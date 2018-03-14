@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 	private final Collection<String> requiredDefinitionStatuses = newHashSet();
 	
 	public SnomedConceptValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
-		super(configuration, configuration.toURL(configuration.getConceptsFile()), ComponentImportType.CONCEPT, context, SnomedRf2Headers.CONCEPT_HEADER);
+		super(configuration, configuration.toURL(configuration.getConceptFile()), ComponentImportType.CONCEPT, context, SnomedRf2Headers.CONCEPT_HEADER);
 	}
 
 	@Override

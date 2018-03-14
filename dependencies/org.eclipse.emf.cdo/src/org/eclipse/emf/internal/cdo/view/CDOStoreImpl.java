@@ -495,10 +495,11 @@ public final class CDOStoreImpl implements CDOStore
         throw new UnsupportedOperationException("REMOVE is not supported for single-valued features");
       }
 
-      CDOFeatureDelta delta = new CDORemoveFeatureDeltaImpl(feature, index);
+      CDORemoveFeatureDeltaImpl delta = new CDORemoveFeatureDeltaImpl(feature, index);
       InternalCDORevision revision = getRevisionForWriting(cdoObject, delta);
 
       oldValue = revision.get(feature, index);
+      delta.setValue(oldValue);
 
       try
       {

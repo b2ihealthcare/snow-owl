@@ -43,7 +43,7 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
-import com.b2international.commons.CompareUtils;
+import com.b2international.collections.PrimitiveCollection;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -56,16 +56,15 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Primitives;
 
 /**
  * @since 5.10
@@ -121,14 +120,35 @@ public class EsDocumentSearcher implements DocSearcher {
 			.setTrackScores(esQueryBuilder.needsScoring());
 		
 		// field selection
+		final boolean fetchSource; 
 		if (query.getFields().isEmpty()) {
 			req.setFetchSource(true);
+			fetchSource = true;
 		} else {
 			if (query.isDocIdOnly()) {
 				req.setFetchSource(false);
+				fetchSource = false;
 			} else {
-				req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+				
+				if (requiresDocumentSourceField(mapping, query.getFields())) {
+					req.setFetchSource(query.getFields().toArray(new String[]{}), null);
+					fetchSource = true;
+				} else {
+					query.getFields().stream().forEach(req::addDocValueField);
+					req.setFetchSource(false);
+					fetchSource = false;
+				}
+				
 			}
+		}
+		
+		// this won't load fields like _parent, _routing, _uid at all
+		// and _id in cases where we explicitly require the _source
+		// ES internals require loading the _id field when we require the _source
+		if (fetchSource	|| query.isDocIdOnly()) {
+			req.storedFields("_id");
+		} else {
+			req.storedFields("_none_");
 		}
 		
 		// sorting
@@ -136,18 +156,25 @@ public class EsDocumentSearcher implements DocSearcher {
 		
 		// scrolling
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
+		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
-		if (limit > resultWindow) {
+		final boolean isLiveScrolled = query.getSearchAfter() != null;
+		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
+			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
 			req.setScroll(scrollTime);
 		} else if (isScrolled) {
+			checkArgument(!isLiveScrolled, "Cannot scroll and live scroll at the same time");
 			req.setScroll(query.getScrollKeepAlive());
-		}
-		
-		// search after
-		if (query.getSearchAfter() != null) {
+		} else if (isLiveScrolled) {
+			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
 			req.searchAfter(query.getSearchAfter());
 		}
+		
+		// disable explain explicitly, just in case
+		req.setExplain(false);
+		// disable version field explicitly, just in case
+		req.setVersion(false);
 		
 		// fetch phase
 		SearchResponse response = null; 
@@ -159,13 +186,12 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		final int totalHits = (int) response.getHits().getTotalHits();
-
-		int numDocsToFetch = query.getLimit() - response.getHits().getHits().length;
+		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
 		
 		final Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.add(response.getHits().getHits());
 
-		while (numDocsToFetch > 0 && limit > resultWindow) {
+		while (isLocalScroll && numDocsToFetch > 0) {
 			response = client.prepareSearchScroll(response.getScrollId()).setScroll(scrollTime).get();
 			int fetchedDocs = response.getHits().getHits().length;
 			if (fetchedDocs == 0) {
@@ -176,14 +202,28 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		// clear the custom local scroll
-		if (limit > resultWindow) {
+		if (isLocalScroll) {
 			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
 		}
 		
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
-		return toHits(select, from, query.getFields(), limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+	}
+
+	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
+		return fields
+			.stream()
+			.filter(field -> {
+				Class<?> fieldType = mapping.getFieldType(field);
+				return mapping.isText(field)
+						|| Iterable.class.isAssignableFrom(fieldType) 
+						|| PrimitiveCollection.class.isAssignableFrom(fieldType) 
+						|| fieldType.getClass().isArray();
+			})
+			.findFirst()
+			.isPresent();
 	}
 
 	@Override
@@ -192,7 +232,10 @@ public class EsDocumentSearcher implements DocSearcher {
 				.prepareSearchScroll(scroll.getScrollId())
 				.setScroll(scroll.getKeepAlive())
 				.get();
-		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
+		
+		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
+		final boolean fetchSource = requiresDocumentSourceField(mapping, scroll.getFields());
+		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
 	}
 	
 	@Override
@@ -204,38 +247,19 @@ public class EsDocumentSearcher implements DocSearcher {
 			Class<T> select, 
 			Class<?> from, 
 			final List<String> fields, 
+			final boolean fetchSource,
 			final int limit, 
 			final int totalHits, 
 			final String scrollId,
 			final SortBy sortBy,
 			final Iterable<SearchHit> hits) throws IOException {
-		final ObjectReader reader = getResultObjectReader(select, from);
+		final HitConverter<T> hitConverter = HitConverter.getConverter(mapper, select, from, fetchSource, fields);
 		Object[] searchAfterSortValues = null;
 		final ImmutableList.Builder<T> result = ImmutableList.builder();
 		for (Iterator<SearchHit> iterator = hits.iterator(); iterator.hasNext();) {
 			SearchHit hit = iterator.next();
 			// if this was the last value then collect the sort values for searchAfter
-			final T value;
-			if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
-				final Map<String, Object> source = hit.getSourceAsMap();
-				if (CompareUtils.isEmpty(source)) {
-					value = (T) hit.getId();
-				} else {
-					value = (T) source.get(Iterables.getOnlyElement(source.keySet()));
-				}
-			} else if (Map.class.isAssignableFrom(select)) {
-				value = select.cast(hit.getSourceAsMap());
-			} else if (String[].class.isAssignableFrom(select)) {
-				final String[] val = new String[fields.size()];
-				for (int i = 0; i < fields.size(); i++) {
-					String field = fields.get(i);
-					val[i] = String.valueOf(hit.getSourceAsMap().get(field));
-				}
-				value = select.cast(val);
-			} else {
-				final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-				value = reader.readValue(bytes, 0, bytes.length);
-			}
+			final T value = hitConverter.convert(hit);
 			if (value instanceof WithId) {
 				((WithId) value).set_id(hit.getId());
 			}
@@ -248,12 +272,6 @@ public class EsDocumentSearcher implements DocSearcher {
 			}
 		}
 		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
-	}
-
-	private <T> ObjectReader getResultObjectReader(Class<T> select, Class<?> from) {
-		return select != from 
-				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
-				: mapper.readerFor(select);
 	}
 
 	private void addSort(DocumentMapping mapping, SearchRequestBuilder req, SortBy sortBy) {
@@ -344,7 +362,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
 		}
 		
-		final ObjectReader reader = getResultObjectReader(aggregation.getFrom(), aggregation.getFrom());
+		final ObjectReader reader = HitConverter.getResultObjectReader(mapper, aggregation.getFrom(), aggregation.getFrom());
 		
 		ImmutableMap.Builder<Object, Bucket<T>> buckets = ImmutableMap.builder();
 		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);

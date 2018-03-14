@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -133,24 +132,28 @@ public final class SnomedValidationContext {
 	}
 	
 	private void addReleaseFilesForValidating() throws IOException {
-		if (isValidReleaseFile(configuration.getConceptsFile())) {
+		if (isValidReleaseFile(configuration.getConceptFile())) {
 			releaseFileValidators.add(new SnomedConceptValidator(configuration, this));
 		}
 
-		if (isValidReleaseFile(configuration.getDescriptionsFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getDescriptionsFile()));
+		for (File descFile : configuration.getDescriptionFiles()) {
+			if (isValidReleaseFile(descFile)) {
+				releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, descFile));
+			}
 		}
 
-		if (isValidReleaseFile(configuration.getTextDefinitionFile())) {
-			releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, configuration.getTextDefinitionFile()));
+		for (File textFile : configuration.getTextDefinitionFiles()) {
+			if (isValidReleaseFile(textFile)) {
+				releaseFileValidators.add(new SnomedDescriptionValidator(configuration, this, textFile));
+			}
 		}
 
-		if (isValidReleaseFile(configuration.getRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipsFile()));
+		if (isValidReleaseFile(configuration.getRelationshipFile())) {
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getRelationshipFile()));
 		}
 		
-		if (isValidReleaseFile(configuration.getStatedRelationshipsFile())) {
-			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipsFile()));
+		if (isValidReleaseFile(configuration.getStatedRelationshipFile())) {
+			releaseFileValidators.add(new SnomedRelationshipValidator(configuration, this, configuration.getStatedRelationshipFile()));
 		}
 	}
 	
@@ -159,15 +162,7 @@ public final class SnomedValidationContext {
 		for (final URL url : configuration.getRefSetUrls()) {
 			addRefSetFile(url);
 		}
-
-		//if the reference file URL set does not contain a language validator yet, specify one 
-		if (!Iterables.any(releaseFileValidators, Predicates.instanceOf(SnomedLanguageRefSetValidator.class))) {
-			
-			if (isValidReleaseFile(configuration.getLanguageRefSetFile())) {
-				releaseFileValidators.add(new SnomedLanguageRefSetValidator(configuration, configuration.toURL(configuration.getLanguageRefSetFile()), this));
-			}
-			
-		}
+		
 	}
 	
 	public boolean isValidReleaseFile(final File releaseFile) {

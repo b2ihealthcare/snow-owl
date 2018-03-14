@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Set;
 
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedImportProtocolCon
 import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 /**
@@ -64,16 +66,17 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 	@Override
 	protected void indicating(final ExtendedDataInputStream in, final OMMonitor monitor) throws Exception {
 
-		monitor.begin(1 + 7 + 1);
+		monitor.begin(1 + 5 + 1);
 		OMMonitor refSetSubmonitor = null;
 		
-		final ImportConfiguration importConfiguration = new ImportConfiguration(in.readUTF());
+		final ImportConfiguration importConfiguration = new ImportConfiguration(in.readUTF()); // branchPath
 		
 		try {
 			// XXX: source kind is always FILES, since the server just receives a bunch of them
 			importConfiguration.setSourceKind(ImportSourceKind.FILES);
+			
 			userId = in.readString();
-			importConfiguration.setVersion(in.readEnum(ContentSubType.class));
+			importConfiguration.setContentSubType(in.readEnum(ContentSubType.class));
 			importConfiguration.setCreateVersions(in.readBoolean());
 			
 			final int exludedRefSetIdCount = in.readInt();
@@ -85,18 +88,22 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			String codeSystemShortName = in.readUTF();
 			importConfiguration.setCodeSystemShortName(codeSystemShortName);
 			
-			monitor.worked();
+			monitor.worked(); // 1
 			
 			receivedFilesDirectory = Files.createTempDir();
 			receivedFilesDirectory.deleteOnExit();
 			
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setConceptsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setTextDefinitionFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setRelationshipsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setStatedRelationshipsFile(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setDescriptionType(f); }}, monitor.fork());
-			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { importConfiguration.setLanguageRefSetFile(f); }}, monitor.fork());
+			int descriptionFilesSize = in.readInt();
+
+			readComponents(in, monitor, importConfiguration, descriptionFilesSize).forEach(file -> importConfiguration.addDescriptionFile(file));
+			
+			int textDefinitionFilesSize = in.readInt();
+			
+			readComponents(in, monitor, importConfiguration, textDefinitionFilesSize).forEach(file -> importConfiguration.addTextDefinitionFile(file));
+			
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setConceptFile(f), monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setRelationshipFile(f), monitor.fork());
+			readComponent(in, importConfiguration, receivedFilesDirectory, f -> importConfiguration.setStatedRelationshipFile(f), monitor.fork());
 			
 			final int refSetUrlCount = in.readInt();
 			
@@ -104,8 +111,7 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 			refSetSubmonitor.begin(refSetUrlCount);
 			
 			for (int i = 0; i < refSetUrlCount; i++) {
-				// XXX: assume that for the pre-determined number of additional refsets, a boolean value of "true" will always be sent 
-				readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() { @Override public void setFile(final File f) { addRefSetUrl(importConfiguration, f); }}, refSetSubmonitor.fork());
+				readComponent(in, importConfiguration, receivedFilesDirectory, f -> addRefSetUrl(importConfiguration, f), refSetSubmonitor.fork());
 			}
 			
 			this.configuration = importConfiguration;
@@ -120,9 +126,25 @@ public class SnomedImportIndication extends IndicationWithMonitoring {
 		}
 	}
 
+	private Set<File> readComponents(final ExtendedDataInputStream in, final OMMonitor monitor, final ImportConfiguration importConfiguration, int numberOfFiles) throws IOException {
+		OMMonitor subMonitor = monitor.fork();
+		subMonitor.begin();
+		Set<File> releaseFiles = Sets.newHashSet();
+		for (int i = 0; i < numberOfFiles; i++) {
+			readComponent(in, importConfiguration, receivedFilesDirectory, new FileCallback() {
+				@Override
+				public void setFile(File f) {
+					releaseFiles.add(f);
+				}
+			}, subMonitor.fork());
+		}
+		subMonitor.done();
+		return releaseFiles;
+	}
+
 	private void addRefSetUrl(final ImportConfiguration importConfiguration, final File f) {
 		try {
-			importConfiguration.addRefSetSource(f.toURI().toURL());
+			importConfiguration.addRefSetURL(f.toURI().toURL());
 		} catch (final MalformedURLException e) {
 			throw new IORuntimeException(e);
 		}

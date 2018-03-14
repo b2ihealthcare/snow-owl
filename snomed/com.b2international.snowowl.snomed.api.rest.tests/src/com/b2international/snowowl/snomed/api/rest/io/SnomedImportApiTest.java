@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -218,7 +218,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
-
+	
 	@Test
 	public void import12OnlyPubContentWithVersioning() {
 		validateBranchHeadtimestampUpdate(branchPath,
@@ -298,6 +298,24 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive("SnomedCT_RF2Release_INT_20180227_incomplete_taxonomy.zip");
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "882169191000154107").statusCode(200);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, "955630781000154129").statusCode(200);
+	}
+
+	@Test
+	public void import25WithMultipleLanguageCodes() {
+		final String enDescriptionId = "41320138114";
+		final String svDescriptionId = "24688171113";
+		final String enLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfc";
+		final String svLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfb";
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetMemberId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, svLanguageRefsetMemberId).statusCode(404);
+		importArchive("SnomedCT_Release_INT_20150201_descriptions_with_multiple_language_codes.zip");
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, enDescriptionId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, svDescriptionId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, enLanguageRefsetMemberId).statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, svLanguageRefsetMemberId).statusCode(200);
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

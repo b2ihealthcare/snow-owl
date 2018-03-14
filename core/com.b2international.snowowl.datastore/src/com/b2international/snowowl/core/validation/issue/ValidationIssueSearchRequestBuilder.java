@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,27 @@ public final class ValidationIssueSearchRequestBuilder
 	public ValidationIssueSearchRequestBuilder filterByTooling(Iterable<String> toolingIds) {
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
- 	
+	
+	public ValidationIssueSearchRequestBuilder filterByAffectedComponentId(String affectedComponentId) {
+		return addOption(OptionKey.AFFECTED_COMPONENT_ID, affectedComponentId);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByAffectedComponentId(Iterable<String> affectedComponentIds) {
+		return addOption(OptionKey.AFFECTED_COMPONENT_ID, affectedComponentIds);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(short affectedComponentType) {
+		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentType);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(Iterable<Short> affectedComponentTypes) {
+		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentTypes);
+	}
+	
+	public ValidationIssueSearchRequestBuilder isWhitelisted(boolean whitelisted) {
+		return addOption(OptionKey.WHITELISTED, whitelisted);
+	}
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationIssues> createSearch() {
 		return new ValidationIssueSearchRequest();

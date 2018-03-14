@@ -42,6 +42,20 @@ public class SnomedIdentifiers {
 	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L + 1L; // 8 digits for itemId, exclusive
 
 	/**
+	 * @param componentId - the ID to check
+	 * @return <code>true</code> if the given componentId is a valid SNOMED CT core component identifier, <code>false</code> otherwise.
+	 * @see #validate(String)
+	 */
+	public static boolean isValid(String componentId) {
+		try {
+			validate(componentId);
+			return true;
+		} catch (final IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	/**
 	 * Validates the given componentId by using the rules defined in the latest
 	 * SNOMED CT Identifier specification, which are the following constraints:
 	 * <ul>

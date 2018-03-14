@@ -275,6 +275,7 @@ public class EsDocumentWriter implements Writer {
 				--attempts;
 				try {
 					Thread.sleep(100 + random.nextInt(900));
+					admin.refresh(Collections.singleton(mapping));
 				} catch (InterruptedException e) {
 					throw new IndexException("Interrupted", e);
 				}

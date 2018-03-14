@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -222,9 +223,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
+		final String id = input.getId();
 		return builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 //				.score(input.getScore())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
@@ -246,9 +249,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	public static Builder builder(SnomedConcept input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())

@@ -30,15 +30,15 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
  */
 final class ValidationWhiteListCreateRequest implements Request<ValidationRepositoryContext, String> {
 
-	@NotEmpty private String ruleId;
-	@NotNull private ComponentIdentifier componentIdentifier;
-	private String reporter;
+	@NotEmpty String ruleId;
+	@NotNull ComponentIdentifier componentIdentifier;
+	@NotEmpty String reporter;
 	private long createdAt;
 	
 	@Override
 	public String execute(ValidationRepositoryContext context) {
 		final String id = UUID.randomUUID().toString();
-		context.save(new ValidationWhiteList(id, ruleId, componentIdentifier, reporter, createdAt));
+		context.save(id, new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier));
 		return id;
 	}
 

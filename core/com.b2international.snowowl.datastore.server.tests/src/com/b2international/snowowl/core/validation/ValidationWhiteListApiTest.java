@@ -38,7 +38,6 @@ import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.eventbus.EventBus;
 
 /**
  * @since 6.1
@@ -113,7 +112,8 @@ public class ValidationWhiteListApiTest {
 		createWhiteLists("6", componentIdentifier);
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
-			.filterByComponentIdentifier(componentIdentifier)
+			.filterByComponentIdentifier(componentIdentifier.getComponentId())
+			.filterByComponentType(componentIdentifier.getTerminologyComponentId())
 			.buildAsync().getRequest()
 			.execute(context);
 		

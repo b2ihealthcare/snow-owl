@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,15 +86,15 @@ public class SnomedTaxonomyValidator {
 			final RepositoryState repositoryState,
 			final String characteristicType) {
 		this.characteristicType = characteristicType;
-		this.snapshot = SNAPSHOT.equals(configuration.getVersion());
-		this.conceptsFile = configuration.getConceptsFile();
+		this.snapshot = SNAPSHOT.equals(configuration.getContentSubType());
+		this.conceptsFile = configuration.getConceptFile();
 		this.conceptIds = repositoryState.getConceptIds(); 
 		this.statements = Concepts.INFERRED_RELATIONSHIP.equals(characteristicType) ? repositoryState.getInferredStatements() : repositoryState.getStatedStatements();
 		
 		if (Concepts.STATED_RELATIONSHIP.equals(characteristicType)) {
-			relationshipsFile = configuration.getStatedRelationshipsFile();
+			relationshipsFile = configuration.getStatedRelationshipFile();
 		} else if (Concepts.INFERRED_RELATIONSHIP.equals(characteristicType)) {
-			relationshipsFile = configuration.getRelationshipsFile();
+			relationshipsFile = configuration.getRelationshipFile();
 		} else {
 			throw new IllegalArgumentException("Collection mode " + characteristicType + " is not allowed.");
 		}

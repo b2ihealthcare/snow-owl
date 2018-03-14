@@ -1,6 +1,47 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.3.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.3.0.
+
+#### Datasets created before 6.3.0
+All datasets created before 6.3.0 require a full `reindex` due to changes in SNOMED CT index schema. 
+
+### Added
+- Support multiple language code files in RF2 import (#194)
+- Support locale specific term based sorting in SNOMED CT Concept API (#199)
+- Support running a selection of validation rules instead of all of them (#196, #212)
+- Include Additional relationship types when exporting Reference Sets to DSV (#208)
+- Support expansion of `preferredDescriptions()` in SNOMED CT Concept API
+- Support HEAD requests on `/snowowl/admin/info` endpoint (d8e90e5)
+- Track inactive memberships of SNOMED CT core components in `memberOf` index field
+
+### Changed
+- Improve SNOMED CT RF2 Export API (#210)
+- Allow SNOMED CT Relationships with inactive source/destination to be imported (#205)
+- Reference Set identifier concept inactivation automatically inactivates members (e445053)
+- Changed default CDO's soft reference based revision cache to time/size eviction based Guava Cache (#199)
+- Field selection now uses indexed `docValues` instead of `_source` to improve response time of search requests (2895245)
+
+### Removed
+- Deprecated `filteredrefset` API (998368f)
+
+### Bugs
+- Fix conceptToKeep selection logic from equivalent concept sets (#200)
+- Fix singleton module/namespace assigner bug in SNOMED CT Classification (#202)
+- Fix branch timestamp update when importing RF2 with unpublished content (#203)
+- Fix and simplify module dependency member collection logic (#191, #214)
+- Reduce memory usage of revision compare (9d5b355)
+- Reduce memory usage of RF2 import (a3642e9)
+- Improve Validation Whitelist API performance (#206)
+- Improve performance of Validation API (#209)
+- Add `60s` timeout to `EventBus` address synchronization (3cfb315)
+- Fix CDORemoveFeatureDelta bug (0929669)
+- Fix occasionally failing bulk updates in index commits (cba7e18)
+
 ## 6.2.0
 
 ### Added

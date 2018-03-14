@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,7 @@ public abstract class AbstractSnomedValidator {
 	}
 	
 	private String getEffectiveTimeKey(final String effectiveTime) {
-		return ContentSubType.SNAPSHOT.equals(configuration.getVersion()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
+		return ContentSubType.SNAPSHOT.equals(configuration.getContentSubType()) ? SPECIAL_EFFECTIVE_TIME_KEY : effectiveTime;
 	}
 	
 	private Path getEffectiveTimeFile(String effectiveTimeKey) {

@@ -77,13 +77,10 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 
 		@Override
 		public B id(String id) {
-			if (!Strings.isNullOrEmpty(id)) {
-				namespace(SnomedIdentifiers.create(id).getNamespace());
-			}
 			return super.id(id);
 		}
 		
-		B namespace(String namespace) {
+		public B namespace(String namespace) {
 			this.namespace = namespace;
 			return getSelf();
 		}

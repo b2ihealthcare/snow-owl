@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import com.b2international.snowowl.internal.eventbus.HandlerChangedEvent;
  */
 public class EventBusProtocol extends SignalProtocol<IEventBus> implements IEventBusProtocol, IListener {
 
+	static final int ADDRESS_BOOK_REQ_TIMEOUT = 60 * 1000;
 	private static final Logger LOG = LoggerFactory.getLogger(EventBusProtocol.class);
 	private final IRequestFactory factory;
 	private Set<String> remoteAddresses = Collections.synchronizedSet(new HashSet<String>());
@@ -144,7 +145,7 @@ public class EventBusProtocol extends SignalProtocol<IEventBus> implements IEven
 			try {
 				final RequestWithConfirmation<Object> request = factory.createRequestWithConfirmation(this, signalID, body);
 				if (request != null) {
-					return request.send();
+					return request.send(ADDRESS_BOOK_REQ_TIMEOUT);
 				}
 			} catch (Exception e) {
 				LOG.error("Exception happened while sending sync request", e);
