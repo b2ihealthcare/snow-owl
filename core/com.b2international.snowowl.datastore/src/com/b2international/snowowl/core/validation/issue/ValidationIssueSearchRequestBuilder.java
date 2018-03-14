@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
@@ -72,6 +73,10 @@ public final class ValidationIssueSearchRequestBuilder
 	
 	public ValidationIssueSearchRequestBuilder isWhitelisted(boolean whitelisted) {
 		return addOption(OptionKey.WHITELISTED, whitelisted);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByDetails(Options options) {
+		return addOption(OptionKey.DETAILS, options);
 	}
 	
 	@Override
