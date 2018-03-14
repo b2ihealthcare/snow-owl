@@ -83,10 +83,10 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			
 			final List<File> listOfFiles = Arrays.asList(env.getConfigDirectory().listFiles());
 			final Set<File> validationRuleFiles = Sets.newHashSet();
-			final Pattern regex = Pattern.compile("(validation-rules)-(\\w+).(json)");
+			final Pattern validationFilenamePattern = Pattern.compile("(validation-rules)-(\\w+).(json)");
 			for (File file : listOfFiles) {
 				final String fileName = file.getName();
-				final Matcher match = regex.matcher(fileName);
+				final Matcher match = validationFilenamePattern.matcher(fileName);
 				if (match.matches()) {
 					validationRuleFiles.add(file);
 				}
