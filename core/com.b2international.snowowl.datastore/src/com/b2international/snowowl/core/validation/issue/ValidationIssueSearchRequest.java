@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -29,6 +30,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.detail.ValidationDetailExtension;
+import com.b2international.snowowl.core.validation.detail.ValidationDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 
@@ -66,8 +69,16 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by that are whitelisted or not. 
 		 */
-		WHITELISTED
+		WHITELISTED,
+		
+		/**
+		 * Filter matches by details
+		 */
+		DETAILS
 	}
+	
+	
+	ValidationIssueSearchRequest() {}
 	
 	@Override
 	protected Searcher searcher(ServiceProvider context) {
@@ -132,6 +143,14 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		if (containsKey(OptionKey.WHITELISTED)) {
 			boolean whitelisted = getBoolean(OptionKey.WHITELISTED);
 			queryBuilder.filter(Expressions.match(ValidationIssue.Fields.WHITELISTED, whitelisted));
+		}
+		
+		if (containsKey(OptionKey.DETAILS)) {
+			final Collection<ValidationDetailExtension> validationDetailExtensions = ValidationDetailExtensionProvider.INSTANCE.getExtensions();
+			for (ValidationDetailExtension extension : validationDetailExtensions) {
+				Options options = getOptions(OptionKey.DETAILS);
+				extension.prepareQuery(queryBuilder, options);
+			}
 		}
 		
 		return queryBuilder.build();

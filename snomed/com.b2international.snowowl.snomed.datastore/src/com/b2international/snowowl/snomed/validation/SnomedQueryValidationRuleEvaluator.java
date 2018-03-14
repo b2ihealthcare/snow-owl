@@ -82,6 +82,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 					final String moduleId = component.getModuleId();
 					final Map<String, Object> details = newHashMap();
 					details.put(SnomedRf2Headers.FIELD_MODULE_ID, moduleId);
+					details.put(SnomedRf2Headers.FIELD_ACTIVE, component.isActive());
 					return new IssueDetail(affectedComponent, details);
 				})
 				.collect(Collectors.toList());
@@ -116,6 +117,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 			return req.filterByActive(active)
 					.filterByModule(module)
 					.filterByEffectiveTime(effectiveTime);
+			
 		}		
 	}
 	

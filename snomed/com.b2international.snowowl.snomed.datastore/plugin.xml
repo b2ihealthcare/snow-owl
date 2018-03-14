@@ -408,4 +408,10 @@
             class="com.b2international.snowowl.snomed.datastore.index.SnomedMappingProvider">
       </provider>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.validationDetailExtension">
+      <validationDetailExtension
+            class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationDetailExtension">
+      </validationDetailExtension>
+   </extension>
 </plugin>
