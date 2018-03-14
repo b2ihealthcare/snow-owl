@@ -17,12 +17,14 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * FHIR Code datatype
  * 
  * @since 6.3
  */
-public class Code implements JsonStringProvider {
+public class Code {
 	
 	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
 	
@@ -33,15 +35,11 @@ public class Code implements JsonStringProvider {
 		this.codeValue = codeValue;
 	}
 
+	@JsonValue
 	public String getCodeValue() {
 		return codeValue;
 	}
 	
-	@Override
-	public String toJsonString() {
-		return codeValue;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;

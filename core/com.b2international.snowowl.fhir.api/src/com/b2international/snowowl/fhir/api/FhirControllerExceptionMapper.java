@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
@@ -72,20 +74,21 @@ public class FhirControllerExceptionMapper {
 		FhirException fhirException = new FhirException("Invalid JSON representation" + " Exception: " + ex.getMessage());
 		return fhirException.toOperationOutcome();
 	}
-//
-//	/**
-//	 * <b>Not Found</b> exception handler. All {@link NotFoundException not found exception}s are mapped to {@link HttpStatus#NOT_FOUND
-//	 * <em>404 Not Found</em>} in case of the absence of an instance resource.
-//	 * 
-//	 * @param ex
-//	 * @return {@link RestApiError} instance with detailed messages
-//	 */
-//	@ExceptionHandler
-//	@ResponseStatus(HttpStatus.NOT_FOUND)
-//	public @ResponseBody RestApiError handle(final NotFoundException ex) {
-//		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_FOUND.value());
-//	}
-//
+
+	/**
+	 * <b>Not Found</b> exception handler. All {@link NotFoundException not found exception}s are mapped to {@link HttpStatus#NOT_FOUND
+	 * <em>404 Not Found</em>} in case of the absence of an instance resource.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public @ResponseBody OperationOutcome handle(final NotFoundException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_NO_EXIST, ex.getKey());
+		return fhirException.toOperationOutcome();
+	}
+
 //	/**
 //	 * Exception handler to return <b>Not Implemented</b> when an {@link UnsupportedOperationException} is thrown from the underlying system.
 //	 * 

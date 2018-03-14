@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.api.tests;
+
 /*
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

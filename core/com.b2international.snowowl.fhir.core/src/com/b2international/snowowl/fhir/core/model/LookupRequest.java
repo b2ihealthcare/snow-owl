@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,7 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 	private List<SerializableParameter> parameters = Lists.newArrayList();
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
+	//@ApiModelProperty(dataType = "java.lang.String")
 	@Order(value = 1)
 	private Code code;
 
@@ -268,7 +270,11 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		}
 
 		public Builder properties(Collection<String> properties) {
-			this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());
+			if (properties == null) {
+				this.properties = Collections.emptySet();
+			} else {
+				this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());
+			}
 			return this;
 		}
 

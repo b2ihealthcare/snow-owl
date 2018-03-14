@@ -36,8 +36,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.LookupRequest.Builder;
+import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.wordnik.swagger.annotations.Api;
@@ -66,7 +69,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(value="/CodeSystem")
 public class FhirCodeSystemRestService {
 	
-	private static final String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.api.provider"; //$NON-NLS-N$
+	private static final String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.provider"; //$NON-NLS-N$
 	
 	@ApiOperation(
 			value="FHIR REST API Ping Test",
@@ -97,7 +100,7 @@ public class FhirCodeSystemRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
-	public void lookupViaParameters(
+	public LookupResult lookupViaParameters(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system uri") @RequestParam(value="uri") final String uri,
@@ -113,17 +116,21 @@ public class FhirCodeSystemRestService {
 			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
 		}
 		
-		LookupRequest lookupRequest = LookupRequest.builder()
+		Builder builder = LookupRequest.builder()
 			.code(code)
 			.system(uri)
 			.version(version)
-			.date(date)
-			.displayLanguage(displayLanguage)
-			.properties(properties)
-			.build();
+			.displayLanguage(displayLanguage);
+		if (date != null) {
+			builder.date(date);
+		}
+		
+		if (properties != null) {
+			builder.properties(properties);
+		}
 		
 		//all good, now do something
-		lookup(lookupRequest);
+		return lookup(builder.build());
 	}
 	
 	/**
@@ -142,7 +149,7 @@ public class FhirCodeSystemRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void lookupViaCodingAndParameters(
+	public LookupResult lookupViaCodingAndParameters(
 		@ApiParam(value="The lookup request parameters") 
 		@Valid 
 		@RequestBody 
@@ -152,20 +159,29 @@ public class FhirCodeSystemRestService {
 		crossFieldValidate(lookupRequest);
 		
 		//all good, now do something
-		lookup(lookupRequest);
+		return lookup(lookupRequest);
 	}
 	
-	private void lookup(LookupRequest lookupRequest) {
+	private LookupResult lookup(LookupRequest lookupRequest) {
 		
+		String uriValue = lookupRequest.getSystem().getUriValue();
 		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
 		
-		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream().findFirst();
+		fhirProviders.forEach(System.out::println);
 		
-		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + lookupRequest.getSystem()));
+		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream()
+				.filter(provider -> provider.isSupported(uriValue))
+				.findFirst();
+		
+		fhirProviderOptional.orElseThrow(() -> {
+			return new BadRequestException("Did not find FHIR module for code system: " + uriValue
+					, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue);
+		});
 		
 		IFhirProvider iFhirProvider = fhirProviderOptional.get();
-		System.out.println("Found provider: " + iFhirProvider);
-		iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
+		System.out.println("Found provider: " + iFhirProvider.getUri());
+		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
+		return lookupResult;
 		
 	}
 	

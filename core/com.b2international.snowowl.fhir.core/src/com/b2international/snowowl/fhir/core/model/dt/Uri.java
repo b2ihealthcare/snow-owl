@@ -17,12 +17,14 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * FHIR URI datatype
  * 
  * @since 6.3
  */
-public class Uri implements JsonStringProvider {
+public class Uri {
 	
 	@NotEmpty
 	@ValidUri
@@ -32,12 +34,8 @@ public class Uri implements JsonStringProvider {
 		this.uriValue = uriValue;
 	}
 
+	@JsonValue
 	public String getUriValue() {
-		return uriValue;
-	}
-
-	@Override
-	public String toJsonString() {
 		return uriValue;
 	}
 

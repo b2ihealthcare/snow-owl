@@ -27,8 +27,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.collect.Lists;
 
 /**
@@ -46,12 +44,10 @@ public class Issue {
 
 	@NotNull
 	@Valid
-	@JsonSerialize(using = ToStringSerializer.class)
 	private final Code severity;
 
 	@NotNull
 	@Valid
-	@JsonSerialize(using = ToStringSerializer.class)
 	private final Code code;
 
 	@JsonProperty("details")

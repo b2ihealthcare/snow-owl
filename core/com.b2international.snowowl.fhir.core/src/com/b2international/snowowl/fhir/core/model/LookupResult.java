@@ -87,8 +87,13 @@ public class LookupResult extends SerializableParameters {
 			return this;
 		}
 		
-		public Builder use(String version) {
+		public Builder version(String version) {
 			this.version = version;
+			return this;
+		}
+		
+		public Builder display(String display) {
+			this.display = display;
 			return this;
 		}
 		

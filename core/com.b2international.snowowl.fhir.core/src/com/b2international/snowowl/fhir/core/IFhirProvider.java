@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import com.b2international.snowowl.fhir.core.model.LookupResult;
+
 /**
  * Extension point interface for code system specific FHIR API support
  * 
@@ -32,6 +34,11 @@ public interface IFhirProvider {
 	 */
 	boolean isSupported(String uri);
 
-	void lookup(String version, String code);
+	LookupResult lookup(String version, String code);
+
+	/**
+	 * @return
+	 */
+	String getUri();
 	
 }

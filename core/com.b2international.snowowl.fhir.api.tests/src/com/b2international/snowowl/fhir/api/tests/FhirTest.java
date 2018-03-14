@@ -33,6 +33,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
+/**
+ * Superclass for common test functionality
+ * @since 6.3
+ */
 public class FhirTest {
 	
 	protected static ObjectMapper objectMapper = new ObjectMapper();

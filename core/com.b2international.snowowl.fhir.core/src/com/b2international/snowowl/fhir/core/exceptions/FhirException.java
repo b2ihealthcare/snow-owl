@@ -32,12 +32,34 @@ public class FhirException extends FormattedRuntimeException {
 	
 	private String location;
 	
+	//default outcome code
+	private OperationOutcomeCode operationOutcomeCode = OperationOutcomeCode.MSG_BAD_SYNTAX;
+			
 	/**
 	 * @param template
 	 * @param args
 	 */
 	public FhirException(String template, Object... args) {
 		super(template, args);
+	}
+	
+	/**
+	 * @param template
+	 * @param args
+	 */
+	public FhirException(String template, OperationOutcomeCode operationOutcomeCode, Object... args) {
+		super(template, args);
+		this.operationOutcomeCode = operationOutcomeCode;
+	}
+	
+	/**
+	 * @param template
+	 * @param args
+	 */
+	public FhirException(String template, OperationOutcomeCode operationOutcomeCode, String location, Object... args) {
+		super(template, args);
+		this.location = location;
+		this.operationOutcomeCode = operationOutcomeCode;
 	}
 	
 	/**
@@ -64,7 +86,7 @@ public class FhirException extends FormattedRuntimeException {
 	 * @return
 	 */
 	public OperationOutcomeCode getOperationOutcomeCode() {
-		return OperationOutcomeCode.MSG_BAD_SYNTAX;
+		return operationOutcomeCode;
 	}
 	
 	/**

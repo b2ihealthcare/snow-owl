@@ -160,7 +160,6 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.setDateFormat(df);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
-		
 		return objectMapper;
 	}
 

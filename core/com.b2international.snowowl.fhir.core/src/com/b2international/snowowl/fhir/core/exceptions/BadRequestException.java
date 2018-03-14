@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.exceptions;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 
 /**
  * Thrown when a request contains incorrect parameters or is otherwise malformed.
@@ -28,6 +29,14 @@ public class BadRequestException extends FhirException {
 	
 	public BadRequestException(final String message, final Object...args) {
 		super(message, args);
+	}
+	
+	public BadRequestException(final String message, OperationOutcomeCode operationOutcomeCode, final Object...args) {
+		super(message, operationOutcomeCode, args);
+	}
+	
+	public BadRequestException(final String message, OperationOutcomeCode operationOutcomeCode, String location, final Object...args) {
+		super(message, operationOutcomeCode, location, args);
 	}
 	
 	public BadRequestException(final String message, String location, final Object...args) {
