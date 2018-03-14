@@ -164,6 +164,7 @@ public class FhirCodeSystemRestService {
 		fhirProviderOptional.orElseThrow(() -> new BadRequestException("Did not find FHIR provider for URI: " + lookupRequest.getSystem()));
 		
 		IFhirProvider iFhirProvider = fhirProviderOptional.get();
+		System.out.println("Found provider: " + iFhirProvider);
 		iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
 		
 	}
