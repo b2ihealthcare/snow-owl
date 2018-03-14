@@ -6,5 +6,13 @@
     "severity": "ERROR",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon1.groovy"
+  },
+  {
+  	"id": "snomed-common-2",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Fully-specified names of active concepts should be unique.",
+    "severity": "WARNING",
+    "type": "script-groovy",
+    "implementation": "scripts/ruleSnomedCommon2.groovy"
   }
 ]
