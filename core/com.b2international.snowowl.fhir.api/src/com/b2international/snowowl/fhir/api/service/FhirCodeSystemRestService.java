@@ -101,11 +101,21 @@ public class FhirCodeSystemRestService {
 	@RequestMapping(method=RequestMethod.GET)
 	public CollectionResource<ICodeSystem> getCodeSystems() {
 		
-		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
+		final List<Promise<CodeSystems>> allCodeSystems = newArrayList();
 		
 		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
+			allCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
 		}
+		
+		Promise.all(allCodeSystems)
+			.then(results -> {
+				results.stream()
+					.filter(CodeSystems.class::isInstance)
+					.map(cs -> cs);
+				return null;
+			});
+		
+		
 		return null;
 		/*
 		return Promise.all(getAllCodeSystems)

@@ -120,6 +120,4 @@ public enum IssueType implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
-
-
 }

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.fhir.core.model.dt;
+
+/**
+ * FHIR Identifier datatype
+ * @see <a href="https://www.hl7.org/fhir/datatypes.html#identifier">FHIR:Data Types:Identifier</a>
+ * @since 6.3
+ */
+public class Identifier {
+
+	//The language code this designation is defined for (0..1)
+	private Code use; //usual | official | temp | secondary (If known)
+		
+	private CodeableConcept type;
+	
+	private Uri system;
+	
+	private String value;
+
+	//private Period period;
+	
+	//private Reference assigner;
+	
+	public Identifier(Code use, CodeableConcept type, Uri system, String value) {
+		this.use = use;
+		this.type = type;
+		this.system = system;
+		this.value = value;
+	}
+	
+	
+}

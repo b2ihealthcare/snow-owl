@@ -26,6 +26,7 @@ import com.wordnik.swagger.annotations.ApiModel;
 
 /**
  * FHIR Coding complex datatype.
+ * 
  * Note that this class is not turned into a collection of parameters but kept in its
  * normal serialization form.
  * 

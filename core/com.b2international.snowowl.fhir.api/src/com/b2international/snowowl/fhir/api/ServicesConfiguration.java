@@ -149,6 +149,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		return swaggerSpringMvcPlugin;
 	}
 
+	/*
+	 * Add properties filter.
+	 * TODO: https://github.com/krishna81m/jackson-nested-prop-filter
+	 * @return
+	 */
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
