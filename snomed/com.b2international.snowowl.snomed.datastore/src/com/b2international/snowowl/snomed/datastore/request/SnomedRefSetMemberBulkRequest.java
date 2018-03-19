@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
 
@@ -47,9 +48,12 @@ final class SnomedRefSetMemberBulkRequest implements Request<TransactionContext,
 	public BulkResponse execute(final TransactionContext context) {
 		
 		// Prefetch all component IDs mentioned in reference set member creation requests, abort if any of them can not be found
-		final Multimap<Class<? extends CDOObject>, String> componentIdsToLoad = FluentIterable.from(bulkRequest.getRequests())
+		final Set<String> requiredComponentIds = FluentIterable.from(bulkRequest.getRequests())
 			.filter(SnomedRefSetMemberCreateRequest.class)
 			.transformAndConcat(createRequest -> createRequest.getRequiredComponentIds(context))
+			.toSet();
+		
+		final Multimap<Class<? extends CDOObject>, String> componentIdsByType = FluentIterable.from(requiredComponentIds)
 			.index(componentId -> {
 				switch (SnomedIdentifiers.getComponentCategory(componentId)) {
 					case CONCEPT: return Concept.class;
@@ -61,8 +65,8 @@ final class SnomedRefSetMemberBulkRequest implements Request<TransactionContext,
 		
 		try {
 			
-			for (final Entry<Class<? extends CDOObject>, Collection<String>> idsByType : componentIdsToLoad.asMap().entrySet()) {
-				context.lookup(idsByType.getValue(), idsByType.getKey());	
+			for (final Entry<Class<? extends CDOObject>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
+				context.lookup(idsForType.getValue(), idsForType.getKey());	
 			}
 			
 		} catch (final ComponentNotFoundException e) {
