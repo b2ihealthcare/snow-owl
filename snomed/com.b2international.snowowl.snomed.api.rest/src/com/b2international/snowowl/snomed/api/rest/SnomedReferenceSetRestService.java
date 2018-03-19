@@ -55,6 +55,7 @@ import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberBulkRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -255,9 +256,13 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		for (RestRequest req : bulkRequest.getRequests()) {
 			req.setSource("referenceSetId", refSetId);
 		}
+		
+		final SnomedRefSetMemberBulkRequestBuilder updateRequestBuilder = SnomedRequests.prepareBulkUpdateMembers();
+		bulkRequest.resolve(resolver).forEach(updateRequestBuilder::add);
+		
 		SnomedRequests
 			.prepareCommit()
-			.setBody(bulkRequest.resolve(resolver))
+			.setBody(updateRequestBuilder.build())
 			.setUserId(principal.getName())
 			.setCommitComment(request.getCommitComment())
 			.build(repositoryId, branchPath)
