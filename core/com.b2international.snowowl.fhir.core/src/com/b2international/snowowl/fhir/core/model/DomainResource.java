@@ -27,9 +27,18 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
   
  * @since 6.3
  */
-public class DomainResource extends FhirResource {
+public abstract class DomainResource extends FhirResource {
 	
+	public DomainResource(Narrative text) {
+		super(null);
+		this.text = text;
+	}
+
 	//Text summary of the resource, for human interpretation 0..1
 	private Narrative text;
+
+	public Narrative getText() {
+		return text;
+	}
 
 }

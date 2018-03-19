@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.valueset;
 
-import javax.validation.constraints.Pattern;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.google.common.collect.Sets;
 
 /**
- * 0..1
- *  "id" : "<id>", // Logical id of this artifact
-  "meta" : { Meta }, // Metadata about the resource
-  "implicitRules" : "<uri>", // A set of rules under which this content was created
-  "language" : "<code>" // Language of the resource content
- * @author bbanfai
- *
+ * All codes from {@link PublicationStatus} code system.
+ * I am not sure this makes sense.
+ * @since 6.3
  */
-public abstract class FhirResource {
+public class PublicationStatusValueSet {
 	
-	private Code language;
+	private static Collection<Code> codes = Sets.newHashSet();
 	
-	public FhirResource(Code language) {
-		this.language = language;
+	static {
+		codes = Arrays.stream(PublicationStatus.values()).map(s -> s.getCode()).collect(Collectors.toSet());
 	}
-
-	@Pattern(regexp = "[A-Za-z0-9\\-\\.]{1,64}")
-	protected abstract String getId();
-
-	public Code getLanguage() {
-		return language;
+	
+	public static Code getCode(String codeValue) {
+		codes.stream().filter(c -> c.getCodeValue().equals(codeValue));
+		return null;
 	}
 
 }
