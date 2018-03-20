@@ -21,7 +21,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,7 +39,9 @@ import com.google.common.collect.Lists;
  * http://hl7.org/fhir/concept-properties#notSelectable	This concept is a grouping concept and not intended to be used in the normal use of the code system (though my be used for filters etc). This is also known as 'Abstract'
  *
  */
-public class Property extends SerializableParameters {
+@JsonDeserialize(converter=PropertyConverter.class)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
+public class Property extends ParametersModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
@@ -88,24 +92,6 @@ public class Property extends SerializableParameters {
 	
 	public Collection<SubProperty> getSubProperties() {
 		return subProperties;
-	}
-	
-	@Override
-	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
-		
-		Collection<SerializableParameter> collectionParameters = Lists.newArrayList();
-
-		@SuppressWarnings("rawtypes")
-		Collection values = (Collection) value;
-		
-		for (Object object : values) {
-			if (object instanceof SubProperty) {
-				Collection<SerializableParameter> propertyParams = ((SubProperty) object).toParameters();
-				SerializableParameter fhirParam = new SerializableParameter("subproperty", "part", propertyParams);
-				collectionParameters.add(fhirParam);
-			}
-		}
-		return collectionParameters;
 	}
 	
 	public static Builder builder() {

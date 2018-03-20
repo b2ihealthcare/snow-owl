@@ -29,28 +29,24 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.Lists;
 
 /**
  * @since 6.3
  */
-@JsonDeserialize(converter=SerializableParameters.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class SerializableParameters extends StdConverter<SerializableParameters, SerializableParameters> {
+public class SerializableParametersConverter extends StdConverter<ParametersModel, ParametersModel> {
 	
-	//the serializable format
-	
-	//header "resourceType" : "Parameters",
-	@JsonProperty
-	private String resourceType = "Parameters";
-		
-	@JsonProperty(value="parameter")
-	private List<SerializableParameter> parameters = Lists.newArrayList();
+	@Override
+	public ParametersModel convert(ParametersModel fhirModel) {
+		try {
+			fhirModel.setParameters(toParameters(fhirModel));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Could not convert.");
+		}
+		return fhirModel;
+	}
 	
 	/**
 	 *  Method to build a the collection of serializable parameters in the format of:
@@ -62,16 +58,16 @@ public class SerializableParameters extends StdConverter<SerializableParameters,
 		 *  @return
 	 * @throws Exception
 	 */
-	public List<SerializableParameter> toParameters() throws Exception {
+	public List<SerializableParameter> toParameters(ParametersModel fhirModel) throws Exception {
 		
 		List<SerializableParameter> parameters = Lists.newArrayList();
 		
-		Field[] fields = this.getClass().getDeclaredFields();
+		Field[] fields = fhirModel.getClass().getDeclaredFields();
 		Arrays.sort(fields, new FieldOrderComparator());
 		
 		for (Field field : fields) {
 			field.setAccessible(true);
-			Object value = field.get(this);
+			Object value = field.get(fhirModel);
 			
 			//embedded collections
 			if (field.getType().equals(Collection.class)) {
@@ -92,6 +88,7 @@ public class SerializableParameters extends StdConverter<SerializableParameters,
 	 * Creates a parameter based on the field (type, name and value)
 	 * To avoid the type-based switch, SerializableParameter could be made typed.
 	 */
+	@JsonIgnore
 	private SerializableParameter createSerializableParameter(Field field, Object value) {
 		
 		SerializableParameter parameter = null;
@@ -127,14 +124,5 @@ public class SerializableParameters extends StdConverter<SerializableParameters,
 	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
 		return Collections.emptySet();
 	}
-
-	@Override
-	public SerializableParameters convert(SerializableParameters fhirModel) {
-		try {
-			parameters = fhirModel.toParameters();
-		} catch (Exception e) {
-			throw new IllegalArgumentException("Could not convert.");
-		}
-		return fhirModel;
-	}
+	
 }

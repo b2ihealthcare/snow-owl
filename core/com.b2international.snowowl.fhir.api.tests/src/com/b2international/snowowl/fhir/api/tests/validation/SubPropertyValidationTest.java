@@ -53,8 +53,7 @@ public class SubPropertyValidationTest extends ValidatorTest<SubProperty> {
 			//.code("123")
 			.value(2.1)
 			.description("propertyDescription")
-			.build()
-			.toParameters();
+			.build();
 	}
 	
 	@Test

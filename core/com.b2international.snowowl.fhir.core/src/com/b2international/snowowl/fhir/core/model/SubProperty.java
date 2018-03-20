@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
-public class SubProperty extends SerializableParameters {
+public class SubProperty extends ParametersModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)

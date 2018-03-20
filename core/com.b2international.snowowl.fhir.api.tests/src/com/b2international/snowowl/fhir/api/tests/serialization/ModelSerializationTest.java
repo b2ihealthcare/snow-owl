@@ -15,12 +15,8 @@
  */
 package com.b2international.snowowl.fhir.api.tests.serialization;
 
-import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.core.StringStartsWith.startsWith;
-
 import java.util.Collection;
-
-import javax.validation.ValidationException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -33,10 +29,14 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
+import com.b2international.snowowl.fhir.core.model.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.Property;
-import com.b2international.snowowl.fhir.core.model.SubProperty;
 import com.b2international.snowowl.fhir.core.model.Property.Builder;
+import com.b2international.snowowl.fhir.core.model.PropertyConverter;
+import com.b2international.snowowl.fhir.core.model.SerializableParametersConverter;
+import com.b2international.snowowl.fhir.core.model.SubProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
@@ -85,13 +85,14 @@ public class ModelSerializationTest extends FhirTest {
 	
 	@Test
 	public void subPropertyTest() throws Exception {
+		
+		SerializableParametersConverter converter = new SerializableParametersConverter();
 
-		Collection<SerializableParameter> parameters = SubProperty.builder()
+		Collection<SerializableParameter> parameters = converter.convert(SubProperty.builder()
 			.code("123")
 			.value(2.1)
 			.description("propertyDescription")
-			.build()
-			.toParameters();
+			.build()).getParameters();
 		
 		printPrettyJson(parameters);
 		
@@ -107,7 +108,7 @@ public class ModelSerializationTest extends FhirTest {
 	@Test
 	public void propertyDecimalValueTest() throws Exception {
 
-		Collection<SerializableParameter> parameters = Property.builder()
+		Property property = Property.builder()
 			.code("123")
 			.value(2.1)
 			.description("propertyDescription")
@@ -116,13 +117,18 @@ public class ModelSerializationTest extends FhirTest {
 				.description("subDescription")
 				.value(1)
 				.build())
-			.build()
-			.toParameters();
+			.build();
+		 
+		PropertyConverter converter = new PropertyConverter();
+		ParametersModel parametersModel = converter.convert(property);
+			
+		Collection<SerializableParameter> serializableParameters = parametersModel.getParameters();
 		
-		printPrettyJson(parameters);
+		printPrettyJson(serializableParameters);
 		
-		String jsonString = objectMapper.writeValueAsString(parameters);
+		String jsonString = objectMapper.writeValueAsString(serializableParameters);
 		System.out.println(jsonString);
+		
 		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
 				+ "{\"name\":\"value\",\"valueDecimal\":2.1},"
 				+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"},"
@@ -146,41 +152,43 @@ public class ModelSerializationTest extends FhirTest {
 		Builder basePropertyBuilder = Property.builder()
 			.code("123");
 		
+		
+		PropertyConverter converter = new PropertyConverter();
 		//value = null
-		Collection<SerializableParameter> parameters = basePropertyBuilder.build().toParameters();
+		Collection<SerializableParameter> parameters = converter.convert(basePropertyBuilder.build()).getParameters();
 		String jsonString = objectMapper.writeValueAsString(parameters);
 		
 		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"}]";
 		Assert.assertEquals(expected, jsonString);
 		
-		parameters = basePropertyBuilder.value(true).build().toParameters();
+		parameters = converter.convert(basePropertyBuilder.value(true).build()).getParameters();
 		jsonString = objectMapper.writeValueAsString(parameters);
 		
 		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
 				+ "{\"name\":\"value\",\"valueBoolean\":true}]";
 		Assert.assertEquals(expected, jsonString);
 		
-		parameters = basePropertyBuilder.value(1).build().toParameters();
+		parameters = converter.convert(basePropertyBuilder.value(1).build()).getParameters();
 		jsonString = objectMapper.writeValueAsString(parameters);
 		
 		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
 				+ "{\"name\":\"value\",\"valueInteger\":1}]";
 		
-		parameters = basePropertyBuilder.value(1l).build().toParameters();
+		parameters = converter.convert(basePropertyBuilder.value(1l).build()).getParameters();
 		jsonString = objectMapper.writeValueAsString(parameters);
 		
 		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
 				+ "{\"name\":\"value\",\"valueDecimal\":1}]";
 		Assert.assertEquals(expected, jsonString);
 		
-		parameters = basePropertyBuilder.value("test").build().toParameters();
+		parameters = converter.convert(basePropertyBuilder.value("test").build()).getParameters();
 		jsonString = objectMapper.writeValueAsString(parameters);
 		
 		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
 				+ "{\"name\":\"value\",\"valueString\":\"test\"}]";
 		Assert.assertEquals(expected, jsonString);
 		
-		parameters = basePropertyBuilder.value(new Code("code")).build().toParameters();
+		parameters = converter.convert(basePropertyBuilder.value(new Code("code")).build()).getParameters();
 		jsonString = objectMapper.writeValueAsString(parameters);
 		
 		expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
@@ -199,15 +207,18 @@ public class ModelSerializationTest extends FhirTest {
 			.version("20180131")
 			.build();
 		
-		Collection<SerializableParameter> designationParams = Designation.builder()
+		Designation designation = Designation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			.value("dValue")
-			.build().toParameters();
+			.build();
+			
+		ParametersModel parametersModel = new SerializableParametersConverter().convert(designation);
 		
-		printPrettyJson(designationParams);
+		List<SerializableParameter> parameters = parametersModel.getParameters();
+		printPrettyJson(parameters);
 		
-		String jsonString = objectMapper.writeValueAsString(designationParams);
+		String jsonString = objectMapper.writeValueAsString(parameters);
 		
 		String expected = "[{\"name\":\"language\",\"valueCode\":\"en_uk\"},"
 				+ "{\"name\":\"use\","
@@ -238,8 +249,11 @@ public class ModelSerializationTest extends FhirTest {
 					.build())
 			.build();
 		
-		printJson(lookupResult);
-		printPrettyJson(lookupResult);
+		LookupResultConverter resultConverter = new LookupResultConverter();
+		ParametersModel paramtersModel = resultConverter.convert(lookupResult);
+		
+		printJson(paramtersModel);
+		printPrettyJson(paramtersModel);
 	}
 
 }

@@ -19,7 +19,9 @@ import java.util.Collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
 
 /**
@@ -28,7 +30,9 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.3
  */
-public class LookupResult extends SerializableParameters {
+@JsonSerialize(converter=LookupResultConverter.class)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
+public class LookupResult extends ParametersModel {
 	
 	//A display name for the code system (1..1)
 	@Order(value=1)
@@ -114,28 +118,6 @@ public class LookupResult extends SerializableParameters {
 		public LookupResult build() {
 			return new LookupResult(name, version, display, designations, properties);
 		}
-	}
-	
-	@Override
-	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
-		
-		Collection<SerializableParameter> collectionParameters = Lists.newArrayList();
-
-		@SuppressWarnings("rawtypes")
-		Collection values = (Collection) value;
-		
-		for (Object object : values) {
-			if (object instanceof Designation) {
-				Collection<SerializableParameter> designationParams = ((Designation) object).toParameters();
-				SerializableParameter fhirParam = new SerializableParameter("designation", "part", designationParams);
-				collectionParameters.add(fhirParam);
-			} else if (object instanceof Property) {
-				Collection<SerializableParameter> propertyParams = ((Property) object).toParameters();
-				SerializableParameter fhirParam = new SerializableParameter("property", "part", propertyParams);
-				collectionParameters.add(fhirParam);
-			}
-		}
-		return collectionParameters;
 	}
 	
 }

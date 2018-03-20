@@ -19,6 +19,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * This class represents a FHIR designation.
@@ -39,7 +42,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#4.7.15.2.1">FHIR:CodeSystem:Operations</a>
  * @since 6.3
  */
-public class Designation extends SerializableParameters {
+@JsonDeserialize(converter=SerializableParametersConverter.class)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
+public class Designation extends ParametersModel {
 	
 	//The language code this designation is defined for (0..1)
 	@Order(value=1)

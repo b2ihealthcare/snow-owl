@@ -59,8 +59,7 @@ public class PropertyValidationTest extends ValidatorTest<Property> {
 				.description("subDescription")
 				.value(1)
 				.build())
-			.build()
-			.toParameters();
+			.build();
 	}
 	
 	@Test
@@ -83,8 +82,7 @@ public class PropertyValidationTest extends ValidatorTest<Property> {
 				.description("subDescription")
 				.value(1)
 				.build())
-			.build()
-			.toParameters();
+			.build();
 	}
 
 }

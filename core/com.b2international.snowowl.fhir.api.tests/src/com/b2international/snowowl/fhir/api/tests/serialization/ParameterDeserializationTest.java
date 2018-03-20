@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.model.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.SerializableParameters;
+import com.b2international.snowowl.fhir.core.model.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
@@ -187,22 +187,6 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("valueUri", param.getType());
 		assertEquals(new Uri("LOINC"), param.getValue());
 		assertEquals(Uri.class, param.getValueType());
-	}
-	
-	@Test
-	public void lookupParametersRoundTrip() throws Exception {
-		String json = "{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-					+ "{\"name\":\"name\",\"valueString\":\"LOINC\"},"
-					+ "{\"name\":\"designation\",\"part\":["
-						+ "{\"name\":\"value\",\"valueString\":\"Bicarbonate [Moles/volume] in Serum\"},"
-						+ "{\"name\":\"language\",\"valueString\":\"en_uk\"}"
-						+ "]}"
-					+ "]}";
-		
-		SerializableParameters parameterModel = objectMapper.readValue(json, SerializableParameters.class);
-		String serializedModel = objectMapper.writeValueAsString(parameterModel);
-		Assert.assertEquals(json, serializedModel);
 	}
 	
 }

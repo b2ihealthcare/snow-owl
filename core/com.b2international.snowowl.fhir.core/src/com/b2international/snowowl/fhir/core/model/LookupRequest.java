@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -23,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -34,7 +32,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.ApiModel;
 
@@ -47,8 +44,8 @@ import com.wordnik.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel
-@JsonDeserialize(converter=LookupRequest.class)
-public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
+@JsonDeserialize(converter=LookupRequestConverter.class)
+public class LookupRequest {
 	
 	//FHIR header "resourceType" : "Parameters",
 	@JsonProperty
@@ -118,7 +115,7 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		this.displayLanguage = displayLanguage;
 		this.properties = properties;
 	}
-
+	
 	public Code getCode() {
 		return code;
 	}
@@ -147,37 +144,12 @@ public class LookupRequest extends StdConverter<LookupRequest,LookupRequest> {
 		return properties;
 	}
 
-	//for testing only
+	/**
+	 * Returns parameter collection to be serialized.
+	 * @return
+	 */
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
-	}
-
-	/**
-	 * Converts the set of parameters into this populated domain object.
-	 * This method is called right after the deserialization.
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
-	@Override
-	public LookupRequest convert(LookupRequest lookupRequest) {
-		try {
-			for (SerializableParameter serializableParameter : lookupRequest.parameters) {
-				
-				String fieldName = serializableParameter.getName();
-				
-				Field[] fields = LookupRequest.class.getDeclaredFields();
-				Optional<Field> fieldOptional = Arrays.stream(fields)
-					.filter(f -> f.getName().equals(fieldName))
-					.findFirst();
-				
-				fieldOptional.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
-				Field field = fieldOptional.get();
-				field.set(lookupRequest, serializableParameter.getValue());
-			}
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new IllegalArgumentException("Error when converting lookup request." + e);
-		}
-		return lookupRequest;
 	}
 
 	@Override

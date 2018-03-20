@@ -63,7 +63,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 			.languageCode("en_uk")
 			.use(coding)
 			//.value("dValue")
-			.build().toParameters();
+			.build();
 	}
 	
 	@Test
@@ -87,8 +87,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 			.languageCode("en_uk")
 			.use(coding)
 			.value("")
-			.build()
-			.toParameters();
+			.build();
 	}
 	
 
