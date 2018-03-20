@@ -38,7 +38,7 @@ public abstract class FhirResource {
 
 	private Code language;
 	
-	FhirResource(Id id, Code language) {
+	FhirResource(final Id id, final Code language) {
 		this.id = id;
 		this.language = language;
 	}

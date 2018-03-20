@@ -36,10 +36,11 @@ public abstract class DomainResource extends FhirResource {
 	//Text summary of the resource, for human interpretation 0..1
 	private Narrative text;
 
-	DomainResource(Id id, Code language) {
+	public DomainResource(final Id id, final Code language, final Narrative text) {
 		super(id, language);
+		this.text = text;
 	}
-	
+
 	public Narrative getText() {
 		return text;
 	}
