@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -43,20 +44,6 @@ import com.wordnik.swagger.annotations.ApiModel;
 @ApiModel("CodeSystem")
 public class CodeSystem extends DomainResource {
 	
-	//Snow Owl
-	/*
-	 * public static final String STORAGE_KEY = "storageKey";
-		public static final String OID = "oid";
-		public static final String NAME = "name"; 
-		public static final String SHORT_NAME = "shortName"; 
-		public static final String ORG_LINK = "orgLink"; 
-		public static final String LANGUAGE = "language"; 
-		public static final String CITATION = "citation"; 
-		public static final String ICON_PATH = "iconPath"; 
-		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
-		public static final String REPOSITORY_UUID = "repositoryUuid";
-	 */
-	
 	//FHIR header "resourceType" : "CodeSystem",
 	private String resourceType = "CodeSystem";
 	
@@ -71,31 +58,29 @@ public class CodeSystem extends DomainResource {
 	
 	private String title;
 	
+	private String description;
+	
 	@Valid
 	@NotNull
 	private Code status;
 	
 	private String publisher;
 	
-	public CodeSystem(Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, Narrative text) {
+	public CodeSystem(Id id, Code language, Uri url, Identifier identifier, String version, String name, 
+			String title, String description, Code status, String publisher, Narrative text) {
 		
-		super(text);
+		super(id, language, text);
 		
 		this.url = url;
 		this.identifier = identifier;
 		this.version = version;
 		this.name = name;
 		this.title = title;
+		this.description = description;
 		this.status = status;
 		this.publisher = publisher;
 	}
 	
-	@Override
-	protected String getId() {
-		return url.getUriValue();
-	}
-
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -110,6 +95,8 @@ public class CodeSystem extends DomainResource {
 		
 		private String name;
 		
+		private String description;
+		
 		private String title;
 		
 		private Code status;
@@ -118,6 +105,19 @@ public class CodeSystem extends DomainResource {
 		
 		//from superclass
 		private Narrative narrative;
+		
+		//TODO: move this to superclass
+		private Code language;
+		
+		public Builder language(final String language) {
+			this.language = new Code(language);
+			return this;
+		}
+
+		public Builder language(final Code languageCode) {
+			this.language = languageCode;
+			return this;
+		}
 		
 		public Builder url(final Uri url) {
 			this.url = url;
@@ -137,6 +137,12 @@ public class CodeSystem extends DomainResource {
 			this.name = name;
 			return this;
 		}
+		
+		public Builder description(final String description) {
+			this.description = description;
+			return this;
+		}
+		
 		public Builder title(final String title) {
 			this.title = title;
 			return this;
@@ -165,7 +171,7 @@ public class CodeSystem extends DomainResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(url, identifier, version, name, title, status, publisher, narrative);
+			return new CodeSystem(new Id(url.getUriValue()), language, url, identifier, version, name, title, description, status, publisher, narrative);
 		}
 	}
 		

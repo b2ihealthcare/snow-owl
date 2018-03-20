@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 
 /**
@@ -29,9 +31,23 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
  */
 public abstract class DomainResource extends FhirResource {
 	
-	public DomainResource(Narrative text) {
-		super(null);
+	public DomainResource(Id id, Code language, Narrative text) {
+		super(id, language);
 		this.text = text;
+	}
+	
+	public DomainResource(String id, String langauge, Narrative text) {
+		super(id, langauge);
+		this.text = text;
+	}
+	
+	public DomainResource(String id, Narrative text) {
+		super(id, null);
+		this.text = text;
+	}
+	
+	public DomainResource(String id) {
+		super(id, null);
 	}
 
 	//Text summary of the resource, for human interpretation 0..1

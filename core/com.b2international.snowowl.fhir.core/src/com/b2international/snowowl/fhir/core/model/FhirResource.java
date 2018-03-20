@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import javax.validation.constraints.Pattern;
-
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
 
 /**
  * 0..1
@@ -32,15 +31,28 @@ public abstract class FhirResource {
 	
 	private Code language;
 	
-	public FhirResource(Code language) {
+	private Id id;
+	
+	public FhirResource() {
+		
+	}
+	
+	public FhirResource(Id id, Code language) {
+		this.id = id;
 		this.language = language;
 	}
-
-	@Pattern(regexp = "[A-Za-z0-9\\-\\.]{1,64}")
-	protected abstract String getId();
-
+	
+	public FhirResource(String id, String language) {
+		this.id = new Id(id);
+		this.language = new Code(language);
+	}
+	
 	public Code getLanguage() {
 		return language;
+	}
+	
+	public Id getId() {
+		return id;
 	}
 
 }
