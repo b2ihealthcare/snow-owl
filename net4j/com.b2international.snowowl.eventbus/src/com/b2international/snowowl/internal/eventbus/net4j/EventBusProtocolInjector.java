@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,19 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
  */
 public class EventBusProtocolInjector implements IElementProcessor {
 
+	private final int numberOfWorkers;
+
+	public EventBusProtocolInjector(int numberOfWorkers) {
+		this.numberOfWorkers = numberOfWorkers;
+	}
+
 	@Override
 	public Object process(IManagedContainer container, String productGroup, String factoryType, String description,
 			Object element) {
 		if (element instanceof IEventBusProtocol) {
 			final IEventBusProtocol protocol = (EventBusProtocol) element;
 			if (protocol.getInfraStructure() == null) {
-				protocol.setInfraStructure(EventBusNet4jUtil.getBus(container));
+				protocol.setInfraStructure(EventBusNet4jUtil.getBus(container, numberOfWorkers));
 			}
 		}
 		return element;
