@@ -15,36 +15,32 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.Base64;
+
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 
 /**
- * 0..1
- *  "id" : "<id>", // Logical id of this artifact
-  "meta" : { Meta }, // Metadata about the resource
-  "implicitRules" : "<uri>", // A set of rules under which this content was created
-  "language" : "<code>" // Language of the resource content
- * @author bbanfai
- *
+ * Top-level FHIR resource
+ * 
+ * 0..1 for every property
+ * "id" : "<id>", // Logical id of this artifact
+ * "meta" : { Meta }, // Metadata about the resource
+ * "implicitRules" : "<uri>", // A set of rules under which this content was created
+ * "language" : "<code>" // Language of the resource content
+ * 
+ * @see <a href="https://www.hl7.org/fhir/resource.html">FHIR:Resource</a>
+ * @since 6.3
  */
 public abstract class FhirResource {
 	
+	private Id id;
+
 	private Code language;
 	
-	private Id id;
-	
-	public FhirResource() {
-		
-	}
-	
-	public FhirResource(Id id, Code language) {
+	FhirResource(Id id, Code language) {
 		this.id = id;
 		this.language = language;
-	}
-	
-	public FhirResource(String id, String language) {
-		this.id = new Id(id);
-		this.language = new Code(language);
 	}
 	
 	public Code getLanguage() {
@@ -53,6 +49,34 @@ public abstract class FhirResource {
 	
 	public Id getId() {
 		return id;
+	}
+	
+	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends ValidatingBuilder<T> {
+
+		protected Id id;
+
+		protected Code language;
+		
+		/**
+		 * Encode our internal component Id to hide it from the outside world.
+		 * @param cdoId
+		 */
+		public Builder(String cdoId) {
+			String encodedString = Base64.getEncoder().encodeToString(cdoId.getBytes());
+			this.id = new Id(encodedString);
+		}
+
+		protected abstract B getSelf();
+		
+		public B language(final Code language) {
+			this.language = language;
+			return getSelf();
+		}
+		
+		public B language(final String language) {
+			this.language = new Code(language);
+			return getSelf();
+		}
 	}
 
 }

@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.model;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -81,11 +80,11 @@ public class CodeSystem extends DomainResource {
 		this.publisher = publisher;
 	}
 	
-	public static Builder builder() {
-		return new Builder();
+	public static Builder builder(String cdoId) {
+		return new Builder(cdoId);
 	}
 
-	public static class Builder extends ValidatingBuilder<CodeSystem> {
+	public static class Builder extends DomainResource.Builder<Builder, CodeSystem> {
 
 		private Uri url; //ORG_LINK or hardcoded provider value
 		
@@ -103,22 +102,15 @@ public class CodeSystem extends DomainResource {
 		
 		private String publisher;
 		
-		//from superclass
-		private Narrative narrative;
+		public Builder(String cdoId) {
+			super(cdoId);
+		}
 		
-		//TODO: move this to superclass
-		private Code language;
-		
-		public Builder language(final String language) {
-			this.language = new Code(language);
+		@Override
+		protected Builder getSelf() {
 			return this;
 		}
 
-		public Builder language(final Code languageCode) {
-			this.language = languageCode;
-			return this;
-		}
-		
 		public Builder url(final Uri url) {
 			this.url = url;
 			return this;
@@ -158,20 +150,9 @@ public class CodeSystem extends DomainResource {
 			return this;
 		}
 		
-		public Builder narrative(Narrative narrative) {
-			this.narrative = narrative;
-			return this;
-		}
-		
-		public Builder narrative(NarrativeStatus narrativeStatus, String div) {
-			Narrative narrative = new Narrative(narrativeStatus, div);
-			this.narrative = narrative;
-			return this;
-		}
-		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(new Id(url.getUriValue()), language, url, identifier, version, name, title, description, status, publisher, narrative);
+			return new CodeSystem(id, language, url, identifier, version, name, title, description, status, publisher, text);
 		}
 	}
 		

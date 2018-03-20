@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -131,9 +132,7 @@ public class FhirCodeSystemRestService {
 					.filter(CodeSystems.class::isInstance)
 					.map(CodeSystems.class::cast)
 					.flatMap(CodeSystems::stream)
-					.map(c -> {
-						return createCodeSystem(c);
-					})
+					.map(this::createCodeSystem)
 					.collect(Collectors.toList());
 				
 				return codeSystemsSet;
@@ -143,9 +142,10 @@ public class FhirCodeSystemRestService {
 	private CodeSystem createCodeSystem(final CodeSystemEntry codeSystemEntry) {
 		
 		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL.getCode(), null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
-		return CodeSystem.builder()
+		
+		return CodeSystem.builder(String.valueOf(codeSystemEntry.getStorageKey()))
 			.identifier(identifier)
-			.language(codeSystemEntry.getLanguage()) //TODO: turn this into a code
+			.language(getLanguageCode(codeSystemEntry.getLanguage()))
 			.name(codeSystemEntry.getShortName())
 			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
 			.publisher(codeSystemEntry.getOrgLink())
@@ -196,6 +196,7 @@ public class FhirCodeSystemRestService {
 			.system(uri)
 			.version(version)
 			.displayLanguage(displayLanguage);
+		
 		if (date != null) {
 			builder.date(date);
 		}
@@ -261,7 +262,6 @@ public class FhirCodeSystemRestService {
 		System.out.println("Found provider: " + iFhirProvider.getUri());
 		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
 		return lookupResult;
-		
 	}
 	
 	/*
@@ -293,6 +293,24 @@ public class FhirCodeSystemRestService {
 	
 	private IEventBus getBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
+	/*
+	 * Returns (attempts) the SO 639 two letter code based on the language name.
+	 */
+	private String getLanguageCode(String language) {
+		
+		if (language == null) return null;
+		
+	    Locale loc = new Locale("en");
+	    String[] languages = Locale.getISOLanguages(); // list of language codes
+
+	    return Arrays.stream(languages)
+	    		.filter(l -> {
+	    			Locale locale = new Locale(l,"US");
+	    			return locale.getDisplayLanguage(loc).equalsIgnoreCase(language) 
+	    					|| locale.getISO3Language().equalsIgnoreCase(language);
+	    		}).findFirst().orElseGet(() -> null);
 	}
 
 }

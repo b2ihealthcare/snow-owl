@@ -15,46 +15,53 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 
 /**
  * "resourceType" : "[name]",
-  // from Resource: id, meta, implicitRules, and language
-  "text" : { Narrative }, // C? Text summary of the resource, for human interpretation 0..1
-  "contained" : [{ Resource }], // Contained, inline Resources 0..*
-  (Extensions - see JSON page) 0..*
-  (Modifier Extensions - see JSON page)
-  
+ * // from Resource: id, meta, implicitRules, and language
+ * "text" : { Narrative }, // C? Text summary of the resource, for human interpretation 0..1
+ * "contained" : [{ Resource }], // Contained, inline Resources 0..*
+ * (Extensions - see JSON page) 0..*
+ * (Modifier Extensions - see JSON page)
+ * 
+ * @see <a href="https://www.hl7.org/fhir/domainresource.html">FHIR:DomainResource</a>
  * @since 6.3
  */
 public abstract class DomainResource extends FhirResource {
 	
-	public DomainResource(Id id, Code language, Narrative text) {
-		super(id, language);
-		this.text = text;
-	}
-	
-	public DomainResource(String id, String langauge, Narrative text) {
-		super(id, langauge);
-		this.text = text;
-	}
-	
-	public DomainResource(String id, Narrative text) {
-		super(id, null);
-		this.text = text;
-	}
-	
-	public DomainResource(String id) {
-		super(id, null);
-	}
-
 	//Text summary of the resource, for human interpretation 0..1
 	private Narrative text;
 
+	DomainResource(Id id, Code language) {
+		super(id, language);
+	}
+	
 	public Narrative getText() {
 		return text;
+	}
+	
+	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends FhirResource.Builder<B, T> {
+
+		protected Narrative text;
+		
+		public Builder(String cdoId) {
+			super(cdoId);
+		}
+
+		public B narrative(NarrativeStatus narrativeStatus, String div) {
+			Narrative narrative = new Narrative(narrativeStatus, div);
+			this.text = narrative;
+			return getSelf();
+		}
+		
+		public B text(Narrative text) {
+			this.text = text;
+			return getSelf();
+		}
 	}
 
 }
