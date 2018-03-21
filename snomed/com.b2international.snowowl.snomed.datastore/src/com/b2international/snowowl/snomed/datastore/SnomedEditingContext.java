@@ -542,66 +542,25 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	@Override
 	public void delete(EObject object, boolean force) {
 		if (object instanceof Concept) {
-			delete((Concept) object, force);
+			tryDelete((Concept) object, force);
 		} else if (object instanceof Description) {
-			delete((Description) object, force);
+			tryDelete((Description) object, force);
 		} else if (object instanceof Relationship) {
-			delete((Relationship) object, force);
+			tryDelete((Relationship) object, force);
 		} else if (object instanceof SnomedRefSet) {
-			delete((SnomedRefSet) object, force);
+			tryDelete((SnomedRefSet) object, force);
 		} else if (object instanceof SnomedRefSetMember) {
-			delete((SnomedRefSetMember) object, force);
+			tryDelete((SnomedRefSetMember) object, force);
 		} else {
 			super.delete(object, force);
 		}
-	}
-	
-	private void delete(Concept concept, boolean force) {
-		
-		canDelete(concept, force);
-		
-		if (deletionPlan.isRejected()) {
-			throw new ConflictException(deletionPlan.toString());
-		}
-	}
-
-	private void delete(Description description, boolean force) {
-		
-		canDelete(description, force);
-		
-		if (deletionPlan.isRejected()) {
-			throw new ConflictException(deletionPlan.toString());
-		}
-	}
-
-	private void delete(Relationship relationship, boolean force) {
-		
-		canDelete(relationship, force);
-		
-		if (deletionPlan.isRejected()) {
-			throw new ConflictException(deletionPlan.toString());
-		}
-	}
-
-	private void delete(SnomedRefSet refSet, boolean force) {
-		
-		canDelete(refSet, force);
 		
 		if (deletionPlan.isRejected()) {
 			throw new ConflictException(deletionPlan.toString());
 		}
 	}
 	
-	private void delete(SnomedRefSetMember member, boolean force) {
-		
-		canDelete(member, force);
-		
-		if (deletionPlan.isRejected()) {
-			throw new ConflictException(deletionPlan.toString());
-		}
-	}
-	
-	private void canDelete(Concept concept, boolean force) {
+	private void tryDelete(Concept concept, boolean force) {
 		
 		// Check if concept is already released, and this is not a forced delete
 		if (concept.isReleased() && !force) {
@@ -609,35 +568,32 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return;
 		}
 		
-		// Also check inbound relationships, as these could have been released with different effective times
 		for (Relationship relationship : getInboundRelationships(concept.getId())) {
+			
 			if (relationship != null) {
 				
-				canDelete(relationship, force);
+				tryDelete(relationship, force);
 				
 				if (deletionPlan.isRejected()) {
 					deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_CONCEPT_MESSAGE, toString(concept)));
 					return;
 				}
+				
 			}
 		}
 		
-		/*
-		 * All other components below should become released when the concept is first released, which was handled 
-		 * above, so don't exit early via a rejection check.
-		 */
-		
 		for (Description description : concept.getDescriptions()) {
-			canDelete(description, force);
+			tryDelete(description, force);
 		}
 		
 		for (Relationship outboundRelationship : concept.getOutboundRelationships()) {
-			canDelete(outboundRelationship, force);
+			tryDelete(outboundRelationship, force);
 		}
 		
 		SnomedRefSet refSet = lookupIfExists(concept.getId(), SnomedRefSet.class);
+		
 		if (refSet != null) {
-			canDelete(refSet, force);
+			tryDelete(refSet, force);
 		}
 		
 		List<SnomedRefSetMember> referringMembers = refSetEditingContext.getReferringMembers(concept);
@@ -648,12 +604,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		if (isDescriptionType.isPresent()) {
 			
 			boolean hasRelatedDescriptions = SnomedRequests.prepareSearchDescription()
-				.setLimit(1)
+				.setLimit(0)
 				.filterByType(concept.getId())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
-				.getItems().size() > 0;
+				.getTotal() > 0;
 			
 			if (hasRelatedDescriptions) {
 				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE, toString(concept)));
@@ -662,11 +618,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 		}
 		
-		deletionPlan.markForDeletion(referringMembers);
+		for (SnomedRefSetMember member: referringMembers) {
+			tryDelete(member, force);
+		}
+		
 		deletionPlan.markForDeletion(concept);
 	}
 
-	private void canDelete(Description description, boolean force) {
+	private void tryDelete(Description description, boolean force) {
 			
 		// Check if description is already released, and this is not a forced delete
 		if (description.isReleased() && !force) {
@@ -674,19 +633,24 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return;
 		}
 		
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(description));
+		for (SnomedRefSetMember member : refSetEditingContext.getReferringMembers(description)) {
+			tryDelete(member, force);
+		}
+		
 		deletionPlan.markForDeletion(description);
 	}
 
-	private void canDelete(Relationship relationship, boolean force) {
+	private void tryDelete(Relationship relationship, boolean force) {
 		
-		// Check if description is already released, and this is not a forced delete
+		// Check if relationship is already released, and this is not a forced delete
 		if (relationship.isReleased() && !force) {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
 			return;
 		}
 		
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));
+		for (SnomedRefSetMember member : refSetEditingContext.getReferringMembers(relationship)) {
+			tryDelete(member, force);
+		}
 		
 		if (relationship.getSource() != null) {
 			deletionPlan.markForDeletion(relationship);
@@ -694,11 +658,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 	}
 
-	private void canDelete(SnomedRefSet refSet, boolean force) {
+	private void tryDelete(SnomedRefSet refSet, boolean force) {
 		
 		for (SnomedRefSetMember member : refSetEditingContext.getMembers(refSet)) {
 			
-			canDelete(member, force);
+			tryDelete(member, force);
 			
 			if (deletionPlan.isRejected()) {
 				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_REFERENCE_SET_MESSAGE, refSet.getIdentifierId()));
@@ -710,7 +674,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(refSet);
 	}
 	
-	private void canDelete(SnomedRefSetMember member, boolean force) {
+	private void tryDelete(SnomedRefSetMember member, boolean force) {
 			
 		if (member.isReleased() && !force) {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "member", member.getUuid()));
