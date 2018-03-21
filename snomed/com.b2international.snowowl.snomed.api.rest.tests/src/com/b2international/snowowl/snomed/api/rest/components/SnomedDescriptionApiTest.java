@@ -51,6 +51,10 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -87,6 +91,8 @@ import com.jayway.restassured.http.ContentType;
  * @since 2.0
  */
 public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
+
+	private static final String ROOT_DESCRIPTION_ID = "2913224013";
 
 	@Test
 	public void createDescriptionNonExistentBranch() {
@@ -687,4 +693,31 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.body(SnomedRf2Headers.FIELD_LANGUAGE_CODE, equalTo(SnomedRestFixtures.DEFAULT_LANGUAGE_CODE));	
 	}
 
+	@Test(expected = ConflictException.class)
+	public void doNotDeleteReleasedDescriptions() {
+		
+		String descriptionId = createNewDescription(branchPath);
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, ROOT_DESCRIPTION_ID)
+			.statusCode(200)
+			.body("released", equalTo(true));
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("released", equalTo(false));
+		
+		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
+		
+		bulk.add(SnomedRequests.prepareDeleteDescription(descriptionId));
+		bulk.add(SnomedRequests.prepareDeleteDescription(ROOT_DESCRIPTION_ID));
+
+		SnomedRequests.prepareCommit()
+			.setBody(bulk)
+			.setCommitComment("Delete multiple descriptions")
+			.setUserId("test")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+		
+	}
 }

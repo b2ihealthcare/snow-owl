@@ -38,6 +38,10 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -59,6 +63,8 @@ import com.google.common.collect.Iterables;
  * @since 4.0
  */
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
+
+	private static final String ROOT_ISA_RELATIONSHIP_ID = "1019504021";
 
 	@Test
 	public void createRelationshipNonExistentBranch() {
@@ -433,4 +439,31 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.body(SnomedRf2Headers.FIELD_DESTINATION_ID, equalTo(Concepts.NAMESPACE_ROOT));
 	}
 	
+	@Test(expected = ConflictException.class)
+	public void doNotDeleteReleasedRelationships() {
+		
+		String relationshipId = createNewRelationship(branchPath);
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, ROOT_ISA_RELATIONSHIP_ID)
+			.statusCode(200)
+			.body("released", equalTo(true));
+		
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body("released", equalTo(false));
+		
+		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
+		
+		bulk.add(SnomedRequests.prepareDeleteRelationship(relationshipId));
+		bulk.add(SnomedRequests.prepareDeleteRelationship(ROOT_ISA_RELATIONSHIP_ID));
+
+		SnomedRequests.prepareCommit()
+			.setBody(bulk)
+			.setCommitComment("Delete multiple relationships")
+			.setUserId("test")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+		
+	}
 }

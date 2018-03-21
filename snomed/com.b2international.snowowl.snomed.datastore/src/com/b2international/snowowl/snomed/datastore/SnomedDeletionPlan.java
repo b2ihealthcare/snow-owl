@@ -25,8 +25,8 @@ import java.util.TreeSet;
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
-import com.b2international.snowowl.snomed.Description;
-import com.google.common.collect.Sets;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 
 /**
  * A DTO about the projected outcome of a delete operation in SNOMED CT.
@@ -35,9 +35,6 @@ public class SnomedDeletionPlan {
 
 	private final List<String> rejectionReasons = new ArrayList<String>();
 	
-	//	deleting concepts that are member of description type refset may affect concept descriptions.
-	private Collection<Description> descriptionsToUpdate = Sets.newHashSet();
-
 	// keep deletedItems sorted by type for nicer display to the user
 	private final Set<CDOObject> deletedItems = new TreeSet<CDOObject>(ComponentUtils2.CDO_OBJECT_COMPARATOR);
 	
@@ -45,13 +42,14 @@ public class SnomedDeletionPlan {
 	public List<String> getRejectionReasons() {
 		return rejectionReasons;
 	}
+	
 	public void addRejectionReason(final String rejectionReason) {
 		rejectionReasons.add(rejectionReason);
 	}
 
 	/** @return true if the requested plan cannot be executed because a concept or a relationship cannot be deleted */
 	public boolean isRejected() {
-		return rejectionReasons.size() > 0 || isEmpty();
+		return rejectionReasons.size() > 0;
 	}
 
 	/** @return true if there are any concepts or relationships in the delete plan */
@@ -84,11 +82,8 @@ public class SnomedDeletionPlan {
 		deletedItems.addAll(items);
 	}
 	
-	public Collection<Description> getDirtyDescriptions() {
-		return Collections.unmodifiableCollection(descriptionsToUpdate);
-	}
-	
-	public void addDirtyDescription(Description... descriptions) {
-		descriptionsToUpdate.addAll(Sets.newHashSet(descriptions));
+	@Override
+	public String toString() {
+		return rejectionReasons.size() < 2 ? Iterables.getFirst(rejectionReasons, "") : Joiner.on(", ").join(rejectionReasons);
 	}
 }

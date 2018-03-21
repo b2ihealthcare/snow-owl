@@ -32,6 +32,7 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -39,7 +40,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDeletionPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
@@ -57,7 +57,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -107,29 +106,27 @@ public class EquivalentConceptMerger {
 		
 		// iterate over the sorted concepts and switch to the equivalent using
 		// the resolved Map
-		final SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
-		for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
-			final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
-			switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap, equivalentConcepts);
-			removeOrDeactivate(conceptsToRemove, deletionPlan);
-		}
-		if (!deletionPlan.isEmpty()) {
-			if (!deletionPlan.isRejected()) {
-				this.editingContext.delete(deletionPlan);
-			} else {
-				throw new SnowowlRuntimeException(Joiner.on(",").join(deletionPlan.getRejectionReasons()));
+		try {
+			
+			for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
+				final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
+				switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap, equivalentConcepts);
+				removeOrDeactivate(conceptsToRemove);
 			}
+			
+		} catch (ConflictException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
-	private void removeOrDeactivate(Collection<Concept> conceptsToRemove, final SnomedDeletionPlan deletionPlan) {
+	private void removeOrDeactivate(Collection<Concept> conceptsToRemove) {
 		if (!Iterables.isEmpty(conceptsToRemove)) {
 			final SnomedInactivationPlan plan = new SnomedInactivationPlan(this.editingContext);
 			for (final Concept concept : conceptsToRemove) {
 				if (concept.isReleased()) {
 					this.editingContext.inactivateConcepts(plan, new NullProgressMonitor(), concept.cdoID());		
 				} else {
-					this.editingContext.canDelete(concept, deletionPlan, false);
+					this.editingContext.delete(concept, false);
 				}
 			}
 			plan.performInactivation(InactivationReason.RETIRED, null);
