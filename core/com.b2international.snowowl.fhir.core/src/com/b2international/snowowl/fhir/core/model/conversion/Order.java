@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.conversion;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -22,12 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
+ * Annotation to provide conversion order for FHIR parameter-based requests and responses. 
  * @since 6.3
  */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Order {
 
+	/**
+	 * Order position.
+	 * @return
+	 */
 	int value();
 
 }

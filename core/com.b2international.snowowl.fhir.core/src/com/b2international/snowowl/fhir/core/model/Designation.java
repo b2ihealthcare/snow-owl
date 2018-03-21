@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.core.model;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.fhir.core.model.conversion.Order;
+import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.lang.reflect.Field;
 import java.util.Comparator;

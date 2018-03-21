@@ -19,10 +19,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.api.tests.serialization.ModelDeserializationTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.ModelSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.validation.CodingValidationTest;
 import com.b2international.snowowl.fhir.api.tests.validation.DesignationValidationTest;
 import com.b2international.snowowl.fhir.api.tests.validation.ExceptionTest;
@@ -39,6 +40,7 @@ import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidati
 	ParameterSerializationTest.class,
 	ParameterDeserializationTest.class,
 	ModelSerializationTest.class,
+	CodeSystemSerializationTest.class,
 	ModelDeserializationTest.class,
 	CodingValidationTest.class,
 	DesignationValidationTest.class,

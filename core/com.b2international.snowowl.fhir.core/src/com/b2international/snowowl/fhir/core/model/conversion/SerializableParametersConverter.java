@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.b2international.snowowl.fhir.core.model.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.DateFormats;
@@ -49,13 +50,7 @@ public class SerializableParametersConverter extends StdConverter<ParametersMode
 	}
 	
 	/**
-	 *  Method to build a the collection of serializable parameters in the format of:
-	 * of a :
-	 * <pre>{@code
-	   
-			}
-			</pre>
-		 *  @return
+	 * Method to build a the collection of serializable parameters
 	 * @throws Exception
 	 */
 	public List<SerializableParameter> toParameters(ParametersModel fhirModel) throws Exception {

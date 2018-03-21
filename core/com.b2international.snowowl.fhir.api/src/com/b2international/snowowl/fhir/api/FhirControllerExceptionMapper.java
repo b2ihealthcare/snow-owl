@@ -24,7 +24,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
@@ -89,28 +91,30 @@ public class FhirControllerExceptionMapper {
 		return fhirException.toOperationOutcome();
 	}
 
-//	/**
-//	 * Exception handler to return <b>Not Implemented</b> when an {@link UnsupportedOperationException} is thrown from the underlying system.
-//	 * 
-//	 * @param ex
-//	 * @return {@link RestApiError} instance with detailed messages
-//	 */
-//	@ExceptionHandler
-//	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-//	public @ResponseBody RestApiError handle(NotImplementedException ex) {
-//		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_IMPLEMENTED.value());
-//	}
-//
-//	/**
-//	 * Exception handler to return <b>Bad Request</b> when an {@link BadRequestException} is thrown from the underlying system.
-//	 * 
-//	 * @param ex
-//	 * @return {@link RestApiError} instance with detailed messages
-//	 */
-//	@ExceptionHandler
-//	@ResponseStatus(HttpStatus.CONFLICT)
-//	public @ResponseBody RestApiError handle(final ConflictException ex) {
-//		return RestApiError.of(ex.toApiError()).build(HttpStatus.CONFLICT.value());
-//	}
-//	
+	/**
+	 * Exception handler to return <b>Not Implemented</b> when an {@link UnsupportedOperationException} is thrown from the underlying system.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
+	public @ResponseBody OperationOutcome handle(NotImplementedException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_UNKNOWN_OPERATION);
+		return fhirException.toOperationOutcome();
+	}
+
+	/**
+	 * Exception handler to return <b>Bad Request</b> when an {@link BadRequestException} is thrown from the underlying system.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.CONFLICT)
+	public @ResponseBody OperationOutcome handle(final ConflictException ex) {
+		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_LOCAL_FAIL);
+		return fhirException.toOperationOutcome();
+	}
+	
 }

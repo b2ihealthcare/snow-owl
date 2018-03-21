@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -44,25 +45,34 @@ import com.wordnik.swagger.annotations.ApiModel;
 public class CodeSystem extends DomainResource {
 	
 	//FHIR header "resourceType" : "CodeSystem",
+	@JsonProperty
 	private String resourceType = "CodeSystem";
 	
 	//same as logical id
+	@JsonProperty
 	private Uri url; //ORG_LINK or hardcoded provider value
 	
+	@JsonProperty
 	private Identifier identifier; //OID
 	
+	@JsonProperty
 	private String version; //not necessarily available - and what to do when we have more than 1??
 	
+	@JsonProperty
 	private String name;
 	
+	@JsonProperty
 	private String title;
 	
+	@JsonProperty
 	private String description;
 	
 	@Valid
 	@NotNull
+	@JsonProperty
 	private Code status;
 	
+	@JsonProperty
 	private String publisher;
 	
 	public CodeSystem(Id id, Code language, Uri url, Identifier identifier, String version, String name, 
@@ -78,6 +88,10 @@ public class CodeSystem extends DomainResource {
 		this.description = description;
 		this.status = status;
 		this.publisher = publisher;
+	}
+	
+	public Uri getUrl() {
+		return url;
 	}
 	
 	public static Builder builder(String cdoId) {
@@ -115,6 +129,7 @@ public class CodeSystem extends DomainResource {
 			this.url = url;
 			return this;
 		}
+		
 		public Builder identifier(final Identifier identifer) {
 			this.identifier = identifer;
 			return this;

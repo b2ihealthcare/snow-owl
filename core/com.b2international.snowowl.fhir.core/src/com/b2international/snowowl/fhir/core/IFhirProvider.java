@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import java.util.Collection;
+
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
 
 /**
@@ -23,7 +27,7 @@ import com.b2international.snowowl.fhir.core.model.LookupResult;
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
  *
  * 
- * @see 'com.b2international.snowowl.fhir.provider' for the extension point definition
+ * @see 'com.b2international.snowowl.fhir.core.provider' for the extension point definition
  * @since 6.3
  */
 public interface IFhirProvider {
@@ -37,8 +41,23 @@ public interface IFhirProvider {
 	LookupResult lookup(String version, String code);
 
 	/**
-	 * @return
+	 * Returns the code system URIs supported.
+	 * @return collection of URIs representing the supported code systems
 	 */
-	String getUri();
+	Collection<String> getSupportedURIs();
+
+	/**
+	 * Returns the code systems supported by this provider
+	 * @return collection of code systems supported
+	 */
+	Collection<CodeSystem> getCodeSystems();
+
+	/**
+	 * Returns the code system for the passed in code system URI
+	 * @param codeSystemUri
+	 * @return
+	 * @throws BadRequestException if the code system is not supported by this provider
+	 */
+	CodeSystem getCodeSystem(String codeSystemUri);
 	
 }

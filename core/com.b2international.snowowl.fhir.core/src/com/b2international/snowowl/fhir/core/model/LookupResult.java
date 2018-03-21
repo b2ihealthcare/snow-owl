@@ -19,6 +19,8 @@ import java.util.Collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
+import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

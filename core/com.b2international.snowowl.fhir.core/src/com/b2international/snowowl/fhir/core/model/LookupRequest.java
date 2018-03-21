@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.conversion.LookupRequestConverter;
+import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.DateFormats;

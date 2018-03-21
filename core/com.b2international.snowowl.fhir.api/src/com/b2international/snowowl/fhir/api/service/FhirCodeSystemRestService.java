@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -23,15 +22,15 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.eclipse.emf.common.util.URI;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,27 +39,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.FhirUtils;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -84,8 +76,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(value="/CodeSystem")
 public class FhirCodeSystemRestService {
 	
-	private static final String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.provider"; //$NON-NLS-N$
-	
 	@ApiOperation(
 			value="FHIR REST API Ping Test",
 			notes="This is only an FHIR ping test.")
@@ -95,7 +85,23 @@ public class FhirCodeSystemRestService {
 		return "Ping!";
 	}
 	
-	//TODO: provide FHIR doc
+	@ApiOperation(
+			value="Retrieve the code system by its URI.",
+			notes="Retrieves the code system specified by its escapes URI string.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/{codeSystemUri}", method=RequestMethod.GET)
+	public CodeSystem getCodeSystem(@PathVariable("codeSystemUri") String codeSystemUri) {
+		
+		String decodedUri= URI.decode(codeSystemUri);
+		IFhirProvider fhirProvider = FhirUtils.getFhirProvider(decodedUri);
+		CodeSystem codeSystem = fhirProvider.getCodeSystem(decodedUri);
+		return codeSystem;
+	}
+	
 	@ApiOperation(
 			value="Retrieve all code systems",
 			notes="Returns a list containing generic information about registered code systems.")
@@ -103,58 +109,30 @@ public class FhirCodeSystemRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public Collection<CodeSystem> getCodeSystems() {
+	public Bundle getCodeSystems() {
 		
-		Set<String> repositoryIds = RepositoryRequests.prepareSearch()
-			.all()
-			.buildAsync()
-			.execute(getBus())
-			.then(repos -> repos.stream().map(RepositoryInfo::id).collect(Collectors.toSet()))
-			.getSync();
+		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirCodeSystemRestService.class);
+		java.net.URI uri = linkBuilder.toUri();
 		
-		//collection of Snow Owl code systems
-		final List<Promise<CodeSystems>> allCodeSystems = newArrayList();
+		com.b2international.snowowl.fhir.core.model.Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
+			.type(BundleType.SEARCHSET)
+			.addLink(uri.toString());
 		
-		for (String repositoryId : repositoryIds) {
-			
-			Promise<CodeSystems> codeSystemPromise = CodeSystemRequests.prepareSearchCodeSystem()
-				.all()
-				.build(repositoryId)
-				.execute(getBus());
-			
-			allCodeSystems.add(codeSystemPromise);
+		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FhirUtils.FHIR_EXTENSION_POINT, IFhirProvider.class);
+		
+		int total = 0;
+		for (IFhirProvider fhirProvider : fhirProviders) {
+			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
+			for (CodeSystem codeSystem : codeSystems) {
+				String resourceUrl = uri.toString() + "/" + codeSystem.getUrl().getUriValue();
+				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+				builder.addEntry(entry);
+				total++;
+			}
 		}
-		
-		return Promise.all(allCodeSystems)
-			.then(results -> {
-				
-				List<CodeSystem> codeSystemsSet = results.stream()
-					.filter(CodeSystems.class::isInstance)
-					.map(CodeSystems.class::cast)
-					.flatMap(CodeSystems::stream)
-					.map(this::createCodeSystem)
-					.collect(Collectors.toList());
-				
-				return codeSystemsSet;
-			}).getSync();
+		return builder.total(total).build();
 	}
 	
-	private CodeSystem createCodeSystem(final CodeSystemEntry codeSystemEntry) {
-		
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL.getCode(), null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
-		
-		return CodeSystem.builder(String.valueOf(codeSystemEntry.getStorageKey()))
-			.identifier(identifier)
-			.language(getLanguageCode(codeSystemEntry.getLanguage()))
-			.name(codeSystemEntry.getShortName())
-			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
-			.publisher(codeSystemEntry.getOrgLink())
-			.status(PublicationStatus.ACTIVE)
-			.title(codeSystemEntry.getName())
-			.description(codeSystemEntry.getCitation())
-			.build();
-	}
-
 	/**
 	 * GET-based lookup endpoint.
 	 * @param code
@@ -243,27 +221,12 @@ public class FhirCodeSystemRestService {
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		
 		String uriValue = lookupRequest.getSystem().getUriValue();
-		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
-		
-		fhirProviders.forEach(System.out::println);
-		
-		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream()
-				.filter(provider -> provider.isSupported(uriValue))
-				.findFirst();
-		
-		fhirProviderOptional.orElseThrow(() -> {
-			return new BadRequestException("Did not find FHIR module for code system: " + uriValue
-					, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue);
-		});
-		
-		IFhirProvider iFhirProvider = fhirProviderOptional.get();
-		System.out.println("Found provider: " + iFhirProvider.getUri());
+		IFhirProvider iFhirProvider = FhirUtils.getFhirProvider(uriValue);
 		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
 		return lookupResult;
 	}
-	
+
 	/*
 	 * Cross-field validation of the incoming parameters
 	 * @param lookupRequest
@@ -295,22 +258,4 @@ public class FhirCodeSystemRestService {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 	
-	/*
-	 * Returns (attempts) the SO 639 two letter code based on the language name.
-	 */
-	private String getLanguageCode(String language) {
-		
-		if (language == null) return null;
-		
-	    Locale loc = new Locale("en");
-	    String[] languages = Locale.getISOLanguages(); // list of language codes
-
-	    return Arrays.stream(languages)
-	    		.filter(l -> {
-	    			Locale locale = new Locale(l,"US");
-	    			return locale.getDisplayLanguage(loc).equalsIgnoreCase(language) 
-	    					|| locale.getISO3Language().equalsIgnoreCase(language);
-	    		}).findFirst().orElseGet(() -> null);
-	}
-
 }

@@ -21,12 +21,17 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 
 /**
+ * 
+ * FHIR Domain resource domain model.
+ * 
+ * <pre>
  * "resourceType" : "[name]",
  * // from Resource: id, meta, implicitRules, and language
  * "text" : { Narrative }, // C? Text summary of the resource, for human interpretation 0..1
  * "contained" : [{ Resource }], // Contained, inline Resources 0..*
  * (Extensions - see JSON page) 0..*
  * (Modifier Extensions - see JSON page)
+ * </pre>
  * 
  * @see <a href="https://www.hl7.org/fhir/domainresource.html">FHIR:DomainResource</a>
  * @since 6.3

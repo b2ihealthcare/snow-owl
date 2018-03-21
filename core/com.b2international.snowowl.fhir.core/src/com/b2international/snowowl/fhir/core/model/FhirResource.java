@@ -19,19 +19,23 @@ import java.util.Base64;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * Top-level FHIR resource
  * 
+ * <pre>
  * 0..1 for every property
  * "id" : "<id>", // Logical id of this artifact
  * "meta" : { Meta }, // Metadata about the resource
  * "implicitRules" : "<uri>", // A set of rules under which this content was created
  * "language" : "<code>" // Language of the resource content
+ * </pre>
  * 
  * @see <a href="https://www.hl7.org/fhir/resource.html">FHIR:Resource</a>
  * @since 6.3
  */
+@JsonPropertyOrder({ "resourceType", "id" })
 public abstract class FhirResource {
 	
 	private Id id;
@@ -55,7 +59,7 @@ public abstract class FhirResource {
 
 		protected Id id;
 
-		protected Code language;
+		protected Code language = new Code("en");
 		
 		/**
 		 * Encode our internal component Id to hide it from the outside world.

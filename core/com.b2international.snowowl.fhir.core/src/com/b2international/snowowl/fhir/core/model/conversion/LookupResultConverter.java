@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.LookupResult;
+import com.b2international.snowowl.fhir.core.model.Property;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 
 /**
+ * Parameter-based converter for the {@link LookupResult} object.
  * @since 6.3
+ *
  */
-public class PropertyConverter extends SerializableParametersConverter {
+public class LookupResultConverter extends SerializableParametersConverter {
 	
 	@Override
 	protected Collection<SerializableParameter> getCollectionParameters(Object value) throws Exception {
@@ -34,9 +39,13 @@ public class PropertyConverter extends SerializableParametersConverter {
 		Collection values = (Collection) value;
 		
 		for (Object object : values) {
-			if (object instanceof SubProperty) {
-				Collection<SerializableParameter> propertyParams = toParameters((SubProperty) object);
-				SerializableParameter fhirParam = new SerializableParameter("subproperty", "part", propertyParams);
+			if (object instanceof Designation) {
+				Collection<SerializableParameter> designationParams = toParameters((Designation) object);
+				SerializableParameter fhirParam = new SerializableParameter("designation", "part", designationParams);
+				collectionParameters.add(fhirParam);
+			} else if (object instanceof Property) {
+				Collection<SerializableParameter> propertyParams = toParameters((Property) object);
+				SerializableParameter fhirParam = new SerializableParameter("property", "part", propertyParams);
 				collectionParameters.add(fhirParam);
 			}
 		}

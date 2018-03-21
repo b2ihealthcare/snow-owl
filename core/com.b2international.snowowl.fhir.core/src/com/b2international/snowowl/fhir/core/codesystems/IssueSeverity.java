@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
@@ -27,20 +28,14 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
  */
 public enum IssueSeverity implements FhirCodeSystem {
 	
-	ERROR("Error"),
-	WARNING("Warning"),
-	INFORMATION("Information");
+	ERROR,
+	WARNING,
+	INFORMATION;
 	
 	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-severity";
 	
-	private String displayName;
-
-	private IssueSeverity(String displayName) {
-		this.displayName = displayName;
-	}
-	
 	public String getDisplayName() {
-		return displayName;
+		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
 	}
 	
 	@Override
