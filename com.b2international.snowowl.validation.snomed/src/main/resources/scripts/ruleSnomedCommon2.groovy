@@ -33,7 +33,7 @@ Expression expression = Expressions
 
 Aggregation<SnomedDescriptionIndexEntry> buckets = ctx.service(RevisionSearcher.class)
 		.aggregate(AggregationBuilder
-		.bucket("rule52", SnomedDescriptionIndexEntry.class)
+		.bucket("ruleSnomedCommon2", SnomedDescriptionIndexEntry.class)
 		.query(expression)
 		.onFieldValue(SnomedDescriptionIndexEntry.Fields.ORIGINAL_TERM)
 		.minBucketSize(2))
