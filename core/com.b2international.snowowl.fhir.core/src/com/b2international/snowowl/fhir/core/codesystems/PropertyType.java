@@ -19,40 +19,35 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
- * FHIR Concept property type code system
+ * FHIR property type code system
+ * 
  * @since 6.3
  */
-public enum ConceptPropertyType implements FhirCodeSystem {
+public enum PropertyType implements FhirCodeSystem {
 	
-	CODE(PropertyType.CODE.getCodeValue(), "code (internal reference)"),
-	CODING(PropertyType.CODING.getCodeValue(), "Coding (external reference)"), 
-	STRING(PropertyType.STRING.getCodeValue(), "string"), 
-	INTEGER(PropertyType.INTEGER.getCodeValue(), "integer"),
-	BOOLEAN(PropertyType.BOOLEAN.getCodeValue(), "boolean"),
-	DATETIME(PropertyType.DATETIME.getCodeValue(), "dateTime");
+	CODE("code"),
+	CODING("Coding"), 
+	STRING("string"), 
+	INTEGER("integer"),
+	BOOLEAN("boolean"),
+	DATETIME("dateTime");
 	
-	public final static String CODE_SYSTEM_URI = "https://www.hl7.org/fhir/concept-property-type.html";
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-property-type";
 	
-	private String code;
-	private String displayName;
+	private String codeName;
 
-	private ConceptPropertyType(String code, String displayName) {
-		this.code = code;
-		this.displayName = displayName;
-	}
-	
-	public String getDisplayName() {
-		return displayName;
+	private PropertyType(String codeName) {
+		this.codeName = codeName;
 	}
 	
 	@Override
 	public Code getCode() {
-		return new Code(code);
+		return new Code(getCodeValue());
 	}
 	
 	@Override
 	public String getCodeValue() {
-		return code;
+		return codeName;
 	}
 	
 	@Override

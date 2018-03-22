@@ -15,26 +15,21 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.util.Collection;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.b2international.snowowl.fhir.core.model.conversion.PropertyConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.Lists;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Lookup Operation property
- *@since 6.3
+ * FHIR Code System supported property
+ * 
+ * @since 6.3
  */
-@JsonSerialize(converter=PropertyConverter.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class Property extends ParametersModel {
+public class SupportedConceptProperty {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
@@ -47,69 +42,76 @@ public class Property extends ParametersModel {
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
 	@Order(value=2)
-	private final Object value;
+	private final Uri uri;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	@Order(value=3)
 	private final String description;
 	
 	@Order(value=4)
-	private final Collection<SubProperty> subProperties;
+	@Valid
+	@NotNull
+	private final Code type;
 	
-	Property(final Code code, final Object value, final String description, final Collection<SubProperty> subproperties) {
+	SupportedConceptProperty(final Code code, final Uri uri, final String description, final Code type) {
 		this.code = code;
-		this.value = value;
+		this.uri = uri;
 		this.description = description;
-		this.subProperties = subproperties;
+		this.type = type;
 	}
 	
 	public Code getCode() {
 		return code;
 	}
 	
+	@JsonIgnore
 	public String getCodeValue() {
 		return code.getCodeValue();
 	}
 
-	/**
-	 * How are we going to get the proper type serialized?
-	 * @return
-	 */
-	public Object getValue() {
-		return value;
+	public Uri getUri() {
+		return uri;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 	
-	public Collection<SubProperty> getSubProperties() {
-		return subProperties;
+	public Code getType() {
+		return type;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends ValidatingBuilder<Property> {
+	public static Builder builder(ConceptProperties conceptProperty) {
+		return new Builder()
+			.code(conceptProperty.getCode())
+			.uri(conceptProperty.getUri())
+			.description(conceptProperty.getDisplayName())
+			.type(conceptProperty.getType());
+	}
+	
+	public static class Builder extends ValidatingBuilder<SupportedConceptProperty> {
 		
 		private Code code;
-		private Object value;
+		private Uri uri;
 		private String description;
-		private Collection<SubProperty> subProperties = Lists.newArrayList();
+		private Code type;
 
-		public Builder code(final String code) {
-			this.code = new Code(code);
-			return this;
-		}
-		
 		public Builder code(final Code code) {
 			this.code = code;
 			return this;
 		}
 		
-		public Builder value(final Object value) {
-			this.value = value;
+		public Builder uri(final Uri uri) {
+			this.uri = uri;
+			return this;
+		}
+		
+		public Builder type(final Code type) {
+			this.type = type;
 			return this;
 		}
 
@@ -118,14 +120,9 @@ public class Property extends ParametersModel {
 			return this;
 		}
 		
-		public Builder addSubProperty(final SubProperty subProperty) {
-			subProperties.add(subProperty);
-			return this;
-		}
-		
 		@Override
-		protected Property doBuild() {
-			return new Property(code, value, description, subProperties);
+		protected SupportedConceptProperty doBuild() {
+			return new SupportedConceptProperty(code, uri, description, type);
 		}
 	}
 

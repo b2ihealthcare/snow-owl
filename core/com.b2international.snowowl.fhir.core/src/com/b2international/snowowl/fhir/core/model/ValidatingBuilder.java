@@ -26,7 +26,7 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 
 
 /**
- * Annotation based validator superclass for FHIR model classes and data types. 
+ * Annotation based builder superclass for FHIR model classes and data types. 
  * @since 6.3
  */
 public abstract class ValidatingBuilder<T> {

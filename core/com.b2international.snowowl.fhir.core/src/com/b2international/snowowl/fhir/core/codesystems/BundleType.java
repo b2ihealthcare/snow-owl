@@ -20,6 +20,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Bundle type code system
+ * 
  * @since 6.3
  */
 public enum BundleType implements FhirCodeSystem {

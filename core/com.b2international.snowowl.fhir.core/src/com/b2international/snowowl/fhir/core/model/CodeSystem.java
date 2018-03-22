@@ -80,10 +80,10 @@ public class CodeSystem extends DomainResource {
 	
 	@Valid
 	@JsonProperty("property")
-	private Collection<ConceptProperty> properties;
+	private Collection<SupportedConceptProperty> properties;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, String description, Code status, String publisher, Collection<ConceptProperty> properties) {
+			String title, String description, Code status, String publisher, Collection<SupportedConceptProperty> properties) {
 		
 		super(id, language, text);
 		
@@ -124,7 +124,7 @@ public class CodeSystem extends DomainResource {
 		
 		private String publisher;
 		
-		private Collection<ConceptProperty> properties = Lists.newArrayList();
+		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
 		
 		public Builder(String codeSystemId) {
 			super(codeSystemId);
@@ -175,7 +175,7 @@ public class CodeSystem extends DomainResource {
 			return getSelf();
 		}
 		
-		public Builder addProperty(ConceptProperty property) {
+		public Builder addProperty(SupportedConceptProperty property) {
 			this.properties.add(property);
 			return getSelf();
 		}

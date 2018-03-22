@@ -23,10 +23,15 @@ import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.BooleanConceptProperty;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.CodingConceptProperty;
 import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 
@@ -39,11 +44,65 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
+	@Test
+	public void conceptPropertyTest() throws Exception {
+		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(ConceptProperties.INACTIVE).build();
+		printPrettyJson(conceptProperty);
+		printJson(conceptProperty);
+		
+		String expectedJson = "{\"code\":\"inactive\","
+				+ "\"uri\":\"http://hl7.org/fhir/concept-properties/inactive\","
+				+ "\"description\":\"Inactive\",\"type\":\"boolean\"}";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		
+	}
+	
+	@Test
+	public void returnedConceptPropertyTest() throws Exception {
+		BooleanConceptProperty conceptProperty = BooleanConceptProperty.builder()
+				.code(ConceptProperties.INACTIVE.getCode())
+				.value(true)
+				.build();
+		
+		printPrettyJson(conceptProperty);
+		printJson(conceptProperty);
+		
+		String expectedJson =  "[{\"name\":\"code\","
+					+ "\"valueCode\":\"inactive\"},"
+					+ "{\"name\":\"valueBoolean\","
+					+ "\"valueBoolean\":true}]";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		
+	}
+	
+	@Test
+	public void returnedConceptCodingPropertyTest() throws Exception {
+		CodingConceptProperty conceptProperty = CodingConceptProperty.builder()
+				.code(ConceptProperties.CHILD.getCode())
+				.value(new Coding.Builder()
+					.code("codingCode")
+					.system("uri")
+					.build())
+				.build();
+		
+		printPrettyJson(conceptProperty);
+		printJson(conceptProperty);
+		
+		String expectedJson = "[{\"name\":\"code\",\"valueCode\":\"child\"},"
+				+ "{\"name\":\"valueCoding\","
+				+ "\"valueCoding\":{\"code\":\"codingCode\","
+				+ "\"system\":\"uri\",\"userSelected\":false}}]";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		
+	}
 	
 	@Test
 	public void bundleTest() throws Exception {
 		
-		CodeSystem codeSystem = CodeSystem.builder("cdoId")
+		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.status(PublicationStatus.ACTIVE)
 			.name("Local code system")
 			.url(new Uri("code system uri"))
@@ -62,14 +121,16 @@ public class CodeSystemSerializationTest extends FhirTest {
 		printPrettyJson(bundle);
 		
 		String expectedJson = "{\"resourceType\":\"Bundle\","
-				+ "\"id\":\"YnVuZGxlX0lkPw==\","
+				+ "\"id\":\"bundle_Id?\","
 				+ "\"language\":\"en\","
 				+ "\"type\":\"searchset\","
+				+"\"total\":1,"
 				+ "\"link\":[{\"relation\":\"self\","
 					+ "\"url\":\"http://localhost:8080/snowowl/CodeSystem\"}],"
 				+ "\"entry\":[{\"fullUrl\":\"full Url\","
 					+ "\"resource\":{\"resourceType\":\"CodeSystem\","
-					+ "\"id\":\"Y2RvSWQ=\","
+					+ "\"id\":\"repo/shortName\","
+					+ "\"language\":\"en\","
 					+ "\"url\":\"code system uri\","
 					+ "\"name\":\"Local code system\","
 					+ "\"status\":\"active\"}}]}";

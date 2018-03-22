@@ -18,110 +18,69 @@ package com.b2international.snowowl.fhir.core.model;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
-import com.b2international.snowowl.fhir.core.model.conversion.Order;
+import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * FHIR Code System Property
- * 
+ * FHIR Concept return property
  * @since 6.3
  */
-public class ConceptProperty {
+@JsonSerialize(using=ConceptPropertySerializer.class)
+@JsonInclude(Include.NON_EMPTY) //covers nulls as well
+public abstract class ConceptProperty<T> {
 	
 	//Identifies the property returned (1..1)
-	@Order(value=1)
 	@Valid
 	@NotNull
-	private final Code code;
+	protected final Code code;
 	
-	/*
-	 * The value of the property returned (0..1)
-	 * code | Coding | string | integer | boolean | dateTime
-	 */
-	@Order(value=2)
-	private final Uri uri;
+	protected final T value;
 	
-	//Human Readable representation of the property value (e.g. display for a code) 0..1
-	@Order(value=3)
-	private final String description;
-	
-	@Order(value=4)
-	@Valid
-	@NotNull
-	private final Code type;
-	
-	ConceptProperty(final Code code, final Uri uri, final String description, final Code type) {
+	ConceptProperty(final Code code, final T value) {
 		this.code = code;
-		this.uri = uri;
-		this.description = description;
-		this.type = type;
+		this.value = value;
 	}
 	
 	public Code getCode() {
 		return code;
 	}
 	
+	public abstract PropertyType getPropertyType();
+	
+	@JsonIgnore
 	public String getCodeValue() {
 		return code.getCodeValue();
 	}
-
-	public Uri getUri() {
-		return uri;
-	}
-
-	public String getDescription() {
-		return description;
+	
+	public T getValue() {
+		return value;
 	}
 	
-	public Code getType() {
-		return type;
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static Builder builder(ConceptProperties conceptProperty) {
-		return new Builder()
-			.code(conceptProperty.getCode())
-			.uri(conceptProperty.getUri())
-			.description(conceptProperty.getDisplayName())
-			.type(conceptProperty.getType());
-	}
-	
-	public static class Builder extends ValidatingBuilder<ConceptProperty> {
+	public static abstract class Builder<B extends Builder<B, CP, T>, CP extends ConceptProperty<T>, T> extends ValidatingBuilder<CP> {
 		
-		private Code code;
-		private Uri uri;
-		private String description;
-		private Code type;
+		protected Code code;
+		protected T value;
 
-		public Builder code(final Code code) {
+		public B code(final String code) {
+			this.code = new Code(code);
+			return getSelf();
+		}
+		
+		public B code(final Code code) {
 			this.code = code;
-			return this;
+			return getSelf();
 		}
 		
-		public Builder uri(final Uri uri) {
-			this.uri = uri;
-			return this;
+		public B value(final T value) {
+			this.value = value;
+			return getSelf();
 		}
 		
-		public Builder type(final Code type) {
-			this.type = type;
-			return this;
-		}
-
-		public Builder description(final String description) {
-			this.description = description;
-			return this;
-		}
-		
-		@Override
-		protected ConceptProperty doBuild() {
-			return new ConceptProperty(code, uri, description, type);
-		}
+		protected abstract B getSelf();
 	}
 
 }
