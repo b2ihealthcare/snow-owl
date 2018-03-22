@@ -16,9 +16,10 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
- * Bundle type code system
+ * FHIR Bundle type code system
  * @since 6.3
  */
 public enum BundleType implements FhirCodeSystem {
@@ -71,6 +72,11 @@ public enum BundleType implements FhirCodeSystem {
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase().replaceAll("_", "-");
+	}
+	
+	@Override
+	public Uri getUri() {
+		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 	
 	@Override

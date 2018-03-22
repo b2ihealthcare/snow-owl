@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Narrative status code system
@@ -48,6 +49,11 @@ public enum NarrativeStatus implements FhirCodeSystem {
 	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
+	}
+	
+	@Override
+	public Uri getUri() {
+		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 	
 	@Override

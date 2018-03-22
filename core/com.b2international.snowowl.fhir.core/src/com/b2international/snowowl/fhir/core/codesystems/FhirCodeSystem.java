@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * Internal FHIR code system
@@ -25,6 +26,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
  */
 public interface FhirCodeSystem {
 	
+	/**
+	 * Returns the code system URI as a string of this code system
+	 * @return
+	 */
+	String getCodeSystemUri();
+
 	/**
 	 * Returns the code from this code system.
 	 * @return
@@ -36,11 +43,11 @@ public interface FhirCodeSystem {
 	 * @return
 	 */
 	String getCodeValue();
-	
+
 	/**
-	 * Returns the code system URI as a string of this code system
+	 * Returns the full URI of the code
 	 * @return
 	 */
-	String getCodeSystemUri();
+	Uri getUri();
 
 }

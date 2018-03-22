@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.Collection;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -25,6 +27,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -75,8 +78,12 @@ public class CodeSystem extends DomainResource {
 	@JsonProperty
 	private String publisher;
 	
-	public CodeSystem(Id id, Code language, Uri url, Identifier identifier, String version, String name, 
-			String title, String description, Code status, String publisher, Narrative text) {
+	@Valid
+	@JsonProperty("property")
+	private Collection<ConceptProperty> properties;
+	
+	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
+			String title, String description, Code status, String publisher, Collection<ConceptProperty> properties) {
 		
 		super(id, language, text);
 		
@@ -88,6 +95,7 @@ public class CodeSystem extends DomainResource {
 		this.description = description;
 		this.status = status;
 		this.publisher = publisher;
+		this.properties = properties;
 	}
 	
 	public Uri getUrl() {
@@ -116,6 +124,8 @@ public class CodeSystem extends DomainResource {
 		
 		private String publisher;
 		
+		private Collection<ConceptProperty> properties = Lists.newArrayList();
+		
 		public Builder(String codeSystemId) {
 			super(codeSystemId);
 		}
@@ -127,47 +137,52 @@ public class CodeSystem extends DomainResource {
 
 		public Builder url(final Uri url) {
 			this.url = url;
-			return this;
+			return getSelf();
 		}
 		
 		public Builder identifier(final Identifier identifer) {
 			this.identifier = identifer;
-			return this;
+			return getSelf();
 		}
 
 		public Builder version(final String version) {
 			this.version = version;
-			return this;
+			return getSelf();
 		}
 
 		public Builder name(final String name) {
 			this.name = name;
-			return this;
+			return getSelf();
 		}
 		
 		public Builder description(final String description) {
 			this.description = description;
-			return this;
+			return getSelf();
 		}
 		
 		public Builder title(final String title) {
 			this.title = title;
-			return this;
+			return getSelf();
 		}
 
 		public Builder status(PublicationStatus status) {
 			this.status = status.getCode();
-			return this;
+			return getSelf();
 		}
 		
 		public Builder publisher(String publisher) {
 			this.publisher = publisher;
-			return this;
+			return getSelf();
+		}
+		
+		public Builder addProperty(ConceptProperty property) {
+			this.properties.add(property);
+			return getSelf();
 		}
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, url, identifier, version, name, title, description, status, publisher, text);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, description, status, publisher, properties);
 		}
 	}
 		

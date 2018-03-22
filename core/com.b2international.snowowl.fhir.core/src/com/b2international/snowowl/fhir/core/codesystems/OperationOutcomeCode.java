@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Operation outcome codesystem.
@@ -98,6 +99,11 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	
 	public String displayName() {
 		return displayName;
+	}
+	
+	@Override
+	public Uri getUri() {
+		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 
 	@Override

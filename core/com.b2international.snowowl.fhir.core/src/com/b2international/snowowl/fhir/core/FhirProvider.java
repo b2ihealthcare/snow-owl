@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -47,7 +48,7 @@ public abstract class FhirProvider implements IFhirProvider {
 		String repositoryId = codeSystemPath.getParent().toString();
 		String shortName = codeSystemPath.getFileName().toString();
 		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(eventBus).getSync();
-		return createCodeSystem(codeSystemEntry);
+		return createCodeSystemBuilder(codeSystemEntry).build();
 	}
 	
 	/**
@@ -64,9 +65,8 @@ public abstract class FhirProvider implements IFhirProvider {
 			
 			return codeSystemsPromise.then(cs -> {
 				List<CodeSystem> codeSystems = cs.stream()
-					.map(this::createCodeSystem)
+					.map(c -> createCodeSystemBuilder(c).build())
 					.collect(Collectors.toList());
-				
 				return codeSystems;
 			}).getSync();
 	}
@@ -82,14 +82,13 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * @param codeSystemEntry
 	 * @return FHIR Code system
 	 */
-	protected CodeSystem createCodeSystem(final CodeSystemEntry codeSystemEntry) {
+	protected Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
 		
 		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL.getCode(), null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
 		
-		//icd10Store/ICD-10
 		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
 		
-		return CodeSystem.builder(id)
+		Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
 			.language(FhirUtils.getLanguageCode(codeSystemEntry.getLanguage()))
 			.name(codeSystemEntry.getShortName())
@@ -98,8 +97,18 @@ public abstract class FhirProvider implements IFhirProvider {
 			.status(PublicationStatus.ACTIVE)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(getFhirUri())
-			.build();
+			.url(getFhirUri());
+		
+		return addSpecificProperties(builder);
+	}
+	
+	/**
+	 * Build code system specific properties. Subclasses to override.
+	 * @param builder
+	 * @return builder
+	 */
+	protected Builder addSpecificProperties(final Builder builder) {
+		return builder;
 	}
 
 }

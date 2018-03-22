@@ -15,40 +15,44 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
- * usual	 The identifier recommended for display and use in real-world interactions.
- * official  The identifier considered to be most trusted for the identification of this item.
- * temp temporary identifier.
- * secondary An identifier that was assigned in secondary use - it serves to identify the object in a relative context, but cannot be consistently assigned to the same object again in a different context.
- * 
- * @see <a href="https://www.hl7.org/fhir/codesystem-identifier-use.html">FHIR:CodeSystem:Terminology</a>
+ * FHIR Concept property type code system
  * @since 6.3
  */
-public enum IdentifierUse implements FhirCodeSystem {
+public enum ConceptPropertyType implements FhirCodeSystem {
 	
-	USUAL,
-	OFFICIAL,
-	TEMP,
-	SECONDARY;
+	CODE("code", "code (internal reference)"),
+	CODING("Coding", "Coding (external reference)"), 
+	STRING("string", "string"), 
+	INTEGER("integer", "integer"),
+	BOOLEAN("boolean", "boolean"),
+	DATETIME("dateTime", "dateTime");
 	
-	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/identifier-use";
+	public final static String CODE_SYSTEM_URI = "https://www.hl7.org/fhir/concept-property-type.html";
+	
+	private String code;
+	private String displayName;
 
+	private ConceptPropertyType(String code, String displayName) {
+		this.code = code;
+		this.displayName = displayName;
+	}
+	
 	public String getDisplayName() {
-		return StringUtils.capitalizeFirstLetter(name());
+		return displayName;
 	}
 	
 	@Override
 	public Code getCode() {
-		return new Code(name().toLowerCase());
+		return new Code(code);
 	}
 	
 	@Override
 	public String getCodeValue() {
-		return name().toLowerCase();
+		return code;
 	}
 	
 	@Override

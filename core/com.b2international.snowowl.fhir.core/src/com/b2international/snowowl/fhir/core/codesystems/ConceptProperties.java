@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Concept properties code system
@@ -25,34 +26,46 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 public enum ConceptProperties implements FhirCodeSystem {
 	
 	//True if the concept is not considered active - e.g. not a valid concept any more. Property type is boolean, default value is false
-	INACTIVE("Inactive"),
+	INACTIVE("Inactive", "boolean"),
 	
 	//The date at which a concept was deprecated. Concepts that are deprecated but not inactive can still be used, 
 	//but their use is discouraged, and they should be expected to be made inactive in a future release. Property type is dateTime
-	DEPRECATED("Deprecated"),
+	DEPRECATED("Deprecated", "dateTime"),
 	
 	//The concept is not intended to be chosen by the user - only intended to be used as a selector for other concepts. 
 	//Note, though, that the interpretation of this is highly contextual; all concepts are selectable in some context. Property type is boolean, default value is false
-	NOT_SELECTABLE("Not Selectable"),
+	NOT_SELECTABLE("Not Selectable", "boolean"),
 	
 	//The concept identified in this property is a parent of the concept on which it is a property. 
 	//The property type will be 'code'. The meaning of 'parent' is defined by the hierarchyMeaning attribute
-	PARENT("Parent"),
+	PARENT("Parent", "code"),
 	
 	//The concept identified in this property is a child of the concept on which it is a property. 
 	//The property type will be 'code'. The meaning of 'child' is defined by the hierarchyMeaning attribute
-	CHILD("Child");
+	CHILD("Child", "code");
 		
 	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-properties";
 	
 	private String displayName;
+	
+	private Code type;
 
-	private ConceptProperties(String displayName) {
+	private ConceptProperties(String displayName, String type) {
 		this.displayName = displayName;
+		this.type = new Code(type);
+	}
+	
+	@Override
+	public String getCodeSystemUri() {
+		return CODE_SYSTEM_URI;
 	}
 	
 	public String getDisplayName() {
 		return displayName;
+	}
+	
+	public Code getType() {
+		return type;
 	}
 	
 	@Override
@@ -66,7 +79,8 @@ public enum ConceptProperties implements FhirCodeSystem {
 	}
 	
 	@Override
-	public String getCodeSystemUri() {
-		return CODE_SYSTEM_URI;
+	public Uri getUri() {
+		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
+	
 }
