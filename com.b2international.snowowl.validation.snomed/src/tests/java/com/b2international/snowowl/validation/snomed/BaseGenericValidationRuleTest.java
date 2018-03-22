@@ -1,9 +1,21 @@
-/*******************************************************************************
- * Copyright (c) 2018 B2i Healthcare. All rights reserved.
- *******************************************************************************/
+/*
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.validation.snomed;
 
-import static com.b2international.snowowl.validation.snomed.util.DocumentBuilders.concept;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
@@ -40,7 +52,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.validation.snomed.util.TestBranchContext;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,11 +71,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	private static final long CASE_SIGNIFICANCEL = Long.parseLong(Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT);
 	private static final long DESCRIPTION_TYPEL = Long.parseLong(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
 	private static final String HISTORICAL_ASSOCIATION = "900000000000522004";
-	private static final Long HISTORICAL_ASSOCIATIONL = Long.parseLong(HISTORICAL_ASSOCIATION);
 	private static final String EPRESCRIBING_ROUTE_SIMPLE_REFSET = "999000051000001100";
-	private static final Long EPRESCRIBING_ROUTE_SIMPLE_REFSETL = Long.parseLong("999000051000001100");
 	private static final Long CONCEPT_MODEL_ATTRIBUTEL = Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE);
-	private static final Long MODULE_ROOTL = Long.parseLong(Concepts.MODULE_ROOT);
 	private static final Long REFSET_ROOTL = Long.parseLong(Concepts.REFSET_ROOT_CONCEPT);
 
 	private BranchContext context;

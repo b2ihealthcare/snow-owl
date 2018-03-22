@@ -94,11 +94,8 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			
 			final List<ValidationRule> availableRules = Lists.newArrayList();
 			for (File validationRulesFile : validationRuleFiles) {
-				if (validationRulesFile.exists()) {
-					LOG.info("Synchronizing validation rules from file: " + validationRulesFile);
-					availableRules.addAll(mapper.readValue(validationRulesFile, new TypeReference<List<ValidationRule>>() {}));
-					 
-				}
+				LOG.info("Synchronizing validation rules from file: " + validationRulesFile);
+				availableRules.addAll(mapper.readValue(validationRulesFile, new TypeReference<List<ValidationRule>>() {}));
 			}
 			
 			repository.write(writer -> {
