@@ -18,8 +18,10 @@ package com.b2international.commons;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
@@ -59,6 +61,19 @@ public class StringUtils {
 		} else {
 			return description.substring(0, maxLength - ELLIPSIS.length()) + ELLIPSIS;
 		}
+	}
+	
+	/**
+	 * Converts the passed in String into camelCase. E.g. TEST_STRING -> testString
+	 * @param string to convert
+	 * @param splitChars characters to split the word
+	 * @return camelCase representation
+	 */
+	public static String camelCase(final String string, final String splitChars) {
+		
+		String[] words = string.toLowerCase().split(splitChars);
+		String capitalizedString = Arrays.stream(words).map(StringUtils::capitalizeFirstLetter).collect(Collectors.joining());
+		return lowerCaseFirstLetter(capitalizedString);
 	}
 	
 	/**
