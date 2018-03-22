@@ -24,7 +24,7 @@ public final class SnomedDeletionPlanMessages {
 
 	public static final String COMPONENT_IS_RELEASED_MESSAGE = "The %s '%s' has been released, and cannot be deleted.";
 	
-	public static final String UNABLE_TO_DELETE_CONCEPT_MESSAGE = "Cannot delete concept: '%s'.";
+	public static final String UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE = "Cannot delete concept: '%s' because it has a released inbound relationship: '%s'.";
 	
 	public static final String UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE = "Cannot delete concept: '%s' because it is used as a description type.";
 	
