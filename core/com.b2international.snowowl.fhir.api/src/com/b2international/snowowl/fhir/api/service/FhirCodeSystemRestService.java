@@ -100,12 +100,7 @@ public class FhirCodeSystemRestService {
 	public CodeSystem getCodeSystem(@PathVariable("codeSystemId") String codeSystemId) {
 
 		Path codeSystemPath = Paths.get(codeSystemId);
-		String shortName = codeSystemPath.getFileName().toString();
-		
 		IFhirProvider fhirProvider = FhirUtils.getFhirProvider(codeSystemPath);
-	
-		System.out.println(fhirProvider);
-		
 		CodeSystem codeSystem = fhirProvider.getCodeSystem(codeSystemPath);
 		return codeSystem;
 	}
@@ -134,7 +129,7 @@ public class FhirCodeSystemRestService {
 		for (IFhirProvider fhirProvider : fhirProviders) {
 			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
 			for (CodeSystem codeSystem : codeSystems) {
-				String resourceUrl = uri.toString() + "/" + codeSystem.getUrl().getUriValue();
+				String resourceUrl = uri.toString() + "/" + codeSystem.getId().getIdValue();
 				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 				builder.addEntry(entry);
 				total++;

@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
- * Publication status code system
+ * FHIR Publication status code system
  * 
  * @since 6.3
  */

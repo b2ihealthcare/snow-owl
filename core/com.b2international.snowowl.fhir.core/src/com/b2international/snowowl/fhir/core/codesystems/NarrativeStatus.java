@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
- * Narrative status code system
+ * FHIR Narrative status code system
  * 
  * @since 6.3
  */

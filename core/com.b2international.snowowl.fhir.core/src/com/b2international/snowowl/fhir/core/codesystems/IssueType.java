@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
- * Issue type codesystem
+ * FHIR Issue type codesystem
  * 
 2	  unknown	Unknown User	The user or system was not able to be authenticated (either there is no process, or the proferred token is unacceptable).
 2	  expired	Session Expired	User session expired; a login may be required.

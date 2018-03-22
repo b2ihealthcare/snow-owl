@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
- * Operation outcome codesystem.
+ * FHIR Operation outcome codesystem.
  * 
  * @see <a href="http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:Operation Outcome:issue</a>
  *  

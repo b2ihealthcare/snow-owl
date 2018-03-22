@@ -19,17 +19,22 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
- * fatal Fatal The issue caused the action to fail, and no further checking could be performed.
- * error	 Error The issue is sufficiently important to cause the action to fail.
- * warning Warning The issue is not important enough to cause the action to fail, but may cause it to be performed suboptimally or in a way that is not as desired.
- * information Information	The issue has no relation to the degree of success of the action.
- *
+ * FHIR Issue Severity Code system
+ * 
  * @since 6.3
  */
 public enum IssueSeverity implements FhirCodeSystem {
 	
+	//The issue caused the action to fail, and no further checking could be performed.
+	FATAL,
+	
+	//The issue is sufficiently important to cause the action to fail.
 	ERROR,
+	
+	//Warning The issue is not important enough to cause the action to fail, but may cause it to be performed suboptimally or in a way that is not as desired.
 	WARNING,
+	
+	//The issue has no relation to the degree of success of the action.
 	INFORMATION;
 	
 	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-severity";
