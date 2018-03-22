@@ -24,16 +24,13 @@ inactiveConceptHits.each( { hits ->
 	}
 })
 		
-Expression shouldrelationshipExpression = Expressions.builder()
+Expression expression = Expressions.builder()
 		.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
 		.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
 		.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
-		.build()
-		
-Expression expression = Expressions.builder()
-		.should(shouldrelationshipExpression)
 		.filter(SnomedRelationshipIndexEntry.Expressions.active())
 		.build()
+		
 
 Iterable<Hits<String>> invalidRelationshipHits = ctx.service(RevisionSearcher.class)
 		.scroll(Query.select(String.class)
