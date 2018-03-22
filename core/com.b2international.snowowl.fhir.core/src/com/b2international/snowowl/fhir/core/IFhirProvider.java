@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import java.nio.file.Path;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -37,6 +38,12 @@ public interface IFhirProvider {
 	 * @return true if the code system represented by the URI is supported
 	 */
 	boolean isSupported(String uri);
+	
+	/**
+	 * @param logical code system path (repositoryId/shortName)
+	 * @return true if this provider supports the code system represented by the path
+	 */
+	boolean isSupported(Path path);
 
 	LookupResult lookup(String version, String code);
 
@@ -55,9 +62,17 @@ public interface IFhirProvider {
 	/**
 	 * Returns the code system for the passed in code system URI
 	 * @param codeSystemUri
-	 * @return
+	 * @return {@link CodeSystem}
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(String codeSystemUri);
-	
+
+	/**
+	 * Returns the code system for the passed in logical path (repositoryId/shortName)
+	 * @param codeSystemPath
+	 * @return {@link CodeSystem}
+	 * @throws BadRequestException if the code system is not supported by this provider
+	 */
+	CodeSystem getCodeSystem(Path codeSystemPath);
+
 }

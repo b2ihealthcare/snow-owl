@@ -19,6 +19,8 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +55,7 @@ import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemUpdateRequestBuilder;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -71,7 +74,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  */
-@Api("Code Systems")
+@Api(value ="CodeSystem")
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/CodeSystem")
 public class FhirCodeSystemRestService {
@@ -86,19 +89,24 @@ public class FhirCodeSystemRestService {
 	}
 	
 	@ApiOperation(
-			value="Retrieve the code system by its URI.",
-			notes="Retrieves the code system specified by its escapes URI string.")
+			value="Retrieve the code system by its Id.",
+			notes="Retrieves the code system specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{codeSystemUri}", method=RequestMethod.GET)
-	public CodeSystem getCodeSystem(@PathVariable("codeSystemUri") String codeSystemUri) {
+	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
+	public CodeSystem getCodeSystem(@PathVariable("codeSystemId") String codeSystemId) {
+
+		Path codeSystemPath = Paths.get(codeSystemId);
+		String shortName = codeSystemPath.getFileName().toString();
 		
-		String decodedUri= URI.decode(codeSystemUri);
-		IFhirProvider fhirProvider = FhirUtils.getFhirProvider(decodedUri);
-		CodeSystem codeSystem = fhirProvider.getCodeSystem(decodedUri);
+		IFhirProvider fhirProvider = FhirUtils.getFhirProvider(codeSystemPath);
+	
+		System.out.println(fhirProvider);
+		
+		CodeSystem codeSystem = fhirProvider.getCodeSystem(codeSystemPath);
 		return codeSystem;
 	}
 	
@@ -111,6 +119,8 @@ public class FhirCodeSystemRestService {
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getCodeSystems() {
 		
+		//TODO: replace this with something more general as described in
+		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirCodeSystemRestService.class);
 		java.net.URI uri = linkBuilder.toUri();
 		

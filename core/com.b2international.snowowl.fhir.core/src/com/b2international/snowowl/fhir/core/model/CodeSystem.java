@@ -116,8 +116,8 @@ public class CodeSystem extends DomainResource {
 		
 		private String publisher;
 		
-		public Builder(String cdoId) {
-			super(cdoId);
+		public Builder(String codeSystemId) {
+			super(codeSystemId);
 		}
 		
 		@Override

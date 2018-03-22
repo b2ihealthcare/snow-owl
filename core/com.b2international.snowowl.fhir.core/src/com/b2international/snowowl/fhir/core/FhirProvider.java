@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,12 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
@@ -32,9 +38,17 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
  * 
  * @since 6.3
  */
-public abstract class FhirProvider {
+public abstract class FhirProvider implements IFhirProvider {
 	
 	protected IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+	
+	@Override
+	public CodeSystem getCodeSystem(Path codeSystemPath) {
+		String repositoryId = codeSystemPath.getParent().toString();
+		String shortName = codeSystemPath.getFileName().toString();
+		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(eventBus).getSync();
+		return createCodeSystem(codeSystemEntry);
+	}
 	
 	/**
 	 * Returns the FHIR code systems available for the given repository
@@ -58,10 +72,34 @@ public abstract class FhirProvider {
 	}
 	
 	/**
-	 * Creates a FHIR {@link CodeSystem} from a Snow Owl {@link CodeSystemEntry}
-	 * @param codeSystemEntry
+	 * Returns the designated FHIR Uri for the given code system
 	 * @return
 	 */
-	protected abstract CodeSystem createCodeSystem(final CodeSystemEntry codeSystemEntry);
+	protected abstract Uri getFhirUri();
+	
+	/**
+	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystemEntry}
+	 * @param codeSystemEntry
+	 * @return FHIR Code system
+	 */
+	protected CodeSystem createCodeSystem(final CodeSystemEntry codeSystemEntry) {
+		
+		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL.getCode(), null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
+		
+		//icd10Store/ICD-10
+		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
+		
+		return CodeSystem.builder(id)
+			.identifier(identifier)
+			.language(FhirUtils.getLanguageCode(codeSystemEntry.getLanguage()))
+			.name(codeSystemEntry.getShortName())
+			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
+			.publisher(codeSystemEntry.getOrgLink())
+			.status(PublicationStatus.ACTIVE)
+			.title(codeSystemEntry.getName())
+			.description(codeSystemEntry.getCitation())
+			.url(getFhirUri())
+			.build();
+	}
 
 }

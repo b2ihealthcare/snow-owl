@@ -65,9 +65,8 @@ public abstract class FhirResource {
 		 * Encode our internal component Id to hide it from the outside world.
 		 * @param cdoId
 		 */
-		public Builder(String cdoId) {
-			String encodedString = Base64.getEncoder().encodeToString(cdoId.getBytes());
-			this.id = new Id(encodedString);
+		public Builder(String resourceId) {
+			this.id = new Id(resourceId);
 		}
 
 		protected abstract B getSelf();

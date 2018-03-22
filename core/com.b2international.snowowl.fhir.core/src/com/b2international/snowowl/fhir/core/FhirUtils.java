@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -35,6 +36,28 @@ public abstract class FhirUtils {
 
 	private FhirUtils() {
 	}
+	
+	/**
+	 * Returns the matching {@link IFhirProvider} for the given path (repository/shortName).
+	 * @param logical code system path (e.g. icd10Store/ICD-10)
+	 * @return FHIR provider
+	 */
+	public static IFhirProvider getFhirProvider(Path path) {
+		
+		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
+		
+		Optional<IFhirProvider> fhirProviderOptional = fhirProviders.stream()
+				.filter(provider -> provider.isSupported(path))
+				.findFirst();
+		
+		fhirProviderOptional.orElseThrow(() -> {
+			return new BadRequestException("Did not find FHIR module for code system: " + path, OperationOutcomeCode.MSG_NO_MODULE, "system=" + path);
+		});
+		
+		IFhirProvider iFhirProvider = fhirProviderOptional.get();
+		return iFhirProvider;
+	}
+	
 	
 	/**
 	 * Returns the matching {@link IFhirProvider} for the given URI.
