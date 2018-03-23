@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.b2international.snowowl.fhir.core.DateFormats;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
@@ -120,7 +120,7 @@ public class ParameterDeserializer extends JsonDeserializer<SerializableParamete
 			break;
 		case DATETIME:
 			String dateText = valueNode.asText();
-			SimpleDateFormat sdf = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT);
+			SimpleDateFormat sdf = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 			try {
 				value = sdf.parse(dateText);
 			} catch (ParseException e) {

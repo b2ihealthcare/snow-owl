@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.b2international.snowowl.fhir.core.DateFormats;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.conversion.LookupRequestConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
@@ -221,7 +221,7 @@ public class LookupRequest {
 		
 		public Builder date(String dateString) {
 			try {
-				this.date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse(dateString);
+				this.date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse(dateString);
 			} catch (ParseException e) {
 				throw new BadRequestException("Incorrect date format '%s'.", dateString);
 			}

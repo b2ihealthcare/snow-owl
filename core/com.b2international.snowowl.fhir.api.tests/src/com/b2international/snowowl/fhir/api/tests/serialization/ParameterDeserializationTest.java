@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.DateFormats;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -37,7 +37,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @since 6.3
- *
  */
 public class ParameterDeserializationTest extends FhirTest {
 	
@@ -135,7 +134,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("part", param.getType());
 		
 		@SuppressWarnings("unchecked")
-		Collection<SerializableParameter> embeddedParams = (Collection) param.getValue();
+		Collection<SerializableParameter> embeddedParams = (Collection<SerializableParameter>) param.getValue();
 		Optional<SerializableParameter> optionalEmbeddedParameter = embeddedParams.stream()
 				.filter(p -> p.getName().equals("value"))
 				.findFirst();
@@ -219,7 +218,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals(new Code("abcd"), request.getCode());
 		assertEquals(new Uri("http://snomed.info/sct"), request.getSystem());
 		assertEquals("20180131", request.getVersion());
-		assertEquals(new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
+		assertEquals(new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
 		assertEquals(new Code("1234"), request.getCoding().getCode());
 	}
 	

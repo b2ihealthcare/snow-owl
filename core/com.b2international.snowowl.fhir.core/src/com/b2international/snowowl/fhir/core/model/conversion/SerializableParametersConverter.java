@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import com.b2international.snowowl.fhir.core.DateFormats;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -94,7 +94,7 @@ public class SerializableParametersConverter extends StdConverter<ParametersMode
 		} else if (value instanceof Integer) {
 			type = "valueInteger";
 		} else if (value instanceof Date) {
-			SimpleDateFormat formatter = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT);
+			SimpleDateFormat formatter = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 			String formattedDate = formatter.format((Date) value);
 			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			value = formattedDate;

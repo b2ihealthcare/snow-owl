@@ -16,10 +16,10 @@
 package com.b2international.snowowl.fhir.core;
 
 /**
- * Date formats
+ * FHIR constants
  * @since 6.3
  */
-public class DateFormats {
+public class FhirConstants {
 	
 	/**
 	 * A date, date-time or partial date (e.g. just year or year + month) as used in human communication. 

@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.DateFormats;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -103,7 +103,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test
 	public void returnedDateConceptPropertyTest() throws Exception {
 		
-		Date date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse("2018-03-23T08:49:40+0100");
+		Date date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-23T08:49:40+0100");
 		ConceptProperty<Date> conceptProperty = DateTimeConceptProperty.builder()
 			.code(new Code("String code"))
 			.value(date)
