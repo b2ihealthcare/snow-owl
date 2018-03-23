@@ -13,44 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.serialization;
 
 import java.io.IOException;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * {
-     "name": "code",
-      "valueCode": "sufficientlyDefined"
-    },
-    {
-      "name": "valueBoolean",
-      "valueBoolean": false
-    }
-    
- * + "{\"name\":\"code\","
-	+ "\"valueCode\":\"inactive\"},"
-	+ "{\"name\":\"valueBoolean\","
-	+ "\"valueBoolean\":true}";
+ * Custom serializer for concept properties returned.
+ * Example: 
+ * <pre>
+ * [{
+ *   "name": "code",
+ *   "valueCode": "sufficientlyDefined"
+ *  },
+ *  {
+ *    "name": "valueBoolean",
+ *    "valueBoolean": false
+ *  }]
+ * </pre>
+ *   
+ *	@since 6.3
  */
 public class ConceptPropertySerializer extends JsonSerializer<ConceptProperty<?>> {
 
+	private static final String VALUE_PREFIX = "value";
+	private static final String VALUE_CODE = "valueCode";
+	private static final String CODE = "code";
+	private static final String NAME = "name";
+
 	@Override
-	public void serialize(ConceptProperty<?> property, JsonGenerator jGen, SerializerProvider arg2) throws IOException, JsonProcessingException {
+	public void serialize(ConceptProperty<?> property, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
-		String typeName = "value" + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
+		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
 		jGen.writeStartArray();
 		jGen.writeStartObject();
-		jGen.writeStringField("name", "code");
-		jGen.writeStringField("valueCode", property.getCodeValue());
+		jGen.writeStringField(NAME, CODE);
+		jGen.writeStringField(VALUE_CODE, property.getCodeValue());
 		jGen.writeEndObject();
 		jGen.writeStartObject();
-		jGen.writeStringField("name", typeName);
+		jGen.writeStringField(NAME, typeName);
 		jGen.writeObjectField(typeName, property.getValue());
 		jGen.writeEndObject();
 		jGen.writeEndArray();

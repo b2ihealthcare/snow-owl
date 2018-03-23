@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.dt;
+package com.b2international.snowowl.fhir.core;
 
+/**
+ * Date formats
+ * @since 6.3
+ */
 public class DateFormats {
 	
 	/**

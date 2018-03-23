@@ -17,23 +17,31 @@ package com.b2international.snowowl.fhir.api.tests.serialization.domain;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.DateFormats;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.BooleanConceptProperty;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.CodingConceptProperty;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-
+import com.b2international.snowowl.fhir.core.model.property.BooleanConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.CodingConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
 
 /**
  * Test for checking the serialization from model->JSON.
@@ -44,29 +52,28 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
+	//Supported property in the code system
 	@Test
-	public void conceptPropertyTest() throws Exception {
+	public void supportedConceptPropertyTest() throws Exception {
 		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(ConceptProperties.INACTIVE).build();
 		printPrettyJson(conceptProperty);
-		printJson(conceptProperty);
 		
 		String expectedJson = "{\"code\":\"inactive\","
 				+ "\"uri\":\"http://hl7.org/fhir/concept-properties/inactive\","
-				+ "\"description\":\"Inactive\",\"type\":\"boolean\"}";
+				+ "\"description\":\"Inactive\","
+				+ "\"type\":\"boolean\"}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
-		
 	}
 	
 	@Test
-	public void returnedConceptPropertyTest() throws Exception {
-		BooleanConceptProperty conceptProperty = BooleanConceptProperty.builder()
-				.code(ConceptProperties.INACTIVE.getCode())
-				.value(true)
-				.build();
+	public void returnedBooleanConceptPropertyTest() throws Exception {
+		ConceptProperty<Boolean> conceptProperty = BooleanConceptProperty.builder()
+			.code(ConceptProperties.INACTIVE.getCode())
+			.value(true)
+			.build();
 		
 		printPrettyJson(conceptProperty);
-		printJson(conceptProperty);
 		
 		String expectedJson =  "[{\"name\":\"code\","
 					+ "\"valueCode\":\"inactive\"},"
@@ -74,11 +81,63 @@ public class CodeSystemSerializationTest extends FhirTest {
 					+ "\"valueBoolean\":true}]";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
-		
 	}
 	
 	@Test
-	public void returnedConceptCodingPropertyTest() throws Exception {
+	public void returnedStringConceptPropertyTest() throws Exception {
+		ConceptProperty<String> conceptProperty = StringConceptProperty.builder()
+			.code(new Code("String code"))
+			.value("text")
+			.build();
+		
+		printPrettyJson(conceptProperty);
+		
+		String expectedJson =  "[{\"name\":\"code\","
+					+ "\"valueCode\":\"String code\"},"
+					+ "{\"name\":\"valueString\","
+					+ "\"valueString\":\"text\"}]";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+	}
+	
+	@Test
+	public void returnedDateConceptPropertyTest() throws Exception {
+		
+		Date date = new SimpleDateFormat(DateFormats.DATE_TIME_FORMAT).parse("2018-03-23T08:49:40+0100");
+		ConceptProperty<Date> conceptProperty = DateTimeConceptProperty.builder()
+			.code(new Code("String code"))
+			.value(date)
+			.build();
+		
+		printPrettyJson(conceptProperty);
+		
+		String expectedJson =  "[{\"name\":\"code\","
+					+ "\"valueCode\":\"String code\"},"
+					+ "{\"name\":\"valueDateTime\","
+					+ "\"valueDateTime\":\"2018-03-23T07:49:40+0000\"}]";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+	}
+	
+	@Test
+	public void returnedCodeConceptPropertyTest() throws Exception {
+		CodeConceptProperty conceptProperty = CodeConceptProperty.builder()
+			.code(ConceptProperties.CHILD.getCode())
+			.value(new Code("codeCode"))
+			.build();
+		
+		printPrettyJson(conceptProperty);
+		
+		String expectedJson =  "[{\"name\":\"code\","
+				+ "\"valueCode\":\"child\"},"
+				+ "{\"name\":\"valueCode\","
+				+ "\"valueCode\":\"codeCode\"}]";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+	}
+	
+	@Test
+	public void returnedCodingConceptPropertyTest() throws Exception {
 		CodingConceptProperty conceptProperty = CodingConceptProperty.builder()
 				.code(ConceptProperties.CHILD.getCode())
 				.value(new Coding.Builder()
@@ -88,7 +147,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 				.build();
 		
 		printPrettyJson(conceptProperty);
-		printJson(conceptProperty);
 		
 		String expectedJson = "[{\"name\":\"code\",\"valueCode\":\"child\"},"
 				+ "{\"name\":\"valueCoding\","
@@ -96,7 +154,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 				+ "\"system\":\"uri\",\"userSelected\":false}}]";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
-		
 	}
 	
 	@Test

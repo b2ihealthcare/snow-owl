@@ -30,7 +30,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Lookup Operation property
- *@since 6.3
+ * @since 6.3
  */
 @JsonSerialize(converter=PropertyConverter.class)
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well

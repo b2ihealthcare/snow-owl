@@ -15,23 +15,14 @@
  */
 package com.b2international.snowowl.fhir.api.tests;
 
-import java.util.TimeZone;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.fhir.api.ICodeSystemVersionPropertiesMixin;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.b2international.snowowl.fhir.api.ServicesConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 
 /**
  * Superclass for common test functionality
@@ -44,14 +35,8 @@ public class FhirTest {
 	@BeforeClass
 	public static void setup() {
 		System.out.println(" --- Setting up object mapper --- ");
-		objectMapper.setVisibility(PropertyAccessor.CREATOR, Visibility.ANY);
-		objectMapper.registerModule(new GuavaModule());
-		objectMapper.setSerializationInclusion(Include.NON_EMPTY);
-		final ISO8601DateFormat df = new ISO8601DateFormat();
-		df.setTimeZone(TimeZone.getTimeZone("UTC"));
-		objectMapper.setDateFormat(df);
-		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
+		ServicesConfiguration configuration = new ServicesConfiguration();
+		objectMapper = configuration.objectMapper();
 	}
 	
 	@Rule 

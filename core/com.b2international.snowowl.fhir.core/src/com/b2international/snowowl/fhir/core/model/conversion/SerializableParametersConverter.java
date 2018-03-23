@@ -25,10 +25,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.b2international.snowowl.fhir.core.DateFormats;
 import com.b2international.snowowl.fhir.core.model.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.DateFormats;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.util.StdConverter;
