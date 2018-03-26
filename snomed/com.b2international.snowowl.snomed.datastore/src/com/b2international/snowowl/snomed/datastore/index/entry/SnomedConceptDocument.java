@@ -36,6 +36,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
@@ -469,8 +470,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 
 	}
 
-	private final boolean primitive;
-	private final boolean exhaustive;
+	private @Hashed final boolean primitive;
+	private @Hashed final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
 	private final int mapTargetComponentType;

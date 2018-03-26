@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
 import com.b2international.index.Script;
@@ -418,11 +419,12 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
 	@Keyword(alias="original")
+	@Hashed
 	private final String term;
 	
 	private final String semanticTag;
 	private final String typeId;
-	private final String caseSignificanceId;
+	@Hashed private final String caseSignificanceId;
 	private final Set<String> acceptableIn;
 	private final Set<String> preferredIn;
 

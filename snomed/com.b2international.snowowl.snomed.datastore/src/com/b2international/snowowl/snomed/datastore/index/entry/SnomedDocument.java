@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.b2international.index.Hashed;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -133,10 +134,10 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 	}
 
-	private final String moduleId;
 	private final boolean released;
-	private final boolean active;
-	private final long effectiveTime;
+	@Hashed	private final String moduleId;
+	@Hashed	private final boolean active;
+	@Hashed private final long effectiveTime;
 
 	protected SnomedDocument(final String id,
 			final String label,

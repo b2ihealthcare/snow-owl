@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -735,42 +736,43 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	// Member specific fields, they can be null or emptyish values
 	// ASSOCIATION reference set members
-	private String targetComponent;
+	@Hashed private String targetComponent;
 	// ATTRIBUTE VALUE
-	private String valueId;
+	@Hashed private String valueId;
 	// CONCRETE DOMAIN reference set members
-	private DataType dataType;
-	private String attributeName;
+	@Hashed private DataType dataType;
+	@Hashed private String attributeName;
 	
 	// only one of these value fields should be set when this represents a concrete domain member
-	private String stringValue;
-	private Boolean booleanValue;
-	private Integer integerValue;
-	private BigDecimal decimalValue;
+	@Hashed private String stringValue;
+	@Hashed private Boolean booleanValue;
+	@Hashed private Integer integerValue;
+	@Hashed private BigDecimal decimalValue;
 	
-	private String operatorId;
-	private String characteristicTypeId;
-	private String unitId;
+	@Hashed private String operatorId;
+	@Hashed private String characteristicTypeId;
+	@Hashed private String unitId;
 	// DESCRIPTION
-	private Integer descriptionLength;
-	private String descriptionFormat;
+	@Hashed private Integer descriptionLength;
+	@Hashed private String descriptionFormat;
 	// LANGUAGE
-	private String acceptabilityId;
+	@Hashed private String acceptabilityId;
 	// MODULE
-	private Long sourceEffectiveTime;
-	private Long targetEffectiveTime;
+	@Hashed private Long sourceEffectiveTime;
+	@Hashed private Long targetEffectiveTime;
 	// SIMPLE MAP reference set members
-	private String mapTarget;
-	private String mapTargetDescription;
+	@Hashed private String mapTarget;
+	@Hashed private String mapTargetDescription;
 	// COMPLEX MAP
-	private String mapCategoryId;
-	private String correlationId;
-	private String mapAdvice;
-	private String mapRule;
-	private Integer mapGroup;
-	private Integer mapPriority;
+	@Hashed private String mapCategoryId;
+	@Hashed private String correlationId;
+	@Hashed private String mapAdvice;
+	@Hashed private String mapRule;
+	@Hashed private Integer mapGroup;
+	@Hashed private Integer mapPriority;
 	// QUERY
 	@Keyword(index = false)
+	@Hashed 
 	private String query;
 
 	private SnomedRefSetMemberIndexEntry(final String id,

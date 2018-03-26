@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -297,11 +298,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final String sourceId;
 	private final String typeId;
 	private final String destinationId;
-	private final String characteristicTypeId;
-	private final String modifierId;
-	private final int group;
-	private final int unionGroup;
-	private final boolean destinationNegated;
+	@Hashed private final String characteristicTypeId;
+	@Hashed private final String modifierId;
+	@Hashed private final int group;
+	@Hashed private final int unionGroup;
+	@Hashed private final boolean destinationNegated;
 	
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
