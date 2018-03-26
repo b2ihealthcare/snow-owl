@@ -23,6 +23,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.google.common.collect.Sets;
 
 /**
+ * Experimental.
+ * If a keeper, move it to the SNOMED specific bundle.
  * @since 6.3
  */
 public class SnomedConceptProperty {

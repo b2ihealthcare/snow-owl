@@ -25,6 +25,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * In addition, any SNOMED CT relationships where the relationship type 
  * is subsumed by Attribute (246061005) automatically become properties.
  * 
+ * TODO: move it to the SNOMED CT specific bundle.
+ * 
  * @see ConceptProperties
  * @since 6.3
  */
@@ -76,7 +78,7 @@ public enum SnomedConceptProperties implements FhirCodeSystem {
 
 	//TODO: what is the URI? 
     //@see hl7.org/fhir/codesystem-snomedct.html with all the ?
-	//for now we will just concat
+	//for now we will just concat the URI and the value
 	@Override
 	public Uri getUri() {
 		return new Uri(CODE_SYSTEM_URI+"/field/Concept." + getCodeValue());
