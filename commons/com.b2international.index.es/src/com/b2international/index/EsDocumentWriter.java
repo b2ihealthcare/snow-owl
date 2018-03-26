@@ -238,10 +238,9 @@ public class EsDocumentWriter implements Writer {
 			}
 			
 			if (!created && !updated && !deleted) {
-				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', no-ops ({}), conflicts ({})", 
 						mapping.typeAsString(), 
 						update.getScript(), 
-						update.getParams(), 
 						r.getNoops(), 
 						r.getVersionConflicts());
 			}

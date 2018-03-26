@@ -73,8 +73,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		final String groupName = getClass().getSimpleName().toLowerCase().concat("-" + description);
-		contexts.list.addAll(executorServiceFactory.createExecutorServices(groupName, numberOfWorkers));
+		contexts.list.addAll(executorServiceFactory.createExecutorServices(description, numberOfWorkers));
 	}
 
 	@Override

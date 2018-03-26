@@ -98,6 +98,8 @@ public final class EsNode extends Node {
 		// this node is always the master node
 		putSettingIfAbsent(esSettings, "node.master", true);
 		putSettingIfAbsent(esSettings, "http.type", "netty4");
+		putSettingIfAbsent(esSettings, "http.cors.enabled", true);
+		putSettingIfAbsent(esSettings, "http.cors.allow-origin", "/https?:\\/\\/localhost(:[0-9]+)?/");
 		
 		return esSettings.build();
 	}

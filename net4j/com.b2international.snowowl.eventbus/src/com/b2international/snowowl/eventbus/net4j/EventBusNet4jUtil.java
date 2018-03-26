@@ -35,12 +35,13 @@ public class EventBusNet4jUtil {
 	 * 
 	 * @param container
 	 * @param gzip - to enable gzip compression on the protocol or not
+	 * @param numberOfWorkers 
 	 */
-	public static final void prepareContainer(IManagedContainer container, boolean gzip) {
+	public static final void prepareContainer(IManagedContainer container, boolean gzip, int numberOfWorkers) {
 		container.registerFactory(new EventBusProtocol.ClientFactory());
 		container.registerFactory(new EventBusProtocol.ServerFactory());
 		container.registerFactory(new EventBus.Factory());
-		container.addPostProcessor(new EventBusProtocolInjector());
+		container.addPostProcessor(new EventBusProtocolInjector(numberOfWorkers));
 		if (gzip) {
 			container.addPostProcessor(new GZIPStreamWrapperInjector(EventBusConstants.PROTOCOL_NAME));
 		}
@@ -61,20 +62,10 @@ public class EventBusNet4jUtil {
 	 * Returns the event bus associated with the description of globalBus.
 	 * 
 	 * @param container
-	 * @return
-	 */
-	public static IEventBus getBus(IManagedContainer container) {
-		return getBus(container, Runtime.getRuntime().availableProcessors());
-	}
-	
-	/**
-	 * Returns the event bus associated with the description of globalBus.
-	 * 
-	 * @param container
 	 * @param numberOfWorkers
 	 * @return
 	 */
-	private static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
+	public static IEventBus getBus(IManagedContainer container, int numberOfWorkers) {
 		return getBus(container, EventBusConstants.GLOBAL_BUS, numberOfWorkers, true);
 	}
 

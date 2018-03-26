@@ -254,7 +254,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the ancestors
 	 */
-	@JsonIgnore
 	public long[] getAncestorIds() {
 		return ancestorIds;
 	}
@@ -262,7 +261,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the parents
 	 */
-	@JsonIgnore
 	public long[] getParentIds() {
 		return parentIds;
 	}
@@ -270,7 +268,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the stated ancestors
 	 */
-	@JsonIgnore
 	public long[] getStatedAncestorIds() {
 		return statedAncestorIds;
 	}
@@ -278,7 +275,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the stated parents
 	 */
-	@JsonIgnore
 	public long[] getStatedParentIds() {
 		return statedParentIds;
 	}

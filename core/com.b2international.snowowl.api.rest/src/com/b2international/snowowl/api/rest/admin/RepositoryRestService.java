@@ -70,7 +70,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 			String[] idFilter) {
 		return DeferredResults.wrap(RepositoryRequests.prepareSearch()
 				.all()
-				.filterByIds(Collections3.toImmutableSet(idFilter))
+				.filterByIds(idFilter == null ? null : Collections3.toImmutableSet(idFilter))
 				.buildAsync()
 				.execute(bus));
 	}
