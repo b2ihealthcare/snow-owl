@@ -226,9 +226,10 @@ public class FhirCodeSystemRestService {
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
+		
 		String uriValue = lookupRequest.getSystem().getUriValue();
 		IFhirProvider iFhirProvider = FhirUtils.getFhirProvider(uriValue);
-		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest.getVersion(), lookupRequest.getCode().getCodeValue());
+		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest);
 		return lookupResult;
 	}
 

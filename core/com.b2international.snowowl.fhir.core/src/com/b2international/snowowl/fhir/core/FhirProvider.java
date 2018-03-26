@@ -16,20 +16,28 @@
 package com.b2international.snowowl.fhir.core;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.CodeSystem.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -109,6 +117,38 @@ public abstract class FhirProvider implements IFhirProvider {
 	 */
 	protected Builder addSpecificProperties(final Builder builder) {
 		return builder;
+	}
+	
+	/**
+	 * @param version
+	 * @return
+	 */
+	protected IBranchPath getBranchPath(String version) {
+		if (version == null) {
+			return BranchPathUtils.createMainPath();
+		} else {
+			return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), version);
+		}
+	}
+
+	/**
+	 * Returns the properties supported by this provider.
+	 * Subclasses to override
+	 * @return
+	 */
+	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+		return Collections.emptySet();
+	}
+	
+	/**
+	 * @param properties
+	 */
+	protected void validateRequestedProperties(Collection<Code> properties) {
+		
+		Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(p -> p.getCode()).collect(Collectors.toSet());
+		if (!supportedCodes.containsAll(properties)) {
+			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
+		}
 	}
 
 }

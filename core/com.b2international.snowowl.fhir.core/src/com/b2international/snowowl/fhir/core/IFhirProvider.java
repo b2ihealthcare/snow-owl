@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.LookupResult;
 
 /**
@@ -45,7 +46,16 @@ public interface IFhirProvider {
 	 */
 	boolean isSupported(Path path);
 
-	LookupResult lookup(String version, String code);
+	/**
+	 * Performs the lookup operation based on the parameter-based lookup request.
+	 * <BR>From the spec:
+	 * If no properties are specified, the server chooses what to return. The following properties are defined for all code systems: url, name, version (code system info) 
+	 * and code information: display, definition, designation, parent and child, and for designations, lang.X where X is a designation language code. 
+	 * Some of the properties are returned explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
+	 * @param lookupRequest
+	 * @return result of the lookup
+	 */
+	LookupResult lookup(LookupRequest lookupRequest);
 
 	/**
 	 * Returns the code system URIs supported.
