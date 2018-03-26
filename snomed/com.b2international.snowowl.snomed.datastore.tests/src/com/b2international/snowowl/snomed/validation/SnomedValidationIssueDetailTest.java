@@ -83,11 +83,9 @@ public class SnomedValidationIssueDetailTest {
 		save(issueWithDetails);
 		save(issueWithoutDetails);
 		
-		final Options options = Options.builder().putAll(details).build();
-		
 		ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 			.all()
-			.filterByDetails(options)
+			.filterByDetails(details)
 			.buildAsync()
 			.getRequest()
 			.execute(context);
@@ -109,11 +107,10 @@ public class SnomedValidationIssueDetailTest {
 		save(issueWithoutModuleId);
 		
 		final Map<String, Object> detailsToSearch = createDetails(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111", "2222"));
-		final Options options = Options.builder().putAll(detailsToSearch).build();
 		
 		ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 				.all()
-				.filterByDetails(options)
+				.filterByDetails(detailsToSearch)
 				.buildAsync()
 				.getRequest()
 				.execute(context);
@@ -132,11 +129,9 @@ public class SnomedValidationIssueDetailTest {
 		save(issueWithActiveComponent);
 		save(issueWithInactiveComponent);
 		
-		final Options optionQuery = Options.builder().putAll(details).build();
-		
 		ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 				.all()
-				.filterByDetails(optionQuery)
+				.filterByDetails(details)
 				.buildAsync()
 				.getRequest()
 				.execute(context);

@@ -102,13 +102,9 @@ public class ValidationIssueApiTest {
 		final String issueWithDetail = createIssue(details);
 		final String issueWithoutDetail = createIssue(Collections.emptyMap()); 
 		
-		final Options optionsQuery = Options.builder()
-			.putAll(details)
-			.build();
-		
 		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 			.all()
-			.filterByDetails(optionsQuery)
+			.filterByDetails(details)
 			.buildAsync()
 			.getRequest()
 			.execute(context);

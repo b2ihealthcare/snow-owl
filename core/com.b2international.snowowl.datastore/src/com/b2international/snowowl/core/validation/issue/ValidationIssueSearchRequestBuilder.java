@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Map;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -75,7 +77,8 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.WHITELISTED, whitelisted);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByDetails(Options options) {
+	public ValidationIssueSearchRequestBuilder filterByDetails(Map<String, Object> details) {
+		final Options options = Options.builder().putAll(details).build();
 		return addOption(OptionKey.DETAILS, options);
 	}
 	
