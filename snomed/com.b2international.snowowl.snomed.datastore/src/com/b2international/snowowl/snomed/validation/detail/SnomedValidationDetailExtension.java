@@ -30,14 +30,19 @@ public class SnomedValidationDetailExtension implements ValidationDetailExtensio
 
 	@Override
 	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
-		if (options.containsKey(SnomedRf2Headers.FIELD_MODULE_ID)) {
-			final Collection<String> moduleIds = options.getCollection(SnomedRf2Headers.FIELD_MODULE_ID, String.class);
-			queryBuilder.filter(Expressions.matchAny(SnomedRf2Headers.FIELD_MODULE_ID, moduleIds));
-		}
 		if (options.containsKey(SnomedRf2Headers.FIELD_ACTIVE)) {
-			Boolean isActive = options.get(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
+			final Boolean isActive = options.get(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
 			queryBuilder.filter(Expressions.match(SnomedRf2Headers.FIELD_ACTIVE, isActive));
 		}
+		
+		if (options.containsKey(SnomedRf2Headers.FIELD_MODULE_ID)) {
+			final Collection<String> moduleIds = options.getCollection(SnomedRf2Headers.FIELD_MODULE_ID, String.class);
+			if (moduleIds.isEmpty()) {
+				return;
+			}
+			queryBuilder.filter(Expressions.matchAny(SnomedRf2Headers.FIELD_MODULE_ID, moduleIds));
+		}
+		
 	}
 
 }
