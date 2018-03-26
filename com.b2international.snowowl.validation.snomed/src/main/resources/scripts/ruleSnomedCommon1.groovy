@@ -9,20 +9,15 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Sets
 
-Iterable<Hits<String>> inactiveConceptHits = ctx.service(RevisionSearcher.class)
-		.scroll(Query.select(String.class)
+Hits<String> inactiveConceptHits = ctx.service(RevisionSearcher.class)
+		.search(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(SnomedConceptDocument.Expressions.active(false))
-		.limit(100_099)
+		.limit(Integer.MAX_VALUE)
 		.build())
 		
-Collection<String> inactiveConceptIds = Sets.newHashSet();
-inactiveConceptHits.each( { hits -> 
-	for (String hit : hits) {
-		inactiveConceptIds.add(hit);
-	}
-})
+Set<String> inactiveConceptIds = Sets.newHashSet(inactiveConceptHits);
 		
 Expression expression = Expressions.builder()
 		.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
