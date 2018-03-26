@@ -16,13 +16,20 @@
 package com.b2international.index.revision;
 
 import static com.b2international.index.query.Expressions.matchAnyInt;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongKeyMap;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -33,9 +40,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
@@ -118,30 +123,44 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
 			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
 			
-			final Multimap<Class<? extends Revision>, Long> newOrChangedRevisions = ArrayListMultimap.create();
-			final Multimap<Class<? extends Revision>, Long> deletedOrChangedRevisions = ArrayListMultimap.create();
+			final Map<Class<? extends Revision>, LongSet> newOrChangedKeys = newHashMap();
+			final LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
+			final Map<Class<? extends Revision>, LongSet> deletedOrChangedKeys = newHashMap();
+			final LongKeyMap<String> deletedOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
 			
 			// query all registered revision types for new, changed and deleted components
-			for (Class<? extends Revision> typeToCompare : typesToCompare) {
-				final Query<Long> newOrChangedQuery = Query
-						.select(Long.class)
-						.from(typeToCompare)
-						.fields(Revision.STORAGE_KEY)
+			for (Class<? extends Revision> type : typesToCompare) {
+				final LongSet newOrChangedKeysForType = newOrChangedKeys.computeIfAbsent(
+						type, key -> PrimitiveSets.newLongOpenHashSet());
+				
+				final Query<String[]> newOrChangedQuery = Query
+						.select(String[].class)
+						.from(type)
+						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 						.where(Revision.branchSegmentFilter(segmentsToCompare))
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(10000)
 						.build();
-				for (final Hits<Long> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
-					for (Long newOrChangedHit : newOrChangedHits) {
-						newOrChangedRevisions.put(typeToCompare, newOrChangedHit);
+				
+				for (final Hits<String[]> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
+					for (final String[] newOrChangedHit : newOrChangedHits) {
+						final long storageKey = Long.parseLong(newOrChangedHit[0]);
+						final String hash = newOrChangedHit[1];
+						newOrChangedKeysForType.add(storageKey);
+						if (hash != null) {
+							newOrChangedHashes.put(storageKey, hash);
+						}
 					}
 				}
 				
 				// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-				final Query<Long> deletedOrChangedQuery = Query
-						.select(Long.class)
-						.from(typeToCompare)
-						.fields(Revision.STORAGE_KEY)
+				final LongSet deletedOrChangedKeysForType = deletedOrChangedKeys.computeIfAbsent(
+						type, key -> PrimitiveSets.newLongOpenHashSet());
+				
+				final Query<String[]> deletedOrChangedQuery = Query
+						.select(String[].class)
+						.from(type)
+						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 						.where(Expressions.builder()
 								.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
 								.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
@@ -149,31 +168,46 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(10000)
 						.build();
-				for (Hits<Long> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
-					for (Long deletedOrChanged : deletedOrChangedHits) {
-						deletedOrChangedRevisions.put(typeToCompare, deletedOrChanged);
+				
+				for (Hits<String[]> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
+					for (String[] deletedOrChanged : deletedOrChangedHits) {
+						final long storageKey = Long.parseLong(deletedOrChanged[0]);
+						final String hash = deletedOrChanged[1];
+						deletedOrChangedKeysForType.add(storageKey);
+						if (hash != null) {
+							deletedOrChangedHashes.put(storageKey, hash);
+						}
 					}
 				}
 			}
 			
-			for (Class<? extends Revision> typeToCompare2 : typesToCompare) {
-				final Collection<Long> newOrChangedRevisionsByStorageKey = newOrChangedRevisions.get(typeToCompare2);
-				final Collection<Long> deletedOrChangedRevisionsByStorageKey = deletedOrChangedRevisions.get(typeToCompare2);
+			for (Class<? extends Revision> type : typesToCompare) {
+				final LongSet newOrChangedKeysForType = newOrChangedKeys.get(type);
+				final LongSet deletedOrChangedKeysForType = deletedOrChangedKeys.get(type);
 				
-				for (Long newOrChangedStorageKey : newOrChangedRevisionsByStorageKey) {
-					if (deletedOrChangedRevisionsByStorageKey.contains(newOrChangedStorageKey)) {
-						// CHANGED
-						result.changedRevision(typeToCompare2, newOrChangedStorageKey);
+				for (LongIterator itr = newOrChangedKeysForType.iterator(); itr.hasNext(); /* empty */) {
+					long newOrChangedStorageKey = itr.next();
+					
+					if (deletedOrChangedKeysForType.contains(newOrChangedStorageKey)) {
+						// CHANGED, unless the hashes tell us otherwise
+						if (!deletedOrChangedHashes.containsKey(newOrChangedStorageKey) 
+								|| !newOrChangedHashes.containsKey(newOrChangedStorageKey) 
+								|| !Objects.equals(deletedOrChangedHashes.get(newOrChangedStorageKey), newOrChangedHashes.get(newOrChangedStorageKey))) {
+							
+							result.changedRevision(type, newOrChangedStorageKey);
+						}
 					} else {
 						// NEW
-						result.newRevision(typeToCompare2, newOrChangedStorageKey);
+						result.newRevision(type, newOrChangedStorageKey);
 					}
 				}
 				
-				for (Long deletedOrChangedStorageKey : deletedOrChangedRevisionsByStorageKey) {
-					if (!newOrChangedRevisionsByStorageKey.contains(deletedOrChangedStorageKey)) {
+				for (LongIterator itr = deletedOrChangedKeysForType.iterator(); itr.hasNext(); /* empty */) {
+					long deletedOrChangedStorageKey = itr.next();
+					
+					if (!newOrChangedKeysForType.contains(deletedOrChangedStorageKey)) {
 						// DELETED
-						result.deletedRevision(typeToCompare2, deletedOrChangedStorageKey);
+						result.deletedRevision(type, deletedOrChangedStorageKey);
 					}
 				}
 			}

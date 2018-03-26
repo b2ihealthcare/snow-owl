@@ -28,6 +28,7 @@ import java.util.TreeMap;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -41,6 +42,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 
@@ -56,6 +58,7 @@ public final class DocumentMapping {
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
+	public static final String _HASH = "_hash";
 
 	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
 		@Override
@@ -72,6 +75,7 @@ public final class DocumentMapping {
 	private final TreeMap<String, Keyword> keywordFields;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
+	private final Set<String> hashedFields;
 
 	DocumentMapping(Class<?> type) {
 		this(null, type);
@@ -92,6 +96,7 @@ public final class DocumentMapping {
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
+		final ImmutableSet.Builder<String> hashedFields = ImmutableSet.builder();
 
 		for (Field field : getFields()) {
 			for (Text analyzer : field.getAnnotationsByType(Text.class)) {
@@ -108,10 +113,14 @@ public final class DocumentMapping {
 					keywordFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
 				}
 			}
+			if (field.isAnnotationPresent(Hashed.class)) {
+				hashedFields.add(field.getName());
+			}
 		}
 		
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
+		this.hashedFields = hashedFields.build();
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
@@ -202,6 +211,10 @@ public final class DocumentMapping {
 	}
 	
 	public Class<?> getFieldType(String key) {
+		// XXX: _hash can be retrieved via field selection, but has not corresponding entry in the mapping
+		if (DocumentMapping._HASH.equals(key)) {
+			return String.class;
+		}
 		return getField(key).getType();
 	}
 	
@@ -223,6 +236,10 @@ public final class DocumentMapping {
 	
 	public Map<String, Keyword> getKeywordFields() {
 		return keywordFields;
+	}
+	
+	public Set<String> getHashedFields() {
+		return hashedFields;
 	}
 
 	public Class<?> type() {

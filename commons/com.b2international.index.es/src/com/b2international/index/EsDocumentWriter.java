@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,10 +50,13 @@ import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -170,7 +173,24 @@ public class EsDocumentWriter implements Writer {
 					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
 					mappingsToRefresh.add(mapping);
-					final byte[] _source = mapper.writeValueAsBytes(obj);
+
+					final Set<String> hashedFields = mapping.getHashedFields();
+					final byte[] _source;
+					
+					if (!hashedFields.isEmpty()) {
+						final ObjectNode objNode = mapper.convertValue(obj, ObjectNode.class);
+						final ObjectNode hashedNode = objNode.deepCopy().retain(hashedFields);
+						final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
+						final HashCode hashCode = Hashing.sha1().hashBytes(hashedBytes);
+						
+						// Inject the result as an extra field into the to-be-indexed JSON content
+						objNode.put(DocumentMapping._HASH, hashCode.toString());
+						_source = mapper.writeValueAsBytes(objNode);
+						
+					} else {
+						_source = mapper.writeValueAsBytes(obj);
+					}
+					
 					processor.add(client
 							.prepareIndex(admin.getTypeIndex(mapping), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)

@@ -31,7 +31,6 @@ import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.7
@@ -50,11 +49,6 @@ public abstract class Revision implements WithId {
 	
 	// scripts
 	public static final String UPDATE_REPLACED_INS = "updateReplacedIns";
-	
-	/**
-	 * Revision fields that should not be part of any hash value.
-	 */
-	public static final Set<String> REV_FIELDS = ImmutableSet.of(BRANCH_PATH, COMMIT_TIMESTAMP, SEGMENT_ID, REPLACED_INS);
 
 	private String _id;
 	

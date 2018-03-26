@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Hashed;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
@@ -38,7 +39,10 @@ public class RevisionFixtures {
 	public static class Data extends Revision {
 		
 		@Text(analyzer=Analyzers.TOKENIZED)
+		@Hashed
 		private String field1;
+		
+		@Hashed
 		private String field2;
 
 		@JsonCreator
