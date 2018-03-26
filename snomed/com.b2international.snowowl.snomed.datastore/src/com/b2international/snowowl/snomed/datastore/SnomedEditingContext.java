@@ -41,8 +41,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -54,18 +54,24 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.spi.cdo.FSMUtil;
 
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
@@ -82,6 +88,8 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
@@ -94,6 +102,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
@@ -595,29 +604,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			tryDelete(refSet, force);
 		}
 		
-		List<SnomedRefSetMember> referringMembers = refSetEditingContext.getReferringMembers(concept);
 
-		Optional<SnomedRefSetMember> isDescriptionType = referringMembers.stream()
-				.filter(member -> member.isActive() && member.getRefSetIdentifierId().equals(REFSET_DESCRIPTION_TYPE)).findAny();
-		
-		if (isDescriptionType.isPresent()) {
-			
-			boolean hasRelatedDescriptions = SnomedRequests.prepareSearchDescription()
-				.setLimit(0)
-				.filterByType(concept.getId())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync()
-				.getTotal() > 0;
-			
-			if (hasRelatedDescriptions) {
-				deletionPlan.addRejectionReason(String.format(UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE, toString(concept)));
-				return;
-			}
-			
-		}
-		
-		deletionPlan.markForDeletion(referringMembers);
 		deletionPlan.markForDeletion(concept);
 	}
 
@@ -629,7 +616,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return;
 		}
 		
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(description));
 		deletionPlan.markForDeletion(description);
 	}
 
@@ -640,8 +626,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
 			return;
 		}
-		
-		deletionPlan.markForDeletion(refSetEditingContext.getReferringMembers(relationship));
 		
 		if (relationship.getSource() != null) {
 			deletionPlan.markForDeletion(relationship);
@@ -673,103 +657,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		
 		deletionPlan.markForDeletion(member);
-	}
-
-	/**
-	 * This functions deletes the objects in the deletionplan from the database.
-	 * For the sake of acceptable execution speed, the <code>remove(int index)</code> function is used
-	 * instead of the <code>remove(object)</code>. This way, the CDO will not iterate through the large
-	 * number of data in the resources. 
-	 * @param deletionPlan the deletionplan containing all the objects to delete
-	 */
-	private void delete() {
-		// organize elements regarding their index
-		final Multimap<Integer, EObject> itemMap = ArrayListMultimap.create();
-		
-		for (CDOObject item : deletionPlan.getDeletedItems()) {
-			
-			// Set bogus value here instead of letting it pass when trying to use it (it would silently remove the first member of a list)
-			int index = -1;
-			
-			if (item instanceof Concept) {
-				index = getIndexFromDatabase(item, (Concepts) item.eContainer(), "SNOMED_CONCEPTS_CONCEPTS_LIST");
-			} else if (item instanceof SnomedRefSet) {
-				// from cdoRootResource
-				index = getIndexFromDatabase(item, item.cdoResource(), "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
-			} else if (item instanceof SnomedRefSetMember) {
-				// from the refset list
-				final SnomedRefSetMember member = (SnomedRefSetMember) item;
-				
-				if (null == member.eContainer()) { //if the reference set member has been detached from its container.
-					continue;
-				}
-				
-				final SnomedRefSet refSet = member.getRefSet();
-				
-				if (!(refSet instanceof SnomedStructuralRefSet)) { // XXX: also includes the previous null check for refSet
-					
-					if (refSet instanceof SnomedMappingRefSet) {
-						index = getIndexFromDatabase(item, ((SnomedRefSetMember) item).getRefSet(), "SNOMEDREFSET_SNOMEDMAPPINGREFSET_MEMBERS_LIST");
-					} else if (refSet instanceof SnomedRegularRefSet) {
-						index = getIndexFromDatabase(item, ((SnomedRefSetMember) item).getRefSet(), "SNOMEDREFSET_SNOMEDREGULARREFSET_MEMBERS_LIST");
-					} else {
-						throw new RuntimeException("Unknown reference set type");
-					}
-				}
-			}
-			
-			itemMap.put(index, item);
-		}
-		// iterate through the elements in reverse order
-		for(Entry<Integer, EObject> toDelete : Ordering.from(new Comparator<Entry<Integer, EObject>>() {
-	
-			@Override
-			public int compare(Entry<Integer, EObject> o1, Entry<Integer, EObject> o2) {
-				return o1.getKey() - o2.getKey();
-			}
-	
-		}).reverse().sortedCopy(itemMap.entries())) {
-			final EObject eObject = toDelete.getValue();
-			final int index = toDelete.getKey();
-			
-			if (eObject instanceof Concept) {
-				final Concepts concepts = (Concepts) eObject.eContainer();
-				concepts.getConcepts().remove(index);
-			} 
-			else if (eObject instanceof SnomedRefSet){
-				refSetEditingContext.getContents().remove(index);
-			}
-			else if (eObject instanceof SnomedRefSetMember) {
-				// get the refset and remove the member from it's list
-				SnomedRefSetMember member = (SnomedRefSetMember) eObject;	
-				SnomedRefSet refSet = member.getRefSet();
-	
-				if (refSet != null) {
-					
-					if (refSet instanceof SnomedStructuralRefSet) {
-						EcoreUtil.remove(member);
-					} else if (refSet instanceof SnomedRegularRefSet) {
-						((SnomedRegularRefSet) refSet).getMembers().remove(index);
-					} else {
-						throw new IllegalStateException("Don't know how to remove member from reference set class '" + refSet.eClass().getName() + "'.");
-					}
-				}
-				
-				//in case of relationship or description an index lookup is not necessary 
-			} else if (eObject instanceof Relationship) {
-				Relationship relationship = (Relationship) eObject;
-				relationship.setSource(null);
-				relationship.setDestination(null);
-			} else if (eObject instanceof Description) {
-				Description description = (Description) eObject;
-				// maybe description was already removed before save, so the delete is reflected on the ui
-				if (description.getConcept() != null) {
-					description.setConcept(null);
-				}
-			}  else {
-				throw new IllegalArgumentException("Don't know how to delete " + eObject.eClass());
-			}
-		}
 	}
 
 	public final List<Relationship> getInboundRelationships(String conceptId) {
@@ -898,6 +785,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	public void preCommit() {
 		
 		if (!deletionPlan.isRejected() && !deletionPlan.isEmpty()) {
+			
+			final Set<String> deletedIds = deletionPlan.getDeletedItems()
+				.stream()
+				.filter(FSMUtil::isTransient)
+				.filter(obj -> !(obj instanceof SnomedRefSetMember) && !(obj instanceof SnomedRefSet))
+				.map(Component.class::cast)
+				.map(Component::getId)
+				.collect(Collectors.toSet());
+			 
+			if (!deletedIds.isEmpty()) {
+				deletionPlan.markForDeletion(getReferringRefSetMembers(deletedIds));
+			}
+					
 			delete();
 		}
 		
@@ -916,6 +816,180 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					Component newComponent = (Component) newObject;
 					uniquenessEnforcer.validateAndReplaceComponentId(newComponent);
 				}
+			}
+		}
+	}
+	
+	private Set<SnomedRefSetMember> getReferringRefSetMembers(Iterable<String> deletedIds) {
+		return SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByReferencedComponent(deletedIds)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+				.execute(getBus())
+				.then(members -> {
+					final Set<SnomedRefSetMember> referringMembersToAdd = members.getItems()
+						.stream()
+						.map(member -> lookupIfExists(member.getStorageKey()))
+						.filter(SnomedRefSetMember.class::isInstance)
+						.map(SnomedRefSetMember.class::cast)
+						.collect(Collectors.toSet());
+					
+					return referringMembersToAdd;
+				})
+				.then(referringMembers -> {
+
+					referringMembers.addAll(getMembersByProps(deletedIds));
+					return referringMembers;
+				})
+				.then(referringMembers -> {
+					for (SnomedRefSetMember member : referringMembers) {
+						if (member.getRefSetIdentifierId().equals(REFSET_DESCRIPTION_TYPE)) {
+							boolean hasRelatedDescriptions = SnomedRequests.prepareSearchDescription()
+									.setLimit(0)
+									.filterById(member.getReferencedComponentId())
+									.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+									.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+									.getSync()
+									.getTotal() > 0;
+								
+								if (hasRelatedDescriptions) {
+									deletionPlan.addRejectionReason(UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE);
+								}
+						}
+					}
+					return referringMembers;
+				}).getSync();
+	}
+	
+	private Set<SnomedRefSetMember> getMembersByProps(Iterable<String> deletedIds) {
+		return RepositoryRequests.prepareBulkRead()
+				.setBody(BulkRequest.<BranchContext>create()
+						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.CORRELATION_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.DESCRIPTION_FORMAT))
+						.add(getReferringMembersByProps(deletedIds, Fields.MAP_CATEGORY_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.OPERATOR_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT))
+						.add(getReferringMembersByProps(deletedIds, Fields.UNIT_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID))
+						)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.then(new Function<BulkResponse, SnomedReferenceSetMembers>() {
+					@Override
+					public SnomedReferenceSetMembers apply(BulkResponse input) {
+						final List<SnomedReferenceSetMember> items = ImmutableList.copyOf(Iterables.concat(input.getResponses(SnomedReferenceSetMembers.class)));
+						return new SnomedReferenceSetMembers(items, null, null, items.size(), items.size());
+					}
+				})
+				.getSync()
+				.stream()
+				.map(member -> lookupIfExists(member.getStorageKey()))
+				.filter(SnomedRefSetMember.class::isInstance)
+				.map(SnomedRefSetMember.class::cast)
+				.collect(Collectors.toSet());
+	}
+	
+	private SnomedRefSetMemberSearchRequestBuilder getReferringMembersByProps(Iterable<String> deletedIds,  final String propField) {
+		return SnomedRequests.prepareSearchMember().all().filterByProps(OptionsBuilder.newBuilder()
+				.put(propField, deletedIds)
+				.build());
+	}
+	
+	/**
+	 * This functions deletes the objects in the deletionplan from the database.
+	 * For the sake of acceptable execution speed, the <code>remove(int index)</code> function is used
+	 * instead of the <code>remove(object)</code>. This way, the CDO will not iterate through the large
+	 * number of data in the resources. 
+	 * @param deletionPlan the deletionplan containing all the objects to delete
+	 */
+	private void delete() {
+		// organize elements regarding their index
+		final Multimap<Integer, EObject> itemMap = ArrayListMultimap.create();
+		
+		for (CDOObject item : deletionPlan.getDeletedItems()) {
+			
+			// Set bogus value here instead of letting it pass when trying to use it (it would silently remove the first member of a list)
+			int index = -1;
+			
+			if (item instanceof Concept) {
+				index = getIndexFromDatabase(item, (Concepts) item.eContainer(), "SNOMED_CONCEPTS_CONCEPTS_LIST");
+			} else if (item instanceof SnomedRefSet) {
+				// from cdoRootResource
+				index = getIndexFromDatabase(item, item.cdoResource(), "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
+			} else if (item instanceof SnomedRefSetMember) {
+				// from the refset list
+				final SnomedRefSetMember member = (SnomedRefSetMember) item;
+				
+				if (null == member.eContainer()) { //if the reference set member has been detached from its container.
+					continue;
+				}
+				
+				final SnomedRefSet refSet = member.getRefSet();
+				
+				if (!(refSet instanceof SnomedStructuralRefSet)) { // XXX: also includes the previous null check for refSet
+					
+					if (refSet instanceof SnomedMappingRefSet) {
+						index = getIndexFromDatabase(item, ((SnomedRefSetMember) item).getRefSet(), "SNOMEDREFSET_SNOMEDMAPPINGREFSET_MEMBERS_LIST");
+					} else if (refSet instanceof SnomedRegularRefSet) {
+						index = getIndexFromDatabase(item, ((SnomedRefSetMember) item).getRefSet(), "SNOMEDREFSET_SNOMEDREGULARREFSET_MEMBERS_LIST");
+					} else {
+						throw new RuntimeException("Unknown reference set type");
+					}
+				}
+			}
+			
+			itemMap.put(index, item);
+		}
+		// iterate through the elements in reverse order
+		for(Entry<Integer, EObject> toDelete : Ordering.from(new Comparator<Entry<Integer, EObject>>() {
+	
+			@Override
+			public int compare(Entry<Integer, EObject> o1, Entry<Integer, EObject> o2) {
+				return o1.getKey() - o2.getKey();
+			}
+	
+		}).reverse().sortedCopy(itemMap.entries())) {
+			final EObject eObject = toDelete.getValue();
+			final int index = toDelete.getKey();
+			
+			if (eObject instanceof Concept) {
+				final Concepts concepts = (Concepts) eObject.eContainer();
+				concepts.getConcepts().remove(index);
+			} 
+			else if (eObject instanceof SnomedRefSet){
+				refSetEditingContext.getContents().remove(index);
+			}
+			else if (eObject instanceof SnomedRefSetMember) {
+				// get the refset and remove the member from it's list
+				SnomedRefSetMember member = (SnomedRefSetMember) eObject;	
+				SnomedRefSet refSet = member.getRefSet();
+	
+				if (refSet != null) {
+					
+					if (refSet instanceof SnomedStructuralRefSet) {
+						EcoreUtil.remove(member);
+					} else if (refSet instanceof SnomedRegularRefSet) {
+						((SnomedRegularRefSet) refSet).getMembers().remove(index);
+					} else {
+						throw new IllegalStateException("Don't know how to remove member from reference set class '" + refSet.eClass().getName() + "'.");
+					}
+				}
+				
+				//in case of relationship or description an index lookup is not necessary 
+			} else if (eObject instanceof Relationship) {
+				Relationship relationship = (Relationship) eObject;
+				relationship.setSource(null);
+				relationship.setDestination(null);
+			} else if (eObject instanceof Description) {
+				Description description = (Description) eObject;
+				// maybe description was already removed before save, so the delete is reflected on the ui
+				if (description.getConcept() != null) {
+					description.setConcept(null);
+				}
+			}  else {
+				throw new IllegalArgumentException("Don't know how to delete " + eObject.eClass());
 			}
 		}
 	}
@@ -1000,4 +1074,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return generatedId;
 	}
 
+	private IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
 }
