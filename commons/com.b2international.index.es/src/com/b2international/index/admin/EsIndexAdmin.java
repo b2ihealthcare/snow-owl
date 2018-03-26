@@ -263,6 +263,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (!mapping.getHashedFields().isEmpty()) {
 			final Map<String, Object> prop = newHashMap();
 			prop.put("type", "keyword");
+			prop.put("index", false);
 			properties.put(DocumentMapping._HASH, prop);
 		}
 		
