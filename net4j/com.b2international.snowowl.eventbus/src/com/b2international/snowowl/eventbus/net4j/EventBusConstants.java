@@ -29,6 +29,6 @@ public interface EventBusConstants {
 	
 	/* Constants used for IEventBus creation */
 	public static final String EVENT_BUS_PRODUCT_GROUP = "com.b2international.snowowl.eventbus";
-	public static final String GLOBAL_BUS = "globalBus";
+	public static final String GLOBAL_BUS = "eventbus";
 	
 }

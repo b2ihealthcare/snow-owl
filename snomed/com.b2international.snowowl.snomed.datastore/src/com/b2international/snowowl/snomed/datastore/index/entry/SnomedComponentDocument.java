@@ -81,7 +81,7 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		}
 		
 		public B namespace(String namespace) {
-			this.namespace = namespace;
+			this.namespace = Strings.emptyToNull(namespace);
 			return getSelf();
 		}
 		

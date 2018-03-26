@@ -142,5 +142,21 @@ public final class EclExpression {
 		}
 		return conceptsWithGroups;
 	}
+
+	public Promise<Expression> resolveToAndExpression(BranchContext context, Set<String> matchingIds) {
+		if (matchingIds.isEmpty()) {
+			return Promise.immediate(Expressions.matchNone());
+		} else if (isAnyExpression()) {
+			return Promise.immediate(SnomedEclEvaluationRequest.matchIdsOrNone().apply(matchingIds));
+		} else {
+			return resolveToExpression(context)
+					.then(left -> {
+						return Expressions.builder()
+								.filter(left)
+								.filter(RevisionDocument.Expressions.ids(matchingIds))
+								.build();
+					});
+		}
+	}
 	
 }

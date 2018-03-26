@@ -145,7 +145,7 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 			final boolean released, 
 			final boolean active, 
 			final long effectiveTime) {
-		super(id, id, iconId);
+		super(id, label, iconId);
 		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = moduleId;
 		this.released = released;
