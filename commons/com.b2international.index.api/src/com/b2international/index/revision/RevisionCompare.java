@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,7 +185,7 @@ public final class RevisionCompare {
 						.must(query.getWhere())
 						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
 						.build())
-				.limit(storageKeys.size())
+				.limit(Math.min(query.getLimit(), storageKeys.size())) // Allow retrieving a subset of these keys, using the query limit
 				.build();
 	}
 	

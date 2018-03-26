@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 
 	private String base;
 	private String compare;
+	private int limit = Integer.MAX_VALUE;
 	
 	public BranchCompareRequestBuilder setBase(String baseBranch) {
 		this.base = baseBranch;
@@ -39,12 +40,17 @@ public final class BranchCompareRequestBuilder extends BaseRequestBuilder<Branch
 		return getSelf();
 	}
 	
+	public BranchCompareRequestBuilder setLimit(int limit) {
+		this.limit = limit;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, CompareResult> doBuild() {
 		final BranchCompareRequest req = new BranchCompareRequest();
 		req.setBaseBranch(base);
 		req.setCompareBranch(compare);
+		req.setLimit(limit);
 		return req;
 	}
-
 }
