@@ -68,6 +68,10 @@ public class Concept {
 		this.properties = properties;
 		this.children = children;
 	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
 
 	public static class Builder extends ValidatingBuilder<Concept> {
 		

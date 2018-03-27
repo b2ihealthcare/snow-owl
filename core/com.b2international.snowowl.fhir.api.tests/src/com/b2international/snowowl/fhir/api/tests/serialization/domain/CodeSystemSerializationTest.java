@@ -27,14 +27,20 @@ import org.junit.rules.ExpectedException;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.property.BooleanConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
@@ -154,6 +160,63 @@ public class CodeSystemSerializationTest extends FhirTest {
 				+ "\"system\":\"uri\",\"userSelected\":false}}]";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+	}
+	
+	@Test 
+	public void codeSystemTest() throws Exception {
+		
+		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), "OID:1234.1234");
+		
+		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
+				.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
+				.description("Code system description")
+				.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
+				.identifier(identifier)
+				.language("en")
+				.name("Local code system")
+				.narrative(NarrativeStatus.ADDITIONAL, "<div>Some html text</div>")
+				.title("title")
+				.publisher("B2i")
+				.status(PublicationStatus.ACTIVE)
+				.url(new Uri("code system uri"))
+				.version("2018.01.01")
+				.addConcept(Concept.builder()
+					.code("conceptCode")
+					.definition("This is a code definition")
+					.display("Label")
+					.addDesignation(Designation.builder()
+						.languageCode("uk_en")
+						.use(Coding.builder()
+							.code("internal")
+							.system("http://b2i.sg/test")
+							.build()
+							)
+						.value("conceptLabel_uk")
+						.build())
+					.addProperties(CodeConceptProperty.builder()
+							.code("childConcept")
+							.value(new Code("childId"))
+							.build())
+					.build())
+				.build();
+		
+		printPrettyJson(codeSystem);
+		printJson(codeSystem);
+		
+		//This is stupid, we should assert parts or use JSONAssert
+		String expectedJson = "{\"resourceType\":\"CodeSystem\","
+				+ "\"id\":\"repo/shortName\","
+				+ "\"language\":\"en\","
+				+ "\"text\":{\"status\":\"additional\","
+				+ "\"div\":\"<div>Some html text</div>\"},"
+				+ "\"url\":\"code system uri\","
+				+ "\"identifier\":{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
+				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
+				+ "\"title\":\"title\",\"status\":\"active\",\"description\":\"Code system description\","
+				+ "\"hierarchyMeaning\":\"is-a\",\"property\":[{\"code\":\"child\",\"uri\":\"http://hl7.org/fhir/concept-properties/child\",\"description\":\"Child\",\"type\":\"code\"}],\"concept\":[{\"code\":\"conceptCode\",\"display\":\"Label\",\"definition\":\"This is a code definition\",\"designation\":[{\"language\":\"uk_en\",\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},\"value\":\"conceptLabel_uk\"}],\"properties\":[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]]}]}";
+		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
+		
 	}
 	
 	@Test

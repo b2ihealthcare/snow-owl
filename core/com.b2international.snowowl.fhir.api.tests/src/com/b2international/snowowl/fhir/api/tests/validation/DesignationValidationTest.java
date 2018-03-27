@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.api.tests.validation;
 
-import static org.hamcrest.core.StringStartsWith.startsWith;
-
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
@@ -45,7 +43,7 @@ public class DesignationValidationTest extends ValidatorTest<ParameterizedDesign
 	@Test
 	public void missingValueTest() throws Exception {
 		
-		Issue expectedIssue = builder.addLocation("Designation.value")
+		Issue expectedIssue = builder.addLocation("ParameterizedDesignation.value")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid [null]. Violation: may not be empty.")
 				.build();
 		
@@ -69,7 +67,7 @@ public class DesignationValidationTest extends ValidatorTest<ParameterizedDesign
 	@Test
 	public void designationEmptyValueTest() throws Exception {
 		
-		Issue expectedIssue = builder.addLocation("Designation.value")
+		Issue expectedIssue = builder.addLocation("ParameterizedDesignation.value")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'value' content is invalid []. Violation: may not be empty.")
 				.build();
 		

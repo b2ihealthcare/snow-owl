@@ -28,6 +28,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -72,11 +73,13 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description, Code hierarchyMeaning, Collection<SupportedConceptProperty> properties) {
+			String title, Code status, String publisher, String description, 
+			Code hierarchyMeaning, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 		
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.properties = properties;
+		this.concepts = concepts;
 	}
 	
 	public static Builder builder(String codeSystemId) {
@@ -86,6 +89,8 @@ public class CodeSystem extends TerminologyResource {
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
 		private Code hierarchyMeaning;
+		
+		private Collection<Concept> concepts = Sets.newHashSet();
 		
 		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
 		
@@ -108,9 +113,14 @@ public class CodeSystem extends TerminologyResource {
 			return getSelf();
 		}
 		
+		public Builder addConcept(Concept concept)  {
+			this.concepts.add(concept);
+			return getSelf();
+		}
+		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, hierarchyMeaning, properties);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, hierarchyMeaning, properties, concepts);
 		}
 	}
 		

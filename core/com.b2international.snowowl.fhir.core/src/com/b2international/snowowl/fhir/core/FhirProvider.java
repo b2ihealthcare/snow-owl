@@ -93,7 +93,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	 */
 	protected Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
 		
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL.getCode(), null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
+		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
 		
 		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
 		

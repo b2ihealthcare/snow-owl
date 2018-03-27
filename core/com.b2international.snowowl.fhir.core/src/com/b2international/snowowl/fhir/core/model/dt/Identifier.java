@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * FHIR Identifier datatype
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#identifier">FHIR:Data Types:Identifier</a>
@@ -22,25 +25,28 @@ package com.b2international.snowowl.fhir.core.model.dt;
  */
 public class Identifier {
 
-	//The language code this designation is defined for (0..1)
+	@JsonProperty
 	private Code use; //usual | official | temp | secondary (If known)
-		
+	
+	//identifier type codes
+	@JsonProperty
 	private CodeableConcept type;
 	
+	@JsonProperty
 	private Uri system;
 	
+	@JsonProperty
 	private String value;
 
 	//private Period period;
 	
 	//private Reference assigner;
 	
-	public Identifier(Code use, CodeableConcept type, Uri system, String value) {
-		this.use = use;
+	public Identifier(IdentifierUse identifierUse, CodeableConcept type, Uri system, String value) {
+		this.use = identifierUse.getCode();
 		this.type = type;
 		this.system = system;
 		this.value = value;
 	}
-	
 	
 }
