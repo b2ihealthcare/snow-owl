@@ -31,6 +31,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -103,6 +104,7 @@ public abstract class FhirProvider implements IFhirProvider {
 			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
 			.publisher(codeSystemEntry.getOrgLink())
 			.status(PublicationStatus.ACTIVE)
+			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri());

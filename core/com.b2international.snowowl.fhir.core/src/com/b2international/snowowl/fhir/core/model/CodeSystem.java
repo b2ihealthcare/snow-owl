@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -76,6 +77,9 @@ public class CodeSystem extends DomainResource {
 	private Code status;
 	
 	@JsonProperty
+	private Code hierarchyMeaning;
+	
+	@JsonProperty
 	private String publisher;
 	
 	@Valid
@@ -83,7 +87,7 @@ public class CodeSystem extends DomainResource {
 	private Collection<SupportedConceptProperty> properties;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, String description, Code status, String publisher, Collection<SupportedConceptProperty> properties) {
+			String title, String description, Code status, Code hierarchyMeaning, String publisher, Collection<SupportedConceptProperty> properties) {
 		
 		super(id, language, text);
 		
@@ -94,6 +98,7 @@ public class CodeSystem extends DomainResource {
 		this.title = title;
 		this.description = description;
 		this.status = status;
+		this.hierarchyMeaning = hierarchyMeaning;
 		this.publisher = publisher;
 		this.properties = properties;
 	}
@@ -121,6 +126,8 @@ public class CodeSystem extends DomainResource {
 		private String title;
 		
 		private Code status;
+		
+		private Code hierarchyMeaning;
 		
 		private String publisher;
 		
@@ -170,6 +177,11 @@ public class CodeSystem extends DomainResource {
 			return getSelf();
 		}
 		
+		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
+			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			return getSelf();
+		}
+		
 		public Builder publisher(String publisher) {
 			this.publisher = publisher;
 			return getSelf();
@@ -182,7 +194,7 @@ public class CodeSystem extends DomainResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, description, status, publisher, properties);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, description, status, hierarchyMeaning, publisher, properties);
 		}
 	}
 		
