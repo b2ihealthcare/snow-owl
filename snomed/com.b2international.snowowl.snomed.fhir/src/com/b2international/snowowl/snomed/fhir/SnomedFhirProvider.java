@@ -19,10 +19,10 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.FhirProvider;
-import com.b2international.snowowl.fhir.core.model.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 
 /**
  * Provider for the SNOMED CT FHIR support

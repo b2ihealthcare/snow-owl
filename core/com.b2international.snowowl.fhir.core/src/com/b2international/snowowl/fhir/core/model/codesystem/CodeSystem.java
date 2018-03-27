@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Collection;
 
@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.DomainResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;

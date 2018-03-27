@@ -18,8 +18,8 @@ package com.b2international.snowowl.fhir.core.model.conversion;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.LookupResult;
-import com.b2international.snowowl.fhir.core.model.Property;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.lookup.Property;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 

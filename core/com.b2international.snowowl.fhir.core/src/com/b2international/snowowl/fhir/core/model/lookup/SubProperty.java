@@ -13,105 +13,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.lookup;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-/**
- * FHIR Code System supported property
- * 
- * @since 6.3
- */
-public class SupportedConceptProperty {
+public class SubProperty extends ParametersModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
-	@Valid
 	@NotNull
-	private final Code code;
+	@Valid
+	private Code code;
 	
 	/*
 	 * The value of the property returned (0..1)
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
 	@Order(value=2)
-	private final Uri uri;
+	@NotNull //only subproperty value is 1..1, property.value is 0..1 (?)
+	private Object value;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	@Order(value=3)
-	private final String description;
+	private String description;
 	
-	@Order(value=4)
-	@Valid
-	@NotNull
-	private final Code type;
-	
-	SupportedConceptProperty(final Code code, final Uri uri, final String description, final Code type) {
+	SubProperty(final Code code, final Object value, final String description) {
 		this.code = code;
-		this.uri = uri;
+		this.value = value;
 		this.description = description;
-		this.type = type;
 	}
 	
 	public Code getCode() {
 		return code;
 	}
 	
-	@JsonIgnore
 	public String getCodeValue() {
 		return code.getCodeValue();
 	}
 
-	public Uri getUri() {
-		return uri;
+	/**
+	 * How are we going to get the proper type serialized?
+	 * @return
+	 */
+	public Object getValue() {
+		return value;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 	
-	public Code getType() {
-		return type;
-	}
-	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static Builder builder(CommonConceptProperties conceptProperty) {
-		return new Builder()
-			.code(conceptProperty.getCode())
-			.uri(conceptProperty.getUri())
-			.description(conceptProperty.getDisplayName())
-			.type(conceptProperty.getType());
-	}
-	
-	public static class Builder extends ValidatingBuilder<SupportedConceptProperty> {
+	public static class Builder extends ValidatingBuilder<SubProperty> {
 		
 		private Code code;
-		private Uri uri;
+		private Object value;
 		private String description;
-		private Code type;
 
-		public Builder code(final Code code) {
-			this.code = code;
+		public Builder code(final String code) {
+			this.code = new Code(code);
 			return this;
 		}
 		
-		public Builder uri(final Uri uri) {
-			this.uri = uri;
-			return this;
-		}
-		
-		public Builder type(final Code type) {
-			this.type = type;
+		public Builder value(final Object value) {
+			this.value = value;
 			return this;
 		}
 
@@ -121,8 +94,8 @@ public class SupportedConceptProperty {
 		}
 		
 		@Override
-		protected SupportedConceptProperty doBuild() {
-			return new SupportedConceptProperty(code, uri, description, type);
+		protected SubProperty doBuild() {
+			return new SubProperty(code, value, description);
 		}
 	}
 

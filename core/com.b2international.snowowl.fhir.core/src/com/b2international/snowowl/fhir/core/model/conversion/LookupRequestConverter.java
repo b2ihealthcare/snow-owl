@@ -19,7 +19,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
 
-import com.b2international.snowowl.fhir.core.model.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.databind.util.StdConverter;
 

@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.model.SubProperty;
+import com.b2international.snowowl.fhir.core.model.lookup.SubProperty;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.google.common.collect.Lists;
 

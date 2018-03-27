@@ -28,10 +28,10 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.FhirConstants;
-import com.b2international.snowowl.fhir.core.model.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.LookupResult;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.core.type.TypeReference;
 

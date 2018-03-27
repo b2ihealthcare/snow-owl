@@ -23,9 +23,9 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Property;
-import com.b2international.snowowl.fhir.core.model.SubProperty;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.b2international.snowowl.fhir.core.model.lookup.Property;
+import com.b2international.snowowl.fhir.core.model.lookup.SubProperty;
 
 /**
  * Deserialized property validation tests

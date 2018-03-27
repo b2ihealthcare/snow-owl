@@ -23,16 +23,16 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.LookupResult;
-import com.b2international.snowowl.fhir.core.model.ParametersModel;
-import com.b2international.snowowl.fhir.core.model.Property;
-import com.b2international.snowowl.fhir.core.model.Property.Builder;
-import com.b2international.snowowl.fhir.core.model.SubProperty;
 import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.PropertyConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.lookup.ParametersModel;
+import com.b2international.snowowl.fhir.core.model.lookup.Property;
+import com.b2international.snowowl.fhir.core.model.lookup.SubProperty;
+import com.b2international.snowowl.fhir.core.model.lookup.Property.Builder;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 
 public class ParameterSerializationTest extends FhirTest {

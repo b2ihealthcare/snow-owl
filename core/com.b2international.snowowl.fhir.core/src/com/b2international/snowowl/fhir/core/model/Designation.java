@@ -21,6 +21,7 @@ import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.lookup.ParametersModel;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

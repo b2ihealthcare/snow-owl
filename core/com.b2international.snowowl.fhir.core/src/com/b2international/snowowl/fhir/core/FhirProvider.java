@@ -36,8 +36,8 @@ import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.CodeSystem.Builder;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;

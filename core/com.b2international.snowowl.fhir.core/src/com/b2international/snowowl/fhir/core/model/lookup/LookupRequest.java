@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model;
+package com.b2international.snowowl.fhir.core.model.lookup;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.conversion.LookupRequestConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
