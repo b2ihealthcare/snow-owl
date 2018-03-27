@@ -135,6 +135,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private void collectExistingVersions() {
 		CodeSystemEntry codeSystem = getCodeSystem();
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(getEventBus())

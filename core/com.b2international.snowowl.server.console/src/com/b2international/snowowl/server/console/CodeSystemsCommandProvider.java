@@ -122,6 +122,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 		
 		List<CodeSystemVersionEntry> codeSystemVersions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
+				.all()
 				.filterByCodeSystemShortName(codeSystemShortName)
 				.build(codeSystem.getRepositoryUuid())
 				.execute(getBus())
