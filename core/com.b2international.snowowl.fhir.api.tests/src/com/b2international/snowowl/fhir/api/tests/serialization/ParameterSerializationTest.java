@@ -22,12 +22,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.PropertyConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.lookup.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.lookup.Property;
@@ -148,7 +148,7 @@ public class ParameterSerializationTest extends FhirTest {
 			.version("20180131")
 			.build();
 		
-		Designation designation = Designation.builder()
+		ParameterizedDesignation designation = ParameterizedDesignation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			.value("dValue")
@@ -175,7 +175,7 @@ public class ParameterSerializationTest extends FhirTest {
 	public void lookupResultTest() throws Exception {
 		LookupResult lookupResult = LookupResult.builder()
 			.name("test")
-			.addDesignation(Designation.builder()
+			.addDesignation(ParameterizedDesignation.builder()
 					.value("dValue")
 					.languageCode("uk").build())
 			.addProperty(Property.builder()

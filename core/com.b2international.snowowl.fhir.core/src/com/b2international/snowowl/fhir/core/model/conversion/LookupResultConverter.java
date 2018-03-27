@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.lookup.Property;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
@@ -39,8 +39,8 @@ public class LookupResultConverter extends SerializableParametersConverter {
 		Collection values = (Collection) value;
 		
 		for (Object object : values) {
-			if (object instanceof Designation) {
-				Collection<SerializableParameter> designationParams = toParameters((Designation) object);
+			if (object instanceof ParameterizedDesignation) {
+				Collection<SerializableParameter> designationParams = toParameters((ParameterizedDesignation) object);
 				SerializableParameter fhirParam = new SerializableParameter("designation", "part", designationParams);
 				collectionParameters.add(fhirParam);
 			} else if (object instanceof Property) {

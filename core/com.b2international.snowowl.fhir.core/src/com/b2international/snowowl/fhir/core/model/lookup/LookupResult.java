@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,7 +51,7 @@ public class LookupResult extends ParametersModel {
 	
 	//Additional representations for this concept (0..*)
 	@Order(value=4)
-	private final Collection<Designation> designations;   
+	private final Collection<ParameterizedDesignation> designations;   
 	
 	/*
 	 * One or more properties that contain additional information about the code, 
@@ -65,7 +64,7 @@ public class LookupResult extends ParametersModel {
 	private LookupResult(final String name, 
 			final String version, 
 			final String display, 
-			Collection<Designation> designations,
+			Collection<ParameterizedDesignation> designations,
 			Collection<Property> properties) {
 		
 		this.name = name;
@@ -85,7 +84,7 @@ public class LookupResult extends ParametersModel {
 		private String version;
 		private String display;
 		
-		private Collection<Designation> designations = Lists.newArrayList();
+		private Collection<ParameterizedDesignation> designations = Lists.newArrayList();
 		
 		private Collection<Property> properties = Lists.newArrayList();;
 
@@ -109,7 +108,7 @@ public class LookupResult extends ParametersModel {
 			return this;
 		}
 		
-		public Builder addDesignation(Designation designation) {
+		public Builder addDesignation(ParameterizedDesignation designation) {
 			designations.add(designation);
 			return this;
 		}

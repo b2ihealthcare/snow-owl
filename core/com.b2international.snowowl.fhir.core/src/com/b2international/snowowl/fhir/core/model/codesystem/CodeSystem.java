@@ -18,11 +18,9 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 import java.util.Collection;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.DomainResource;
+import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
@@ -47,35 +45,11 @@ import com.wordnik.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
-public class CodeSystem extends DomainResource {
+public class CodeSystem extends TerminologyResource {
 	
 	//FHIR header "resourceType" : "CodeSystem",
 	@JsonProperty
 	private String resourceType = "CodeSystem";
-	
-	//same as logical id
-	@JsonProperty
-	private Uri url; //ORG_LINK or hardcoded provider value
-	
-	@JsonProperty
-	private Identifier identifier; //OID
-	
-	@JsonProperty
-	private String version; //not necessarily available - and what to do when we have more than 1??
-	
-	@JsonProperty
-	private String name;
-	
-	@JsonProperty
-	private String title;
-	
-	@JsonProperty
-	private String description;
-	
-	@Valid
-	@NotNull
-	@JsonProperty
-	private Code status;
 	
 	@JsonProperty
 	private Code hierarchyMeaning;
@@ -83,54 +57,35 @@ public class CodeSystem extends DomainResource {
 	@JsonProperty
 	private String publisher;
 	
+	/*
+	 * The properties supported by this code system
+	 */
 	@Valid
 	@JsonProperty("property")
 	private Collection<SupportedConceptProperty> properties;
 	
+	/*
+	 * Concepts in the code system
+	 */
+	@Valid
+	@JsonProperty("concept")
+	private Collection<Concept> concepts;
+	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, String description, Code status, Code hierarchyMeaning, String publisher, Collection<SupportedConceptProperty> properties) {
+			String title, Code status, String publisher, String description, Code hierarchyMeaning, Collection<SupportedConceptProperty> properties) {
 		
-		super(id, language, text);
-		
-		this.url = url;
-		this.identifier = identifier;
-		this.version = version;
-		this.name = name;
-		this.title = title;
-		this.description = description;
-		this.status = status;
+		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
 		this.hierarchyMeaning = hierarchyMeaning;
-		this.publisher = publisher;
 		this.properties = properties;
 	}
 	
-	public Uri getUrl() {
-		return url;
-	}
-	
-	public static Builder builder(String cdoId) {
-		return new Builder(cdoId);
+	public static Builder builder(String codeSystemId) {
+		return new Builder(codeSystemId);
 	}
 
-	public static class Builder extends DomainResource.Builder<Builder, CodeSystem> {
+	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
-		private Uri url; //ORG_LINK or hardcoded provider value
-		
-		private Identifier identifier; //OID
-		
-		private String version; //not necessarily available - and what to do when we have more than 1??
-		
-		private String name;
-		
-		private String description;
-		
-		private String title;
-		
-		private Code status;
-		
 		private Code hierarchyMeaning;
-		
-		private String publisher;
 		
 		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
 		
@@ -143,48 +98,8 @@ public class CodeSystem extends DomainResource {
 			return this;
 		}
 
-		public Builder url(final Uri url) {
-			this.url = url;
-			return getSelf();
-		}
-		
-		public Builder identifier(final Identifier identifer) {
-			this.identifier = identifer;
-			return getSelf();
-		}
-
-		public Builder version(final String version) {
-			this.version = version;
-			return getSelf();
-		}
-
-		public Builder name(final String name) {
-			this.name = name;
-			return getSelf();
-		}
-		
-		public Builder description(final String description) {
-			this.description = description;
-			return getSelf();
-		}
-		
-		public Builder title(final String title) {
-			this.title = title;
-			return getSelf();
-		}
-
-		public Builder status(PublicationStatus status) {
-			this.status = status.getCode();
-			return getSelf();
-		}
-		
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
 			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
-			return getSelf();
-		}
-		
-		public Builder publisher(String publisher) {
-			this.publisher = publisher;
 			return getSelf();
 		}
 		
@@ -195,7 +110,7 @@ public class CodeSystem extends DomainResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, description, status, hierarchyMeaning, publisher, properties);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, hierarchyMeaning, properties);
 		}
 	}
 		

@@ -15,10 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.Collection;
+
+import javax.validation.Valid;
+
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 /**
  * 
@@ -40,6 +46,10 @@ public abstract class DomainResource extends FhirResource {
 	
 	//Text summary of the resource, for human interpretation 0..1
 	private Narrative text;
+	
+	@Valid
+	@JsonProperty("extension")
+	private Collection<Extension<?>> extensions;
 
 	public DomainResource(final Id id, final Code language, final Narrative text) {
 		super(id, language);
@@ -54,8 +64,10 @@ public abstract class DomainResource extends FhirResource {
 
 		protected Narrative text;
 		
-		public Builder(String cdoId) {
-			super(cdoId);
+		protected Collection<Extension<?>> extensions = Sets.newHashSet();
+		
+		public Builder(String resourceId) {
+			super(resourceId);
 		}
 
 		public B narrative(NarrativeStatus narrativeStatus, String div) {
@@ -66,6 +78,11 @@ public abstract class DomainResource extends FhirResource {
 		
 		public B text(Narrative text) {
 			this.text = text;
+			return getSelf();
+		}
+		
+		public B addExtension(Extension<?> extension) {
+			this.extensions.add(extension);
 			return getSelf();
 		}
 	}

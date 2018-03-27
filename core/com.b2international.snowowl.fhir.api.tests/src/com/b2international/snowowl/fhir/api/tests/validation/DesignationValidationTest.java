@@ -24,17 +24,17 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 
 /**
  * Deserialized designation validation tests
  * 
  * @since 6.3
  */
-public class DesignationValidationTest extends ValidatorTest<Designation> {
+public class DesignationValidationTest extends ValidatorTest<ParameterizedDesignation> {
 	
 	private Builder builder = Issue.builder()
 			.code(IssueType.INVALID)
@@ -59,7 +59,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 			.version("20180131")
 			.build();
 		
-		Designation.builder()
+		ParameterizedDesignation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			//.value("dValue")
@@ -83,7 +83,7 @@ public class DesignationValidationTest extends ValidatorTest<Designation> {
 			.version("20180131")
 			.build();
 		
-		Designation.builder()
+		ParameterizedDesignation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			.value("")
