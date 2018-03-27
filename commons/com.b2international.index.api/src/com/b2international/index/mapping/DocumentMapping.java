@@ -42,8 +42,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -96,7 +96,7 @@ public final class DocumentMapping {
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
-		final ImmutableSet.Builder<String> hashedFields = ImmutableSet.builder();
+		final ImmutableSortedSet.Builder<String> hashedFields = ImmutableSortedSet.naturalOrder();
 
 		for (Field field : getFields()) {
 			for (Text analyzer : field.getAnnotationsByType(Text.class)) {

@@ -178,8 +178,14 @@ public class EsDocumentWriter implements Writer {
 					final byte[] _source;
 					
 					if (!hashedFields.isEmpty()) {
-						final ObjectNode objNode = mapper.convertValue(obj, ObjectNode.class);
-						final ObjectNode hashedNode = objNode.deepCopy().retain(hashedFields);
+						final ObjectNode objNode = mapper.valueToTree(obj);
+						final ObjectNode hashedNode = mapper.createObjectNode();
+					
+						// Preserve property order, share references with objNode
+						for (String hashedField : hashedFields) {
+							hashedNode.set(hashedField, objNode.get(hashedField));
+						}
+					
 						final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
 						final HashCode hashCode = Hashing.sha1().hashBytes(hashedBytes);
 						
