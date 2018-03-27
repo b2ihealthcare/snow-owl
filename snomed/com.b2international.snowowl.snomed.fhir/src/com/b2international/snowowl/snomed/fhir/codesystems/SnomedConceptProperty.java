@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.codesystems;
+package com.b2international.snowowl.snomed.fhir.codesystems;
 
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.google.common.collect.Sets;

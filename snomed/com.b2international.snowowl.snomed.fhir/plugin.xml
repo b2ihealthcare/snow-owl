@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+<extension point="com.b2international.snowowl.fhir.core.provider">
+      <fhirApiProvider
+            class="com.b2international.snowowl.snomed.fhir.SnomedFhirProvider">
+      </fhirApiProvider>
+   </extension>
+</plugin>
