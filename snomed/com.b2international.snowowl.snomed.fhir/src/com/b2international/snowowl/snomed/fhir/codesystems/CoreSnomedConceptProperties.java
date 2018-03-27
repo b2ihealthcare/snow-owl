@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.fhir.codesystems;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -28,36 +28,34 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * In addition, any SNOMED CT relationships where the relationship type 
  * is subsumed by Attribute (246061005) automatically become properties.
  * 
- * TODO: move it to the SNOMED CT specific bundle.
- * 
- * @see ConceptProperties
+ * @see CommonConceptProperties
  * @since 6.3
  */
-public enum SnomedConceptProperties implements FhirCodeSystem {
+public enum CoreSnomedConceptProperties implements FhirCodeSystem {
 	
 	//Whether the code is active or not (defaults to false). 
 	//This is derived from the active column in the Concept file of the RF2 Distribution (by inverting the value)
-	INACTIVE(ConceptPropertyType.BOOLEAN.getCodeValue()),
+	INACTIVE(ConceptPropertyType.BOOLEAN),
 	
 	//True if the description logic definition of the concept includes sufficient conditions
 	//(i.e., if the concept is not primitive - found in the value of definitionStatusId in the concept file).
-	SUFFICIENTLY_DEFINED(ConceptPropertyType.BOOLEAN.getCodeValue()),
+	SUFFICIENTLY_DEFINED(ConceptPropertyType.BOOLEAN),
 	
 	//The SNOMED CT concept id of the module that the concept belongs to.
-	MODULE_ID(ConceptPropertyType.CODE.getCodeValue()),
+	MODULE_ID(ConceptPropertyType.CODE),
 	
 	//Generated Normal form expression for the provided code or expression, with terms
-	NORMAL_FORM(ConceptPropertyType.STRING.getCodeValue()),
+	NORMAL_FORM(ConceptPropertyType.STRING),
 	
 	//Generated Normal form expression for the provided code or expression, conceptIds only
-	NORMAL_FORM_TERSE(ConceptPropertyType.STRING.getCodeValue());
+	NORMAL_FORM_TERSE(ConceptPropertyType.STRING);
 	
-	private Code type;
+	private ConceptPropertyType conceptPropertyType;
 	
 	public final static String CODE_SYSTEM_URI = "http://snomed.info"; //$NON-NLS-N$
 	
-	private SnomedConceptProperties(String type) {
-		this.type = new Code(type);
+	private CoreSnomedConceptProperties(ConceptPropertyType conceptPropertyType) {
+		this.conceptPropertyType = conceptPropertyType;
 	}
 
 	@Override
@@ -66,7 +64,11 @@ public enum SnomedConceptProperties implements FhirCodeSystem {
 	}
 	
 	public Code getType() {
-		return type;
+		return conceptPropertyType.getCode();
+	}
+	
+	public ConceptPropertyType getConceptPropertyType() {
+		return conceptPropertyType;
 	}
 	
 	@Override

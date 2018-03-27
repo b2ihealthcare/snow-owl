@@ -31,7 +31,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -136,7 +136,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * Subclasses to override
 	 * @return
 	 */
-	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
 		return Collections.emptySet();
 	}
 	

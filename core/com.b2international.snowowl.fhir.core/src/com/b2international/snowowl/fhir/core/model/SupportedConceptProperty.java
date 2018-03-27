@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.core.model;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -85,7 +85,7 @@ public class SupportedConceptProperty {
 		return new Builder();
 	}
 	
-	public static Builder builder(ConceptProperties conceptProperty) {
+	public static Builder builder(CommonConceptProperties conceptProperty) {
 		return new Builder()
 			.code(conceptProperty.getCode())
 			.uri(conceptProperty.getUri())

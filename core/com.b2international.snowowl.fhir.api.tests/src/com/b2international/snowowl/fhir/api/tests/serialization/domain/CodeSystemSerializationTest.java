@@ -27,7 +27,7 @@ import org.junit.rules.ExpectedException;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.codesystems.ConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.CodeSystem;
@@ -55,7 +55,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	//Supported property in the code system
 	@Test
 	public void supportedConceptPropertyTest() throws Exception {
-		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(ConceptProperties.INACTIVE).build();
+		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(CommonConceptProperties.INACTIVE).build();
 		printPrettyJson(conceptProperty);
 		
 		String expectedJson = "{\"code\":\"inactive\","
@@ -69,7 +69,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test
 	public void returnedBooleanConceptPropertyTest() throws Exception {
 		ConceptProperty<Boolean> conceptProperty = BooleanConceptProperty.builder()
-			.code(ConceptProperties.INACTIVE.getCode())
+			.code(CommonConceptProperties.INACTIVE.getCode())
 			.value(true)
 			.build();
 		
@@ -122,7 +122,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test
 	public void returnedCodeConceptPropertyTest() throws Exception {
 		CodeConceptProperty conceptProperty = CodeConceptProperty.builder()
-			.code(ConceptProperties.CHILD.getCode())
+			.code(CommonConceptProperties.CHILD.getCode())
 			.value(new Code("codeCode"))
 			.build();
 		
@@ -139,7 +139,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test
 	public void returnedCodingConceptPropertyTest() throws Exception {
 		CodingConceptProperty conceptProperty = CodingConceptProperty.builder()
-				.code(ConceptProperties.CHILD.getCode())
+				.code(CommonConceptProperties.CHILD.getCode())
 				.value(new Coding.Builder()
 					.code("codingCode")
 					.system("uri")

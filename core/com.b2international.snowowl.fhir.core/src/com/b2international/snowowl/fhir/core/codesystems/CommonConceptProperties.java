@@ -20,10 +20,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
- * FHIR Concept properties code system
+ * FHIR Common concept properties code system
  * @since 6.3
  */
-public enum ConceptProperties implements FhirCodeSystem {
+public enum CommonConceptProperties implements FhirCodeSystem {
 	
 	//True if the concept is not considered active - e.g. not a valid concept any more. Property type is boolean, default value is false
 	INACTIVE("Inactive", ConceptPropertyType.BOOLEAN),
@@ -50,7 +50,7 @@ public enum ConceptProperties implements FhirCodeSystem {
 	
 	private ConceptPropertyType type;
 
-	private ConceptProperties(String displayName, ConceptPropertyType type) {
+	private CommonConceptProperties(String displayName, ConceptPropertyType type) {
 		this.displayName = displayName;
 		this.type = type;
 	}
