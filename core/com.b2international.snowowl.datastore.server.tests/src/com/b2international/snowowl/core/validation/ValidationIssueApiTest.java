@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +44,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.4
@@ -97,7 +96,7 @@ public class ValidationIssueApiTest {
 	@Test
 	public void filterIssueByDetails() {
 
-		final Map<String, Object> details = createDetails("testkey", "testvalue");
+		final Map<String, Object> details = ImmutableMap.of("testkey", "testvalue");
 		
 		final String issueWithDetail = createIssue(details);
 		final String issueWithoutDetail = createIssue(Collections.emptyMap()); 
@@ -114,12 +113,6 @@ public class ValidationIssueApiTest {
 		
 	}
 
-	private Map<String, Object> createDetails(String key, Object value) {
-		Map<String, Object> details = newHashMap();
-		details.put(key, value);
-		return details;
-	}
-	
 	private String createIssue(Map<String, Object> details) {
 		final String branchPath = "testBranch";
 		final String issueId = UUID.randomUUID().toString();
