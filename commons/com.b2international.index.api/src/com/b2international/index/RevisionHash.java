@@ -15,7 +15,7 @@
  */
 package com.b2international.index;
 
-import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
@@ -29,7 +29,11 @@ import java.lang.annotation.Target;
  * @since 6.4
  */
 @Retention(RUNTIME)
-@Target(FIELD)
-public @interface Hashed {
-
+@Target(TYPE)
+public @interface RevisionHash {
+	
+	/**
+	 * @return an array of field names that should be used for computing the revision hash
+	 */
+	String[] value();
 }

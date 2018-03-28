@@ -28,7 +28,7 @@ import java.util.TreeMap;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.Hashed;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -96,7 +96,6 @@ public final class DocumentMapping {
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
-		final ImmutableSortedSet.Builder<String> hashedFields = ImmutableSortedSet.naturalOrder();
 
 		for (Field field : getFields()) {
 			for (Text analyzer : field.getAnnotationsByType(Text.class)) {
@@ -113,14 +112,18 @@ public final class DocumentMapping {
 					keywordFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
 				}
 			}
-			if (field.isAnnotationPresent(Hashed.class)) {
-				hashedFields.add(field.getName());
-			}
 		}
 		
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
-		this.hashedFields = hashedFields.build();
+
+		// @RevisionHash should be directly present, not inherited
+		final RevisionHash revisionHash = type.getDeclaredAnnotation(RevisionHash.class);
+		if (revisionHash != null) {
+			this.hashedFields = ImmutableSortedSet.copyOf(revisionHash.value());
+		} else {
+			this.hashedFields = ImmutableSortedSet.of();
+		}
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(new Function<Field, Class<?>>() {
