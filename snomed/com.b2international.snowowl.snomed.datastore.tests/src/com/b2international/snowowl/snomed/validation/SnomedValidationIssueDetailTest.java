@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.4
@@ -75,7 +76,7 @@ public class SnomedValidationIssueDetailTest {
 	
 	@Test
 	public void filterByModuleId() {
-		final Map<String, Object> details = createDetails(SnomedRf2Headers.FIELD_MODULE_ID, "1010101010101010");
+		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, "1010101010101010");
 
 		final ValidationIssue issueWithDetails = createIssue("1122334455",details);
 		final ValidationIssue issueWithoutDetails = createIssue("5544332211", Collections.emptyMap());
@@ -95,8 +96,8 @@ public class SnomedValidationIssueDetailTest {
 
 	@Test
 	public void filterByModuleIds() {
-		final Map<String, Object> details = createDetails(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111"));
-		final Map<String, Object> details2 = createDetails(SnomedRf2Headers.FIELD_MODULE_ID, "2222");
+		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111"));
+		final Map<String, Object> details2 = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, "2222");
 		
 		final ValidationIssue issueWithModuleId = createIssue("111111111", details);
 		final ValidationIssue issueWithModuleId2 = createIssue("222222222", details2);
@@ -106,7 +107,7 @@ public class SnomedValidationIssueDetailTest {
 		save(issueWithModuleId2);
 		save(issueWithoutModuleId);
 		
-		final Map<String, Object> detailsToSearch = createDetails(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111", "2222"));
+		final Map<String, Object> detailsToSearch = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111", "2222"));
 		
 		ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 				.all()
@@ -120,8 +121,8 @@ public class SnomedValidationIssueDetailTest {
 
 	@Test
 	public void filterByAffectedComponentStatus() {
-		final Map<String, Object> details = createDetails(SnomedRf2Headers.FIELD_ACTIVE, true);
-		final Map<String, Object> details2 = createDetails(SnomedRf2Headers.FIELD_ACTIVE, false);
+		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, true);
+		final Map<String, Object> details2 = ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, false);
 		
 		final ValidationIssue issueWithActiveComponent = createIssue("444444444", details);
 		final ValidationIssue issueWithInactiveComponent = createIssue("555555555", details2);
@@ -137,12 +138,6 @@ public class SnomedValidationIssueDetailTest {
 				.execute(context);
 		
 		assertComponents(issues, issueWithActiveComponent.getAffectedComponent());
-	}
-	
-	private Map<String, Object> createDetails(String key, Object value) {
-		final Map<String, Object> extraFields = newHashMap();
-		extraFields.put(key, value);
-		return extraFields;
 	}
 	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
