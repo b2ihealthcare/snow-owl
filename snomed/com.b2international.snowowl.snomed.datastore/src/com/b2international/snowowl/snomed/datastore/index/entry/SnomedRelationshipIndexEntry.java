@@ -296,8 +296,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	private final String sourceId;
-	private final String typeId;
-	private final String destinationId;
+	@Hashed private final String typeId;
+	@Hashed private final String destinationId;
 	@Hashed private final String characteristicTypeId;
 	@Hashed private final String modifierId;
 	@Hashed private final int group;
