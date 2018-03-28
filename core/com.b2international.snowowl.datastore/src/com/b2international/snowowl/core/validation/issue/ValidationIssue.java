@@ -58,7 +58,7 @@ public final class ValidationIssue implements Serializable {
 	private final short affectedComponentType;
 	private final boolean whitelisted;
 	
-	private Map<String, Object> details = newHashMap();
+	private Map<String, Object> details = null;
 	
 	private transient ComponentIdentifier affectedComponent;
 
@@ -128,11 +128,14 @@ public final class ValidationIssue implements Serializable {
 	
 	@JsonAnySetter
 	public void setDetails(String key, Object value) {
+		if (details == null) {
+			this.details = newHashMap();
+		}
 		this.details.put(key, value);
 	}
 	
 	public void setDetails(Map<String, Object> details) {
-		this.details.putAll(details);
+		this.details = details;
 	}
 	
 	@Override
