@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ import java.util.regex.Pattern;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.Hashed;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.compat.TextConstants;
@@ -67,6 +67,14 @@ import com.google.common.collect.Maps;
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
+	SnomedDescriptionIndexEntry.Fields.TERM,
+	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
+})
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
@@ -419,12 +427,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
 	@Keyword(alias="original")
-	@Hashed
 	private final String term;
 	
 	private final String semanticTag;
 	private final String typeId;
-	@Hashed private final String caseSignificanceId;
+	private final String caseSignificanceId;
 	private final Set<String> acceptableIn;
 	private final Set<String> preferredIn;
 

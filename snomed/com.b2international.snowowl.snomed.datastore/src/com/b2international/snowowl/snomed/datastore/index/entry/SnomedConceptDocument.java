@@ -36,7 +36,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
-import com.b2international.index.Hashed;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
@@ -108,6 +108,13 @@ import com.google.common.collect.ImmutableMap;
 	+ "}"
 	// Otherwise select the ID for sorting
 	+ "return doc.id.value")
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedConceptDocument.Fields.PRIMITIVE,
+	SnomedConceptDocument.Fields.EXHAUSTIVE
+})
 public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
 
 	public static final float DEFAULT_DOI = 1.0f;
@@ -470,8 +477,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 
 	}
 
-	private @Hashed final boolean primitive;
-	private @Hashed final boolean exhaustive;
+	private final boolean primitive;
+	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
 	private final int mapTargetComponentType;

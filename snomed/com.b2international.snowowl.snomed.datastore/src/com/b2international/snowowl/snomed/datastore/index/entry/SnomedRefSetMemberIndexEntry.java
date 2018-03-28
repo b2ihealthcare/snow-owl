@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import java.util.Map.Entry;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
-import com.b2international.index.Hashed;
 import com.b2international.index.Keyword;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -79,6 +79,35 @@ import com.google.common.collect.ImmutableMap;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
+	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
+	SnomedRefSetMemberIndexEntry.Fields.ATTRIBUTE_NAME,
+	SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.OPERATOR_ID,
+	SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+	SnomedRefSetMemberIndexEntry.Fields.UNIT_ID,
+	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
+	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
+	SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
+	SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
+	SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
+	SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
+	SnomedRefSetMemberIndexEntry.Fields.QUERY
+})
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 5198766293865046258L;
@@ -736,43 +765,42 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	// Member specific fields, they can be null or emptyish values
 	// ASSOCIATION reference set members
-	@Hashed private String targetComponent;
+	private String targetComponent;
 	// ATTRIBUTE VALUE
-	@Hashed private String valueId;
+	private String valueId;
 	// CONCRETE DOMAIN reference set members
-	@Hashed private DataType dataType;
-	@Hashed private String attributeName;
+	private DataType dataType;
+	private String attributeName;
 	
 	// only one of these value fields should be set when this represents a concrete domain member
-	@Hashed private String stringValue;
-	@Hashed private Boolean booleanValue;
-	@Hashed private Integer integerValue;
-	@Hashed private BigDecimal decimalValue;
+	private String stringValue;
+	private Boolean booleanValue;
+	private Integer integerValue;
+	private BigDecimal decimalValue;
 	
-	@Hashed private String operatorId;
-	@Hashed private String characteristicTypeId;
-	@Hashed private String unitId;
+	private String operatorId;
+	private String characteristicTypeId;
+	private String unitId;
 	// DESCRIPTION
-	@Hashed private Integer descriptionLength;
-	@Hashed private String descriptionFormat;
+	private Integer descriptionLength;
+	private String descriptionFormat;
 	// LANGUAGE
-	@Hashed private String acceptabilityId;
+	private String acceptabilityId;
 	// MODULE
-	@Hashed private Long sourceEffectiveTime;
-	@Hashed private Long targetEffectiveTime;
+	private Long sourceEffectiveTime;
+	private Long targetEffectiveTime;
 	// SIMPLE MAP reference set members
-	@Hashed private String mapTarget;
-	@Hashed private String mapTargetDescription;
+	private String mapTarget;
+	private String mapTargetDescription;
 	// COMPLEX MAP
-	@Hashed private String mapCategoryId;
-	@Hashed private String correlationId;
-	@Hashed private String mapAdvice;
-	@Hashed private String mapRule;
-	@Hashed private Integer mapGroup;
-	@Hashed private Integer mapPriority;
+	private String mapCategoryId;
+	private String correlationId;
+	private String mapAdvice;
+	private String mapRule;
+	private Integer mapGroup;
+	private Integer mapPriority;
 	// QUERY
 	@Keyword(index = false)
-	@Hashed 
 	private String query;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
