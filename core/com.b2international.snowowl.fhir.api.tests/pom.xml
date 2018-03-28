@@ -7,7 +7,7 @@
 		<version>6.4.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>com.b2international.snowowl.fhir.api.core</artifactId>
-	<packaging>eclipse-plugin</packaging>
+	<artifactId>com.b2international.snowowl.fhir.api</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
 
 </project>
