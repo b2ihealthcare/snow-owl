@@ -49,6 +49,7 @@ import org.elasticsearch.script.ScriptType;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
@@ -183,7 +184,10 @@ public class EsDocumentWriter implements Writer {
 					
 						// Preserve property order, share references with objNode
 						for (String hashedField : hashedFields) {
-							hashedNode.set(hashedField, objNode.get(hashedField));
+							JsonNode value = objNode.get(hashedField);
+							if (value != null && !value.isNull()) {
+								hashedNode.set(hashedField, value);
+							}
 						}
 					
 						final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
