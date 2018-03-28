@@ -21,7 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import com.b2international.snowowl.fhir.api.ServicesConfiguration;
+import com.b2international.snowowl.fhir.api.FhirApiConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -35,7 +35,7 @@ public class FhirTest {
 	@BeforeClass
 	public static void setup() {
 		System.out.println(" --- Setting up object mapper --- ");
-		ServicesConfiguration configuration = new ServicesConfiguration();
+		FhirApiConfig configuration = new FhirApiConfig();
 		objectMapper = configuration.objectMapper();
 	}
 	
