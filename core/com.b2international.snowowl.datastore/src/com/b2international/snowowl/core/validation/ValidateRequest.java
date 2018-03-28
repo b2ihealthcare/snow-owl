@@ -40,7 +40,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 6.0
  */
-final class ValidateRequest implements Request<BranchContext, ValidationResult>{
+final class ValidateRequest implements Request<BranchContext, ValidationResult> {
 	
 	Collection<String> ruleIds;
 	
