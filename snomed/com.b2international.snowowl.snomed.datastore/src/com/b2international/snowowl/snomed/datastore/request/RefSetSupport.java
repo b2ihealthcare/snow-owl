@@ -54,6 +54,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

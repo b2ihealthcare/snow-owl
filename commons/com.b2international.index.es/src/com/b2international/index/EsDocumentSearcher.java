@@ -58,7 +58,6 @@ import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -234,7 +233,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				.get();
 		
 		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
-		final boolean fetchSource = requiresDocumentSourceField(mapping, scroll.getFields());
+		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
 		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
 	}
 	

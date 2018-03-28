@@ -101,6 +101,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		
 		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
+				.all()
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
 				.build(codeSystem.getRepositoryUuid())
@@ -183,6 +184,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> result = newHashSet();
 		result.addAll(CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
+				.all()
 				.filterByCodeSystemShortName(shortName)
 				.build(repositoryId)
 				.execute(getEventBus())
