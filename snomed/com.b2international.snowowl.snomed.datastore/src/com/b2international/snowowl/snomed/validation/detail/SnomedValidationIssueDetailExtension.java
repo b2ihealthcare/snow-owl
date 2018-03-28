@@ -20,13 +20,13 @@ import java.util.Collection;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.validation.issue.ValidationDetailExtension;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 
 /**
  * @since 6.4
  */
-public class SnomedValidationDetailExtension implements ValidationDetailExtension {
+public class SnomedValidationIssueDetailExtension implements ValidationIssueDetailExtension {
 
 	@Override
 	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {

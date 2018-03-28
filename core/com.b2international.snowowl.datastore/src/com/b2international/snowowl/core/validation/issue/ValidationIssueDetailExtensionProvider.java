@@ -22,26 +22,26 @@ import com.b2international.commons.platform.Extensions;
 /**
  * @since 6.4
  */
-public enum ValidationDetailExtensionProvider {
+public enum ValidationIssueDetailExtensionProvider {
 
 	INSTANCE;
 	
-	private static final String VALIDATION_DETAIL_EXTENSION_ID = "com.b2international.snowowl.datastore.validationDetailExtension";
+	private static final String VALIDATION_DETAIL_EXTENSION_ID = "com.b2international.snowowl.datastore.validationIssueDetailExtension";
 	
-	private final Collection<ValidationDetailExtension> extensions;
+	private final Collection<ValidationIssueDetailExtension> extensions;
 	
-	private ValidationDetailExtensionProvider() {
-		this.extensions = Extensions.getExtensions(VALIDATION_DETAIL_EXTENSION_ID, ValidationDetailExtension.class);
+	private ValidationIssueDetailExtensionProvider() {
+		this.extensions = Extensions.getExtensions(VALIDATION_DETAIL_EXTENSION_ID, ValidationIssueDetailExtension.class);
 	}
 	
-	public Collection<ValidationDetailExtension> getExtensions() {
+	public Collection<ValidationIssueDetailExtension> getExtensions() {
 		return extensions;
 	}
 	
 	/**
 	 * Usage of this function is intended for testing purposes only
 	 */
-	public void addExtension(ValidationDetailExtension extension) {
+	public void addExtension(ValidationIssueDetailExtension extension) {
 		extensions.add(extension);
 	}
 	

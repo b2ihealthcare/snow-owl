@@ -21,7 +21,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 /**
  * @since 6.4
  */
-public interface ValidationDetailExtension {
+public interface ValidationIssueDetailExtension {
 
 	void prepareQuery(ExpressionBuilder queryBuilder, Options options);
 	

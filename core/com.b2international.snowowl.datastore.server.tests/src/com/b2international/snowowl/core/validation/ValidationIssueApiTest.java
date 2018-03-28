@@ -38,9 +38,9 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.core.validation.issue.ValidationDetailExtension;
-import com.b2international.snowowl.core.validation.issue.ValidationDetailExtensionProvider;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ public class ValidationIssueApiTest {
 	/**
 	 * Usage of this class intended for testing purposes only
 	 */
-	private static final class TestValidationDetailExtension implements ValidationDetailExtension {
+	private static final class TestValidationDetailExtension implements ValidationIssueDetailExtension {
 
 		@Override
 		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
@@ -80,7 +80,7 @@ public class ValidationIssueApiTest {
 				.bind(ValidationRepository.class, repository)
 				.build();
 		
-		ValidationDetailExtensionProvider extensionProvider = ValidationDetailExtensionProvider.INSTANCE;
+		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
 		extensionProvider.addExtension(new TestValidationDetailExtension());
 		
 	}

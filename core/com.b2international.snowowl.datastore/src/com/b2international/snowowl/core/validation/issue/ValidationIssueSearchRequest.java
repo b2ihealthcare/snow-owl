@@ -144,8 +144,8 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		}
 		
 		if (containsKey(OptionKey.DETAILS)) {
-			final Collection<ValidationDetailExtension> validationDetailExtensions = ValidationDetailExtensionProvider.INSTANCE.getExtensions();
-			for (ValidationDetailExtension extension : validationDetailExtensions) {
+			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
+			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
 				Options options = getOptions(OptionKey.DETAILS);
 				extension.prepareQuery(queryBuilder, options);
 			}
