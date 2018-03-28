@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 /**
  * @since 6.4
  */
-public class IssueDetail {
+public final class IssueDetail {
 	
 	private final ComponentIdentifier affectedComponent;
 	private final Map<String, Object> details;
