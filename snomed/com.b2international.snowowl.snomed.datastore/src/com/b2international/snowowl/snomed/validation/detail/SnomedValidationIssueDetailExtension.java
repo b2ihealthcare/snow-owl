@@ -37,9 +37,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		if (options.containsKey(SnomedRf2Headers.FIELD_MODULE_ID)) {
 			final Collection<String> moduleIds = options.getCollection(SnomedRf2Headers.FIELD_MODULE_ID, String.class);
-			if (moduleIds.isEmpty()) {
-				return;
-			}
 			queryBuilder.filter(Expressions.matchAny(SnomedRf2Headers.FIELD_MODULE_ID, moduleIds));
 		}
 		
