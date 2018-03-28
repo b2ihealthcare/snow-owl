@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.validation.detail;
+package com.b2international.snowowl.core.validation.issue;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions.ExpressionBuilder;

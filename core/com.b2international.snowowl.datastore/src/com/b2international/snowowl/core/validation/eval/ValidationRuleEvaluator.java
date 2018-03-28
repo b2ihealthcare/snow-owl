@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.validation.detail.IssueDetail;
+import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableSet;
 

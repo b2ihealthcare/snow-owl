@@ -20,7 +20,7 @@ import java.util.Collection;
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.validation.detail.ValidationDetailExtension;
+import com.b2international.snowowl.core.validation.issue.ValidationDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 
 /**

@@ -55,7 +55,7 @@
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.core.validation.detail.ValidationDetailExtension"/>
+                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.core.validation.issue.ValidationDetailExtension"/>
                </appinfo>
             </annotation>
          </attribute>
