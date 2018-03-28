@@ -78,7 +78,7 @@ public final class ValidationIssueSearchRequestBuilder
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByDetails(Map<String, Object> details) {
-		final Options options = Options.builder().putAll(details).build();
+		final Options options = Options.from(details);
 		return addOption(OptionKey.DETAILS, options);
 	}
 	
