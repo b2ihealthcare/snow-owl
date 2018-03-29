@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import java.util.Objects;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -22,9 +24,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * FHIR URI datatype
  * 
- * @since 6.3
+ * @since 6.4
  */
-public class Uri {
+public final class Uri {
 	
 	@NotEmpty
 	@ValidUri
@@ -41,27 +43,16 @@ public class Uri {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((uriValue == null) ? 0 : uriValue.hashCode());
-		return result;
+		return Objects.hash(uriValue);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		Uri other = (Uri) obj;
-		if (uriValue == null) {
-			if (other.uriValue != null)
-				return false;
-		} else if (!uriValue.equals(other.uriValue))
-			return false;
-		return true;
+		return Objects.equals(uriValue, other.uriValue);
 	}
 
 	@Override

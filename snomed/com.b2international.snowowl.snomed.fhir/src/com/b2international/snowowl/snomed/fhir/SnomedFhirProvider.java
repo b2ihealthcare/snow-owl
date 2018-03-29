@@ -16,63 +16,57 @@
 package com.b2international.snowowl.snomed.fhir;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Set;
 
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.fhir.core.FhirProvider;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Provider for the SNOMED CT FHIR support
  * @since 6.4
+ * @see IFhirProvider
+ * @see FhirProvider
  */
-public class SnomedFhirProvider extends FhirProvider {
+public final class SnomedFhirProvider extends FhirProvider {
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#isSupported(java.nio.file.Path)
-	 */
+	private static final Uri FHIR_URI = new Uri("http://snomed.info/sct"); 
+	private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
+		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
+		SnomedTerminologyComponentConstants.SNOMED_INT_LINK
+	);
+	
+	public SnomedFhirProvider() {
+		super(SnomedDatastoreActivator.REPOSITORY_UUID);
+	}
+	
 	@Override
 	public boolean isSupported(Path path) {
-		// TODO Auto-generated method stub
-		return false;
+		return SNOMED_INT_PATH.equals(path);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#lookup(com.b2international.snowowl.fhir.core.model.LookupRequest)
-	 */
 	@Override
 	public LookupResult lookup(LookupRequest lookupRequest) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#getSupportedURIs()
-	 */
 	@Override
 	public Collection<String> getSupportedURIs() {
-		// TODO Auto-generated method stub
-		return null;
+		return SUPPORTED_URIS;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#getCodeSystems()
-	 */
-	@Override
-	public Collection<CodeSystem> getCodeSystems() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.FhirProvider#getFhirUri()
-	 */
 	@Override
 	protected Uri getFhirUri() {
-		// TODO Auto-generated method stub
-		return null;
+		return FHIR_URI;
 	}
 
 }

@@ -49,6 +49,12 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
  */
 public abstract class FhirProvider implements IFhirProvider {
 	
+	private final String repositoryId;
+
+	public FhirProvider(String repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+	
 	@Override
 	public final boolean isSupported(String uri) {
 		return getSupportedURIs().stream()
@@ -76,23 +82,19 @@ public abstract class FhirProvider implements IFhirProvider {
 				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
 	}
 	
-	/**
-	 * Returns the FHIR code systems available for the given repository
-	 * @param repositoryId
-	 * @return collection of {@link CodeSystem}
-	 */
-	protected final Collection<CodeSystem> getCodeSystems(String repositoryId) {
+	@Override
+	public final Collection<CodeSystem> getCodeSystems() {
 		return CodeSystemRequests.prepareSearchCodeSystem()
-			.all()
-			.build(repositoryId)
-			.execute(getBus())
-			.then(codeSystems -> {
-				return codeSystems.stream()
-					.map(this::createCodeSystemBuilder)
-					.map(Builder::build)
-					.collect(Collectors.toList());
-			})
-			.getSync();
+				.all()
+				.build(repositoryId)
+				.execute(getBus())
+				.then(codeSystems -> {
+					return codeSystems.stream()
+						.map(this::createCodeSystemBuilder)
+						.map(Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync();
 	}
 	
 	/**
