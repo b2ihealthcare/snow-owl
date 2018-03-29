@@ -22,8 +22,10 @@ import java.util.regex.Pattern;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 /**
@@ -120,6 +122,13 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * Segment separator in {@link Branch#path()} values.
 	 */
 	String SEPARATOR = "/";
+	
+	/**
+	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
+	 * @since 6.4
+	 * @see #get(String...)
+	 */
+	Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
 
 	/**
 	 * Returns the unique path of this {@link Branch}.
@@ -277,4 +286,13 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * @param metadata
 	 */
 	void update(Metadata metadata);
+
+	/**
+	 * @param segments - segments to join into a usable branch path string 
+	 * @return a full absolute branch path that can be used in {@link Request}s and other services  
+	 * @since 6.4
+	 */
+	static String get(String...segments) {
+		return BRANCH_PATH_JOINER.join(segments);
+	}
 }
