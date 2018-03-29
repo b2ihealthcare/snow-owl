@@ -58,6 +58,9 @@
 		
 		<!-- SNOMED CT Core Features -->
 		<module>com.b2international.snowowl.snomed.core.feature</module>
+		
+		<!-- SNOMED CT Generic Validation Rules -->
+		<module>com.b2international.snowowl.validation.snomed</module>
 	</modules>
 	
 </project>
