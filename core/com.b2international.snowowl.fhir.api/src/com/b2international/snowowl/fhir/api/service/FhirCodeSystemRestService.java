@@ -69,9 +69,9 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  */
-@Api(value ="CodeSystem")
+@Api(value = "CodeSystem", tags = { "CodeSystem" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/CodeSystem")
+@RequestMapping(value="/CodeSystem", produces = { MediaType.APPLICATION_JSON_VALUE })
 public class FhirCodeSystemRestService {
 	
 	@ApiOperation(
@@ -132,7 +132,7 @@ public class FhirCodeSystemRestService {
 	/**
 	 * GET-based lookup endpoint.
 	 * @param code
-	 * @param uri
+	 * @param system
 	 * @param version
 	 * @param date
 	 * @param displayLanguage
@@ -152,13 +152,13 @@ public class FhirCodeSystemRestService {
 	public LookupResult lookupViaParameters(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
-		@ApiParam(value="The code system uri") @RequestParam(value="uri") final String uri,
+		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
 		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
 		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) throws ParseException {
 		
-		System.err.println("Code: " + code + " uri: " + uri +
+		System.err.println("Code: " + code + " system: " + system +
 				" version:" + version + " lookup date: " + date + " display language: " + displayLanguage);
 		
 		if (properties !=null) {
@@ -167,7 +167,7 @@ public class FhirCodeSystemRestService {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
-			.system(uri)
+			.system(system)
 			.version(version)
 			.displayLanguage(displayLanguage);
 		
@@ -202,7 +202,7 @@ public class FhirCodeSystemRestService {
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public LookupResult lookupViaCodingAndParameters(
 		@ApiParam(value="The lookup request parameters") 
-		@Valid 
+		@Valid
 		@RequestBody 
 		final LookupRequest lookupRequest) {
 		
