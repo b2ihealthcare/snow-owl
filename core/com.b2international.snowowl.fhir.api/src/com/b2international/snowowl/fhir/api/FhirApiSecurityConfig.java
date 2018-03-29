@@ -38,7 +38,7 @@ public class FhirApiSecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.authorizeRequests()
 				.antMatchers("/", "/static/**", "/api-docs")
-				.anonymous()
+				.permitAll()
 			.and()
 			.authorizeRequests()
 				.antMatchers("/**")
