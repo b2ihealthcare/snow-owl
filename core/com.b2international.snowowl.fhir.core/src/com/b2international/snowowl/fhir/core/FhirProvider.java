@@ -19,18 +19,16 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
@@ -51,14 +49,31 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
  */
 public abstract class FhirProvider implements IFhirProvider {
 	
-	protected final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+	@Override
+	public final boolean isSupported(String uri) {
+		return getSupportedURIs().stream()
+			.filter(uri::equalsIgnoreCase)
+			.findAny()
+			.isPresent();
+	}
 	
 	@Override
-	public CodeSystem getCodeSystem(Path codeSystemPath) {
+	public final CodeSystem getCodeSystem(Path codeSystemPath) {
 		String repositoryId = codeSystemPath.getParent().toString();
 		String shortName = codeSystemPath.getFileName().toString();
-		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(eventBus).getSync();
+		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(getBus()).getSync();
 		return createCodeSystemBuilder(codeSystemEntry).build();
+	}
+	
+	@Override
+	public final CodeSystem getCodeSystem(String codeSystemUri) {
+		if (!isSupported(codeSystemUri)) {
+			throw new BadRequestException("Code system with URI %s is not supported by this provider %s.", codeSystemUri, this.getClass().getSimpleName());
+		}
+		return getCodeSystems()
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
 	}
 	
 	/**
@@ -66,19 +81,18 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * @param repositoryId
 	 * @return collection of {@link CodeSystem}
 	 */
-	protected Collection<CodeSystem> getCodeSystems(String repositoryId) {
-		
-		Promise<CodeSystems> codeSystemsPromise = CodeSystemRequests.prepareSearchCodeSystem()
+	protected final Collection<CodeSystem> getCodeSystems(String repositoryId) {
+		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
-			.execute(eventBus);
-			
-			return codeSystemsPromise.then(cs -> {
-				List<CodeSystem> codeSystems = cs.stream()
-					.map(c -> createCodeSystemBuilder(c).build())
+			.execute(getBus())
+			.then(codeSystems -> {
+				return codeSystems.stream()
+					.map(this::createCodeSystemBuilder)
+					.map(Builder::build)
 					.collect(Collectors.toList());
-				return codeSystems;
-			}).getSync();
+			})
+			.getSync();
 	}
 	
 	/**
@@ -92,7 +106,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * @param codeSystemEntry
 	 * @return FHIR Code system
 	 */
-	protected Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
+	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
 		
 		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
 		
@@ -123,21 +137,8 @@ public abstract class FhirProvider implements IFhirProvider {
 	}
 	
 	/**
-	 * @param version
-	 * @return
-	 */
-	protected IBranchPath getBranchPath(String version) {
-		if (version == null) {
-			return BranchPathUtils.createMainPath();
-		} else {
-			return BranchPathUtils.createPath(BranchPathUtils.createMainPath(), version);
-		}
-	}
-
-	/**
-	 * Returns the properties supported by this provider.
-	 * Subclasses to override
-	 * @return
+	 * Subclasses may override this method to provide additional properties supported by this provider.
+	 * @return the supported properties
 	 */
 	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
 		return Collections.emptySet();
@@ -147,19 +148,32 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * @param properties
 	 */
 	protected void validateRequestedProperties(Collection<Code> properties) {
-		
-		Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(p -> p.getCode()).collect(Collectors.toSet());
+		Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).collect(Collectors.toSet());
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}
 	}
 	
 	/**
-	 * Returns (attempts) the SO 639 two letter code based on the language name.
+	 * @param version - the version to target 
+	 * @return an absolute branch path to use in terminology API requests
+	 */
+	protected final String getBranchPath(String version) {
+		return CompareUtils.isEmpty(version) ? Branch.MAIN_PATH : Branch.get(Branch.MAIN_PATH, version); 
+	}
+	
+	/**
+	 * @return the {@link IEventBus} service to access terminology resources.
+	 */
+	protected final IEventBus getBus() {
+		return ApplicationContext.getServiceForClass(IEventBus.class);
+	}
+	
+	/**
+	 * Returns (attempts) the ISO 639 two letter code based on the language name.
 	 * @return two letter language code
 	 */
 	private static String getLanguageCode(String language) {
-		
 		if (language == null) return null;
 		
 	    Locale loc = new Locale("en");
@@ -170,7 +184,9 @@ public abstract class FhirProvider implements IFhirProvider {
 	    			Locale locale = new Locale(l,"US");
 	    			return locale.getDisplayLanguage(loc).equalsIgnoreCase(language) 
 	    					|| locale.getISO3Language().equalsIgnoreCase(language);
-	    		}).findFirst().orElseGet(() -> null);
+	    		})
+	    		.findFirst()
+	    		.orElse(null);
 	}
 
 }

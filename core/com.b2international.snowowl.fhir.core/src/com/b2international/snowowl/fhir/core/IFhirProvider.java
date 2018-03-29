@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Extension point interface for code system specific FHIR API support. 
@@ -49,7 +50,7 @@ public interface IFhirProvider {
 		private final Collection<IFhirProvider> providers;
 		
 		private Registry() {
-			this.providers = Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class);
+			this.providers = ImmutableList.copyOf(Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class));
 		}
 		
 		public static Collection<IFhirProvider> getProviders() {

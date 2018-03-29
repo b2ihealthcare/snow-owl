@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,9 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 
 /**
  * Provider for the SNOMED CT FHIR support
- * @since 6.3
+ * @since 6.4
  */
 public class SnomedFhirProvider extends FhirProvider {
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#isSupported(java.lang.String)
-	 */
-	@Override
-	public boolean isSupported(String uri) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#isSupported(java.nio.file.Path)
@@ -71,15 +62,6 @@ public class SnomedFhirProvider extends FhirProvider {
 	 */
 	@Override
 	public Collection<CodeSystem> getCodeSystems() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.fhir.core.IFhirProvider#getCodeSystem(java.lang.String)
-	 */
-	@Override
-	public CodeSystem getCodeSystem(String codeSystemUri) {
 		// TODO Auto-generated method stub
 		return null;
 	}
