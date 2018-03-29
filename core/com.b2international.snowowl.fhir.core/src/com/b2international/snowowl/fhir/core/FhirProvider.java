@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,11 +47,11 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 /**
  * FHIR provider base class.
  * 
- * @since 6.3
+ * @since 6.4
  */
 public abstract class FhirProvider implements IFhirProvider {
 	
-	protected IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
+	protected final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
 	
 	@Override
 	public CodeSystem getCodeSystem(Path codeSystemPath) {
@@ -99,7 +100,7 @@ public abstract class FhirProvider implements IFhirProvider {
 		
 		Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
-			.language(FhirUtils.getLanguageCode(codeSystemEntry.getLanguage()))
+			.language(getLanguageCode(codeSystemEntry.getLanguage()))
 			.name(codeSystemEntry.getShortName())
 			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
 			.publisher(codeSystemEntry.getOrgLink())
@@ -151,6 +152,25 @@ public abstract class FhirProvider implements IFhirProvider {
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}
+	}
+	
+	/**
+	 * Returns (attempts) the SO 639 two letter code based on the language name.
+	 * @return two letter language code
+	 */
+	private static String getLanguageCode(String language) {
+		
+		if (language == null) return null;
+		
+	    Locale loc = new Locale("en");
+	    String[] languages = Locale.getISOLanguages(); // list of language codes
+
+	    return Arrays.stream(languages)
+	    		.filter(l -> {
+	    			Locale locale = new Locale(l,"US");
+	    			return locale.getDisplayLanguage(loc).equalsIgnoreCase(language) 
+	    					|| locale.getISO3Language().equalsIgnoreCase(language);
+	    		}).findFirst().orElseGet(() -> null);
 	}
 
 }

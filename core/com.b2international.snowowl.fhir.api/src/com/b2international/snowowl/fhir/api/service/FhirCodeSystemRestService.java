@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.FhirUtils;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -97,11 +93,10 @@ public class FhirCodeSystemRestService {
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
 	public CodeSystem getCodeSystem(@PathVariable("codeSystemId") String codeSystemId) {
-
 		Path codeSystemPath = Paths.get(codeSystemId);
-		IFhirProvider fhirProvider = FhirUtils.getFhirProvider(codeSystemPath);
-		CodeSystem codeSystem = fhirProvider.getCodeSystem(codeSystemPath);
-		return codeSystem;
+		return IFhirProvider.Registry
+				.getFhirProvider(codeSystemPath)
+				.getCodeSystem(codeSystemPath);
 	}
 	
 	@ApiOperation(
@@ -112,23 +107,20 @@ public class FhirCodeSystemRestService {
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getCodeSystems() {
-		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirCodeSystemRestService.class);
-		java.net.URI uri = linkBuilder.toUri();
+		String uri = linkBuilder.toUri().toString();
 		
-		com.b2international.snowowl.fhir.core.model.Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
+		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
 			.type(BundleType.SEARCHSET)
-			.addLink(uri.toString());
-		
-		Collection<IFhirProvider> fhirProviders = Extensions.getExtensions(FhirUtils.FHIR_EXTENSION_POINT, IFhirProvider.class);
+			.addLink(uri);
 		
 		int total = 0;
-		for (IFhirProvider fhirProvider : fhirProviders) {
+		for (IFhirProvider fhirProvider : IFhirProvider.Registry.getProviders()) {
 			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
 			for (CodeSystem codeSystem : codeSystems) {
-				String resourceUrl = uri.toString() + "/" + codeSystem.getId().getIdValue();
+				String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
 				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 				builder.addEntry(entry);
 				total++;
@@ -225,11 +217,9 @@ public class FhirCodeSystemRestService {
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		
 		String uriValue = lookupRequest.getSystem().getUriValue();
-		IFhirProvider iFhirProvider = FhirUtils.getFhirProvider(uriValue);
-		LookupResult lookupResult = iFhirProvider.lookup(lookupRequest);
-		return lookupResult;
+		return IFhirProvider.Registry.getFhirProvider(uriValue)
+				.lookup(lookupRequest);
 	}
 
 	/*
@@ -257,10 +247,6 @@ public class FhirCodeSystemRestService {
 				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
 			}
 		}
-	}
-	
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 	
 }
