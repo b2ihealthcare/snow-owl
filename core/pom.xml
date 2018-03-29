@@ -44,6 +44,12 @@
 		<module>com.b2international.snowowl.server.core.feature</module>
 		<module>com.b2international.snowowl.server.dependencies.feature</module>
 		<module>com.b2international.snowowl.server.product.feature</module>
+		
+		<!-- FHIR modules -->
+		<module>com.b2international.snowowl.fhir.core</module>
+		<module>com.b2international.snowowl.fhir.api</module>
+		<module>com.b2international.snowowl.fhir.api.tests</module>
+		
 	</modules>
 	
 </project>
