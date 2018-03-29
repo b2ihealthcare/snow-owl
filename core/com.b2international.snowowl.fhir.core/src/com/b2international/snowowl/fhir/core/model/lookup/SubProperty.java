@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,10 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 
-public class SubProperty extends ParametersModel {
+/**
+ * @since 6.4
+ */
+public final class SubProperty extends ParametersModel {
 	
 	//Identifies the property returned (1..1)
 	@Order(value=1)
@@ -72,7 +75,7 @@ public class SubProperty extends ParametersModel {
 		return new Builder();
 	}
 	
-	public static class Builder extends ValidatingBuilder<SubProperty> {
+	public static final class Builder extends ValidatingBuilder<SubProperty> {
 		
 		private Code code;
 		private Object value;

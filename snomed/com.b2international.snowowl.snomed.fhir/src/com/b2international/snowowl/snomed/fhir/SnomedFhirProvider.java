@@ -20,14 +20,18 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Set;
 
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.fhir.core.FhirProvider;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -38,11 +42,12 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedFhirProvider extends FhirProvider {
 
-	private static final Uri FHIR_URI = new Uri("http://snomed.info/sct"); 
+	private static final Uri FHIR_URI = new Uri("http://snomed.info/sct");
 	private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-		SnomedTerminologyComponentConstants.SNOMED_INT_LINK
+		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
+		FHIR_URI.getUriValue()
 	);
 	
 	public SnomedFhirProvider() {
@@ -55,8 +60,28 @@ public final class SnomedFhirProvider extends FhirProvider {
 	}
 
 	@Override
-	public LookupResult lookup(LookupRequest lookupRequest) {
-		throw new NotImplementedException();
+	public LookupResult lookup(LookupRequest lookup) {
+		
+		String version = lookup.getVersion();
+		String branchPath = getBranchPath(version);
+		
+		Collection<Code> properties = lookup.getProperties();
+		validateRequestedProperties(properties);
+		
+		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode().getCodeValue())
+				.setExpand("pt()")
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(lookup.getDisplayLanguage().getCodeValue())));
+		
+		return req.build(repositoryId(), branchPath)
+			.execute(getBus())
+			.then(c -> {
+				return LookupResult.builder()
+					.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
+					.version(version)
+					.display(c.getPt() == null ? c.getId() : c.getPt().getTerm())
+					.build();
+			}).getSync();
+		
 	}
 
 	@Override

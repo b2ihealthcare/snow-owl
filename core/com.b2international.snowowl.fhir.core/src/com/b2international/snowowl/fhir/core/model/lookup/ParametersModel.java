@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,34 +15,31 @@
  */
 package com.b2international.snowowl.fhir.core.model.lookup;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Lists;
 
 /**
- * @since 6.3
+ * @since 6.4
  */
 @JsonDeserialize(converter=SerializableParametersConverter.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class ParametersModel {
+public abstract class ParametersModel {
 	
 	//the serializable format
 	
 	//header "resourceType" : "Parameters",
 	@JsonProperty
-	private String resourceType = "Parameters";
+	private final String resourceType = "Parameters";
 		
 	@JsonProperty(value="parameter")
-	private List<SerializableParameter> parameters = Lists.newArrayList();
+	private List<SerializableParameter> parameters = Collections.emptyList();
 	
 	/**
-	 * @param parameters2
+	 * @param parameters
 	 */
 	public void setParameters(List<SerializableParameter> parameters) {
 		this.parameters = parameters;

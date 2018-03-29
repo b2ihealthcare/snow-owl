@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@ package com.b2international.snowowl.fhir.core.model.conversion;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Optional;
 
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 import com.fasterxml.jackson.databind.util.StdConverter;
 
 /**
- * @since 6.3
+ * @since 6.4
  */
-public class LookupRequestConverter extends StdConverter<LookupRequest,LookupRequest> {
+public class LookupRequestConverter extends StdConverter<LookupRequest, LookupRequest> {
 	
 	/**
 	 * Converts the set of parameters into this populated domain object.
@@ -42,16 +41,12 @@ public class LookupRequestConverter extends StdConverter<LookupRequest,LookupReq
 				String fieldName = serializableParameter.getName();
 				
 				Field[] fields = LookupRequest.class.getDeclaredFields();
-				Optional<Field> fieldOptional = Arrays.stream(fields)
-					.map(f -> { 
-						f.setAccessible(true);
-						return f;
-					})
+				Field field = Arrays.stream(fields)
 					.filter(f -> f.getName().equals(fieldName))
-					.findFirst();
-				
-				fieldOptional.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
-				Field field = fieldOptional.get();
+					.findFirst()
+					.orElseThrow(() -> new NullPointerException("Could not find field '" + fieldName + "'."));
+					
+				field.setAccessible(true);
 				field.set(lookupRequest, serializableParameter.getValue());
 			}
 		} catch (IllegalArgumentException | IllegalAccessException e) {

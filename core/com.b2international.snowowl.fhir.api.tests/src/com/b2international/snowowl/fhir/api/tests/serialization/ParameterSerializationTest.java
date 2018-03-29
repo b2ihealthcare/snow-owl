@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,17 @@ import com.b2international.snowowl.fhir.core.model.conversion.PropertyConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 import com.b2international.snowowl.fhir.core.model.lookup.ParametersModel;
 import com.b2international.snowowl.fhir.core.model.lookup.Property;
-import com.b2international.snowowl.fhir.core.model.lookup.SubProperty;
 import com.b2international.snowowl.fhir.core.model.lookup.Property.Builder;
+import com.b2international.snowowl.fhir.core.model.lookup.SubProperty;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
 
+/**
+ * @since 6.4
+ */
 public class ParameterSerializationTest extends FhirTest {
 	
 	@Test

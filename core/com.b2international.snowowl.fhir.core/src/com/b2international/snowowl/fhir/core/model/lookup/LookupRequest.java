@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.model.lookup;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +22,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
@@ -44,18 +45,18 @@ import com.wordnik.swagger.annotations.ApiModel;
  * serialized parameters. See {@link #toModelObject()}.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
- * @since 6.3
+ * @since 6.4
  */
 @ApiModel
 @JsonDeserialize(converter=LookupRequestConverter.class)
-public class LookupRequest {
+public final class LookupRequest {
 	
 	//FHIR header "resourceType" : "Parameters",
 	@JsonProperty
-	private String resourceType = "Parameters";
+	private final String resourceType = "Parameters";
 	
 	@JsonProperty(value="parameter")
-	private List<SerializableParameter> parameters = Lists.newArrayList();
+	private List<SerializableParameter> parameters = Collections.emptyList();
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
 	//@ApiModelProperty(dataType = "java.lang.String")
@@ -104,12 +105,16 @@ public class LookupRequest {
 	private Collection<Code> properties = Lists.newArrayList();
 	
 	//For Jackson
-	@SuppressWarnings("unused")
-	private LookupRequest() {}
+	LookupRequest() {}
 	
-	LookupRequest(Code code, Uri system, String version, Coding coding, Date date, Code displayLanguage,
+	LookupRequest(
+			Code code, 
+			Uri system, 
+			String version, 
+			Coding coding, 
+			Date date, 
+			Code displayLanguage,
 			Collection<Code> properties) {
-		
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -148,8 +153,7 @@ public class LookupRequest {
 	}
 
 	/**
-	 * Returns parameter collection to be serialized.
-	 * @return
+	 * @return parameter collection to be serialized
 	 */
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
@@ -165,7 +169,7 @@ public class LookupRequest {
 		return new Builder();
 	}
 
-	public static class Builder extends ValidatingBuilder<LookupRequest> {
+	public static final class Builder extends ValidatingBuilder<LookupRequest> {
 
 		private Code code;
 		private Uri system;
@@ -173,7 +177,7 @@ public class LookupRequest {
 		private Coding coding;
 		private Date date;
 		private Code displayLanguage;
-		private Collection<Code> properties = Lists.newArrayList();
+		private Collection<Code> properties = Collections.emptyList();
 		
 		public Builder code(final Code code) {
 			this.code = code;
@@ -222,8 +226,8 @@ public class LookupRequest {
 		
 		public Builder date(String dateString) {
 			try {
-				this.date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse(dateString);
-			} catch (ParseException e) {
+				this.date = Dates.parse(dateString, FhirConstants.DATE_TIME_FORMAT);
+			} catch (SnowowlRuntimeException e) {
 				throw new BadRequestException("Incorrect date format '%s'.", dateString);
 			}
 			return this;
@@ -239,17 +243,11 @@ public class LookupRequest {
 			return this;
 		}
 
-		public Builder addProperty(String property) {
-			properties.add(new Code(property));
-			return this;
-		}
-
 		public Builder properties(Collection<String> properties) {
-			if (properties == null) {
-				this.properties = Collections.emptySet();
-			} else {
-				this.properties = properties.stream().map(p-> new Code(p)).collect(Collectors.toSet());
-			}
+			this.properties = Collections3.toImmutableSet(properties)
+					.stream()
+					.map(Code::new)
+					.collect(Collectors.toSet());
 			return this;
 		}
 

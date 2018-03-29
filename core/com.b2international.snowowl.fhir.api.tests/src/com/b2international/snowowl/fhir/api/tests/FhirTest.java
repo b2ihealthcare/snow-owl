@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class FhirTest {
 	
-	protected static ObjectMapper objectMapper = new ObjectMapper();
+	protected static ObjectMapper objectMapper;
 	
 	@BeforeClass
 	public static void setup() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.b2international.snowowl.fhir.core.model.conversion.SerializableParametersConverter;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * This class represents a FHIR designation.
@@ -43,11 +39,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  *	</pre>
  *
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#4.7.15.2.1">FHIR:CodeSystem:Operations</a>
- * @since 6.3
+ * @since 6.4
  */
-@JsonDeserialize(converter=SerializableParametersConverter.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class ParameterizedDesignation extends ParametersModel {
+public final class ParameterizedDesignation extends ParametersModel {
 	
 	//The language code this designation is defined for (0..1)
 	@Order(value=1)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
 
@@ -30,11 +29,10 @@ import com.google.common.collect.Lists;
  * Model object for the lookup service request response
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
- * @since 6.3
+ * @since 6.4
  */
 @JsonSerialize(converter=LookupResultConverter.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public class LookupResult extends ParametersModel {
+public final class LookupResult extends ParametersModel {
 	
 	//A display name for the code system (1..1)
 	@Order(value=1)

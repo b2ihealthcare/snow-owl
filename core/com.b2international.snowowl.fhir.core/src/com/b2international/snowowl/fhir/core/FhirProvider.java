@@ -55,6 +55,10 @@ public abstract class FhirProvider implements IFhirProvider {
 		this.repositoryId = repositoryId;
 	}
 	
+	protected final String repositoryId() {
+		return repositoryId;
+	}
+	
 	@Override
 	public final boolean isSupported(String uri) {
 		return getSupportedURIs().stream()
