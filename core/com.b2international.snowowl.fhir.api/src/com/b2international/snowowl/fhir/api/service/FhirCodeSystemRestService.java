@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -201,7 +202,7 @@ public class FhirCodeSystemRestService {
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public LookupResult lookupViaCodingAndParameters(
-		@ApiParam(value="The lookup request parameters") 
+		@ApiParam(value="The lookup request parameters", name="body") 
 		@Valid
 		@RequestBody 
 		final LookupRequest lookupRequest) {
@@ -218,8 +219,7 @@ public class FhirCodeSystemRestService {
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
 		String uriValue = lookupRequest.getSystem().getUriValue();
-		return IFhirProvider.Registry.getFhirProvider(uriValue)
-				.lookup(lookupRequest);
+		return IFhirProvider.Registry.getFhirProvider(uriValue).lookup(lookupRequest);
 	}
 
 	/*
@@ -227,6 +227,10 @@ public class FhirCodeSystemRestService {
 	 * @param lookupRequest
 	 */
 	private void validateLookupRequest(LookupRequest lookupRequest) {
+		if (lookupRequest.getSystem() != null && lookupRequest.getCode() == null) {
+			throw new NotFoundException("Code", "");
+		}
+		
 		if (lookupRequest.getCode()!=null && lookupRequest.getSystem() == null) {
 			throw new BadRequestException("Parameter 'system' is not specified while code is present in the request.", "LookupRequest.system");
 		}
