@@ -17,10 +17,12 @@ package com.b2international.snowowl.fhir.core.model.serialization;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.wordnik.swagger.annotations.ApiModel;
 
 /**
  * 
@@ -58,25 +60,21 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 }
  * @since 6.3
  */
+@ApiModel("Parameter")
 @JsonSerialize(using = ParameterSerializer.class)
 @JsonDeserialize(using = ParameterDeserializer.class)
 public class SerializableParameter {
 
-	@JsonProperty
-	private String name;
-	
-	@JsonProperty
-	private String type;
-	
-	@JsonProperty
+	private final String name;
+	private final String type;
 	@NotNull
-	private Object value;
-	
-	//For Jackson
-	@SuppressWarnings("unused")
-	private SerializableParameter() {}
-	
-	public SerializableParameter(String name, String type, Object value) {
+	private final Object value;
+
+	@JsonCreator
+	public SerializableParameter(
+			@JsonProperty("name") String name, 
+			@JsonProperty("type") String type, 
+			@JsonProperty("value") Object value) {
 		this.name = name;
 		this.type = type;
 		this.value = value;

@@ -21,9 +21,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
 import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Model object for the lookup service request response
@@ -62,8 +61,8 @@ public final class LookupResult extends ParametersModel {
 	private LookupResult(final String name, 
 			final String version, 
 			final String display, 
-			Collection<ParameterizedDesignation> designations,
-			Collection<Property> properties) {
+			final Collection<ParameterizedDesignation> designations,
+			final Collection<Property> properties) {
 		
 		this.name = name;
 		this.version = version;
@@ -76,15 +75,14 @@ public final class LookupResult extends ParametersModel {
 		return new Builder();
 	}
 	
-	public static class Builder {
+	public static final class Builder {
 		
 		private String name;
 		private String version;
 		private String display;
 		
-		private Collection<ParameterizedDesignation> designations = Lists.newArrayList();
-		
-		private Collection<Property> properties = Lists.newArrayList();;
+		private final ImmutableList.Builder<ParameterizedDesignation> designations = ImmutableList.builder();
+		private final ImmutableList.Builder<Property> properties = ImmutableList.builder();
 
 		public Builder name(final String name) {
 			this.name = name;
@@ -116,7 +114,7 @@ public final class LookupResult extends ParametersModel {
 			return this;
 		}
 		public LookupResult build() {
-			return new LookupResult(name, version, display, designations, properties);
+			return new LookupResult(name, version, display, designations.build(), properties.build());
 		}
 	}
 	

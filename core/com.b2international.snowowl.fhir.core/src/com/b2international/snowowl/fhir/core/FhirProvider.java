@@ -40,6 +40,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
@@ -118,7 +119,7 @@ public abstract class FhirProvider implements IFhirProvider {
 		
 		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
 		
-		Builder builder = CodeSystem.builder(id)
+		final Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
 			.language(getLanguageCode(codeSystemEntry.getLanguage()))
 			.name(codeSystemEntry.getShortName())
@@ -130,20 +131,20 @@ public abstract class FhirProvider implements IFhirProvider {
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri());
 		
-		return addSpecificProperties(builder);
+		return appendCodeSystemSpecificProperties(builder);
 	}
 	
 	/**
-	 * Build code system specific properties. Subclasses to override.
+	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @param builder
 	 * @return builder
 	 */
-	protected Builder addSpecificProperties(final Builder builder) {
+	protected CodeSystem.Builder appendCodeSystemSpecificProperties(final CodeSystem.Builder builder) {
 		return builder;
 	}
 	
 	/**
-	 * Subclasses may override this method to provide additional properties supported by this provider.
+	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @return the supported properties
 	 */
 	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
@@ -153,8 +154,9 @@ public abstract class FhirProvider implements IFhirProvider {
 	/**
 	 * @param properties
 	 */
-	protected void validateRequestedProperties(Collection<Code> properties) {
-		Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).collect(Collectors.toSet());
+	protected void validateRequestedProperties(LookupRequest request) {
+		final Collection<Code> properties = request.getProperties();
+		final Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).collect(Collectors.toSet());
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}

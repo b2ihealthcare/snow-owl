@@ -34,9 +34,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Lists;
+import com.google.common.base.Strings;
 import com.wordnik.swagger.annotations.ApiModel;
 
 /**
@@ -47,7 +48,7 @@ import com.wordnik.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
-@ApiModel
+@ApiModel("Parameters")
 @JsonDeserialize(converter=LookupRequestConverter.class)
 public final class LookupRequest {
 	
@@ -102,7 +103,7 @@ public final class LookupRequest {
 	 * group
 	 */
 	@Order(value = 7)
-	private Collection<Code> properties = Lists.newArrayList();
+	private Collection<Code> properties = Collections.emptyList();
 	
 	//For Jackson
 	LookupRequest() {}
@@ -124,30 +125,37 @@ public final class LookupRequest {
 		this.properties = properties;
 	}
 	
+	@JsonIgnore
 	public Code getCode() {
 		return code;
 	}
 
+	@JsonIgnore
 	public Uri getSystem() {
 		return system;
 	}
 
+	@JsonIgnore
 	public String getVersion() {
 		return version;
 	}
 
+	@JsonIgnore
 	public Coding getCoding() {
 		return coding;
 	}
 
+	@JsonIgnore
 	public Date getDate() {
 		return date;
 	}
 
+	@JsonIgnore
 	public Code getDisplayLanguage() {
 		return displayLanguage;
 	}
 
+	@JsonIgnore
 	public Collection<Code> getProperties() {
 		return properties;
 	}
@@ -157,6 +165,16 @@ public final class LookupRequest {
 	 */
 	public Collection<SerializableParameter> getParameters() {
 		return parameters;
+	}
+	
+	/**
+	 * Returns <code>true</code> if the given code is present in the given collection of properties, returns <code>false</code> otherwise.
+	 * @param properties
+	 * @param property
+	 * @return
+	 */
+	public final boolean containsProperty(Code property) {
+		return properties.stream().filter(property::equals).findFirst().isPresent();
 	}
 
 	@Override
@@ -239,7 +257,7 @@ public final class LookupRequest {
 		}
 
 		public Builder displayLanguage(final String displayLanguage) {
-			this.displayLanguage = new Code(displayLanguage);
+			this.displayLanguage = Strings.isNullOrEmpty(displayLanguage) ? null : new Code(displayLanguage);
 			return this;
 		}
 

@@ -106,7 +106,7 @@ public class SerializableParametersConverter extends StdConverter<ParametersMode
 			type = "valueCode";
 			value = ((Code) value).getCodeValue();
 		} else if (value instanceof Coding) {
-				type = "valueCoding";
+			type = "valueCoding";
 		} else {
 			type = "valueString";
 		}
