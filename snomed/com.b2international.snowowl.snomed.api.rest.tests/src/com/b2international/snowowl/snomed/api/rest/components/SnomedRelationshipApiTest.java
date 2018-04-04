@@ -64,7 +64,7 @@ import com.google.common.collect.Iterables;
  */
 public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
-	private static final String ROOT_ISA_RELATIONSHIP_ID = "1019504021";
+	private static final String RELEASED_ISA_RELATIONSHIP_ID = "1019504021";
 
 	@Test
 	public void createRelationshipNonExistentBranch() {
@@ -444,7 +444,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		
 		String relationshipId = createNewRelationship(branchPath);
 		
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, ROOT_ISA_RELATIONSHIP_ID)
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, RELEASED_ISA_RELATIONSHIP_ID)
 			.statusCode(200)
 			.body("released", equalTo(true));
 		
@@ -455,7 +455,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
 		
 		bulk.add(SnomedRequests.prepareDeleteRelationship(relationshipId));
-		bulk.add(SnomedRequests.prepareDeleteRelationship(ROOT_ISA_RELATIONSHIP_ID));
+		bulk.add(SnomedRequests.prepareDeleteRelationship(RELEASED_ISA_RELATIONSHIP_ID));
 
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)

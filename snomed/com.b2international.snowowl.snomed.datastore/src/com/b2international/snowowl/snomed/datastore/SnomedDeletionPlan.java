@@ -26,7 +26,6 @@ import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 
 /**
  * A DTO about the projected outcome of a delete operation in SNOMED CT.
@@ -84,6 +83,6 @@ public class SnomedDeletionPlan {
 	
 	@Override
 	public String toString() {
-		return rejectionReasons.size() < 2 ? Iterables.getFirst(rejectionReasons, "") : Joiner.on(", ").join(rejectionReasons);
+		return Joiner.on(", ").join(rejectionReasons);
 	}
 }

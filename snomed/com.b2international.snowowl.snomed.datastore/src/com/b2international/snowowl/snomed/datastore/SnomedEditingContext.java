@@ -784,6 +784,9 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	@Override
 	public void preCommit() {
 		
+		
+		if (deletionPlan.isRejected()) throw new ConflictException(deletionPlan.toString());
+		
 		if (!deletionPlan.isRejected() && !deletionPlan.isEmpty()) {
 			
 			final Set<String> deletedIds = deletionPlan.getDeletedItems()
@@ -799,7 +802,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			}
 					
 			delete();
-		}
+		} 
 		
 		/*
 		 * Ensure that all new components (concepts, descriptions and relationships)
@@ -902,7 +905,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * For the sake of acceptable execution speed, the <code>remove(int index)</code> function is used
 	 * instead of the <code>remove(object)</code>. This way, the CDO will not iterate through the large
 	 * number of data in the resources. 
-	 * @param deletionPlan the deletionplan containing all the objects to delete
 	 */
 	private void delete() {
 		// organize elements regarding their index
@@ -962,7 +964,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				refSetEditingContext.getContents().remove(index);
 			}
 			else if (eObject instanceof SnomedRefSetMember) {
-				// get the refset and remove the member from it's list
+				// get the refset and remove the member from its list
 				SnomedRefSetMember member = (SnomedRefSetMember) eObject;	
 				SnomedRefSet refSet = member.getRefSet();
 	
