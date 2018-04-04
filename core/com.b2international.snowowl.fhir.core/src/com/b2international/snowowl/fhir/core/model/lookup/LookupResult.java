@@ -24,12 +24,15 @@ import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * Model object for the lookup service request response
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
+@ApiModel("Parameters")
 @JsonSerialize(converter=LookupResultConverter.class)
 public final class LookupResult extends ParametersModel {
 	
