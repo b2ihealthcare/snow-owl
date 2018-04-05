@@ -42,6 +42,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.base.Strings;
 
 /**
  * FHIR provider base class.
@@ -62,6 +63,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	
 	@Override
 	public final boolean isSupported(String uri) {
+		if (Strings.isNullOrEmpty(uri)) return false;
 		return getSupportedURIs().stream()
 			.filter(uri::equalsIgnoreCase)
 			.findAny()
@@ -155,8 +157,8 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * @param properties
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
-		final Collection<Code> properties = request.getProperties();
-		final Set<Code> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).collect(Collectors.toSet());
+		final Collection<String> properties = request.getProperties();
+		final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).map(Code::getCodeValue).collect(Collectors.toSet());
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}
