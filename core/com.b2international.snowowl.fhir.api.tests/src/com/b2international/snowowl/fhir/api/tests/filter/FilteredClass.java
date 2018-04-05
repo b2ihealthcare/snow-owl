@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.tests.filter;
 
-import com.b2international.snowowl.fhir.core.model.conversion.Mandatory;
+import com.b2international.snowowl.fhir.core.model.annotations.Mandatory;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

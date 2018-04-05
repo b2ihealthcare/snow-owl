@@ -5,7 +5,7 @@ package com.b2international.snowowl.fhir.api.tests.filter;
 
 import java.util.Set;
 
-import com.b2international.snowowl.fhir.core.model.conversion.Mandatory;
+import com.b2international.snowowl.fhir.core.model.annotations.Mandatory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
