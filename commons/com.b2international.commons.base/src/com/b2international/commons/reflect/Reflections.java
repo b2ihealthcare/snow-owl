@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.util;
+package com.b2international.commons.reflect;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
-import com.b2international.index.IndexException;
 
 /**
  * @since 4.7
@@ -39,7 +37,7 @@ public class Reflections {
 		try {
 			return field.get(object);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new IndexException("Couldn't get value from field " + field, e);
+			throw new RuntimeException("Couldn't get value from field " + field, e);
 		}
 	}
 	
@@ -80,7 +78,7 @@ public class Reflections {
 				return f;
 			}
 		}
-		throw new IndexException("Couldn't find field " + field + " on type " + type.getName(), null);
+		throw new RuntimeException("Couldn't find field " + field + " on type " + type.getName(), null);
 	}
 
 	public static Class<?> getFieldType(Class<?> type, String field) {

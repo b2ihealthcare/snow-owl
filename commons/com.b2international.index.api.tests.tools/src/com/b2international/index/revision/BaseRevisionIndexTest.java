@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 
+import com.b2international.commons.reflect.Reflections;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
@@ -40,7 +41,6 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
-import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
