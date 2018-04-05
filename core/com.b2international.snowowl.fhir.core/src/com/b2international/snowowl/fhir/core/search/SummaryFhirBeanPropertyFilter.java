@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 
 /**
- * Inclusive property filter to return everything
+ * Inclusive property filter to the summary elements
  * @since 6.4
  *
  */

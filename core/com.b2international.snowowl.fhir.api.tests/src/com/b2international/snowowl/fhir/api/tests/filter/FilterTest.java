@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.LinkedMultiValueMap;
@@ -28,6 +28,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
 
@@ -35,62 +36,90 @@ import com.google.common.collect.Lists;
  * @since 6.4
  */
 public class FilterTest extends FhirTest {
+	
+	private FilteredClass filteredClass;
+
+	@Before
+	public void setupFilter() {
+		filteredClass = new FilteredClass("ID123", "Balazs", "Banfai", "Andrassy Ave.");
+	}
 
 	@Test
-	public void filterParametersTest() throws Exception {
+	public void filterElementsTest() throws Exception {
 
-		FilteredClass filteredClass = new FilteredClass("ID123", "Balazs", "Banfai");
-		
-		MultiValueMap<String, String> elements = getParametersMap("firstName", "lastName");
+		MultiValueMap<String, String> elements = getParametersMap("_elements=firstName, lastName");
 
-		String[] requestedFields = getRequestedFields(elements);
+		String[] requestedFields = getRequestedFields(elements, "_elements");
 		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
 
-		setupFilters(requestedFields, filteredClass);
+		setupElementsFilter(requestedFields);
 
 		printPrettyJson(filteredClass);
 		String jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"firstName\":\"Balazs\",\"lastName\":\"Banfai\",\"id\":\"ID123\"}", jsonString);
 		
-		setupFilters(null, filteredClass);
+		setupElementsFilter(null);
 		printPrettyJson(filteredClass);
 		jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"id\":\"ID123\"}", jsonString);
 	}
 	
-	
-	
+	@Test
+	public void summaryFalseTest() throws Exception {
 
-	/**
-	 * @param filteredClass
-	 */
-	private void setupFilters(String[] requestedFields, FilteredClass filteredClass) {
+		MultiValueMap<String, String> elements = getParametersMap("_summary=false");
+
+		String[] requestedFields = getRequestedFields(elements, "_summary");
+		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
+		SummaryParameter summaryParameter = SummaryParameter.valueOf(requestedFields[0].toUpperCase());
+
+		setupSummaryFilter(summaryParameter);
+
+		printPrettyJson(filteredClass);
+		String jsonString = objectMapper.writeValueAsString(filteredClass);
+		assertEquals("{\"firstName\":\"Balazs\",\"lastName\":\"Banfai\","
+				+ "\"id\":\"ID123\",\"address\":\"Andrassy Ave.\"}", jsonString);
+	}
+	
+	@Test
+	public void summaryTrueTest() throws Exception {
+
+		MultiValueMap<String, String> elements = getParametersMap("_summary=true");
+
+		String[] requestedFields = getRequestedFields(elements, "_summary");
+		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
+		SummaryParameter summaryParameter = SummaryParameter.valueOf(requestedFields[0].toUpperCase());
+
+		setupSummaryFilter(summaryParameter);
+
+		printPrettyJson(filteredClass);
+		String jsonString = objectMapper.writeValueAsString(filteredClass);
+		assertEquals("{\"id\":\"ID123\",\"address\":\"Andrassy Ave.\"}", jsonString);
+	}
+
+	private void setupElementsFilter(String[] requestedFields) {
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredClass);
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
-//		if (requestedFields != null) {
-//			filters.addFilter("TestClassFilter", FhirPropertyFilter.filterOutAllExcept(requestedFields));
-//		} else {
-//			filters.addFilter("TestClassFilter", FhirPropertyFilter.serializeAll());
-//		}
-		
 		filterProvider.addFilter("TestClassFilter", FhirBeanPropertyFilter.createFilter(requestedFields));
-		// filters.addFilter("Whatever", new AnnotationBasedPropertyFilter());
 		mappingJacksonValue.setFilters(filterProvider);
-
 		objectMapper.setFilterProvider(filterProvider);
-		
+	}
+	
+	private void setupSummaryFilter(SummaryParameter summaryParameter) {
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredClass);
+
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+		filterProvider.addFilter("TestClassFilter", FhirBeanPropertyFilter.createFilter(summaryParameter));
+		mappingJacksonValue.setFilters(filterProvider);
+		objectMapper.setFilterProvider(filterProvider);
 	}
 
-	/**
-	 * @param elements 
-	 * @return
-	 */
-	private String[] getRequestedFields(MultiValueMap<String, String> elements) {
+	private String[] getRequestedFields(MultiValueMap<String, String> elements, String paramName) {
 		
 		String[] requestedFields = null;
-		if (elements.containsKey("_elements")) {
-			List<String> returnFields = elements.get("_elements");
+		if (elements.containsKey(paramName)) {
+			List<String> returnFields = elements.get(paramName);
 			returnFields.replaceAll(f -> f.replaceAll(" ", ""));
 			for (String element : returnFields) {
 				String[] split = element.split("=");
@@ -104,12 +133,12 @@ public class FilterTest extends FhirTest {
 	 * @param string
 	 * @return
 	 */
-	private MultiValueMap<String, String> getParametersMap(String ...params) {
+	private MultiValueMap<String, String> getParametersMap(String paramLine) {
+		
+		String[] splitParams = paramLine.split("=");
 		MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
-		String requestString = Arrays.stream(params).map(p-> p.toString()).collect(Collectors.joining(", "));
-
-		List<String> values = Lists.newArrayList("_elements=" + requestString);
-		multiValueMap.put("_elements", values);
+		List<String> values = Lists.newArrayList(splitParams[0]+"=" + splitParams[1]);
+		multiValueMap.put(splitParams[0], values);
 		return multiValueMap;
 	}
 }

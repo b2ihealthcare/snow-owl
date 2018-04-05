@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.api.tests.filter;
 
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -34,16 +35,22 @@ public class FilteredClass {
 	@Mandatory
 	@JsonProperty
 	private String id;
+	
+	@Summary
+	@JsonProperty
+	private String address;
 
-	public FilteredClass(String id, String firstName, String lastName) {
+	public FilteredClass(String id, String firstName, String lastName, String address) {
 		this.id = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.address = address;
 	}
 
 	@Override
 	public String toString() {
-		return "FilteredClass [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + "]";
+		return "FilteredClass [id=" + id + ", firstName=" + firstName 
+				+ ", lastName=" + lastName + ", address" + address + "]";
 	}
 	
 
