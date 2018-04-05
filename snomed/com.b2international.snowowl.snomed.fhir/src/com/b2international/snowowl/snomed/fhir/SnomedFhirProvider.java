@@ -24,14 +24,15 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.fhir.core.FhirProvider;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
+import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.fhir.core.model.lookup.Property;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -71,15 +72,15 @@ public final class SnomedFhirProvider extends FhirProvider {
 		
 		validateRequestedProperties(lookup);
 		
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
 		
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
+		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
 		
-		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode().getCodeValue())
-				.setExpand(String.format("pt()%s%s", expandDescendants, expandAncestors))
+		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
+				.setExpand(String.format("descriptions(),pt()%s%s", expandDescendants, expandAncestors))
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
 		
 		return req.build(repositoryId(), branchPath)
@@ -90,33 +91,33 @@ public final class SnomedFhirProvider extends FhirProvider {
 	}
 
 	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookup) {
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
 		
 		final LookupResult.Builder result = LookupResult.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
 				.version(lookup.getVersion())
 				.display(getPreferredTermOrId(concept));
-			
+
+		// add remaining terms as designations
+		for (SnomedDescription description : concept.getDescriptions()) {
+			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
+			if (!description.getId().equals(preferredTermId)) {
+				result.addDesignation(Designation.builder()
+						.value(description.getTerm())
+						.build());
+			}
+		}
+		
 		if (requestedChild && concept.getDescendants() != null) {
 			for (SnomedConcept child : concept.getDescendants()) {
-				Property childProperty = Property.builder()
-						.code(CommonConceptProperties.CHILD.getCode())
-						.value(child.getId())
-						.description(getPreferredTermOrId(child))
-						.build();
-				result.addProperty(childProperty);
+				result.addProperty(CommonConceptProperties.CHILD.propertyOf(child.getId(), getPreferredTermOrId(child)));
 			}
 		}
 		
 		if (requestedParent && concept.getAncestors() != null) {
 			for (SnomedConcept parent : concept.getAncestors()) {
-				Property parentProperty = Property.builder()
-						.code(CommonConceptProperties.PARENT.getCode())
-						.value(parent.getId())
-						.description(getPreferredTermOrId(parent))
-						.build();
-				result.addProperty(parentProperty);
+				result.addProperty(CommonConceptProperties.PARENT.propertyOf(parent.getId(), getPreferredTermOrId(parent)));
 			}
 		}
 		
