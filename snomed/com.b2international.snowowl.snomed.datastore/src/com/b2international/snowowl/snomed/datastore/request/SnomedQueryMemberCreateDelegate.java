@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -24,6 +26,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.0
@@ -98,4 +101,12 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		return member.getUuid();
 	}
 
+	@Override
+	public Set<String> getRequiredComponentIds() {
+		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
+			return ImmutableSet.of(getModuleId());
+		} else {
+			return ImmutableSet.of(getModuleId(), getReferencedComponentId());
+		}
+	}
 }
