@@ -24,13 +24,13 @@ public final class SnomedDeletionPlanMessages {
 
 	public static final String COMPONENT_IS_RELEASED_MESSAGE = "The %s '%s' has been released, and cannot be deleted.";
 	
-	public static final String UNABLE_TO_DELETE_CONCEPT_MESSAGE = "Cannot delete concept: '%s'.";
+	public static final String UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE = "Cannot delete concept: '%s' because it has a released inbound relationship: '%s'.";
+	
+	public static final String UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE = "Cannot delete concept: '%s' because it is used as a description type.";
 	
 	public static final String UNABLE_TO_DELETE_CONCEPT_DUE_TO_ISA_RSHIP_MESSAGE = "Concept '%s' would be deleted when the last active 'Is a' relationship is deleted.";
 	
 	public static final String UNABLE_TO_DELETE_RELATIONSHIP_MESSAGE = "Cannot relationship concept: '%s'.";
-	
-	public static final String UNABLE_TO_DELETE_ONLY_FSN_DESCRIPTION_MESSAGE = "Cannot delete a description if it is the only fully specified name of a concept.";
 	
 	public static final String UNABLE_TO_DELETE_REFERENCE_SET_MESSAGE = "Cannot delete reference set: '%s'.";
 	
