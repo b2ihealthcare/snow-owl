@@ -20,7 +20,6 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.conversion.Order;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class SupportedConceptProperty {
 	
 	//Identifies the property returned (1..1)
-	@Order(value=1)
 	@Valid
 	@NotNull
 	private final Code code;
@@ -42,14 +40,11 @@ public class SupportedConceptProperty {
 	 * The value of the property returned (0..1)
 	 * code | Coding | string | integer | boolean | dateTime
 	 */
-	@Order(value=2)
 	private final Uri uri;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
-	@Order(value=3)
 	private final String description;
 	
-	@Order(value=4)
 	@Valid
 	@NotNull
 	private final Code type;

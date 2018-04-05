@@ -168,59 +168,59 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertTrue(optionalParameter.isPresent());
 	}
 	
-	@Test
-	public void lookupParametersTest() throws Exception {
-		
-		String jsonMini = "{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-					+ "{\"name\":\"system\",\"valueUri\":\"LOINC\"},"
-					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
-					+ "{\"name\":\"code\",\"valuecode\":\"1234\"}"
-					+ "]}";
-		
-		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
-		
-		Optional<SerializableParameter> optionalParameter = request.getParameters().stream()
-				.filter(p -> p.getName().equals("system"))
-				.findFirst();
-		assertTrue(optionalParameter.isPresent());
-		SerializableParameter param = optionalParameter.get();
-		assertEquals("valueUri", param.getType());
-		assertEquals(new Uri("LOINC"), param.getValue());
-		assertEquals(Uri.class, param.getValueType());
-	}
+//	@Test
+//	public void lookupParametersTest() throws Exception {
+//		
+//		String jsonMini = "{\"resourceType\":\"Parameters\","
+//				+ "\"parameter\":["
+//					+ "{\"name\":\"system\",\"valueUri\":\"LOINC\"},"
+//					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
+//					+ "{\"name\":\"code\",\"valuecode\":\"1234\"}"
+//					+ "]}";
+//		
+//		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
+//		
+//		Optional<SerializableParameter> optionalParameter = request.getParameters().stream()
+//				.filter(p -> p.getName().equals("system"))
+//				.findFirst();
+//		assertTrue(optionalParameter.isPresent());
+//		SerializableParameter param = optionalParameter.get();
+//		assertEquals("valueUri", param.getType());
+//		assertEquals(new Uri("LOINC"), param.getValue());
+//		assertEquals(Uri.class, param.getValueType());
+//	}
 	
-	@Test
-	public void lookupRequestTest() throws Exception {
-		
-		String jsonMini = "{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-					+ "{\"name\":\"code\",\"valueCode\":\"abcd\"},"
-					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct\"},"
-					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
-					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21+0100\"},"
-					+ "{\"name\":\"coding\", \"valueCoding\":{\"code\":\"1234\","
-							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\",\"userSelected\":false}}"
-					+ "]}";
-		
-		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
-		
-		Optional<SerializableParameter> optionalParameter = request.getParameters().stream()
-				.filter(p -> p.getName().equals("code")).findFirst();
-		assertTrue(optionalParameter.isPresent());
-		SerializableParameter param = optionalParameter.get();
-		assertEquals("valueCode", param.getType());
-		assertEquals(new Code("abcd"), param.getValue());
-		assertEquals(Code.class, param.getValueType());
-		
-		System.out.println("Request: " + request);
-		assertEquals(new Code("abcd"), request.getCode());
-		assertEquals(new Uri("http://snomed.info/sct"), request.getSystem());
-		assertEquals("20180131", request.getVersion());
-		assertEquals(new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
-		assertEquals(new Code("1234"), request.getCoding().getCode());
-	}
+//	@Test
+//	public void lookupRequestTest() throws Exception {
+//		
+//		String jsonMini = "{\"resourceType\":\"Parameters\","
+//				+ "\"parameter\":["
+//					+ "{\"name\":\"code\",\"valueCode\":\"abcd\"},"
+//					+ "{\"name\":\"system\",\"valueUri\":\"http://snomed.info/sct\"},"
+//					+ "{\"name\":\"version\",\"valueString\":\"20180131\"},"
+//					+ "{\"name\":\"date\",\"valueDateTime\":\"2018-03-09T20:50:21+0100\"},"
+//					+ "{\"name\":\"coding\", \"valueCoding\":{\"code\":\"1234\","
+//							+ "\"system\":\"http://snomed.info/sct\","
+//							+ "\"version\":\"20180131\",\"userSelected\":false}}"
+//					+ "]}";
+//		
+//		LookupRequest request = objectMapper.readValue(jsonMini, LookupRequest.class);
+//		
+//		Optional<SerializableParameter> optionalParameter = request.getParameters().stream()
+//				.filter(p -> p.getName().equals("code")).findFirst();
+//		assertTrue(optionalParameter.isPresent());
+//		SerializableParameter param = optionalParameter.get();
+//		assertEquals("valueCode", param.getType());
+//		assertEquals(new Code("abcd"), param.getValue());
+//		assertEquals(Code.class, param.getValueType());
+//		
+//		System.out.println("Request: " + request);
+//		assertEquals(new Code("abcd"), request.getCode());
+//		assertEquals(new Uri("http://snomed.info/sct"), request.getSystem());
+//		assertEquals("20180131", request.getVersion());
+//		assertEquals(new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-09T20:50:21+0100"), request.getDate());
+//		assertEquals(new Code("1234"), request.getCoding().getCode());
+//	}
 	
 	//@Test
 		public void lookupRoundTrip() throws Exception {

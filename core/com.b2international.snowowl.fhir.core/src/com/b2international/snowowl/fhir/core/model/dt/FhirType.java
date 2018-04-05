@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,51 +15,18 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-/**
- * FHIR datatypes
- * 
- * @see <a href="https://www.hl7.org/fhir/datatypes.html">FHIR:Data Types</a>
- * @since 6.3
- */
-public enum FhirType {
-	
-	BOOLEAN("Boolean"),
-	INTEGER("Integer"),
-	DECIMAL("Decimal"),
-	STRING("String"),
-	URI("Uri"),
-	CODE("Code"),
-	DATE("Date"),
-	DATETIME("DateTime"),
-	OID("Oid"),
-	
-	//complex types
-	CODING("Coding");
-	
-	private String serializedName;
-	
-	FhirType(String serializedName) {
-		this.serializedName = serializedName;
-	}
-	
-	public String getSerializedName() {
-		return serializedName;
-	}
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	/**
-	 * Returns the FHIR datatype enum for a given serialized representation
-	 * @param typeString
-	 * @return
-	 */
-	public static FhirType fhirTypeOf(String typeString) {
-		
-		if (typeString == null) throw new NullPointerException("Type parameter is null.");
-		
-		for (FhirType fhirType : FhirType.values()) {
-			if (fhirType.serializedName.equalsIgnoreCase(typeString)) {
-				return fhirType;
-			}
-		}
-		throw new IllegalArgumentException("Could not find FHIR data type for serialized representation '" + typeString + "'");
-	}
+/**
+ * @since 6.4
+ */
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface FhirType {
+
+	FhirDataType value();
+	
 }

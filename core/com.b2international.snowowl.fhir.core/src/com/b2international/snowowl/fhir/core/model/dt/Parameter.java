@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.serialization;
+package com.b2international.snowowl.fhir.core.model.dt;
 
-import javax.validation.constraints.NotNull;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.ApiModel;
 
 /**
  * 
-  "resourceType" : "Parameters",
   // from Resource: id, meta, implicitRules, and language
   "parameter" : [{ // Operation Parameter
     "name" : "<string>", // R!  Name from the definition
@@ -62,49 +59,81 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("Parameter")
-public class SerializableParameter {
+@JsonDeserialize(builder=Parameter.Builder.class)
+public final class Parameter extends FhirProperty {
 
+	@JsonPOJOBuilder(withPrefix="")
+	public static class Builder extends FhirProperty.Builder<Parameter, Parameter.Builder> {
+		
+		private String name;
+		
+		Builder() {}
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		public Builder name(String name) {
+			this.name = name;
+			return this;
+		}
+		
+		public Builder part(List<Parameter> parameters) {
+			return setValue(FhirDataType.PART, new Parameters(parameters));
+		}
+		
+		@Override
+		protected Parameter doBuild() {
+			return new Parameter(name, type(), value());
+		}
+		
+	}
+	
 	private final String name;
-	private final String type;
-	@NotNull
-	private final Object value;
-
-	@JsonCreator
-	public SerializableParameter(
-			@JsonProperty("name") String name, 
-			@JsonProperty("type") String type, 
-			@JsonProperty("value") Object value) {
+	
+	Parameter(String name, FhirDataType type, Object value) {
+		super(type, value);
 		this.name = name;
-		this.type = type;
-		this.value = value;
 	}
 	
 	public String getName() {
 		return name;
 	}
-	
-	public String getType() {
-		return type;
+
+	public static Parameter valueString(String name, String value) {
+		return new Builder()
+				.name(name)
+				.valueString(value)
+				.build();
 	}
 	
-	public Object getValue() {
-		return value;
+	public static Parameter valueBoolean(String name, Boolean value) {
+		return new Builder()
+				.name(name)
+				.valueBoolean(value)
+				.build();
 	}
 	
-	@Override
-	public String toString() {
-		return "FhirParameter [name=" + name + ", type=" + type + ", value=" + value + "]";
+	public static Parameter valueUri(String name, String uri) {
+		return new Builder()
+				.name(name)
+				.valueUri(uri)
+				.build();
 	}
 	
-	/**
-	 * Returns the type of the parameter value.
-	 * For testing only.
-	 * @return
-	 */
-	@JsonIgnore
-	@SuppressWarnings("rawtypes")
-	public Class getValueType() {
-		return value.getClass();
+	public static Parameter valueCode(String name, String code) {
+		return new Builder()
+				.name(name)
+				.valueCode(code)
+				.build();
+	}
+	
+	public static Parameter part(String name, Parameter...parts) {
+		return new Builder()
+				.name(name)
+				.part(ImmutableList.copyOf(parts))
+				.build();
 	}
 	
 }

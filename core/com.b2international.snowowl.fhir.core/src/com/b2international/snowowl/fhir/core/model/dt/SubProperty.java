@@ -13,60 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.lookup;
+package com.b2international.snowowl.fhir.core.model.dt;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * @since 6.4
  */
-public final class SubProperty extends ParametersModel {
+@JsonPropertyOrder({"code", "value", "description"})
+public final class SubProperty extends FhirProperty {
 	
 	//Identifies the property returned (1..1)
-	@Order(value=1)
 	@NotNull
-	@Valid
-	private Code code;
-	
-	/*
-	 * The value of the property returned (0..1)
-	 * code | Coding | string | integer | boolean | dateTime
-	 */
-	@Order(value=2)
-	@NotNull //only subproperty value is 1..1, property.value is 0..1 (?)
-	private Object value;
+	private String code;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
-	@Order(value=3)
 	private String description;
 	
-	SubProperty(final Code code, final Object value, final String description) {
+	SubProperty(FhirDataType type, Object value, final String code, final String description) {
+		super(type, value);
 		this.code = code;
-		this.value = value;
 		this.description = description;
 	}
 	
-	public Code getCode() {
+	public String getCode() {
 		return code;
 	}
 	
-	public String getCodeValue() {
-		return code.getCodeValue();
-	}
-
-	/**
-	 * How are we going to get the proper type serialized?
-	 * @return
-	 */
-	public Object getValue() {
-		return value;
-	}
-
 	public String getDescription() {
 		return description;
 	}
@@ -75,30 +50,29 @@ public final class SubProperty extends ParametersModel {
 		return new Builder();
 	}
 	
-	public static final class Builder extends ValidatingBuilder<SubProperty> {
+	public static final class Builder extends FhirProperty.Builder<SubProperty, Builder> {
 		
-		private Code code;
-		private Object value;
+		private String code;
 		private String description;
 
 		public Builder code(final String code) {
-			this.code = new Code(code);
+			this.code = code;
 			return this;
 		}
 		
-		public Builder value(final Object value) {
-			this.value = value;
-			return this;
-		}
-
 		public Builder description(final String description) {
 			this.description = description;
 			return this;
 		}
 		
 		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		@Override
 		protected SubProperty doBuild() {
-			return new SubProperty(code, value, description);
+			return new SubProperty(type(), value(), code, description);
 		}
 	}
 

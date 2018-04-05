@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,17 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.lookup.ParameterizedDesignation;
 
 /**
  * Deserialized designation validation tests
  * 
- * @since 6.3
+ * @since 6.4
  */
-public class DesignationValidationTest extends ValidatorTest<ParameterizedDesignation> {
+public class DesignationValidationTest extends ValidatorTest<Designation> {
 	
 	private Builder builder = Issue.builder()
 			.code(IssueType.INVALID)
@@ -57,7 +57,7 @@ public class DesignationValidationTest extends ValidatorTest<ParameterizedDesign
 			.version("20180131")
 			.build();
 		
-		ParameterizedDesignation.builder()
+		Designation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			//.value("dValue")
@@ -81,7 +81,7 @@ public class DesignationValidationTest extends ValidatorTest<ParameterizedDesign
 			.version("20180131")
 			.build();
 		
-		ParameterizedDesignation.builder()
+		Designation.builder()
 			.languageCode("en_uk")
 			.use(coding)
 			.value("")
