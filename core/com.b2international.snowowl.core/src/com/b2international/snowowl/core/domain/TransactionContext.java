@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.domain;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -61,6 +62,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	void preCommit();
 
+	/**
+	 * Commits any changes made to {@link EObject}s into the store.
+	 * 
+	 * @return
+	 */
+	long commit();
+	
 	/**
 	 * Commits any changes made to {@link EObject}s into the store.
 	 * 
@@ -122,7 +130,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param type
 	 * @return
 	 */
-	<T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
+	<T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
 	 * Clears the entire content of the repository this context belongs to.

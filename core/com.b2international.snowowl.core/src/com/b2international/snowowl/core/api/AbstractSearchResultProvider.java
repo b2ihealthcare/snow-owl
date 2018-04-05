@@ -15,19 +15,16 @@
  */
 package com.b2international.snowowl.core.api;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
 /**
  * Abstract implementation that delegates the no-argument call to the context-based call with an empty context.
- * 
  *
- * @param <K>
- * @param <T>
+ * @param <T> - an implementation of {@link com.b2international.snowowl.core.domain.IComponent}
  */
-public abstract class AbstractSearchResultProvider<K extends Serializable, T extends IComponent<K>> {
+public abstract class AbstractSearchResultProvider<T extends com.b2international.snowowl.core.domain.IComponent> {
 
 	private static final Map<String, Object> EMPTY = ImmutableMap.of();
 	

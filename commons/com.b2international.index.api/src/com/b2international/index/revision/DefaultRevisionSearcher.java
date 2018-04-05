@@ -79,6 +79,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.scroll(query.getScrollKeepAlive())
+					.searchAfter(query.getSearchAfter())
 					.withScores(query.isWithScores())
 					.build();
 		} else {
@@ -94,6 +95,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
 					.scroll(query.getScrollKeepAlive())
+					.searchAfter(query.getSearchAfter())
 					.withScores(query.isWithScores())
 					.build();
 		}
@@ -102,6 +104,10 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
+		aggregation.query(Expressions.builder()
+				.must(aggregation.getQuery())
+				.filter(Revision.branchFilter(branch))
+			.build());
 		return searcher.aggregate(aggregation);
 	}
 	

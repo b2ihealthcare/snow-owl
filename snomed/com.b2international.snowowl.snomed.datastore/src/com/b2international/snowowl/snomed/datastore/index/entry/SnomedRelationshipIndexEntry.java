@@ -34,13 +34,13 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.collect.FluentIterable;
+import com.google.common.base.Strings;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -59,9 +59,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	public static Builder builder(final SnomedRelationship input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
@@ -83,9 +85,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	public static Builder builder(Relationship relationship) {
+		String id = relationship.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
-				.id(relationship.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(relationship.isActive())
 				.sourceId(relationship.getSource().getId())
 				.typeId(relationship.getType().getId())
@@ -101,9 +105,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
+		String id = input.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(input.cdoID()))
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
@@ -116,15 +122,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				.destinationNegated(input.isDestinationNegated())
 				.moduleId(input.getModuleId())
 				.effectiveTime(input.getEffectiveTime());
-	}
-	
-	public static Collection<SnomedRelationshipIndexEntry> fromRelationships(Iterable<SnomedRelationship> relationships) {
-		return FluentIterable.from(relationships).transform(new Function<SnomedRelationship, SnomedRelationshipIndexEntry>() {
-			@Override
-			public SnomedRelationshipIndexEntry apply(SnomedRelationship input) {
-				return builder(input).build();
-			}
-		}).toSet();
 	}
 	
 	public static final class Expressions extends SnomedComponentDocument.Expressions {
@@ -285,8 +282,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					unionGroup, 
 					destinationNegated,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
@@ -336,8 +333,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				referringMappingRefSets);
 
 		// XXX -1 is the default value
-		checkArgument(group >= -1, String.format("Group number '%s' may not be negative (relationship ID: %s).", group, id));
-		checkArgument(unionGroup >= -1, String.format("Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id));
+		checkArgument(group >= -1, "Group number '%s' may not be negative (relationship ID: %s).", group, id);
+		checkArgument(unionGroup >= -1, "Union group number '%s' may not be negative (relationship ID: %s).", unionGroup, id);
 
 		this.sourceId = sourceId;
 		this.typeId = typeId;

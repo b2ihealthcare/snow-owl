@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.IServiceChangeListener;
@@ -52,7 +52,6 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -87,9 +86,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
 
-	private static final String NAMESPACE_ASSIGNER_EXTENSION = "com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner";
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedReasonerServerService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner");
 	
 	private final IListener invalidationListener = new IListener() {
 		@Override 
@@ -152,7 +149,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
 	private final Cache<String, InitialReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
-	private final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner;
 	private final boolean concreteDomainSupportEnabled;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
@@ -160,11 +156,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 		this.taxonomyResultRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
 		this.taxonomyBuilderRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
-		this.namespaceAndModuleAssigner = checkNotNull(getNamespaceModuleAssigner(), "Could not find a namespace and module allocator in the extension registry");
 		this.concreteDomainSupportEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isConcreteDomainSupported();
 		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
-		LOGGER.info("Reasoner service will use the {} class for relationship/concrete domain namespace and module assignement.", namespaceAndModuleAssigner.getClass().getSimpleName());
 	}
 
 	public void registerListeners() {
@@ -189,10 +183,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-
-	private static SnomedNamespaceAndModuleAssigner getNamespaceModuleAssigner() {
-		return Extensions.getFirstPriorityExtension(NAMESPACE_ASSIGNER_EXTENSION, SnomedNamespaceAndModuleAssigner.class);
 	}
 
 	private void setStale(IBranchPath branchPath) {
@@ -436,8 +426,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			results.add(new UnsatisfiableSet(LongSets.toStringList(unsatisfiableConceptIds)));
 		}
 		
-		List<LongSet> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
-		for (LongSet equivalentConceptSet : equivalentConceptSets) {
+		List<LongCollection> equivalentConceptSets = taxonomy.getEquivalentConceptIds();
+		for (LongCollection equivalentConceptSet : equivalentConceptSets) {
 			List<String> equivalentIds = LongSets.toStringList(equivalentConceptSet);
 			String suggestedConcept = equivalentIds.remove(0);
 			results.add(new EquivalenceSet(suggestedConcept, equivalentIds));
@@ -474,7 +464,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				.setTaxonomy(taxonomy)
 				.setTaxonomyBuilder(taxonomyBuilder)
 				.setUserId(userId)
-				.setNamespaceAndModuleAssigner(namespaceAndModuleAssigner)
 				.buildAsync()
 				.execute(getEventBus())
 				.getSync();

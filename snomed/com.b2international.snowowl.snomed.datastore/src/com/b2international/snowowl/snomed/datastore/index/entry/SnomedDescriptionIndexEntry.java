@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -89,9 +90,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	public static Builder builder(final SnomedDescription input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
 				.languageCode(input.getLanguageCode())
@@ -119,9 +122,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	public static Builder builder(Description description) {
+		String id = description.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-				.id(description.getId()) 
+				.id(id) 
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(description.getTerm())
 				.moduleId(description.getModule().getId())
 				.released(description.isReleased()) 
@@ -141,9 +146,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 * @return
 	 */
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
+		String id = doc.getId();
 		return builder()
 				.storageKey(doc.getStorageKey())
-				.id(doc.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
 				.moduleId(doc.getModuleId())
 				.released(doc.isReleased())
@@ -392,8 +399,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					preferredIn, 
 					acceptableIn,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

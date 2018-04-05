@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 
 import java.util.Collection;
 
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
@@ -33,9 +31,14 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 	enum OptionKey {
 		
 		/**
-		 * Filters component to be members of the specified reference sets.
+		 * Filters component to be active members of the specified reference sets.
 		 */
 		ACTIVE_MEMBER_OF,
+		
+		/**
+		 * Filters matches to be active/inactive members of the specified reference sets.
+		 */
+		MEMBER_OF,
 		
 		/**
 		 * Namespace part of the component ID to match (?)
@@ -44,18 +47,19 @@ public abstract class SnomedComponentSearchRequest<R, D extends SnomedComponentD
 		
 	}
 	
+	protected final void addMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.MEMBER_OF)) {
+			final Collection<String> refSetFilters = getCollection(OptionKey.MEMBER_OF, String.class);
+			final Collection<String> referringRefSetIds = evaluateEclFilter(context, refSetFilters);
+			queryBuilder.filter(SnomedComponentDocument.Expressions.memberOf(referringRefSetIds));
+		}
+	}
+	
 	protected final void addActiveMemberOfClause(BranchContext context, ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE_MEMBER_OF)) {
 			final Collection<String> refSetFilters = getCollection(OptionKey.ACTIVE_MEMBER_OF, String.class);
-			
 			final Collection<String> referringRefSetIds = evaluateEclFilter(context, refSetFilters);
-			
-			final Expression expression = Expressions
-					.builder()
-					.should(SnomedComponentDocument.Expressions.referringRefSets(referringRefSetIds))
-					.should(SnomedComponentDocument.Expressions.referringMappingRefSets(referringRefSetIds))
-					.build();
-			queryBuilder.filter(expression);
+			queryBuilder.filter(SnomedComponentDocument.Expressions.activeMemberOf(referringRefSetIds));
 		}
 	}
 	

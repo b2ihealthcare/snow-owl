@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@ package com.b2international.snowowl.snomed.importer.rf2.command;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -41,9 +43,8 @@ import com.google.common.collect.Maps;
 public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 
 	public ListLanguageRefSetsCommand() {
-		super("rf2_languages", "<path>", "Lists all available language type reference set identifiers in a release archive", new String[] {
-				"<path>\t\tSpecifies the release archive to scan."
-		});
+		super("rf2_languages", "<path>", "Lists all available language type reference set identifiers in a release archive",
+				new String[] { "<path>\t\tSpecifies the release archive to scan." });
 	}
 
 	@Override
@@ -93,52 +94,58 @@ public class ListLanguageRefSetsCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 
-		final Collection<String> languageRefSetFileNames = archiveFileSet.getAllFileName(zipFiles, ReleaseComponentType.LANGUAGE_REFERENCE_SET, contentSubType);
+		final Map<String, String> languageRefsetToLabelMap = Maps.newHashMap();
+		final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
 		
-		final Map<String, String> $ = Maps.newHashMap();
+		config.setArchiveFile(archiveFile);
 		
-		for (final String languageRefSetFileName : languageRefSetFileNames) {
+		final Set<File> languageRefSetFiles = archiveFileSet
+				.getAllFileName(zipFiles, ReleaseComponentType.LANGUAGE_REFERENCE_SET, contentSubType)
+				.stream()
+				.map(fileName -> new File(fileName))
+				.collect(Collectors.toSet());
 		
-			final File languageRefSetFile = new File(languageRefSetFileName);
-			interpreter.println("Searching for language type reference sets in '" + languageRefSetFile.getName() + "'...");
-			
-			final ImportConfiguration config = new ImportConfiguration(Branch.MAIN_PATH);
-	
-			// Setting up configuration only with the required fields
-			config.setSourceKind(ImportSourceKind.ARCHIVE);
-			config.setArchiveFile(archiveFile);
-			config.setDescriptionsFile(new File(archiveFileSet.getFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType)));
-			config.setLanguageRefSetFile(languageRefSetFile);
-	
-			final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(config, new NullProgressMonitor(), "");
-	
-			try {
-				provider.parse(config.toURL(config.getLanguageRefSetFile()));
-			} catch (final IOException e) {
-				interpreter.println(e);
-				return;
-			}
+		final Set<File> descriptionFiles = archiveFileSet
+				.getAllFileName(zipFiles, ReleaseComponentType.DESCRIPTION, contentSubType)
+				.stream()
+				.map(fileName -> new File(fileName))
+				.collect(Collectors.toSet());
 
-			for (final Entry<String, String> label : provider.getAvailableLabels().entrySet()) {
-				$.put(label.getKey(), label.getValue());
+		descriptionFiles.forEach(file -> config.addDescriptionFile(file));
+		
+		Set<URL> refsetUrls = languageRefSetFiles.stream().map(file -> {
+			try {
+				return config.toURL(file);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
-			
+		}).collect(Collectors.toSet());
+		
+		final SnomedRefSetNameCollector provider = new SnomedRefSetNameCollector(refsetUrls, config, new NullProgressMonitor());
+		provider.parse();
+		
+		// Setting up configuration only with the required fields
+		config.setSourceKind(ImportSourceKind.ARCHIVE);
+		config.setArchiveFile(archiveFile);
+		
+		for (final Entry<String, String> label : provider.getRefsetIdToLabelMap().entrySet()) {
+			languageRefsetToLabelMap.put(label.getKey(), label.getValue());
 		}
 		
-		if ($.isEmpty()) {
+		if (languageRefsetToLabelMap.isEmpty()) {
 			interpreter.println("No language reference sets could be found in release archive.");
 			return;
 		}
 
 		interpreter.println("\n---------------------------------------------------------------------\n");
 
-		for (final Entry<String, String> label : $.entrySet()) {
+		for (final Entry<String, String> label : languageRefsetToLabelMap.entrySet()) {
 			final StringBuilder sb = new StringBuilder();
 			sb.append("\t");
 			sb.append(label.getKey());
-			sb.append("|");
+			sb.append(" | ");
 			sb.append(label.getValue().trim());
-			sb.append("|");
+			sb.append(" | ");
 			interpreter.println(sb.toString());
 		}
 		

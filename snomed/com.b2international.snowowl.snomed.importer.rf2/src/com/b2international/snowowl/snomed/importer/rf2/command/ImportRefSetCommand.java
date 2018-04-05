@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			}
 
 			try {
-				configuration.addRefSetSource(refSetFile.toURI().toURL());
+				configuration.addRefSetURL(refSetFile.toURI().toURL());
 			} catch (final MalformedURLException e) {
 				interpreter.println(e);
 			}
@@ -124,7 +124,7 @@ public class ImportRefSetCommand extends AbstractRf2ImporterCommand {
 			return;
 		}
 		
-		configuration.setVersion(contentSubType);
+		configuration.setContentSubType(contentSubType);
 		configuration.setSourceKind(ImportSourceKind.FILES);
 		
 		if ("-x".equals(arg)) {

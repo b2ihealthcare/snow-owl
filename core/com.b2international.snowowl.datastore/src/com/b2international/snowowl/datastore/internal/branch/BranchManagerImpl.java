@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 		final String path = toAbsolutePath(parent.path(), name);
 		Branch existingBranch = getBranchFromStore(path);
-		if (existingBranch != null) {
+		if (existingBranch != null && !existingBranch.isDeleted()) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
 			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
 		} else {
@@ -106,7 +106,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 			public InternalBranch call() throws Exception {
 				// check again and return if exists, otherwise open the child branch
 				final Branch existingBranch = getBranchFromStore(toAbsolutePath(parentPath, name));
-				if (existingBranch != null) {
+				if (existingBranch != null && !existingBranch.isDeleted()) {
 					return (InternalBranch) existingBranch;
 				} else {
 					final InternalBranch createdBranch = doReopen(parent, name, metadata);

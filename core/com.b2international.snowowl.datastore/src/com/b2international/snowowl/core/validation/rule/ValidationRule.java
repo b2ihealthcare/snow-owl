@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,25 @@ public final class ValidationRule implements Serializable {
 	 * @since 6.0
 	 */
 	public enum Severity {
-		ERROR,
-		WARNING
+		ERROR("Error", 3),
+		WARNING("Warning", 2),
+		INFO("Info", 1);
+		
+		private final String name;
+		private int value;
+		
+		private Severity(String name, int value) {
+			this.name = name;
+			this.value = value;
+		}
+
+		public String getName() {
+			return name;
+		}
+		
+		public int getValue() {
+			return value;
+		}
 	}
 	
 	/**

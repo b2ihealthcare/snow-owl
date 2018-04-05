@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -29,9 +31,18 @@ public final class ValidateRequestBuilder
 
 	ValidateRequestBuilder() {}
 	
+	private Collection<String> ruleIds;
+	
+	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
+		this.ruleIds = ruleIds;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<BranchContext, ValidationResult> doBuild() {
-		return new ValidateRequest();
+		ValidateRequest validateRequest = new ValidateRequest();
+		validateRequest.setRuleIds(ruleIds);
+		return validateRequest;
 	}
 
 }

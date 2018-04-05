@@ -16,18 +16,16 @@
 package com.b2international.index.admin;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,7 +33,6 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
@@ -129,7 +126,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 		
  		// wait until the cluster processes each index create request
-		waitForYellowHealth(getAllIndexes());
+		waitForYellowHealth(getAllIndexes().toArray(new String[]{}));
 		log.info("'{}' indexes are ready.", name);
 	}
 
@@ -150,10 +147,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.build();
 	}
 	
-	private void waitForYellowHealth(Set<String> indexes) {
-		if (!CompareUtils.isEmpty(indexes)) {
+	private void waitForYellowHealth(String...indices) {
+		if (!CompareUtils.isEmpty(indices)) {
 			ClusterHealthResponse clusterHealthResponse = client().admin().cluster()
-				.prepareHealth(indexes.toArray(new String[indexes.size()]))
+				.prepareHealth(indices)
 				.setWaitForYellowStatus()
 				.setTimeout("3m") // wait 3 minutes for yellow status
 				.get();
@@ -336,20 +333,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
-			final List<Future<RefreshResponse>> futures = newArrayList();
-			for (DocumentMapping mapping : typesToRefresh) {
-				final String typeIndex = getTypeIndex(mapping);
-				log.trace("Refreshing indexes '{}'", typeIndex);
-				futures.add(client().admin().indices().prepareRefresh(typeIndex).execute());
-			}
-			for (Future<RefreshResponse> future : futures) {
-				try {
-					future.get();
-				} catch (InterruptedException | ExecutionException e) {
-					throw new IndexException("Failed to refresh index", e);
-				}
-			}
-			waitForYellowHealth(typesToRefresh.stream().map(this::getTypeIndex).collect(Collectors.toSet()));
+			String[] indicesToRefresh = typesToRefresh.stream().map(this::getTypeIndex).collect(toSet()).toArray(new String[0]);
+			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
+			client().admin()
+			        .indices()
+			        .prepareRefresh(indicesToRefresh)
+			        .get();
+			waitForYellowHealth();
 		}
 	}
 	

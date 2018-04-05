@@ -222,26 +222,25 @@ public class EsDocumentWriter implements Writer {
 			boolean created = r.getCreated() > 0;
 			if (created) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Created {} {} documents with script '{}'", r.getCreated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean updated = r.getUpdated() > 0;
 			if (updated) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Updated {} {} documents with script '{}'", r.getUpdated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean deleted = r.getDeleted() > 0;
 			if (deleted) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Deleted {} {} documents with script '{}'", r.getDeleted(), mapping.typeAsString(), update.getScript());
 			}
 			
 			if (!created && !updated && !deleted) {
-				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', no-ops ({}), conflicts ({})", 
 						mapping.typeAsString(), 
 						update.getScript(), 
-						update.getParams(), 
 						r.getNoops(), 
 						r.getVersionConflicts());
 			}
@@ -275,6 +274,7 @@ public class EsDocumentWriter implements Writer {
 				--attempts;
 				try {
 					Thread.sleep(100 + random.nextInt(900));
+					admin.refresh(Collections.singleton(mapping));
 				} catch (InterruptedException e) {
 					throw new IndexException("Interrupted", e);
 				}

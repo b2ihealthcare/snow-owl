@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class ImportRequest extends RequestWithMonitoring<Boolean> {
 
 	private final File sourceDir;
 	private final TerminologyImportType importType;
-	private Set<Long> visitedComponentStorageKeys;
+	private Set<String> visitedComponentIds;
 	private Set<TerminologyImportValidationDefect> defects;
 	
 	/**
@@ -126,11 +126,11 @@ public class ImportRequest extends RequestWithMonitoring<Boolean> {
 		boolean importOk = in.readBoolean();
 		
 		if (importOk) {
-			visitedComponentStorageKeys = Sets.newHashSet();
+			visitedComponentIds = Sets.newHashSet();
 			int size = in.readInt();
 			
 			for (int i = 0; i < size; i++) {
-				visitedComponentStorageKeys.add(in.readLong());
+				visitedComponentIds.add(in.readUTF());
 			}
 		} else {
 			int size = in.readInt();
@@ -183,8 +183,8 @@ public class ImportRequest extends RequestWithMonitoring<Boolean> {
 		return 85;
 	}
 
-	public Set<Long> getVisitedComponentStorageKeys() {
-		return visitedComponentStorageKeys;
+	public final Set<String> getVisitedComponentIds() {
+		return visitedComponentIds;
 	}
 	
 	public Set<TerminologyImportValidationDefect> getDefects() {

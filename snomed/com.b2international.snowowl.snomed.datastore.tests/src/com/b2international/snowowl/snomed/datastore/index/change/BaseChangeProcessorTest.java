@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateRelationshipId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
@@ -37,6 +38,8 @@ import org.eclipse.emf.cdo.common.revision.CDORevisionFactory;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.common.revision.CDORevisionImpl;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDOAddFeatureDeltaImpl;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDORemoveFeatureDeltaImpl;
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
 import org.eclipse.emf.cdo.view.CDOView;
@@ -52,6 +55,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedFactory;
@@ -124,6 +128,16 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	
 	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
 		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue, oldValue);
+		getRevisionDelta(object).addFeatureDelta(featureDelta);
+	}
+	
+	protected final void registerAddRevisionDelta(CDOObject object, EStructuralFeature feature, int index, Object value) {
+		final CDOAddFeatureDeltaImpl featureDelta = new CDOAddFeatureDeltaImpl(feature, index, value);
+		getRevisionDelta(object).addFeatureDelta(featureDelta);
+	}
+	
+	protected final void registerRemoveRevisionDelta(CDOObject object, EStructuralFeature feature, int index) {
+		final CDORemoveFeatureDeltaImpl featureDelta = new CDORemoveFeatureDeltaImpl(feature, index);
 		getRevisionDelta(object).addFeatureDelta(featureDelta);
 	}
 	
@@ -266,6 +280,34 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		member.setRefSet(refSet);
 		member.setUuid(UUID.randomUUID().toString());
 		return member;
+	}
+	
+	protected Description createFsnWithTwoAcceptabilityMembers() {
+		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
+		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
+		final SnomedLanguageRefSetMember preferredMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
+		description.getLanguageRefSetMembers().add(acceptableMember);
+		description.getLanguageRefSetMembers().add(preferredMember);
+		return description;
+	}
+	
+	protected Description createDescription(String typeId, String term) {
+		return createDescription(generateConceptId(), typeId, term);
+	}
+	
+	protected Description createDescription(String conceptId, String typeId, String term) {
+		final Description description = SnomedFactory.eINSTANCE.createDescription();
+		withCDOID(description, nextStorageKey());
+		description.setActive(true);
+		description.setCaseSignificance(getConcept(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
+		description.setConcept(getConcept(conceptId));
+		description.setId(generateDescriptionId());
+		description.setLanguageCode("en");
+		description.setModule(module());
+		description.setReleased(false);
+		description.setTerm("Term");
+		description.setType(getConcept(typeId));
+		return description;
 	}
 
 }

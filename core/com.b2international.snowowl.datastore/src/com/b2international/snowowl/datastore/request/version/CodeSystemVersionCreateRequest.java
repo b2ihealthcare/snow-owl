@@ -322,6 +322,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			final Set<ICodeSystemVersion> versions = newHashSet();
 			versions.addAll(requestBuilder
+					.all()
 					.build(repositoryId)
 					.execute(context.service(IEventBus.class))
 					.getSync()

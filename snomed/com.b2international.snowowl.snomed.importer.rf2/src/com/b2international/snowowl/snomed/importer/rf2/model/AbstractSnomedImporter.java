@@ -64,8 +64,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -351,26 +349,20 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 
 	protected final LongValueMap<String> getAvailableComponents() {
 		final String branch = getImportContext().getEditingContext().getBranch();
-		return getIndex().read(branch, new RevisionIndexRead<LongValueMap<String>>() {
-			@Override
-			public LongValueMap<String> execute(RevisionSearcher index) throws IOException {
-				final Query<? extends SnomedDocument> query = Query.select(getType())
-						.fields(SnomedDocument.Fields.ID, SnomedDocument.Fields.EFFECTIVE_TIME)
-						.where(getAvailableComponentQuery())
-						.limit(Integer.MAX_VALUE)
-						.build();
-				final Hits<? extends SnomedDocument> hits = index.search(query);
-				final int totalHits = hits.getTotal();
-				if (totalHits <= 0) {
-					return PrimitiveMaps.newObjectKeyLongOpenHashMap();
-				} else {
-					final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(totalHits);
-					for (SnomedDocument hit : hits) {
-						result.put(hit.getId(), hit.getEffectiveTime());
-					}
-					return result;
+		return getIndex().read(branch, index -> {
+			final Query<String[]> query = Query.select(String[].class)
+					.from(getType())
+					.fields(SnomedDocument.Fields.ID, SnomedDocument.Fields.EFFECTIVE_TIME)
+					.where(getAvailableComponentQuery())
+					.limit(10000)
+					.build();
+			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap();
+			for (Hits<String[]> hits : index.scroll(query)) {
+				for (String[] hit : hits) {
+					result.put(hit[0], Long.parseLong(hit[1]));
 				}
 			}
+			return result;
 		});
 	}
 	

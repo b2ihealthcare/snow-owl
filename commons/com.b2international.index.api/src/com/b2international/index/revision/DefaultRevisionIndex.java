@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,12 @@ import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
-import com.b2international.index.IndexRead;
-import com.b2international.index.IndexWrite;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.admin.IndexAdmin;
@@ -39,7 +35,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
@@ -49,7 +44,9 @@ import com.google.common.collect.Sets;
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
+	private static final String SCROLL_KEEP_ALIVE = "2m";
 	private static final int PURGE_LIMIT = 100_000;
+	
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
 
@@ -87,12 +84,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public <T> T read(final RevisionBranch branch, final RevisionIndexRead<T> read) {
-		return index.read(new IndexRead<T>() {
-			@Override
-			public T execute(DocSearcher index) throws IOException {
-				return read.execute(new DefaultRevisionSearcher(branch, index));
-			}
-		});
+		return index.read(index -> read.execute(new DefaultRevisionSearcher(branch, index)));
 	}
 	
 	@Override
@@ -100,13 +92,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		if (branchPath.endsWith(BASE_REF_CHAR)) {
 			throw new IllegalArgumentException(String.format("It is illegal to modify a branch's base point (%s).", branchPath));
 		}
-		return index.write(new IndexWrite<T>() {
-			@Override
-			public T execute(Writer index) throws IOException {
-				final RevisionBranch branch = getBranch(branchPath);
-				final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
-				return write.execute(writer);
-			}
+		return index.write(index -> {
+			final RevisionBranch branch = getBranch(branchPath);
+			final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
+			return write.execute(writer);
 		});
 	}
 	
@@ -121,109 +110,100 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	private RevisionCompare compare(final RevisionBranch base, final RevisionBranch compare) {
-		return index.read(new IndexRead<RevisionCompare>() {
-			@Override
-			public RevisionCompare execute(DocSearcher searcher) throws IOException {
-				final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
-				final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
-				final RevisionBranch baseOfCompareBranch = new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath);
-				
-				final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
-				final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
-				
-				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> newOrChangedRevisions = ArrayListMultimap.create();
-				final Multimap<Class<? extends Revision>, Revision.Views.StorageKeyAndHash> deletedOrChangedRevisions = ArrayListMultimap.create();
-				
-				// query all registered revision types for new, changed and deleted components
-				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Query<Revision.Views.StorageKeyAndHash> newOrChangedQuery = Query
-							.select(Revision.Views.StorageKeyAndHash.class)
-							.from(typeToCompare)
-							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
-							.where(Revision.branchSegmentFilter(segmentsToCompare))
-							.limit(Integer.MAX_VALUE)
-							.build();
-					final Hits<Revision.Views.StorageKeyAndHash> newOrChangedHits = searcher.search(newOrChangedQuery);
-					for (Revision.Views.StorageKeyAndHash newOrChangedHit : newOrChangedHits) {
+		return index.read(searcher -> {
+			final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
+			final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
+			final RevisionBranch baseOfCompareBranch = new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath);
+			
+			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
+			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
+			
+			final Multimap<Class<? extends Revision>, Long> newOrChangedRevisions = ArrayListMultimap.create();
+			final Multimap<Class<? extends Revision>, Long> deletedOrChangedRevisions = ArrayListMultimap.create();
+			
+			// query all registered revision types for new, changed and deleted components
+			for (Class<? extends Revision> typeToCompare : typesToCompare) {
+				final Query<Long> newOrChangedQuery = Query
+						.select(Long.class)
+						.from(typeToCompare)
+						.fields(Revision.STORAGE_KEY)
+						.where(Revision.branchSegmentFilter(segmentsToCompare))
+						.scroll(SCROLL_KEEP_ALIVE)
+						.limit(10000)
+						.build();
+				for (final Hits<Long> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
+					for (Long newOrChangedHit : newOrChangedHits) {
 						newOrChangedRevisions.put(typeToCompare, newOrChangedHit);
 					}
-					
-					// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-					final Query<Revision.Views.StorageKeyAndHash> deletedOrChangedQuery = Query
-							.select(Revision.Views.StorageKeyAndHash.class)
-							.from(typeToCompare)
-							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
-							.where(Expressions.builder()
-									.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
-									.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
-									.build())
-							.limit(Integer.MAX_VALUE)
-							.build();
-					final Hits<Revision.Views.StorageKeyAndHash> deletedOrChangedHits = searcher.search(deletedOrChangedQuery);
-					for (Revision.Views.StorageKeyAndHash deletedOrChanged : deletedOrChangedHits) {
+				}
+				
+				// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
+				final Query<Long> deletedOrChangedQuery = Query
+						.select(Long.class)
+						.from(typeToCompare)
+						.fields(Revision.STORAGE_KEY)
+						.where(Expressions.builder()
+								.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
+								.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+								.build())
+						.scroll(SCROLL_KEEP_ALIVE)
+						.limit(10000)
+						.build();
+				for (Hits<Long> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
+					for (Long deletedOrChanged : deletedOrChangedHits) {
 						deletedOrChangedRevisions.put(typeToCompare, deletedOrChanged);
 					}
 				}
+			}
+			
+			for (Class<? extends Revision> typeToCompare2 : typesToCompare) {
+				final Collection<Long> newOrChangedRevisionsByStorageKey = newOrChangedRevisions.get(typeToCompare2);
+				final Collection<Long> deletedOrChangedRevisionsByStorageKey = deletedOrChangedRevisions.get(typeToCompare2);
 				
-				for (Class<? extends Revision> typeToCompare : typesToCompare) {
-					final Map<Long, Revision.Views.StorageKeyAndHash> newOrChangedRevisionsByStorageKey = Maps.uniqueIndex(newOrChangedRevisions.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
-					final Map<Long, Revision.Views.StorageKeyAndHash> deletedOrChangedRevisionsByStorageKey = Maps.uniqueIndex(deletedOrChangedRevisions.get(typeToCompare), Revision.Views.StorageKeyAndHash::getStorageKey);
-					
-					for (Long newOrChangedStorageKey : newOrChangedRevisionsByStorageKey.keySet()) {
-						if (deletedOrChangedRevisionsByStorageKey.keySet().contains(newOrChangedStorageKey)) {
-							// CHANGED
-							// check that the hash of the two documents changed since then, if it did, then register as changed, otherwise skip
-							final String newOrChangedHash = newOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
-							final String deletedOrChangedHash = deletedOrChangedRevisionsByStorageKey.get(newOrChangedStorageKey)._hash();
-							// XXX register documents as changed if they do not have a hash value indexed (certain index implementation might not be able to compute and store it)
-							if ((newOrChangedHash == null && deletedOrChangedHash == null) || !Objects.equals(newOrChangedHash, deletedOrChangedHash)) {
-								result.changedRevision(typeToCompare, newOrChangedStorageKey);
-							}
-						} else {
-							// NEW
-							result.newRevision(typeToCompare, newOrChangedStorageKey);
-						}
-					}
-					
-					for (Long deletedOrChangedStorageKey : deletedOrChangedRevisionsByStorageKey.keySet()) {
-						if (!newOrChangedRevisionsByStorageKey.keySet().contains(deletedOrChangedStorageKey)) {
-							// DELETED
-							result.deletedRevision(typeToCompare, deletedOrChangedStorageKey);
-						}
+				for (Long newOrChangedStorageKey : newOrChangedRevisionsByStorageKey) {
+					if (deletedOrChangedRevisionsByStorageKey.contains(newOrChangedStorageKey)) {
+						// CHANGED
+						result.changedRevision(typeToCompare2, newOrChangedStorageKey);
+					} else {
+						// NEW
+						result.newRevision(typeToCompare2, newOrChangedStorageKey);
 					}
 				}
 				
-				return result.build();
+				for (Long deletedOrChangedStorageKey : deletedOrChangedRevisionsByStorageKey) {
+					if (!newOrChangedRevisionsByStorageKey.contains(deletedOrChangedStorageKey)) {
+						// DELETED
+						result.deletedRevision(typeToCompare2, deletedOrChangedStorageKey);
+					}
+				}
 			}
+			
+			return result.build();
 		});
 	}
 	
 	@Override
 	public void purge(final String branchPath, final Purge purge) {
 		final RevisionBranch branch = getBranch(branchPath);
-		index.write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				// TODO support selective type purging
-				final Set<Class<? extends Revision>> typesToPurge = getRevisionTypes();
-				
-				switch (purge) {
-				case ALL: 
-					purge(branch.path(), index, typesToPurge, branch.segments());
-					break;
-				case HISTORY:
-					final Set<Integer> segmentsToPurge = newHashSet(branch.segments());
-					segmentsToPurge.remove(branch.segmentId());
-					purge(branch.path(), index, typesToPurge, segmentsToPurge);
-					break;
-				case LATEST:
-					purge(branch.path(), index, typesToPurge, Collections.singleton(branch.segmentId()));
-					break;
-				default: throw new UnsupportedOperationException("Unsupported purge: " + purge);
-				}
-				return null;
+		index.write(index -> {
+			// TODO support selective type purging
+			final Set<Class<? extends Revision>> typesToPurge = getRevisionTypes();
+			
+			switch (purge) {
+			case ALL: 
+				purge(branch.path(), index, typesToPurge, branch.segments());
+				break;
+			case HISTORY:
+				final Set<Integer> segmentsToPurge = newHashSet(branch.segments());
+				segmentsToPurge.remove(branch.segmentId());
+				purge(branch.path(), index, typesToPurge, segmentsToPurge);
+				break;
+			case LATEST:
+				purge(branch.path(), index, typesToPurge, Collections.singleton(branch.segmentId()));
+				break;
+			default: throw new UnsupportedOperationException("Unsupported purge: " + purge);
 			}
-
+			return null;
 		});
 	}
 	
@@ -250,7 +230,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				.from(revisionType)
 				.fields(DocumentMapping._ID)
 				.where(purgeQuery.build())
-				.scroll("10m") 
+				.scroll(SCROLL_KEEP_ALIVE) 
 				.limit(PURGE_LIMIT)
 				.build();
 			

@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Date;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,8 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteLists;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.eventbus.EventBusUtil;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -50,6 +53,7 @@ public class ValidationWhiteListApiTest {
 		index.admin().create();
 		final ValidationRepository repository = new ValidationRepository(index);
 		context = ServiceProvider.EMPTY.inject()
+				.bind(IEventBus.class, EventBusUtil.getBus())
 				.bind(ValidationRepository.class, repository)
 				.build();
 	}
@@ -108,7 +112,8 @@ public class ValidationWhiteListApiTest {
 		createWhiteLists("6", componentIdentifier);
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
-			.filterByComponentIdentifier(componentIdentifier)
+			.filterByComponentIdentifier(componentIdentifier.getComponentId())
+			.filterByComponentType(componentIdentifier.getTerminologyComponentId())
 			.buildAsync().getRequest()
 			.execute(context);
 		
@@ -129,10 +134,12 @@ public class ValidationWhiteListApiTest {
 	
 	private String createWhiteLists(final String ruleId, final ComponentIdentifier componentIdentifier) {
 		return ValidationRequests.whiteList().prepareCreate()
-			.setRuleId(ruleId)
-			.setComponentIdentifier(componentIdentifier)
-			.buildAsync().getRequest()
-			.execute(context);
+				.setReporter("test")
+				.setCreatedAt(new Date().getTime())
+				.setRuleId(ruleId)
+				.setComponentIdentifier(componentIdentifier)
+				.buildAsync().getRequest()
+				.execute(context);
 	}
 	
 	private ValidationWhiteLists getWhiteLists() throws Exception {

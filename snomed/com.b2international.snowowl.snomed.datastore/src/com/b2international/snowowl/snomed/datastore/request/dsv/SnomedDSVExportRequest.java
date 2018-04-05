@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.rmi.server.ExportException;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,11 +86,14 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 
 	private File doExport(SnomedRefSetDSVExportModel exportModel) throws Exception {
 		SnomedRefSetDSVExportClientRequest dsvRequest = new SnomedRefSetDSVExportClientRequest(SnomedClientProtocol.getInstance(), exportModel);
-		File exportFile = dsvRequest.send(new Monitor());
 
+		File exportFile = dsvRequest.send(new Monitor());
 		SnomedExportResult result = dsvRequest.getExportResult();
-		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
+		if (result.getResult().equals(SnomedExportResult.Result.CANCELED) || result.getResult().equals(SnomedExportResult.Result.EXCEPTION)) {
+			throw new ExportException(result.getMessage());
+		}
 		
+		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
 		return exportFile;
 	}
 

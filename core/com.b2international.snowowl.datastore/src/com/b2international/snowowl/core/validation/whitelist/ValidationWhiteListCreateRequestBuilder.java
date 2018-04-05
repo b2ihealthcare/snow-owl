@@ -15,21 +15,25 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryRequestBuilder;
 
 /**
  * @since 6.1
  */
 public final class ValidationWhiteListCreateRequestBuilder 
-	extends BaseRequestBuilder<ValidationWhiteListCreateRequestBuilder, ServiceProvider, String> 
-	implements SystemRequestBuilder<String> {
+	extends BaseRequestBuilder<ValidationWhiteListCreateRequestBuilder, ValidationRepositoryContext, String> 
+	implements ValidationRepositoryRequestBuilder<String> {
 
 	private String ruleId;
 	private ComponentIdentifier componentIdentifier;
+	private String reporter;
+	private long createdAt = new Date().getTime();
 	
 	ValidationWhiteListCreateRequestBuilder() {}
 	
@@ -42,12 +46,24 @@ public final class ValidationWhiteListCreateRequestBuilder
 		this.componentIdentifier = componentIdentifier;
 		return getSelf();
 	}
-
+	
+	public ValidationWhiteListCreateRequestBuilder setReporter(String reporter) {
+		this.reporter = reporter;
+		return getSelf();
+	}
+	
+	public ValidationWhiteListCreateRequestBuilder setCreatedAt(long createdAt) {
+		this.createdAt = createdAt;
+		return getSelf();
+	}
+	
 	@Override
-	protected Request<ServiceProvider, String> doBuild() {
+	protected Request<ValidationRepositoryContext, String> doBuild() {
 		ValidationWhiteListCreateRequest req = new ValidationWhiteListCreateRequest();
 		req.setRuleId(ruleId);
 		req.setComponentIdentifier(componentIdentifier);
+		req.setReporter(reporter);
+		req.setCreatedAt(createdAt);
 		return req;
 	}
 	

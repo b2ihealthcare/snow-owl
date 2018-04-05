@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,14 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.b2international.index.Script;
-import com.b2international.index.WithHash;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.ImmutableSet;
-
 
 /**
  * @since 4.7
@@ -45,35 +41,6 @@ import com.google.common.collect.ImmutableSet;
 		+ "    ctx._source.replacedIns.add(params.segmentId);"
 		+ "}")
 public abstract class Revision implements WithId {
-
-	public static class Views {
-		
-		public static final class StorageKeyAndHash implements WithHash {
-			private final long storageKey;
-			private String _hash;
-
-			@JsonCreator
-			public StorageKeyAndHash(@JsonProperty(Revision.STORAGE_KEY) long storageKey, @JsonProperty(DocumentMapping._HASH) String _hash) {
-				this.storageKey = storageKey;
-				this._hash = _hash;
-			}
-			
-			public long getStorageKey() {
-				return storageKey;
-			}
-			
-			@Override
-			public String _hash() {
-				return _hash;
-			}
-			
-			@Override
-			public void set_hash(String _hash) {
-				this._hash = _hash;
-			}
-			
-		}
-	}
 	
 	public static final String STORAGE_KEY = "storageKey";
 	public static final String BRANCH_PATH = "branchPath";
@@ -182,5 +149,4 @@ public abstract class Revision implements WithId {
 				.mustNot(matchAnyInt(Revision.REPLACED_INS, segments))
 				.build();
 	}
-
 }

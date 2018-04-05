@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.importer.net4j;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,53 +39,39 @@ import com.google.common.collect.Sets;
 public final class ImportConfiguration {
 
 	public static final String ARCHIVE_FILE_PROPERTY = "archiveFile";
-	public static final String ROOT_FILE_PROPERTY = "rootFile";
-	public static final String CONCEPTS_FILE_PROPERTY = "conceptsFile";
-	public static final String DESCRIPTIONS_FILE_PROPERTY = "descriptionsFile";
-	public static final String RELATIONSHIPS_FILE_PROPERTY = "relationshipsFile";
-	public static final String STATED_RELATIONSHIPS_FILE_PROPERTY = "statedRelationshipsFile";
-	public static final String LANGUAGE_REF_SET_FILE_PROPERTY = "languageRefSetFile";
-	public static final String LANGUAGE_REF_SET_ID_PROPERTY = "languageRefSetId";
-	public static final String IMPORT_SOURCE_KIND_PROPERTY = "sourceKind";
-	public static final String DESCRIPTION_TYPE_REFSET_FILE_PROPERTY = "descriptionType";
-	public static final String TEXT_DEFINITION_FILE_PROPERTY = "textDefinitionFile";
-	public static final String VERSION_PROPERTY = "version";
+	public static final String CONTENTSUBTYPE = "contentSubType";
 	public static final String CREATE_VERSIONS_PROPERTY = "createVersions";
 	
 	public enum ImportSourceKind {
 		ARCHIVE,
-		ROOT_DIRECTORY,
 		FILES;
 	}
 	
-	private File archiveFile;
-	private File rootFile;
-	private File conceptsFile;
-	private File descriptionsFile;
-	private File relationshipsFile;
-	private File statedRelationshipsFile;
-	private File languageRefSetFile;
-	private File descriptionType;
-	private File textDefinitionFile;
-	
-	private ImportSourceKind sourceKind = ImportSourceKind.ARCHIVE;
-	private ContentSubType version = ContentSubType.DELTA;
-	private final Set<URL> additionalRefSetURLs = Sets.newHashSet(); 
-	private final Set<String> excludedRefSetIds = Sets.newHashSet();
-	
+	private final String branchPath;
 	private String codeSystemShortName;
 	private boolean createVersions;
 	
-	/* Not bound */
+	private ImportSourceKind sourceKind = ImportSourceKind.ARCHIVE;
+	private ContentSubType contentSubType = ContentSubType.DELTA;
+	
+	private File archiveFile;
 	private ReleaseFileSet releaseFileSet;
 	
-	private final String branchPath;
+	private File conceptFile;
+	private Set<File> descriptionFiles = newHashSet();
+	private Set<File> textDefinitionFiles = newHashSet();
+	private File relationshipFile;
+	private File statedRelationshipFile;
+	
+	private final Set<URL> refSetURLs = Sets.newHashSet(); 
+	private final Set<String> excludedRefSetIds = Sets.newHashSet();
+	
 	private final Map<String, String> releaseFileNameMappings = Maps.newHashMap();
 
 	public ImportConfiguration(final String branchPath) {
 		this.branchPath = branchPath;
 	}
-	
+
 	public boolean isCreateVersions() {
 		return createVersions;
 	}
@@ -99,46 +88,38 @@ public final class ImportConfiguration {
 		this.archiveFile = archiveFile;
 	}
 
-	public File getRootFile() {
-		return rootFile;
+	public File getConceptFile() {
+		return conceptFile;
 	}
 
-	public void setRootFile(final File rootFile) {
-		this.rootFile = rootFile;
+	public void setConceptFile(final File conceptFile) {
+		this.conceptFile = conceptFile;
 	}
 
-	public File getConceptsFile() {
-		return conceptsFile;
+	public Collection<File> getDescriptionFiles() {
+		return descriptionFiles;
+	}
+	
+	public boolean addDescriptionFile(File descriptionFile) {
+		return descriptionFiles.add(descriptionFile);
 	}
 
-	public void setConceptsFile(final File conceptsFile) {
-		this.conceptsFile = conceptsFile;
+	public Collection<File> getTextDefinitionFiles() {
+		return textDefinitionFiles;
+	}
+	
+	public boolean addTextDefinitionFile(File textDefinitionFile) {
+		return textDefinitionFiles.add(textDefinitionFile);
 	}
 
-	public File getDescriptionsFile() {
-		return descriptionsFile;
+	public File getRelationshipFile() {
+		return relationshipFile;
 	}
 
-	public void setDescriptionsFile(final File descriptionsFile) {
-		this.descriptionsFile = descriptionsFile;
+	public void setRelationshipFile(final File relationshipFile) {
+		this.relationshipFile = relationshipFile;
 	}
-
-	public File getRelationshipsFile() {
-		return relationshipsFile;
-	}
-
-	public void setRelationshipsFile(final File relationshipsFile) {
-		this.relationshipsFile = relationshipsFile;
-	}
-
-	public File getLanguageRefSetFile() {
-		return languageRefSetFile;
-	}
-
-	public void setLanguageRefSetFile(final File languageRefSetFile) {
-		this.languageRefSetFile = languageRefSetFile;
-	}
-
+	
 	public ImportSourceKind getSourceKind() {
 		return sourceKind;
 	}
@@ -147,38 +128,22 @@ public final class ImportConfiguration {
 		this.sourceKind = sourceKind;
 	}
 
-	public ContentSubType getVersion() {
-		return version;
+	public ContentSubType getContentSubType() {
+		return contentSubType;
 	}
 
-	public void setVersion(final ContentSubType version) {
-		this.version = version;
+	public void setContentSubType(final ContentSubType contentSubType) {
+		this.contentSubType = contentSubType;
 	}
 	
-	public File getStatedRelationshipsFile() {
-		return statedRelationshipsFile;
+	public File getStatedRelationshipFile() {
+		return statedRelationshipFile;
 	}
 
-	public void setStatedRelationshipsFile(final File statedRelationshipsFile) {
-		this.statedRelationshipsFile = statedRelationshipsFile;
+	public void setStatedRelationshipFile(final File statedRelationshipFile) {
+		this.statedRelationshipFile = statedRelationshipFile;
 	}
 	
-	public File getDescriptionType() {
-		return descriptionType;
-	}
-
-	public void setDescriptionType(final File descriptionType) {
-		this.descriptionType = descriptionType;
-	}
-	
-	public File getTextDefinitionFile() {
-		return textDefinitionFile;
-	}
-
-	public void setTextDefinitionFile(final File textDefinitionFile) {
-		this.textDefinitionFile = textDefinitionFile;
-	}
-
 	public URL toURL(final File releaseFile) throws IOException {
 		
 		if (releaseFile == null || releaseFile.getPath().isEmpty()) {
@@ -189,9 +154,6 @@ public final class ImportConfiguration {
 		
 			case ARCHIVE:
 				return ZipURLHandler.createURL(getArchiveFile(), new Path(releaseFile.getPath()).toString());
-
-			case ROOT_DIRECTORY:
-				return new File(getRootFile(), releaseFile.getPath()).toURI().toURL();
 
 			case FILES:
 				return releaseFile.toURI().toURL();
@@ -209,17 +171,24 @@ public final class ImportConfiguration {
 		this.releaseFileSet = releaseFileSet;
 	}	
 	
-	public void addRefSetSource(final URL refSetURL) {
-		additionalRefSetURLs.add(refSetURL);
+	public void addRefSetURL(final URL refSetURL) {
+		refSetURLs.add(refSetURL);
 	}
 	
-	public void clearRefSetSettings() {
-		additionalRefSetURLs.clear();
+	public void clear() {
+		conceptFile = null;
+		relationshipFile = null;
+		statedRelationshipFile = null;
+		
+		descriptionFiles.clear();
+		textDefinitionFiles.clear();
+		
+		refSetURLs.clear();
 		excludedRefSetIds.clear();
 	}
 
 	public Set<URL> getRefSetUrls() {
-		return additionalRefSetURLs;
+		return refSetURLs;
 	}
 
 	public Set<String> getExcludedRefSetIds() {
@@ -238,7 +207,7 @@ public final class ImportConfiguration {
 		excludedRefSetIds.remove(refSetId);
 	}
 
-	public static boolean isValidReleaseFile(final File releaseFile) {
+	public boolean isValidReleaseFile(final File releaseFile) {
 		return null != releaseFile && !releaseFile.getPath().isEmpty();
 	}
 
@@ -267,4 +236,5 @@ public final class ImportConfiguration {
 	public void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 	}
+	
 }

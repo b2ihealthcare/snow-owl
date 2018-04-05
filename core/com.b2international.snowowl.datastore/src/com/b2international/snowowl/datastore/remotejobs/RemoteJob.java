@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
 
 import com.b2international.commons.status.Statuses;
@@ -38,6 +39,7 @@ import com.google.common.primitives.Primitives;
  */
 public final class RemoteJob extends Job {
 
+	public static final QualifiedName REQUEST_STATUS = new QualifiedName(null, "requestStatus");
 	private final String id;
 	private final ServiceProvider context;
 	private final Request<ServiceProvider, ?> request;
@@ -77,7 +79,9 @@ public final class RemoteJob extends Job {
 					this.response = mapper.writeValueAsString(response);
 				}
 			}
-			return Statuses.ok();
+			
+			IStatus status = (IStatus) getProperty(REQUEST_STATUS);
+			return (status != null) ? status : Statuses.ok();
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
 		} catch (Throwable e) {

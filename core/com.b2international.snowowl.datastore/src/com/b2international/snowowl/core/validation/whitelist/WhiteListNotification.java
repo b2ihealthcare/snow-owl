@@ -17,8 +17,9 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.events.SystemNotification;
-import com.google.common.base.Strings;
 
 /**
  * @since 6.1
@@ -30,8 +31,8 @@ public class WhiteListNotification extends SystemNotification {
 	 */
 	private static final class Added extends WhiteListNotification {
 		
-		public Added(String whiteListId) {
-			super(whiteListId);
+		public Added(Set<String> whiteListIds) {
+			super(whiteListIds);
 		}
 		
 	}
@@ -41,25 +42,25 @@ public class WhiteListNotification extends SystemNotification {
 	 */
 	private static final class Removed extends WhiteListNotification {
 		
-		public Removed(String whiteListId) {
-			super(whiteListId);
+		public Removed(Set<String> whiteListIds) {
+			super(whiteListIds);
 		}
 	
 	}
 	
-	private final String whiteListId;
+	private final Set<String> whiteListIds;
 	
-	public WhiteListNotification(final String whiteListId) {
-		checkArgument(!Strings.isNullOrEmpty(whiteListId), "Whitelist id must be specified");
-		this.whiteListId = whiteListId;
+	public WhiteListNotification(final Set<String> whiteListIds) {
+		checkArgument(!whiteListIds.isEmpty(), "At least one Whitelist id must be specified");
+		this.whiteListIds = whiteListIds;
 	}
 	
-	public static WhiteListNotification added(String whiteListId) {
-		return new Added(whiteListId);
+	public static WhiteListNotification added(Set<String> whiteListIds) {
+		return new Added(whiteListIds);
 	}
 
-	public static WhiteListNotification removed(String whiteListId) {
-		return new Removed(whiteListId);
+	public static WhiteListNotification removed(Set<String> whiteListIds) {
+		return new Removed(whiteListIds);
 	}
 	
 	public final boolean isAdded() {
@@ -70,7 +71,8 @@ public class WhiteListNotification extends SystemNotification {
 		return this instanceof Removed;
 	}
 	
-	public String getWhiteListId() {
-		return whiteListId;
+	public Set<String> getWhiteListIds() {
+		return whiteListIds;
 	}
+	
 }

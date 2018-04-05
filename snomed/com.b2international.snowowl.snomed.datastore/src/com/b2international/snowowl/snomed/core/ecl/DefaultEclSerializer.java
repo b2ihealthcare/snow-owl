@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,15 @@ public class DefaultEclSerializer implements EclSerializer {
 	
 	@Override
 	public String serialize(ExpressionConstraint expression) {
-		return eclSerializer.serialize(expression);
+		synchronized (eclSerializer) {
+			return eclSerializer.serialize(expression);
+		}
 	}
 	
 	@Override
 	public String serializeWithoutTerms(ExpressionConstraint expression) {
 		removeTerms(expression);
-		return eclSerializer.serialize(expression).trim();
+		return serialize(expression).trim();
 	}
 
 	private void removeTerms(EObject expression) {
@@ -52,5 +54,4 @@ public class DefaultEclSerializer implements EclSerializer {
 			}
 		}
 	}
-
 }

@@ -38,6 +38,7 @@ import com.google.common.collect.Multimap;
  * <p>
  * <ul>
  * <li>{@code type()} - returns the concept representing the type of the description</li>
+ * <li>{@code members()} - returns the reference set members referencing this component</li>
  * </ul>
  * 
  * Expand parameters can be nested to further expand or filter the details returned. 

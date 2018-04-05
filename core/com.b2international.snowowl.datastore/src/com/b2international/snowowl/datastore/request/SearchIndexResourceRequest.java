@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,12 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	/**
 	 * Special field name for sorting based on the document's natural occurrence (document order). 
 	 */
-	public static final SortField DOC_ID = new SortField(DocumentMapping._ID, true);
+	public static final SortField DOC_ID = SortField.ascending(DocumentMapping._ID);
 	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
-	public static final SortField SCORE = new SortField(SortBy.FIELD_SCORE, false);
+	public static final SortField SCORE = SortField.descending(SortBy.FIELD_SCORE);
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {
@@ -98,12 +98,20 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	
 	protected final SortBy sortBy() {
 		if (containsKey(OptionKey.SORT_BY)) {
-			List<SortField> fields = getList(OptionKey.SORT_BY, SortField.class);
-			SortBy.Builder builder = SortBy.builder();
-			for (SortField sortField : fields) {
-				builder.add(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+			List<Sort> sorts = getList(OptionKey.SORT_BY, Sort.class);
+			SortBy.Builder sortBuilder = SortBy.builder();
+			for (Sort sort : sorts) {
+				if (sort instanceof SortField) {
+					SortField sortField = (SortField) sort;
+					sortBuilder.sortByField(sortField.getField(), sortField.isAscending() ? Order.ASC : Order.DESC);
+				} else if (sort instanceof SortScript) {
+					SortScript sortScript = (SortScript) sort;
+					sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), sortScript.isAscending() ? Order.ASC : Order.DESC);
+				} else {
+					throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+				}
 			}
-			return builder.build();
+			return sortBuilder.build();
 		} else {
 			return SortBy.DOC_ID;
 		}		

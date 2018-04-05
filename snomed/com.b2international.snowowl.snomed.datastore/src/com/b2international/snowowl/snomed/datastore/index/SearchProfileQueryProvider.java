@@ -144,62 +144,62 @@ public abstract class SearchProfileQueryProvider {
 						
 					case MAPPING_SOURCE_CONCEPTS:
 						
-						final Expression mappingQuery = SnomedConceptDocument.Expressions.referringMappingRefSet(conceptId);
-						
-						switch (interest) {
-							
-							case BELOW_AVERAGE: //$FALL-THROUGH$
-							case ABOVE_AVERAGE:
-								
-								searchProfileQuery.should(decorateQuery(mappingQuery, interest));
-								break;
-								
-							case EXCLUDE:
-								
-								//exclude
-								searchProfileQuery.mustNot(mappingQuery);
-								break;
-								
-							case AVERAGE:
-								
-								throw new IllegalStateException("Interest must not be average.");
-								
-							default:
-								
-								throw new IllegalArgumentException("Unknown interest type: " + interest);
-								
-						}
+//						final Expression mappingQuery = SnomedConceptDocument.Expressions.referringMappingRefSet(conceptId);
+//						
+//						switch (interest) {
+//							
+//							case BELOW_AVERAGE: //$FALL-THROUGH$
+//							case ABOVE_AVERAGE:
+//								
+//								searchProfileQuery.should(decorateQuery(mappingQuery, interest));
+//								break;
+//								
+//							case EXCLUDE:
+//								
+//								//exclude
+//								searchProfileQuery.mustNot(mappingQuery);
+//								break;
+//								
+//							case AVERAGE:
+//								
+//								throw new IllegalStateException("Interest must not be average.");
+//								
+//							default:
+//								
+//								throw new IllegalArgumentException("Unknown interest type: " + interest);
+//								
+//						}
 						
 						break; //break 'mapping source concept' domain
 						
 						
 					case REFERENCE_SET_MEMBERS:
 						
-						final Expression refSetQuery = SnomedConceptDocument.Expressions.referringRefSet(conceptId);
-						
-						switch (interest) {
-							
-							case BELOW_AVERAGE: //$FALL-THROUGH$
-							case ABOVE_AVERAGE:
-								
-								searchProfileQuery.should(decorateQuery(refSetQuery, interest));
-								break;
-								
-							case EXCLUDE:
-								
-								//exclude
-								searchProfileQuery.mustNot(refSetQuery);
-								break;
-								
-							case AVERAGE:
-								
-								throw new IllegalStateException("Interest must not be average.");
-								
-							default:
-								
-								throw new IllegalArgumentException("Unknown interest type: " + interest);
-								
-						}
+//						final Expression refSetQuery = SnomedConceptDocument.Expressions.referringRefSet(conceptId);
+//						
+//						switch (interest) {
+//							
+//							case BELOW_AVERAGE: //$FALL-THROUGH$
+//							case ABOVE_AVERAGE:
+//								
+//								searchProfileQuery.should(decorateQuery(refSetQuery, interest));
+//								break;
+//								
+//							case EXCLUDE:
+//								
+//								//exclude
+//								searchProfileQuery.mustNot(refSetQuery);
+//								break;
+//								
+//							case AVERAGE:
+//								
+//								throw new IllegalStateException("Interest must not be average.");
+//								
+//							default:
+//								
+//								throw new IllegalArgumentException("Unknown interest type: " + interest);
+//								
+//						}
 						
 						break; //break 'reference set members query' domain
 							

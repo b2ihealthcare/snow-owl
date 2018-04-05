@@ -52,6 +52,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -105,6 +106,22 @@ public final class RemoteJobTracker implements IDisposableService {
 		this.events = events;
 		this.mapper = mapper;
 		this.index.admin().create();
+		
+		// query all existing remote job entries and set their status to FAILED if they are either in SCHEDULED/RUNNING/CANCEL_REQUESTED state
+		this.index.write(writer -> {
+			final Expression filter = RemoteJobEntry.Expressions.state(ImmutableSet.of(RemoteJobState.SCHEDULED, RemoteJobState.RUNNING, RemoteJobState.CANCEL_REQUESTED));
+			final BulkUpdate<RemoteJobEntry> update = new BulkUpdate<>(
+				RemoteJobEntry.class, 
+				filter, 
+				RemoteJobEntry.Fields.ID, 
+				RemoteJobEntry.WITH_DONE,
+				ImmutableMap.of("state", RemoteJobState.FAILED, "finishDate", System.currentTimeMillis())
+			);
+			writer.bulkUpdate(update);
+			writer.commit();
+			return null;
+		});
+		
 		this.listener = new RemoteJobChangeAdapter();
 		Job.getJobManager().addJobChangeListener(listener);
 		this.cleanUp = new CleanUpTask();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	public CommitResult execute(BranchContext context) {
 		final Metrics metrics = context.service(Metrics.class);
 		metrics.setExternalValue("preRequest", preRequestPreparationTime);
-		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId)) {
+		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId, commitComment, parentContextDescription)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {

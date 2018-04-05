@@ -67,7 +67,7 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, relationship);
 		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1);
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
-		assertEquals("", actual.getNamespace());
+		assertEquals(null, actual.getNamespace());
 		assertDocEquals(relationship, actual);
 	}
 	

@@ -20,7 +20,6 @@ import java.util.Collections;
 
 import org.eclipse.emf.cdo.CDOLock;
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.view.CDOView;
 
@@ -36,119 +35,64 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(IObjectLockManager.NullImpl.class)
 public interface IObjectLockManager {
 
-	public static final String UNKNOWN_USER_ID = "N/A";
+	int UNKNOWN_SESSION_ID = -1;
 	
-	/**
-	 * Returns the locked entries from the given collection of storage keys. The
-	 * returned collection will contain only the long storagekeys of those, who
-	 * are actually locked by someone else in this {@link IObjectLockManager}.
-	 * Forcefully updates the current state for each given storage key in the
-	 * currently active branch.
-	 * 
-	 * @param storageKeys
-	 * @return
-	 */
-	Collection<Long> isLockedByOthersUpdate(Collection<Long> storageKeys);
+	String UNKNOWN_USER_ID = "N/A";
 	
-	/**
-	 * Returns whether the {@link CDOObject} identified by the given {@link CDOID} is locked or not.
-	 * 
-	 * @param storageKey
-	 * @return <code>true</code> if locked, <code>false</code> otherwise.
-	 */
-	boolean isLocked(CDOID storageKey);
-
 	/**
 	 * Returns whether the {@link CDOObject} identified by the given long {@link CDOID} is locked or not.
+	 * <p>
+	 * This method will not open a view to check if a lock is present; the lock manager can return a 
+	 * false negative answer for locks that it doesn't know about.
 	 * 
 	 * @param storageKey
-	 *            - will be converted to {@link CDOID}
+	 * @param branch
 	 * @return <code>true</code> if locked, <code>false</code> otherwise.
 	 */
-	boolean isLocked(long storageKey);
-	
+	boolean isLocked(long storageKey, String branch);
+
 	/**
 	 * Returns whether the {@link CDOObject} identified by the given long
 	 * {@link CDOID} is locked or not. This method refreshes the current lock
 	 * state of the element and returns the new state.
 	 * 
 	 * @param storageKey
+	 * @param branch
 	 * @return
 	 */
-	boolean isLockedForceUpdate(long storageKey);
-	
-	/**
-	 * Returns whether the {@link CDOObject} identified by the given
-	 * {@link CDOID} is locked or not. This method refreshes the current lock
-	 * state of the element and returns the new state.
-	 * 
-	 * @param storageKey
-	 * @return
-	 */
-	boolean isLockedForceUpdate(CDOID storageKey);
-	
-	/**
-	 * Returns whether the {@link CDOObject} identified by the given
-	 * {@link CDOID} is locked or not. This method refreshes the current lock
-	 * state of the element and returns the new state by using the given
-	 * {@link CDOBranch} as reference point.
-	 * 
-	 * @param storageKey - locked state of this element
-	 * @param branch - to check locked state on this branch
-	 * @return
-	 */
-	boolean isLockedForceUpdate(CDOID storageKey, CDOBranch branch);
-	
-	/**
-	 * Returns whether the {@link CDOObject} identified by the given
-	 * {@link CDOID} is locked or not. This method refreshes the current lock
-	 * state of the element and returns the new state by using the given
-	 * {@link CDOView} as reference.
-	 * 
-	 * @param storageKey - locked state of this element
-	 * @param branch - to check locked state on this branch
-	 * @return
-	 */
-	boolean isLockedForceUpdate(CDOID storageKey, CDOView view);
+	boolean isLockedForceUpdate(long storageKey, String branch);
 
 	/**
-	 * Returns whether the {@link CDOObject} identified by the given {@link CDOID} is locked or not, in the given
-	 * branch.
+	 * Returns the locked entries from the given collection of storage keys. The
+	 * returned collection will contain only the long storage keys of those, who
+	 * are actually locked by someone else in this {@link IObjectLockManager}.
+	 * Forcefully updates the current state for each given storage key in the
+	 * currently specified branch.
 	 * 
-	 * @param storageKey
-	 * @param view
+	 * @param storageKeys
+	 * @param branch
 	 * @return
 	 */
-	boolean isLocked(CDOID storageKey, CDOBranch view);
-
+	Collection<Long> getStorageKeysLockedByOthers(Collection<Long> storageKeys, String branch);
+	
 	/**
-	 * Returns whether the {@link CDOObject} identified by the given long {@link CDOID} is locked or not.
+	 * Returns lock owner for the specified {@link CDOObject} if it is locked on the specified branch, if not returns {@value #UNKNOWN_USER_ID}.
 	 * 
 	 * @param storageKey
 	 *            - will be converted to {@link CDOID}
-	 * @param view
-	 *            - as the lock context
-	 * @return <code>true</code> if locked, <code>false</code> otherwise.
+	 * @param branch
+	 * @return
 	 */
-	boolean isLocked(long storageKey, CDOView view);
+	String getLockOwner(long storageKey, String branch);
 
 	/**
 	 * Returns the lock owner's session ID if the given entry is locked, otherwise returns <code>-1</code>.
 	 * 
 	 * @param storageKey
+	 * @param branch
 	 * @return
 	 */
-	int getLockOwnerSessionId(long storageKey);
-
-	/**
-	 * Tries to lock the {@link CDOObject} identified by the given {@link CDOID}.
-	 * 
-	 * @param storageKey
-	 * @param view
-	 *            - as the lock context
-	 * @return - if the locking was successful.
-	 */
-	boolean lock(CDOID storageKey, CDOView view);
+	int getLockOwnerSessionId(long storageKey, String branch);
 
 	/**
 	 * Tries to lock the {@link CDOObject} identified by the given {@link CDOID}.
@@ -160,15 +104,6 @@ public interface IObjectLockManager {
 	 * @return - if the locking was successful.
 	 */
 	boolean lock(long storageKey, CDOView view);
-
-	/**
-	 * Unlocks the {@link CDOObject} identified by the given {@link CDOID} if it was locked.
-	 * 
-	 * @param storageKey
-	 * @param view
-	 *            - as the lock context
-	 */
-	void unlock(CDOID storageKey, CDOView view);
 
 	/**
 	 * Unlocks the {@link CDOObject} if it was locked.
@@ -186,41 +121,6 @@ public interface IObjectLockManager {
 	 * Disposes the lock manager instance.
 	 */
 	void dispose();
-
-	/**
-	 * Returns lock owner for the specified {@link CDOObject} if it is locked on the active branch, if not returns {@value #UNKNOWN_USER_ID}.
-	 * 
-	 * @param storageKey
-	 * @return
-	 */
-	String getLockOwnerUserId(CDOID storageKey);
-
-	/**
-	 * Returns lock owner for the specified {@link CDOObject} if it is locked on the given branch, if not returns {@value #UNKNOWN_USER_ID}.
-	 * 
-	 * @param storageKey
-	 * @param branch
-	 * @return
-	 */
-	String getLockOwnerUserId(CDOID storageKey, CDOBranch branch);
-
-	/**
-	 * Returns lock owner for the specified {@link CDOObject} if it is locked on the active branch, if not returns {@value #UNKNOWN_USER_ID}.
-	 * 
-	 * @param storageKey
-	 *            - will be converted to {@link CDOID}
-	 * @return
-	 */
-	String getLockOwnerUserId(long storageKey);
-
-	/**
-	 * Returns lock owner for the specified {@link CDOObject} if it is locked on the given branch, if not returns {@value #UNKNOWN_USER_ID}.
-	 * 
-	 * @param storageKey
-	 * @param branch
-	 * @return
-	 */
-	String getLockOwnerUserId(long storageKey, CDOBranch branch);
 
 	/**
 	 * Registers the given listener in this {@link ISddEntryLockManager}.
@@ -244,38 +144,28 @@ public interface IObjectLockManager {
 	public class NullImpl implements IObjectLockManager {
 
 		@Override
-		public Collection<Long> isLockedByOthersUpdate(Collection<Long> storageKeys) {
-			return Collections.emptySet();
-		}
-		
-		@Override
-		public boolean isLocked(long storageKey, CDOView view) {
-			return false;
-		}
-		
-		@Override
-		public boolean isLockedForceUpdate(long storageKey) {
-			return false;
-		}
-		
-		@Override
-		public boolean isLockedForceUpdate(CDOID storageKey) {
-			return false;
-		}
-		
-		@Override
-		public boolean isLockedForceUpdate(CDOID storageKey, CDOBranch branch) {
-			return false;
-		}
-		
-		@Override
-		public boolean isLockedForceUpdate(CDOID storageKey, CDOView view) {
+		public boolean isLocked(long storageKey, String branch) {
 			return false;
 		}
 
 		@Override
-		public boolean lock(CDOID storageKey, CDOView view) {
+		public boolean isLockedForceUpdate(long storageKey, String branch) {
 			return false;
+		}
+		
+		@Override
+		public Collection<Long> getStorageKeysLockedByOthers(Collection<Long> storageKeys, String branch) {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public String getLockOwner(long storageKey, String branch) {
+			return UNKNOWN_USER_ID;
+		}
+
+		@Override
+		public int getLockOwnerSessionId(long storageKey, String branch) {
+			return UNKNOWN_SESSION_ID;
 		}
 
 		@Override
@@ -284,65 +174,23 @@ public interface IObjectLockManager {
 		}
 
 		@Override
-		public void unlock(CDOID storageKey, CDOView view) {
-		}
-
-		@Override
 		public void unlock(long storageKey, CDOView view) {
+			return;
 		}
 
 		@Override
 		public void dispose() {
-		}
-
-		@Override
-		public boolean isLocked(CDOID storageKey) {
-			return false;
-		}
-
-		@Override
-		public boolean isLocked(long storageKey) {
-			return false;
-		}
-
-		@Override
-		public String getLockOwnerUserId(CDOID storageKey, CDOBranch branch) {
-			return UNKNOWN_USER_ID;
-		}
-
-		@Override
-		public String getLockOwnerUserId(long storageKey, CDOBranch branch) {
-			return UNKNOWN_USER_ID;
+			return;
 		}
 
 		@Override
 		public void registerLockChangeListener(IObjectLockChangeListener listener) {
+			return;
 		}
 
 		@Override
 		public void unregisterLockChangeListener(IObjectLockChangeListener listener) {
+			return;
 		}
-
-		@Override
-		public boolean isLocked(CDOID storageKey, CDOBranch view) {
-			return false;
-		}
-
-		@Override
-		public String getLockOwnerUserId(CDOID storageKey) {
-			return UNKNOWN_USER_ID;
-		}
-
-		@Override
-		public String getLockOwnerUserId(long storageKey) {
-			return UNKNOWN_USER_ID;
-		}
-
-		@Override
-		public int getLockOwnerSessionId(long storageKey) {
-			return -1;
-		}
-
 	}
-
 }

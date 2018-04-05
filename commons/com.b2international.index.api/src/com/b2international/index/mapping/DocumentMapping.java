@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ public final class DocumentMapping {
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
-	public static final String _HASH = "_hash";
 
 	private static final Function<? super Field, String> GET_NAME = new Function<Field, String>() {
 		@Override
@@ -203,9 +202,6 @@ public final class DocumentMapping {
 	}
 	
 	public Class<?> getFieldType(String key) {
-		if (DocumentMapping._HASH.equals(key)) {
-			return String.class;
-		}
 		return getField(key).getType();
 	}
 	

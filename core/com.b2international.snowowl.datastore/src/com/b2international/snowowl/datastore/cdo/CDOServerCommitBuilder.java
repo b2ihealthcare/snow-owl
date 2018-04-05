@@ -784,7 +784,7 @@ public class CDOServerCommitBuilder {
 
 			for (final CDORevision revision : revisions) {
 				final InternalCDORevision internalRevision  = (InternalCDORevision) revision;
-				postCommitRevision(internalRevision, internalTransaction, result);
+				postCommitRevision(internalRevision.copy(), internalTransaction, result);
 			}
 		}
 

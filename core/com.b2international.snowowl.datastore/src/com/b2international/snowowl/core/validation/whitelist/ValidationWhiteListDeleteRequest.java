@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.core.validation.whitelist;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
 
 /**
  * @since 6.1
  */
-final class ValidationWhiteListDeleteRequest implements Request<ServiceProvider, Boolean> {
+final class ValidationWhiteListDeleteRequest implements Request<ValidationRepositoryContext, Boolean> {
 
 	private final String id;
 
@@ -32,11 +30,8 @@ final class ValidationWhiteListDeleteRequest implements Request<ServiceProvider,
 	}
 	
 	@Override
-	public Boolean execute(ServiceProvider context) {
-		context.service(ValidationRepository.class).remove(ValidationWhiteList.class, id);
-		
-		WhiteListNotification.removed(id).publish(context.service(IEventBus.class));
-		
+	public Boolean execute(ValidationRepositoryContext context) {
+		context.delete(ValidationWhiteList.class, id);
 		return Boolean.TRUE;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,114 +16,134 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.Date;
 
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
+import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, UUID> 
-		implements RevisionIndexRequestBuilder<UUID> {
+		extends BaseRequestBuilder<SnomedRf2ExportRequestBuilder, RepositoryContext, Rf2ExportResult> 
+		implements RepositoryRequestBuilder<Rf2ExportResult> {
 
 	private String userId;
-	private String codeSystem = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-	private boolean includeUnpublished;
-	private String startEffectiveTime;
-	private String endEffectiveTime;
+	private String codeSystem;
+	private String referenceBranch;
 	private Rf2ReleaseType releaseType;
-	private Collection<String> modules = Collections.emptySet();
+	private Rf2RefSetExportLayout refSetExportLayout;
+	private String countryNamespaceElement;
+	private String namespaceFilter;
+	private Date startEffectiveTime;
+	private Date endEffectiveTime;
+	private boolean includePreReleaseContent;
+	private Collection<String> componentTypes = null;
+	private Collection<String> modules = null;
+	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
-	private String namespace;
-	private Collection<String> refSets = Collections.emptySet();
-	private Collection<String> componentTypes = Collections.emptySet();
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
-	public SnomedRf2ExportRequestBuilder setUserId(String userId) {
+	public SnomedRf2ExportRequestBuilder setUserId(final String userId) {
 		this.userId = userId;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setCodeSystem(String codeSystem) {
+	public SnomedRf2ExportRequestBuilder setCodeSystem(final String codeSystem) {
 		this.codeSystem = codeSystem;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setIncludeUnpublished(boolean includeUnpublished) {
-		this.includeUnpublished = includeUnpublished;
-		return getSelf();
-	}
-
-	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(String startEffectiveTime) {
-		this.startEffectiveTime = startEffectiveTime;
+	public SnomedRf2ExportRequestBuilder setReferenceBranch(final String referenceBranch) {
+		this.referenceBranch = referenceBranch;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(String endEffectiveTime) {
-		this.endEffectiveTime = endEffectiveTime;
-		return getSelf();
-	}
-	
-	public SnomedRf2ExportRequestBuilder setReleaseType(Rf2ReleaseType releaseType) {
+	public SnomedRf2ExportRequestBuilder setReleaseType(final Rf2ReleaseType releaseType) {
 		this.releaseType = releaseType;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setModules(Collection<String> modules) {
-		this.modules = modules;
+	public SnomedRf2ExportRequestBuilder setRefSetExportLayout(final Rf2RefSetExportLayout refSetExportLayout) {
+		this.refSetExportLayout = refSetExportLayout;
+		return getSelf();
+	}
+
+	public SnomedRf2ExportRequestBuilder setCountryNamespaceElement(final String countryNamespaceElement) {
+		this.countryNamespaceElement = countryNamespaceElement;
+		return getSelf();
+	}
+
+	public SnomedRf2ExportRequestBuilder setNamespaceFilter(final String namespaceFilter) {
+		this.namespaceFilter = namespaceFilter;
+		return getSelf();
+	}
+
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Date startEffectiveTime) {
+		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setExtensionOnly(boolean extensionOnly) {
-		this.extensionOnly = extensionOnly;
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Date endEffectiveTime) {
+		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setTransientEffectiveTime(String transientEffectiveTime) {
-		this.transientEffectiveTime = transientEffectiveTime;
+	public SnomedRf2ExportRequestBuilder setIncludePreReleaseContent(final boolean includePreReleaseContent) {
+		this.includePreReleaseContent = includePreReleaseContent;
 		return getSelf();
 	}
-	
-	public SnomedRf2ExportRequestBuilder setNamespace(String namespace) {
-		this.namespace = namespace;
-		return getSelf();
-	}
-	
-	public SnomedRf2ExportRequestBuilder setRefSets(Collection<String> refSets) {
-		this.refSets = refSets;
-		return getSelf();
-	}
-	
-	public SnomedRf2ExportRequestBuilder setComponentTypes(Collection<String> componentTypes) {
+
+	public SnomedRf2ExportRequestBuilder setComponentTypes(final Collection<String> componentTypes) {
 		this.componentTypes = componentTypes;
 		return getSelf();
 	}
 
-	@Override
-	protected Request<BranchContext, UUID> doBuild() {
-		SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
-		req.setReleaseType(releaseType);
-		req.setUserId(userId);
-		req.setCodeSystem(codeSystem);
-		req.setIncludeUnpublished(includeUnpublished);
-		req.setExtensionOnly(extensionOnly);
-		req.setStartEffectiveTime(startEffectiveTime);
-		req.setEndEffectiveTime(endEffectiveTime);
-		req.setModules(modules);
-		req.setTransientEffectiveTime(transientEffectiveTime);
-		req.setNamespace(namespace);
-		req.setRefSets(refSets);
-		req.setComponentTypes(componentTypes);
-		return req;
+	public SnomedRf2ExportRequestBuilder setModules(final Collection<String> modules) {
+		this.modules = modules;
+		return getSelf();
+	}
+	
+	public SnomedRf2ExportRequestBuilder setRefSets(final Collection<String> refSets) {
+		this.refSets = refSets;
+		return getSelf();
 	}
 
+	public SnomedRf2ExportRequestBuilder setTransientEffectiveTime(final String transientEffectiveTime) {
+		this.transientEffectiveTime = transientEffectiveTime;
+		return getSelf();
+	}
+
+	public SnomedRf2ExportRequestBuilder setExtensionOnly(final boolean extensionOnly) {
+		this.extensionOnly = extensionOnly;
+		return getSelf();
+	}
+	
+	@Override
+	protected Request<RepositoryContext, Rf2ExportResult> doBuild() {
+		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
+		req.setUserId(userId);
+		req.setCodeSystem(codeSystem);
+		req.setReferenceBranch(referenceBranch);
+		req.setReleaseType(releaseType);
+		req.setRefSetExportLayout(refSetExportLayout);
+		req.setCountryNamespaceElement(countryNamespaceElement);
+		req.setNamespaceFilter(namespaceFilter);
+		req.setStartEffectiveTime(startEffectiveTime);
+		req.setEndEffectiveTime(endEffectiveTime);
+		req.setIncludePreReleaseContent(includePreReleaseContent);
+		req.setComponentTypes(componentTypes);
+		req.setModules(modules);
+		req.setRefSets(refSets);
+		req.setTransientEffectiveTime(transientEffectiveTime);
+		req.setExtensionOnly(extensionOnly);
+		return req;
+	}
 }

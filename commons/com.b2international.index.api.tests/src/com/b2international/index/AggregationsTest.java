@@ -16,7 +16,6 @@
 package com.b2international.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -83,7 +82,7 @@ public class AggregationsTest extends BaseIndexTest {
 		final Aggregation<Data> buckets = aggregate(
 			AggregationBuilder.bucket("aggregateOnScriptValue", Data.class)
 				.query(Expressions.matchAll())
-				.onScriptValue(Data.Scripts.COMPOUND_VALUE)
+				.onScriptValue("return doc.field1.value + '_' + doc.field2.value")
 				.minBucketSize(2)
 		);
 		

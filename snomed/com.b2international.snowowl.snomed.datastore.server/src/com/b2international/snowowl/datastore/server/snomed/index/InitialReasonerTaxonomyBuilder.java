@@ -60,6 +60,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
@@ -276,7 +277,11 @@ public class InitialReasonerTaxonomyBuilder extends AbstractReasonerTaxonomyBuil
 
 				for (SnomedRefSetMemberIndexEntry entry : hits) {
 					final long referencedComponentIdL = Long.parseLong(entry.getReferencedComponentId());
-					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()), entry.getAttributeName(), (byte) entry.getDataType().ordinal(), Long.parseLong(entry.getUnitId()), entry.getStorageKey(), Long.parseLong(entry.getReferenceSetId()));
+					final long refsetIdL = Long.parseLong(entry.getReferenceSetId());
+					final byte dataType = (byte) entry.getDataType().ordinal();
+					final long unitIdL = Strings.isNullOrEmpty(entry.getUnitId()) ? -1L : Long.parseLong(entry.getUnitId());
+					final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
+					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, entry.getAttributeName(), dataType,	unitIdL, entry.getStorageKey(), refsetIdL);
 					if (!concreteDomainMap.containsKey(referencedComponentIdL)) {
 						concreteDomainMap.put(referencedComponentIdL, newArrayList());
 					}
