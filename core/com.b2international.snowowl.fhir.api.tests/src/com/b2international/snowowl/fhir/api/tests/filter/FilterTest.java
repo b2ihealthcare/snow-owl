@@ -27,6 +27,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
 
@@ -49,13 +50,9 @@ public class FilterTest extends FhirTest {
 
 		printPrettyJson(filteredClass);
 		String jsonString = objectMapper.writeValueAsString(filteredClass);
-		assertEquals("{\"firstName\":\"Balazs\",\"lastName\":\"Banfai\"}", jsonString);
+		assertEquals("{\"firstName\":\"Balazs\",\"lastName\":\"Banfai\",\"id\":\"ID123\"}", jsonString);
 		
-		elements = getParametersMap("id");
-		requestedFields = getRequestedFields(elements);
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
-
-		setupFilters(requestedFields, filteredClass);
+		setupFilters(null, filteredClass);
 		printPrettyJson(filteredClass);
 		jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"id\":\"ID123\"}", jsonString);
@@ -77,7 +74,7 @@ public class FilterTest extends FhirTest {
 //			filters.addFilter("TestClassFilter", FhirPropertyFilter.serializeAll());
 //		}
 		
-		filterProvider.addFilter("TestClassFilter", new FhirBeanPropertyFilter(requestedFields));
+		filterProvider.addFilter("TestClassFilter", FhirBeanPropertyFilter.createFilter(requestedFields));
 		// filters.addFilter("Whatever", new AnnotationBasedPropertyFilter());
 		mappingJacksonValue.setFilters(filterProvider);
 
