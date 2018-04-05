@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.datastore.request.job;
-
-import java.util.Collection;
-import java.util.Collections;
 
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 
@@ -69,11 +66,7 @@ public final class JobRequests {
 	 * @return {@link DeleteJobRequestBuilder}
 	 */
 	public static DeleteJobRequestBuilder prepareDelete(String jobId) {
-		return new DeleteJobRequestBuilder(Collections.singleton(jobId));
-	}
-	
-	public static DeleteJobRequestBuilder prepareDelete(Collection<String> jobIds) {
-		return new DeleteJobRequestBuilder(jobIds);
+		return new DeleteJobRequestBuilder(jobId);
 	}
 	
 }
