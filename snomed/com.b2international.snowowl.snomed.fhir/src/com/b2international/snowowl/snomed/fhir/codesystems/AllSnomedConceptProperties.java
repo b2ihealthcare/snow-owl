@@ -61,23 +61,22 @@ public class AllSnomedConceptProperties {
 		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
 
 		//add the dynamic relationship types as properties
-		Set<Property> dynamicProperties = SnomedRequests.prepareSearchConcept()
-			.all()
-			.filterByActive(true)
-			.filterByAncestor("246061005") //Attribute
-			.setExpand("pt()")
-			.setLocales(locales)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-			.then(sc -> sc.stream()
-					.map(c -> {
-							return new AllSnomedConceptProperties.Property(new Code(c.getPt().getTerm()), getUri(c.getId()), c.getId(), ConceptPropertyType.CODE);
-						})
-					.collect(Collectors.toSet())
-				)
-			.getSync();
-		
-		properties.addAll(dynamicProperties);
+//		Set<Property> dynamicProperties = SnomedRequests.prepareSearchConcept()
+//			.all()
+//			.filterByActive(true)
+//			.filterByAncestor("246061005") //Attribute
+//			.setExpand("pt()")
+//			.setLocales(locales)
+//			.build(SnomedDatastoreActivator.REPOSITORY_UUID, IBranchPath.MAIN_BRANCH)
+//			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+//			.then(sc -> sc.stream()
+//					.map(c -> {
+//							return new AllSnomedConceptProperties.Property(new Code(c.getPt().getTerm()), getUri(c.getId()), c.getId(), ConceptPropertyType.CODE);
+//						})
+//					.collect(Collectors.toSet())
+//				)
+//			.getSync();
+//		properties.addAll(dynamicProperties);
 		
 	}
 	
