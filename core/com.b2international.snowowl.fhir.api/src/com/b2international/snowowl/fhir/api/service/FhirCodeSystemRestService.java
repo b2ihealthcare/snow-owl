@@ -25,13 +25,11 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.Valid;
-
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,6 +48,7 @@ import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
@@ -79,8 +78,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "CodeSystem", tags = { "CodeSystem" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/CodeSystem", produces = { MediaType.APPLICATION_JSON_VALUE })
-public class FhirCodeSystemRestService {
+@RequestMapping(value="/CodeSystem", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
+public class FhirCodeSystemRestService extends BaseFhirRestService {
 	
 	@JsonFilter("TestClassFilter")
 	class TestClass {
@@ -212,7 +211,7 @@ public class FhirCodeSystemRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
-	public LookupResult lookupViaParameters(
+	public LookupResult lookup(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -255,33 +254,33 @@ public class FhirCodeSystemRestService {
 	 * @param properties
 	 */
 	@ApiOperation(value="Concept lookup", notes="Given a code/system, or a Coding, get additional details about the concept.\n"
-					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
-	
+			+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public LookupResult lookupViaCodingAndParameters(
-		@ApiParam(value="The lookup request parameters", name="body") 
-		@Valid
-		@RequestBody 
-		final LookupRequest lookupRequest) {
-		
+	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	public Parameters.Fhir lookup(
+			@ApiParam(name = "body", value = "The lookup request parameters")
+			@RequestBody
+			Parameters.Fhir in) {
+		final LookupRequest req = toRequest(in, LookupRequest.class);
+
 		//validate the code/system/version parameters BOTH in the request as well as possibly in the coding
-		validateLookupRequest(lookupRequest);
+		validateLookupRequest(req);
 		
 		//all good, now do something
-		return lookup(lookupRequest);
+		LookupResult result = lookup(req);
+		
+		return toResponse(result);
 	}
 	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		String uriValue = lookupRequest.getSystem().getUriValue();
-		return IFhirProvider.Registry.getFhirProvider(uriValue).lookup(lookupRequest);
+		return IFhirProvider.Registry.getFhirProvider(lookupRequest.getSystem()).lookup(lookupRequest);
 	}
 
 	/*
@@ -299,17 +298,15 @@ public class FhirCodeSystemRestService {
 		
 		if (lookupRequest.getCode() !=null && lookupRequest.getCoding() !=null) {
 			Coding coding = lookupRequest.getCoding();
-			if (!coding.getCode().equals(lookupRequest.getCode())) {
+			if (!coding.getCode().getCodeValue().equals(lookupRequest.getCode())) {
 				throw new BadRequestException("Code and Coding.code are different. Probably would make sense to specify only one of them.", "LookupRequest");
 			}
 			
-			if (!coding.getSystem().equals(lookupRequest.getSystem())) {
+			if (!coding.getSystem().getUriValue().equals(lookupRequest.getSystem())) {
 				throw new BadRequestException("System and Coding.system are different. Probably would make sense to specify only one of them.", "LookupRequest");
 			}
 			
-			if (coding.getVersion() != null && lookupRequest.getVersion() == null || 
-					coding.getVersion() == null && lookupRequest.getVersion() != null ||
-					!coding.getVersion().equals(lookupRequest.getVersion())) {
+			if (!Objects.equals(coding.getVersion(), lookupRequest.getVersion())) {
 				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
 			}
 		}
