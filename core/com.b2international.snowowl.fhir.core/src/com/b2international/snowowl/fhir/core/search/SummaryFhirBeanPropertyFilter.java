@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.search;
 
-import com.b2international.snowowl.fhir.core.model.conversion.Mandatory;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 
