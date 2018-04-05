@@ -19,12 +19,12 @@ import java.util.Collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.model.conversion.LookupResultConverter;
-import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.b2international.snowowl.fhir.core.model.dt.FhirType;
+import com.b2international.snowowl.fhir.core.model.dt.Property;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
-
-import io.swagger.annotations.ApiModel;
 
 /**
  * Model object for the lookup service request response
@@ -32,46 +32,62 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
-@ApiModel("Parameters")
-@JsonSerialize(converter=LookupResultConverter.class)
-public final class LookupResult extends ParametersModel {
+@JsonPropertyOrder({"name", "version", "display", "designation", "property"})
+public final class LookupResult {
 	
 	//A display name for the code system (1..1)
-	@Order(value=1)
 	@NotEmpty
 	private final String name;
 	
 	//The version that these details are based on (0..1)
-	@Order(value=2)
 	private final String version;
 	
 	//The preferred display for this concept (1..1)
-	@Order(value=3)
 	private final String display;
 	
 	//Additional representations for this concept (0..*)
-	@Order(value=4)
-	private final Collection<ParameterizedDesignation> designations;   
+	@FhirType(FhirDataType.PART)
+	private final Collection<Designation> designation;   
 	
 	/*
 	 * One or more properties that contain additional information about the code, 
 	 * including status. For complex terminologies (e.g. SNOMED CT, LOINC, medications), these properties serve to decompose the code
 	 * 0..*
 	 */
-	@Order(value=5)
-	private final Collection<Property> properties;
+	@FhirType(FhirDataType.PART)
+	private final Collection<Property> property;
 	
 	private LookupResult(final String name, 
 			final String version, 
 			final String display, 
-			final Collection<ParameterizedDesignation> designations,
-			final Collection<Property> properties) {
+			final Collection<Designation> designation,
+			final Collection<Property> property) {
 		
 		this.name = name;
 		this.version = version;
 		this.display = display;
-		this.designations = designations;
-		this.properties = properties;
+		this.designation = designation;
+		this.property = property;
+	}
+
+	public String getName() {
+		return name;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	
+	public String getDisplay() {
+		return display;
+	}
+	
+	public Collection<Designation> getDesignation() {
+		return designation;
+	}
+	
+	public Collection<Property> getProperty() {
+		return property;
 	}
 	
 	public static Builder builder() {
@@ -84,7 +100,7 @@ public final class LookupResult extends ParametersModel {
 		private String version;
 		private String display;
 		
-		private final ImmutableList.Builder<ParameterizedDesignation> designations = ImmutableList.builder();
+		private final ImmutableList.Builder<Designation> designations = ImmutableList.builder();
 		private final ImmutableList.Builder<Property> properties = ImmutableList.builder();
 
 		public Builder name(final String name) {
@@ -107,7 +123,7 @@ public final class LookupResult extends ParametersModel {
 			return this;
 		}
 		
-		public Builder addDesignation(ParameterizedDesignation designation) {
+		public Builder addDesignation(Designation designation) {
 			designations.add(designation);
 			return this;
 		}

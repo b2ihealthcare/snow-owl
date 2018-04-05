@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model.lookup;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -28,54 +25,31 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.conversion.LookupRequestConverter;
-import com.b2international.snowowl.fhir.core.model.conversion.Order;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Strings;
-
-import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * This class represents a FHIR lookup operation request.
- * This domain model class is capable of building itself from a collection of
- * serialized parameters. See {@link #toModelObject()}.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
-@ApiModel("Parameters")
-@JsonDeserialize(converter=LookupRequestConverter.class)
-public final class LookupRequest {
-	
-	//FHIR header "resourceType" : "Parameters",
-	@JsonProperty
-	private final String resourceType = "Parameters";
-	
-	@JsonProperty(value="parameter")
-	private List<SerializableParameter> parameters = Collections.emptyList();
+@JsonDeserialize(builder = LookupRequest.Builder.class)
+public class LookupRequest {
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
-	//@ApiModelProperty(dataType = "java.lang.String")
-	@Order(value = 1)
-	private Code code;
+	private final String code;
 
 	// The system for the code that is to be located (0..1)
-	@Order(value = 2)
-	private Uri system;
+	private final String system;
 	
 	// The version that these details are based on (0..1)
-	@Order(value = 3)
-	private String version;
+	private final String version;
 
 	// The coding to look up (0..1)
-	@Order(value = 4)
-	private Coding coding;
+	private final Coding coding;
 	
 	/*
 	 * The date for which the information should be returned. Normally, this is the
@@ -86,12 +60,10 @@ public final class LookupRequest {
 	 * record is being edited. Note that which date is appropriate is a matter for
 	 * implementation policy.
 	 */
-	@Order(value = 5)
-	private Date date;
+	private final Date date;
 	
 	//The requested language for display (see ExpansionProfile.displayLanguage)
-	@Order(value = 6)
-	private Code displayLanguage;
+	private final String displayLanguage;
 	
 	/*
 	 * A property that the client wishes to be returned in the output. If no
@@ -103,20 +75,16 @@ public final class LookupRequest {
 	 * names match), and the rest (except for lang.X) in the property parameter
 	 * group
 	 */
-	@Order(value = 7)
-	private Collection<Code> properties = Collections.emptyList();
-	
-	//For Jackson
-	LookupRequest() {}
+	private final Collection<String> properties;
 	
 	LookupRequest(
-			Code code, 
-			Uri system, 
+			String code, 
+			String system, 
 			String version, 
 			Coding coding, 
 			Date date, 
-			Code displayLanguage,
-			Collection<Code> properties) {
+			String displayLanguage,
+			Collection<String> properties) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -126,95 +94,78 @@ public final class LookupRequest {
 		this.properties = properties;
 	}
 	
-	@JsonIgnore
-	public Code getCode() {
-		return code;
+	public String getCode() {
+		if (code != null) {
+			return code;
+		} else if (coding != null) {
+			return coding.getCode().getCodeValue();
+		}
+		return null;
 	}
 
-	@JsonIgnore
-	public Uri getSystem() {
-		return system;
+	public String getSystem() {
+		if (system != null) {
+			return system;
+		} else if (coding != null) {
+			return coding.getSystem().getUriValue();
+		}
+		return null;
 	}
 
-	@JsonIgnore
 	public String getVersion() {
 		return version;
 	}
 
-	@JsonIgnore
 	public Coding getCoding() {
 		return coding;
 	}
 
-	@JsonIgnore
 	public Date getDate() {
 		return date;
 	}
 
-	@JsonIgnore
-	public Code getDisplayLanguage() {
+	public String getDisplayLanguage() {
 		return displayLanguage;
 	}
 
-	@JsonIgnore
-	public Collection<Code> getProperties() {
+	public Collection<String> getProperties() {
 		return properties;
 	}
 
-	/**
-	 * @return parameter collection to be serialized
-	 */
-	public Collection<SerializableParameter> getParameters() {
-		return parameters;
-	}
-	
 	/**
 	 * Returns <code>true</code> if the given code is present in the given collection of properties, returns <code>false</code> otherwise.
 	 * @param properties
 	 * @param property
 	 * @return
 	 */
-	public final boolean containsProperty(Code property) {
-		return properties.stream().filter(property::equals).findFirst().isPresent();
+	public final boolean containsProperty(String property) {
+		return properties.contains(property);
 	}
 
-	@Override
-	public String toString() {
-		return "LookupRequest [code=" + code + ", system=" + system + ", version=" + version + ", coding=" + coding
-				+ ", date=" + date + ", displayLanguage=" + displayLanguage + ", properties=" + Arrays.toString(properties.toArray()) + "]";
-	}
-	
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<LookupRequest> {
 
-		private Code code;
-		private Uri system;
+		private String code;
+		private String system;
 		private String version;
 		private Coding coding;
 		private Date date;
-		private Code displayLanguage;
-		private Collection<Code> properties = Collections.emptyList();
+		private String displayLanguage;
+		private Set<String> properties;
 		
-		public Builder code(final Code code) {
+		Builder() {}
+		
+		public Builder code(final String code) {
 			this.code = code;
 			return this;
 		}
 
-		public Builder code(final String codeValue) {
-			this.code = new Code(codeValue);
-			return this;
-		}
-		
-		public Builder system(final Uri system) {
+		public Builder system(final String system) {
 			this.system = system;
-			return this;
-		}
-
-		public Builder system(final String systemValue) {
-			this.system = new Uri(systemValue);
 			return this;
 		}
 		
@@ -228,45 +179,30 @@ public final class LookupRequest {
 			return this;
 		}
 		
-		public Builder coding(String code, String system, String display) {
-			Coding coding = Coding.builder()
-				.code(code)
-				.system(system)
-				.display(display).build();
-			
-			this.coding = coding;
-			return this;
-		}
-		
-		public Builder date(Date date) {
-			this.date = date;
-			return this;
-		}
-		
-		public Builder date(String dateString) {
+		public Builder date(String date) {
 			try {
-				this.date = Dates.parse(dateString, FhirConstants.DATE_TIME_FORMAT);
+				this.date = Dates.parse(date, FhirConstants.DATE_TIME_FORMAT);
 			} catch (SnowowlRuntimeException e) {
-				throw new BadRequestException("Incorrect date format '%s'.", dateString);
+				throw new BadRequestException("Incorrect date format '%s'.", date);
 			}
 			return this;
 		}
 		
-		public Builder displayLanguage(final Code displayLanguage) {
+		public Builder displayLanguage(final String displayLanguage) {
 			this.displayLanguage = displayLanguage;
 			return this;
 		}
 
-		public Builder displayLanguage(final String displayLanguage) {
-			this.displayLanguage = Strings.isNullOrEmpty(displayLanguage) ? null : new Code(displayLanguage);
-			return this;
+		/**
+		 * Alternative property deserializer to be used when converting FHIR Parameters representation to LookupRequest. Multi-valued property expand.
+		 */
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		Builder property(Collection<String> properties) {
+			return properties(properties);
 		}
-
+		
 		public Builder properties(Collection<String> properties) {
-			this.properties = Collections3.toImmutableSet(properties)
-					.stream()
-					.map(Code::new)
-					.collect(Collectors.toSet());
+			this.properties = Collections3.toImmutableSet(properties);
 			return this;
 		}
 
