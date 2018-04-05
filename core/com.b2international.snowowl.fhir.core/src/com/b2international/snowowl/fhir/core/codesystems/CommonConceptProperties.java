@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Property;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
@@ -85,6 +86,15 @@ public enum CommonConceptProperties implements FhirCodeSystem {
 	@Override
 	public Uri getUri() {
 		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
+	}
+
+	// TODO move this somewhere else, preferably to the enum itself
+	public Property propertyOf(String code, String description) {
+		return Property.builder()
+				.code(getCodeValue())
+				.valueCode(code)
+				.description(description)
+				.build();
 	}
 	
 }
