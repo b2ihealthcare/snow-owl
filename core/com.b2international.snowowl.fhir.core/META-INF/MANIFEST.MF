@@ -13,7 +13,6 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.model.conversion,
  com.b2international.snowowl.fhir.core.model.dt,
  com.b2international.snowowl.fhir.core.model.lookup,
- com.b2international.snowowl.fhir.core.model.op,
  com.b2international.snowowl.fhir.core.model.property,
  com.b2international.snowowl.fhir.core.model.serialization,
  io.swagger.annotations

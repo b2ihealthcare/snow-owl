@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,6 +32,8 @@ import javax.validation.Valid;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +54,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -74,6 +81,61 @@ import io.swagger.annotations.ApiResponses;
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/CodeSystem", produces = { MediaType.APPLICATION_JSON_VALUE })
 public class FhirCodeSystemRestService {
+	
+	@JsonFilter("TestClassFilter")
+	class TestClass {
+		
+		@JsonProperty
+		private String firstName;
+		
+		@JsonProperty
+		private String lastName;
+
+		public TestClass(String firstName, String lastName) {
+			this.firstName = firstName;
+			this.lastName = lastName;
+		}
+
+		@Override
+		public String toString() {
+			return "TestClass [firstName=" + firstName + ", lastName=" + lastName + "]";
+		}
+		
+	}
+	
+	
+	@RequestMapping(value="/filter", method = RequestMethod.GET)
+	@ApiOperation(response = TestClass.class, value ="Filter test class")
+	public MappingJacksonValue filter(@RequestParam MultiValueMap<String, String> elements) {
+		System.out.println(elements);
+		
+		String[] requestedFields = null;
+		
+		if (elements.containsKey("_elements")) {
+			List<String> returnFields = elements.get("_elements");
+			returnFields.replaceAll(f -> f.replaceAll(" ", ""));
+			for (String element : returnFields) {
+				System.out.println("Line: " + element);
+				String[] split = element.split("=");
+				requestedFields = split[1].split(",");
+			}
+		}
+		
+		TestClass tc = new TestClass("Balazs", "Banfai");
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(tc);
+		System.out.println("Req: " + Arrays.toString(requestedFields));
+		SimpleFilterProvider filters = new SimpleFilterProvider().setFailOnUnknownId(false);
+		if (requestedFields != null) {
+			filters.addFilter("TestClassFilter", SimpleBeanPropertyFilter.filterOutAllExcept(requestedFields));
+		} else {
+			filters.addFilter("TestClassFilter", SimpleBeanPropertyFilter.serializeAll());
+		}
+		//filters.addFilter("Whatever", new AnnotationBasedPropertyFilter());
+		mappingJacksonValue.setFilters(filters);
+		
+		System.out.println(tc);
+		return mappingJacksonValue;
+	}
 	
 	@ApiOperation(
 			value="FHIR REST API Ping Test",

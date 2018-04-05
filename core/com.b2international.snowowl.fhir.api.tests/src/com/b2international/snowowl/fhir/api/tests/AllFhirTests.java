@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.api.tests.filter.FilterTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
@@ -47,7 +48,8 @@ import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidati
 	DesignationValidationTest.class,
 	PropertyValidationTest.class,
 	SubPropertyValidationTest.class,
-	ExceptionTest.class
+	ExceptionTest.class,
+	FilterTest.class
 })
 public class AllFhirTests {
 }
