@@ -138,7 +138,8 @@ public class FilterTest extends FhirTest {
 
 		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
-		String expectedJson = "{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\",\"status\":\"active\"}";
+		String expectedJson = "{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
+				+ "\"name\":\"Local code system\",\"status\":\"active\"}";
 		assertEquals(expectedJson, jsonString);
 		
 		setupElementsFilter(null);
@@ -195,7 +196,7 @@ public class FilterTest extends FhirTest {
 				+ "\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
 				+ "\"title\":\"title\",\"status\":\"active\","
-				+ "\"hierarchyMeaning\":\"is-a\",\"property\":[{\"code\":\"child\","
+				+ "\"hierarchyMeaning\":\"is-a\",\"count\":0,\"property\":[{\"code\":\"child\","
 				+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
 				+ "\"description\":\"Child\",\"type\":\"code\"}]}", jsonString);
 	}

@@ -76,6 +76,7 @@ public class CodeSystem extends TerminologyResource {
 	@JsonProperty("property")
 	private Collection<SupportedConceptProperty> properties;
 	
+	@Summary
 	@Min(value = 0, message = "Count must be equal to or larger than 0")
 	@JsonProperty
 	private int count;
