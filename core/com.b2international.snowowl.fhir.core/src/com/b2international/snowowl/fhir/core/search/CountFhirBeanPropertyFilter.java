@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 
 /**
- * Property filter to the summary elements
+ * Property filter to the count element
  * @since 6.4
  *
  */
-public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
+public class CountFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 
 	@Override
 	protected boolean include(BeanPropertyWriter writer) {
@@ -33,15 +33,14 @@ public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 	@Override
 	protected boolean include(PropertyWriter writer) {
 		
+		//Summary should always cover mandatory, but just in case
 		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
 		
 		if (mandatoryAnnotation!=null) {
 			return true;
 		}
 		
-		Summary summaryAnnotation = writer.findAnnotation(Summary.class);
-		
-		if (summaryAnnotation!=null) {
+		if (writer.getName().equals("count")) {
 			return true;
 		}
 		return false;

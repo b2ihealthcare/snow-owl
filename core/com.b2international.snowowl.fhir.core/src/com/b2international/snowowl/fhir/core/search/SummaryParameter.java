@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.core.search;
 
 /**
- * Search parameter _summary
+ * Values for the _summary request parameter
  * @since 6.4
  */
 public enum SummaryParameter {
@@ -26,5 +26,9 @@ public enum SummaryParameter {
 	DATA	, //Remove the text element
 	COUNT, //Search only: just return a count of the matching resources, without returning the actual matches
 	FALSE; //Return all parts of the resource(s)
+	
+	public static SummaryParameter fromRequestParameter(String requestParam) {
+		return valueOf(requestParam.toUpperCase());
+	}
 
 }

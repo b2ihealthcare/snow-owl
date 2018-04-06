@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.util.Base64;
-
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
@@ -38,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({ "resourceType", "id" })
 public abstract class FhirResource {
 	
+	@Mandatory
 	private Id id;
 
 	private Code language;

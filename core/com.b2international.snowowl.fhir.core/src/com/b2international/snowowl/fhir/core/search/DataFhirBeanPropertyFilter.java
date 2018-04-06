@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 
 /**
- * Property filter to the summary elements
+ * Property filter to remove the text element
  * @since 6.4
  *
  */
-public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
+public class DataFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 
 	@Override
 	protected boolean include(BeanPropertyWriter writer) {
@@ -33,18 +33,10 @@ public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 	@Override
 	protected boolean include(PropertyWriter writer) {
 		
-		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
-		
-		if (mandatoryAnnotation!=null) {
-			return true;
+		if (writer.getName().equals("text")) {
+			return false;
 		}
-		
-		Summary summaryAnnotation = writer.findAnnotation(Summary.class);
-		
-		if (summaryAnnotation!=null) {
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 }

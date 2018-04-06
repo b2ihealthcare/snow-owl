@@ -32,6 +32,8 @@ import com.google.common.collect.Sets;
  *
  */
 public class FhirBeanPropertyFilter implements PropertyFilter {
+	
+	public static final String FILTER_NAME = "FhirResponseFilter";
 
 	private Set<String> requestedFields = Sets.newHashSet();
 	
@@ -50,20 +52,17 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 			return new SummaryFhirBeanPropertyFilter();
 		case COUNT:
 			//return count only. How is this different from the _count?
-			break;
+			return new CountFhirBeanPropertyFilter();
 		case DATA:
 			//remove the text element
-			break;
+			return new DataFhirBeanPropertyFilter();
 		case TEXT:
 			//Return only the "text" element, the 'id' element, the 'meta' element, 
 			//and only top-level mandatory elements
-			break;
+			return new TextFhirBeanPropertyFilter();
 		default:
-			break;
+			throw new UnsupportedOperationException("No property filter is registered for " + summaryParameter);
 		}
-			
-		return null;
-		
 	}
 
 	/**
@@ -115,6 +114,11 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 	 * returned) or filtered out (if 'false' returned)
 	 */
 	protected boolean include(BeanPropertyWriter writer) {
+		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
+		
+		if (mandatoryAnnotation!=null) {
+			return true;
+		}
 		return requestedFields.contains(writer.getName());
 	}
 
@@ -125,6 +129,7 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 	 * @since 2.3
 	 */
 	protected boolean include(PropertyWriter writer) {
+		System.out.println("FhirBeanPropertyFilter.include()" + writer.getName());
 		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
 		
 		if (mandatoryAnnotation!=null) {

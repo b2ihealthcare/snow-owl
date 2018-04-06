@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 
 /**
- * Property filter to the summary elements
+ * Property filter to return only the "text" element, the 'id' element, the 'meta' element 
+ * and only top-level mandatory elements
  * @since 6.4
- *
  */
-public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
+public class TextFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 
 	@Override
 	protected boolean include(BeanPropertyWriter writer) {
@@ -33,15 +33,16 @@ public class SummaryFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 	@Override
 	protected boolean include(PropertyWriter writer) {
 		
+		//Summary should always cover mandatory, but just in case
 		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
-		
+				
 		if (mandatoryAnnotation!=null) {
 			return true;
 		}
 		
-		Summary summaryAnnotation = writer.findAnnotation(Summary.class);
-		
-		if (summaryAnnotation!=null) {
+		if (writer.getName().equals("text") ||
+				writer.getName().equals("id") || 
+				writer.getName().equals("meta")) {
 			return true;
 		}
 		return false;

@@ -24,6 +24,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -34,26 +36,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class TerminologyResource extends DomainResource {
 	
 	//same as logical id
+	@Summary
 	@JsonProperty
 	private Uri url; //ORG_LINK or hardcoded provider value
 	
+	@Summary
 	@JsonProperty
 	private Identifier identifier; //OID
 	
+	@Summary
 	@JsonProperty
 	private String version; //not necessarily available - and what to do when we have more than 1??
 	
+	@Summary
 	@JsonProperty
 	private String name;
 	
+	@Summary
 	@JsonProperty
 	private String title;
 	
+	@Mandatory
 	@Valid
 	@NotNull
 	@JsonProperty
 	private Code status;
 	
+	@Summary
 	@JsonProperty
 	private String publisher;
 

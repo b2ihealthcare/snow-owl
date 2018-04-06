@@ -50,7 +50,7 @@ public class Bundle extends FhirResource {
 	@JsonProperty
 	private Code type;
 	
-	@Min(value = 0, message = "Total must be larger than 0")
+	@Min(value = 0, message = "Total must be equal to or larger than 0")
 	@JsonProperty
 	private int total;
 

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.api.tests.filter;
 
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
@@ -23,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 6.4
  */
-@JsonFilter("TestClassFilter")
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class FilteredClass {
 
 	@JsonProperty

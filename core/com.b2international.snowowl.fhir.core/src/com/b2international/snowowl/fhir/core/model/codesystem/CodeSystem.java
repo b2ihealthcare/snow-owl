@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 import java.util.Collection;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
@@ -26,6 +27,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -47,24 +52,33 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class CodeSystem extends TerminologyResource {
 	
 	//FHIR header "resourceType" : "CodeSystem",
+	@Mandatory
 	@JsonProperty
 	private String resourceType = "CodeSystem";
 	
+	@Summary
 	@JsonProperty
 	private Code hierarchyMeaning;
 	
+	@Summary
 	@JsonProperty
 	private String publisher;
 	
 	/*
 	 * The properties supported by this code system
 	 */
+	@Summary
 	@Valid
 	@JsonProperty("property")
 	private Collection<SupportedConceptProperty> properties;
+	
+	@Min(value = 0, message = "Count must be equal to or larger than 0")
+	@JsonProperty
+	private int count;
 	
 	/*
 	 * Concepts in the code system
@@ -74,12 +88,13 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description, 
-			Code hierarchyMeaning, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+			String title, Code status, String publisher, String description, Code hierarchyMeaning, 
+			Collection<SupportedConceptProperty> properties, final int count, Collection<Concept> concepts) {
 		
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.properties = properties;
+		this.count = count;
 		this.concepts = concepts;
 	}
 	
@@ -90,6 +105,8 @@ public class CodeSystem extends TerminologyResource {
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
 		private Code hierarchyMeaning;
+		
+		private int count;
 		
 		private Collection<Concept> concepts = Sets.newHashSet();
 		
@@ -114,6 +131,11 @@ public class CodeSystem extends TerminologyResource {
 			return getSelf();
 		}
 		
+		public Builder count(int count) {
+			this.count = count;
+			return getSelf();
+		}
+		
 		public Builder addConcept(Concept concept)  {
 			this.concepts.add(concept);
 			return getSelf();
@@ -121,7 +143,8 @@ public class CodeSystem extends TerminologyResource {
 		
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, hierarchyMeaning, properties, concepts);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, 
+					hierarchyMeaning, properties, count, concepts);
 		}
 	}
 		
