@@ -346,11 +346,19 @@ public abstract class SnomedRequests {
 	}
 
 	/**
-	 * Returns a SNOMED CT request builder to prepare the updating reference set members.
+	 * Returns a SNOMED CT request builder to prepare the updating of a single reference set member.
 	 * @return SNOMED CT reference set member update request builder
 	 */
 	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember() {
 		return new SnomedRefSetMemberUpdateRequestBuilder();
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of multiple reference set members.
+	 * @return SNOMED CT reference set update request builder
+	 */
+	public static SnomedRefSetMemberBulkRequestBuilder prepareBulkUpdateMembers() {
+		return new SnomedRefSetMemberBulkRequestBuilder();
 	}
 
 	/**

@@ -18,9 +18,11 @@ package com.b2international.index.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -331,8 +333,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
-			String[] indicesToRefresh = typesToRefresh.stream().map(this::getTypeIndex).toArray(length -> new String[length]);
-			log.trace("Refreshing indexes '{}'", (Object[]) indicesToRefresh);
+			String[] indicesToRefresh = typesToRefresh.stream().map(this::getTypeIndex).collect(toSet()).toArray(new String[0]);
+			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
 			client().admin()
 			        .indices()
 			        .prepareRefresh(indicesToRefresh)

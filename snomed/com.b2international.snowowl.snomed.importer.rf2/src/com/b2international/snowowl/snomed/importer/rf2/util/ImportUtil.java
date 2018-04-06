@@ -423,8 +423,9 @@ public final class ImportUtil {
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IDatastoreOperationLockManager.class);
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String importFeatureToggle = ImportUtil.createFeatureToggleString(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
 		try {
-			features.enable(SnomedDatastoreActivator.REPOSITORY_UUID + ".import");
+			features.enable(importFeatureToggle);
 			OperationLockRunner.with(lockManager).run(new Runnable() { 
 				@Override 
 				public void run() {
@@ -436,7 +437,7 @@ public final class ImportUtil {
 		} catch (final InvocationTargetException e) {
 			throw new ImportException("Failed to import RF2 release.", e.getCause());
 		} finally {
-			features.disable(SnomedDatastoreActivator.REPOSITORY_UUID + ".import");
+			features.disable(importFeatureToggle);
 		}
 		
 		return resultHolder[0];
@@ -584,5 +585,9 @@ public final class ImportUtil {
 		}
 
 		return ImmutableList.copyOf(listOfFiles);
+	}
+	
+	public static String createFeatureToggleString(String repositoryUuId, IBranchPath branchPath) {
+		return String.format("%s-%s.import", repositoryUuId, branchPath.getPath());
 	}
 }

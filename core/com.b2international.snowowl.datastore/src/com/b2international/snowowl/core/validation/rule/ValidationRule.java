@@ -34,19 +34,25 @@ public final class ValidationRule implements Serializable {
 	 * @since 6.0
 	 */
 	public enum Severity {
-		ERROR("Error"),
-		WARNING("Warning"),
-		INFO("Info");
+		ERROR("Error", 3),
+		WARNING("Warning", 2),
+		INFO("Info", 1);
 		
-		private final String severity;
-		private Severity(String severity) {
-			this.severity = severity;
+		private final String name;
+		private int value;
+		
+		private Severity(String name, int value) {
+			this.name = name;
+			this.value = value;
 		}
 
 		public String getName() {
-			return severity;
+			return name;
 		}
 		
+		public int getValue() {
+			return value;
+		}
 	}
 	
 	/**
