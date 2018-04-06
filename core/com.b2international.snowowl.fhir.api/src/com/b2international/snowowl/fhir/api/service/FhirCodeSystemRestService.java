@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -53,10 +52,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -81,61 +76,6 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/CodeSystem", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemRestService extends BaseFhirRestService {
 	
-	@JsonFilter("TestClassFilter")
-	class TestClass {
-		
-		@JsonProperty
-		private String firstName;
-		
-		@JsonProperty
-		private String lastName;
-
-		public TestClass(String firstName, String lastName) {
-			this.firstName = firstName;
-			this.lastName = lastName;
-		}
-
-		@Override
-		public String toString() {
-			return "TestClass [firstName=" + firstName + ", lastName=" + lastName + "]";
-		}
-		
-	}
-	
-	
-	@RequestMapping(value="/filter", method = RequestMethod.GET)
-	@ApiOperation(response = TestClass.class, value ="Filter test class")
-	public MappingJacksonValue filter(@RequestParam MultiValueMap<String, String> elements) {
-		System.out.println(elements);
-		
-		String[] requestedFields = null;
-		
-		if (elements.containsKey("_elements")) {
-			List<String> returnFields = elements.get("_elements");
-			returnFields.replaceAll(f -> f.replaceAll(" ", ""));
-			for (String element : returnFields) {
-				System.out.println("Line: " + element);
-				String[] split = element.split("=");
-				requestedFields = split[1].split(",");
-			}
-		}
-		
-		TestClass tc = new TestClass("Balazs", "Banfai");
-		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(tc);
-		System.out.println("Req: " + Arrays.toString(requestedFields));
-		SimpleFilterProvider filters = new SimpleFilterProvider().setFailOnUnknownId(false);
-		if (requestedFields != null) {
-			filters.addFilter("TestClassFilter", SimpleBeanPropertyFilter.filterOutAllExcept(requestedFields));
-		} else {
-			filters.addFilter("TestClassFilter", SimpleBeanPropertyFilter.serializeAll());
-		}
-		//filters.addFilter("Whatever", new AnnotationBasedPropertyFilter());
-		mappingJacksonValue.setFilters(filters);
-		
-		System.out.println(tc);
-		return mappingJacksonValue;
-	}
-	
 	@ApiOperation(
 			value="FHIR REST API Ping Test",
 			notes="This is only an FHIR ping test.")
@@ -146,6 +86,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	}
 	
 	@ApiOperation(
+			response=CodeSystem.class,
 			value="Retrieve the code system by its Id.",
 			notes="Retrieves the code system specified by its logical id.")
 	@ApiResponses({
@@ -154,11 +95,17 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
-	public CodeSystem getCodeSystem(@PathVariable("codeSystemId") String codeSystemId) {
+	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
+			@RequestParam MultiValueMap<String, String> searchParams) {
+		
+		validateSearchParams(searchParams);
+
 		Path codeSystemPath = Paths.get(codeSystemId);
-		return IFhirProvider.Registry
-				.getFhirProvider(codeSystemPath)
-				.getCodeSystem(codeSystemPath);
+		CodeSystem codeSystem = IFhirProvider.Registry
+			.getFhirProvider(codeSystemPath)
+			.getCodeSystem(codeSystemPath);
+
+		return applyResponseFilter(searchParams, codeSystem);
 	}
 	
 	@ApiOperation(

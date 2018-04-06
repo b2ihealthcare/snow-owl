@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.search;
 
-import java.util.Set;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyFilter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.4
@@ -35,9 +35,9 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 	
 	public static final String FILTER_NAME = "FhirResponseFilter";
 
-	private Set<String> requestedFields = Sets.newHashSet();
+	private List<String> requestedFields = Lists.newArrayList();
 	
-	public static FhirBeanPropertyFilter createFilter(String[] requestedFields) {
+	public static FhirBeanPropertyFilter createFilter(List<String> requestedFields) {
 		return new FhirBeanPropertyFilter(requestedFields);
 	}
 	
@@ -68,9 +68,9 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 	/**
 	 * @param requestedFields
 	 */
-	protected FhirBeanPropertyFilter(String[] requestedFields) {
+	protected FhirBeanPropertyFilter(List<String> requestedFields) {
 		if (requestedFields != null) {
-			this.requestedFields = Sets.newHashSet(requestedFields);
+			this.requestedFields = requestedFields;
 		}
 	}
 	
@@ -129,7 +129,6 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 	 * @since 2.3
 	 */
 	protected boolean include(PropertyWriter writer) {
-		System.out.println("FhirBeanPropertyFilter.include()" + writer.getName());
 		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
 		
 		if (mandatoryAnnotation!=null) {

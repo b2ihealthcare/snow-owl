@@ -17,14 +17,14 @@ package com.b2international.snowowl.fhir.api.tests.filter;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
@@ -96,12 +96,22 @@ public class FilterTest extends FhirTest {
 	}
 	
 	@Test
+	public void mvmTest() {
+		UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl("http://localhost?a=1, 2");
+		MultiValueMap<String,String> queryParams = uriComponentsBuilder.build().getQueryParams();
+		Set<String> keySet = queryParams.keySet();
+		for (String key : keySet) {
+			System.out.println("Key: " + key + ": " + queryParams.get(key));
+		}
+	}
+	
+	@Test
 	public void filterIncorrectElementsTest() throws Exception {
 
-		MultiValueMap<String, String> elements = getParametersMap("_elements=f, l");
+		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_elements=x, y").build().getQueryParams();
 
-		String[] requestedFields = getRequestedFields(elements, "_elements");
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
+		List<String> requestedFields = getRequestedFields(elements, "_elements");
+		System.out.println("Requested fields: " + requestedFields);
 
 		setupElementsFilter(requestedFields);
 
@@ -119,10 +129,10 @@ public class FilterTest extends FhirTest {
 	@Test
 	public void filterElementsTest() throws Exception {
 
-		MultiValueMap<String, String> elements = getParametersMap("_elements=firstName, lastName");
+		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_elements=firstName, lastName").build().getQueryParams();
 
-		String[] requestedFields = getRequestedFields(elements, "_elements");
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
+		List<String> requestedFields = getRequestedFields(elements, "_elements");
+		System.out.println("Requested fields: " + requestedFields);
 
 		setupElementsFilter(requestedFields);
 
@@ -140,11 +150,12 @@ public class FilterTest extends FhirTest {
 	@Test
 	public void summaryFalseTest() throws Exception {
 
-		MultiValueMap<String, String> elements = getParametersMap("_summary=false");
+		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=false").build().getQueryParams();
 
-		String[] requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
-		SummaryParameter summaryParameter = SummaryParameter.valueOf(requestedFields[0].toUpperCase());
+		List<String> requestedFields = getRequestedFields(elements, "_summary");
+		System.out.println("Requested fields: " + requestedFields);
+		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
+
 
 		setupSummaryFilter(summaryParameter);
 
@@ -167,11 +178,12 @@ public class FilterTest extends FhirTest {
 	@Test
 	public void summaryTrueTest() throws Exception {
 
-		MultiValueMap<String, String> elements = getParametersMap("_summary=true");
+		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=true").build().getQueryParams();
 
-		String[] requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
-		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields[0]);
+		List<String> requestedFields = getRequestedFields(elements, "_summary");
+		System.out.println("Requested fields: " + requestedFields);
+		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
+
 
 		setupSummaryFilter(summaryParameter);
 
@@ -197,11 +209,11 @@ public class FilterTest extends FhirTest {
 				.count(12)
 				.build();
 
-		MultiValueMap<String, String> elements = getParametersMap("_summary=count");
+		MultiValueMap<String, String> elements = UriComponentsBuilder.fromHttpUrl("http://localhost?_summary=count").build().getQueryParams();
 
-		String[] requestedFields = getRequestedFields(elements, "_summary");
-		System.out.println("Requested fields: " + Arrays.toString(requestedFields));
-		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields[0]);
+		List<String> requestedFields = getRequestedFields(elements, "_summary");
+		System.out.println("Requested fields: " + requestedFields);
+		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
 
@@ -211,7 +223,7 @@ public class FilterTest extends FhirTest {
 				+ "\"status\":\"active\",\"count\":12}", jsonString);
 	}
 
-	private void setupElementsFilter(String[] requestedFields) {
+	private void setupElementsFilter(List<String> requestedFields) {
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredClass);
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
@@ -229,30 +241,23 @@ public class FilterTest extends FhirTest {
 		objectMapper.setFilterProvider(filterProvider);
 	}
 
-	private String[] getRequestedFields(MultiValueMap<String, String> elements, String paramName) {
+	private List<String> getRequestedFields(MultiValueMap<String, String> elements, String paramName) {
 		
-		String[] requestedFields = null;
+		List<String> requestedParameters = Lists.newArrayList();
 		if (elements.containsKey(paramName)) {
 			List<String> returnFields = elements.get(paramName);
-			returnFields.replaceAll(f -> f.replaceAll(" ", ""));
 			for (String element : returnFields) {
-				String[] split = element.split("=");
-				requestedFields = split[1].split(",");
+				element = element.replaceAll(" ", "");
+				if (element.contains(",")) {
+					String requestedFields[] = element.split(",");
+					requestedParameters.addAll(Lists.newArrayList(requestedFields));
+				} else {
+					requestedParameters.add(element);
+				}
 			}
 		}
-		return requestedFields;
+		return requestedParameters;
 	}
 
-	/**
-	 * @param string
-	 * @return
-	 */
-	private MultiValueMap<String, String> getParametersMap(String paramLine) {
-		
-		String[] splitParams = paramLine.split("=");
-		MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
-		List<String> values = Lists.newArrayList(splitParams[0]+"=" + splitParams[1]);
-		multiValueMap.put(splitParams[0], values);
-		return multiValueMap;
-	}
+
 }

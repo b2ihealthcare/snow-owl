@@ -15,11 +15,21 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.util.MultiValueMap;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameterKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.4
@@ -38,6 +48,52 @@ public abstract class BaseFhirRestService {
 	
 	protected final Parameters.Fhir toResponse(Object response) {
 		return new Parameters.Fhir(Parameters.from(response));
+	}
+	
+	protected MappingJacksonValue applyResponseFilter(MultiValueMap<String, String> searchParams, Object filteredObject) {
+
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+		
+		if (searchParams.containsKey(SearchRequestParameterKey._summary.name())) {
+			List<String> summaryParameter = getRequestedFields(searchParams, SearchRequestParameterKey._summary.name());
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(summaryParameter));
+		} else if (searchParams.containsKey(SearchRequestParameterKey._elements.name())) {
+			List<String> requestedElements = getRequestedFields(searchParams, SearchRequestParameterKey._elements.name());
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(requestedElements));
+		}
+		
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
+		mappingJacksonValue.setFilters(filterProvider);
+		mapper.setFilterProvider(filterProvider);
+		return mappingJacksonValue;
+	}
+	
+	protected void validateSearchParams(MultiValueMap<String, String> searchParams) {
+		
+		if (searchParams.containsKey(SearchRequestParameterKey._summary.name()) && 
+				searchParams.containsKey(SearchRequestParameterKey._elements.name())) {
+			throw new BadRequestException("Both search parameters '_summary' and '_elements' cannot be specified at the same time.");
+		}
+	}
+	
+	protected List<String> getRequestedFields(MultiValueMap<String, String> elements, String paramName) {
+		
+		List<String> requestedParameters = Lists.newArrayList();
+		if (elements.containsKey(paramName)) {
+			List<String> returnFields = elements.get(paramName);
+			for (String element : returnFields) {
+				element = element.replaceAll(" ", "");
+				if (element.contains(",")) {
+					String requestedFields[] = element.split(",");
+					requestedParameters.addAll(Lists.newArrayList(requestedFields));
+				} else {
+					if (!StringUtils.isEmpty(element)) {
+						requestedParameters.add(element);
+					}
+				}
+			}
+		}
+		return requestedParameters;
 	}
 	
 }
