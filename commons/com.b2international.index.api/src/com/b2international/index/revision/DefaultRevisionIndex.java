@@ -16,12 +16,11 @@
 package com.b2international.index.revision;
 
 import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,6 +29,7 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -50,7 +50,12 @@ import com.google.common.collect.Sets;
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
 	private static final String SCROLL_KEEP_ALIVE = "2m";
+	
+	private static final int SCROLL_LIMIT = 10_000;
+	
 	private static final int PURGE_LIMIT = 100_000;
+	
+	private static final int COMPARE_DEFAULT_LIMIT = 10_000;
 	
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
@@ -105,109 +110,158 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	@Override
-	public RevisionCompare compare(String branch) {
-		return compare(getParentBranch(branch), getBranch(branch));
+	public RevisionCompare compare(final String branch) {
+		return compare(getParentBranch(branch), getBranch(branch), COMPARE_DEFAULT_LIMIT);
+	}
+	
+	@Override
+	public RevisionCompare compare(final String branch, final int limit) {
+		return compare(getParentBranch(branch), getBranch(branch), limit);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
-		return compare(getBranch(baseBranch), getBranch(compareBranch));
+		return compare(getBranch(baseBranch), getBranch(compareBranch), COMPARE_DEFAULT_LIMIT);
 	}
 	
-	private RevisionCompare compare(final RevisionBranch base, final RevisionBranch compare) {
+	@Override
+	public RevisionCompare compare(final String baseBranch, final String compareBranch, final int limit) {
+		return compare(getBranch(baseBranch), getBranch(compareBranch), limit);
+	}
+	
+	private RevisionCompare compare(final RevisionBranch base, final RevisionBranch compare, final int limit) {
 		return index.read(searcher -> {
 			final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
 			final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
 			final RevisionBranch baseOfCompareBranch = new RevisionBranch(base.path(), Ordering.natural().max(commonPath), commonPath);
-			
+
 			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
-			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, baseOfCompareBranch, compare);
-			
-			final Map<Class<? extends Revision>, LongSet> newOrChangedKeys = newHashMap();
-			final LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
-			final Map<Class<? extends Revision>, LongSet> deletedOrChangedKeys = newHashMap();
-			final LongKeyMap<String> deletedOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
+			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, 
+					baseOfCompareBranch, 
+					compare,
+					limit);
 			
 			// query all registered revision types for new, changed and deleted components
 			for (Class<? extends Revision> type : typesToCompare) {
-				final LongSet newOrChangedKeysForType = newOrChangedKeys.computeIfAbsent(
-						type, key -> PrimitiveSets.newLongOpenHashSet());
-				
+
+				// The current storage key-hash pairs from the "compare" segments
 				final Query<String[]> newOrChangedQuery = Query
 						.select(String[].class)
 						.from(type)
 						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 						.where(Revision.branchSegmentFilter(segmentsToCompare))
 						.scroll(SCROLL_KEEP_ALIVE)
-						.limit(10000)
+						.limit(SCROLL_LIMIT)
 						.build();
 				
 				for (final Hits<String[]> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
+					
+					final LongSet newOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
+					final LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
+
 					for (final String[] newOrChangedHit : newOrChangedHits) {
 						final long storageKey = Long.parseLong(newOrChangedHit[0]);
 						final String hash = newOrChangedHit[1];
-						newOrChangedKeysForType.add(storageKey);
+						newOrChangedKeys.add(storageKey);
 						if (hash != null) {
 							newOrChangedHashes.put(storageKey, hash);
 						}
 					}
+					
+					/* 
+					 * Create "dependent sub-query": try to find the same IDs in the "base" segments, which 
+					 * will be either changed or "same" revisions from a compare point of view 
+					 * (in case of a matching content hash value)
+					 */
+					final Query<String[]> changedOrSameQuery = Query
+							.select(String[].class)
+							.from(type)
+							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
+							.where(Expressions.builder()
+									.filter(matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(newOrChangedKeys)))
+									.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
+									.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+									.build())
+							.scroll(SCROLL_KEEP_ALIVE)
+							.limit(SCROLL_LIMIT)
+							.build();
+					
+					for (Hits<String[]> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
+						for (final String[] changedOrSameHit : changedOrSameHits) {
+							final long storageKey = Long.parseLong(changedOrSameHit[0]);
+							final String hash = changedOrSameHit[1];
+
+							// CHANGED, unless the hashes tell us otherwise
+							if (hash == null 
+									|| !newOrChangedHashes.containsKey(storageKey)
+									|| !Objects.equals(newOrChangedHashes.get(storageKey), hash)) {
+								
+								result.changedRevision(type, storageKey);
+							}
+							
+							// Remove this storage key from newOrChanged, it is decidedly changed-or-same
+							newOrChangedKeys.remove(storageKey);
+							newOrChangedHashes.remove(storageKey);
+						}
+					}
+					
+					// Everything remaining in newOrChanged is NEW, as it had no previous revision in the common segments
+					for (LongIterator itr = newOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
+						result.newRevision(type, itr.next());
+					}
 				}
-				
-				// any revision counts as changed or deleted which has segmentID in the common path, but replaced in the compared path
-				final LongSet deletedOrChangedKeysForType = deletedOrChangedKeys.computeIfAbsent(
-						type, key -> PrimitiveSets.newLongOpenHashSet());
-				
+
+				// Revisions which existed on "base", but where replaced by another revision on "compare" segments
 				final Query<String[]> deletedOrChangedQuery = Query
 						.select(String[].class)
 						.from(type)
-						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
+						.fields(Revision.STORAGE_KEY)
 						.where(Expressions.builder()
 								.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
 								.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
 								.build())
 						.scroll(SCROLL_KEEP_ALIVE)
-						.limit(10000)
+						.limit(SCROLL_LIMIT)
 						.build();
 				
 				for (Hits<String[]> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
+					
+					final LongSet deletedOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
+					// Don't need to keep track of hashes here
+
 					for (String[] deletedOrChanged : deletedOrChangedHits) {
 						final long storageKey = Long.parseLong(deletedOrChanged[0]);
-						final String hash = deletedOrChanged[1];
-						deletedOrChangedKeysForType.add(storageKey);
-						if (hash != null) {
-							deletedOrChangedHashes.put(storageKey, hash);
-						}
+						deletedOrChangedKeys.add(storageKey);
 					}
-				}
-			}
-			
-			for (Class<? extends Revision> type : typesToCompare) {
-				final LongSet newOrChangedKeysForType = newOrChangedKeys.get(type);
-				final LongSet deletedOrChangedKeysForType = deletedOrChangedKeys.get(type);
-				
-				for (LongIterator itr = newOrChangedKeysForType.iterator(); itr.hasNext(); /* empty */) {
-					long newOrChangedStorageKey = itr.next();
 					
-					if (deletedOrChangedKeysForType.contains(newOrChangedStorageKey)) {
-						// CHANGED, unless the hashes tell us otherwise
-						if (!deletedOrChangedHashes.containsKey(newOrChangedStorageKey) 
-								|| !newOrChangedHashes.containsKey(newOrChangedStorageKey) 
-								|| !Objects.equals(deletedOrChangedHashes.get(newOrChangedStorageKey), newOrChangedHashes.get(newOrChangedStorageKey))) {
+					/* 
+					 * Create "dependent sub-query": try to find the same IDs in the "compare" segments,
+					 * if they are present, the revision is definitely not deleted
+					 */
+					final Query<String[]> changedOrSameQuery = Query
+							.select(String[].class)
+							.from(type)
+							.fields(Revision.STORAGE_KEY)
+							.where(Expressions.builder()
+									.filter(matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(deletedOrChangedKeys)))
+									.filter(Revision.branchSegmentFilter(segmentsToCompare))
+									.build())
+							.scroll(SCROLL_KEEP_ALIVE)
+							.limit(SCROLL_LIMIT)
+							.build();
+					
+					for (Hits<String[]> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
+						for (final String[] changedOrSameHit : changedOrSameHits) {
+							final long storageKey = Long.parseLong(changedOrSameHit[0]);
 							
-							result.changedRevision(type, newOrChangedStorageKey);
+							// Remove this storage key from deletedOrChanged, it is decidedly still existing
+							deletedOrChangedKeys.remove(storageKey);
 						}
-					} else {
-						// NEW
-						result.newRevision(type, newOrChangedStorageKey);
 					}
-				}
-				
-				for (LongIterator itr = deletedOrChangedKeysForType.iterator(); itr.hasNext(); /* empty */) {
-					long deletedOrChangedStorageKey = itr.next();
 					
-					if (!newOrChangedKeysForType.contains(deletedOrChangedStorageKey)) {
-						// DELETED
-						result.deletedRevision(type, deletedOrChangedStorageKey);
+					// Everything remaining in deletedOrChanged is DELETED, as it had successor in the "compare" segments
+					for (LongIterator itr = deletedOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
+						result.deletedRevision(type, itr.next());
 					}
 				}
 			}

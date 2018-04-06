@@ -75,10 +75,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare);
+			compareResult = index.compare(base, compare, limit);
 			baseBranchPath = base;
 		} else {
-			compareResult = index.compare(compare);
+			compareResult = index.compare(compare, limit);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
@@ -88,7 +88,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchNew(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalNew(hits.getTotal());
+				result.addTotalNew(compareResult.getNewTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -100,7 +100,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchChanged(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalChanged(hits.getTotal());
+				result.addTotalChanged(compareResult.getChangedTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -112,7 +112,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
-				result.addTotalDeleted(hits.getTotal());
+				result.addTotalDeleted(compareResult.getDeletedTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
