@@ -65,9 +65,9 @@ public interface IFhirProvider {
 		 */
 		public static IFhirProvider getFhirProvider(Path path) {
 			return getProviders().stream()
-					.filter(provider -> provider.isSupported(path))
-					.findFirst()
-					.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + path, OperationOutcomeCode.MSG_NO_MODULE, "system=" + path));
+				.filter(provider -> provider.isSupported(path))
+				.findFirst()
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + path, OperationOutcomeCode.MSG_NO_MODULE, "system=" + path));
 		}
 		
 		/**
@@ -77,9 +77,9 @@ public interface IFhirProvider {
 		 */
 		public static IFhirProvider getFhirProvider(String uriValue) {
 			return getProviders().stream()
-					.filter(provider -> provider.isSupported(uriValue))
-					.findFirst()
-					.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
+				.filter(provider -> provider.isSupported(uriValue))
+				.findFirst()
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
 		}
 		
 	}
