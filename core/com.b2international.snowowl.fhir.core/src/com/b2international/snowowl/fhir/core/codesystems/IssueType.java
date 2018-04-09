@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.core.codesystems;
-
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Issue type codesystem
@@ -44,7 +41,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 2	  throttled	Throttled	The system is not prepared to handle this request due to load management.
 1	informational	Informational Note	A message unrelated to the processing success of the completed operation (examples of the latter include things like reminders of password expiry, system maintenance times, etc.).
  * 
- * @since 6.3
+ * @since 6.4
  */
 public enum IssueType implements FhirCodeSystem {
 	
@@ -108,11 +105,6 @@ public enum IssueType implements FhirCodeSystem {
 	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
 	@Override
-	public Code getCode() {
-		return new Code(name().toLowerCase());
-	}
-	
-	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
 	}
@@ -120,11 +112,6 @@ public enum IssueType implements FhirCodeSystem {
 	@Override
 	public String getDisplayName() {
 		return getCodeValue();
-	}
-	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 	
 	@Override

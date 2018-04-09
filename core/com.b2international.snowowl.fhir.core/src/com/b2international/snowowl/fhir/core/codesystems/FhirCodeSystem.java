@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * Internal FHIR code system
  * 
  * @see <a href="http://hl7.org/fhir/terminologies-systems.html">FHIR:Terminology:Code Systems</a>
- * @since 6.3
+ * @since 6.4
  */
 public interface FhirCodeSystem {
 	
@@ -36,7 +36,9 @@ public interface FhirCodeSystem {
 	 * Returns the code from this code system.
 	 * @return
 	 */
-	Code getCode();
+	default Code getCode() {
+		return new Code(getCodeValue());
+	}
 	
 	/**
 	 * Returns the code value of the code
@@ -51,9 +53,11 @@ public interface FhirCodeSystem {
 	String getDisplayName();
 
 	/**
-	 * Returns the full URI of the code
+	 * Returns the full URI of the code. By default this is in the format of `{@link #getCodeSystemUri() uri}/{@link #getCodeValue() value}`.
 	 * @return
 	 */
-	Uri getUri();
+	default Uri getUri() {
+		return new Uri(String.format("%s/%s", getCodeSystemUri(), getCodeValue()));
+	}
 
 }

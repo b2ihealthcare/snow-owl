@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * usual	 The identifier recommended for display and use in real-world interactions.
@@ -26,7 +24,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * secondary An identifier that was assigned in secondary use - it serves to identify the object in a relative context, but cannot be consistently assigned to the same object again in a different context.
  * 
  * @see <a href="https://www.hl7.org/fhir/codesystem-identifier-use.html">FHIR:CodeSystem:Terminology</a>
- * @since 6.3
+ * @since 6.4
  */
 public enum IdentifierUse implements FhirCodeSystem {
 	
@@ -42,18 +40,8 @@ public enum IdentifierUse implements FhirCodeSystem {
 	}
 	
 	@Override
-	public Code getCode() {
-		return new Code(name().toLowerCase());
-	}
-	
-	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
-	}
-	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 	
 	@Override

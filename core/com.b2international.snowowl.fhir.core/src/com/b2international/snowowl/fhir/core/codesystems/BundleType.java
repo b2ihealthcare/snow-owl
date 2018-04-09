@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-
 /**
  * FHIR Bundle type code system
  * 
- * @since 6.3
+ * @since 6.4
  */
 public enum BundleType implements FhirCodeSystem {
 	
@@ -55,7 +52,7 @@ public enum BundleType implements FhirCodeSystem {
 	
 	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-bundle-type";
 	
-	private String displayName;
+	private final String displayName;
 
 	private BundleType(String displayName) {
 		this.displayName = displayName;
@@ -66,18 +63,8 @@ public enum BundleType implements FhirCodeSystem {
 	}
 	
 	@Override
-	public Code getCode() {
-		return new Code(getCodeValue());
-	}
-	
-	@Override
 	public String getCodeValue() {
 		return name().toLowerCase().replaceAll("_", "-");
-	}
-	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 	
 	@Override

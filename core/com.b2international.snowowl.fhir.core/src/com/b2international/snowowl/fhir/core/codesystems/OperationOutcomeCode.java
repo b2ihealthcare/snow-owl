@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-
 /**
  * FHIR Operation outcome codesystem.
  * 
  * @see <a href="http://hl7.org/fhir/operationoutcome-definitions.html#OperationOutcome.issue">FHIR:Operation Outcome:issue</a>
  *  
- * @since 6.3
+ * @since 6.4
  */
 public enum OperationOutcomeCode implements FhirCodeSystem {
 	
@@ -87,11 +84,6 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	}
 	
 	@Override
-	public Code getCode() {
-		return new Code(name().toLowerCase());
-	}
-	
-	@Override
 	public String getCodeValue() {
 		return name().toLowerCase();
 	}
@@ -101,11 +93,6 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 		return displayName;
 	}
 	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
-	}
-
 	@Override
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;

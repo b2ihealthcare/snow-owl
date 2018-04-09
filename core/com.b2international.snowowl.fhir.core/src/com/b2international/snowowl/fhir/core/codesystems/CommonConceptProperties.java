@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Common concept properties code system
- * @since 6.3
+ * @since 6.4
  */
 public enum CommonConceptProperties implements ConceptProperties {
 	
@@ -66,18 +64,8 @@ public enum CommonConceptProperties implements ConceptProperties {
 	}
 	
 	@Override
-	public Code getType() {
-		return type.getCode();
-	}
-	
-	@Override
 	public ConceptPropertyType getConceptPropertyType() {
 		return type;
-	}
-	
-	@Override
-	public Code getCode() {
-		return new Code(getCodeValue());
 	}
 	
 	@Override
@@ -85,9 +73,4 @@ public enum CommonConceptProperties implements ConceptProperties {
 		return StringUtils.camelCase(name(), "_");
 	}
 	
-	@Override
-	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
-	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
@@ -29,7 +28,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * is subsumed by Attribute (246061005) automatically become properties.
  * 
  * @see CommonConceptProperties
- * @since 6.3
+ * @since 6.4
  */
 public enum CoreSnomedConceptProperties implements ConceptProperties {
 	
@@ -63,17 +62,9 @@ public enum CoreSnomedConceptProperties implements ConceptProperties {
 		return CODE_SYSTEM_URI;
 	}
 	
-	public Code getType() {
-		return conceptPropertyType.getCode();
-	}
-	
+	@Override
 	public ConceptPropertyType getConceptPropertyType() {
 		return conceptPropertyType;
-	}
-	
-	@Override
-	public Code getCode() {
-		return new Code(getCodeValue());
 	}
 	
 	@Override
@@ -91,7 +82,7 @@ public enum CoreSnomedConceptProperties implements ConceptProperties {
 	//for now we will just concat the URI and the value
 	@Override
 	public Uri getUri() {
-		return new Uri(CODE_SYSTEM_URI+"/field/Concept." + getCodeValue());
+		return new Uri(String.format("%s/field/Concept.%s", getCodeSystemUri(), getCodeValue()));
 	}
 
 
