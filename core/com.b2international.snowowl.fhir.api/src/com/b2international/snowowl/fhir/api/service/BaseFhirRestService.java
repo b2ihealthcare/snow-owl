@@ -26,7 +26,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameterKey;
+import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
@@ -40,7 +40,7 @@ public abstract class BaseFhirRestService {
 	public static final String APPLICATION_JSON = MediaType.APPLICATION_JSON_VALUE;
 	
 	@Autowired
-	private ObjectMapper mapper;
+	protected ObjectMapper mapper;
 	
 	protected final <T> T toRequest(Parameters.Fhir in, Class<T> request) {
 		return mapper.convertValue(new Parameters.Json(in.parameters()), request);
@@ -50,16 +50,14 @@ public abstract class BaseFhirRestService {
 		return new Parameters.Fhir(Parameters.from(response));
 	}
 	
-	protected MappingJacksonValue applyResponseFilter(MultiValueMap<String, String> searchParams, Object filteredObject) {
+	protected MappingJacksonValue applyResponseFilter(String summaryParameter, List<String> elementsParameter, Object filteredObject) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
 		
-		if (searchParams.containsKey(SearchRequestParameterKey._summary.name())) {
-			List<String> summaryParameter = getRequestedFields(searchParams, SearchRequestParameterKey._summary.name());
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(summaryParameter));
-		} else if (searchParams.containsKey(SearchRequestParameterKey._elements.name())) {
-			List<String> requestedElements = getRequestedFields(searchParams, SearchRequestParameterKey._elements.name());
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(requestedElements));
+		if (summaryParameter !=null) {
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameter.fromRequestParameter(summaryParameter)));
+		} else if (elementsParameter != null) {
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameter)));
 		}
 		
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
@@ -68,28 +66,23 @@ public abstract class BaseFhirRestService {
 		return mappingJacksonValue;
 	}
 	
-	protected void validateSearchParams(MultiValueMap<String, String> searchParams) {
-		
-		if (searchParams.containsKey(SearchRequestParameterKey._summary.name()) && 
-				searchParams.containsKey(SearchRequestParameterKey._elements.name())) {
+	protected void validateSearchParams(String summary, List<String> elements) {
+		if (summary != null && elements !=null) {
 			throw new BadRequestException("Both search parameters '_summary' and '_elements' cannot be specified at the same time.");
 		}
 	}
 	
-	protected List<String> getRequestedFields(MultiValueMap<String, String> elements, String paramName) {
+	protected List<String> getRequestedFields(List<String> elements) {
 		
 		List<String> requestedParameters = Lists.newArrayList();
-		if (elements.containsKey(paramName)) {
-			List<String> returnFields = elements.get(paramName);
-			for (String element : returnFields) {
-				element = element.replaceAll(" ", "");
-				if (element.contains(",")) {
-					String requestedFields[] = element.split(",");
-					requestedParameters.addAll(Lists.newArrayList(requestedFields));
-				} else {
-					if (!StringUtils.isEmpty(element)) {
-						requestedParameters.add(element);
-					}
+		for (String element : elements) {
+			element = element.replaceAll(" ", "");
+			if (element.contains(",")) {
+				String requestedFields[] = element.split(",");
+				requestedParameters.addAll(Lists.newArrayList(requestedFields));
+			} else {
+				if (!StringUtils.isEmpty(element)) {
+					requestedParameters.add(element);
 				}
 			}
 		}

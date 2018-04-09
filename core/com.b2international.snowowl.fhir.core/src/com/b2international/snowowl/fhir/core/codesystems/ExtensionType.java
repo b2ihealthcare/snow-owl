@@ -53,6 +53,11 @@ public enum ExtensionType implements FhirCodeSystem {
 	}
 	
 	@Override
+	public String getDisplayName() {
+		return getCodeValue();
+	}
+
+	@Override
 	public Uri getUri() {
 		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
@@ -61,5 +66,6 @@ public enum ExtensionType implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
 
 }

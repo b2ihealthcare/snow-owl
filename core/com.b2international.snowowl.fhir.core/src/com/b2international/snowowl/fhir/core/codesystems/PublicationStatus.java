@@ -52,6 +52,11 @@ public enum PublicationStatus implements FhirCodeSystem {
 	}
 	
 	@Override
+	public String getDisplayName() {
+		return getCodeValue();
+	}
+	
+	@Override
 	public Uri getUri() {
 		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}

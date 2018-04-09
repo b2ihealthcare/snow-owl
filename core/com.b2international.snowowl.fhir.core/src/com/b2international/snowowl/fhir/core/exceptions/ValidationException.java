@@ -61,7 +61,7 @@ public final class ValidationException extends BadRequestException {
 		
 		for (ConstraintViolation<?> violation : violations) {
 				
-			String issueDetails = String.format(getOperationOutcomeCode().displayName(), violation.getPropertyPath());
+			String issueDetails = String.format(getOperationOutcomeCode().getDisplayName(), violation.getPropertyPath());
 			StringBuilder builder = new StringBuilder(issueDetails);
 			builder.append(" [");
 			builder.append(violation.getInvalidValue());

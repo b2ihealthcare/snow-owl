@@ -53,7 +53,7 @@ public enum BundleType implements FhirCodeSystem {
 	//The bundle is a set of resources collected into a single package for ease of distribution.
 	COLLECTION("Collection");
 	
-	public final static String CODE_SYSTEM_URI = "https://www.hl7.org/fhir/codesystem-bundle-type.html";
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-bundle-type";
 	
 	private String displayName;
 

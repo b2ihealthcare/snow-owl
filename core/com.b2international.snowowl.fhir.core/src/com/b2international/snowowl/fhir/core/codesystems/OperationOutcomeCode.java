@@ -97,7 +97,7 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	}
 
 	
-	public String displayName() {
+	public String getDisplayName() {
 		return displayName;
 	}
 	

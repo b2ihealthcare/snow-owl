@@ -140,15 +140,15 @@ public class Issue {
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())
 					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
-					.display(operationOutcomeCode.displayName()).build();
+					.display(operationOutcomeCode.getDisplayName()).build();
 			
-			this.codeableConcept = new CodeableConcept(coding, operationOutcomeCode.displayName());
+			this.codeableConcept = new CodeableConcept(coding, operationOutcomeCode.getDisplayName());
 			return this;
 		}
 		
 		public Builder codeableConceptWithDisplayArgs(OperationOutcomeCode operationOutcomeCode, Object... args) {
 			
-			String substitutedDisplayName = String.format(operationOutcomeCode.displayName(), args);
+			String substitutedDisplayName = String.format(operationOutcomeCode.getDisplayName(), args);
 			
 			Coding coding = Coding.builder()
 					.code(operationOutcomeCode.getCodeValue())

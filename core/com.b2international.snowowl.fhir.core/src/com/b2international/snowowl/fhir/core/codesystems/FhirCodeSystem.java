@@ -43,6 +43,12 @@ public interface FhirCodeSystem {
 	 * @return
 	 */
 	String getCodeValue();
+	
+	/**
+	 * Returns the human-readable display name for the code
+	 * @return
+	 */
+	String getDisplayName();
 
 	/**
 	 * Returns the full URI of the code

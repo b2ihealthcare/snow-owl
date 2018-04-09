@@ -29,7 +29,7 @@ public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
 	PART_OF("Part Of"), 
 	CLASSIFIED_WITH("Classified With");
 	
-	public final static String CODE_SYSTEM_URI = "https://www.hl7.org/fhir/codesystem-hierarchy-meaning.html";
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/codesystem-hierarchy-meaning";
 	
 	private String displayName;
 

@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.core.model;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

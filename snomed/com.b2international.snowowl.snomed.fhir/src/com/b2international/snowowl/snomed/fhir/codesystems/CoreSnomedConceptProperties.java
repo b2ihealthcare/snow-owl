@@ -81,6 +81,11 @@ public enum CoreSnomedConceptProperties implements FhirCodeSystem {
 		return StringUtils.camelCase(name(), "_");
 	}
 
+	@Override
+	public String getDisplayName() {
+		return getCodeValue();
+	}
+
 	//TODO: what is the URI? 
     //@see hl7.org/fhir/codesystem-snomedct.html with all the ?
 	//for now we will just concat the URI and the value
@@ -88,5 +93,6 @@ public enum CoreSnomedConceptProperties implements FhirCodeSystem {
 	public Uri getUri() {
 		return new Uri(CODE_SYSTEM_URI+"/field/Concept." + getCodeValue());
 	}
+
 
 }

@@ -26,3 +26,7 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-databind,
  com.b2international.snowowl.datastore
 Bundle-ClassPath: .,
  lib/swagger-annotations-1.5.14.jar
+Import-Package: org.osgi.framework,
+ org.osgi.framework.wiring;version="1.2.0"
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: com.b2international.snowowl.fhir.core.FhirCoreActivator

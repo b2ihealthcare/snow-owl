@@ -71,7 +71,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	}
 	
 	@Override
-	public final CodeSystem getCodeSystem(Path codeSystemPath) {
+	public CodeSystem getCodeSystem(Path codeSystemPath) {
 		String repositoryId = codeSystemPath.getParent().toString();
 		String shortName = codeSystemPath.getFileName().toString();
 		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(getBus()).getSync();
@@ -90,7 +90,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	}
 	
 	@Override
-	public final Collection<CodeSystem> getCodeSystems() {
+	public Collection<CodeSystem> getCodeSystems() {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.build(repositoryId)

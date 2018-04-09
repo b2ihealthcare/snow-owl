@@ -44,6 +44,13 @@ import io.swagger.annotations.ApiModel;
 @ApiModel("Operation outcome")
 public class OperationOutcome {
 	
+	/**
+	 * 
+	 */
+	public OperationOutcome() {
+		// TODO Auto-generated constructor stub
+	}
+	
 	//FHIR header "resourceType" : "Parameters",
 	@JsonProperty
 	private String resourceType = "OperationOutcome";

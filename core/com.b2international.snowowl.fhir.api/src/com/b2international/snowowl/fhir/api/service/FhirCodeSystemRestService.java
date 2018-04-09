@@ -24,13 +24,13 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,16 +96,19 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
-			@RequestParam MultiValueMap<String, String> searchParams) {
+			@RequestParam(required=false) String _summary,
+			@RequestParam(required=false) List<String> _elements) {
 		
-		validateSearchParams(searchParams);
+		System.err.println("_S: " + _summary + " _E:" + _elements);
+		
+		validateSearchParams(_summary, _elements);
 
 		Path codeSystemPath = Paths.get(codeSystemId);
 		CodeSystem codeSystem = IFhirProvider.Registry
 			.getFhirProvider(codeSystemPath)
 			.getCodeSystem(codeSystemPath);
 
-		return applyResponseFilter(searchParams, codeSystem);
+		return applyResponseFilter(_summary, _elements, codeSystem);
 	}
 	
 	@ApiOperation(
@@ -115,7 +118,11 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public Bundle getCodeSystems() {
+	public Bundle getCodeSystems(@RequestParam(required=false) String _summary,
+			@RequestParam(required=false) List<String> _elements) {
+		
+		validateSearchParams(_summary, _elements);
+		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirCodeSystemRestService.class);
@@ -129,6 +136,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		for (IFhirProvider fhirProvider : IFhirProvider.Registry.getProviders()) {
 			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
 			for (CodeSystem codeSystem : codeSystems) {
+				applyResponseFilter(_summary, _elements, codeSystem);
 				String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
 				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 				builder.addEntry(entry);
