@@ -1,3 +1,55 @@
-Snow Owl® FHIR API support. If you have any problems or requests please contact <a href="mailto:support@b2i.sg">support</a>.
-
-TODO
+<h2>Snow Owl<sup>&reg;</sup> <a href="http://hl7.org/fhir/">FHIR<sup>&reg;</sup></a> API support</h2>
+<p>Fast Healthcare Interoperability Resources (FHIR) specifies resources, operations, coded data types and terminologies that are used for representing and communicating coded, structured data in the FHIR core specification within its Terminology Module. The Snow Owl terminology server's first FHIR API release includes support for the following resources:</p>
+<h3>CodeSystem</h3>
+<p>Code systems maintained within Snow Owl are exposed via the endpoints <em>/CodeSystem</em> and <em>/CodeSystem/{codeSystemId}</em>.&nbsp; Supported concept properties are handled and returned if requested. No Delete or Create operations are currently exposed.</p>
+<h4>$lookup</h4>
+<p>Both <em>GET</em> as well as <em>POST</em> HTTP methods are supported for the lookup operation.&nbsp; Concepts are queried based on <em>code,&nbsp; version, system</em> or <em>Coding</em>.&nbsp; Designations are included as part of the response as well as supported concept properties when requested. No <em>date</em> parameter is supported.</p>
+<p>For SNOMED CT, all common and SNOMED CT properties are supported, including all active relationship types.</p>
+<h4>Search</h4>
+<p>The supported search result parameters:</p>
+<ul>
+<li>_summary</li>
+<li>_elements</li>
+</ul>
+<h3>Code Systems</h3>
+<p>The currently exposed code systems are:</p>
+<ul>
+<li>SNOMED CT</li>
+<li>ICD-10</li>
+<li>Internal (FHIR) Code Systems</li>
+</ul>
+<h3>REST API</h3>
+<p>Currently only JSON format is supported with UTF-8 encoding and the Content-Type = application/fhir+json;charset=utf-8.&nbsp; The current HTTP status codes are:</p>
+<div class="rTable">
+<div class="rTableRow">
+<div class="rTableHead"><strong>HTTP Status code</strong></div>
+<div class="rTableHead"><span style="font-weight: bold;">Reason</span></div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">200</div>
+<div class="rTableCell">OK</div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">400</div>
+<div class="rTableCell">Bad Request</div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">401</div>
+<div class="rTableCell">Unathorized.</div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">403</div>
+<div class="rTableCell">Forbidden.</div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">404</div>
+<div class="rTableCell">Not found.</div>
+</div>
+<div class="rTableRow">
+<div class="rTableCell">500</div>
+<div class="rTableCell">Internal error.</div>
+</div>
+</div>
+<h3>Roadmap</h3>
+<p>Snow Owl's pluggable and extensible architecture allows modular development of the FHIR API both in terms of the supported functionality as well as the exposed terminologies.&nbsp; Additionally, Snow Owl's revision-based model allows the support for multiple terminology versions queried concurrently.</p>
+<p>If you have any problems or requests please contact <a href="mailto:support@b2i.sg">support</a>.</p>
