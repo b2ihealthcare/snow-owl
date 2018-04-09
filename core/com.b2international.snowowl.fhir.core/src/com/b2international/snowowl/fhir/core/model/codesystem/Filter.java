@@ -33,6 +33,10 @@ import com.google.common.collect.Lists;
  */
 public class Filter {
 	
+	/**
+	 * Generic is-a and value set containment filters
+	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">IS_A an IN filter</a>
+	 */
 	@JsonIgnore
 	public static final Filter IS_A_FILTER = Filter.builder()
 		.code("concept")
@@ -43,12 +47,28 @@ public class Filter {
 		.value("code system code")
 		.build();
 	
+	/**
+	 * SNOMED CT filter
+	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT ECL filter</a>
+	 */
 	@JsonIgnore
 	public static final Filter EXPRESSION_FILTER = Filter.builder()
 		.code("expression")
 		.description("Filter result of the given SNOMED CT Expression Constraint")
 		.addOperator(FilterOperator.EQUALS)
 		.value("SNOMED CT ECL Expression (http://snomed.org/ecl")
+		.build();
+	
+	/**
+	 * SNOMED CT filter
+	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT post cordinated expressions filter</a>
+	 */
+	@JsonIgnore
+	public static final Filter EXPRESSIONS_FILTER = Filter.builder()
+		.code("expressions")
+		.description("Whether post-coordinated expressions are included in the value set")
+		.addOperator(FilterOperator.EQUALS)
+		.value("true or false")
 		.build();
 	
 	@Valid
