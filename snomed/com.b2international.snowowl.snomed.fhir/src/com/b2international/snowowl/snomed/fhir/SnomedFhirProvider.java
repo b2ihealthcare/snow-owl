@@ -31,9 +31,8 @@ import com.b2international.snowowl.fhir.core.FhirProvider;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -186,6 +185,11 @@ public final class SnomedFhirProvider extends FhirProvider {
 	}
 	
 	@Override
+	protected Collection<Filter> getSupportedFilters() {
+		return ImmutableList.of(Filter.IS_A_FILTER, Filter.EXPRESSION_FILTER, Filter.EXPRESSIONS_FILTER);
+	}
+	
+	@Override
 	public Collection<String> getSupportedURIs() {
 		return SUPPORTED_URIS;
 	}
@@ -195,15 +199,4 @@ public final class SnomedFhirProvider extends FhirProvider {
 		return FHIR_URI;
 	}
 	
-	@Override
-	protected Builder appendCodeSystemSpecificProperties(Builder builder) {
-		
-		supportedProperties.stream()
-			.map(SupportedConceptProperty::builder)
-			.map(SupportedConceptProperty.Builder::build)
-			.forEach(builder::addProperty);
-		
-		return builder;
-	}
-
 }

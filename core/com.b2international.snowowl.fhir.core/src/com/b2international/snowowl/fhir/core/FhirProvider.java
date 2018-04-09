@@ -38,6 +38,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
@@ -139,15 +140,12 @@ public abstract class FhirProvider implements IFhirProvider {
 			builder.addFilter(filter);
 		}
 		
-		return appendCodeSystemSpecificProperties(builder);
-	}
-	
-	/**
-	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
-	 * @param builder
-	 * @return builder
-	 */
-	protected CodeSystem.Builder appendCodeSystemSpecificProperties(final CodeSystem.Builder builder) {
+		// include supported concept properties
+		getSupportedConceptProperties().stream()
+			.map(SupportedConceptProperty::builder)
+			.map(SupportedConceptProperty.Builder::build)
+			.forEach(builder::addProperty);
+		
 		return builder;
 	}
 	
