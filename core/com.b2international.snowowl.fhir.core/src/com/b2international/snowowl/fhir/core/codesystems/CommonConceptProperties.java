@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Property;
+import com.b2international.snowowl.fhir.core.model.dt.Property.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
@@ -88,13 +89,26 @@ public enum CommonConceptProperties implements FhirCodeSystem {
 		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 
-	// TODO move this somewhere else, preferably to the enum itself
-	public Property propertyOf(String code, String description) {
-		return Property.builder()
+	public Property propertyOf(Object value, String description) {
+		Builder prop = Property.builder()
 				.code(getCodeValue())
-				.valueCode(code)
-				.description(description)
-				.build();
+				.description(description);
+		
+		switch (type) {
+		case CODE:
+			prop.valueCode((String) value);
+			break;
+		case BOOLEAN:
+			prop.valueBoolean((Boolean) value);
+			break;
+		case STRING:
+			prop.valueString((String) value);
+			break;
+		default: 
+			throw new UnsupportedOperationException("Unsupported property type " + type);
+		}
+		
+		return prop.build();
 	}
 	
 }
