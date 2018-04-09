@@ -99,8 +99,6 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements) {
 		
-		System.err.println("_S: " + _summary + " _E:" + _elements);
-		
 		validateSearchParams(_summary, _elements);
 
 		Path codeSystemPath = Paths.get(codeSystemId);
