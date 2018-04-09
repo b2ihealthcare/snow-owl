@@ -164,7 +164,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
-	public LookupResult lookup(
+	public Parameters.Fhir lookup(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -184,18 +184,15 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			.code(code)
 			.system(system)
 			.version(version)
-			.displayLanguage(displayLanguage);
+			.displayLanguage(displayLanguage)
+			.properties(properties);
 		
 		if (date != null) {
 			builder.date(date);
 		}
 		
-		if (properties != null) {
-			builder.properties(properties);
-		}
-		
 		//all good, now do something
-		return lookup(builder.build());
+		return toResponse(lookup(builder.build()));
 	}
 	
 	/**
