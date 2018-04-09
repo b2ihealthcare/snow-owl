@@ -26,16 +26,19 @@ import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
+import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -100,7 +103,9 @@ public final class SnomedFhirProvider extends FhirProvider {
 				.display(getPreferredTermOrId(concept));
 
 		// add basic properties
-		result.addProperty(CommonConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
+		result.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
+		result.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId(), null));
+		result.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
 		
 		// add remaining terms as designations
 		for (SnomedDescription description : concept.getDescriptions()) {
@@ -132,8 +137,8 @@ public final class SnomedFhirProvider extends FhirProvider {
 	}
 
 	@Override
-	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
-		return ImmutableSet.of(CommonConceptProperties.INACTIVE, CommonConceptProperties.CHILD, CommonConceptProperties.PARENT);
+	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+		return ImmutableSet.of(CoreSnomedConceptProperties.INACTIVE, CommonConceptProperties.CHILD, CommonConceptProperties.PARENT);
 	}
 	
 	@Override
@@ -151,7 +156,9 @@ public final class SnomedFhirProvider extends FhirProvider {
 		return builder
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.PARENT).build())
-			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.INACTIVE).build());
+			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.INACTIVE).build())
+			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.MODULE_ID).build())
+			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED).build());
 	}
 
 }

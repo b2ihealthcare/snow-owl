@@ -31,13 +31,12 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
@@ -149,7 +148,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @return the supported properties
 	 */
-	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
+	protected Collection<ConceptProperties> getSupportedConceptProperties() {
 		return Collections.emptySet();
 	}
 	
@@ -158,7 +157,7 @@ public abstract class FhirProvider implements IFhirProvider {
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
 		final Collection<String> properties = request.getProperties();
-		final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).map(Code::getCodeValue).collect(Collectors.toSet());
+		final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(ConceptProperties::getCodeValue).collect(Collectors.toSet());
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}

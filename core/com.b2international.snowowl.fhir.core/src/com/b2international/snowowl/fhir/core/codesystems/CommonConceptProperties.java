@@ -16,16 +16,15 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Property;
-import com.b2international.snowowl.fhir.core.model.dt.Property.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * FHIR Common concept properties code system
  * @since 6.3
  */
-public enum CommonConceptProperties implements FhirCodeSystem {
+public enum CommonConceptProperties implements ConceptProperties {
 	
 	//True if the concept is not considered active - e.g. not a valid concept any more. Property type is boolean, default value is false
 	INACTIVE("Inactive", ConceptPropertyType.BOOLEAN),
@@ -66,10 +65,12 @@ public enum CommonConceptProperties implements FhirCodeSystem {
 		return displayName;
 	}
 	
+	@Override
 	public Code getType() {
 		return type.getCode();
 	}
 	
+	@Override
 	public ConceptPropertyType getConceptPropertyType() {
 		return type;
 	}
@@ -89,26 +90,4 @@ public enum CommonConceptProperties implements FhirCodeSystem {
 		return new Uri(CODE_SYSTEM_URI + "/" + getCodeValue());
 	}
 
-	public Property propertyOf(Object value, String description) {
-		Builder prop = Property.builder()
-				.code(getCodeValue())
-				.description(description);
-		
-		switch (type) {
-		case CODE:
-			prop.valueCode((String) value);
-			break;
-		case BOOLEAN:
-			prop.valueBoolean((Boolean) value);
-			break;
-		case STRING:
-			prop.valueString((String) value);
-			break;
-		default: 
-			throw new UnsupportedOperationException("Unsupported property type " + type);
-		}
-		
-		return prop.build();
-	}
-	
 }
