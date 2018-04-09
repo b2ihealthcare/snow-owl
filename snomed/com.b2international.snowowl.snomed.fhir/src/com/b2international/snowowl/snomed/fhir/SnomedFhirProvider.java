@@ -99,6 +99,9 @@ public final class SnomedFhirProvider extends FhirProvider {
 				.version(lookup.getVersion())
 				.display(getPreferredTermOrId(concept));
 
+		// add basic properties
+		result.addProperty(CommonConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
+		
 		// add remaining terms as designations
 		for (SnomedDescription description : concept.getDescriptions()) {
 			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
@@ -130,7 +133,7 @@ public final class SnomedFhirProvider extends FhirProvider {
 
 	@Override
 	protected Collection<CommonConceptProperties> getSupportedConceptProperties() {
-		return ImmutableSet.of(CommonConceptProperties.CHILD, CommonConceptProperties.PARENT);
+		return ImmutableSet.of(CommonConceptProperties.INACTIVE, CommonConceptProperties.CHILD, CommonConceptProperties.PARENT);
 	}
 	
 	@Override
@@ -146,8 +149,9 @@ public final class SnomedFhirProvider extends FhirProvider {
 	@Override
 	protected Builder appendCodeSystemSpecificProperties(Builder builder) {
 		return builder
-				.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
-				.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.PARENT).build());
+			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
+			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.PARENT).build())
+			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.INACTIVE).build());
 	}
 
 }
