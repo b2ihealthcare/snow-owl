@@ -138,7 +138,13 @@ public final class SnomedFhirProvider extends FhirProvider {
 
 	@Override
 	protected Collection<ConceptProperties> getSupportedConceptProperties() {
-		return ImmutableSet.of(CoreSnomedConceptProperties.INACTIVE, CommonConceptProperties.CHILD, CommonConceptProperties.PARENT);
+		return ImmutableSet.of(
+			CoreSnomedConceptProperties.INACTIVE, 
+			CoreSnomedConceptProperties.MODULE_ID, 
+			CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED, 
+			CommonConceptProperties.CHILD, 
+			CommonConceptProperties.PARENT
+		);
 	}
 	
 	@Override
@@ -153,6 +159,9 @@ public final class SnomedFhirProvider extends FhirProvider {
 	
 	@Override
 	protected Builder appendCodeSystemSpecificProperties(Builder builder) {
+		
+		
+		
 		return builder
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.PARENT).build())
