@@ -15,12 +15,18 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirProvider;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
@@ -31,10 +37,12 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptPr
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -59,8 +67,44 @@ public final class SnomedFhirProvider extends FhirProvider {
 		FHIR_URI.getUriValue()
 	);
 	
+	private final Collection<ConceptProperties> supportedProperties;
+	
 	public SnomedFhirProvider() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID);
+
+		// what should be the locale here? Likely we need to add the config locale as well
+		final List<ExtendedLocale> locales = newArrayList(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference());
+		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
+ 
+		final ImmutableList.Builder<ConceptProperties> supportedProperties = ImmutableList.builder();
+		
+		// add basic properties
+		supportedProperties.add(
+			CoreSnomedConceptProperties.INACTIVE, 
+			CoreSnomedConceptProperties.MODULE_ID, 
+			CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED, 
+			CommonConceptProperties.CHILD, 
+			CommonConceptProperties.PARENT
+		);
+		
+		// fetch available relationship types and register them as supported concept property
+		SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterByActive(true)
+			.filterByAncestor(Concepts.CONCEPT_MODEL_ATTRIBUTE)
+			.setExpand("pt()")
+			.setLocales(locales)
+			.build(repositoryId(), Branch.MAIN_PATH)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync()
+			.stream()
+			.map(type -> {
+				final String displayName = type.getPt() == null ? "N/A" : type.getPt().getTerm();
+				return ConceptProperties.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
+			})
+			.forEach(supportedProperties::add);
+		
+		this.supportedProperties = supportedProperties.build();
 	}
 	
 	@Override
@@ -138,13 +182,7 @@ public final class SnomedFhirProvider extends FhirProvider {
 
 	@Override
 	protected Collection<ConceptProperties> getSupportedConceptProperties() {
-		return ImmutableSet.of(
-			CoreSnomedConceptProperties.INACTIVE, 
-			CoreSnomedConceptProperties.MODULE_ID, 
-			CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED, 
-			CommonConceptProperties.CHILD, 
-			CommonConceptProperties.PARENT
-		);
+		return supportedProperties;
 	}
 	
 	@Override
@@ -160,14 +198,12 @@ public final class SnomedFhirProvider extends FhirProvider {
 	@Override
 	protected Builder appendCodeSystemSpecificProperties(Builder builder) {
 		
+		supportedProperties.stream()
+			.map(SupportedConceptProperty::builder)
+			.map(SupportedConceptProperty.Builder::build)
+			.forEach(builder::addProperty);
 		
-		
-		return builder
-			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
-			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.PARENT).build())
-			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.INACTIVE).build())
-			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.MODULE_ID).build())
-			.addProperty(SupportedConceptProperty.builder(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED).build());
+		return builder;
 	}
 
 }
