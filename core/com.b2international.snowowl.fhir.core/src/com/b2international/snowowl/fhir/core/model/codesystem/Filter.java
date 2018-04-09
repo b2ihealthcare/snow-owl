@@ -34,7 +34,8 @@ import com.google.common.collect.Lists;
 public class Filter {
 	
 	@JsonIgnore
-	public static final Filter IS_A_FILTER = Filter.builder().build();
+	public static final Filter IS_A_FILTER = Filter.builder()
+		.build();
 
 	@Valid
 	@NotNull
