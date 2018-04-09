@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.lookup;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
@@ -155,7 +156,7 @@ public class LookupRequest {
 		private Coding coding;
 		private Date date;
 		private String displayLanguage;
-		private Set<String> properties;
+		private Set<String> properties = Collections.emptySet();
 		
 		Builder() {}
 		

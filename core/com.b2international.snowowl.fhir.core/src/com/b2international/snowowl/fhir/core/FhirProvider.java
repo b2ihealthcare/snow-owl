@@ -158,11 +158,9 @@ public abstract class FhirProvider implements IFhirProvider {
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
 		final Collection<String> properties = request.getProperties();
-		if (properties != null) {
-			final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).map(Code::getCodeValue).collect(Collectors.toSet());
-			if (!supportedCodes.containsAll(properties)) {
-				throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
-			}
+		final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(CommonConceptProperties::getCode).map(Code::getCodeValue).collect(Collectors.toSet());
+		if (!supportedCodes.containsAll(properties)) {
+			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}
 	}
 	
