@@ -35,8 +35,22 @@ public class Filter {
 	
 	@JsonIgnore
 	public static final Filter IS_A_FILTER = Filter.builder()
+		.code("concept")
+		.description("Filter that includes concepts based on their logical definition. e.g. [concept] [is-a] [x] - include all concepts with an is-a relationship to concept x,"
+				+ " or [concept] [in] [x]- include all concepts in the reference set identified by concept x")
+		.addOperator(FilterOperator.IS_A)
+		.addOperator(FilterOperator.IN)
+		.value("code system code")
 		.build();
-
+	
+	@JsonIgnore
+	public static final Filter EXPRESSION_FILTER = Filter.builder()
+		.code("expression")
+		.description("Filter result of the given SNOMED CT Expression Constraint")
+		.addOperator(FilterOperator.EQUALS)
+		.value("SNOMED CT ECL Expression (http://snomed.org/ecl")
+		.build();
+	
 	@Valid
 	@NotNull
 	@JsonProperty

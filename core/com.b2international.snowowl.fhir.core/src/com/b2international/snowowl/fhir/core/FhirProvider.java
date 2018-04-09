@@ -133,6 +133,12 @@ public abstract class FhirProvider implements IFhirProvider {
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri());
 		
+		//add filters here
+		Collection<Filter> supportedFilters = getSupportedFilters();
+		for (Filter filter : supportedFilters) {
+			builder.addFilter(filter);
+		}
+		
 		return appendCodeSystemSpecificProperties(builder);
 	}
 	
