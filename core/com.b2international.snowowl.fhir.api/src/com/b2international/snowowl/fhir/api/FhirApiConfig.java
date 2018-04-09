@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.api;
 
 import static springfox.documentation.builders.PathSelectors.regex;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -44,15 +46,17 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.fasterxml.classmate.TypeResolver;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
@@ -78,9 +82,6 @@ public class FhirApiConfig extends WebMvcConfigurerAdapter {
 	
 	@Value("${api.title}")
 	private String apiTitle;
-
-	@Value("${api.description}")
-	private String apiDescription;
 
 	@Value("${api.termsOfServiceUrl}")
 	private String apiTermsOfServiceUrl;
@@ -123,9 +124,18 @@ public class FhirApiConfig extends WebMvcConfigurerAdapter {
             .ignoredParameterTypes(Principal.class)
             .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
             .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
-            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
+            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
 	}
 	
+	private String readApiDescription() {
+		try {
+			final File apiDesc = new File(PlatformUtil.toAbsolutePath(FhirApiConfig.class, "api-description.html"));
+			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read api-description.html file", e);
+		}
+	}
+
 	/*
 	 * Add properties filter.
 	 * TODO: https://github.com/krishna81m/jackson-nested-prop-filter
