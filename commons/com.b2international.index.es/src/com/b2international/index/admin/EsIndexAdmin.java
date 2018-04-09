@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
-	}
-	
-	@Override
-	public boolean isHashSupported() {
-		return false;
 	}
 	
 	@Override
@@ -260,6 +255,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 			}
 		}
+		
+		// Add system field "_hash", if there is at least a single field to hash
+		if (!mapping.getHashedFields().isEmpty()) {
+			final Map<String, Object> prop = newHashMap();
+			prop.put("type", "keyword");
+			prop.put("index", false);
+			properties.put(DocumentMapping._HASH, prop);
+		}
+		
 		return ImmutableMap.of("properties", properties);
 	}
 
@@ -342,5 +346,4 @@ public final class EsIndexAdmin implements IndexAdmin {
 			waitForYellowHealth();
 		}
 	}
-	
 }

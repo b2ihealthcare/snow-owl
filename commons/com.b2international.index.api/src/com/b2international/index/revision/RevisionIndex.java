@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,14 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	RevisionCompare compare(String branch);
+
+	/**
+	 * 
+	 * @param branch
+	 * @param limit
+	 * @return
+	 */
+	RevisionCompare compare(String branch, int limit);
 	
 	/**
 	 * Compares the given compare branch with the given base branch. The {@link RevisionCompare} response will contain the difference from the compare
@@ -86,5 +94,13 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	RevisionCompare compare(String baseBranch, String compareBranch);
-
+	
+	/**
+	 * 
+	 * @param baseBranch
+	 * @param compareBranch
+	 * @param limit
+	 * @return
+	 */
+	RevisionCompare compare(String baseBranch, String compareBranch, int limit);
 }

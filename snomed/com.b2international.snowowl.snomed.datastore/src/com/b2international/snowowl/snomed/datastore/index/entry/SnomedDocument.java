@@ -133,8 +133,8 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 	}
 
-	private final String moduleId;
 	private final boolean released;
+	private final String moduleId;
 	private final boolean active;
 	private final long effectiveTime;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.util.Map.Entry;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -78,6 +79,35 @@ import com.google.common.collect.ImmutableMap;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
+	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
+	SnomedRefSetMemberIndexEntry.Fields.ATTRIBUTE_NAME,
+	SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
+	SnomedRefSetMemberIndexEntry.Fields.OPERATOR_ID,
+	SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+	SnomedRefSetMemberIndexEntry.Fields.UNIT_ID,
+	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
+	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
+	SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
+	SnomedRefSetMemberIndexEntry.Fields.SOURCE_EFFECTIVE_TIME,
+	SnomedRefSetMemberIndexEntry.Fields.TARGET_EFFECTIVE_TIME,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_TARGET_DESCRIPTION,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_CATEGORY_ID,
+	SnomedRefSetMemberIndexEntry.Fields.CORRELATION_ID,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_ADVICE,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
+	SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
+	SnomedRefSetMemberIndexEntry.Fields.QUERY
+})
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private static final long serialVersionUID = 5198766293865046258L;
