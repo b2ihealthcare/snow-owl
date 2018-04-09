@@ -43,7 +43,7 @@ public enum NarrativeStatus implements FhirCodeSystem {
 	
 	@Override
 	public Code getCode() {
-		return new Code(name().toLowerCase());
+		return new Code(getCodeValue());
 	}
 	
 	@Override

@@ -68,6 +68,16 @@ public class CodeSystem extends TerminologyResource {
 	@JsonProperty
 	private String publisher;
 	
+	@Summary
+	@Min(value = 0, message = "Count must be equal to or larger than 0.")
+	@JsonProperty
+	private int count;
+	
+	@Summary
+	@Valid
+	@JsonProperty("filter")
+	private Collection<Filter> filters;
+	
 	/*
 	 * The properties supported by this code system
 	 */
@@ -76,26 +86,22 @@ public class CodeSystem extends TerminologyResource {
 	@JsonProperty("property")
 	private Collection<SupportedConceptProperty> properties;
 	
-	@Summary
-	@Min(value = 0, message = "Count must be equal to or larger than 0")
-	@JsonProperty
-	private int count;
-	
 	/*
-	 * Concepts in the code system
+	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
 	@JsonProperty("concept")
 	private Collection<Concept> concepts;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description, Code hierarchyMeaning, 
-			Collection<SupportedConceptProperty> properties, final int count, Collection<Concept> concepts) {
+			String title, Code status, String publisher, String description, Code hierarchyMeaning, final int count,
+			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 		
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
 		this.hierarchyMeaning = hierarchyMeaning;
-		this.properties = properties;
 		this.count = count;
+		this.filters = filters;
+		this.properties = properties;
 		this.concepts = concepts;
 	}
 	
@@ -109,9 +115,11 @@ public class CodeSystem extends TerminologyResource {
 		
 		private int count;
 		
-		private Collection<Concept> concepts = Sets.newHashSet();
+		private Collection<Filter> filters = Sets.newHashSet();
 		
 		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
+
+		private Collection<Concept> concepts = Sets.newHashSet();
 		
 		public Builder(String codeSystemId) {
 			super(codeSystemId);
@@ -127,13 +135,18 @@ public class CodeSystem extends TerminologyResource {
 			return getSelf();
 		}
 		
-		public Builder addProperty(SupportedConceptProperty property) {
-			this.properties.add(property);
+		public Builder count(int count) {
+			this.count = count;
+			return getSelf();
+		}
+
+		public Builder addFilter(Filter filter) {
+			this.filters.add(filter);
 			return getSelf();
 		}
 		
-		public Builder count(int count) {
-			this.count = count;
+		public Builder addProperty(SupportedConceptProperty property) {
+			this.properties.add(property);
 			return getSelf();
 		}
 		
@@ -145,7 +158,7 @@ public class CodeSystem extends TerminologyResource {
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, 
-					hierarchyMeaning, properties, count, concepts);
+				hierarchyMeaning, count, filters, properties, concepts);
 		}
 	}
 		

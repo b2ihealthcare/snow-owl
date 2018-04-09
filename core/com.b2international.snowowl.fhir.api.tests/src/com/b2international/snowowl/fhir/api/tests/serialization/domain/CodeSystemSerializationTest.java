@@ -23,6 +23,7 @@ import java.util.Date;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.FhirConstants;
@@ -48,6 +49,9 @@ import com.b2international.snowowl.fhir.core.model.property.CodingConceptPropert
 import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.SummaryParameter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 /**
  * Test for checking the serialization from model->JSON.
@@ -200,6 +204,8 @@ public class CodeSystemSerializationTest extends FhirTest {
 					.build())
 				.build();
 		
+		applyFilter(codeSystem);
+		
 		printPrettyJson(codeSystem);
 		printJson(codeSystem);
 		
@@ -213,7 +219,10 @@ public class CodeSystemSerializationTest extends FhirTest {
 				+ "\"identifier\":{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
 				+ "\"title\":\"title\",\"status\":\"active\",\"description\":\"Code system description\","
-				+ "\"hierarchyMeaning\":\"is-a\",\"property\":[{\"code\":\"child\",\"uri\":\"http://hl7.org/fhir/concept-properties/child\",\"description\":\"Child\",\"type\":\"code\"}],\"concept\":[{\"code\":\"conceptCode\",\"display\":\"Label\",\"definition\":\"This is a code definition\",\"designation\":[{\"language\":\"uk_en\",\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},\"value\":\"conceptLabel_uk\"}],\"properties\":[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]]}]}";
+				+ "\"hierarchyMeaning\":\"is-a\",\"count\":0,\"property\":[{\"code\":\"child\",\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
+				+ "\"description\":\"Child\",\"type\":\"code\"}],"
+				+ "\"concept\":[{\"code\":\"conceptCode\",\"display\":\"Label\","
+				+ "\"definition\":\"This is a code definition\",\"designation\":[{\"language\":\"uk_en\",\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},\"value\":\"conceptLabel_uk\"}],\"properties\":[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]]}]}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
 		
@@ -253,7 +262,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 					+ "\"language\":\"en\","
 					+ "\"url\":\"code system uri\","
 					+ "\"name\":\"Local code system\","
-					+ "\"status\":\"active\"}}]}";
+					+ "\"status\":\"active\",\"count\":0}}]}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(bundle));
 		

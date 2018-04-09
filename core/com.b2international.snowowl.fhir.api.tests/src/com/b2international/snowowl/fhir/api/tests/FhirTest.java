@@ -20,9 +20,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.fhir.api.FhirApiConfig;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 /**
  * Superclass for common test functionality
@@ -62,6 +66,13 @@ public class FhirTest {
 	protected void printJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		System.out.println(result);
+	}
+	
+	protected void applyFilter(Object filteredObject) {
+		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
+		mappingJacksonValue.setFilters(filterProvider);
+		objectMapper.setFilterProvider(filterProvider);
 	}
 
 }
