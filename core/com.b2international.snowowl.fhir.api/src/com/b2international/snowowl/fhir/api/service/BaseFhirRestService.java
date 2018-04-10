@@ -35,7 +35,7 @@ import com.google.common.collect.Lists;
  */
 public abstract class BaseFhirRestService {
 
-	public static final String APPLICATION_FHIR_JSON = "application/fhir+json";
+	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	public static final String APPLICATION_JSON = MediaType.APPLICATION_JSON_VALUE;
 	
 	@Autowired
