@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
@@ -79,7 +80,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
-			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
+			final Multimap<String, IssueDetail> newIssuesByRule = HashMultimap.create();
 			
 			// evaluate selected rules
 			for (ValidationRule rule : rules) {
@@ -87,8 +88,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				if (evaluator != null) {
 					pool.submit(() -> {
 						try {
-							List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
-							newIssuesByRule.putAll(rule.getId(), affectedComponents);
+							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
+							newIssuesByRule.putAll(rule.getId(), issueDetails);
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
@@ -112,9 +113,19 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			// persist new issues
 			for (String ruleId : newIssuesByRule.keySet()) {
-				for (ComponentIdentifier affectedComponent : newIssuesByRule.get(ruleId)) {
+				for (IssueDetail issueDetail : newIssuesByRule.get(ruleId)) {
 					String issueId = UUID.randomUUID().toString();
-					index.put(issueId, new ValidationIssue(issueId, ruleId, branchPath, affectedComponent, whiteListedEntries.get(ruleId).contains(affectedComponent)));
+					
+					ValidationIssue validationIssue = new ValidationIssue(
+						issueId,
+						ruleId,
+						branchPath,
+						issueDetail.getAffectedComponent(),
+						whiteListedEntries.get(ruleId).contains(issueDetail.getAffectedComponent()));
+				
+					validationIssue.setDetails(issueDetail.getDetails());
+					
+					index.put(issueId, validationIssue);
 				}
 			}
 			
