@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.japi.branches.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
+import com.b2international.snowowl.snomed.api.japi.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.api.japi.issue.IssueSO2503RemoteJobDynamicMappingFix;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedListFeaturesTests;
@@ -94,7 +95,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Java API test cases
 	SnomedBranchRequestTest.class,
 	BranchCompareRequestTest.class,
-	SnomedRefSetDSVExportTest.class
+	SnomedRefSetDSVExportTest.class,
+	EclSerializerTest.class
 })
 public class AllSnomedApiTests {
 
