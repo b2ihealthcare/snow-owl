@@ -96,7 +96,7 @@ class StrengthService implements IStrengthService {
 	}
 	
 	def private isSimpleType(Collection<SnomedReferenceSetMember> entries) {
-			val result = entries.forall[it.attributeName.endsWith(CD_NUMERATOR_VALUE)]
+		val result = entries.forall[it.attributeName.endsWith(CD_NUMERATOR_VALUE)]
  		
  		if (entries.size > 1 && result) {
  			entries.forEach[LOG.info("Found multiple simple type strength for {}: {}", it.referencedComponent.id, it)]
@@ -138,7 +138,7 @@ class StrengthService implements IStrengthService {
 	def private StrengthEntry createSimpleRangeStrength(String name, Collection<SnomedReferenceSetMember> entries) {
 		val numeratorMinEntry = entries.findFirst[attributeName.endsWithMinLabel]
 		val numeratorMaxEntry = entries.findFirst[attributeName.endsWithMaxLabel]
-		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong 
+		val numeratorUnit = if (numeratorMinEntry !== null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong 
 		return new StrengthEntry(name, numeratorMinEntry?.decimalValue, numeratorMaxEntry?.decimalValue, numeratorUnit) 
 	}
 	
@@ -152,7 +152,7 @@ class StrengthService implements IStrengthService {
 		val numeratorUnit = if (isDefaultUnit) -1L else numeratorEntry.uomComponentId.toLong
 		val denominatorUnit = if (isDefaultUnit) -1L else denominatorEntry.uomComponentId.toLong
 		
-		val delimiter = if (delimiterEntry != null) getDelimiterFor(delimiterEntry.stringValue) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
+		val delimiter = if (delimiterEntry !== null) getDelimiterFor(delimiterEntry.stringValue) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
 		
 		return new StrengthEntry(name, numeratorEntry.decimalValue, numeratorUnit, delimiter, denominatorEntry.decimalValue, denominatorUnit)
 	}
@@ -163,10 +163,10 @@ class StrengthService implements IStrengthService {
 		val denominatorEntry = entries.findFirst[attributeName.endsWith(CD_DENOMINATOR_VALUE)]
 		val delimiterEntry = entries.findFirst[attributeName.endsWith(CD_DELIMITER)]
 		
-		val numeratorUnit = if (numeratorMinEntry != null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong
+		val numeratorUnit = if (numeratorMinEntry !== null) numeratorMinEntry.uomComponentId.toLong else numeratorMaxEntry.uomComponentId.toLong
 		val denominatorUnit = denominatorEntry.uomComponentId.toLong
 		
-		val delimiter = if (delimiterEntry != null)  getDelimiterFor(delimiterEntry.stringValue) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
+		val delimiter = if (delimiterEntry !== null)  getDelimiterFor(delimiterEntry.stringValue) ?: StrengthEntryDelimiter.SLASH else StrengthEntryDelimiter.SLASH
 		
 		return new StrengthEntry(name, numeratorMinEntry?.decimalValue, numeratorMaxEntry?.decimalValue, numeratorUnit, delimiter, denominatorEntry.decimalValue, denominatorUnit)
 	}
