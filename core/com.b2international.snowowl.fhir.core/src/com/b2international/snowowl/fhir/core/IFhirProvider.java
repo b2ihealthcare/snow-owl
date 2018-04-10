@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -134,5 +135,20 @@ public interface IFhirProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(Path codeSystemPath);
+
+	/**
+	 * Returns the value sets supported by this provider.
+	 * TODO: move this to a different extension. (probably an extension definition per resource)
+	 * @return collection of value sets supported
+	 */
+	Collection<ValueSet> getValueSets();
+
+	/**
+	 * Returns the value set for the passed in logical path (repositoryId/valueSetId)
+	 * @param valueSetPath
+	 * @return {@link ValueSet}
+	 * @throws BadRequestException if the value set is not supported by this provider
+	 */
+	ValueSet getValueSet(Path valueSetPath);
 
 }

@@ -24,7 +24,6 @@ import java.util.Optional;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -33,7 +32,6 @@ import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Sets;
 
 /**
@@ -109,6 +107,7 @@ public class FhirCoreProvider extends FhirProvider {
 		return codeSytemUris;
 	}
 	
+	/* private methods */
 	private CodeSystem buildCodeSystem(FhirCodeSystem fhirCodeSystem) {
 		
 		String supportedUri = fhirCodeSystem.getCodeSystemUri();
@@ -192,10 +191,8 @@ public class FhirCoreProvider extends FhirProvider {
 
 	@Override
 	protected Uri getFhirUri() {
-		// TODO Auto-generated method stub
+		//handled on the per Core terminology basis (like LCS) 
 		return null;
 	}
-
-	
 
 }

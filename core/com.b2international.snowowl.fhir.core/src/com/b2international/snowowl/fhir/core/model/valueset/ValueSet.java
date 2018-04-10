@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset;
 
+import java.util.Collection;
+
+import javax.validation.Valid;
+
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -22,6 +26,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 import io.swagger.annotations.ApiModel;
 
@@ -42,12 +47,17 @@ public class ValueSet extends TerminologyResource {
 	
 	//FHIR header "resourceType" : "ValueSet",
 	@JsonProperty
-	private String resourceType = "ValueSet";
+	private final String resourceType = "ValueSet";
+	
+	@Valid
+	@JsonProperty("compose")
+	private final Collection<Compose> composeParts;
 	
 	public ValueSet(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description) {
+			String title, Code status, String publisher, String description, Collection<Compose> composeParts) {
 		
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
+		this.composeParts = composeParts;
 	}
 	
 	public static Builder builder(String valueSetId) {
@@ -56,8 +66,15 @@ public class ValueSet extends TerminologyResource {
 
 	public static class Builder extends TerminologyResource.Builder<Builder, ValueSet> {
 
+		private Collection<Compose> composeParts = Lists.newArrayList();
+		
 		public Builder(String valueSetId) {
 			super(valueSetId);
+		}
+		
+		public Builder addCompose(final Compose compose) {
+			this.composeParts.add(compose);
+			return getSelf();
 		}
 		
 		@Override
@@ -67,7 +84,8 @@ public class ValueSet extends TerminologyResource {
 		
 		@Override
 		protected ValueSet doBuild() {
-			return new ValueSet(id, language, text, url, identifier, version, name, title, status, publisher, description);
+			return new ValueSet(id, language, text, url, identifier, version, name, 
+					title, status, publisher, description, composeParts);
 		}
 	}
 		

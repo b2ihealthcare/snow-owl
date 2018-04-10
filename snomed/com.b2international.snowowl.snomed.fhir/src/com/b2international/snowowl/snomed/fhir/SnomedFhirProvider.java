@@ -22,30 +22,39 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirProvider;
 import com.b2international.snowowl.fhir.core.IFhirProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
+import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -135,6 +144,75 @@ public final class SnomedFhirProvider extends FhirProvider {
 			.getSync();
 		
 	}
+	
+	/* Value set related methods */
+	@Override
+	public Collection<ValueSet> getValueSets() {
+		
+		//TODO: what to do with the language? Where do i get the locale from the request? 
+		String displayLanguage = "en-us";
+		
+		return SnomedRequests.prepareSearchRefSet()
+			.all()
+			.filterByType(SnomedRefSetType.SIMPLE)
+			.build(repositoryId(), IBranchPath.MAIN_BRANCH)
+			.execute(getBus())
+			.then(refsets -> {
+				return refsets.stream()
+					.map(r -> createValueSetBuilder(r, displayLanguage))
+					.map(ValueSet.Builder::build)
+					.collect(Collectors.toList());
+			})
+			.getSync();
+	}
+	
+	@Override
+	public ValueSet getValueSet(Path valueSetPath) {
+		
+		//TODO: what to do with the language? Where do i get the locale from the request? 
+		String displayLanguage = "en-us";
+		
+		String referenceSetId = valueSetPath.getFileName().toString();
+		
+		return SnomedRequests.prepareSearchRefSet()
+				.filterById(referenceSetId)
+				.filterByType(SnomedRefSetType.SIMPLE)
+				.build(repositoryId(), IBranchPath.MAIN_BRANCH)
+				.execute(getBus())
+				.then(refsets -> {
+					return refsets.stream()
+						.map(r -> createValueSetBuilder(r, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync()
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("Active value set", valueSetPath.toString()));
+		
+	}
+	
+	private ValueSet.Builder createValueSetBuilder(final SnomedReferenceSet referenceSet, final String displayLanguage) {
+		
+		String referenceSetId = referenceSet.getId();
+		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, getFhirUri(), referenceSetId);
+		String id = repositoryId() + "/" + referenceSetId;
+		
+		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
+			.setExpand("pt()")
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.build(repositoryId(), IBranchPath.MAIN_BRANCH)
+			.execute(getBus())
+			.getSync();
+			
+		
+		return ValueSet.builder(id)
+			.identifier(identifier)
+			.language(displayLanguage)
+			.url(getFhirUri())
+			.status(referenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
+			.title(refsetConcept.getPt().getTerm());
+	}
 
 	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookup) {
 		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
@@ -155,8 +233,8 @@ public final class SnomedFhirProvider extends FhirProvider {
 			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
 			if (!description.getId().equals(preferredTermId)) {
 				result.addDesignation(Designation.builder()
-						.value(description.getTerm())
-						.build());
+					.value(description.getTerm())
+					.build());
 			}
 		}
 		

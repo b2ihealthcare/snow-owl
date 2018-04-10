@@ -69,6 +69,8 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/codesystems.html">FHIR:CodeSystem</a>
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
+ * @since 6.4
+ * 
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController //no need for method level @ResponseBody annotations

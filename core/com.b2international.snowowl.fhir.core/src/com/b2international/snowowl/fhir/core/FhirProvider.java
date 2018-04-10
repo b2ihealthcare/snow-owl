@@ -42,6 +42,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptPr
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 
@@ -106,6 +107,25 @@ public abstract class FhirProvider implements IFhirProvider {
 	}
 	
 	/**
+	 * Subclasses to override.
+	 * TODO: move it to different provider/extension
+	 */
+	@Override
+	public Collection<ValueSet> getValueSets() {
+		return Collections.emptySet();
+	}
+	
+	/**
+	 * Subclasses to override.
+	 * TODO: move it to different provider/extension
+	 */
+	@Override
+	public ValueSet getValueSet(Path valueSetPath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	/**
 	 * Returns the designated FHIR Uri for the given code system
 	 * @return
 	 */
@@ -118,7 +138,8 @@ public abstract class FhirProvider implements IFhirProvider {
 	 */
 	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
 		
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), codeSystemEntry.getOid());
+		
+		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri(codeSystemEntry.getOrgLink()), codeSystemEntry.getOid());
 		
 		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
 		
