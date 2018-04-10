@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @since 6.4
  * @param <T>
@@ -37,6 +39,7 @@ public abstract class FhirProperty {
 		return type;
 	}
 	
+	@ApiModelProperty(notes = "Code|String|Boolean|Coding|Integer|Date|Datetime")
 	public Object getValue() {
 		return value;
 	}

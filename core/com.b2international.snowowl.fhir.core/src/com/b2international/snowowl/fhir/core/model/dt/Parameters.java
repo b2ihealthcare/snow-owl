@@ -43,6 +43,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @since 6.4
@@ -120,6 +121,7 @@ public final class Parameters {
 		
 	}
 	
+	@ApiModel("Parameters")
 	@JsonSerialize(using = Parameters.Fhir.Ser.class)
 	@JsonDeserialize(using = Parameters.Fhir.Deser.class)
 	public static final class Fhir {
@@ -130,9 +132,10 @@ public final class Parameters {
 			this.parameters = parameters;
 		}
 		
-		public Parameters parameters() {
-			return parameters;
-		}
+		@ApiModelProperty("parameter")
+		public List<Parameter> getParameters() {
+			return parameters.getParameters();
+		} 
 
 		static final class Ser extends StdSerializer<Parameters.Fhir> {
 
@@ -186,6 +189,10 @@ public final class Parameters {
 		        return new Parameters.Fhir(new Parameters(deserializedParameters));
 			}
 			
+		}
+
+		public Parameters.Json toJson() {
+			return new Parameters.Json(parameters);
 		}
 		
 	}

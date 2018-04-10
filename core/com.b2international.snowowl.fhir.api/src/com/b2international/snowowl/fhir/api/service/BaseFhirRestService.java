@@ -20,7 +20,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJacksonValue;
-import org.springframework.util.MultiValueMap;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -43,7 +42,7 @@ public abstract class BaseFhirRestService {
 	protected ObjectMapper mapper;
 	
 	protected final <T> T toRequest(Parameters.Fhir in, Class<T> request) {
-		return mapper.convertValue(new Parameters.Json(in.parameters()), request);
+		return mapper.convertValue(in.toJson(), request);
 	}
 	
 	protected final Parameters.Fhir toResponse(Object response) {
