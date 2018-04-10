@@ -22,7 +22,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -71,47 +70,20 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html">FHIR:CodeSystem:Operations</a>
  * 
  */
-@Api(value = "CodeSystem", tags = { "CodeSystem" })
+@Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/CodeSystem", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemRestService extends BaseFhirRestService {
 	
-	@ApiOperation(
-			value="FHIR REST API Ping Test",
-			notes="This is only an FHIR ping test.")
-	@RequestMapping(value="/ping", method=RequestMethod.GET)
-	public String ping() {
-		System.out.println("FhirCodeSystemRestService.ping()");
-		return "Ping!";
-	}
-	
-	@ApiOperation(
-			response=CodeSystem.class,
-			value="Retrieve the code system by its Id.",
-			notes="Retrieves the code system specified by its logical id.")
-	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
-	})
-	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
-	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
-			@RequestParam(required=false) String _summary,
-			@RequestParam(required=false) List<String> _elements) {
-		
-		validateSearchParams(_summary, _elements);
-
-		Path codeSystemPath = Paths.get(codeSystemId);
-		CodeSystem codeSystem = IFhirProvider.Registry
-			.getFhirProvider(codeSystemPath)
-			.getCodeSystem(codeSystemPath);
-
-		return applyResponseFilter(_summary, _elements, codeSystem);
-	}
-	
+	/**
+	 * CodeSystems
+	 * @param _summary
+	 * @param _elements
+	 * @return bundle of code systems
+	 */
 	@ApiOperation(
 			value="Retrieve all code systems",
-			notes="Returns a list containing generic information about registered code systems.")
+			notes="Returns a collection of the supported code systems.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK")
 	})
@@ -145,7 +117,38 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	}
 	
 	/**
-	 * GET-based lookup endpoint.
+	 * HTTP Get for retrieving a code system by its code system id
+	 * @param codeSystemId
+	 * @param _summary
+	 * @param _elements
+	 * @return
+	 */
+	@ApiOperation(
+			response=CodeSystem.class,
+			value="Retrieve the code system by id",
+			notes="Retrieves the code system specified by its logical id.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
+	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
+			@RequestParam(required=false) String _summary,
+			@RequestParam(required=false) List<String> _elements) {
+		
+		validateSearchParams(_summary, _elements);
+
+		Path codeSystemPath = Paths.get(codeSystemId);
+		CodeSystem codeSystem = IFhirProvider.Registry
+			.getFhirProvider(codeSystemPath)
+			.getCodeSystem(codeSystemPath);
+
+		return applyResponseFilter(_summary, _elements, codeSystem);
+	}
+	
+	/**
+	 * GET-based FHIR lookup endpoint.
 	 * @param code
 	 * @param system
 	 * @param version
@@ -155,9 +158,8 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	 * @throws ParseException 
 	 */
 	@ApiOperation(
-			value="Concept lookup",
-			notes="Given a code/system, or a Coding, get additional details about the concept.\n"
-					+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
+			value="Concept lookup and decomposition",
+			notes="Given a code/version/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -172,13 +174,6 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
 		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
 		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) throws ParseException {
-		
-		System.err.println("Code: " + code + " system: " + system +
-				" version:" + version + " lookup date: " + date + " display language: " + displayLanguage);
-		
-		if (properties !=null) {
-			System.out.println(" properties: " + Arrays.toString(properties.toArray()));
-		}
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
@@ -203,8 +198,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	 * @param displayLanguage
 	 * @param properties
 	 */
-	@ApiOperation(value="Concept lookup", notes="Given a code/system, or a Coding, get additional details about the concept.\n"
-			+ "https://www.hl7.org/fhir/2016May/datatypes.html#dateTime")
+	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/verion/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -225,6 +219,17 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		
 		return toResponse(result);
 	}
+	
+	/*
+	@ApiOperation(
+			value="FHIR REST API Ping Test",
+			notes="This is only an FHIR ping test.")
+	@RequestMapping(value="/ping", method=RequestMethod.GET)
+	public String ping() {
+		System.out.println("FhirCodeSystemRestService.ping()");
+		return "Ping!";
+	}
+	*/
 	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
