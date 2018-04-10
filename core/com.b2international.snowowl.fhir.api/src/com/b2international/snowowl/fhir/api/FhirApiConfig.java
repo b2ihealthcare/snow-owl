@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -60,6 +61,7 @@ import com.google.common.io.Files;
 
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -124,15 +126,15 @@ public class FhirApiConfig extends WebMvcConfigurerAdapter {
             .ignoredParameterTypes(Principal.class)
             .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
             .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
-            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
+            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 	
 	private String readApiDescription() {
 		try {
-			final File apiDesc = new File(PlatformUtil.toAbsolutePath(FhirApiConfig.class, "api-description.html"));
+			final File apiDesc = new File(PlatformUtil.toAbsolutePath(FhirApiConfig.class, "api-description.md"));
 			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to read api-description.html file", e);
+			throw new RuntimeException("Failed to read api-description.md file", e);
 		}
 	}
 
