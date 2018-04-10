@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
@@ -32,6 +33,8 @@ import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.google.common.collect.Sets;
 
 /**
@@ -89,6 +92,16 @@ public class FhirCoreProvider extends FhirProvider {
 
 	@Override
 	public LookupResult lookup(LookupRequest lookupRequest) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	protected Set<String> fetchAncestors(String branchPath, String componentId) {
 		throw new UnsupportedOperationException();
 	}
 	

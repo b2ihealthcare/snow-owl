@@ -142,7 +142,57 @@ public final class SnomedFhirProvider extends FhirProvider {
 			.execute(getBus())
 			.then(concept -> mapToLookupResult(concept, lookup))
 			.getSync();
+	}
+	
+	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookup) {
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
 		
+		final LookupResult.Builder result = LookupResult.builder()
+				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
+				.version(lookup.getVersion())
+				.display(getPreferredTermOrId(concept));
+
+		// add basic properties
+		result.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
+		result.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId(), null));
+		result.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
+		
+		// add remaining terms as designations
+		for (SnomedDescription description : concept.getDescriptions()) {
+			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
+			if (!description.getId().equals(preferredTermId)) {
+				result.addDesignation(Designation.builder()
+					.value(description.getTerm())
+					.build());
+			}
+		}
+		
+		if (requestedChild && concept.getDescendants() != null) {
+			for (SnomedConcept child : concept.getDescendants()) {
+				result.addProperty(CommonConceptProperties.CHILD.propertyOf(child.getId(), getPreferredTermOrId(child)));
+			}
+		}
+		
+		if (requestedParent && concept.getAncestors() != null) {
+			for (SnomedConcept parent : concept.getAncestors()) {
+				result.addProperty(CommonConceptProperties.PARENT.propertyOf(parent.getId(), getPreferredTermOrId(parent)));
+			}
+		}
+		
+		return result.build();
+	}
+
+	private String getPreferredTermOrId(SnomedConcept concept) {
+		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
+	}
+	
+	@Override
+	protected Set<String> fetchAncestors(String branchPath, String componentId) {
+		return SnomedConcept.GET_ANCESTORS.apply(SnomedRequests.prepareGetConcept(componentId)
+				.build(repositoryId(), branchPath)
+				.execute(getBus())
+				.getSync());
 	}
 	
 	/* Value set related methods */
@@ -214,48 +264,7 @@ public final class SnomedFhirProvider extends FhirProvider {
 			.title(refsetConcept.getPt().getTerm());
 	}
 
-	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookup) {
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
-		
-		final LookupResult.Builder result = LookupResult.builder()
-				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
-				.version(lookup.getVersion())
-				.display(getPreferredTermOrId(concept));
 
-		// add basic properties
-		result.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
-		result.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId(), null));
-		result.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
-		
-		// add remaining terms as designations
-		for (SnomedDescription description : concept.getDescriptions()) {
-			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
-			if (!description.getId().equals(preferredTermId)) {
-				result.addDesignation(Designation.builder()
-					.value(description.getTerm())
-					.build());
-			}
-		}
-		
-		if (requestedChild && concept.getDescendants() != null) {
-			for (SnomedConcept child : concept.getDescendants()) {
-				result.addProperty(CommonConceptProperties.CHILD.propertyOf(child.getId(), getPreferredTermOrId(child)));
-			}
-		}
-		
-		if (requestedParent && concept.getAncestors() != null) {
-			for (SnomedConcept parent : concept.getAncestors()) {
-				result.addProperty(CommonConceptProperties.PARENT.propertyOf(parent.getId(), getPreferredTermOrId(parent)));
-			}
-		}
-		
-		return result.build();
-	}
-
-	private String getPreferredTermOrId(SnomedConcept concept) {
-		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
-	}
 
 	@Override
 	protected Collection<ConceptProperties> getSupportedConceptProperties() {

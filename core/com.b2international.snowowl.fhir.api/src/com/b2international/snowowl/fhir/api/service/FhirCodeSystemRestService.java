@@ -51,6 +51,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -219,6 +221,22 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		//all good, now do something
 		LookupResult result = lookup(req);
 		
+		return toResponse(result);
+	}
+
+	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	public Parameters.Fhir subsumes(
+			@ApiParam(name = "body", value = "The lookup request parameters")
+			@RequestBody
+			Parameters.Fhir in) {
+		SubsumptionRequest req = toRequest(in, SubsumptionRequest.class);
+		SubsumptionResult result = IFhirProvider.Registry.getFhirProvider(req.getSystem()).subsumes(req);
 		return toResponse(result);
 	}
 	

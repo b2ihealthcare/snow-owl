@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -42,6 +43,8 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptPr
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
@@ -170,6 +173,34 @@ public abstract class FhirProvider implements IFhirProvider {
 		return builder;
 	}
 	
+	@Override
+	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
+		final String version = subsumption.getVersion();
+		final String branchPath = getBranchPath(version);
+		
+		final Set<String> ancestorsA = fetchAncestors(branchPath, subsumption.getCodeA());
+		final Set<String> ancestorsB = fetchAncestors(branchPath, subsumption.getCodeB());
+		
+		if (subsumption.getCodeA().equals(subsumption.getCodeB())) {
+			return SubsumptionResult.equivalent();
+		} else if (ancestorsA.contains(subsumption.getCodeB())) {
+			return SubsumptionResult.subsumedBy();
+		} else if (ancestorsB.contains(subsumption.getCodeA())) {
+			return SubsumptionResult.subsumes();
+		} else {
+			return SubsumptionResult.notSubsumed();
+		}
+	}
+	
+	/**
+	 * Returns all ancestors up to the terminology's root component (in terms of Snow Owl, this means {@link IComponent#ROOT_ID}).
+	 * 
+	 * @param branchPath
+	 * @param componentId
+	 * @return
+	 */
+	protected abstract Set<String> fetchAncestors(String branchPath, String componentId);
+
 	/**
 	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @return the supported properties
