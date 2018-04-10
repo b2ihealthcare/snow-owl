@@ -2,17 +2,21 @@ Fast Healthcare Interoperability Resources (FHIR) specifies resources, operation
 
 ## CodeSystem
 
-Code systems maintained within Snow Owl are exposed (read-only) via the endpoints _/CodeSystem_ and _/CodeSystem/{codeSystemId}_.  Supported concept properties are handled and returned if requested.
+Code systems maintained within Snow Owl are exposed (read-only) via the endpoints `/CodeSystem` and `/CodeSystem/{codeSystemId}`.  Supported concept properties are handled and returned if requested.
 
 ### $lookup
 
-Both _GET_ as well as _POST_ HTTP methods are supported for the lookup operation.  Concepts are queried based on _code,  version, system_ or _Coding_.  Designations are included as part of the response as well as supported concept properties when requested. No _date_ parameter is supported.
+Both _GET_ as well as _POST_ HTTP methods are supported. Concepts are queried based on `code`,  `version`, `system` or `Coding`.  Designations are included as part of the response as well as supported concept properties when requested. No `date` parameter is supported.
 
 For SNOMED CT, all common and SNOMED CT properties are supported, including all active relationship types.
 
+### $subsumes
+
+Both _GET_ as well as _POST_ HTTP methods are supported. Subsumption testing is supported for ICD-10 and SNOMED CT terminologies. In case of error (eg. _codeA/codeB/system/version_ not found) the API responds with an error `OperationOutCome`. 
+
 ##ValueSet
  
- Simple type reference sets maintained within Snow Owl are exposed (read-only) via the endpoints _/ValueSet_ and _/ValueSet/{valueSetId}_. _Delete_ and _create_ operations are not yet implemented. 
+Simple type reference sets maintained within Snow Owl are exposed (read-only) via the endpoints `/ValueSet` and `/ValueSet/{valueSetId}`. `Delete` and `create` operations are not yet implemented. 
 
 ### Search
 
@@ -31,7 +35,7 @@ The currently exposed code systems are:
 
 ## REST API
 
-Currently only JSON format is supported with UTF-8 encoding and the *Content-Type = application/fhir+json;charset=utf-8*. 
+Currently only JSON format is supported with UTF-8 encoding and the `Content-Type = application/fhir+json;charset=utf-8`. 
 
 The current HTTP status codes are:
 
