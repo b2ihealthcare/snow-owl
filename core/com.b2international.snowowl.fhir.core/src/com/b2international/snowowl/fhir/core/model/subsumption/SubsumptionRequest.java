@@ -70,6 +70,10 @@ public class SubsumptionRequest {
 		return codeB;
 	}
 	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
 	@JsonPOJOBuilder(withPrefix = "")
 	public static final class Builder extends ValidatingBuilder<SubsumptionRequest> {
 		
@@ -104,5 +108,5 @@ public class SubsumptionRequest {
 		}
 		
 	}
-	
+
 }

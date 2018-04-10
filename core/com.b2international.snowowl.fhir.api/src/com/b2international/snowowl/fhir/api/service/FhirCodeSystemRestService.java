@@ -177,7 +177,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
 		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
 		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) throws ParseException {
+		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
@@ -224,6 +224,33 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		return toResponse(result);
 	}
 
+	@ApiOperation(
+			value="Subsumption testing",
+			notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
+	public Parameters.Fhir subsumes(
+			@ApiParam(value="The \"A\" code that is to be tested.") @RequestParam(value="codeA") final String codeA,
+			@ApiParam(value="The \"B\" code that is to be tested.") @RequestParam(value="codeB") final String codeB,
+			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
+			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version
+			) {
+		final SubsumptionRequest req = SubsumptionRequest.builder()
+				.codeA(codeA)
+				.codeB(codeB)
+				.system(system)
+				.version(version)
+				.build();
+		
+		final SubsumptionResult result = IFhirProvider.Registry.getFhirProvider(req.getSystem()).subsumes(req);
+		
+		return toResponse(result);
+	}
+	
 	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
