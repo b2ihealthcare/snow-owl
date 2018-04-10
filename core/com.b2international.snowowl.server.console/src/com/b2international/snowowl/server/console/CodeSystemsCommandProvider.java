@@ -120,14 +120,14 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		List<CodeSystemVersionEntry> codeSystemVersions = CodeSystemRequests
+		List<CodeSystemVersionEntry> codeSystemVersions = newArrayList(CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(codeSystemShortName)
 				.build(codeSystem.getRepositoryUuid())
 				.execute(getBus())
 				.getSync()
-				.getItems();
+				.getItems());
 		
 		Collections.sort(codeSystemVersions, new Comparator<ICodeSystemVersion>() {
 			@Override public int compare(ICodeSystemVersion o1, ICodeSystemVersion o2) {
