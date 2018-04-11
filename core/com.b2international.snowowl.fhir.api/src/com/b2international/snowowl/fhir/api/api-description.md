@@ -12,7 +12,7 @@ For SNOMED CT, all common and SNOMED CT properties are supported, including all 
 
 ### $subsumes
 
-Both _GET_ as well as _POST_ HTTP methods are supported. Subsumption testing is supported for ICD-10 and SNOMED CT terminologies. In case of error (eg. _codeA/codeB/system/version_ not found) the API responds with an error `OperationOutCome`. 
+Both _GET_ as well as _POST_ HTTP methods are supported. Subsumption testing is supported for ICD-10 and SNOMED CT terminologies.
 
 ##ValueSet
  
@@ -35,9 +35,7 @@ The currently exposed code systems are:
 
 ## REST API
 
-Currently only JSON format is supported with UTF-8 encoding and the `Content-Type = application/fhir+json;charset=utf-8`. 
-
-The current HTTP status codes are:
+Currently only JSON format is supported with UTF-8 encoding and the `Content-Type = application/fhir+json;charset=utf-8`. In case of any errors during the processing the API responds with an `OperationOutCome` within the response body using one of the HTTP status codes:
 
 | HTTP Status   | Reason         |
 | ------------- | -------------- |
