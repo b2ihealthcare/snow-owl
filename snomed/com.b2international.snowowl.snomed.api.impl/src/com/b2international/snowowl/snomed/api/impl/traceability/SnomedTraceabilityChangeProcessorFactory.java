@@ -25,9 +25,8 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
-import com.b2international.snowowl.snomed.reasoner.server.request.ClassifyRequest;
 
 /**
  * CDO change processor factory responsible to create {@link SnomedTraceabilityChangeProcessor traceability change processors} for the SNOMED CT terminology.
@@ -50,7 +49,7 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 
 	private boolean isImportInProgress(final IBranchPath branchPath) {
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = ImportUtil.createFeatureToggleString(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
+		final String feature = SnomedFeatures.getImportFeatureToggle(branchPath.getPath());
 		
 		return features.exists(feature) && features.check(feature);
 	}
@@ -64,7 +63,7 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 	
 	private boolean isClassifyInProgress() {
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = ClassifyRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
+		final String feature = SnomedFeatures.getClassifyFeatureToggle();
 		
 		return features.exists(feature) && features.check(feature);
 	}

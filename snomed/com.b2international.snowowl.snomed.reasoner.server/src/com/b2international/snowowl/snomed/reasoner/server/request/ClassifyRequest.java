@@ -111,12 +111,4 @@ public class ClassifyRequest implements Request<ServiceProvider, ApiError> {
 		return new ApiError.Builder("Caught exception while running classification.").code(500).build();
 	}
 
-	/**
-	 * Feature toggle key to indicate whether classifying is in progress.
-	 * @param repositoryUuid
-	 * @return
-	 */
-	public static String featureFor(String repositoryUuid) {
-		return "classify." + repositoryUuid;
-	}
 }

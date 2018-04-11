@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -100,7 +101,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	@Override
 	public Boolean execute(BranchContext context) {
 		final FeatureToggles features = context.service(FeatureToggles.class);
-		final String feature = context.id() + ".import";
+		final String feature = SnomedFeatures.getImportFeatureToggle(context.branchPath());
 
 		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
 		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
