@@ -411,7 +411,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		// add top hits agg to get the top N items for each bucket
 		if (aggregation.getBucketHitsLimit() > 0) {
 			termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
-					.fetchSource(true)
+					.fetchSource(null, EXCLUDED_SOURCE_FIELDS)
 					.size(aggregation.getBucketHitsLimit()));
 		}
 		
