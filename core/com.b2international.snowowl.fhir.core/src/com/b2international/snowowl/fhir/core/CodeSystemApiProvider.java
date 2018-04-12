@@ -32,6 +32,7 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
@@ -131,12 +132,18 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(getFhirUri());
+			.url(getFhirUri())
+			.count(getCount());
 		
 		//add filters here
 		Collection<Filter> supportedFilters = getSupportedFilters();
 		for (Filter filter : supportedFilters) {
 			builder.addFilter(filter);
+		}
+		
+		Collection<Concept> concepts = getConcepts(codeSystemEntry);
+		for (Concept concept: concepts) {
+			builder.addConcept(concept);
 		}
 		
 		// include supported concept properties
@@ -148,6 +155,12 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return builder;
 	}
 	
+	protected Collection<Concept> getConcepts(CodeSystemEntry codeSystemEntry) {
+		return Collections.emptySet();
+	}
+
+	protected abstract int getCount();
+
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
 		final String version = subsumption.getVersion();

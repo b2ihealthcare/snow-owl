@@ -208,4 +208,10 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return null;
 	}
 
+	@Override
+	protected int getCount() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 }

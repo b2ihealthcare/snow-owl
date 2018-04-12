@@ -187,6 +187,13 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
+	protected int getCount() {
+		return SnomedRequests.prepareSearchConcept().setLimit(0)
+			.build(repositoryId(), getBranchPath(null))
+			.execute(getBus()).getSync().getTotal();
+	}
+	
+	@Override
 	protected Collection<ConceptProperties> getSupportedConceptProperties() {
 		return supportedProperties;
 	}
