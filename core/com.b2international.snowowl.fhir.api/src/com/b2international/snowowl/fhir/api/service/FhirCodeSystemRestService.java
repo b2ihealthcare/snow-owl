@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.fhir.core.IFhirProvider;
+import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -107,7 +107,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			.addLink(uri);
 		
 		int total = 0;
-		for (IFhirProvider fhirProvider : IFhirProvider.Registry.getProviders()) {
+		for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders()) {
 			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
 			for (CodeSystem codeSystem : codeSystems) {
 				applyResponseFilter(_summary, _elements, codeSystem);
@@ -144,8 +144,8 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		validateSearchParams(_summary, _elements);
 
 		Path codeSystemPath = Paths.get(codeSystemId);
-		CodeSystem codeSystem = IFhirProvider.Registry
-			.getFhirProvider(codeSystemPath)
+		CodeSystem codeSystem = ICodeSystemApiProvider.Registry
+			.getCodeSystemProvider(codeSystemPath)
 			.getCodeSystem(codeSystemPath);
 
 		return applyResponseFilter(_summary, _elements, codeSystem);
@@ -246,7 +246,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 				.version(version)
 				.build();
 		
-		final SubsumptionResult result = IFhirProvider.Registry.getFhirProvider(req.getSystem()).subsumes(req);
+		final SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
 		
 		return toResponse(result);
 	}
@@ -263,7 +263,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			@RequestBody
 			Parameters.Fhir in) {
 		SubsumptionRequest req = toRequest(in, SubsumptionRequest.class);
-		SubsumptionResult result = IFhirProvider.Registry.getFhirProvider(req.getSystem()).subsumes(req);
+		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
 		return toResponse(result);
 	}
 	
@@ -282,7 +282,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		return IFhirProvider.Registry.getFhirProvider(lookupRequest.getSystem()).lookup(lookupRequest);
+		return ICodeSystemApiProvider.Registry.getCodeSystemProvider(lookupRequest.getSystem()).lookup(lookupRequest);
 	}
 
 	/*

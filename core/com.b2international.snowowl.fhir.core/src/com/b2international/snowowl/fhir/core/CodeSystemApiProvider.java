@@ -19,18 +19,13 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -45,7 +40,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 
@@ -54,11 +48,11 @@ import com.google.common.base.Strings;
  * 
  * @since 6.4
  */
-public abstract class FhirProvider implements IFhirProvider {
+public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
 	private final String repositoryId;
 
-	public FhirProvider(String repositoryId) {
+	public CodeSystemApiProvider(String repositoryId) {
 		this.repositoryId = repositoryId;
 	}
 	
@@ -107,25 +101,6 @@ public abstract class FhirProvider implements IFhirProvider {
 						.collect(Collectors.toList());
 				})
 				.getSync();
-	}
-	
-	/**
-	 * Subclasses to override.
-	 * TODO: move it to different provider/extension
-	 */
-	@Override
-	public Collection<ValueSet> getValueSets() {
-		return Collections.emptySet();
-	}
-	
-	/**
-	 * Subclasses to override.
-	 * TODO: move it to different provider/extension
-	 */
-	@Override
-	public ValueSet getValueSet(Path valueSetPath) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	
 	/**
@@ -228,39 +203,5 @@ public abstract class FhirProvider implements IFhirProvider {
 		}
 	}
 	
-	/**
-	 * @param version - the version to target 
-	 * @return an absolute branch path to use in terminology API requests
-	 */
-	protected final String getBranchPath(String version) {
-		return CompareUtils.isEmpty(version) ? Branch.MAIN_PATH : Branch.get(Branch.MAIN_PATH, version); 
-	}
 	
-	/**
-	 * @return the {@link IEventBus} service to access terminology resources.
-	 */
-	protected final IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-	
-	/**
-	 * Returns (attempts) the ISO 639 two letter code based on the language name.
-	 * @return two letter language code
-	 */
-	private static String getLanguageCode(String language) {
-		if (language == null) return null;
-		
-	    Locale loc = new Locale("en");
-	    String[] languages = Locale.getISOLanguages(); // list of language codes
-
-	    return Arrays.stream(languages)
-	    		.filter(l -> {
-	    			Locale locale = new Locale(l,"US");
-	    			return locale.getDisplayLanguage(loc).equalsIgnoreCase(language) 
-	    					|| locale.getISO3Language().equalsIgnoreCase(language);
-	    		})
-	    		.findFirst()
-	    		.orElse(null);
-	}
-
 }

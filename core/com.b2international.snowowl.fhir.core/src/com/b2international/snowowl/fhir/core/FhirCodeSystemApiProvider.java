@@ -42,12 +42,12 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.4
  */
-public class FhirCoreProvider extends FhirProvider {
+public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	/*
 	 * No repository associated with the internal hard-coded FHIR terminologies
 	 */
-	public FhirCoreProvider() {
+	public FhirCodeSystemApiProvider() {
 		super(null);
 	}
 	

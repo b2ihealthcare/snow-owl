@@ -26,7 +26,6 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,10 +34,10 @@ import com.google.common.collect.ImmutableList;
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
  *
  * 
- * @see 'com.b2international.snowowl.fhir.core.provider' for the extension point definition
+ * @see 'com.b2international.snowowl.fhir.core.codeSystemProvider' for the extension point definition
  * @since 6.4
  */
-public interface IFhirProvider {
+public interface ICodeSystemApiProvider {
 
 	/**
 	 * Registry that reads and instantiates FHIR API supporting services registered by the actual terminology plug-ins.
@@ -49,24 +48,24 @@ public interface IFhirProvider {
 		
 		INSTANCE;
 		
-		private final static String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.provider"; //$NON-NLS-N$
-		private final Collection<IFhirProvider> providers;
+		private final static String FHIR_EXTENSION_POINT = "com.b2international.snowowl.fhir.core.codeSystemProvider"; //$NON-NLS-N$
+		private final Collection<ICodeSystemApiProvider> providers;
 		
 		private Registry() {
-			this.providers = ImmutableList.copyOf(Extensions.getExtensions(FHIR_EXTENSION_POINT, IFhirProvider.class));
+			this.providers = ImmutableList.copyOf(Extensions.getExtensions(FHIR_EXTENSION_POINT, ICodeSystemApiProvider.class));
 		}
 		
-		public static Collection<IFhirProvider> getProviders() {
+		public static Collection<ICodeSystemApiProvider> getProviders() {
 			return INSTANCE.providers;
 		}
 		
 		/**
-		 * Returns the matching {@link IFhirProvider} for the given path (repository/shortName).
+		 * Returns the matching {@link ICodeSystemApiProvider} for the given path (repository/shortName).
 		 * @param logical code system path (e.g. icd10Store/ICD-10)
-		 * @return FHIR provider
+		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static IFhirProvider getFhirProvider(Path path) {
+		public static ICodeSystemApiProvider getCodeSystemProvider(Path path) {
 			return getProviders().stream()
 				.filter(provider -> provider.isSupported(path))
 				.findFirst()
@@ -74,11 +73,11 @@ public interface IFhirProvider {
 		}
 		
 		/**
-		 * Returns the matching {@link IFhirProvider} for the given URI.
+		 * Returns the matching {@link ICodeSystemApiProvider} for the given URI.
 		 * @param uriValue
-		 * @return FHIR provider
+		 * @return FHIR code system provider
 		 */
-		public static IFhirProvider getFhirProvider(String uriValue) {
+		public static ICodeSystemApiProvider getCodeSystemProvider(String uriValue) {
 			return getProviders().stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()
@@ -149,20 +148,5 @@ public interface IFhirProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(Path codeSystemPath);
-
-	/**
-	 * Returns the value sets supported by this provider.
-	 * TODO: move this to a different extension. (probably an extension definition per resource)
-	 * @return collection of value sets supported
-	 */
-	Collection<ValueSet> getValueSets();
-
-	/**
-	 * Returns the value set for the passed in logical path (repositoryId/valueSetId)
-	 * @param valueSetPath
-	 * @return {@link ValueSet}
-	 * @throws BadRequestException if the value set is not supported by this provider
-	 */
-	ValueSet getValueSet(Path valueSetPath);
 
 }

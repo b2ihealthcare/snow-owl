@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.fhir.core.IFhirProvider;
+import com.b2international.snowowl.fhir.core.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
@@ -56,7 +56,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "ValueSet", description="FHIR ValueSet Resource", tags = { "ValueSet" })
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/ValueSet", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
-public class FhiValueSetRestService extends BaseFhirRestService {
+public class FhirValueSetRestService extends BaseFhirRestService {
 	
 	/**
 	 * ValueSets
@@ -79,7 +79,7 @@ public class FhiValueSetRestService extends BaseFhirRestService {
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhiValueSetRestService.class);
+		ControllerLinkBuilder linkBuilder = ControllerLinkBuilder.linkTo(FhirValueSetRestService.class);
 		String uri = linkBuilder.toUri().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
@@ -87,7 +87,7 @@ public class FhiValueSetRestService extends BaseFhirRestService {
 			.addLink(uri);
 		
 		int total = 0;
-		for (IFhirProvider fhirProvider : IFhirProvider.Registry.getProviders()) {
+		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders()) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
 				applyResponseFilter(_summary, _elements, valueSet);
@@ -124,8 +124,9 @@ public class FhiValueSetRestService extends BaseFhirRestService {
 		validateSearchParams(_summary, _elements);
 
 		Path valueSetPath = Paths.get(valueSetId);
-		ValueSet valueSet = IFhirProvider.Registry
-			.getFhirProvider("http://snomed.info/sct") //hack
+		ValueSet valueSet = IValueSetApiProvider.Registry
+			//.getValueSetProvider("http://snomed.info/sct") //hack
+			.getValueSetProvider(valueSetPath) 
 			.getValueSet(valueSetPath);
 
 		return applyResponseFilter(_summary, _elements, valueSet);
