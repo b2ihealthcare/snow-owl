@@ -446,15 +446,23 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		}
 		
 		if (taxonomy.isStale()) {
+			// Stale results can be removed immediately
+			removeResult(classificationId);
 			return new PersistChangesResponse(Type.STALE);
 		}
 		
+		final PersistChangesResponse response;
+		
 		try {
-			return doPersistChanges(classificationId, taxonomy, taxonomyBuilder, userId);
+			response = doPersistChanges(classificationId, taxonomy, taxonomyBuilder, userId);
 		} catch (OperationLockException | InterruptedException e) {
 			LOGGER.error("Cannot persist classification changes.", e);
 			return new PersistChangesResponse(Type.NOT_AVAILABLE);
 		}
+		
+		// Remove results only if saving was successful
+		removeResult(classificationId);
+		return response;
 	}
 
 	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId) throws OperationLockException, InterruptedException {
