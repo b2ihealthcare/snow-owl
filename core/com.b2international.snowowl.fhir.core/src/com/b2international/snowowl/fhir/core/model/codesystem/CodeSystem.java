@@ -66,6 +66,10 @@ public class CodeSystem extends TerminologyResource {
 	
 	@Summary
 	@JsonProperty
+	private String content="complete";
+	
+	@Summary
+	@JsonProperty
 	private String publisher;
 	
 	@Summary

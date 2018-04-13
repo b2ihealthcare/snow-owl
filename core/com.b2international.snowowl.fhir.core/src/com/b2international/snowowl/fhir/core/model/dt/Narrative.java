@@ -26,9 +26,11 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 public class Narrative {
 	
 	//"status" : "<cod >", // R!  generated | extensions | additional | empty
+	//TODO:1.1
 	private Code status;
 	
 	//"div" : "(Escaped XHTML)" // R!  Limited xhtml content
+	//TODO: 1..1
 	private String div;
 	
 	public Narrative(NarrativeStatus status, String div) {
