@@ -55,7 +55,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	private static final int PURGE_LIMIT = 100_000;
 	
-	private static final int COMPARE_DEFAULT_LIMIT = 10_000;
+	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
 	
 	private final Index index;
 	private final RevisionBranchProvider branchProvider;
@@ -141,6 +141,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					compare,
 					limit);
 			
+			int added = 0;
+			int changed = 0;
+			int deleted = 0;
+			
 			// query all registered revision types for new, changed and deleted components
 			for (Class<? extends Revision> type : typesToCompare) {
 
@@ -197,19 +201,27 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 									|| !Objects.equals(newOrChangedHashes.get(storageKey), hash)) {
 								
 								result.changedRevision(type, storageKey);
+								changed++;
 							}
 							
 							// Remove this storage key from newOrChanged, it is decidedly changed-or-same
 							newOrChangedKeys.remove(storageKey);
 							newOrChangedHashes.remove(storageKey);
 						}
-					}
+						
+					} // changedOrSameHits
 					
 					// Everything remaining in newOrChanged is NEW, as it had no previous revision in the common segments
 					for (LongIterator itr = newOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
 						result.newRevision(type, itr.next());
+						added++;
 					}
-				}
+					
+					if (added > limit || changed > limit) {
+						break;
+					}
+				
+				} // newOrChangedHits
 
 				// Revisions which existed on "base", but where replaced by another revision on "compare" segments
 				final Query<String[]> deletedOrChangedQuery = Query
@@ -262,9 +274,20 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					// Everything remaining in deletedOrChanged is DELETED, as it had successor in the "compare" segments
 					for (LongIterator itr = deletedOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
 						result.deletedRevision(type, itr.next());
+						deleted++;
 					}
+					
+					if (deleted > limit) {
+						break;
+					}
+					
+				} // deletedOrChangedHits
+				
+				if (added > limit || changed > limit || deleted > limit) {
+					break;
 				}
-			}
+				
+			} // type
 			
 			return result.build();
 		});
