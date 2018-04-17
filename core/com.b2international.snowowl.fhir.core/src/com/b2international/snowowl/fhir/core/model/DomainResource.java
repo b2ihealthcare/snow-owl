@@ -71,7 +71,11 @@ public abstract class DomainResource extends FhirResource {
 		}
 
 		public B narrative(NarrativeStatus narrativeStatus, String div) {
-			Narrative narrative = new Narrative(narrativeStatus, div);
+			Narrative narrative = Narrative.builder()
+					.status(narrativeStatus)
+					.div(div)
+					.build();
+			
 			this.text = narrative;
 			return getSelf();
 		}

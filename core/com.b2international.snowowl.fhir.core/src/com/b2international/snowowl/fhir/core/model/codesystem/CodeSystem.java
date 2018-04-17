@@ -20,6 +20,7 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -66,11 +67,11 @@ public class CodeSystem extends TerminologyResource {
 	
 	@Summary
 	@JsonProperty
-	private String content="complete";
-	
-	@Summary
-	@JsonProperty
 	private String publisher;
+	
+	@Mandatory
+	@JsonProperty
+	private String content;
 	
 	@Summary
 	@Min(value = 0, message = "Count must be equal to or larger than 0.")
@@ -98,11 +99,12 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 	
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description, Code hierarchyMeaning, final int count,
+			String title, Code status, String publisher, String description, Code hierarchyMeaning, final String content, final int count,
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 		
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
 		this.hierarchyMeaning = hierarchyMeaning;
+		this.content = content;
 		this.count = count;
 		this.filters = filters;
 		this.properties = properties;
@@ -116,6 +118,8 @@ public class CodeSystem extends TerminologyResource {
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
 		private Code hierarchyMeaning;
+		
+		private String content;
 		
 		private int count;
 		
@@ -136,6 +140,11 @@ public class CodeSystem extends TerminologyResource {
 
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
 			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			return getSelf();
+		}
+		
+		public Builder content(CodeSystemContentMode contentMode) {
+			this.content = contentMode.getCodeValue();
 			return getSelf();
 		}
 		
@@ -162,7 +171,7 @@ public class CodeSystem extends TerminologyResource {
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, 
-				hierarchyMeaning, count, filters, properties, concepts);
+				hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}
 		

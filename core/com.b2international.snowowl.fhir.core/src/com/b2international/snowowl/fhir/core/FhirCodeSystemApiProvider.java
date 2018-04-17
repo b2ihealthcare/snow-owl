@@ -25,6 +25,7 @@ import java.util.Set;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -132,7 +133,8 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.name(id)
 			.publisher("www.hl7.org")
 			.status(PublicationStatus.ACTIVE)
-			.url(new Uri(supportedUri));
+			.url(new Uri(supportedUri))
+			.content(CodeSystemContentMode.COMPLETE);
 				
 		int counter = 0;
 		

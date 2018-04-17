@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -133,6 +134,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri())
+			.content(CodeSystemContentMode.NOT_PRESENT)
 			.count(getCount());
 		
 		//add filters here

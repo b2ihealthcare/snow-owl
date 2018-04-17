@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 
 /**
  * FHIR Narrative datatype
@@ -26,15 +30,17 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 public class Narrative {
 	
 	//"status" : "<cod >", // R!  generated | extensions | additional | empty
-	//TODO:1.1
-	private Code status;
+	@Mandatory
+	@NotEmpty
+	private final Code status;
 	
-	//"div" : "(Escaped XHTML)" // R!  Limited xhtml content
-	//TODO: 1..1
-	private String div;
+	//"div" : "(Escaped XHTML)" // R!  Limited xhtml content, between <div></div> tags
+	@Mandatory
+	@ValidDiv
+	private final String div;
 	
-	public Narrative(NarrativeStatus status, String div) {
-		this.status = status.getCode();
+	Narrative(final Code status, final String div) {
+		this.status = status;
 		this.div = div;
 	}
 	
@@ -49,6 +55,36 @@ public class Narrative {
 	@Override
 	public String toString() {
 		return "Narrative [status=" + status + ", div=" + div + "]";
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	/**
+	 * @since 6.4
+	 */
+	public static final class Builder extends ValidatingBuilder<Narrative> {
+		
+		private Code status;
+		private String div;
+
+		Builder() {}
+		
+		public Builder status(final NarrativeStatus narrativeStatus) {
+			this.status = narrativeStatus.getCode();
+			return this;
+		}
+		
+		public Builder div(final String div) {
+			this.div = div;
+			return this;
+		}
+		
+		@Override
+		protected Narrative doBuild() {
+			return new Narrative(status, div);
+		}
 	}
 	
 }
