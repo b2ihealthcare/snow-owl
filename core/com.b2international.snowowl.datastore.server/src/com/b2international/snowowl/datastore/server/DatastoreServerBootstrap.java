@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,9 @@ import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepos
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
-import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
@@ -114,7 +112,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
 			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
 			manager.addListener(new LogListener());
-			manager.addListener(new VersionProcessor());
 			
 			env.services().registerService(IApplicationSessionManager.class, manager);
 			env.services().registerService(InternalApplicationSessionManager.class, manager);
