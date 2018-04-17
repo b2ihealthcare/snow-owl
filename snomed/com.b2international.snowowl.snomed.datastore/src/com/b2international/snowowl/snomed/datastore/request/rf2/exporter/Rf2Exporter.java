@@ -99,7 +99,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 		return component.isActive() ? "1" : "0";
 	}
 
-	public final void exportBranch(final Path releaseDirectory, final RepositoryContext context, final String branch, final long effectiveTime) throws IOException {
+	public final void exportBranch(final Path releaseDirectory, final RepositoryContext context, final String branch, final long effectiveTimeStart, final long effectiveTimeEnd) throws IOException {
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
 		Files.createDirectories(exportFileDirectory);
@@ -136,14 +136,17 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						requestBuilder.setScrollId(scrollId);
 					}
 					
-					if (effectiveTime == Long.MIN_VALUE) {
-						// For snapshot exports, no effective time-based filtering is needed
-					} else if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-						// If we are in the final "layer", export only components if the effective time is not set
-						requestBuilder.filterByEffectiveTime(effectiveTime);
-					} else {
-						// Version branches might include updated content; we will export them at this point
-						requestBuilder.filterByEffectiveTime(effectiveTime, Long.MAX_VALUE);
+//					if (effectiveTime == Long.MIN_VALUE) {
+//						// For snapshot exports, no effective time-based filtering is needed
+//					} else if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+//						// If we are in the final "layer", export only components if the effective time is not set
+//						requestBuilder.filterByEffectiveTime(effectiveTime);
+//					} else {
+//						// Version branches might include updated content; we will export them at this point
+//						requestBuilder.filterByEffectiveTime(effectiveTime, Long.MAX_VALUE);
+//					}
+					if (effectiveTimeStart != 0 || effectiveTimeEnd != Long.MAX_VALUE) {
+						requestBuilder.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd);
 					}
 
 					final RevisionIndexReadRequest<R> indexReadRequest = new RevisionIndexReadRequest<>(requestBuilder.build());
