@@ -15,8 +15,13 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.Arrays;
+
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.7
@@ -27,6 +32,13 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch). 
 	 */
 	String BASE_REF_CHAR = "^";
+	
+	/**
+	 * Three dot characters that represent git diff notation between two branch paths. This kind of path expression will evaluate to the latest version of a given document available in the segments selected by the range described in the expression
+	 * (eg. MAIN...MAIN/A would consider revisions available on all segments of MAIN/A since it diverged from MAIN)
+	 * https://git-scm.com/docs/git-diff 
+	 */
+	String REV_RANGE = "...";
 	
 	/**
 	 * Returns the name of the index.
@@ -103,4 +115,46 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	RevisionCompare compare(String baseBranch, String compareBranch, int limit);
+
+	/**
+	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.
+	 * @param base
+	 * @param compare
+	 * @return
+	 */
+	static String toRevisionRange(String base, String compare) {
+		return String.format("%s%s%s", base, REV_RANGE, compare);
+	}
+	
+	/**
+	 * Extracts the branch paths from the given revision range path expression.
+	 * @param revisionRangePath
+	 * @return
+	 * @throws IllegalArgumentException - if the given path cannot be parsed as a revision range path expression
+	 */
+	static String[] getRevisionRangePaths(String revisionRangePath) {
+		final String[] branches = revisionRangePath.split("\\.\\.\\.");
+		checkArgument(branches.length == 2 && !Strings.isNullOrEmpty(branches[0]) && !Strings.isNullOrEmpty(branches[1]), 
+				"Diff notation ('%s') requires two full branch paths. Got %s.", RevisionIndex.REV_RANGE, Arrays.toString(branches));
+		return branches;
+	}
+
+	/**
+	 * Returns <code>true</code> if the given branch path can evaluate to its base segments.
+	 * @param branchPath
+	 * @return
+	 */
+	static boolean isBaseRefPath(String branchPath) {
+		return branchPath.endsWith(BASE_REF_CHAR);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its segments.
+	 * @param revisionRangePath
+	 * @return
+	 */
+	static boolean isRevRangePath(String revisionRangePath) {
+		return revisionRangePath.contains(REV_RANGE);
+	}
+
 }

@@ -77,7 +77,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public <T> T read(final String branchPath, final RevisionIndexRead<T> read) {
-		if (branchPath.endsWith(BASE_REF_CHAR)) {
+		if (RevisionIndex.isBaseRefPath(branchPath)) {
 			final String branchPathWithoutBaseRef = branchPath.substring(0, branchPath.length() - 1);
 			if (RevisionBranch.MAIN_PATH.equals(branchPathWithoutBaseRef)) {
 				throw new IllegalArgumentException("Cannot query base of MAIN branch");
@@ -87,6 +87,14 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			final Set<Integer> commonPath = Sets.intersection(branch.segments(), parent.segments());
 			final RevisionBranch baseOfBranch = new RevisionBranch(parent.path(), Ordering.natural().max(commonPath), commonPath);
 			return read(baseOfBranch, read);
+		} else if (RevisionIndex.isRevRangePath(branchPath)) {
+			final String[] branches = RevisionIndex.getRevisionRangePaths(branchPath);
+			final String basePath = branches[0];
+			final String comparePath = branches[1];
+			final RevisionBranch base = getBranch(basePath);
+			final RevisionBranch compare = getBranch(comparePath);
+			final Set<Integer> compareSegments = Sets.difference(compare.segments(), base.segments());
+			return read(new RevisionBranch(comparePath, compare.segmentId(), compareSegments), read);
 		} else {
 			return read(getBranch(branchPath), read);
 		}
