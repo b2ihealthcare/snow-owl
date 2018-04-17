@@ -41,7 +41,6 @@ import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -115,7 +114,7 @@ import com.google.common.collect.ImmutableMap;
 	SnomedConceptDocument.Fields.PRIMITIVE,
 	SnomedConceptDocument.Fields.EXHAUSTIVE
 })
-public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
+public class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
@@ -554,7 +553,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return exhaustive;
 	}
 	
-	@Override
 	public LongSet getParents() {
 		return parents;
 	}
@@ -563,7 +561,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return statedParents;
 	}
 	
-	@Override
 	public LongSet getAncestors() {
 		return ancestors;
 	}
