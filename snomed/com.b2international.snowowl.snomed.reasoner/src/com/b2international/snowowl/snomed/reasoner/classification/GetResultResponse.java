@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ public class GetResultResponse extends AbstractResponse implements Serializable 
 	 * Creates a new response with the specified type and an empty reasoner change set.
 	 * @param type the response type (preferably {@link Type#NOT_AVAILABLE} or {@link Type#STALE})
 	 */
-	public GetResultResponse(final Type type) {
-		this(type, null);
+	public GetResultResponse() {
+		this(null);
 	}
 
 	/**
@@ -43,8 +43,8 @@ public class GetResultResponse extends AbstractResponse implements Serializable 
 	 * @param type the response type
 	 * @param changes the computed change set determined by the classification
 	 */
-	public GetResultResponse(final Type type, final GetResultResponseChanges changes) {
-		super(type);
+	public GetResultResponse(final GetResultResponseChanges changes) {
+		super(changes == null ? Type.NOT_AVAILABLE : Type.SUCCESS);
 		this.changes = changes;
 	}
 
