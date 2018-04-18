@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,9 @@ public class LinkageRefSetGenerator {
 
 		SubMonitor subMonitor = SubMonitor.convert(monitor, "Generating linkage reference set...", 3);
 		final SnomedRegularRefSet refSet = editingContext.createSnomedSimpleTypeRefSet(
-				fullySpecifiedName, SnomedTerminologyComponentConstants.RELATIONSHIP);
+				fullySpecifiedName, 
+				SnomedTerminologyComponentConstants.RELATIONSHIP,
+				Concepts.REFSET_LANGUAGE_TYPE_UK);
 		final Collection<ReferencedComponentDelta> subsumedDeltas = Collections2.filter(referencedComponentDeltas, new SubsumedDeltaPredicate());
 		final Collection<ReferencedComponentDelta> relatedDeltas = Collections2.filter(referencedComponentDeltas, new RelatedDeltaPredicate());
 

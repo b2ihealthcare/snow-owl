@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -270,7 +271,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			final Row row = sheet.createRow(rowNum);
 			
 			// TODO all acceptability values should be printed out
-			final Acceptability acceptability = description.getAcceptabilityMap().get(context.getLanguageRefSetId());
+			final Acceptability acceptability = description.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK);
 			
 			if (null == acceptability) {
 				monitor.worked(1);

@@ -69,7 +69,6 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -324,14 +323,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	
 	/**Returns with the currently used language type reference set, falls back to an existing language if the configured identifier can not be resolved.*/
-	public SnomedStructuralRefSet getLanguageRefSet() {
-		return lookup(getLanguageRefSetId(), SnomedStructuralRefSet.class);
+	public SnomedStructuralRefSet getLanguageRefSet(String languageReferenceSetId) {
+		return lookup(languageReferenceSetId, SnomedStructuralRefSet.class);
 	}
 
-	public String getLanguageRefSetId() {
-		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
-	}
-	
 	/**
 	 * @param source can be <tt>null</tt> then source will be an empty concept with empty <tt>String</tt> description.
 	 * @param type can be <tt>null</tt> then type will be an empty concept with empty <tt>String</tt> description.
@@ -399,7 +394,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - will be replaced and removed in 4.4
 	 */
 	public Description buildDefaultDescription(String term, final String namespace, final Concept type, final Concept moduleConcept) {
-		return buildDefaultDescription(term, namespace, type, moduleConcept, getDefaultLanguageCode());
+		return buildDefaultDescription(term, namespace, type, moduleConcept, "en");
 	}
 	
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
@@ -730,29 +725,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		} else {
 			return super.getComponentLookupService(type);
 		}
-	}
-	
-	/**
-	 * @return the default language code used for descriptions, calculated by
-	 *         taking the language code of the currently used language reference
-	 *         set, and removing any region-specific parts (everything after the
-	 *         first dash character)
-	 */
-	public String getDefaultLanguageCode() {
-		
-		String languageRefSetCode = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageCode();
-		
-		if (languageRefSetCode == null) {
-			throw new NullPointerException("No default language code configured");
-		}
-		
-		int regionStart = languageRefSetCode.indexOf('-');
-		
-		if (regionStart != -1) {
-			languageRefSetCode = languageRefSetCode.substring(0, regionStart);
-		}
-		
-		return languageRefSetCode;
 	}
 	
 	/**

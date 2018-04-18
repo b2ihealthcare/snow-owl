@@ -60,6 +60,7 @@ import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -561,7 +562,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Exporting SNOMED CT descriptions into RF1 format");
-			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, includeExtendedDescriptionTypes).execute();
+			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, Concepts.REFSET_LANGUAGE_TYPE_UK, includeExtendedDescriptionTypes).execute();
 			
 			if (monitor.isCanceled()) {
 				return;

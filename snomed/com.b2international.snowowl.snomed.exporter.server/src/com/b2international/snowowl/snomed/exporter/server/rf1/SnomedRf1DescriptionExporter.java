@@ -33,11 +33,9 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
@@ -109,15 +107,16 @@ public class SnomedRf1DescriptionExporter extends AbstractSnomedRf1CoreExporter<
 	
 	private Id2Rf1PropertyMapper mapper;
 	private final Set<String> undefinedDescriptionTypeIds = Sets.newHashSet();
-	private String preferredLanguageId;
+	private final String preferredLanguageId;
 	private boolean includeExtendedDescriptionTypes;
 	
 	public SnomedRf1DescriptionExporter(final SnomedExportContext exportContext, final RevisionSearcher revisionSearcher,
+			final String preferredLanguageId,
 			final boolean includeExtendedDescriptionTypes) {
 		super(exportContext, SnomedDescriptionIndexEntry.class, revisionSearcher);
 		mapper = exportContext.getId2Rf1PropertyMapper();
 		this.includeExtendedDescriptionTypes = includeExtendedDescriptionTypes;
-		this.preferredLanguageId = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId();
+		this.preferredLanguageId = preferredLanguageId;
 	}
 	
 	@Override

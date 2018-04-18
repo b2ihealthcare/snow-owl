@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,13 +53,12 @@ public class CDOTransactionBasedIdProvider implements CDOIDProvider {
 	public CDOID provideCDOID(final Object idOrObject) {
 		
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getByUuid(repositoryUuid);
-		
-		return CDOUtils.apply(new CDOTransactionFunction<CDOID>(connection, branchPath) {
-			@Override protected CDOID apply(final CDOTransaction transaction) {
-				return ((InternalCDOTransaction) transaction).provideCDOID(idOrObject);
-			}
-		});
-		
+		CDOTransaction transaction = connection.createTransaction(branchPath);
+		try {
+			return ((InternalCDOTransaction) transaction).provideCDOID(idOrObject);
+		} finally {
+			transaction.close();
+		}
 	}
 
 }
