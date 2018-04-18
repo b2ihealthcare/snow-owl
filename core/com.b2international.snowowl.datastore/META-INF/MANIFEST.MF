@@ -67,7 +67,6 @@ Export-Package: com.b2international.snowowl.core.internal.validation,
  com.b2international.snowowl.terminologymetadata,
  com.b2international.snowowl.terminologymetadata.impl,
  com.b2international.snowowl.terminologymetadata.util,
- com.b2international.snowowl.terminologymetadata.validation,
  com.b2international.snowowl.terminologyregistry.core.builder,
  com.b2international.snowowl.terminologyregistry.core.request
 Import-Package: org.apache.log4j;version="1.2.15",
