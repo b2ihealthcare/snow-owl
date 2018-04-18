@@ -43,7 +43,7 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -148,7 +148,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
-	private final Cache<String, InitialReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
+	private final Cache<String, ReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
 	private final boolean concreteDomainSupportEnabled;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
@@ -224,7 +224,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		taxonomyResultRegistry.put(remoteJobId, reasonerTaxonomy);
 	}
 	
-	public void registerTaxonomyBuilder(String classificationId, InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public void registerTaxonomyBuilder(String classificationId, ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		taxonomyBuilderRegistry.put(classificationId, checkNotNull(reasonerTaxonomyBuilder));
 	}
 
@@ -259,7 +259,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private GetResultResponseChanges doGetResult(String classificationId, ReasonerTaxonomy taxonomy) {
 		
 		IBranchPath branchPath = taxonomy.getBranchPath();
-		InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
+		ReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
 		
 		ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
@@ -303,7 +303,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				
 				// look up all CDEs from the original relationship and add them as inferred
 				if (concreteDomainSupportEnabled) {
-					Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatementConcreteDomainFragments(subject.getStatementId());
+					Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(subject.getStatementId());
 					
 					for (ConcreteDomainFragment concreteDomainElementIndexEntry : relationshipConcreteDomainElements) {
 						
@@ -439,7 +439,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	@Override 
 	public PersistChangesResponse persistChanges(String classificationId, String userId) {
 		ReasonerTaxonomy taxonomy = taxonomyResultRegistry.getIfPresent(classificationId);
-		InitialReasonerTaxonomyBuilder taxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
+		ReasonerTaxonomyBuilder taxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
 		
 		if (null == taxonomy) {
 			return new PersistChangesResponse(Type.NOT_AVAILABLE);
@@ -465,7 +465,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		return response;
 	}
 
-	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId) throws OperationLockException, InterruptedException {
+	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, ReasonerTaxonomyBuilder taxonomyBuilder, String userId) 
+			throws OperationLockException, InterruptedException {
 		
 		String persistJobId = SnomedReasonerRequests.preparePersistChanges()
 				.setClassificationId(classificationId)

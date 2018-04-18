@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 
 /**
@@ -32,7 +32,7 @@ public final class PersistChangesRequestBuilder extends BaseRequestBuilder<Persi
 	private String classificationId;
 	private ReasonerTaxonomy taxonomy;
 	private String userId;
-	private InitialReasonerTaxonomyBuilder taxonomyBuilder;
+	private ReasonerTaxonomyBuilder taxonomyBuilder;
 
 	public PersistChangesRequestBuilder setClassificationId(String classificationId) {
 		this.classificationId = classificationId;
@@ -49,7 +49,7 @@ public final class PersistChangesRequestBuilder extends BaseRequestBuilder<Persi
 		return getSelf();
 	}
 
-	public PersistChangesRequestBuilder setTaxonomyBuilder(InitialReasonerTaxonomyBuilder taxonomyBuilder) {
+	public PersistChangesRequestBuilder setTaxonomyBuilder(ReasonerTaxonomyBuilder taxonomyBuilder) {
 		this.taxonomyBuilder = taxonomyBuilder;
 		return getSelf();
 	}

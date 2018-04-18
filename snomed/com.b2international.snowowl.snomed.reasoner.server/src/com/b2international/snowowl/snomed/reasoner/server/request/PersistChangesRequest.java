@@ -48,7 +48,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -83,14 +83,14 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 	@JsonProperty
 	private final String classificationId;
 	private final String userId;
-	private final InitialReasonerTaxonomyBuilder taxonomyBuilder;
+	private final ReasonerTaxonomyBuilder taxonomyBuilder;
 
 	private ReasonerTaxonomy taxonomy;
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 	private LongSet statedDescendantsOfSmp;
 
-	PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId) {
+	PersistChangesRequest(String classificationId, ReasonerTaxonomy taxonomy, ReasonerTaxonomyBuilder taxonomyBuilder, String userId) {
 		this.classificationId = classificationId;
 		this.taxonomy = taxonomy;
 		this.taxonomyBuilder = taxonomyBuilder;

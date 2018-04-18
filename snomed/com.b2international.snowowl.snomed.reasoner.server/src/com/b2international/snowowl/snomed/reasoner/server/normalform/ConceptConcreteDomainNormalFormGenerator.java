@@ -29,7 +29,7 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
@@ -43,19 +43,19 @@ public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerato
 	
 	private final LongKeyMap<Set<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 
-	public ConceptConcreteDomainNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public ConceptConcreteDomainNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
 	}
 
 	@Override
 	public Collection<ConcreteDomainFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getInferredConceptConcreteDomainFragments(conceptId);
+		return reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
 	}
 	
 	@Override
 	public Collection<ConcreteDomainFragment> getGeneratedComponents(final long conceptId) {
 		
-		final Set<ConcreteDomainFragment> computedItems = newHashSet(reasonerTaxonomyBuilder.getConceptConcreteDomainFragments(conceptId));
+		final Set<ConcreteDomainFragment> computedItems = newHashSet(reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(conceptId));
 		final LongSet parents = reasonerTaxonomy.getParents(conceptId);
 		
 		for (final LongIterator itr = parents.iterator(); itr.hasNext(); /* empty */) {
