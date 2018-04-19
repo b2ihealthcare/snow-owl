@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
+import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,16 +36,16 @@ public class GetEquivalentConceptsResponse extends AbstractResponse implements S
 	 * Creates a new response with the specified type and an empty list of equivalence sets.
 	 */
 	public GetEquivalentConceptsResponse() {
-		this(ImmutableList.<AbstractEquivalenceSet>of());
+		this(ImmutableList.of());
 	}
 
 	/**
 	 * Creates a new response with the specified type and list of equivalence sets.
 	 * @param equivalenceSets the list of equivalence sets found during classification
 	 */
-	public GetEquivalentConceptsResponse(final List<? extends AbstractEquivalenceSet> equivalenceSets) {
+	public GetEquivalentConceptsResponse(final List<AbstractEquivalenceSet> equivalenceSets) {
 		super(equivalenceSets == null ? Type.NOT_AVAILABLE : Type.SUCCESS);
-		this.equivalenceSets = ImmutableList.copyOf(equivalenceSets);
+		this.equivalenceSets = Collections3.toImmutableList(equivalenceSets);
 	}
 
 	/**
