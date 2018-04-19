@@ -28,8 +28,11 @@ import java.util.stream.Stream;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -82,7 +85,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 
 	protected abstract String[] getHeader();
 
-	protected abstract SnomedSearchRequestBuilder<B, R> createSearchRequestBuilder();
+	protected abstract B createSearchRequestBuilder();
 
 	protected abstract Stream<List<String>> getMappedStream(R results, RepositoryContext context, String branch);
 
@@ -117,43 +120,30 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				// We want to append rows, if the file already exists, so jump to the end
 				fileChannel.position(fileChannel.size());
 
-				String scrollId = null;
-				R results = null;
-
-				while (results == null || !results.isEmpty()) {
-
-					/* 
-					 * XXX: createSearchRequestBuilder() should handle namespace/language code filtering, if applicable;
-					 * we will only handle the effective time and module filters here.
-					 */
-					final SnomedSearchRequestBuilder<B, R> requestBuilder = createSearchRequestBuilder()
-							.setLimit(BATCH_SIZE)
-							.filterByModules(modules); // null value will be ignored
-
-					if (scrollId == null) {
-						requestBuilder.setScroll("15m");
-					} else {
-						requestBuilder.setScrollId(scrollId);
-					}
-					
-//					if (effectiveTime == Long.MIN_VALUE) {
-//						// For snapshot exports, no effective time-based filtering is needed
-//					} else if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-//						// If we are in the final "layer", export only components if the effective time is not set
-//						requestBuilder.filterByEffectiveTime(effectiveTime);
-//					} else {
-//						// Version branches might include updated content; we will export them at this point
-//						requestBuilder.filterByEffectiveTime(effectiveTime, Long.MAX_VALUE);
-//					}
-					if (effectiveTimeStart != 0 || effectiveTimeEnd != Long.MAX_VALUE) {
-						requestBuilder.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd);
-					}
-
-					final RevisionIndexReadRequest<R> indexReadRequest = new RevisionIndexReadRequest<>(requestBuilder.build());
+				/* 
+				 * XXX: createSearchRequestBuilder() should handle namespace/language code filtering, if applicable;
+				 * we will only handle the effective time and module filters here.
+				 */
+				final B requestBuilder = createSearchRequestBuilder()
+						.filterByModules(modules) // null value will be ignored
+						.setLimit(BATCH_SIZE)
+						.setScroll("15m");
+				
+				if (effectiveTimeStart != 0 || effectiveTimeEnd != Long.MAX_VALUE) {
+					requestBuilder.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd);
+				}
+				
+				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
+					final Request<BranchContext, R> scrolledRequest = scrolledBuilder.build();
+					final RevisionIndexReadRequest<R> indexReadRequest = new RevisionIndexReadRequest<>(scrolledRequest);
 					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, indexReadRequest);
-					results = branchRequest.execute(context);
-
-					getMappedStream(results, context, branch).forEachOrdered(row -> {
+					return branchRequest.execute(context);
+				});
+				
+				while (iterator.hasNext()) {
+					final R hits = iterator.next();
+					
+					getMappedStream(hits, context, branch).forEachOrdered(row -> {
 						try {
 							fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
 							fileChannel.write(toByteBuffer(CR_LF));
@@ -161,8 +151,6 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 							throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
 						}
 					});
-
-					scrollId = results.getScrollId();
 				}
 			}
 		}
