@@ -230,7 +230,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						added++;
 					}
 					
-					if (added > limit || changed > limit) {
+					if (added > limit && changed > limit) {
 						break;
 					}
 				
@@ -295,7 +295,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					
 				} // deletedOrChangedHits
 				
-				if (added > limit || changed > limit || deleted > limit) {
+				if (added > limit && changed > limit && deleted > limit) {
 					break;
 				}
 				
