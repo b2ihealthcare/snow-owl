@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.CharMatcher;
@@ -247,7 +246,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	}
 
 	@Override
-	protected SnomedSearchRequestBuilder<SnomedRefSetMemberSearchRequestBuilder, SnomedReferenceSetMembers> createSearchRequestBuilder() {
+	protected SnomedRefSetMemberSearchRequestBuilder createSearchRequestBuilder() {
 		final Set<String> referenceSetIds = referenceSets.stream()
 				.map(c -> c.getId())
 				.collect(Collectors.toSet());
