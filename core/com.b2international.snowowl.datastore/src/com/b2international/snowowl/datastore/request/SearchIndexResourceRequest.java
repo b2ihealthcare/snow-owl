@@ -61,7 +61,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		final Expression where = prepareQuery(context);
 		final Hits<D> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(docType, fields(), scrollId()));
+			hits = searcher.scroll(new Scroll<>(docType, docType, fields(), scrollId(), scrollKeepAlive()));
 		} else {
 			hits = searcher.search(Query.select(docType)
 					.fields(fields())
