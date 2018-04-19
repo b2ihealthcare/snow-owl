@@ -18,6 +18,7 @@ package com.b2international.index;
 import java.util.List;
 
 import com.b2international.index.query.Query;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.0
@@ -35,14 +36,14 @@ public final class Scroll<T> {
 	}
 	
 	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId) {
-		this(select, from, fields, scrollId, Query.DEFAULT_SCROLL_KEEP_ALIVE);
+		this(select, from, fields, scrollId, null);
 	}
 	
 	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId, String keepAlive) {
 		this.select = select;
 		this.from = from;
 		this.scrollId = scrollId;
-		this.keepAlive = keepAlive;
+		this.keepAlive = Strings.isNullOrEmpty(keepAlive) ? Query.DEFAULT_SCROLL_KEEP_ALIVE : keepAlive;
 		this.fields = fields;
 	}
 	
