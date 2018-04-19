@@ -152,6 +152,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			int added = 0;
 			int changed = 0;
 			int deleted = 0;
+
+			LongSet newOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
+			LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
+			LongSet deletedOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
+			// Don't need to keep track of deleted-or-changed hashes
 			
 			// query all registered revision types for new, changed and deleted components
 			for (Class<? extends Revision> type : typesToCompare) {
@@ -168,8 +173,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				
 				for (final Hits<String[]> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
 					
-					final LongSet newOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					final LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
+					newOrChangedKeys.clear();
+					newOrChangedHashes.clear();
 
 					for (final String[] newOrChangedHit : newOrChangedHits) {
 						final long storageKey = Long.parseLong(newOrChangedHit[0]);
@@ -246,8 +251,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				
 				for (Hits<String[]> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
 					
-					final LongSet deletedOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
-					// Don't need to keep track of hashes here
+					deletedOrChangedKeys.clear();
 
 					for (String[] deletedOrChanged : deletedOrChangedHits) {
 						final long storageKey = Long.parseLong(deletedOrChanged[0]);
