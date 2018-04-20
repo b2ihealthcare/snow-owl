@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -47,6 +50,7 @@ import com.google.common.base.Joiner;
  */
 public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R extends PageableCollectionResource<C>, C extends SnomedComponent> {
 
+	private static final Logger LOG = LoggerFactory.getLogger("rf2.export");
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
 	
 	private static final String CR_LF = "\r\n";
@@ -110,6 +114,9 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final long effectiveTimeStart, 
 			final long effectiveTimeEnd,
 			final Set<String> visitedComponentEffectiveTimes) throws IOException {
+
+		LOG.info("Exporting {} from {} branch...", getFileName(), branch);
+		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
 		Files.createDirectories(exportFileDirectory);
