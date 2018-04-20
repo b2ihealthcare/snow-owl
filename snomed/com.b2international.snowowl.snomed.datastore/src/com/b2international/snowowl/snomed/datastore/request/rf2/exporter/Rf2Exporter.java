@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -102,7 +103,13 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 		return component.isActive() ? "1" : "0";
 	}
 
-	public final void exportBranch(final Path releaseDirectory, final RepositoryContext context, final String branch, final long effectiveTimeStart, final long effectiveTimeEnd) throws IOException {
+	public final void exportBranch(
+			final Path releaseDirectory, 
+			final RepositoryContext context, 
+			final String branch, 
+			final long effectiveTimeStart, 
+			final long effectiveTimeEnd,
+			final Set<String> visitedComponentEffectiveTimes) throws IOException {
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
 		Files.createDirectories(exportFileDirectory);
@@ -144,14 +151,22 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				while (iterator.hasNext()) {
 					final R hits = iterator.next();
 					
-					getMappedStream(hits, context, branch).forEachOrdered(row -> {
-						try {
-							fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
-							fileChannel.write(toByteBuffer(CR_LF));
-						} catch (final IOException e) {
-							throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
-						}
-					});
+					getMappedStream(hits, context, branch)
+						.forEachOrdered(row -> {
+							String id = row.get(0);
+							String effectiveTime = row.get(1);
+							
+							if (!visitedComponentEffectiveTimes.add(String.format("%s_%s", id, effectiveTime))) {
+								return;
+							}
+							
+							try {
+								fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
+								fileChannel.write(toByteBuffer(CR_LF));
+							} catch (final IOException e) {
+								throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
+							}
+						});
 				}
 			}
 		}
