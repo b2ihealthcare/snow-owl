@@ -120,18 +120,19 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				// We want to append rows, if the file already exists, so jump to the end
 				fileChannel.position(fileChannel.size());
 
-				/* 
-				 * XXX: createSearchRequestBuilder() should handle namespace/language code filtering, if applicable;
-				 * we will only handle the effective time and module filters here.
+				/*
+				 * XXX: createSearchRequestBuilder() should handle namespace/language code
+				 * filtering, if applicable; we will only handle the effective time and module
+				 * filters here.
+				 * 
+				 * An effective time filter is always set, even if not in delta mode, to prevent
+				 * exporting unpublished content twice.
 				 */
 				final B requestBuilder = createSearchRequestBuilder()
 						.filterByModules(modules) // null value will be ignored
+						.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
 						.setLimit(BATCH_SIZE)
 						.setScroll("15m");
-				
-				if (effectiveTimeStart != 0 || effectiveTimeEnd != Long.MAX_VALUE) {
-					requestBuilder.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd);
-				}
 				
 				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
 					final Request<BranchContext, R> scrolledRequest = scrolledBuilder.build();
