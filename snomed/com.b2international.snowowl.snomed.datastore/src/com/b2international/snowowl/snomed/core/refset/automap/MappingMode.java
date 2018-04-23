@@ -13,18 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 /**
- * Common class to collect common automap columns.
- * @since 3.1
+ * Enumeration to represent the mapping mode of an {@link AutoMapEntry}.
+ * 
  */
-public class RefSetAutoMapColumnConstants {
+public enum MappingMode {
+	/**
+	 * No mapping.
+	 */
+	EMPTY(""),
+
+	/**
+	 * Manual mapping.
+	 */
+	MANUALLY_REVISED("Revised"),
+
+	/**
+	 * Automatic mapping.
+	 */
+	AUTOMAPPED("Auto");
 	
-	public static final String ID_COLUMN = "ID";
-	public static final String LABEL_COLUMN = "Label";
+	private final String text;
 	
-	private RefSetAutoMapColumnConstants() {
-		// Prevent instantiation
+	private MappingMode(String text) {
+		this.text = text;
+	}
+	
+	@Override
+	public String toString() {
+		return text;
 	}
 }

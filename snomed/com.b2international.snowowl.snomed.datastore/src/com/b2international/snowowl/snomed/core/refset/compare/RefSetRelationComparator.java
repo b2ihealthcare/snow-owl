@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.compare;
+package com.b2international.snowowl.snomed.core.refset.compare;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,12 +25,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.semanticengine.simpleast.subsumption.SubsumptionTester;
-import com.b2international.snowowl.snomed.datastore.index.SnomedHierarchy;
+import com.b2international.snowowl.snomed.core.refset.compare.ReferencedComponentDelta.DeltaKind;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.refset.core.compare.ReferencedComponentDelta.DeltaKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -42,12 +41,6 @@ import com.google.common.collect.Sets;
  * 
  */
 public class RefSetRelationComparator {
-
-	private final SubsumptionTester subsumptionTester;
-
-	public RefSetRelationComparator(final String branch) {
-		this.subsumptionTester = new SubsumptionTester(branch);
-	}
 
 	/**
 	 * Compare the predicate reference set to the candidate reference set.
@@ -93,17 +86,8 @@ public class RefSetRelationComparator {
 
 	private final class AddedOrRelatedReferencedComponentDeltaFunction implements Function<SnomedConceptDocument, Collection<ReferencedComponentDelta>> {
 		private final Collection<SnomedConceptDocument> referencedComponents;
-		private SnomedHierarchy hierarchy;
 
 		public AddedOrRelatedReferencedComponentDeltaFunction(Collection<SnomedConceptDocument> referencedComponents) {
-			final Runnable initBuilder = new Runnable() {
-				@Override public void run() {
-					// TODO convert comparator to request class
-					hierarchy = SnomedHierarchy.forBranch(BranchPathUtils.createMainPath());
-				}
-			};
-			
-			initBuilder.run();
 			this.referencedComponents = referencedComponents;
 		}
 
@@ -129,8 +113,11 @@ public class RefSetRelationComparator {
 			return componentDeltas;
 		}
 
-		private boolean isSubsumed(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {
-			return subsumptionTester.isSubsumed(Long.parseLong(refComponentId.getId()), Long.parseLong(id.getId()), hierarchy);
+		private boolean isSubsumed(SnomedConceptDocument predicate, SnomedConceptDocument candidate) {
+			final LongSet inferredAncestors = PrimitiveSets.newLongOpenHashSet();
+			inferredAncestors.addAll(candidate.getParents());
+			inferredAncestors.addAll(candidate.getAncestors());
+			return inferredAncestors.contains(Long.parseLong(predicate.getId()));
 		}
 
 		private boolean isRelated(SnomedConceptDocument refComponentId, SnomedConceptDocument id) {

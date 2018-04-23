@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -38,7 +38,7 @@ import org.eclipse.core.runtime.Path;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.snomed.refset.core.SnomedRefsetCoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -75,7 +75,7 @@ public class RefSetAutoMapPersisterUtil {
 
 			return file;
 		}  catch (UnsupportedEncodingException e) {
-			ApplicationContext.handleException(SnomedRefsetCoreActivator.getContext().getBundle(), e, e.getMessage());
+			ApplicationContext.handleException(SnomedDatastoreActivator.getContext().getBundle(), e, e.getMessage());
 		} finally {
 			Closeables.closeQuietly(is);
 		}
@@ -99,7 +99,7 @@ public class RefSetAutoMapPersisterUtil {
 
 			return savedFile;
 		} catch (SnowowlServiceException e) {
-			ApplicationContext.handleException(SnomedRefsetCoreActivator.getContext().getBundle(), e, e.getMessage());
+			ApplicationContext.handleException(SnomedDatastoreActivator.getContext().getBundle(), e, e.getMessage());
 		} finally {
 			Closeables.closeQuietly(is);
 		}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.derivation;
+package com.b2international.snowowl.snomed.core.refset;
 
 /**
  * Model for simple type refset to simple type refset derivation.

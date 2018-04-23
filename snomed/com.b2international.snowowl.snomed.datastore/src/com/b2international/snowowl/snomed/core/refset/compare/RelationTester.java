@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.compare;
+package com.b2international.snowowl.snomed.core.refset.compare;
 
 import java.util.List;
 import java.util.Set;

@@ -13,31 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 /**
- * Enumeration to represent the mapping mode of an {@link AutoMapEntry}.
+ * Enumeration to represent the state of an {@link AutoMapEntry}.
  * 
  */
-public enum MappingMode {
+public enum MappingState {
 	/**
-	 * No mapping.
+	 * The mapping has not been accepted (yet).
 	 */
-	EMPTY(""),
-
+	NOT_ACCEPTED("Not accepted"),
+	
 	/**
-	 * Manual mapping.
+	 * The mapping has been manually accepted.
 	 */
-	MANUALLY_REVISED("Revised"),
-
-	/**
-	 * Automatic mapping.
-	 */
-	AUTOMAPPED("Auto");
+	ACCEPTED("Accepted");
 	
 	private final String text;
 	
-	private MappingMode(String text) {
+	private MappingState(String text) {
 		this.text = text;
 	}
 	

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

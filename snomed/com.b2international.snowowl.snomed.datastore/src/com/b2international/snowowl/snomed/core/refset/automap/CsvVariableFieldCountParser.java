@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,7 +32,7 @@ import com.b2international.commons.csv.RecordLexerCallback;
 import com.b2international.commons.csv.RecordParserCallback;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.snomed.refset.core.SnomedRefsetCoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.Lists;
 
 /**
@@ -72,7 +72,7 @@ public class CsvVariableFieldCountParser implements ITableParser {
 			this.lexerCallback = new VariableFieldSizeLexerCallback();
 			this.lexer = new CsvLexer(reader, settings, lexerCallback);
 		} catch (FileNotFoundException e) {
-			ApplicationContext.handleException(SnomedRefsetCoreActivator.getContext().getBundle(), e, e.getMessage());
+			ApplicationContext.handleException(SnomedDatastoreActivator.getContext().getBundle(), e, e.getMessage());
 		}
 	}
 	

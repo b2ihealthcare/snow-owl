@@ -13,31 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.refset.core.automap;
+package com.b2international.snowowl.snomed.core.refset.automap;
 
 /**
- * Enumeration to represent the state of an {@link AutoMapEntry}.
- * 
+ * Common class to collect common automap columns.
+ * @since 3.1
  */
-public enum MappingState {
-	/**
-	 * The mapping has not been accepted (yet).
-	 */
-	NOT_ACCEPTED("Not accepted"),
+public class RefSetAutoMapColumnConstants {
 	
-	/**
-	 * The mapping has been manually accepted.
-	 */
-	ACCEPTED("Accepted");
+	public static final String ID_COLUMN = "ID";
+	public static final String LABEL_COLUMN = "Label";
 	
-	private final String text;
-	
-	private MappingState(String text) {
-		this.text = text;
-	}
-	
-	@Override
-	public String toString() {
-		return text;
+	private RefSetAutoMapColumnConstants() {
+		// Prevent instantiation
 	}
 }
