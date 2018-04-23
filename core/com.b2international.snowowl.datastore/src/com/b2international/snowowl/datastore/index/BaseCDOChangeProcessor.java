@@ -49,7 +49,6 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
@@ -149,7 +148,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		for (final CodeSystem newCodeSystem : newCodeSystems) {
 			final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
 			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(ICodeSystem.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
+			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
 		}
 
 		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
@@ -161,7 +160,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		for (final CodeSystem dirtyCodeSystem : dirtyCodeSystems) {
 			final CodeSystemEntry entry = CodeSystemEntry.builder(dirtyCodeSystem).build();
 			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(ICodeSystem.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
+			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
 		}
 
 		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {

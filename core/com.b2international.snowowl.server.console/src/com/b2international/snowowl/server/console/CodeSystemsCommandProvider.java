@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -50,7 +50,7 @@ import com.google.common.collect.Ordering;
  */
 public class CodeSystemsCommandProvider implements CommandProvider {
 
-	private static final Ordering<ICodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(ICodeSystem::getShortName);
+	private static final Ordering<CodeSystemEntry> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystemEntry::getShortName);
 	
 	private static final String VERSIONS_COMMAND = "versions";
 	private static final String DETAILS_COMMAND = "details";
@@ -112,7 +112,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		ICodeSystem codeSystem = getCodeSystemById(codeSystemShortName);
+		CodeSystemEntry codeSystem = getCodeSystemById(codeSystemShortName);
 		
 		if (codeSystem == null) {
 			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemShortName));
@@ -153,7 +153,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 			return;
 		}
 		
-		ICodeSystem codeSystem = getCodeSystemById(codeSystemNameOrId);
+		CodeSystemEntry codeSystem = getCodeSystemById(codeSystemNameOrId);
 		
 		if (codeSystem == null) {
 			interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemNameOrId));
@@ -171,7 +171,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 		interpreter.print(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInformation(input))));
 	}
 	
-	private String getCodeSystemInformation(ICodeSystem codeSystem) {
+	private String getCodeSystemInformation(CodeSystemEntry codeSystem) {
 		StringBuilder builder = new StringBuilder();
 		builder
 			.append("Name: ").append(codeSystem.getName()).append("\n")
@@ -197,7 +197,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 		return builder.toString();
 	}
 
-	private ICodeSystem getCodeSystemById(String shortNameOrOid) {
+	private CodeSystemEntry getCodeSystemById(String shortNameOrOid) {
 		checkNotNull(shortNameOrOid, "Shortname Or OID parameter may not be null.");
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
@@ -219,14 +219,14 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 				.getSync();
 	}
 	
-	private List<ICodeSystem> getCodeSystems() {
+	private List<CodeSystemEntry> getCodeSystems() {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
-					final List<ICodeSystem> codeSystems = newArrayList();
+					final List<CodeSystemEntry> codeSystems = newArrayList();
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
 						codeSystems.addAll(result.getItems());
 					}

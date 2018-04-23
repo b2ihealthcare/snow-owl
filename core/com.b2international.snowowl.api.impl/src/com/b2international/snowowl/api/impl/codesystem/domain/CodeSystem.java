@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.api.impl.codesystem.domain;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -31,7 +32,7 @@ public class CodeSystem implements ICodeSystem {
 		return new Builder();
 	}
 	
-	public static Builder builder(final com.b2international.snowowl.datastore.ICodeSystem input) {
+	public static Builder builder(final CodeSystemEntry input) {
 		return builder()
 				.oid(input.getOid())
 				.name(input.getName())
