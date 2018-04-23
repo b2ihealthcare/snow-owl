@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,15 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	EXTENDED_MAP(10, "EXTENDED_MAP", "EXTENDED_MAP");
+	EXTENDED_MAP(10, "EXTENDED_MAP", "EXTENDED_MAP"), 
+	
+	/**
+	 * Simple map type with map target description included.
+	 * @see #SIMPLE_MAP_WITH_DESCRIPTION_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	SIMPLE_MAP_WITH_DESCRIPTION(11, "SIMPLE_MAP_WITH_DESCRIPTION", "SIMPLE_MAP_WITH_DESCRIPTION");
 
 	/**
 	 * The '<em><b>SIMPLE</b></em>' literal value.
@@ -222,6 +230,21 @@ public enum SnomedRefSetType implements Enumerator {
 	public static final int EXTENDED_MAP_VALUE = 10;
 
 	/**
+	 * The '<em><b>SIMPLE MAP WITH DESCRIPTION</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>SIMPLE MAP WITH DESCRIPTION</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #SIMPLE_MAP_WITH_DESCRIPTION
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int SIMPLE_MAP_WITH_DESCRIPTION_VALUE = 11;
+
+	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -240,6 +263,7 @@ public enum SnomedRefSetType implements Enumerator {
 			ASSOCIATION,
 			MODULE_DEPENDENCY,
 			EXTENDED_MAP,
+			SIMPLE_MAP_WITH_DESCRIPTION,
 		};
 
 	/**
@@ -295,6 +319,7 @@ public enum SnomedRefSetType implements Enumerator {
 			case ASSOCIATION_VALUE: return ASSOCIATION;
 			case MODULE_DEPENDENCY_VALUE: return MODULE_DEPENDENCY;
 			case EXTENDED_MAP_VALUE: return EXTENDED_MAP;
+			case SIMPLE_MAP_WITH_DESCRIPTION_VALUE: return SIMPLE_MAP_WITH_DESCRIPTION;
 		}
 		return null;
 	}

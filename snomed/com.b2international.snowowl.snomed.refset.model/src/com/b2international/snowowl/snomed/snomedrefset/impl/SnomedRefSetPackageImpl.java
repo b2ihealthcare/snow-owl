@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -960,6 +960,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ASSOCIATION);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MODULE_DEPENDENCY);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.EXTENDED_MAP);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
 
 		initEEnum(dataTypeEEnum, DataType.class, "DataType");
 		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);
