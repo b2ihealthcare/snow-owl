@@ -102,6 +102,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			SnomedRefSetType.CONCRETE_DATA_TYPE, 
 			SnomedRefSetType.SIMPLE, 
 			SnomedRefSetType.SIMPLE_MAP,
+			SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
 			SnomedRefSetType.COMPLEX_MAP, 
 			SnomedRefSetType.EXTENDED_MAP,
 			SnomedRefSetType.QUERY);
@@ -115,7 +116,8 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			SnomedRefSetType.ATTRIBUTE_VALUE,
 			SnomedRefSetType.ASSOCIATION,
 			SnomedRefSetType.LANGUAGE,
-			SnomedRefSetType.SIMPLE_MAP);
+			SnomedRefSetType.SIMPLE_MAP,
+			SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
 	
 	protected final SnomedEditingContext snomedEditingContext;
 
