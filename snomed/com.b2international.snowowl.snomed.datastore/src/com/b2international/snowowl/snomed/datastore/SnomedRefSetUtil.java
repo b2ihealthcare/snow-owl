@@ -16,60 +16,42 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.ATTRIBUTE_VALUE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.COMPLEX_MAP;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.EXTENDED_MAP;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.QUERY;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
+import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.BooleanUtils;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.common.collect.ImmutableSet.Builder;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
  */
 public abstract class SnomedRefSetUtil {
-
-	private static final SnomedRefSetType[] REF_SET_VIEW_ROOTS = new SnomedRefSetType[] {
-		ATTRIBUTE_VALUE, 
-		COMPLEX_MAP, 
-		DESCRIPTION_TYPE, 
-		QUERY, 
-		SIMPLE_MAP, 
-		SIMPLE,
-		EXTENDED_MAP
-	};
 
 	/***
 	 * Mapping between the association indication reference set IDs and the human readable names instead of
@@ -192,27 +174,6 @@ public abstract class SnomedRefSetUtil {
 				throw new IllegalArgumentException("Unsupported reference set type: " + type);
 		}
 	}
-
-	public static String getSpecificCondition(final SnomedRefSetType type) {
-		
-		switch (type) {
-			case COMPLEX_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP: //$FALL-THROUGH$
-			case EXTENDED_MAP:
-				return "MAPTARGETID";
-			case ATTRIBUTE_VALUE:
-				return "VALUEID";
-			case QUERY:
-				return "QUERY";
-			case SIMPLE: //$FALL-THROUGH$
-			case LANGUAGE:
-				return "ACCEPTABILITYID";
-			case DESCRIPTION_TYPE:
-				return "DESCRIPTIONFORMAT";
-			default:
-				throw new IllegalArgumentException("Unsupported reference set type: " + type);
-		}
-	}
 	
 	/**
 	 * Returns with the identifier concept ID of the concrete domain reference set specified by the data type enumeration.
@@ -237,82 +198,43 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 	
-	public static short getSpecialFieldComponentTypeId(final SnomedRefSetType type) {
-		
-		switch (Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null")) {
-			
-			case LANGUAGE://$FALL-THROUGH$
-			case ASSOCIATION://$FALL-THROUGH$
-			case DESCRIPTION_TYPE://$FALL-THROUGH$
-			case ATTRIBUTE_VALUE:
-				return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-			case QUERY://$FALL-THROUGH$
-			case SIMPLE://$FALL-THROUGH$
-			case MODULE_DEPENDENCY://$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE:
-				return CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
-			case SIMPLE_MAP://$FALL-THROUGH$
-			case COMPLEX_MAP://$FALL-THROUGH$
-			case EXTENDED_MAP:
-				throw new UnsupportedOperationException("Cannot specify special field concept type ID for mapping type reference sets.");
-			default:
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
-		}
-		
-	}
-	
 	/**
-	 * Returns with the unique index field name of  the <i>special field</i> ID.
-	 * <br>Returns with {@code null} in case of {@link SnomedRefSetType#SIMPLE}.
-	 * @param type the reference set type.
-	 * @return the unique index field name for storing the <i>special field</>i ID.
+	 * Attempts to retrieve the reference set type associated with the specified
+	 * ancestor concept in the reference set hierarchy.
+	 * <p>
+	 * <b>Note</b>: Certain reference set types do not have a corresponding (fixed) common
+	 * ancestor, and so will not be returned by this method, eg.: "concrete domain",
+	 * "simple map with map target description"
+	 * 
+	 * @param conceptId the concept ID to find a corresponding reference set type for
+	 * @return the detected reference set type, or <code>null</code>
 	 */
-//	@Nullable public static String getSpecialComponentIdIndexField(final SnomedRefSetType type) {
-//		Preconditions.checkNotNull(type, "SNOMED CT reference set type argument cannot be null.");
-//		switch (type) {
-//			case ASSOCIATION:
-//				return SnomedMappings.memberTargetComponentId().fieldName();
-//			case ATTRIBUTE_VALUE:
-//				return SnomedMappings.memberValueId().fieldName();
-//			case COMPLEX_MAP: //$FALL-THROUGH$
-//			case EXTENDED_MAP:
-//				return SnomedMappings.memberMapTargetComponentId().fieldName();
-//			case CONCRETE_DATA_TYPE:
-//				// FIXME: The previous value was memberDataTypeOrdinal, but this seems to fit better
-//				return SnomedMappings.memberSerializedValue().fieldName(); 
-//			case DESCRIPTION_TYPE:
-//				return SnomedMappings.memberDescriptionFormatId().fieldName();
-//			case LANGUAGE:
-//				return SnomedMappings.memberAcceptabilityId().fieldName();
-//			case QUERY:
-//				return SnomedMappings.memberQuery().fieldName();
-//			case SIMPLE:
-//				return null; //intentionally null.
-//			case SIMPLE_MAP:
-//				return SnomedMappings.memberMapTargetComponentId().fieldName();
-//			case MODULE_DEPENDENCY:
-//				return null;
-//			default: throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + type);
-//		}
-//	}
-	
-	// concrete domain reference set members should not be shown in the UI.
 	public static SnomedRefSetType getByConceptId(String conceptId) {
 		switch (conceptId) {
-		case Concepts.REFSET_ATTRIBUTE_VALUE_TYPE: return SnomedRefSetType.ATTRIBUTE_VALUE;
-		case Concepts.REFSET_LANGUAGE_TYPE: return SnomedRefSetType.LANGUAGE;
-		case Concepts.REFSET_QUERY_SPECIFICATION_TYPE: return SnomedRefSetType.QUERY;
-		case Concepts.SDD_DRUG_REFERENCE_SET:
-		case Concepts.REFSET_SIMPLE_MAP_TYPE: return SnomedRefSetType.SIMPLE_MAP;
-		case Concepts.SDD_SIMPLE_TYPE_REFERENCE_SET:
-		case Concepts.REFSET_SIMPLE_TYPE: return SnomedRefSetType.SIMPLE;
-		case Concepts.REFSET_COMPLEX_MAP_TYPE: return SnomedRefSetType.COMPLEX_MAP;
-		case Concepts.EXTENDED_MAP_TYPE: return SnomedRefSetType.EXTENDED_MAP;
-		case Concepts.REFSET_DESCRIPTION_TYPE: return SnomedRefSetType.DESCRIPTION_TYPE;
-		case Concepts.REFSET_ASSOCIATION_TYPE: return SnomedRefSetType.ASSOCIATION;
-		case Concepts.REFSET_MODULE_DEPENDENCY_TYPE: return SnomedRefSetType.MODULE_DEPENDENCY;
-		
-		default: return null;
+			case Concepts.REFSET_ATTRIBUTE_VALUE_TYPE: 
+				return SnomedRefSetType.ATTRIBUTE_VALUE;
+			case Concepts.REFSET_LANGUAGE_TYPE: 
+				return SnomedRefSetType.LANGUAGE;
+			case Concepts.REFSET_QUERY_SPECIFICATION_TYPE: 
+				return SnomedRefSetType.QUERY;
+			case Concepts.SDD_DRUG_REFERENCE_SET: //$FALL-THROUGH$
+			case Concepts.REFSET_SIMPLE_MAP_TYPE: 
+				return SnomedRefSetType.SIMPLE_MAP;
+			case Concepts.SDD_SIMPLE_TYPE_REFERENCE_SET: //$FALL-THROUGH$
+			case Concepts.REFSET_SIMPLE_TYPE: 
+				return SnomedRefSetType.SIMPLE;
+			case Concepts.REFSET_COMPLEX_MAP_TYPE: 
+				return SnomedRefSetType.COMPLEX_MAP;
+			case Concepts.EXTENDED_MAP_TYPE: 
+				return SnomedRefSetType.EXTENDED_MAP;
+			case Concepts.REFSET_DESCRIPTION_TYPE: 
+				return SnomedRefSetType.DESCRIPTION_TYPE;
+			case Concepts.REFSET_ASSOCIATION_TYPE: 
+				return SnomedRefSetType.ASSOCIATION;
+			case Concepts.REFSET_MODULE_DEPENDENCY_TYPE: 
+				return SnomedRefSetType.MODULE_DEPENDENCY;
+			default: 
+				return null;
 		}
 	}
 
@@ -322,7 +244,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return {@code true} if the reference set type is complex or extended map type, otherwise returns with {@code false}.
 	 */
 	public static boolean isComplexMapping(final SnomedRefSetType type) {
-		return COMPLEX_MAP.equals(type)
+		return COMPLEX_MAP.equals(type) 
 				|| EXTENDED_MAP.equals(type);
 	}
 	
@@ -343,10 +265,6 @@ public abstract class SnomedRefSetUtil {
 		return QUERY.equals(check(refSet).getType());
 	}
 	
-	public static Iterable<SnomedRefSetType> getTypesForUI() {
-		return new LinkedHashSet<SnomedRefSetType>(Arrays.asList(REF_SET_VIEW_ROOTS));
-	}
-
 	/**
 	 * Returns a human-readable label for the specified reference set type.
 	 * 
@@ -407,18 +325,6 @@ public abstract class SnomedRefSetUtil {
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}
-	}
-	
-	/**
-	 * Returns concept IDs of the currently known and handled reference set types.
-	 * @return
-	 */
-	public static Collection<String> getUIRefSetTypeConceptIds() {
-		final Builder<String> ids = ImmutableSet.builder();
-		for (SnomedRefSetType type : getTypesForUI()) {
-			ids.add(getConceptId(type));
-		}
-		return ids.build();
 	}
 	
 	@SuppressWarnings("unchecked")
