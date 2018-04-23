@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public final class Rf2Format {
 			.add(new Rf2LanguageRefSetContentType())
 			// -map
 			.add(new Rf2SimpleMapRefSetContentType())
+			.add(new Rf2SimpleMapWithDescriptionContentType())
 			.add(new Rf2ComplexMapRefSetContentType())
 			.add(new Rf2ExtendedMapRefSetContentType())
 			// -metadata
@@ -50,7 +51,4 @@ public final class Rf2Format {
 	public static List<Rf2ContentType<?>> getContentTypes() {
 		return CONTENT_TYPES;
 	}
-
-	
-	
 }

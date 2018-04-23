@@ -379,12 +379,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			return SnomedRefSetFactory.eINSTANCE.createSnomedAttributeValueRefSetMember();
 		case DESCRIPTION_TYPE: 
 			return SnomedRefSetFactory.eINSTANCE.createSnomedDescriptionTypeRefSetMember();
-		case COMPLEX_MAP:
+		case COMPLEX_MAP: //$FALL-THROUGH$
 		case EXTENDED_MAP: 
 			return SnomedRefSetFactory.eINSTANCE.createSnomedComplexMapRefSetMember();
 		case LANGUAGE: 
 			return SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-		case SIMPLE_MAP: 
+		case SIMPLE_MAP: //$FALL-THROUGH$ 
+		case SIMPLE_MAP_WITH_DESCRIPTION:
 			return SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
 		case MODULE_DEPENDENCY:
 			return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
@@ -462,17 +463,20 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
 					.withMapCategoryId((String) properties.get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
 					.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
-					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
-					.withMapTargetDescription((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION));
+					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
 			break;
 		case LANGUAGE: 
 			builder = SnomedComponents.newLanguageMember()
 					.withAcceptability(Acceptability.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)));
 			break;
-		case SIMPLE_MAP: 
+		case SIMPLE_MAP_WITH_DESCRIPTION: 
 			builder = SnomedComponents.newSimpleMapMember()
 					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
 					.withMapTargetDescription((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION));
+			break;
+		case SIMPLE_MAP: 
+			builder = SnomedComponents.newSimpleMapMember()
+					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
 			break;
 		case MODULE_DEPENDENCY:
 			builder = SnomedComponents.newModuleDependencyMember()
@@ -492,5 +496,4 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				.withReferencedComponent(rf2Component.getReferencedComponent().getId())
 				.withRefSet(rf2Component.getReferenceSetId());
 	}
-	
 }
