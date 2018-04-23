@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,6 +91,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 				return RF2_CONTENT_REFERENCE_SET_RELATIVE_DIR;
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case COMPLEX_MAP: 
 				return RF2_MAP_REFERENCE_SET_RELATIVE_DIR;
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
@@ -103,7 +104,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 	}
 	
 	@Override
-	public String getFileName() {
+	public final String getFileName() {
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), getRefsetName(), refset);
 	}
 
@@ -126,9 +127,4 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 			})
 			.getSync();
 	}
-	
-	protected SnomedReferenceSet getRefset() {
-		return refset;
-	}
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
+import static com.google.common.base.Strings.nullToEmpty;
+
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -22,11 +24,14 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 
 /**
- * SNOMED CT simple map type reference set exporter.
+ * SNOMED CT simple map type reference set exporter, that also includes an extra
+ * column for the baked-in map target description.
+ * 
+ * @since 6.5
  */
-public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
+public class SnomedSimpleMapWithDescriptionRefSetExporter extends SnomedRefSetExporter {
 
-	public SnomedSimpleMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
+	public SnomedSimpleMapWithDescriptionRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
 		super(exportContext, refset, revisionSearcher);
 	}
 
@@ -36,11 +41,13 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(super.convertToString(doc));
 		sb.append(HT);
 		sb.append(doc.getMapTarget());
+		sb.append(HT);
+		sb.append(nullToEmpty(doc.getMapTargetDescription()));
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+		return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
 	}
 }
