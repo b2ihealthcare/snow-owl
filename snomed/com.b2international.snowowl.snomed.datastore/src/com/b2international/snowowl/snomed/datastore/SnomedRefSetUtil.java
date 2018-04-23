@@ -58,7 +58,6 @@ import com.google.common.collect.ImmutableSet.Builder;
 
 /** 
  * Utility class collecting commons operations related to SNOMED CT reference sets. 
- *
  */
 public abstract class SnomedRefSetUtil {
 
@@ -145,7 +144,8 @@ public abstract class SnomedRefSetUtil {
 			case COMPLEX_MAP: //$FALL-THROUGH$
 			case EXTENDED_MAP:
 				return SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER;
-			case SIMPLE_MAP:
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
 			case QUERY:
 				return SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER;
@@ -169,7 +169,6 @@ public abstract class SnomedRefSetUtil {
 	));
 	
 	public static String getTableName(final SnomedRefSetType type) {
-		
 		switch (type) {
 			case SIMPLE:
 				return "SNOMEDREFSET_SNOMEDREFSETMEMBER";
@@ -177,7 +176,8 @@ public abstract class SnomedRefSetUtil {
 				return "SNOMEDREFSET_SNOMEDATTRIBUTEVALUEREFSETMEMBER";
 			case LANGUAGE:
 				return "SNOMEDREFSET_SNOMEDLANGUAGEREFSETMEMBER";
-			case SIMPLE_MAP:
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
 				return "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER";
 			case QUERY:
 				return "SNOMEDREFSET_SNOMEDQUERYREFSETMEMBER";
@@ -333,6 +333,7 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static boolean isMapping(final SnomedRefSetType type) {
 		return SIMPLE_MAP.equals(type) 
+				|| SIMPLE_MAP_WITH_DESCRIPTION.equals(type)
 				|| COMPLEX_MAP.equals(type)
 				|| EXTENDED_MAP.equals(type);
 	}
@@ -347,9 +348,9 @@ public abstract class SnomedRefSetUtil {
 	}
 
 	/**
-	 * Get the type dependent label
+	 * Returns a human-readable label for the specified reference set type.
 	 * 
-	 * @param type SnomedRefSetType
+	 * @param type
 	 * @return
 	 */
 	public static String getTypeLabel(SnomedRefSetType type) {
@@ -359,6 +360,7 @@ public abstract class SnomedRefSetUtil {
 			case LANGUAGE: return "Language type reference set";
 			case QUERY: return "Query type reference set";
 			case SIMPLE_MAP: return "Simple map type reference set";
+			case SIMPLE_MAP_WITH_DESCRIPTION: return "Simple map type with map target description";
 			case SIMPLE: return "Simple type reference set";
 			case COMPLEX_MAP: return "Complex map type reference set";
 			case EXTENDED_MAP: return "Extended map type reference set";
@@ -371,9 +373,13 @@ public abstract class SnomedRefSetUtil {
 		}
 	}
 
-	//concrete domain reference set members should not be shown in the UI.
+	/**
+	 * Returns the identifier concept ancestor for the specified reference set type.
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public static String getConceptId(SnomedRefSetType type) {
-		
 		switch (type) {
 			case ATTRIBUTE_VALUE:
 				return Concepts.REFSET_ATTRIBUTE_VALUE_TYPE;
@@ -381,7 +387,8 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_LANGUAGE_TYPE;
 			case QUERY:
 				return Concepts.REFSET_QUERY_SPECIFICATION_TYPE;
-			case SIMPLE_MAP:
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return Concepts.REFSET_SIMPLE_MAP_TYPE;
 			case SIMPLE:
 				return Concepts.REFSET_SIMPLE_TYPE;
