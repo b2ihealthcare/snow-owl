@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMemb
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefSetImporter<SimpleMapRefSetRow> {
+/**
+ * @since 6.5
+ */
+public class SnomedSimpleMapWithDescriptionRefSetImporter extends AbstractSnomedMapTypeRefSetImporter<SimpleMapRefSetRow> {
 
 	private static final Map<String, CellProcessor> CELL_PROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(AssociatingRefSetRow.PROP_UUID, new ParseUuid())
@@ -49,6 +52,8 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 			.put(AssociatingRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
 			.put(AssociatingRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
 			.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
+			.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
+			.put(SimpleMapRefSetRow.PROP_MAP_TARGET_DESCRIPTION, NullObjectPattern.INSTANCE)
 			.build();
 	
 	public static final List<IndexConfiguration> INDEXES = ImmutableList.<IndexConfiguration>builder()
@@ -60,19 +65,19 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 			.build();
 	
 	private static final SnomedImportConfiguration<SimpleMapRefSetRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<SimpleMapRefSetRow>(
-			ComponentImportType.SIMPLE_MAP_TYPE_REFSET, 
+			ComponentImportType.SIMPLE_MAP_TYPE_REFSET_WITH_DESCRIPTION, 
 			CELL_PROCESSOR_MAPPING, 
 			SimpleMapRefSetRow.class, 
-			SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER, 
+			SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION, 
 			INDEXES); 
 	
-	public SnomedSimpleMapTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
+	public SnomedSimpleMapWithDescriptionRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
 		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 	
 	@Override
 	protected SnomedRefSetType getRefSetType() {
-		return SnomedRefSetType.SIMPLE_MAP;
+		return SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 	}
 
 	@Override
@@ -89,6 +94,7 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 		member.setModuleId(row.getModuleId());
 		member.setReferencedComponentId(row.getReferencedComponentId());
 		member.setMapTargetComponentId(row.getAssociatedComponentId());
+		member.setMapTargetComponentDescription(((SimpleMapRefSetRow) row).getMapTargetDescription());
 	}
 	
 	@Override
