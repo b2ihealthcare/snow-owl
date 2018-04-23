@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -78,7 +75,6 @@ import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -90,8 +86,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -566,7 +560,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Check if concept is already released, and this is not a forced delete
 		if (concept.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", toString(concept)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", concept.getId()));
 			return;
 		}
 		
@@ -578,7 +572,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				
 				if (deletionPlan.isRejected()) {
 					deletionPlan.addRejectionReason(
-							String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE, toString(concept), toString(relationship)));
+							String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE, concept.getId(), relationship.getId()));
 					return;
 				}
 				
@@ -607,7 +601,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 		// Check if description is already released, and this is not a forced delete
 		if (description.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", toString(description)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", description.getId()));
 			return;
 		}
 		
@@ -618,7 +612,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Check if relationship is already released, and this is not a forced delete
 		if (relationship.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", relationship.getId()));
 			return;
 		}
 		
@@ -672,19 +666,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.getSync();
 	}
 
-	private String toString(final Component component) {
-		final String id = getAttribute(component, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
-		if (component instanceof Concept) {
-			return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(component), id);
-		} else if (component instanceof Description) {
-			return getAttribute(component, SnomedPackage.eINSTANCE.getDescription_Term(), String.class);
-		} else if (component instanceof Relationship) {
-			return getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(createPath(component), id); 
-		} else {
-			return id;
-		}
-	}
-	
 	/**
 	 * @return the module concept specified in the preferences, or falls back to the <em>SNOMED CT core module</em>
 	 * concept if the specified concept is not found.
