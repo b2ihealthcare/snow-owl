@@ -325,6 +325,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	 * @param version the version to check.
 	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
 	 */
+	@JsonIgnore
 	public boolean isLatestVersion() {
 		return MAIN_BRANCH.equals(getVersionId());
 	}
