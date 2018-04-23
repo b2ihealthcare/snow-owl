@@ -14,11 +14,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.server.serviceconfig.TagServiceConfigJob"
-            id="com.b2international.snowowl.datastore.server.serviceconfig.TagServiceConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.server.serviceconfig.DatastoreOperationLockManagerConfigJob"
             id="com.b2international.snowowl.datastore.server.serviceconfig.DatastoreOperationLockManagerConfigJob"
             terminologyId="UNSPECIFIED">

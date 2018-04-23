@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request.version;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CREATE_VERSION;
-import static com.b2international.snowowl.datastore.version.TagConfigurationBuilder.createForToolingId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Iterables.tryFind;
@@ -40,6 +38,7 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -60,8 +59,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
-import com.b2international.snowowl.datastore.version.ITagConfiguration;
-import com.b2international.snowowl.datastore.version.ITagService;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.IVersioningManager;
 import com.b2international.snowowl.datastore.version.PublishOperationConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
@@ -271,12 +269,16 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	/**Performs the tagging in the repository. Creates the corresponding branches and sets up the index infrastructure.*/
 	private void doTag(final String user, final Map<String, Boolean> performTagPerToolingFeatures, final IProgressMonitor monitor) {
-		final ITagService tagService = getServiceForClass(ITagService.class);
-
 		for (final String toolingId : toolingIds) {
 			if (performTagPerToolingFeatures.get(toolingId)) {
-				final ITagConfiguration tagConfiguration = createTagConfiguration(user, toolingId);
-				tagService.tag(tagConfiguration);
+				RepositoryRequests
+					.branching()
+					.prepareCreate()
+					.setParent(parentBranchPath)
+					.setName(versionId)
+					.build(getRepositoryUuid(toolingId))
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
 				monitor.worked(1);
 			}
 		}
@@ -292,14 +294,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				monitor.worked(1);
 			}
 		}
-	}
-	
-	private ITagConfiguration createTagConfiguration(final String user, final String toolingId) {
-		checkNotNull(toolingId, "toolingId");
-		return createForToolingId(toolingId, versionId)
-				.setUserId(user)
-				.setBranchPath(BranchPathUtils.createPath(parentBranchPath))
-				.build();
 	}
 	
 	private Map<String, Collection<CodeSystemVersionEntry>> getExistingVersions(ServiceProvider context) {
