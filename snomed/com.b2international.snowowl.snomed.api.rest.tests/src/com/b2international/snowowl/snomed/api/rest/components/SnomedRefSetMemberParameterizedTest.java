@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,17 +63,18 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION  		}, 
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE	}, 
+			{ 	SnomedRefSetType.ASSOCIATION  					},
+			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				},
 			//  Concrete data type reference sets are tested separately
-			{ 	SnomedRefSetType.COMPLEX_MAP		},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE	}, 
-			{ 	SnomedRefSetType.EXTENDED_MAP		},
-			{ 	SnomedRefSetType.LANGUAGE			},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY	},
-			//  Query type reference sets are tested separately 
-			{ 	SnomedRefSetType.SIMPLE				}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP			}, 
+			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.DESCRIPTION_TYPE				},
+			{ 	SnomedRefSetType.EXTENDED_MAP					},
+			{ 	SnomedRefSetType.LANGUAGE						},
+			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
+			//  Query type reference sets are tested separately
+			{ 	SnomedRefSetType.SIMPLE							},
+			{ 	SnomedRefSetType.SIMPLE_MAP						},
+			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	},
 		});
 	}
 
@@ -329,7 +330,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		case SIMPLE_MAP:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget")
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "simpleMapTargetDescription")
+					.build();
+		case SIMPLE_MAP_WITH_DESCRIPTION:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
 					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
@@ -384,7 +389,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		case SIMPLE_MAP:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2")
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "simpleMapTargetDescription2")
+					.build();
+		case SIMPLE_MAP_WITH_DESCRIPTION:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget2")
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription2")
 					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
@@ -402,7 +411,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_VALUE_ID, "")
 					.build();
 		case COMPLEX_MAP:
-			// SnomedRf2Headers.FIELD_MAP_PRIORITY is not set
+			// Invalid because FIELD_MAP_PRIORITY is not set
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget")
 					.put(SnomedRf2Headers.FIELD_MAP_GROUP, (byte) 0)
@@ -430,13 +439,18 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, "")
 					.build();
 		case MODULE_DEPENDENCY:
-			// SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME is not set
+			// Invalid because FIELD_TARGET_EFFECTIVE_TIME is not set
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20170222")
 					.build();
 		case SIMPLE_MAP:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
+					.build();
+		case SIMPLE_MAP_WITH_DESCRIPTION:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
 					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");

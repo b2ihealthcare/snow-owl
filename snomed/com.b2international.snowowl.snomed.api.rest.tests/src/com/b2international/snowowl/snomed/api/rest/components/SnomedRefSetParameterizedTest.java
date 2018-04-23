@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,17 +65,18 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION		}, 
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE	}, 
+			{ 	SnomedRefSetType.ASSOCIATION					}, 
+			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
 			//  Concrete data type reference sets are tested separately 
-			{ 	SnomedRefSetType.COMPLEX_MAP		},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE	}, 
-			{ 	SnomedRefSetType.EXTENDED_MAP		},
-			{ 	SnomedRefSetType.LANGUAGE			},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY	},
-			{ 	SnomedRefSetType.QUERY				}, 
-			{ 	SnomedRefSetType.SIMPLE				}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP			}, 
+			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
+			{ 	SnomedRefSetType.EXTENDED_MAP					},
+			{ 	SnomedRefSetType.LANGUAGE						},
+			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
+			{ 	SnomedRefSetType.QUERY							}, 
+			{ 	SnomedRefSetType.SIMPLE							}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
 		});
 	}
 
@@ -143,5 +144,4 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 		return createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody);
 	}
-
 }
