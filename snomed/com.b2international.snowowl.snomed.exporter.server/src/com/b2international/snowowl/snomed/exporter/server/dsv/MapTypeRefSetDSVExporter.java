@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -224,14 +223,13 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return buffer.toString();
 	}
 
+	// FIXME: Restore fetching map target labels from external terminology if map target type (code system/version?) is set
 	private String getExportItemForConcept(final SnomedRefSetMemberIndexEntry member, final SnomedDsvExportItemType type, Map<String, String> labelMap) {
 		switch (type) {
 			case REFERENCED_COMPONENT:
 				return labelMap.get(member.getReferencedComponentId());
 			case REFERENCED_COMPONENT_ID:
 				return member.getReferencedComponentId();
-			case MAP_TARGET:
-				return member.getMapTarget();
 			case MAP_TARGET_ID:
 				return member.getMapTarget();
 			case STATUS_ID:

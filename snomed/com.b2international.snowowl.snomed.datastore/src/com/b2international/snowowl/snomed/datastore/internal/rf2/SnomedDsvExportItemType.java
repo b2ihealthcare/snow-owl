@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ public enum SnomedDsvExportItemType {
 	DEFINITION_STATUS("Definition status"), 
 	REFERENCED_COMPONENT("Referenced component"), 
 	REFERENCED_COMPONENT_ID("Referenced component ID"), 
-	MAP_TARGET("Map target"),
 	MAP_TARGET_DESCRIPTION("Map target description"),
 	MAP_TARGET_ID("Map target ID"), 
 	MODULE_LABEL("Module label"), 
