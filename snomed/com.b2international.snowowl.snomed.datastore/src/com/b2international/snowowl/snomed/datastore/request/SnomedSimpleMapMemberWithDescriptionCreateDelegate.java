@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,21 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * @since 5.0
+ * @since 6.5
  */
-final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
+final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRefSetMemberCreateDelegate {
 
-	SnomedSimpleMapMemberCreateDelegate(SnomedRefSetMemberCreateRequest request) {
+	SnomedSimpleMapMemberWithDescriptionCreateDelegate(SnomedRefSetMemberCreateRequest request) {
 		super(request);
 	}
 
 	@Override
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
-		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP);
+		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
 
@@ -51,6 +52,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 				.withModule(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withMapTargetId(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET))
+				.withMapTargetDescription(Strings.nullToEmpty(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)))
 				.addTo(context);
 
 		return member.getUuid();

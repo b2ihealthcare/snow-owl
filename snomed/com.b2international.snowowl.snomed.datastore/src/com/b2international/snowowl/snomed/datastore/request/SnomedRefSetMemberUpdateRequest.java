@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,8 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 				return new SnomedSimpleMemberUpdateDelegate(this);
 			case SIMPLE_MAP:
 				return new SnomedSimpleMapMemberUpdateDelegate(this);
+			case SIMPLE_MAP_WITH_DESCRIPTION:
+				return new SnomedSimpleMapMemberWithDescriptionUpdateDelegate(this);
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}
