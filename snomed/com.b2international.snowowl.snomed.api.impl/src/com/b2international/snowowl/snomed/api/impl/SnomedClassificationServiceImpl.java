@@ -196,9 +196,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 						case NOT_AVAILABLE: 
 							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.FAILED);
 							break;
-						case STALE: 
-							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.STALE);
-							break;
 						case SUCCESS:
 							indexService.updateClassificationRunStatus(remoteJob.getId(), ClassificationStatus.COMPLETED, result.getChanges());
 							break;
@@ -435,7 +432,6 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 
 		switch (persistChanges.getType()) {
 			case NOT_AVAILABLE:
-			case STALE:
 				saveStatus = ClassificationStatus.STALE;
 				break;
 			case SUCCESS:

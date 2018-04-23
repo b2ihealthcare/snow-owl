@@ -71,8 +71,11 @@ public abstract class ClassifyOperation<T> {
 					case CANCEL_REQUESTED:
 						break;
 					case FINISHED:
-						deleteEntry();
-						return processResults(getClassificationId());
+						try {
+							return processResults(getClassificationId());
+						} finally {
+							deleteEntry();
+						}
 					case CANCELED:
 						deleteEntry();
 						throw new OperationCanceledException();

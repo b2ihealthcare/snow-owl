@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ public class ReasonerTaxonomy implements Serializable {
 
 	private final IBranchPath branchPath;
 	private final long elapsedTimeMillis;
-	private volatile boolean stale = false;
 	
 	public ReasonerTaxonomy(final IBranchPath branchPath, final long elapsedTimeMillis) {
 		this.branchPath = branchPath;
@@ -69,14 +68,6 @@ public class ReasonerTaxonomy implements Serializable {
 		return elapsedTimeMillis;
 	}
 
-	public void setStale() {
-		this.stale = true;
-	}
-	
-	public boolean isStale() {
-		return stale;
-	}
-	
 	public void addEquivalentConceptIds(final LongSet conceptIds) {
 		String persistedEquivalentId = SnomedRequests.prepareSearchConcept()
 					.one()
