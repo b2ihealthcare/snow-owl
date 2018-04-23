@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,18 +88,19 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		final SnomedRefSet refSet;
 		
 		switch (type) {
-			case SIMPLE:
-			case QUERY:
-			case DESCRIPTION_TYPE:
+			case SIMPLE: //$FALL-THROUGH$
+			case QUERY: //$FALL-THROUGH$
+			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case MODULE_DEPENDENCY:
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:
 				refSet = createConcreteDomainRefSet(context);
 				break;
-			case COMPLEX_MAP:
-			case EXTENDED_MAP:
-			case SIMPLE_MAP:
+			case COMPLEX_MAP: //$FALL-THROUGH$
+			case EXTENDED_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION:
 				refSet = createMappingRefSet(context);
 				break;
 			case ASSOCIATION:
@@ -152,5 +153,4 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 				.withIdentifierConceptId(identifierId)
 				.build(context);
 	}
-
 }
