@@ -23,11 +23,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.serviceconfig.CodeSystemServiceClientConfigJob"
-            id="com.b2international.snowowl.datastore.serviceconfig.CodeSystemServiceClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
             id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
             terminologyId="UNSPECIFIED">

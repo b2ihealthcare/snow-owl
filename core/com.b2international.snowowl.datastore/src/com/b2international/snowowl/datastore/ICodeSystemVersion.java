@@ -37,12 +37,6 @@ public interface ICodeSystemVersion extends Serializable {
 	/**Constant for {@value} artefacts.*/
 	String UNVERSIONED = "Unversioned";
 	
-	/**Constant representing a version in the repository without any content.
-	 *<br>Such version branches has to be created while initializing the repository on the very first time.
-	 *<p>ID: {@value}
-	 *@deprecated will be removed after 3.5*/
-	String INITIAL_STATE = "init";
-
 	/**Timestamp indicating that a version branch has not been modified since the corresponding {@link ICodeSystemVersion} has been created.*/
 	long NOT_MODIFIED_YET_LAST_UPDATE_TIME = EffectiveTimes.UNSET_EFFECTIVE_TIME;
 	

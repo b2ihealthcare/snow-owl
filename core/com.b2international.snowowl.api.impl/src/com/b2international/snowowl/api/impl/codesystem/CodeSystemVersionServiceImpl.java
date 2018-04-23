@@ -16,7 +16,6 @@
 package com.b2international.snowowl.api.impl.codesystem;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Date;
@@ -41,6 +40,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningService;
@@ -54,26 +54,21 @@ import com.google.common.collect.Ordering;
 
 public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 
-	private static final Function<? super com.b2international.snowowl.datastore.ICodeSystemVersion, ICodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = 
-			new Function<com.b2international.snowowl.datastore.ICodeSystemVersion, ICodeSystemVersion>() {
-
-		@Override
-		public ICodeSystemVersion apply(final com.b2international.snowowl.datastore.ICodeSystemVersion input) {
-			final CodeSystemVersion result = new CodeSystemVersion();
-			result.setDescription(input.getDescription());
-			result.setEffectiveDate(toDate(input.getEffectiveDate()));
-			result.setImportDate(toDate(input.getImportDate()));
-			result.setLastModificationDate(toDate(input.getLatestUpdateDate()));
-			result.setParentBranchPath(input.getParentBranchPath());
-			result.setPatched(input.isPatched());
-			result.setVersion(input.getVersionId());
-			return result;
-		}
-
-		private Date toDate(final long timeStamp) {
-			return timeStamp >= 0L ? new Date(timeStamp) : null;
-		}
+	private static final Function<CodeSystemVersionEntry, ICodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = (input) -> {
+		final CodeSystemVersion result = new CodeSystemVersion();
+		result.setDescription(input.getDescription());
+		result.setEffectiveDate(toDate(input.getEffectiveDate()));
+		result.setImportDate(toDate(input.getImportDate()));
+		result.setLastModificationDate(toDate(input.getLatestUpdateDate()));
+		result.setParentBranchPath(input.getParentBranchPath());
+		result.setPatched(input.isPatched());
+		result.setVersion(input.getVersionId());
+		return result;
 	};
+	
+	private static Date toDate(final long timeStamp) {
+		return timeStamp >= 0L ? new Date(timeStamp) : null;
+	}
 
 	private static final Ordering<ICodeSystemVersion> VERSION_ID_ORDERING = Ordering.natural().onResultOf(new Function<ICodeSystemVersion, String>() {
 		@Override
@@ -86,7 +81,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	public List<ICodeSystemVersion> getCodeSystemVersions(final String shortName) {
 		checkNotNull(shortName, "Short name may not be null.");
 		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid()); 
+		final Collection<CodeSystemVersionEntry> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid()); 
 		return toSortedCodeSystemVersionList(versions);
 	}
 	
@@ -108,7 +103,7 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 				.execute(getEventBus())
 				.getSync();
 		
-		final com.b2international.snowowl.datastore.ICodeSystemVersion version = Iterables.getOnlyElement(versions, null);
+		final CodeSystemVersionEntry version = Iterables.getOnlyElement(versions, null);
 		if (version == null) {
 			throw new CodeSystemVersionNotFoundException(versionId);
 		} else {
@@ -120,9 +115,9 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	public ICodeSystemVersion createVersion(String shortName, ICodeSystemVersionProperties properties) {
 		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		final String terminologyId = "com.b2international.snowowl.terminology.snomed";
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid());
-		final ImmutableMap<String, Collection<com.b2international.snowowl.datastore.ICodeSystemVersion>> versionsMap = ImmutableMap
-				.<String, Collection<com.b2international.snowowl.datastore.ICodeSystemVersion>> builder().put(terminologyId, versions).build();
+		final Collection<CodeSystemVersionEntry> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid());
+		final ImmutableMap<String, Collection<CodeSystemVersionEntry>> versionsMap = ImmutableMap
+				.<String, Collection<CodeSystemVersionEntry>> builder().put(terminologyId, versions).build();
 		final VersioningService versioningService = new VersioningService(terminologyId, versionsMap);
 		
 		try {
@@ -180,25 +175,22 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		}
 	}
 
-	private Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> getCodeSystemVersions(final String shortName, final String repositoryId) {
-		final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> result = newHashSet();
-		result.addAll(CodeSystemRequests
+	private Collection<CodeSystemVersionEntry> getCodeSystemVersions(final String shortName, final String repositoryId) {
+		return CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.build(repositoryId)
 				.execute(getEventBus())
 				.getSync()
-				.getItems());
-		return result;
+				.getItems();
 	}
 	
 	private IEventBus getEventBus() {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
-	private List<ICodeSystemVersion> toSortedCodeSystemVersionList(
-			final Collection<com.b2international.snowowl.datastore.ICodeSystemVersion> sourceCodeSystemVersions) {
+	private List<ICodeSystemVersion> toSortedCodeSystemVersionList(final Collection<CodeSystemVersionEntry> sourceCodeSystemVersions) {
 		final Collection<ICodeSystemVersion> targetCodeSystemVersions = Collections2.transform(sourceCodeSystemVersions, CODE_SYSTEM_VERSION_CONVERTER);
 		return VERSION_ID_ORDERING.immutableSortedCopy(targetCodeSystemVersions);
 	}

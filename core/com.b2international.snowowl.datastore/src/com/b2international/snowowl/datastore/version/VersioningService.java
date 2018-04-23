@@ -34,7 +34,6 @@ import static java.util.Collections.unmodifiableMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,6 +61,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.ICodeSystemVersion;
@@ -106,12 +106,11 @@ public class VersioningService implements IVersioningService {
 	/**Application specific reserved words.*/
 	private static final Collection<String> APPLICATION_RESERVED_WORDS = Collections.unmodifiableSet(Sets.newHashSet(
 			IBranchPath.MAIN_BRANCH,
-			ICodeSystemVersion.UNVERSIONED,
-			ICodeSystemVersion.INITIAL_STATE
+			ICodeSystemVersion.UNVERSIONED
 			));
 	
 	
-	private final Map<String, Collection<ICodeSystemVersion>> existingVersions;
+	private final Map<String, Collection<CodeSystemVersionEntry>> existingVersions;
 	private Map<String, DatastoreLockContext> lockContexts;
 	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
 	private final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers;
@@ -137,7 +136,7 @@ public class VersioningService implements IVersioningService {
 		locked = new AtomicBoolean();
 	}
 	
-	public VersioningService(final String toolingId, final Map<String, Collection<ICodeSystemVersion>> existingVersions, final String... otherToolingIds) {
+	public VersioningService(final String toolingId, final Map<String, Collection<CodeSystemVersionEntry>> existingVersions, final String... otherToolingIds) {
 		this.primaryToolingId = toolingId;
 		this.toolingIds = Lists.asList(toolingId, otherToolingIds);
 		this.existingVersions = existingVersions;
@@ -148,7 +147,7 @@ public class VersioningService implements IVersioningService {
 	}
 
 	@Override
-	public Collection<ICodeSystemVersion> getExistingVersions(final String toolingId) {
+	public Collection<CodeSystemVersionEntry> getExistingVersions(final String toolingId) {
 		checkNotNull(toolingId, "toolingId");
 		return existingVersions.get(toolingId);
 	}
@@ -389,16 +388,25 @@ public class VersioningService implements IVersioningService {
 			.headTimestamp();
 	}
 	
-	private HashMap<String, Collection<ICodeSystemVersion>> initExistingVersions(final Iterable<String> toolingIds) {
-		final Map<String , Collection<ICodeSystemVersion>> versions = Maps.newConcurrentMap();
+	private Map<String, Collection<CodeSystemVersionEntry>> initExistingVersions(final Iterable<String> toolingIds) {
+		final Map<String , Collection<CodeSystemVersionEntry>> versions = Maps.newConcurrentMap();
 		ConcurrentCollectionUtils.forEach(toolingIds, new Procedure<String>() {
 			protected void doApply(final String toolingId) {
-				versions.put(toolingId, new VersionCollector(toolingId).getVersions());
+				versions.put(toolingId, getVersions(toolingId));
 			}
 		});
 		return newHashMap(versions);
 	}
 	
+	private Collection<CodeSystemVersionEntry> getVersions(String toolingId) {
+		return CodeSystemRequests.prepareSearchCodeSystemVersion()
+					.all()
+					.build(getRepositoryUuid(toolingId))
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync()
+					.getItems();
+	}
+
 	private Map<String, Supplier<ICodeSystemVersion>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
 		final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers = newHashMap();
 		for (final String toolingId : toolingIds) {

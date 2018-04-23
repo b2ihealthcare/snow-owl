@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import org.eclipse.core.runtime.IStatus;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 
@@ -35,7 +35,7 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 public interface IVersioningService {
 	
 	/**Returns with a collection of already existing versions for a given tooling feature.*/
-	Collection<ICodeSystemVersion> getExistingVersions(final String toolingId);
+	Collection<CodeSystemVersionEntry> getExistingVersions(final String toolingId);
 	
 	/**Configures and applies the given version on the service.*/
 	IStatus configureNewVersionId(final String versionId, final boolean ignoreValidation);
