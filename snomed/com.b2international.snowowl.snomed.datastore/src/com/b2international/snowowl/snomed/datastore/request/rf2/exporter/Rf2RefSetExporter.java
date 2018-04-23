@@ -97,6 +97,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return Paths.get(releaseType.toString(), "Refset", "Content");
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case COMPLEX_MAP:
 				return Paths.get(releaseType.toString(), "Refset", "Map");
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
@@ -124,8 +125,10 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		switch (refSetType) {
 			case SIMPLE: 
 				return "";
-			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
-			case LANGUAGE: //$FALL-THROUGH$
+			case ATTRIBUTE_VALUE:
+				return "c";
+			case LANGUAGE:
+				return "c";
 			case ASSOCIATION:
 				return "c";
 			case CONCRETE_DATA_TYPE: 
@@ -136,6 +139,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "ci";
 			case SIMPLE_MAP: 
 				return "s";
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				return "ss";
 			case COMPLEX_MAP: 
 				return "iisssc";
 			case EXTENDED_MAP: 
@@ -165,6 +170,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case COMPLEX_MAP: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case MODULE_DEPENDENCY: //$FALL-THROUGH$ 
@@ -234,6 +240,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
 			case SIMPLE_MAP: 
 				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
 			case COMPLEX_MAP: 
 				return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
 			case EXTENDED_MAP: 
