@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
@@ -71,7 +71,6 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemVe
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -128,7 +127,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		try ( final ICDOTransactionAggregator aggregator = CDOTransactionAggregator.create(Lists.<CDOTransaction>newArrayList()); ) {
 			final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(toolingIds) + 1);
 			
-			final Map<String, Collection<ICodeSystemVersion>> existingVersions = getExistingVersions(context);
+			final Map<String, Collection<CodeSystemVersionEntry>> existingVersions = getExistingVersions(context);
 			final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences(existingVersions);
 			
 			subMonitor.worked(1);
@@ -243,7 +242,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			final String user,
 			final ICDOTransactionAggregator aggregator,
 			final IProgressMonitor monitor,
-			final Map<String, Collection<ICodeSystemVersion>> existingVersions) throws SnowowlServiceException {
+			final Map<String, Collection<CodeSystemVersionEntry>> existingVersions) throws SnowowlServiceException {
 		try {
 			new CDOServerCommitBuilder(user, getCommitComment(existingVersions), aggregator)
 				.parentContextDescription(CREATE_VERSION)
@@ -258,16 +257,11 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	/**Returns with the commit comment for the version operation. */
-	private String getCommitComment(final Map<String, Collection<ICodeSystemVersion>> existingVersions) {
+	private String getCommitComment(final Map<String, Collection<CodeSystemVersionEntry>> existingVersions) {
 		final String toolingName = getToolingName(primaryToolingId);
-		final Optional<ICodeSystemVersion> optional = FluentIterable
+		final Optional<CodeSystemVersionEntry> optional = FluentIterable
 				.from(existingVersions.get(primaryToolingId))
-				.firstMatch(new Predicate<ICodeSystemVersion>() {
-					@Override
-					public boolean apply(ICodeSystemVersion input) {
-						return input.getVersionId().equals(versionId);
-					}
-				});
+				.firstMatch(input -> input.getVersionId().equals(versionId));
 		if (optional.isPresent()) {
 			return format(ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE, EffectiveTimes.format(effectiveTime), toolingName, versionId);
 		} else {
@@ -308,8 +302,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				.build();
 	}
 	
-	private Map<String, Collection<ICodeSystemVersion>> getExistingVersions(ServiceProvider context) {
-		final Map<String, Collection<ICodeSystemVersion>> existingVersions = Maps.newHashMap();
+	private Map<String, Collection<CodeSystemVersionEntry>> getExistingVersions(ServiceProvider context) {
+		final Map<String, Collection<CodeSystemVersionEntry>> existingVersions = Maps.newHashMap();
 		
 		for (final String toolingId : toolingIds) {
 			final String repositoryId = CodeSystemUtils.getRepositoryUuid(toolingId);
@@ -320,7 +314,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				requestBuilder.filterByCodeSystemShortName(codeSystemShortName);
 			}
 			
-			final Set<ICodeSystemVersion> versions = newHashSet();
+			final Set<CodeSystemVersionEntry> versions = newHashSet();
 			versions.addAll(requestBuilder
 					.all()
 					.build(repositoryId)
@@ -334,15 +328,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		return existingVersions;
 	}
 	
-	private Map<String, Boolean> getTagPreferences(final Map<String, Collection<ICodeSystemVersion>> existingVersions) {
+	private Map<String, Boolean> getTagPreferences(final Map<String, Collection<CodeSystemVersionEntry>> existingVersions) {
 		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap();
 		
 		for (final String toolingId : toolingIds) {
-			shouldPerformTagPerToolingFeature.put(toolingId, !tryFind(existingVersions.get(toolingId), new Predicate<ICodeSystemVersion>() {
-				@Override public boolean apply(final ICodeSystemVersion version) {
-					return checkNotNull(version).getVersionId().equals(versionId);
-				}
-			}).isPresent());
+			shouldPerformTagPerToolingFeature.put(toolingId,
+					!tryFind(existingVersions.get(toolingId), version -> checkNotNull(version).getVersionId().equals(versionId)).isPresent());
 		}
 		
 		return shouldPerformTagPerToolingFeature;

@@ -64,7 +64,6 @@ import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
 import com.b2international.snowowl.datastore.DatastoreActivator;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.LatestCodeSystemVersionUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -79,7 +78,6 @@ import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.validation.TimeValidator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -106,14 +104,14 @@ public class VersioningService implements IVersioningService {
 	/**Application specific reserved words.*/
 	private static final Collection<String> APPLICATION_RESERVED_WORDS = Collections.unmodifiableSet(Sets.newHashSet(
 			IBranchPath.MAIN_BRANCH,
-			ICodeSystemVersion.UNVERSIONED
+			CodeSystemVersionEntry.UNVERSIONED
 			));
 	
 	
 	private final Map<String, Collection<CodeSystemVersionEntry>> existingVersions;
 	private Map<String, DatastoreLockContext> lockContexts;
 	private Map<String, SingleRepositoryAndBranchLockTarget> lockTargets;
-	private final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers;
+	private final Map<String, Supplier<CodeSystemVersionEntry>> currentVersionSuppliers;
 	private final AtomicBoolean locked;
 
 	private final String primaryToolingId; 
@@ -166,7 +164,7 @@ public class VersioningService implements IVersioningService {
 		
 		for (final String toolingId : getToolingIds()) {
 			if (!ignoreValidation) {
-				final Collection<String> existingVersions = Collections2.transform(VersioningService.this.getExistingVersions(toolingId), IVersionCollector.GET_VERSION_NAME_FUNC);
+				final Collection<String> existingVersions = Collections2.transform(VersioningService.this.getExistingVersions(toolingId), CodeSystemVersionEntry::getVersionId);
 				if (existingVersions.contains(versionId)) {
 					return Statuses.error("Name should be unique.");
 				}
@@ -297,20 +295,18 @@ public class VersioningService implements IVersioningService {
 			return new TimeValidator(getMostRecentVersionEffectiveDateTime(toolingId)).validate(effectiveTime);
 		}
 		
-		final List<ICodeSystemVersion> allTagsWithHead = getAllVersionsWithHead(toolingId);
+		final List<CodeSystemVersionEntry> allTagsWithHead = getAllVersionsWithHead(toolingId);
 
-		final ICodeSystemVersion version = checkNotNull(find(allTagsWithHead, new Predicate<ICodeSystemVersion>() {
-			@Override public boolean apply(final ICodeSystemVersion version) {
-				return checkNotNull(versionId, "versionId").equals(version.getVersionId());
-			}
-		}), "Version cannot be found for ID: " + versionId);
+		final CodeSystemVersionEntry version = checkNotNull(
+				find(allTagsWithHead, version1 -> checkNotNull(versionId, "versionId").equals(version1.getVersionId())),
+				"Version cannot be found for ID: " + versionId);
 		
 		return new TimeValidator(version.getEffectiveDate()).validate(effectiveTime);
 		
 	}
 
-	private List<ICodeSystemVersion> getAllVersionsWithHead(final String toolingId) {
-		final List<ICodeSystemVersion> allTagsWithHead = newArrayList(existingVersions.get(toolingId));
+	private List<CodeSystemVersionEntry> getAllVersionsWithHead(final String toolingId) {
+		final List<CodeSystemVersionEntry> allTagsWithHead = newArrayList(existingVersions.get(toolingId));
 		allTagsWithHead.add(0, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(getRepositoryUuid(toolingId)));
 		return allTagsWithHead;
 	}
@@ -332,7 +328,7 @@ public class VersioningService implements IVersioningService {
 			throw new NoChangesException(getRepositoryUuid(toolingId));
 		}
 		
-		final ICodeSystemVersion version = getVersion(toolingId, branchPath.lastSegment());
+		final CodeSystemVersionEntry version = getVersion(toolingId, branchPath.lastSegment());
 		if (null == version) {
 			return;
 		}
@@ -360,18 +356,13 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	@Nullable 
-	private ICodeSystemVersion getVersion(final String toolingId, final String versionId) {
-		final ICodeSystemVersion version = uniqueIndex(getAllVersionsWithHead(toolingId), new Function<ICodeSystemVersion, String>() {
-			public String apply(final ICodeSystemVersion version) {
-				return checkNotNull(version, "version").getVersionId();
-			}
-		}).get(versionId);
-		return version;
+	private CodeSystemVersionEntry getVersion(final String toolingId, final String versionId) {
+		return uniqueIndex(getAllVersionsWithHead(toolingId), CodeSystemVersionEntry::getVersionId).get(versionId);
 	}
 	
 	private long getMostRecentVersionEffectiveDateTime(final String toolingId) {
-		final List<ICodeSystemVersion> versions = newArrayList(existingVersions.get(toolingId));
-		Collections.sort(versions, Collections.reverseOrder(ICodeSystemVersion.VERSION_EFFECTIVE_DATE_COMPARATOR));
+		final List<CodeSystemVersionEntry> versions = newArrayList(existingVersions.get(toolingId));
+		Collections.sort(versions, Collections.reverseOrder(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR));
 		return get(versions, 0).getEffectiveDate();
 	}
 	
@@ -407,15 +398,15 @@ public class VersioningService implements IVersioningService {
 					.getItems();
 	}
 
-	private Map<String, Supplier<ICodeSystemVersion>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
-		final Map<String, Supplier<ICodeSystemVersion>> currentVersionSuppliers = newHashMap();
+	private Map<String, Supplier<CodeSystemVersionEntry>> initCurrentVersionSuppliers(final Iterable<String> toolingIds) {
+		final Map<String, Supplier<CodeSystemVersionEntry>> currentVersionSuppliers = newHashMap();
 		for (final String toolingId : toolingIds) {
 			// TODO on server the active branch is always MAIN, refactor versioning 
 			final String versionIdForTooling = Branch.MAIN_PATH;
-			currentVersionSuppliers.put(toolingId, memoize(new Supplier<ICodeSystemVersion>() {
-				public ICodeSystemVersion get() {
-					return find(getExistingVersions(toolingId), new Predicate<ICodeSystemVersion>() {
-						public boolean apply(final ICodeSystemVersion codeSystemVersion) {
+			currentVersionSuppliers.put(toolingId, memoize(new Supplier<CodeSystemVersionEntry>() {
+				public CodeSystemVersionEntry get() {
+					return find(getExistingVersions(toolingId), new Predicate<CodeSystemVersionEntry>() {
+						public boolean apply(final CodeSystemVersionEntry codeSystemVersion) {
 							return versionIdForTooling.equals(codeSystemVersion.getVersionId());
 						}
 					}, LatestCodeSystemVersionUtils.createLatestCodeSystemVersion(getRepositoryUuid(toolingId)));
@@ -487,11 +478,8 @@ public class VersioningService implements IVersioningService {
 	private Map<String, Boolean> shouldPerformTag() {
 		final Map<String, Boolean> shouldPerformTagPerToolingFeature = newHashMap(); 
 		for (final String toolingId : getToolingIds()) {
-			shouldPerformTagPerToolingFeature.put(toolingId, !tryFind(existingVersions.get(toolingId), new Predicate<ICodeSystemVersion>() {
-				@Override public boolean apply(final ICodeSystemVersion version) {
-					return checkNotNull(version).getVersionId().equals(versionId);
-				}
-			}).isPresent());
+			shouldPerformTagPerToolingFeature.put(toolingId,
+					!tryFind(existingVersions.get(toolingId), version -> checkNotNull(version).getVersionId().equals(versionId)).isPresent());
 		}
 		return shouldPerformTagPerToolingFeature;
 	}
@@ -527,7 +515,7 @@ public class VersioningService implements IVersioningService {
 	}
 	
 	private String getCurrentVersionId(final String toolingId) {
-		final Supplier<ICodeSystemVersion> versionIdSupplier = currentVersionSuppliers.get(checkNotNull(toolingId, "toolingId"));
+		final Supplier<CodeSystemVersionEntry> versionIdSupplier = currentVersionSuppliers.get(checkNotNull(toolingId, "toolingId"));
 		return checkNotNull(versionIdSupplier, "Current version ID supplier does not exist for: " + toolingId).get().getVersionId();
 	}
 	

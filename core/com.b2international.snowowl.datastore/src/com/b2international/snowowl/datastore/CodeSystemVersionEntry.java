@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
+import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Objects;
+import java.util.function.Function;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -27,17 +32,63 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
+import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.primitives.Longs;
 
 /**
  * CDO independent representation of a {@link CodeSystemVersion}.
  */
 @Doc
 @JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
-public class CodeSystemVersionEntry implements ICodeSystemVersion {
+public final class CodeSystemVersionEntry implements Serializable {
 
+	/**
+	 * Unique terminology component identifier for versions.
+	 */
+	public static final short TERMINOLOGY_COMPONENT_ID = 2;
+	
+	/**Constant for {@value} artefacts.*/
+	public static final  String UNVERSIONED = "Unversioned";
+	
+	/**Timestamp indicating that a version branch has not been modified since the corresponding {@link ICodeSystemVersion} has been created.*/
+	public static final long NOT_MODIFIED_YET_LAST_UPDATE_TIME = EffectiveTimes.UNSET_EFFECTIVE_TIME;
+	
+	/**
+	 * This effective time has to be manually set on the {@link TerminologymetadataPackage#getCodeSystemVersion_LastUpdateDate()}
+	 * feature before re-versioning an already existing version.
+	 * <p>This is the workaround to lie to CDO about a change, since the commit timestamp not known at commit time but
+	 * on change processing time.
+	 */
+	public static final Date FAKE_LAST_UPDATE_TIME_DATE = new Date(Dates.MIN_DATE_LONG);
+	
+	/**Comparator for comparing {@link ICodeSystemVersion versions} via {@link ICodeSystemVersion#getEffectiveDate() effective date}s.*/
+	public static final Comparator<CodeSystemVersionEntry> VERSION_EFFECTIVE_DATE_COMPARATOR = new CodeSystemVersionDateComparator(CodeSystemVersionEntry::getEffectiveDate);
+
+	public static final class CodeSystemVersionDateComparator implements Comparator<CodeSystemVersionEntry> {
+		
+		private final Function<CodeSystemVersionEntry, Long> f;
+
+		protected CodeSystemVersionDateComparator(final Function<CodeSystemVersionEntry, Long> f) {
+			this.f = f;
+		}
+		
+		@Override
+		public int compare(final CodeSystemVersionEntry o1, final CodeSystemVersionEntry o2) {
+			if (null == o1) {
+				return null == o2 ? 0 : 1;
+			}
+			if (null == o2) {
+				return -1;
+			}
+			final long time1 = Longs.max(f.apply(o1), Dates.MIN_DATE_LONG);
+			final long time2 = Longs.max(f.apply(o2), Dates.MIN_DATE_LONG);
+			return Longs.compare(time1, time2);
+		}
+	}
+	
 	public static class Fields {
 		public static final String IMPORT_DATE = "importDate";
 		public static final String EFFECTIVE_DATE = "effectiveDate";
@@ -177,68 +228,105 @@ public class CodeSystemVersionEntry implements ICodeSystemVersion {
 		this.storageKey = storageKey;
 	}
 	
-	@Override
+	/**
+	 * @return the code system short name where this version belongs to.
+	 */
 	public String getCodeSystemShortName() {
 		return codeSystemShortName;
 	}
 	
 	/**
-	 * @param patched
-	 * @deprecated - use {@link #builder()} to construct immutable version entry with patch flag set to true 
+	 * Returns with the import date time.
+	 * @return the import date time.
 	 */
-	public void setPatched(boolean patched) {
-		this.patched = patched;
-	}
-
-	@Override
 	public long getImportDate() {
 		return importDate;
 	}
 
-	@Override
+	/**
+	 * Returns with the point in time when the code system version has been modified.
+	 * @return the effective time.
+	 */
 	public long getEffectiveDate() {
 		return effectiveDate;
 	}
 
-	@Override
+	/**
+	 * Returns with the description of the version.
+	 * @return the description.
+	 */
 	public String getDescription() {
 		return description;
 	}
 
-	@Override
+	/**
+	 * Returns with the ID of the code system version.
+	 * @return the version ID.
+	 */
 	public String getVersionId() {
 		return versionId;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the parent branch path where the version branch is forked off
+	 * @return parent branch path
+	 */
 	public String getParentBranchPath() {
 		return parentBranchPath;
 	}
 
-	@Override
+	/**
+	 * Returns with {@code true} if any modifications have been made on 
+	 * the branch associated with the current code system version for
+	 * the terminology or content. Otherwise {@code false}. 
+	 * @return {@code true} if the code system version is patched. Otherwise {@code false}.
+	 */
 	public boolean isPatched() {
 		return patched;
 	}
 
-	@Override
+	/**
+	 * Returns with the timestamp indicating the last modification time of the current version.
+	 * May return with {@link DateUtils#UNSET_EFFECTIVE_TIME} if the current version has not been modified 
+	 * yet. 
+	 * @return the last update date of the current version.
+	 */
 	public long getLatestUpdateDate() {
 		return latestUpdateDate;
 	}
 
-	@Override
+	/**
+	 * Returns with the unique storage key of the version.
+	 * @return the storage key.
+	 */
 	public long getStorageKey() {
 		return storageKey;
 	}
 
-	@Override
+	/**
+	 * Returns with the UUID of the repository where the current version belongs to. 
+	 */
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
 
+	/**
+	 * Returns the full path of this version including the MAIN prefix as well as the version tag.
+	 * @return
+	 */
 	@JsonIgnore
-	@Override
 	public String getPath() {
 		return parentBranchPath + IBranchPath.SEPARATOR_CHAR + versionId;
+	}
+	
+	/**
+	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
+	 * representing the HEAD in the repository.
+	 * @param version the version to check.
+	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
+	 */
+	public boolean isLatestVersion() {
+		return MAIN_BRANCH.equals(getVersionId());
 	}
 
 	@Override

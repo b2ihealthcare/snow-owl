@@ -34,7 +34,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -129,14 +128,14 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 				.getSync()
 				.getItems());
 		
-		Collections.sort(codeSystemVersions, new Comparator<ICodeSystemVersion>() {
-			@Override public int compare(ICodeSystemVersion o1, ICodeSystemVersion o2) {
+		Collections.sort(codeSystemVersions, new Comparator<CodeSystemVersionEntry>() {
+			@Override public int compare(CodeSystemVersionEntry o1, CodeSystemVersionEntry o2) {
 				return Ordering.natural().compare(o1.getEffectiveDate(), o2.getEffectiveDate());
 			}
 		});
 		
-		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).transform(new Function<ICodeSystemVersion, String>() {
-			@Override public String apply(ICodeSystemVersion input) {
+		interpreter.print(Joiner.on("\n").join(FluentIterable.from(codeSystemVersions).transform(new Function<CodeSystemVersionEntry, String>() {
+			@Override public String apply(CodeSystemVersionEntry input) {
 				return getCodeSystemVersionInformation(input);
 			}
 		})));
@@ -183,7 +182,7 @@ public class CodeSystemsCommandProvider implements CommandProvider {
 		return builder.toString();
 	}
 	
-	private String getCodeSystemVersionInformation(ICodeSystemVersion codeSystemVersion) {
+	private String getCodeSystemVersionInformation(CodeSystemVersionEntry codeSystemVersion) {
 		StringBuilder builder = new StringBuilder();
 		builder
 			.append("Version id: ").append(codeSystemVersion.getVersionId()).append("\n")

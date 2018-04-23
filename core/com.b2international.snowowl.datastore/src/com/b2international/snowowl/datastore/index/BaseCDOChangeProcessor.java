@@ -49,7 +49,6 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
@@ -154,7 +153,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
 			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
 			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
+			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
 		}
 
 		for (final CodeSystem dirtyCodeSystem : dirtyCodeSystems) {
@@ -166,20 +165,20 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
 			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
 			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
+			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
 		}
 		
 		// apply code system and version deletions
 		List<String> detachedCodeSystemDocIds = LongToStringFunction.copyOf(detachedCodeSystemIds);
 		indexCommitChangeSet.putRawDeletions(CodeSystemEntry.class, detachedCodeSystemDocIds);
 		detachedCodeSystemDocIds.stream()
-			.map(componentId -> ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, componentId))
+			.map(componentId -> ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, componentId))
 			.forEach(indexCommitChangeSet::putDeletedComponents);
 		
 		List<String> detachedCodeSystemVersionDocIds = LongToStringFunction.copyOf(detachedCodeSystemVersionIds);
 		indexCommitChangeSet.putRawDeletions(CodeSystemVersionEntry.class, detachedCodeSystemVersionDocIds);
 		detachedCodeSystemDocIds.stream()
-			.map(componentId -> ComponentIdentifier.of(ICodeSystemVersion.TERMINOLOGY_COMPONENT_ID, componentId))
+			.map(componentId -> ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, componentId))
 			.forEach(indexCommitChangeSet::putDeletedComponents);
 
 		preUpdateDocuments(commitChangeSet, index);

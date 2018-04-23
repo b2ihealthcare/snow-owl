@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.server.version;
 
 import static com.b2international.commons.collect.LongSets.transform;
-import static com.b2international.snowowl.datastore.ICodeSystemVersion.FAKE_LAST_UPDATE_TIME_DATE;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -49,8 +48,8 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 import com.b2international.snowowl.datastore.version.IPublishManager;
@@ -240,18 +239,18 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	private void setFakeLastUpdateTimeOnExistingVersion(final PublishOperationConfiguration configuration) {
-		final ICodeSystemVersion version = getVersion(configuration);
+		final CodeSystemVersionEntry version = getVersion(configuration);
 		checkNotNull(version, String.format("Code system version cannot be found with ID: %s.", configuration.getVersionId()));
 
 		final CodeSystemVersion codeSystemVersion = (CodeSystemVersion) getObjectIfExists(getTransaction(), version.getStorageKey());
 		checkNotNull(codeSystemVersion, String.format("Code System version does not exist in store. ID: %s, Version ID: %s.",
 				version.getStorageKey(), configuration.getVersionId()));
 		
-		codeSystemVersion.setLastUpdateDate(FAKE_LAST_UPDATE_TIME_DATE);
+		codeSystemVersion.setLastUpdateDate(CodeSystemVersionEntry.FAKE_LAST_UPDATE_TIME_DATE);
 	}
 
 	@Nullable
-	private ICodeSystemVersion getVersion(final PublishOperationConfiguration configuration) {
+	private CodeSystemVersionEntry getVersion(final PublishOperationConfiguration configuration) {
 		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.setLimit(2)

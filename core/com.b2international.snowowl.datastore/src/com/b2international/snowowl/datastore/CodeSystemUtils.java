@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public class CodeSystemUtils {
 	 * @param versions an iterable of code system version.
 	 * @return the matching code system version, or {@code null} if not found.
 	 */
-	@Nullable public static ICodeSystemVersion findMatchingVersion(IBranchPath branchPath, final Iterable<? extends ICodeSystemVersion> versions) {
+	@Nullable public static CodeSystemVersionEntry findMatchingVersion(IBranchPath branchPath, final Iterable<CodeSystemVersionEntry> versions) {
 		
 		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
 		Preconditions.checkNotNull(versions, "Versions argument cannot be null.");
@@ -91,7 +91,7 @@ public class CodeSystemUtils {
 			
 			final String versionIdForRepository = branchPath.lastSegment();
 			
-			for (final ICodeSystemVersion candidate : versions) {
+			for (final CodeSystemVersionEntry candidate : versions) {
 				if (candidate.getVersionId().equals(versionIdForRepository)) {
 					return candidate;
 				}
