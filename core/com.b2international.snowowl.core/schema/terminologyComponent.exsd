@@ -143,6 +143,8 @@ For example:&lt;ul&gt;
                   </enumeration>
                   <enumeration value="SIMPLE_MAP">
                   </enumeration>
+                  <enumeration value="SIMPLE_MAP_WITH_DESCRIPTION">
+                  </enumeration>
                   <enumeration value="QUERY">
                   </enumeration>
                   <enumeration value="LANGUAGE">
@@ -175,6 +177,8 @@ For example:&lt;ul&gt;
             <simpleType>
                <restriction base="string">
                   <enumeration value="SIMPLE_MAP">
+                  </enumeration>
+                  <enumeration value="SIMPLE_MAP_WITH_DESCRIPTION">
                   </enumeration>
                   <enumeration value="COMPLEX_MAP">
                   </enumeration>
