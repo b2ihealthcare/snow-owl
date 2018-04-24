@@ -20,6 +20,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDProvider;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -53,11 +54,12 @@ public class CDOTransactionBasedIdProvider implements CDOIDProvider {
 	public CDOID provideCDOID(final Object idOrObject) {
 		
 		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getByUuid(repositoryUuid);
-		CDOTransaction transaction = connection.createTransaction(branchPath);
+		CDOTransaction transaction = null;
 		try {
+			transaction = connection.createTransaction(branchPath);
 			return ((InternalCDOTransaction) transaction).provideCDOID(idOrObject);
 		} finally {
-			transaction.close();
+			LifecycleUtil.deactivate(transaction);
 		}
 	}
 

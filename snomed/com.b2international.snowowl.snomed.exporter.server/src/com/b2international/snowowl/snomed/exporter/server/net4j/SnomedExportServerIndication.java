@@ -59,10 +59,10 @@ import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -556,7 +556,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Exporting SNOMED CT descriptions into RF1 format");
-			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, Concepts.REFSET_LANGUAGE_TYPE_UK, includeExtendedDescriptionTypes).execute();
+			final String languageRefSetId = SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference().get(0).getLanguageTag());
+			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, languageRefSetId, includeExtendedDescriptionTypes).execute();
 			
 			if (monitor.isCanceled()) {
 				return;
