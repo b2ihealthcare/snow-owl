@@ -30,7 +30,6 @@
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
 		<module>com.b2international.snowowl.snomed.datastore.server</module>
-		<module>com.b2international.snowowl.snomed.refset.core</module>
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
