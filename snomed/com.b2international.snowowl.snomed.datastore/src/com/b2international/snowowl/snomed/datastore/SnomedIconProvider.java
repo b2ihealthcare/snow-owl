@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.ComponentIconProvider;
+import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.collect.Sets;
 
@@ -31,10 +30,8 @@ import com.google.common.collect.Sets;
  * An icon provider for snomed concepts that doesn't have any SWT dependency so it can be used on the server side and
  * with Swing.
  * </p>
- * 
- * 
  */
-public class SnomedIconProvider extends ComponentIconProvider<String> {
+public final class SnomedIconProvider {
 
 	private static final String EXT_PNG = ".png";
 	private static final String SNOMEDICONS_FOLDER = "snomedicons";
@@ -58,22 +55,12 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		return instance;
 	}
 
-	@Override
-	public void refresh() {
-	}
-	
 	/**
-	 * Tries to find the icon id for the selected conceptId, based on information of the
-	 * {@link BranchPathUtils#createActivePath() currently active path}. Returns the ROOT_Concept Icon Id if none found.
-	 * Returns <code>null</code> if the terminology browser not available or the input is <code>null</code>.
-	 * 
-	 * @param conceptId
-	 * @return
-	 * @deprecated - UNSUPPORTED API
+	 * Returns with the file instance pointing the the absolute location of the icon directory.
+	 * @return the file instance describing the folder containing the icons for the components.
 	 */
-	@Override
-	public String getIconComponentId(String componentId) {
-		throw new UnsupportedOperationException("Getting icon ID on server side is not supported without specifying a branch");
+	private File getIconDirectory() {
+		return new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), SNOMEDICONS_FOLDER);
 	}
 	
 	/**
@@ -105,43 +92,17 @@ public class SnomedIconProvider extends ComponentIconProvider<String> {
 		return imageConceptIds;
 	}
 
-	/** @return the File pointing at the icon .png for the specified concept */
-	@Override
-	public File getIconFile(String componentId) {
-		String iconConceptId = getIconComponentId(componentId);
-		if (iconConceptId == null) {
-			return null;
-		}
-		return getExactFile(iconConceptId);
-	}
-
 	/** @return the File for the specified concept, file will not exist if concept is not an icon concept */
-	@Override
 	public File getExactFile(String componentId) {
 		return new File(getIconDirectory(), componentId + EXT_PNG);
 	}
 
-	@Override
 	public File getExactFile(String componentId, String defaultComponentId) {
 		File icon = getExactFile(componentId);
 		if (icon == null || !icon.exists()) {
 			icon = getExactFile(defaultComponentId);
 		}
 		return icon;
-	}
-
-	@Override
-	public String getIconFileName(String componentId) {
-		File iconFile = getIconFile(componentId);
-		if (null == iconFile) {
-			return null;
-		}
-		return iconFile.getName();
-	}
-
-	@Override
-	protected String getFolderName() {
-		return SNOMEDICONS_FOLDER;
 	}
 
 	private SnomedIconProvider() {

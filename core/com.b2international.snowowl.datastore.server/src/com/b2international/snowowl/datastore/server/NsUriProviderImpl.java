@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server;
 import static com.b2international.commons.collections.Collections3.forEach;
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.core.api.NsUri.TO_STRING_FUNCTION;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.apply;
 import static com.google.common.base.Suppliers.memoize;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Sets.newHashSet;
@@ -29,12 +28,12 @@ import java.util.Set;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.commons.collections.Procedure;
 import com.b2international.commons.emf.NsUriProvider;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
-import com.b2international.snowowl.datastore.cdo.CDOTransactionFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
@@ -81,23 +80,22 @@ public abstract class NsUriProviderImpl implements NsUriProvider {
 	}
 
 	private Set<String> initResourceURIs() {
-		return unmodifiableSet(newHashSet(apply(new CDOTransactionFunction<Set<String>>(getConnection(), BranchPathUtils.createMainPath()) {
-			
-			@Override
-			protected Set<String> apply(final CDOTransaction transaction) {
-				final Set<String> resourceUris = newHashSet();
-				forEach(transaction.getRootResource().getContents(), new Procedure<EObject>() {
-					
-					@Override
-					protected void doApply(final EObject object) {
-						if (object instanceof CDOResource) {
-							resourceUris.add(((CDOResource) object).getURI().toString());
-						}
+		final CDOTransaction transaction = getConnection().createTransaction(BranchPathUtils.createMainPath());
+		try {
+			final Set<String> resourceUris = newHashSet();
+			forEach(transaction.getRootResource().getContents(), new Procedure<EObject>() {
+				
+				@Override
+				protected void doApply(final EObject object) {
+					if (object instanceof CDOResource) {
+						resourceUris.add(((CDOResource) object).getURI().toString());
 					}
-				});
-				return resourceUris;
-			}
-		})));
+				}
+			});
+			return resourceUris;
+		} finally {
+			LifecycleUtil.deactivate(transaction);
+		}
 	}
 
 	private ICDOConnection getConnection() {

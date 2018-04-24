@@ -18,6 +18,7 @@ package com.b2international.snowowl.api.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,10 +27,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.snowowl.core.exceptions.ApiErrorException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
@@ -54,6 +57,13 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
+		LOG.error("Timeout during request processing", ex);
+		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
+	}
+	
 	/**
 	 * Exception handler converting any {@link JsonMappingException} to an <em>HTTP 400</em>.
 	 * 
@@ -65,6 +75,12 @@ public class ControllerExceptionMapper {
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	@ExceptionHandler
+	public ResponseEntity<RestApiError> handle(final ApiErrorException ex) {
+		final ApiError error = ex.toApiError();
+		return new ResponseEntity<>(RestApiError.of(error).build(error.getStatus()), HttpStatus.valueOf(error.getStatus()));
 	}
 
 	/**

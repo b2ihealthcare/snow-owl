@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.request.version;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 
 import com.b2international.snowowl.core.ServiceProvider;
@@ -29,12 +27,9 @@ import com.b2international.snowowl.core.events.Request;
 public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Boolean> {
 
 	private String codeSystemShortName;
-	private String parentBranchPath;
 	private String versionId;
 	private String description;
 	private Date effectiveTime;
-	private String primaryToolingId;
-	private Collection<String> toolingIds = Collections.emptySet();
 
 	// TODO make it package visible
 	public CodeSystemVersionCreateRequestBuilder() {
@@ -55,21 +50,6 @@ public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuil
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setParentBranchPath(String parentBranchPath) {
-		this.parentBranchPath = parentBranchPath;
-		return getSelf();
-	}
-	
-	public CodeSystemVersionCreateRequestBuilder setPrimaryToolingId(String primaryToolingId) {
-		this.primaryToolingId = primaryToolingId;
-		return getSelf();
-	}
-	
-	public CodeSystemVersionCreateRequestBuilder setToolingIds(Collection<String> toolingIds) {
-		this.toolingIds = toolingIds;
-		return getSelf();
-	}
-	
 	public CodeSystemVersionCreateRequestBuilder setVersionId(String versionId) {
 		this.versionId = versionId;
 		return getSelf();
@@ -78,13 +58,10 @@ public final class CodeSystemVersionCreateRequestBuilder extends BaseRequestBuil
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
 		final CodeSystemVersionCreateRequest req = new CodeSystemVersionCreateRequest();
-		req.setCodeSystemShortName(codeSystemShortName);
-		req.setParentBranchPath(parentBranchPath);
-		req.setVersionId(versionId);
-		req.setDescription(description);
-		req.setEffectiveTime(effectiveTime);
-		req.setPrimaryToolingId(primaryToolingId);
-		req.setToolingIds(toolingIds);
+		req.codeSystemShortName = codeSystemShortName;
+		req.versionId = versionId;
+		req.description= description;
+		req.effectiveTime = effectiveTime;
 		return req;
 	}
 

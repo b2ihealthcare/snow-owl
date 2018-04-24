@@ -291,13 +291,6 @@ public abstract class CDOUtils {
 	}
 
 	/**
-	 * Executes the given CDO function and return with the output of the function.
-	 */
-	public static <T> T apply(final CDOFunction<T> function) {
-		return Preconditions.checkNotNull(function, "CDO function argument cannot be null.").apply();
-	}
-	
-	/**
 	 * Returns {@code true} if the CDO state of the specified object is {@link CDOState#TRANSIENT transient} otherwise returns with {@code false}.
 	 * @param object CDO object to check. Cannot be {@code null}.
 	 * @return {@code true} if the object has {@link CDOState#TRANSIENT transient} state.

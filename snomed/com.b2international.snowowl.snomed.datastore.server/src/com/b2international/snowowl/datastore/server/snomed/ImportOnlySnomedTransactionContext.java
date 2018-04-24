@@ -179,14 +179,6 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 		return editingContext;
 	}
 	
-	public String getDefaultLanguageRefsetId() {
-		return editingContext.getLanguageRefSetId();
-	}
-
-	public String getDefaultLanguageCode() {
-		return editingContext.getDefaultLanguageCode();
-	}
-	
 	@Override
 	public boolean isNotificationEnabled() {
 		return true;
