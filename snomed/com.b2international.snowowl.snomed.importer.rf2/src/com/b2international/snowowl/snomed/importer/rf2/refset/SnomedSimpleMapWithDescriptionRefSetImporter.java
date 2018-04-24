@@ -52,7 +52,6 @@ public class SnomedSimpleMapWithDescriptionRefSetImporter extends AbstractSnomed
 			.put(AssociatingRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
 			.put(AssociatingRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
 			.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
-			.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
 			.put(SimpleMapRefSetRow.PROP_MAP_TARGET_DESCRIPTION, NullObjectPattern.INSTANCE)
 			.build();
 	
