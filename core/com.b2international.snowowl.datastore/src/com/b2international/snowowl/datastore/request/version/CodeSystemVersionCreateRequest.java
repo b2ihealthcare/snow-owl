@@ -19,14 +19,17 @@ import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockCon
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Iterables.tryFind;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.text.MessageFormat.format;
 import static org.eclipse.core.runtime.SubMonitor.convert;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,8 +47,12 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -72,6 +79,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -126,17 +134,30 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			final IProgressMonitor subMonitor = convert(monitor, TASK_WORK_STEP * size(toolingIds) + 1);
 			
 			final Map<String, Collection<CodeSystemVersionEntry>> existingVersions = getExistingVersions(context);
+			for (String toolingId : toolingIds) {
+				try {
+					RepositoryRequests.branching()
+						.prepareGet(String.format("%s%s%s", parentBranchPath, Branch.SEPARATOR, versionId))
+						.build(getRepositoryUuid(toolingId))
+						.execute(context.service(IEventBus.class))
+						.getSync();
+					throw new ConflictException("An existing branch with path '%s%s%s' conflicts with the specified version identifier.", parentBranchPath, Branch.SEPARATOR, versionId);
+				} catch (NotFoundException e) {
+					// ignore
+				}
+			}
+			
+			for (String toolingId : toolingIds) {
+				validateEffectiveTime(toolingId, existingVersions);
+			}
+			
 			final Map<String, Boolean> performTagPerToolingFeatures = getTagPreferences(existingVersions);
 			
 			subMonitor.worked(1);
 			
 			// create version managers
-			final Map<String, IVersioningManager> versioningManagers = Maps.toMap(toolingIds, new Function<String, IVersioningManager>() {
-				@Override
-				public IVersioningManager apply(String toolingId) {
-					return VersioningManagerBroker.INSTANCE.createVersioningManager(toolingId);
-				}
-			});
+			final Map<String, IVersioningManager> versioningManagers = Maps.toMap(toolingIds,
+					(Function<String, IVersioningManager>) toolingId -> VersioningManagerBroker.INSTANCE.createVersioningManager(toolingId));
 			
 			doPublish(aggregator, versioningManagers, subMonitor);
 			doCommitChanges(user, aggregator, subMonitor, existingVersions);
@@ -153,6 +174,25 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		return Boolean.TRUE;
 	}
 	
+	private void validateEffectiveTime(String toolingId, Map<String, Collection<CodeSystemVersionEntry>> existingVersions) {
+		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(toolingId)) {
+			return;
+		}
+
+		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(toolingId, existingVersions);
+		
+		if (!effectiveTime.toInstant().isAfter(mostRecentVersionEffectiveTime)) {
+			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after epoch.", effectiveTime, mostRecentVersionEffectiveTime);
+		}
+	}
+
+	private Instant getMostRecentVersionEffectiveDateTime(String toolingId, Map<String, Collection<CodeSystemVersionEntry>> existingVersions) {
+		final List<CodeSystemVersionEntry> versions = newArrayList(existingVersions.get(toolingId));
+		Collections.sort(versions, Collections.reverseOrder(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR));
+		CodeSystemVersionEntry mostRecentVersion = Iterables.getFirst(versions, null);
+		return mostRecentVersion == null ? Instant.EPOCH : Instant.ofEpochMilli(mostRecentVersion.getEffectiveDate());
+	}
+
 	void setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
 	}
