@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,14 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 	
 	private Set<String> mapTargetIsEmpty = newHashSet();
 
-	public SnomedSimpleMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context, final boolean extended) {
-		super(configuration, releaseUrl, ComponentImportType.SIMPLE_MAP_TYPE_REFSET, context, extended ? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION : SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER);
+	public SnomedSimpleMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.SIMPLE_MAP_TYPE_REFSET, context, SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER);
 	}
 	
+	protected SnomedSimpleMapTypeRefSetValidator(ImportConfiguration configuration, URL releaseUrl, ComponentImportType importType, SnomedValidationContext validationUtil, String[] expectedHeader) {
+		super(configuration, releaseUrl, importType, validationUtil, expectedHeader);
+	}
+
 	@Override
 	protected void doValidate(final List<String> row) {
 		super.doValidate(row);
@@ -65,5 +69,4 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 			mapTargetIsEmpty.add(String.format("Reference set member '%s''s map target is empty", uuid, effectiveTime));
 		}
 	}
-
 }

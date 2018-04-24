@@ -190,7 +190,7 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE)) { // AU CDT refset
 				releaseFileValidators.add(new SnomedConcreteDataTypeRefSetValidator(configuration, url, this, false));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET)) {
-				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this, false));
+				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
 				releaseFileValidators.add(new SnomedComplexMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH)) {
@@ -204,7 +204,7 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equals(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
 				releaseFileValidators.add(new SnomedExtendedMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
-				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this, true));	
+				releaseFileValidators.add(new SnomedSimpleMapWithDescriptionRefSetValidator(configuration, url, this));	
 			} else {
 				logger.warn("Couldn't determine reference set type for file '" + configuration.getMappedName(url.getPath()) + "', not validating.");
 			}
