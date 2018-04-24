@@ -18,7 +18,6 @@ package com.b2international.snowowl.api.impl.codesystem;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,8 +36,6 @@ import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFo
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.core.exceptions.ApiErrorException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
@@ -114,20 +111,15 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 	
 	@Override
 	public ICodeSystemVersion createVersion(String shortName, ICodeSystemVersionProperties properties) {
-		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
-		
 		Request<ServiceProvider, Boolean> req = CodeSystemRequests.prepareNewCodeSystemVersion()
 				.setCodeSystemShortName(shortName)
 				.setVersionId(properties.getVersion())
 				.setDescription(properties.getDescription())
 				.setEffectiveTime(properties.getEffectiveDate())
-				.setParentBranchPath(codeSystem.getBranchPath())
-				.setPrimaryToolingId(codeSystem.getTerminologyId())
-				.setToolingIds(Collections.singleton(codeSystem.getTerminologyId()))
 				.build();
 		
 		String jobId = JobRequests.prepareSchedule()
-				.setDescription(String.format("Creating version '%s/%s'", codeSystem.getShortName(), properties.getVersion()))
+				.setDescription(String.format("Creating version '%s/%s'", shortName, properties.getVersion()))
 				.setUser(User.SYSTEM.getUsername())
 				.setRequest(req)
 				.buildAsync()
