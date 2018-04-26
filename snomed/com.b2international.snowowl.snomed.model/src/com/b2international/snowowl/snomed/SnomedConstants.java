@@ -166,6 +166,11 @@ public abstract class SnomedConstants {
 		public static final String REFSET_DESCRIPTION_TYPE = "900000000000538005";
 		public static final String REFSET_CONCRETE_DOMAIN_TYPE_AU = "50131000036100"; //AU release -> NEHTA_0856_2012_AMTImplentationKit_20120229
 		public static final String REFSET_MODULE_DEPENDENCY_TYPE = "900000000000534007";
+		public static final String REFSET_OWL_AXIOM = "733073007";
+		public static final String REFSET_MRCM_DOMAIN_INTERNATIONAL = "723560006";
+		public static final String REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL = "723561005";
+		public static final String REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL = "723562003";
+		public static final String REFSET_MRCM_MODULE_SCOPE = "723563008";
 		
 		//CMT reference sets
 		public static final String REFSET_B2I_EXAMPLE = "780716481000154104"; //for more details see: https://github.com/b2ihealthcare/snowowl/issues/368

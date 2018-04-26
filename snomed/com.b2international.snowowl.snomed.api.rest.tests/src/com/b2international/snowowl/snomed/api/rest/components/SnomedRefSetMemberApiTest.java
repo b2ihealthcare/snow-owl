@@ -19,11 +19,18 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.executeMemberAction;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +47,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberBulkRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -141,6 +149,201 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE));
 	}
 
+	@Test
+	public void createMRCMDomainMemberWithMandatoryAndOptionalFields() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_DOMAIN));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_DOMAIN, newIdentifierConceptId);
+
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "parentDomain")
+				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
+				.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, equalTo("domainConstraint"))
+			.body(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, equalTo("parentDomain"))
+			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, equalTo("proximalPrimitiveConstraint"))
+			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, equalTo("proximalPrimitiveRefinement"))
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, equalTo("domainTemplateForPrecoordination"))
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, equalTo("domainTemplateForPostcoordination"))
+			.body(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, equalTo("editorialGuideReference"));
+	}
+	
+	@Test
+	public void createMRCMDomainMemberWithOnlyMandatoryFields() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_DOMAIN));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_DOMAIN, newIdentifierConceptId);
+
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, equalTo("domainConstraint"))
+			.body(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, nullValue())
+			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, equalTo("proximalPrimitiveConstraint"))
+			.body(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, nullValue())
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, equalTo("domainTemplateForPrecoordination"))
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, equalTo("domainTemplateForPostcoordination"))
+			.body(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, nullValue());
+	}
+	
+	@Test
+	public void createMRCMAttributeDomainMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, newIdentifierConceptId);
+
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, equalTo(Concepts.ROOT_CONCEPT))
+			.body(SnomedRf2Headers.FIELD_MRCM_GROUPED, equalTo(Boolean.TRUE))
+			.body(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, equalTo("attributeCardinality"))
+			.body(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, equalTo("attributeInGroupCardinality"))
+			.body(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, equalTo(Concepts.ROOT_CONCEPT))
+			.body(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, equalTo(Concepts.ROOT_CONCEPT));
+		
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, "159725002") // XXX batman should not be in the test dataset
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
+		
+		Map<?, ?> requestBody3 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "159725002") // XXX batman should not be in the test dataset
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody3).statusCode(400);
+		
+		Map<?, ?> requestBody4 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "159725002") // XXX batman should not be in the test dataset
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody4).statusCode(400);
+	}
+	
+	@Test
+	public void createMRMCAttributeRangeMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, newIdentifierConceptId);
+
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, equalTo("rangeConstraint"))
+			.body(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, equalTo("attributeRule"))
+			.body(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, equalTo(Concepts.ROOT_CONCEPT))
+			.body(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, equalTo(Concepts.ROOT_CONCEPT));
+		
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "159725002") // XXX batman should not be in the test dataset
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
+		
+		Map<?, ?> requestBody3 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "159725002") // XXX batman should not be in the test dataset
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody3).statusCode(400);
+	}
+	
+	@Test
+	public void createMRCMModuleScopeMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_MODULE_SCOPE, newIdentifierConceptId);
+
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
+			.body(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, equalTo(Concepts.ROOT_CONCEPT));
+		
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, "159725002") // XXX batman should not be in the test dataset
+				.put("commitComment", "Created new reference set member")
+				.build();
+		
+		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
+	}
+	
 	@Test
 	public void executeInvalidAction() throws Exception {
 		String queryRefSetId = createNewRefSet(branchPath, SnomedRefSetType.QUERY);

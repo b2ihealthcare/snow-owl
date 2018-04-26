@@ -1579,6 +1579,677 @@ public interface SnomedRefSetPackage extends EPackage {
 	int SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
 
 	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl <em>Snomed Annotation Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedAnnotationRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER = 15;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Annotation</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Snomed Annotation Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_ANNOTATION_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl <em>Snomed MRCM Domain Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER = 16;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Domain Constraint</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Parent Domain</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Proximal Primitive Constraint</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_CONSTRAINT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Proximal Primitive Refinement</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_REFINEMENT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 3;
+
+	/**
+	 * The feature id for the '<em><b>Domain Template For Precoordination</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_PRECOORDINATION = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 4;
+
+	/**
+	 * The feature id for the '<em><b>Domain Template For Postcoordination</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 5;
+
+	/**
+	 * The feature id for the '<em><b>Editorial Guide Reference</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EDITORIAL_GUIDE_REFERENCE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 6;
+
+	/**
+	 * The number of structural features of the '<em>Snomed MRCM Domain Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 7;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeDomainRefSetMemberImpl <em>Snomed MRCM Attribute Domain Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeDomainRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER = 17;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Domain Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__DOMAIN_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Grouped</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__GROUPED = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Attribute Cardinality</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_CARDINALITY = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Attribute In Group Cardinality</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_IN_GROUP_CARDINALITY = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 3;
+
+	/**
+	 * The feature id for the '<em><b>Rule Strength Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RULE_STRENGTH_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 4;
+
+	/**
+	 * The feature id for the '<em><b>Content Type Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__CONTENT_TYPE_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 5;
+
+	/**
+	 * The number of structural features of the '<em>Snomed MRCM Attribute Domain Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 6;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeRangeRefSetMemberImpl <em>Snomed MRCM Attribute Range Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeRangeRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeRangeRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER = 18;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Range Constraint</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RANGE_CONSTRAINT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Attribute Rule</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ATTRIBUTE_RULE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
+	 * The feature id for the '<em><b>Rule Strength Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RULE_STRENGTH_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Content Type Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__CONTENT_TYPE_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 3;
+
+	/**
+	 * The number of structural features of the '<em>Snomed MRCM Attribute Range Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 4;
+
+	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMModuleScopeRefSetMemberImpl <em>Snomed MRCM Module Scope Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMModuleScopeRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMModuleScopeRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER = 19;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Mrcm Rule Refset Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MRCM_RULE_REFSET_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Snomed MRCM Module Scope Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1586,7 +2257,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedRefSetType()
 	 * @generated
 	 */
-	int SNOMED_REF_SET_TYPE = 15;
+	int SNOMED_REF_SET_TYPE = 20;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.DataType <em>Data Type</em>}' enum.
@@ -1596,7 +2267,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getDataType()
 	 * @generated
 	 */
-	int DATA_TYPE = 16;
+	int DATA_TYPE = 21;
 
 
 	/**
@@ -2179,6 +2850,265 @@ public interface SnomedRefSetPackage extends EPackage {
 	EAttribute getSnomedModuleDependencyRefSetMember_TargetEffectiveTime();
 
 	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember <em>Snomed Annotation Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed Annotation Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedAnnotationRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation <em>Annotation</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Annotation</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation()
+	 * @see #getSnomedAnnotationRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedAnnotationRefSetMember_Annotation();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember <em>Snomed MRCM Domain Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedMRCMDomainRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainConstraint <em>Domain Constraint</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Domain Constraint</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainConstraint()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_DomainConstraint();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getParentDomain <em>Parent Domain</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Parent Domain</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getParentDomain()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_ParentDomain();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getProximalPrimitiveConstraint <em>Proximal Primitive Constraint</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Proximal Primitive Constraint</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getProximalPrimitiveConstraint()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getProximalPrimitiveRefinement <em>Proximal Primitive Refinement</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Proximal Primitive Refinement</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getProximalPrimitiveRefinement()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainTemplateForPrecoordination <em>Domain Template For Precoordination</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Domain Template For Precoordination</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainTemplateForPrecoordination()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainTemplateForPostcoordination <em>Domain Template For Postcoordination</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Domain Template For Postcoordination</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getDomainTemplateForPostcoordination()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getEditorialGuideReference <em>Editorial Guide Reference</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Editorial Guide Reference</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember#getEditorialGuideReference()
+	 * @see #getSnomedMRCMDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMDomainRefSetMember_EditorialGuideReference();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember <em>Snomed MRCM Attribute Domain Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedMRCMAttributeDomainRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getDomainId <em>Domain Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Domain Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getDomainId()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_DomainId();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#isGrouped <em>Grouped</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Grouped</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#isGrouped()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_Grouped();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getAttributeCardinality <em>Attribute Cardinality</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Attribute Cardinality</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getAttributeCardinality()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeCardinality();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getAttributeInGroupCardinality <em>Attribute In Group Cardinality</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Attribute In Group Cardinality</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getAttributeInGroupCardinality()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeInGroupCardinality();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getRuleStrengthId <em>Rule Strength Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Rule Strength Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getRuleStrengthId()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_RuleStrengthId();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getContentTypeId <em>Content Type Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Content Type Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember#getContentTypeId()
+	 * @see #getSnomedMRCMAttributeDomainRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeDomainRefSetMember_ContentTypeId();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember <em>Snomed MRCM Attribute Range Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedMRCMAttributeRangeRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getRangeConstraint <em>Range Constraint</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Range Constraint</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getRangeConstraint()
+	 * @see #getSnomedMRCMAttributeRangeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getAttributeRule <em>Attribute Rule</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Attribute Rule</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getAttributeRule()
+	 * @see #getSnomedMRCMAttributeRangeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeRangeRefSetMember_AttributeRule();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getRuleStrengthId <em>Rule Strength Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Rule Strength Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getRuleStrengthId()
+	 * @see #getSnomedMRCMAttributeRangeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeRangeRefSetMember_RuleStrengthId();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getContentTypeId <em>Content Type Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Content Type Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember#getContentTypeId()
+	 * @see #getSnomedMRCMAttributeRangeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMAttributeRangeRefSetMember_ContentTypeId();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember <em>Snomed MRCM Module Scope Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedMRCMModuleScopeRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember#getMrcmRuleRefsetId <em>Mrcm Rule Refset Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Mrcm Rule Refset Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember#getMrcmRuleRefsetId()
+	 * @see #getSnomedMRCMModuleScopeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedMRCMModuleScopeRefSetMember_MrcmRuleRefsetId();
+
+	/**
 	 * Returns the meta object for enum '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2681,6 +3611,208 @@ public interface SnomedRefSetPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME = eINSTANCE.getSnomedModuleDependencyRefSetMember_TargetEffectiveTime();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl <em>Snomed Annotation Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedAnnotationRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_ANNOTATION_REF_SET_MEMBER = eINSTANCE.getSnomedAnnotationRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Annotation</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION = eINSTANCE.getSnomedAnnotationRefSetMember_Annotation();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl <em>Snomed MRCM Domain Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMDomainRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_MRCM_DOMAIN_REF_SET_MEMBER = eINSTANCE.getSnomedMRCMDomainRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Domain Constraint</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT = eINSTANCE.getSnomedMRCMDomainRefSetMember_DomainConstraint();
+
+		/**
+		 * The meta object literal for the '<em><b>Parent Domain</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN = eINSTANCE.getSnomedMRCMDomainRefSetMember_ParentDomain();
+
+		/**
+		 * The meta object literal for the '<em><b>Proximal Primitive Constraint</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_CONSTRAINT = eINSTANCE.getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint();
+
+		/**
+		 * The meta object literal for the '<em><b>Proximal Primitive Refinement</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_REFINEMENT = eINSTANCE.getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement();
+
+		/**
+		 * The meta object literal for the '<em><b>Domain Template For Precoordination</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_PRECOORDINATION = eINSTANCE.getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination();
+
+		/**
+		 * The meta object literal for the '<em><b>Domain Template For Postcoordination</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = eINSTANCE.getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination();
+
+		/**
+		 * The meta object literal for the '<em><b>Editorial Guide Reference</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EDITORIAL_GUIDE_REFERENCE = eINSTANCE.getSnomedMRCMDomainRefSetMember_EditorialGuideReference();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeDomainRefSetMemberImpl <em>Snomed MRCM Attribute Domain Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeDomainRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeDomainRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Domain Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__DOMAIN_ID = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_DomainId();
+
+		/**
+		 * The meta object literal for the '<em><b>Grouped</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__GROUPED = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_Grouped();
+
+		/**
+		 * The meta object literal for the '<em><b>Attribute Cardinality</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_CARDINALITY = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_AttributeCardinality();
+
+		/**
+		 * The meta object literal for the '<em><b>Attribute In Group Cardinality</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_IN_GROUP_CARDINALITY = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_AttributeInGroupCardinality();
+
+		/**
+		 * The meta object literal for the '<em><b>Rule Strength Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RULE_STRENGTH_ID = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_RuleStrengthId();
+
+		/**
+		 * The meta object literal for the '<em><b>Content Type Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__CONTENT_TYPE_ID = eINSTANCE.getSnomedMRCMAttributeDomainRefSetMember_ContentTypeId();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeRangeRefSetMemberImpl <em>Snomed MRCM Attribute Range Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMAttributeRangeRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeRangeRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER = eINSTANCE.getSnomedMRCMAttributeRangeRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Range Constraint</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RANGE_CONSTRAINT = eINSTANCE.getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint();
+
+		/**
+		 * The meta object literal for the '<em><b>Attribute Rule</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ATTRIBUTE_RULE = eINSTANCE.getSnomedMRCMAttributeRangeRefSetMember_AttributeRule();
+
+		/**
+		 * The meta object literal for the '<em><b>Rule Strength Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RULE_STRENGTH_ID = eINSTANCE.getSnomedMRCMAttributeRangeRefSetMember_RuleStrengthId();
+
+		/**
+		 * The meta object literal for the '<em><b>Content Type Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__CONTENT_TYPE_ID = eINSTANCE.getSnomedMRCMAttributeRangeRefSetMember_ContentTypeId();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMModuleScopeRefSetMemberImpl <em>Snomed MRCM Module Scope Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMModuleScopeRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMModuleScopeRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER = eINSTANCE.getSnomedMRCMModuleScopeRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Mrcm Rule Refset Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MRCM_RULE_REFSET_ID = eINSTANCE.getSnomedMRCMModuleScopeRefSetMember_MrcmRuleRefsetId();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType <em>Type</em>}' enum.

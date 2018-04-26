@@ -239,6 +239,21 @@ public abstract class SnomedRestFixtures {
 		return createNewRefSet(refSetPath, SnomedRefSetType.SIMPLE);
 	}
 
+	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type, String identifierConceptId) {
+		
+		Map<?, ?> refSetRequestBody = ImmutableMap.<String, Object>builder()
+				.put("id", identifierConceptId)
+				.put("type", type)
+				.put("referencedComponentType", getFirstAllowedReferencedComponentType(type))
+				.put("commitComment", "Created new reference set")
+				.build();
+		
+		return lastPathSegment(createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody)
+				.statusCode(201)
+				.body(equalTo(""))
+				.extract().header("Location"));
+	}
+	
 	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type) {
 		String parentConceptId = SnomedRefSetUtil.getConceptId(type);
 		String referencedComponentType = getFirstAllowedReferencedComponentType(type);

@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -147,4 +148,161 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertNull(json.get(Fields.DECIMAL_VALUE));
 	}
 	
+	@Test
+	public void indexMRCMDomainMemberWithAllFields() throws Exception {
+		
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.field(Fields.MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
+				.field(Fields.MRCM_PARENT_DOMAIN, "parentDomain")
+				.field(Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
+				.field(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement")
+				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
+				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
+				.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("domainConstraint", actual.getDomainConstraint());
+		assertEquals("parentDomain", actual.getParentDomain());
+		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
+		assertEquals("proximalPrimitiveRefinement", actual.getProximalPrimitiveRefinement());
+		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
+		assertEquals("domainTemplateForPostcoordination", actual.getDomainTemplateForPostcoordination());
+		assertEquals("editorialGuideReference", actual.getEditorialGuideReference());
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexMRCMDomainMemberWithMandatoryFields() throws Exception {
+		
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_DOMAIN)
+				.field(Fields.MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
+				.field(Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
+				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
+				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("domainConstraint", actual.getDomainConstraint());
+		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
+		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
+		assertEquals("domainTemplateForPostcoordination", actual.getDomainTemplateForPostcoordination());
+		assertDocEquals(member, actual);
+		
+		// verify that not mandatory members are empty
+		final JsonNode json = getMapper().convertValue(member, JsonNode.class);
+		assertNull(json.get(Fields.MRCM_PARENT_DOMAIN));
+		assertNull(json.get(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT));
+		assertNull(json.get(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE));
+		
+		// assert that isGrouped is not serialized with any valid value for this reference set member type
+		assertNull(json.get(Fields.MRCM_GROUPED));
+	}
+	
+	@Test
+	public void indexMRCMAttributeDomainMember() throws Exception {
+		
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
+				.field(Fields.MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.field(Fields.MRCM_GROUPED, Boolean.TRUE)
+				.field(Fields.MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.field(Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.field(Fields.MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(Concepts.ROOT_CONCEPT, actual.getDomainId());
+		assertEquals(Boolean.TRUE, actual.isGrouped());
+		assertEquals("attributeCardinality", actual.getAttributeCardinality());
+		assertEquals("attributeInGroupCardinality", actual.getAttributeInGroupCardinality());
+		assertEquals(Concepts.ROOT_CONCEPT, actual.getRuleStrengthId());
+		assertEquals(Concepts.ROOT_CONCEPT, actual.getContentTypeId());
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexMRCMAttributeRangeMember() throws Exception {
+		
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL)
+				.referenceSetType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE)
+				.field(Fields.MRCM_RANGE_CONSTRAINT, "rangeConstraint")
+				.field(Fields.MRCM_ATTRIBUTE_RULE, "attributeRule")
+				.field(Fields.MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("rangeConstraint", actual.getRangeConstraint());
+		assertEquals("attributeRule", actual.getAttributeRule());
+		assertEquals(Concepts.ROOT_CONCEPT, actual.getRuleStrengthId());
+		assertEquals(Concepts.ROOT_CONCEPT, actual.getContentTypeId());
+		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexMRCMModuleScopeMember() throws Exception {
+		
+		final SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(UUID.randomUUID().toString())
+				.active(true)
+				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+				.released(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(Concepts.ROOT_CONCEPT)
+				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referenceSetId(Concepts.REFSET_MRCM_MODULE_SCOPE)
+				.referenceSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
+				.field(Fields.MRCM_RULE_REFSET_ID, "mrcmRuleRefsetId")
+				.build();
+			
+		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, STORAGE_KEY1);
+		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals("mrcmRuleRefsetId", actual.getMrcmRuleRefsetId());
+		assertDocEquals(member, actual);
+	}
 }

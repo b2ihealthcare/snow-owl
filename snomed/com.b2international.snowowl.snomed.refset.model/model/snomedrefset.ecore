@@ -131,7 +131,12 @@
     <eLiterals name="ASSOCIATION" value="8"/>
     <eLiterals name="MODULE_DEPENDENCY" value="9" literal="MODULE_DEPENDENCY"/>
     <eLiterals name="EXTENDED_MAP" value="10" literal="EXTENDED_MAP"/>
-    <eLiterals name="SIMPLE_MAP_WITH_DESCRIPTION" value="11" literal="SIMPLE_MAP_WITH_DESCRIPTION"/>
+    <eLiterals name="SIMPLE_MAP_WITH_DESCRIPTION" value="11"/>
+    <eLiterals name="OWL_AXIOM" value="12" literal="OWL_AXIOM"/>
+    <eLiterals name="MRCM_DOMAIN" value="13"/>
+    <eLiterals name="MRCM_ATTRIBUTE_DOMAIN" value="14"/>
+    <eLiterals name="MRCM_ATTRIBUTE_RANGE" value="15"/>
+    <eLiterals name="MRCM_MODULE_SCOPE" value="16"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DataType">
     <eLiterals name="INTEGER" literal="INTEGER"/>
@@ -146,5 +151,100 @@
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="targetEffectiveTime" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SnomedAnnotationRefSetMember" eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="annotation" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SnomedMRCMDomainRefSetMember" eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainConstraint" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="parentDomain" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="proximalPrimitiveConstraint"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="proximalPrimitiveRefinement"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainTemplateForPrecoordination"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainTemplateForPostcoordination"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="editorialGuideReference"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SnomedMRCMAttributeDomainRefSetMember"
+      eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="domainId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="grouped" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributeCardinality" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributeInGroupCardinality"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ruleStrengthId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="contentTypeId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SnomedMRCMAttributeRangeRefSetMember"
+      eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rangeConstraint" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="attributeRule" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
+      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
+        <details key="columnType" value="LONG VARCHAR"/>
+        <details key="columnLength" value="32768"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="ruleStrengthId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="contentTypeId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SnomedMRCMModuleScopeRefSetMember" eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="mrcmRuleRefsetId" lowerBound="1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

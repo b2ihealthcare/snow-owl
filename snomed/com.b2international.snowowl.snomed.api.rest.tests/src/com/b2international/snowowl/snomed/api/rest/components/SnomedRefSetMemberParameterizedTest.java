@@ -17,12 +17,19 @@ package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createReferencedComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentCategory;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
@@ -30,7 +37,11 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Assume;
@@ -75,6 +86,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.SIMPLE							},
 			{ 	SnomedRefSetType.SIMPLE_MAP						},
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	},
+			{ 	SnomedRefSetType.OWL_AXIOM				},
+			{ 	SnomedRefSetType.MRCM_DOMAIN			},
+			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN	},
+			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE	},
+			{ 	SnomedRefSetType.MRCM_MODULE_SCOPE		},
 		});
 	}
 
@@ -336,6 +352,40 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
 					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_1)
+					.build();
+		case MRCM_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, DOMAIN_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, PARENT_DOMAIN)
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, PROXIMAL_PRIMITIVE_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, PROXIMAL_PRIMITIVE_REFINEMENT)
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION)
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION)
+					.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, EDITORIAL_GUIDE_REFERENCE)
+					.build();
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, DOMAIN_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, ATTRIBUTE_CARDINALITY)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, ATTRIBUTE_IN_GROUP_CARDINALITY)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID)
+					.build();
+		case MRCM_ATTRIBUTE_RANGE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, RANGE_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, ATTRIBUTE_RULE)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID)
+					.build();
+		case MRCM_MODULE_SCOPE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, RULE_REFSET_ID)
+					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
@@ -395,6 +445,40 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget2")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription2")
 					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_2)
+					.build();
+		case MRCM_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, DOMAIN_CONSTRAINT_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "") // unset on purpose
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, PROXIMAL_PRIMITIVE_CONSTRAINT_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "") // unset on purpose
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "") // unset on purpose
+					.build();
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, DOMAIN_ID_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.FALSE)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, ATTRIBUTE_CARDINALITY_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, ATTRIBUTE_IN_GROUP_CARDINALITY_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2)
+					.build();
+		case MRCM_ATTRIBUTE_RANGE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, RANGE_CONSTRAINT_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, ATTRIBUTE_RULE_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2)
+					.build();
+		case MRCM_MODULE_SCOPE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, RULE_REFSET_ID_2)
+					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
@@ -451,6 +535,37 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
+					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "")
+					.build();
+		case MRCM_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "")
+					.build();
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, "booleanValue")
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "1234")
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "")
+					.build();
+		case MRCM_ATTRIBUTE_RANGE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "")
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "1234")
+					.build();
+		case MRCM_MODULE_SCOPE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, "")
 					.build();
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");

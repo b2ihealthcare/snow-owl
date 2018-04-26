@@ -139,6 +139,16 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
 			case MODULE_DEPENDENCY:
 				return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
+			case OWL_AXIOM:
+				return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
+			case MRCM_DOMAIN:
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER;
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER;
+			case MRCM_ATTRIBUTE_RANGE:
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER;
+			case MRCM_MODULE_SCOPE:
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER;
 			default:
 				throw new IllegalArgumentException("Unsupported reference set type: " + type);
 		}
@@ -322,6 +332,16 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 			case EXTENDED_MAP:
 				return Concepts.EXTENDED_MAP_TYPE;
+			case OWL_AXIOM:
+				return Concepts.REFSET_OWL_AXIOM;
+			case MRCM_DOMAIN:
+				return Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+			case MRCM_ATTRIBUTE_RANGE:
+				return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
+			case MRCM_MODULE_SCOPE:
+				return Concepts.REFSET_MRCM_MODULE_SCOPE;
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}

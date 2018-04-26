@@ -25,6 +25,8 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -81,6 +83,12 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		
 		if (Strings.isNullOrEmpty(identifierId)) {
 			throw new BadRequestException("Reference set identifier ID may not be null or empty.");
+		} else {
+			try {
+				context.lookup(identifierId, Concept.class);
+			} catch (ComponentNotFoundException e) {
+				throw e.toBadRequestException();
+			}
 		}
 		
 		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
@@ -92,6 +100,11 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case QUERY: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case MODULE_DEPENDENCY:
+			case OWL_AXIOM:
+			case MRCM_DOMAIN:
+			case MRCM_ATTRIBUTE_DOMAIN:
+			case MRCM_ATTRIBUTE_RANGE:
+			case MRCM_MODULE_SCOPE:
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:

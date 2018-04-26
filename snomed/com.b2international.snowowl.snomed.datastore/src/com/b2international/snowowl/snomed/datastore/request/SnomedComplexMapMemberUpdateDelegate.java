@@ -31,7 +31,7 @@ final class SnomedComplexMapMemberUpdateDelegate extends SnomedRefSetMemberUpdat
 
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedComplexMapRefSetMember concreteDomainMember = (SnomedComplexMapRefSetMember) member;
+		SnomedComplexMapRefSetMember complexMapMember = (SnomedComplexMapRefSetMember) member;
 		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
 		Integer newGroup = getProperty(SnomedRf2Headers.FIELD_MAP_GROUP, Integer.class);
 		Integer newPriority = getProperty(SnomedRf2Headers.FIELD_MAP_PRIORITY, Integer.class);
@@ -41,33 +41,33 @@ final class SnomedComplexMapMemberUpdateDelegate extends SnomedRefSetMemberUpdat
 
 		boolean changed = false;
 
-		if (newMapTargetId != null && !newMapTargetId.equals(concreteDomainMember.getMapTargetComponentId())) {
-			concreteDomainMember.setMapTargetComponentId(newMapTargetId);
+		if (newMapTargetId != null && !newMapTargetId.equals(complexMapMember.getMapTargetComponentId())) {
+			complexMapMember.setMapTargetComponentId(newMapTargetId);
 			changed |= true;
 		}
 
-		if (newGroup != null && newGroup.intValue() != concreteDomainMember.getMapGroup()) {
-			concreteDomainMember.setMapGroup(newGroup);
+		if (newGroup != null && newGroup.intValue() != complexMapMember.getMapGroup()) {
+			complexMapMember.setMapGroup(newGroup);
 			changed |= true;
 		}
 
-		if (newPriority != null && newPriority.intValue() != concreteDomainMember.getMapPriority()) {
-			concreteDomainMember.setMapPriority(newPriority);
+		if (newPriority != null && newPriority.intValue() != complexMapMember.getMapPriority()) {
+			complexMapMember.setMapPriority(newPriority);
 			changed |= true;
 		}
 
-		if (newMapRule != null && !newMapRule.equals(concreteDomainMember.getMapRule())) {
-			concreteDomainMember.setMapRule(newMapRule);
+		if (newMapRule != null && !newMapRule.equals(complexMapMember.getMapRule())) {
+			complexMapMember.setMapRule(newMapRule);
 			changed |= true;
 		}
 
-		if (newMapAdvice != null && !newMapAdvice.equals(concreteDomainMember.getMapAdvice())) {
-			concreteDomainMember.setMapAdvice(newMapAdvice);
+		if (newMapAdvice != null && !newMapAdvice.equals(complexMapMember.getMapAdvice())) {
+			complexMapMember.setMapAdvice(newMapAdvice);
 			changed |= true;
 		}
 
-		if (newCorrelationId != null && !newCorrelationId.equals(concreteDomainMember.getCorrelationId())) {
-			concreteDomainMember.setCorrelationId(newCorrelationId);
+		if (newCorrelationId != null && !newCorrelationId.equals(complexMapMember.getCorrelationId())) {
+			complexMapMember.setCorrelationId(newCorrelationId);
 			changed |= true;
 		}
 

@@ -122,7 +122,57 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	SIMPLE_MAP_WITH_DESCRIPTION(11, "SIMPLE_MAP_WITH_DESCRIPTION", "SIMPLE_MAP_WITH_DESCRIPTION");
+	SIMPLE_MAP_WITH_DESCRIPTION(11, "SIMPLE_MAP_WITH_DESCRIPTION", "SIMPLE_MAP_WITH_DESCRIPTION"),
+	
+	/**
+	 * The '<em><b>OWL AXIOM</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #OWL_AXIOM_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"),
+	
+	/**
+	 * The '<em><b>MRCM DOMAIN</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_DOMAIN_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MRCM_DOMAIN(13, "MRCM_DOMAIN", "MRCM_DOMAIN"),
+	
+	/**
+	 * The '<em><b>MRCM ATTRIBUTE DOMAIN</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_ATTRIBUTE_DOMAIN_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MRCM_ATTRIBUTE_DOMAIN(14, "MRCM_ATTRIBUTE_DOMAIN", "MRCM_ATTRIBUTE_DOMAIN"),
+	
+	/**
+	 * The '<em><b>MRCM ATTRIBUTE RANGE</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_ATTRIBUTE_RANGE_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MRCM_ATTRIBUTE_RANGE(15, "MRCM_ATTRIBUTE_RANGE", "MRCM_ATTRIBUTE_RANGE"),
+	
+	/**
+	 * The '<em><b>MRCM MODULE SCOPE</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_MODULE_SCOPE_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	MRCM_MODULE_SCOPE(16, "MRCM_MODULE_SCOPE", "MRCM_MODULE_SCOPE");
 
 	/**
 	 * The '<em><b>SIMPLE</b></em>' literal value.
@@ -245,6 +295,81 @@ public enum SnomedRefSetType implements Enumerator {
 	public static final int SIMPLE_MAP_WITH_DESCRIPTION_VALUE = 11;
 
 	/**
+	 * The '<em><b>OWL AXIOM</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>OWL AXIOM</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #OWL_AXIOM
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int OWL_AXIOM_VALUE = 12;
+
+	/**
+	 * The '<em><b>MRCM DOMAIN</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>MRCM DOMAIN</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_DOMAIN
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MRCM_DOMAIN_VALUE = 13;
+
+	/**
+	 * The '<em><b>MRCM ATTRIBUTE DOMAIN</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>MRCM ATTRIBUTE DOMAIN</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_ATTRIBUTE_DOMAIN
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MRCM_ATTRIBUTE_DOMAIN_VALUE = 14;
+
+	/**
+	 * The '<em><b>MRCM ATTRIBUTE RANGE</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>MRCM ATTRIBUTE RANGE</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_ATTRIBUTE_RANGE
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MRCM_ATTRIBUTE_RANGE_VALUE = 15;
+
+	/**
+	 * The '<em><b>MRCM MODULE SCOPE</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>MRCM MODULE SCOPE</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #MRCM_MODULE_SCOPE
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int MRCM_MODULE_SCOPE_VALUE = 16;
+
+	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -264,6 +389,11 @@ public enum SnomedRefSetType implements Enumerator {
 			MODULE_DEPENDENCY,
 			EXTENDED_MAP,
 			SIMPLE_MAP_WITH_DESCRIPTION,
+			OWL_AXIOM,
+			MRCM_DOMAIN,
+			MRCM_ATTRIBUTE_DOMAIN,
+			MRCM_ATTRIBUTE_RANGE,
+			MRCM_MODULE_SCOPE,
 		};
 
 	/**
@@ -320,6 +450,11 @@ public enum SnomedRefSetType implements Enumerator {
 			case MODULE_DEPENDENCY_VALUE: return MODULE_DEPENDENCY;
 			case EXTENDED_MAP_VALUE: return EXTENDED_MAP;
 			case SIMPLE_MAP_WITH_DESCRIPTION_VALUE: return SIMPLE_MAP_WITH_DESCRIPTION;
+			case OWL_AXIOM_VALUE: return OWL_AXIOM;
+			case MRCM_DOMAIN_VALUE: return MRCM_DOMAIN;
+			case MRCM_ATTRIBUTE_DOMAIN_VALUE: return MRCM_ATTRIBUTE_DOMAIN;
+			case MRCM_ATTRIBUTE_RANGE_VALUE: return MRCM_ATTRIBUTE_RANGE;
+			case MRCM_MODULE_SCOPE_VALUE: return MRCM_MODULE_SCOPE;
 		}
 		return null;
 	}

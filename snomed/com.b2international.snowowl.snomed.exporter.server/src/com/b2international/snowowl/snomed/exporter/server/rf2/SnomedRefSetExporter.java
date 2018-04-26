@@ -87,7 +87,8 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 			case ASSOCIATION: //$FALL-THROUGH$
 			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
-			case ATTRIBUTE_VALUE:  
+			case ATTRIBUTE_VALUE:
+			case OWL_AXIOM:
 				return RF2_CONTENT_REFERENCE_SET_RELATIVE_DIR;
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
@@ -95,7 +96,11 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 			case COMPLEX_MAP: 
 				return RF2_MAP_REFERENCE_SET_RELATIVE_DIR;
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: 
+			case MODULE_DEPENDENCY:
+			case MRCM_DOMAIN:
+			case MRCM_ATTRIBUTE_DOMAIN:
+			case MRCM_ATTRIBUTE_RANGE:
+			case MRCM_MODULE_SCOPE:
 				return RF2_METADATA_REFERENCE_SET_RELATIVE_DIR;
 			case LANGUAGE: 
 				return RF2_LANGUAGE_REFERENCE_SET_RELATIVE_DIR;
