@@ -15,17 +15,20 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * @since 6.1.0
+ * @since 6.5.0
  */
-public class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
+final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
 
 	SnomedMRCMDomainMemberCreateDelegate(final SnomedRefSetMemberCreateRequest request) {
 		super(request);
@@ -59,6 +62,11 @@ public class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.addTo(context);
 
 		return member.getUuid();
+	}
+
+	@Override
+	public Set<String> getRequiredComponentIds() {
+		return ImmutableSet.of(getModuleId(), getReferencedComponentId());
 	}
 
 }
