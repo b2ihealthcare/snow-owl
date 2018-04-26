@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -59,8 +60,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -169,38 +168,25 @@ public class SnomedPublishManager extends PublishManager {
 	}
 	
 	@Override
-	protected void addCodeSystemVersion(final String codeSystemShortName, final CodeSystemVersion codeSystemVersion) {
-		if (getEditingContext().getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			final CodeSystem codeSystem = getEditingContext().lookup(codeSystemShortName, CodeSystem.class);
-			
-			if (codeSystem == null) {
-				throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", codeSystemShortName));
-			} else {
-				codeSystem.getCodeSystemVersions().add(codeSystemVersion);
-			}
+	protected void createCodeSystemVersion(final CDOEditingContext editingContext, PublishOperationConfiguration config) {
+		if (Branch.MAIN_PATH.equals(editingContext.getBranch())) {
+			super.createCodeSystemVersion(editingContext, config);
 		} else {
-			try (final SnomedEditingContext ec = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-				final CodeSystem codeSystem = ec.lookup(codeSystemShortName, CodeSystem.class);
-				if (codeSystem == null) {
-					throw new IllegalStateException(String.format("Couldn't find SNOMED release for %s.", codeSystemShortName));
-				} else {
-					codeSystem.getCodeSystemVersions().add(codeSystemVersion);
-					
-					final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.",
-							codeSystemVersion.getVersionId(), codeSystem.getShortName());
-					CDOServerUtils.commit(ec, "System", commitComment, null);
-				}
+			try (final SnomedEditingContext mainEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
+				super.createCodeSystemVersion(mainEditingContext, config);
+				final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.", config.getVersionId(), config.getCodeSystemShortName());
+				CDOServerUtils.commit(mainEditingContext, "System", commitComment, null);
 			} catch (Exception e) {
 				throw new SnowowlRuntimeException(String.format("An error occurred while adding Snomed Version %s to Snomed Release %s.",
-						codeSystemVersion.getVersionId(), codeSystemShortName), e);
+						config.getVersionId(), config.getCodeSystemShortName()), e);
 			}
 		}
 	}
 	
 	@Override
-	protected void postProcess(PublishOperationConfiguration config) {
+	protected void postProcess(CDOEditingContext editingContext, PublishOperationConfiguration config) {
 		LOGGER.info("Adjusting effective time changes on module dependency...");
-		adjustDependencyRefSetMembers(config.getEffectiveTime());
+		adjustDependencyRefSetMembers(editingContext, config.getEffectiveTime());
 		LOGGER.info("Effective time adjustment successfully finished on module dependency.");
 	}
 	
@@ -233,10 +219,10 @@ public class SnomedPublishManager extends PublishManager {
 
 	/**Updates all new module dependency reference set members.
 	 * @param date */
-	private void adjustDependencyRefSetMembers(Date effectiveTime) {
+	private void adjustDependencyRefSetMembers(CDOEditingContext editingContext, Date effectiveTime) {
 		// Update existing, add new members to moduleDependencyRefSet
 		if (!CompareUtils.isEmpty(moduleDependencies)) {
-			final SnomedRegularRefSet moduleDependencyRefSet = getEditingContext().lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
+			final SnomedRegularRefSet moduleDependencyRefSet = editingContext.lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
 			moduleDependencies.entries().forEach((entry) -> {
 				final String source = entry.getKey();
 				final String target = entry.getValue();

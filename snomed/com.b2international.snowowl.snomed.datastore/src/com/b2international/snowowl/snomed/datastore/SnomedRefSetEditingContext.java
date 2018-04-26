@@ -180,7 +180,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param referencedComponentType the unique referenced component type as a string literal.
 	 * @return the brand new reference set.
 	 */
-	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType) {
+	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType, final String languageReferenceSetId) {
 		return createSnomedSimpleTypeRefSet(fullySpecifiedName, referencedComponentType, Concepts.REFSET_SIMPLE_TYPE);
 	}
 	
@@ -191,9 +191,9 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param parentConcept the parent concept of the new concept.
 	 * @return the brand new reference set.
 	 */
-	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType, final String parentConceptId) {
+	public SnomedRegularRefSet createSnomedSimpleTypeRefSet(final String fullySpecifiedName, final String referencedComponentType, final String parentConceptId, final String languageReferenceSetId) {
 		final SnomedRegularRefSet snomedRefSet = createSnomedRegularRefSet(getTerminologyComponentTypeAsShort(referencedComponentType), SnomedRefSetType.SIMPLE);
-		createIdentifierAndAddRefSet(snomedRefSet, parentConceptId, fullySpecifiedName);
+		createIdentifierAndAddRefSet(snomedRefSet, parentConceptId, fullySpecifiedName, languageReferenceSetId);
 		return snomedRefSet;
 	}
 	
@@ -737,13 +737,13 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		
 	} 
 
-	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name) {
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String parentConceptId, final String name, final String languageReferenceSetId) {
 		createIdentifierAndAddRefSet(snomedRefSet, getSnomedEditingContext().generateComponentId(ComponentCategory.CONCEPT), parentConceptId, name);
 	}
 	
 	// create identifier concept with the given arguments, save it locally
-	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String conceptId, final String parentConceptId, final String name) {
-		final Concept identifier = createIdentifierConcept(conceptId, parentConceptId, name);
+	private void createIdentifierAndAddRefSet(final SnomedRefSet snomedRefSet, final String conceptId, final String parentConceptId, final String name, final String languageReferenceSetId) {
+		final Concept identifier = createIdentifierConcept(conceptId, parentConceptId, name, languageReferenceSetId);
 		snomedRefSet.setIdentifierId(identifier.getId());
 		add(snomedRefSet);
 	}
@@ -754,7 +754,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * @param name
 	 * @return
 	 */
-	public Concept createIdentifierConcept(final String conceptId, final String parentConceptId, final String name) {
+	public Concept createIdentifierConcept(final String conceptId, final String parentConceptId, final String name, final String languageReferenceSetId) {
 		final SnomedEditingContext context = getSnomedEditingContext();
 		
 		// FIXME replace with proper builder, 
@@ -768,7 +768,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		identifier.getOutboundRelationships().add(inferredIsa);
 		
 		// create language reference set members for the descriptions, one FSN and PT both should be preferred
-		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet();
+		final SnomedStructuralRefSet languageRefSet = getLanguageRefSet(languageReferenceSetId);
 		for (final Description description : identifier.getDescriptions()) {
 			if (description.isActive()) { //this point all description should be active
 				//create language reference set membership
@@ -780,9 +780,8 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return identifier;
 	}
 	
-	/*returns with the currently used language type reference set*/
-	private SnomedStructuralRefSet getLanguageRefSet() {
-		return snomedEditingContext.getLanguageRefSet();
+	private SnomedStructuralRefSet getLanguageRefSet(String languageRefSetId) {
+		return snomedEditingContext.getLanguageRefSet(languageRefSetId);
 	}
 
 	private short getTerminologyComponentTypeAsShort(final String terminologyComponentId) {

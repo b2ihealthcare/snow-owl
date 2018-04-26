@@ -25,15 +25,17 @@ import com.b2international.snowowl.core.exceptions.ApiError;
  */
 public class ApiErrorImpl implements ApiError {
 
-	private String message;
-	private String developerMessage;
-	private Integer code;
-	private Map<String, Object> additionalInfo;
+	private final String message;
+	private final String developerMessage;
+	private final Integer code;
+	private final Integer status;
+	private final Map<String, Object> additionalInfo;
 
-	public ApiErrorImpl(String message, String developerMessage, int code, Map<String, Object> additionalInformation) {
+	public ApiErrorImpl(String message, String developerMessage, int code, int status, Map<String, Object> additionalInformation) {
 		this.message = message;
 		this.developerMessage = developerMessage;
 		this.code = code;
+		this.status = status;
 		this.additionalInfo = additionalInformation == null ? Collections.<String, Object>emptyMap() : additionalInformation;
 	}
 	
@@ -52,6 +54,11 @@ public class ApiErrorImpl implements ApiError {
 		return code;
 	}
 
+	@Override
+	public Integer getStatus() {
+		return status;
+	}
+	
 	@Override
 	public Map<String, Object> getAdditionalInfo() {
 		return additionalInfo;

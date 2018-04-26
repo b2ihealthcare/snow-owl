@@ -421,7 +421,7 @@ final class SnomedEclRefinementEvaluator {
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
 			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(((AttributeComparison) comparison).getConstraint()));
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : null;
-			final Collection<String> valueConceptFilter = refinement.isReversed() ? null : destinationConceptFilter;
+			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConcepts.resolve(context).getSync() : destinationConceptFilter;
 			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
 		} else if (comparison instanceof DataTypeComparison) {
 			if (grouped) {
@@ -627,7 +627,7 @@ final class SnomedEclRefinementEvaluator {
 		// XXX more than 1000 IDs will be filtered using Java instead of in the query to gain performance
 		final Predicate<SnomedRelationship> sourcePredicate;
 		if (sourceFilter != null) {
-			if (sourceFilter.size() < 1000) {
+			if (sourceFilter.size() < 10000) {
 				req.filterBySource(sourceFilter);
 				sourcePredicate = Predicates.alwaysTrue();
 			} else {
@@ -639,7 +639,7 @@ final class SnomedEclRefinementEvaluator {
 		
 		final Predicate<SnomedRelationship> destinationPredicate;
 		if (destinationFilter != null) {
-			if (destinationFilter.size() < 1000) {
+			if (destinationFilter.size() < 10000) {
 				req.filterByDestination(destinationFilter);
 				destinationPredicate = Predicates.alwaysTrue();
 			} else {

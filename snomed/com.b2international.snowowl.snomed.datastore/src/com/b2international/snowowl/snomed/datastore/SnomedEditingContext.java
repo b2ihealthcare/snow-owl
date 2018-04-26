@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.getAttribute;
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -69,7 +66,6 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -79,7 +75,6 @@ import com.b2international.snowowl.snomed.Concepts;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.SnomedFactory;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -91,8 +86,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedRelationshipNameProvider;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -324,14 +317,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	
 	
 	/**Returns with the currently used language type reference set, falls back to an existing language if the configured identifier can not be resolved.*/
-	public SnomedStructuralRefSet getLanguageRefSet() {
-		return lookup(getLanguageRefSetId(), SnomedStructuralRefSet.class);
+	public SnomedStructuralRefSet getLanguageRefSet(String languageReferenceSetId) {
+		return lookup(languageReferenceSetId, SnomedStructuralRefSet.class);
 	}
 
-	public String getLanguageRefSetId() {
-		return ApplicationContext.getInstance().getServiceChecked(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageRefSetId(BranchPathUtils.createPath(transaction));
-	}
-	
 	/**
 	 * @param source can be <tt>null</tt> then source will be an empty concept with empty <tt>String</tt> description.
 	 * @param type can be <tt>null</tt> then type will be an empty concept with empty <tt>String</tt> description.
@@ -399,7 +388,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	 * @deprecated - will be replaced and removed in 4.4
 	 */
 	public Description buildDefaultDescription(String term, final String namespace, final Concept type, final Concept moduleConcept) {
-		return buildDefaultDescription(term, namespace, type, moduleConcept, getDefaultLanguageCode());
+		return buildDefaultDescription(term, namespace, type, moduleConcept, "en");
 	}
 	
 	/*builds a description with the specified description type, module concept, language code and namespace.*/
@@ -571,7 +560,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Check if concept is already released, and this is not a forced delete
 		if (concept.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", toString(concept)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "concept", concept.getId()));
 			return;
 		}
 		
@@ -583,7 +572,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				
 				if (deletionPlan.isRejected()) {
 					deletionPlan.addRejectionReason(
-							String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE, toString(concept), toString(relationship)));
+							String.format(UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE, concept.getId(), relationship.getId()));
 					return;
 				}
 				
@@ -612,7 +601,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			
 		// Check if description is already released, and this is not a forced delete
 		if (description.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", toString(description)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "description", description.getId()));
 			return;
 		}
 		
@@ -623,7 +612,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		
 		// Check if relationship is already released, and this is not a forced delete
 		if (relationship.isReleased() && !force) {
-			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", toString(relationship)));
+			deletionPlan.addRejectionReason(String.format(COMPONENT_IS_RELEASED_MESSAGE, "relationship", relationship.getId()));
 			return;
 		}
 		
@@ -677,19 +666,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.getSync();
 	}
 
-	private String toString(final Component component) {
-		final String id = getAttribute(component, SnomedPackage.eINSTANCE.getComponent_Id(), String.class);
-		if (component instanceof Concept) {
-			return getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(createPath(component), id);
-		} else if (component instanceof Description) {
-			return getAttribute(component, SnomedPackage.eINSTANCE.getDescription_Term(), String.class);
-		} else if (component instanceof Relationship) {
-			return getServiceForClass(ISnomedRelationshipNameProvider.class).getComponentLabel(createPath(component), id); 
-		} else {
-			return id;
-		}
-	}
-	
 	/**
 	 * @return the module concept specified in the preferences, or falls back to the <em>SNOMED CT core module</em>
 	 * concept if the specified concept is not found.
@@ -730,29 +706,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		} else {
 			return super.getComponentLookupService(type);
 		}
-	}
-	
-	/**
-	 * @return the default language code used for descriptions, calculated by
-	 *         taking the language code of the currently used language reference
-	 *         set, and removing any region-specific parts (everything after the
-	 *         first dash character)
-	 */
-	public String getDefaultLanguageCode() {
-		
-		String languageRefSetCode = ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration().getLanguageCode();
-		
-		if (languageRefSetCode == null) {
-			throw new NullPointerException("No default language code configured");
-		}
-		
-		int regionStart = languageRefSetCode.indexOf('-');
-		
-		if (regionStart != -1) {
-			languageRefSetCode = languageRefSetCode.substring(0, regionStart);
-		}
-		
-		return languageRefSetCode;
 	}
 	
 	/**

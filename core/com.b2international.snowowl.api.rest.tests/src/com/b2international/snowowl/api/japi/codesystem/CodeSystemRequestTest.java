@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.ICodeSystem;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Iterables;
@@ -48,7 +48,7 @@ public class CodeSystemRequestTest {
 	
 	@Test
 	public void getCodeSystem() {
-		final ICodeSystem codeSystem = getCodeSystem(SNOMEDCT);
+		final CodeSystemEntry codeSystem = getCodeSystem(SNOMEDCT);
 		assertNotNull(codeSystem);
 	}
 	
@@ -64,7 +64,7 @@ public class CodeSystemRequestTest {
 
 		assertCodeSystemCreated(shortName, oid);
 		
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		final CodeSystemEntry codeSystem = getCodeSystem(shortName);
 		assertEquals(shortName, codeSystem.getShortName());
 	}
 	
@@ -74,7 +74,7 @@ public class CodeSystemRequestTest {
 		final String oid = "oid2";
 		
 		createCodeSystem(shortName, oid);
-		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
+		final CodeSystemEntry oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
@@ -83,7 +83,7 @@ public class CodeSystemRequestTest {
 			.execute(bus)
 			.getSync();
 		
-		final ICodeSystem updatedCodeSystem = getCodeSystem(shortName);
+		final CodeSystemEntry updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
 		assertEquals("updated name", updatedCodeSystem.getName());
 	}
@@ -94,7 +94,7 @@ public class CodeSystemRequestTest {
 		final String oid = "oid3";
 		
 		createCodeSystem(shortName, oid);
-		final ICodeSystem oldCodeSystem = getCodeSystem(shortName);
+		final CodeSystemEntry oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
@@ -133,7 +133,7 @@ public class CodeSystemRequestTest {
 			.getSync();
 	}
 	
-	private ICodeSystem getCodeSystem(final String shortName) {
+	private CodeSystemEntry getCodeSystem(final String shortName) {
 		return CodeSystemRequests.prepareGetCodeSystem(shortName)
 				.build(REPOSITORY_ID)
 				.execute(bus)
@@ -142,7 +142,7 @@ public class CodeSystemRequestTest {
 	
 	private void assertCodeSystemCreated(final String shortName, final String oid) {
 		createCodeSystem(shortName, oid);
-		final ICodeSystem codeSystem = getCodeSystem(shortName);
+		final CodeSystemEntry codeSystem = getCodeSystem(shortName);
 		assertNotNull(codeSystem);
 	}
 
