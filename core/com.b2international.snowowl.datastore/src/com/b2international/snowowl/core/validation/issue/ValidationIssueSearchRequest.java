@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -51,8 +52,31 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by their rule's tooling ID field.
 		 */
-		TOOLING_ID
+		TOOLING_ID,
+		
+		/**
+		 * Filter matches by affected component identifier(s).
+		 */
+		AFFECTED_COMPONENT_ID,
+		
+		/**
+		 * Filter matches by affected component type(s).
+		 */
+		AFFECTED_COMPONENT_TYPE,
+		
+		/**
+		 * Filter matches by that are whitelisted or not. 
+		 */
+		WHITELISTED,
+		
+		/**
+		 * Filter matches by details
+		 */
+		DETAILS
 	}
+	
+	
+	ValidationIssueSearchRequest() {}
 	
 	@Override
 	protected Searcher searcher(ServiceProvider context) {
@@ -69,7 +93,7 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
 		}
 		
-		final Set<String> filterByRuleIds = newHashSet();
+		Set<String> filterByRuleIds = null;
 		
 		if (containsKey(OptionKey.TOOLING_ID)) {
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
@@ -87,16 +111,44 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 			if (ruleIds.isEmpty()) {
 				queryBuilder.filter(Expressions.matchNone());
 			} else {
-				filterByRuleIds.addAll(ruleIds);
+				filterByRuleIds = newHashSet(ruleIds);
 			}
 		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
-			filterByRuleIds.addAll(getCollection(OptionKey.RULE_ID, String.class));
+			Collection<String> ruleFilter = getCollection(OptionKey.RULE_ID, String.class);
+			if (filterByRuleIds != null) {
+				filterByRuleIds.addAll(ruleFilter);
+			} else {
+				filterByRuleIds = newHashSet(ruleFilter);
+			}
 		}
 		
-		if (!filterByRuleIds.isEmpty()) {
+		if (filterByRuleIds != null) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RULE_ID, filterByRuleIds));
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
+			Collection<String> affectedComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, affectedComponentIds));
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
+			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
+			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
+		}
+		
+		if (containsKey(OptionKey.WHITELISTED)) {
+			boolean whitelisted = getBoolean(OptionKey.WHITELISTED);
+			queryBuilder.filter(Expressions.match(ValidationIssue.Fields.WHITELISTED, whitelisted));
+		}
+		
+		if (containsKey(OptionKey.DETAILS)) {
+			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
+			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
+				Options options = getOptions(OptionKey.DETAILS);
+				extension.prepareQuery(queryBuilder, options);
+			}
 		}
 		
 		return queryBuilder.build();

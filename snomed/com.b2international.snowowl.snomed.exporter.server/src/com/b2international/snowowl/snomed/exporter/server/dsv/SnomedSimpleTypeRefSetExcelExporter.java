@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -49,11 +50,11 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.label.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Function;
 
 /**
@@ -112,7 +113,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 
-	@Override
 	protected CDOEditingContext getEditingContext() {
 		return context;
 	}
@@ -155,7 +155,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		
 		try {
 			
-			final String refSetLabel = formatSheetName(ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(getBranchPath(), refSet.getId()));
+			final String refSetLabel = formatSheetName(new SnomedConceptNameProvider(ApplicationContext.getServiceForClass(IEventBus.class), ApplicationContext.getServiceForClass(LanguageSetting.class)).getComponentLabel(getBranchPath(), refSet.getId()));
 			final Sheet sheet = workbook.createSheet(refSetLabel);
 			
 			async = monitor.forkAsync(70);
@@ -271,7 +271,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			final Row row = sheet.createRow(rowNum);
 			
 			// TODO all acceptability values should be printed out
-			final Acceptability acceptability = description.getAcceptabilityMap().get(context.getLanguageRefSetId());
+			final Acceptability acceptability = description.getAcceptabilityMap().get(Concepts.REFSET_LANGUAGE_TYPE_UK);
 			
 			if (null == acceptability) {
 				monitor.worked(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.IBranchPoint;
 
 /**
  * Service interface for wrapping a {@link CDONet4jSession session}.
@@ -35,20 +34,6 @@ public interface ICDOConnection extends ICDOManagedItem<ICDOConnection> {
 	 */
 	CDOView createView();
 
-	/**
-	 * Creates a CDO view on the specified {@link IBranchPoint#getBranchPath() branch } with a given {@link IBranchPoint#getTimestamp() timestamp}. 
-	 * @param branchPoint the branch point.
-	 * @return the CDO view.
-	 */
-	CDOView createView(final IBranchPoint branchPoint);
-
-	/**
-	 * Creates a CDO view on onto the HEAD of a branch given with its unique {@link IBranchPath branch path}. 
-	 * @param branchPath the branch path.
-	 * @return the CDO view.
-	 */
-	CDOView createView(final IBranchPath branchPath);
-	
 	/**
 	 * Creates a non-audit CDO view on a branch with unspecified HEAD branch point. 
 	 * @param branch the CDO branch. 

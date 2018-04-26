@@ -85,7 +85,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addActiveClause(queryBuilder);
 		addLanguageFilter(queryBuilder);
 		addNamespaceFilter(queryBuilder);
-		addActiveMemberOfClause(queryBuilder);
+		addActiveMemberOfClause(context, queryBuilder);
+		addMemberOfClause(context, queryBuilder);
 		addLanguageRefSetFilter(queryBuilder);
 		addAcceptableInFilter(queryBuilder);
 		addPreferredInFilter(queryBuilder);
@@ -146,10 +147,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	
 	private Expression toDescriptionTermQuery(final String searchTerm) {
 		final ExpressionBuilder qb = Expressions.builder();
-		qb.should(createTermDisjunctionQuery(searchTerm));
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
 			qb.should(parsedTerm(searchTerm));
+		} else {
+			qb.should(createTermDisjunctionQuery(searchTerm));
 		}
 		
 		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {

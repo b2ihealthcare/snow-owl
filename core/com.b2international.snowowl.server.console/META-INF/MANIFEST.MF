@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Server Console
 Bundle-SymbolicName: com.b2international.snowowl.server.console
-Bundle-Version: 6.1.0.qualifier
+Bundle-Version: 6.5.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
 Service-Component: OSGI-INF/maintenanceCommandProvider.xml, 
  OSGI-INF/userSessionCommandProvider.xml,
  OSGI-INF/remoteJobsCommandProvider.xml,
- OSGI-INF/codeSystemsCommandProvider.xml
+ OSGI-INF/codeSystemsCommandProvider.xml,
+ OSGI-INF/scriptCommandProvider.xml
 Import-Package: org.slf4j;version="1.7.2"
 Export-Package: com.b2international.snowowl.server.console
 Bundle-ActivationPolicy: lazy

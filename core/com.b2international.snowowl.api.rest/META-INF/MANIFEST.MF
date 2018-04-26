@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 6.1.0.qualifier
+Bundle-Version: 6.5.0.qualifier
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
@@ -42,9 +42,17 @@ Bundle-ActivationPolicy: lazy
 Web-ContextPath: /snowowl/admin
 Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.equinox.security;bundle-version="1.1.100",
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5",
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.4.5",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.4.5"
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.8.10",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.10",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.10",
+ com.fasterxml.jackson.datatype.jackson-datatype-guava;bundle-version="2.8.10",
+ com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider;bundle-version="2.8.10",
+ com.fasterxml.jackson.module.jackson-module-jaxb-annotations;bundle-version="2.8.10",
+ com.fasterxml.jackson.module.jackson-module-jsonSchema;bundle-version="2.8.10",
+ com.fasterxml.jackson.module.jackson.module.scala;bundle-version="2.8.10",
+ org.scala-lang.scala-library;bundle-version="2.10.6",
+ com.fasterxml.jackson.module.jackson-module-paranamer;bundle-version="2.8.10",
+ com.thoughtworks.paranamer;bundle-version="2.8.0"
 Bundle-ClassPath: .,
  WEB-INF/lib/aopalliance-1.0.jar,
  WEB-INF/lib/classmate-1.1.0.jar,
@@ -59,10 +67,6 @@ Bundle-ClassPath: .,
  WEB-INF/lib/json4s-native_2.10-3.2.9.jar,
  WEB-INF/lib/jsr311-api-1.1.1.jar,
  WEB-INF/lib/objenesis-2.1.jar,
- WEB-INF/lib/paranamer-2.3.jar,
- WEB-INF/lib/scala-library-2.10.4.jar,
- WEB-INF/lib/scala-reflect-2.10.0.jar,
- WEB-INF/lib/scalap-2.10.0.jar,
  WEB-INF/lib/spring-aop-4.0.5.RELEASE.jar,
  WEB-INF/lib/spring-beans-4.0.5.RELEASE.jar,
  WEB-INF/lib/spring-context-4.0.5.RELEASE.jar,
@@ -78,9 +82,4 @@ Bundle-ClassPath: .,
  WEB-INF/lib/swagger-annotations-1.3.11.jar,
  WEB-INF/lib/swagger-core_2.10-1.3.11.jar,
  WEB-INF/lib/swagger-models-0.9.3.jar,
- WEB-INF/lib/swagger-springmvc-0.9.3.jar,
- WEB-INF/lib/jackson-datatype-guava-2.6.6.jar,
- WEB-INF/lib/jackson-jaxrs-json-provider-2.6.6.jar,
- WEB-INF/lib/jackson-module-jaxb-annotations-2.6.6.jar,
- WEB-INF/lib/jackson-module-jsonSchema-2.6.6.jar,
- WEB-INF/lib/jackson-module-scala_2.10-2.6.6.jar
+ WEB-INF/lib/swagger-springmvc-0.9.3.jar

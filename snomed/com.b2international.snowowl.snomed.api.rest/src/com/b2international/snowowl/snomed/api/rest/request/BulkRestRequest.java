@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 package com.b2international.snowowl.snomed.api.rest.request;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
-import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,16 +35,11 @@ public final class BulkRestRequest {
 		this.requests = requests;
 	}
 	
-	public <C extends ServiceProvider> Request<C, BulkResponse> resolve(RequestResolver<C> resolver) {
-		final BulkRequestBuilder<C> req = BulkRequest.create();
-		for (RestRequest request : requests) {
-			req.add(request.resolve(resolver));
-		}
-		return req.build();
+	public <C extends ServiceProvider> Stream<Request<C, ?>> resolve(RequestResolver<C> resolver) {
+		return requests.stream().map(request -> request.resolve(resolver));
 	}
 	
 	public Collection<RestRequest> getRequests() {
 		return requests;
 	}
-
 }

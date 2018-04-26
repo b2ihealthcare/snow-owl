@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
@@ -55,11 +54,9 @@ import org.eclipse.spi.net4j.ClientProtocolFactory;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPoint;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.datastore.Authenticator;
 import com.b2international.snowowl.datastore.ClientProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.DatastoreActivator;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
@@ -163,28 +160,6 @@ import com.google.common.collect.Maps;
 	}
 
 	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(org.eclipse.emf.cdo.common.branch.CDOBranchPoint)
-	 */
-	@Override
-	public ICDOConnection get(final CDOBranchPoint branchPoint) {
-
-		Preconditions.checkNotNull(branchPoint, "CDO branch point argument cannot be null.");
-		return get(branchPoint.getBranch());
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(com.b2international.snowowl.core.api.IBranchPoint)
-	 */
-	@Override
-	public ICDOConnection get(final IBranchPoint branchPoint) {
-
-		Preconditions.checkNotNull(branchPoint, "Branch point argument cannot be null.");
-		return getByUuid(Preconditions.checkNotNull(branchPoint.getUuid()));
-
-	}
-
-	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(org.eclipse.emf.cdo.common.revision.CDORevision)
 	 */
 	@Override
@@ -218,8 +193,7 @@ import com.google.common.collect.Maps;
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#getAuthenticator()
 	 */
-	@Override
-	public Authenticator getAuthenticator() {
+	Authenticator getAuthenticator() {
 		return authenticator;
 	}
 

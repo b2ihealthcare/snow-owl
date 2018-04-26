@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.b2international.snowowl.snomed.api.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.b2international.snowowl.core.domain.IComponentRef;
-import com.b2international.snowowl.datastore.server.domain.ComponentRef;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -36,9 +34,4 @@ public abstract class AbstractSnomedRestService extends AbstractRestService {
 	@Autowired
 	protected IEventBus bus;
 
-	protected IComponentRef createComponentRef(final String branchPath, final String componentId) {
-		final ComponentRef conceptRef = new ComponentRef(repositoryId, branchPath, componentId);
-		conceptRef.checkStorageExists();
-		return conceptRef;
-	}
 }

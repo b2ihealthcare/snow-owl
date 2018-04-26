@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.tests.util;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -31,8 +30,8 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
@@ -56,9 +55,7 @@ public abstract class DocumentBuilders {
 				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongOpenHashSet())
 				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet())
-				.referringRefSets(Collections.<String>emptySet())
-				.referringMappingRefSets(Collections.<String>emptySet());
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
 	}
 	
 	public static SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {

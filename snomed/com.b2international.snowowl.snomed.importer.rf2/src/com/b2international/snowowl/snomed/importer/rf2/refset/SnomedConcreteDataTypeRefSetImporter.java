@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -139,7 +140,7 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 		member.setActive(row.isActive());
 		member.setModuleId(row.getModuleId());
 		member.setReferencedComponentId(row.getReferencedComponentId());
-		member.setUomComponentId(row.getUomId());
+		member.setUomComponentId(Strings.emptyToNull(row.getUomId()));
 		member.setOperatorComponentId(row.getOperatorId());
 		member.setLabel(row.getAttributeName());
 		member.setSerializedValue(row.getDataValue());

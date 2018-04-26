@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,35 +15,42 @@
  */
 package com.b2international.snowowl.datastore.version;
 
-import static com.google.common.base.Objects.toStringHelper;
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.util.Date;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.google.common.base.MoreObjects;
 
 /**
  * Configuration for the publication process.
  */
 public final class PublishOperationConfiguration {
 
-	private String codeSystemShortName;
-	private String versionId;
-	private String description;
-	private Date effectiveTime;
-	private String parentBranchPath;
+	private final String user;
+	private final String codeSystemShortName;
+	private final String parentBranchPath;
+	private final String versionId;
+	private final String description;
+	private final Date effectiveTime;
 	
 	public PublishOperationConfiguration(
+			String user,
 			String codeSystemShortName,
+			String parentBranchPath,
 			String versionId, 
 			String description,
-			Date effectiveTime,
-			String parentBranchPath) {
+			Date effectiveTime) {
+		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
+		this.parentBranchPath = parentBranchPath;
 		this.versionId = versionId;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
-		this.parentBranchPath = parentBranchPath;
+	}
+	
+	public String getUser() {
+		return user;
 	}
 
 	public String getVersionId() {
@@ -68,7 +75,7 @@ public final class PublishOperationConfiguration {
 	
 	@Override
 	public String toString() {
-		return toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("Version ID", versionId)
 				.add("Effective time", null == effectiveTime ? "unset" : EffectiveTimes.format(effectiveTime))
 				.add("Description", nullToEmpty(description))

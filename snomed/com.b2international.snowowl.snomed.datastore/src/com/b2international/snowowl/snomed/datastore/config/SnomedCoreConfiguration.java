@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
-	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
 	@Min(1)
 	@Max(3)
@@ -79,6 +78,9 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	@Valid
 	private SnomedIdentifierConfiguration ids = new SnomedIdentifierConfiguration();
+	
+	@Valid
+	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
 	
 	private boolean collectSystemChanges = false;
 	
@@ -209,12 +211,26 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 		this.collectSystemChanges = collectSystemChanges;
 	}
 	
+	/**
+	 * @return the identifier generation sub-section of the SNOMED CT core configuration object
+	 */
 	public SnomedIdentifierConfiguration getIds() {
 		return ids;
 	}
 	
 	public void setIds(SnomedIdentifierConfiguration ids) {
 		this.ids = ids;
+	}
+	
+	/**
+	 * @return the RF2 export defaults sub-section of the SNOMED CT core configuration object
+	 */
+	public SnomedExportDefaultConfiguration getExport() {
+		return export;
+	}
+	
+	public void setExport(SnomedExportDefaultConfiguration export) {
+		this.export = export;
 	}
 
 	/**

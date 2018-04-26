@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package com.b2international.snowowl.datastore.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
@@ -32,6 +35,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -56,19 +60,28 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 		final BranchManager branchManager = context.service(BranchManager.class);
 		final ICDOConnectionManager connectionManager = context.service(ICDOConnectionManager.class);
 		
-		final String branchWithoutBaseRef = branchPath.endsWith(RevisionIndex.BASE_REF_CHAR) 
-				? branchPath.substring(0, branchPath.length() - 1)
-				: branchPath;
-		final Branch branch = branchManager.getBranch(branchWithoutBaseRef);
-
-		if (branch.isDeleted()) {
-			throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchWithoutBaseRef);
+		final List<String> branchesToCheck = newArrayList();
+		if (RevisionIndex.isBaseRefPath(branchPath)) {
+			branchesToCheck.add(branchPath.substring(0, branchPath.length() - 1));
+		} else if (RevisionIndex.isRevRangePath(branchPath)) {
+			branchesToCheck.addAll(ImmutableList.copyOf(RevisionIndex.getRevisionRangePaths(branchPath)));
+		} else {
+			branchesToCheck.add(branchPath);
 		}
 		
-		final ICDOConnection connection = connectionManager.getByUuid(context.id());
-		final CDOBranch cdoBranch = connection.getBranch(branch.branchPath());
-		if (cdoBranch == null) {
-			throw new NotFoundException("Branch", branchWithoutBaseRef);
+		Branch branch = null; 
+		for (String branchToCheck : branchesToCheck) {
+			branch = branchManager.getBranch(branchToCheck);
+			
+			if (branch.isDeleted()) {
+				throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchToCheck);
+			}
+			
+			final ICDOConnection connection = connectionManager.getByUuid(context.id());
+			final CDOBranch cdoBranch = connection.getBranch(branch.branchPath());
+			if (cdoBranch == null) {
+				throw new NotFoundException("Branch", branchToCheck);
+			}
 		}
 		
 		return branch;

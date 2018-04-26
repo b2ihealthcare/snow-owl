@@ -21,22 +21,19 @@
    <feature url="features/org.eclipse.emf.sdk_2.12.0.v20160526-0356.jar" id="org.eclipse.emf.sdk" version="2.12.0.v20160526-0356">
       <category name="Modeling"/>
    </feature>
-   <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
-      <category name="Modeling"/>
-   </feature>
    <feature url="features/org.eclipse.net4j_4.1.0.v20120612-0600.jar" id="org.eclipse.net4j" version="4.1.0.v20120612-0600">
       <category name="CDO"/>
    </feature>
    <feature url="features/org.eclipse.net4j.db_4.1.0.v20120609-0625.jar" id="org.eclipse.net4j.db" version="4.1.0.v20120609-0625">
       <category name="CDO"/>
    </feature>
-   <feature url="features/org.codehaus.groovy20.feature_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy20.feature" version="2.9.1.xx-201411061342-e43j8-RELEASE">
+   <feature url="features/org.codehaus.groovy24.feature_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy24.feature" version="2.9.2.xx-201712112151-e43j8">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.1.xx-201411061342-e43j8-RELEASE" patch="true">
+   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.2.xx-201712112151-e43j8" patch="true">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.headless.feature_2.9.1.xx-201411061342-e43j8-RELEASE.jar" id="org.codehaus.groovy.headless.feature" version="2.9.1.xx-201411061342-e43j8-RELEASE">
+   <feature url="features/org.codehaus.groovy.headless.feature_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy.headless.feature" version="2.9.2.xx-201712112151-e43j8">
       <category name="IDE Tools"/>
    </feature>
    <feature url="features/org.eclipse.jdt_3.9.2.v20140221-1700.jar" id="org.eclipse.jdt" version="3.9.2.v20140221-1700">
@@ -106,14 +103,20 @@
    <bundle id="com.codahale.metrics.json" version="3.0.2"/>
    <bundle id="com.codahale.metrics.healthchecks" version="3.0.2"/>
    <bundle id="com.codahale.metrics.servlet" version="3.0.2"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile" version="2.8.6"/>
-   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.8.6"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-annotations" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-core" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.core.jackson-databind" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.dataformat.jackson-dataformat-xml" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.module.jackson-module-afterburner" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.module.jackson-module-jsonSchema" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.module.jackson.module.scala" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.datatype.jackson-datatype-guava" version="2.8.10"/>
+   <bundle id="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" version="2.8.10"/>
    <bundle id="com.healthmarketscience.jackcess" version="1.2.9"/>
    <bundle id="io.reactivex.rxjava2.rxjava" version="2.0.7"/>
    <bundle id="org.reactivestreams.reactive-streams" version="1.0.0.release"/>
@@ -135,6 +138,7 @@
    <bundle id="io.netty.handler" version="4.1.13.Final" />
    <bundle id="io.netty.resolver" version="4.1.13.Final" />
    <bundle id="io.netty.transport" version="4.1.13.Final" />
+   <bundle id="org.jetbrains.kotlin.osgi-bundle" version="1.1.51" />
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>

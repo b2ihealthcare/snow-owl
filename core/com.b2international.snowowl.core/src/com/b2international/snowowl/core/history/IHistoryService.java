@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.history;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -43,5 +42,5 @@ public interface IHistoryService {
 	 *                                            is not registered
 	 * @throws ComponentNotFoundException         if the component identifier does not match any component on the given task
 	 */
-	List<IHistoryInfo> getHistory(IComponentRef ref);
+	List<IHistoryInfo> getHistory(String branch, String componentId);
 }

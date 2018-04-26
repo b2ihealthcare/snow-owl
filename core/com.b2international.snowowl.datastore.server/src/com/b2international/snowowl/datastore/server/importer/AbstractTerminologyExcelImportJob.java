@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> extends AbstractTerminologyImportJob {
 
+	public static final String INDEX_SHEET = "index";
 	protected static final boolean DEFAULT_ACTIVE_STATUS = true;
 
 	private long latestSuccessfulCommitTime;
@@ -285,14 +286,14 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 		return CDOServerUtils.getLastCommitTime(getEditingContext().getTransaction().getBranch());
 	}
 
-	private Set<Sheet> collectSheets(final Workbook workbook) {
+	public static Set<Sheet> collectSheets(final Workbook workbook) {
 		final Set<Sheet> sheets = Sets.newHashSet();
 		final int numberOfSheets = workbook.getNumberOfSheets();
 
 		for (int i = 0; i < numberOfSheets; i++) {
 			final Sheet sheet = workbook.getSheetAt(i);
 
-			if (!"index".equalsIgnoreCase(sheet.getSheetName())) {
+			if (!INDEX_SHEET.equalsIgnoreCase(sheet.getSheetName())) {
 				sheets.add(sheet);
 			}
 

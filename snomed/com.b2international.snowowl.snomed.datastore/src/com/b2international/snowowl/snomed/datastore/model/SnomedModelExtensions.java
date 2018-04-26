@@ -96,7 +96,7 @@ public class SnomedModelExtensions {
 	 */
 	public static void remove(final Description description) {
 		if (isNewObject(description) || !description.isReleased()) {
-			EcoreUtil.remove(description);
+			description.setConcept(null);
 		}
 	}
 

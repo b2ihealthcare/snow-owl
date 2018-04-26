@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,52 @@
  */
 package com.b2international.snowowl.datastore;
 
-import java.io.Serializable;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
+import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 
 /**
  * Abstract service implementation for {@link ILookupService}s.
  * 
- * 
- * @param <K> serializable unique identifier of the component
- * @param <T> type of the searched component
- * @param <V> should be CDO View or its subclass.
+ * @param <T> type of the searched component, {@link CDOObject} subclass
+ * @param <V> should be {@link CDOView} or its subclass.
  */
-public abstract class AbstractLookupService<K extends Serializable, T, V> implements ILookupService<K, T, V> {
+public abstract class AbstractLookupService<T extends CDOObject, V extends CDOView> implements ILookupService<T, V> {
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.core.api.ILookupService#exists(com.b2international.snowowl.core.api.IBranchPath, java.io.Serializable)
-	 */
 	@Override
-	public boolean exists(final IBranchPath branchPath, final K id) {
+	public T getComponent(String id, V view) {
+		checkNotNull(id, "Component ID argument cannot be null.");
+		CDOUtils.check(view);
+
+		// check the new components first in the given view
+		for (final T component : ComponentUtils2.getNewObjects(view, getType())) {
+			if (id.equals(getId(component))) {
+				return component;
+			}
+		}
+		
+		final long conceptStorageKey = getStorageKey(BranchPathUtils.createPath(view), id);
+
+		if (CDOUtils.NO_STORAGE_KEY == conceptStorageKey) { 
+			return null;
+		}
+		
+		return CDOUtils.getObjectIfExists(view, conceptStorageKey);
+	}
+	
+	@Override
+	public final boolean exists(final IBranchPath branchPath, final String id) {
 		return -1 < getStorageKey(branchPath, id);
 	}
 	
-	protected abstract EPackage getEPackage();
+	protected abstract String getId(T component);
+	
+	protected abstract Class<T> getType();
+	
 }

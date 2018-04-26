@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.datastore.request.compare;
+
+import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -44,6 +46,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	@JsonProperty
 	private String compare;
 	
+	@Min(0)
+	@JsonProperty
+	private int limit;
+	
 	BranchCompareRequest() {
 	}
 	
@@ -53,6 +59,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	
 	void setCompareBranch(String compareBranch) {
 		this.compare = compareBranch;
+	}
+	
+	void setLimit(int limit) {
+		this.limit = limit;
 	}
 	
 	@Override
@@ -65,10 +75,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare);
+			compareResult = index.compare(base, compare, limit);
 			baseBranchPath = base;
 		} else {
-			compareResult = index.compare(compare);
+			compareResult = index.compare(compare, limit);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
@@ -78,6 +88,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchNew(createMatchAllReturnIdsQuery(revisionType));
+				result.addTotalNew(compareResult.getNewTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -89,6 +100,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchChanged(createMatchAllReturnIdsQuery(revisionType));
+				result.addTotalChanged(compareResult.getChangedTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -100,6 +112,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
 				final Hits<String> hits = compareResult.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
+				result.addTotalDeleted(compareResult.getDeletedTotals(revisionType));
 				hits.getHits()
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
@@ -115,8 +128,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			.from(revisionType)
 			.fields(RevisionDocument.Fields.ID)
 			.where(Expressions.matchAll())
-			.limit(Integer.MAX_VALUE)
+			.limit(limit)
 			.build();
 	}
-
 }

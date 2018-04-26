@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,17 +61,16 @@ import org.eclipse.xtext.util.Tuples;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.collections.longs.LongValueMap;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.datastore.cdo.CDOQueryUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
@@ -163,7 +163,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			containerVersion = visibleContainerRevision.getVersion();
 			
 			final CDOQuery query = transaction.createQuery("sql", sqlGetIndexFormatted);
-			query.setParameter(CDOQueryUtils.CDO_OBJECT_QUERY, false);
+			query.setParameter(org.eclipse.emf.cdo.server.internal.db.SQLQueryHandler.CDO_OBJECT_QUERY, false);
 			query.setParameter("cdoId", cdoId);
 			query.setParameter("containerId", containerId);
 			query.setParameter("containerVersion", containerVersion);
@@ -217,33 +217,57 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return Tuples.<String, Class<?>>pair(componentId, type);
 	}
 	
-	public final <T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public final <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		final Map<String, T> resolvedComponentsById = newHashMap();
-		final Set<String> unresolvedComponentIds = newHashSet();
+		final Set<String> unresolvedComponentIds = newHashSet(componentIds);
 		
-		for (String componentId : componentIds) {
+		// check already resolved components first
+		for (Iterator<String> it = unresolvedComponentIds.iterator(); it.hasNext();) {
+			String componentId = it.next();
 			Pair<String, Class<?>> key = createComponentKey(componentId, type);
 			if (resolvedObjectsById.containsKey(key)) {
 				resolvedComponentsById.put(componentId, type.cast(resolvedObjectsById.get(key)));
-			} else {
-				unresolvedComponentIds.add(componentId);
+				it.remove();
 			}
 		}
 		
+		for (Iterator<String> it = unresolvedComponentIds.iterator(); it.hasNext();) {
+			String componentId = it.next();
+			// lookup the unresolved ID in new and dirty components
+			for (CDOObject newComponent : ComponentUtils2.getNewObjects(getTransaction(), type)) {
+				if (componentId.equals(getId(newComponent))) {
+					resolvedComponentsById.put(componentId, type.cast(newComponent));
+					it.remove();
+				}
+			}
+			
+			for (CDOObject dirtyComponent : ComponentUtils2.getDirtyObjects(getTransaction(), type)) {
+				if (componentId.equals(getId(dirtyComponent))) {
+					resolvedComponentsById.put(componentId, type.cast(dirtyComponent));
+					it.remove();
+				}
+			}
+		}
+		
+		// as last resort, query the index for the storageKey to be able to resolve the class
 		if (!unresolvedComponentIds.isEmpty()) {
-			LongValueMap<String> storageKeyById = getStorageKeys(unresolvedComponentIds, type);
-			for (String componentId : storageKeyById.keySet()) {
-				final long storageKey = storageKeyById.get(componentId);
+			for (IComponent component : fetchComponents(unresolvedComponentIds, type)) {
+				final String componentId = component.getId();
+				final long storageKey = component.getStorageKey();
 				final T object = type.cast(lookup(storageKey));
 				resolvedComponentsById.put(componentId, object);
 				resolvedObjectsById.put(createComponentKey(componentId, type), object);
 			}
 		}
 		
+		// TODO remove detached components???
+		
 		return resolvedComponentsById;
 	}
 	
-	protected abstract <T extends EObject> LongValueMap<String> getStorageKeys(Collection<String> componentIds, Class<T> type);
+	protected abstract String getId(CDOObject component);
+
+	protected abstract <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type);
 
 	public final <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
 		try {
@@ -253,7 +277,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		}
  	}
 	
-	protected <T> ILookupService<String, T, CDOView> getComponentLookupService(Class<T> type) {
+	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
 		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
 	}
 
@@ -409,19 +433,11 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * @return an immutable list of the available code systems.
 	 */
 	public List<CodeSystem> getCodeSystems() {
-		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
-		}
-		
 		final CDOResource cdoResource = transaction.getOrCreateResource(getMetaRootResourceName());
 		return FluentIterable.from(cdoResource.getContents()).filter(CodeSystem.class).toList();
 	}
 	
 	public CodeSystem getCodeSystem(final String uniqueId) {
-		if (!getBranch().equals(IBranchPath.MAIN_BRANCH)) {
-			throw new IllegalStateException(String.format("Snomed Code Systems are maintained on MAIN branch, this editing context uses %s", getBranch()));
-		}
-		
 		final Optional<CodeSystem> optional = FluentIterable.from(getCodeSystems()).firstMatch(new Predicate<CodeSystem>() {
 			@Override
 			public boolean apply(final CodeSystem input) {

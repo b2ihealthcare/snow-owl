@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Normalizers;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.compat.TextConstants;
@@ -48,6 +49,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -65,6 +67,14 @@ import com.google.common.collect.Maps;
 @Doc
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
+	SnomedDescriptionIndexEntry.Fields.TERM,
+	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
+})
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
@@ -89,9 +99,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	public static Builder builder(final SnomedDescription input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
 				.moduleId(input.getModuleId())
 				.languageCode(input.getLanguageCode())
@@ -119,9 +131,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	public static Builder builder(Description description) {
+		String id = description.getId();
 		return builder()
 				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-				.id(description.getId()) 
+				.id(id) 
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(description.getTerm())
 				.moduleId(description.getModule().getId())
 				.released(description.isReleased()) 
@@ -141,9 +155,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 * @return
 	 */
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
+		String id = doc.getId();
 		return builder()
 				.storageKey(doc.getStorageKey())
-				.id(doc.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
 				.moduleId(doc.getModuleId())
 				.released(doc.isReleased())
@@ -173,6 +189,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
+		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -201,7 +218,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchTermOriginal(String term) {
-			return exactMatch(Fields.TERM + ".original", term);
+			return exactMatch(Fields.ORIGINAL_TERM, term);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
@@ -391,8 +408,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					preferredIn, 
 					acceptableIn,
 					namespace,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf);
 			doc.setScore(score);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);

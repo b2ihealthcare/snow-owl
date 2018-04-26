@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test tools for tests based on Index API
 Bundle-SymbolicName: com.b2international.index.api.tests.tools;singleton:=true
-Bundle-Version: 6.1.0.qualifier
+Bundle-Version: 6.5.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.index.api,

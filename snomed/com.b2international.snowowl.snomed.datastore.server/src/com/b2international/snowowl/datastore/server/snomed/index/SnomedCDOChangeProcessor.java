@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
@@ -228,7 +229,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
 		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final String importFeature = SnomedDatastoreActivator.REPOSITORY_UUID + ".import";
+		final String importFeature = SnomedFeatures.getImportFeatureToggle(searcher.branch());
 		final boolean importRunning = features.exists(importFeature) ? features.check(importFeature) : false;
 		final boolean reindexRunning = features.exists(reindexFeature) ? features.check(reindexFeature) : false;
 		final boolean checkCycles = !importRunning && !reindexRunning;

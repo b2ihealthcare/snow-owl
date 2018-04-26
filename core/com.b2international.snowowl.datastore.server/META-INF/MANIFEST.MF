@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Datastore Server
 Bundle-SymbolicName: com.b2international.snowowl.datastore.server;singleton:=true
-Bundle-Version: 6.1.0.qualifier
+Bundle-Version: 6.5.0.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.server.DatastoreServerActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.codehaus.groovy;bundle-version="[2.0.7,2.1.0)",
+ org.codehaus.groovy;bundle-version="[2.4.13,2.5.0)",
  com.b2international.snowowl.datastore;visibility:=reexport,
  com.b2international.snowowl.rpc,
  com.b2international.snowowl.dependencies,
@@ -16,7 +16,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.cdo,
- com.b2international.snowowl.datastore.server.domain,
  com.b2international.snowowl.datastore.server.history,
  com.b2international.snowowl.datastore.server.importer,
  com.b2international.snowowl.datastore.server.index,

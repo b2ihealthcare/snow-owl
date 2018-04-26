@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import static java.util.Collections.synchronizedSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
  * @since 2.7
  */
-public class CompositeClassLoader extends ClassLoader {
+public final class CompositeClassLoader extends ClassLoader {
 
 	private final Set<ClassLoader> classLoaders = synchronizedSet(Sets.<ClassLoader>newHashSet());
 
@@ -35,6 +36,11 @@ public class CompositeClassLoader extends ClassLoader {
 		}
 	}
 
+	@Override
+	protected Class<?> findClass(String name) throws ClassNotFoundException {
+		return loadClass(name);
+	}
+	
 	@Override
 	public Class loadClass(String name) throws ClassNotFoundException {
 		for (final Iterator<ClassLoader> iterator = classLoaders.iterator(); iterator.hasNext();) {
@@ -53,6 +59,10 @@ public class CompositeClassLoader extends ClassLoader {
 		if (classLoader != null) {
 			classLoaders.remove(classLoader);
 		}
+	}
+	
+	public Set<ClassLoader> getClassLoaders() {
+		return ImmutableSet.copyOf(classLoaders);
 	}
 
 }

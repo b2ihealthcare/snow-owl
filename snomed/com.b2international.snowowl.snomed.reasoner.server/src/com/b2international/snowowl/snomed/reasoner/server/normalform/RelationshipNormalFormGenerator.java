@@ -43,7 +43,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.LongSets.InverseLongFunction;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
@@ -681,7 +681,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 *
 	 * @param reasonerTaxonomy the reasoner to extract results from (may not be {@code null})
 	 */
-	public RelationshipNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public RelationshipNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
 	}
 
@@ -737,7 +737,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			otherNonIsAFragments.put(directSuperTypeId, getCachedNonIsAFragments(directSuperTypeId));
 		}
 
-		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getNonIsAFragments(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getStatedNonIsAFragments(conceptId);
 		final Collection<StatementFragment> ownInferredFragments = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
 		final Collection<StatementFragment> ownInferredNonIsaFragments = Collections2.filter(ownInferredFragments, new Predicate<StatementFragment>() {
 			@Override

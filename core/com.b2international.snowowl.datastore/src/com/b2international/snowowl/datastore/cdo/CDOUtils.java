@@ -39,7 +39,6 @@ import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOChangeSetData;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.model.CDOClassInfo;
@@ -61,7 +60,6 @@ import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.util.ObjectNotFoundException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
@@ -74,18 +72,13 @@ import org.eclipse.emf.internal.cdo.CDOObjectImpl.CDOStoreSettingsImpl;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 import org.eclipse.net4j.util.lifecycle.LifecycleState;
-import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.collections.Procedure;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -95,7 +88,6 @@ import com.google.common.collect.Lists;
  */
 public abstract class CDOUtils {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CDOUtils.class); 
 	private static final int MAX_REVISION_LIMIT = 1_000_000;
 	
 	/**
@@ -298,13 +290,6 @@ public abstract class CDOUtils {
 		return object;
 	}
 
-	/**
-	 * Executes the given CDO function and return with the output of the function.
-	 */
-	public static <T> T apply(final CDOFunction<T> function) {
-		return Preconditions.checkNotNull(function, "CDO function argument cannot be null.").apply();
-	}
-	
 	/**
 	 * Returns {@code true} if the CDO state of the specified object is {@link CDOState#TRANSIENT transient} otherwise returns with {@code false}.
 	 * @param object CDO object to check. Cannot be {@code null}.
@@ -511,122 +496,7 @@ public abstract class CDOUtils {
 		
 	}
 	
-	/***
-	 * Applies and commits the changes to the HEAD of the branch given by its unique {@link IBranchPath branch path}.
-	 * <br>The object graph changes are given as a input stream. If the commit comment is given, then it will be set 
-	 * as the commit comment for the modification.<br>This method attempts to merge conflicting changes if any,
-	 * after the first failed commit attempt. The specified stream will be closed, cannot be referenced after invoking this method.
-	 * @param branchPath the branch path where to apply the changes.
-	 * @param repositoryUuid the UUID of the repository.
-	 * @param is the object graph changes as a stream. Will be closed in anyway.
-	 * @param commitComment the commit comment. Optional, can be {@code null}.
-	 * @return the commit comment returns as an outcome of the changes made in the repository.
-	 * @throws SnowowlServiceException if either the stream cannot be referenced, or the commit failed due to {@link CommitException}.
-	 */
-	public static CDOCommitInfo commitChanges(final IBranchPath branchPath, final String repositoryUuid, final InputStream is, @Nullable final String commitComment) throws SnowowlServiceException {
-		
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.");
-		Preconditions.checkNotNull(is, "Input stream argument cannot be null.");
-		
-		final ICDOConnection connection = ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getByUuid(repositoryUuid);
-		final CDOBranch targetBranch = connection.getBranch(branchPath);
-		
-		CDOTransaction transaction = null;
-		
-		try {
-		
-			transaction = connection.createTransaction(targetBranch);
-			@SuppressWarnings("restriction")
-			final org.eclipse.emf.internal.cdo.object.CDOObjectMerger objectMerger = createObjectMerger();
-			transaction.importChanges(is, true, objectMerger);
-			
-			try {
-				
-				//set commit comment if any
-				transaction.setCommitComment(Strings.nullToEmpty(commitComment));
-				return transaction.commit();
-				
-			} catch (final CommitException e) {
-				
-				//if transaction contains conflicts, try to merge them
-				if (transaction.hasConflict()) {
-					
-					CDOTransaction newTransaction = null;
-					
-					try {
-						
-						newTransaction = connection.createTransaction(targetBranch);
-						//merge changes
-						mergeTransaction(transaction, newTransaction);
-						
-						try {
-							
-							//set commit comment if any
-							newTransaction.setCommitComment(Strings.nullToEmpty(commitComment));
-							return newTransaction.commit();
-							
-						} catch (final CommitException ee) {
-							
-							final StringBuilder sb = new StringBuilder("Cannot apply changes to transaction. Reason: ");
-							sb.append(ee.getMessage());
-							sb.append(".");
-							LOGGER.error(sb.toString());
-							
-							throw new SnowowlServiceException(sb.toString(), ee);
-							
-						}
-						
-					} finally {
-						
-						LifecycleUtil.deactivate(newTransaction);
-						
-					}
-					
-				}
-				
-				final StringBuilder sb = new StringBuilder("Cannot apply changes to transaction. Reason: ");
-				sb.append(e.getMessage());
-				sb.append(".");
-				LOGGER.error(sb.toString());
-				
-				throw new SnowowlServiceException(sb.toString(), e);
-				
-			}
-			
-		} catch (final IOException e) {
-			
-			final StringBuilder sb = new StringBuilder("Cannot apply changes to transaction. Reason: ");
-			sb.append(e.getMessage());
-			sb.append(".");
-			LOGGER.error(sb.toString());
-			
-			throw new SnowowlServiceException(sb.toString(), e);
-			
-		} finally {
-			
-			LifecycleUtil.deactivate(transaction);
-			
-			if (null != is) {
-				
-				try {
-					is.close();
-				} catch (final IOException e) {
-					try {
-						is.close();
-					} catch (final IOException e1) {
-						e.addSuppressed(e1);
-					}
-				}
-				
-			}
-			
-		}
-		
-		
-	}
-	
-	/***
+	/**
 	 * Adjusts all revisions of the given {@link CDOTransaction transaction} with the given {@link CDOReferenceAdjuster adjuster}.
 	 * The following revisions will be adjusted:<p>
 	 * <ul>
@@ -811,12 +681,6 @@ public abstract class CDOUtils {
 		return sb;
 	}
 	
-	@SuppressWarnings("restriction")
-	private static org.eclipse.emf.internal.cdo.object.CDOObjectMerger createObjectMerger() {
-		return new org.eclipse.emf.internal.cdo.object.DelegatingCDOObjectMerger(
-				new CDORevisionMerger2());
-	}
-
 	/*returns with an iterator for traversing CDO branch hierarchy from bottom to top.*/
 	private static Iterator<CDOBranch> bottomToTopIterator0(final CDOBranch branch) {
 		Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.");

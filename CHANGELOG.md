@@ -1,6 +1,140 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.4.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.4.0.
+
+#### Datasets created before 6.4.0
+All datasets created before 6.4.0 require a full `reindex` due to changes in all codesystem schemas.
+
+### Added
+- Add inferred and stated parent ID arrays to the SNOMED CT Concept representations (a5f1f1f)
+- Support revision expression values in search requests path parameters (6e5ab16) 
+
+### Changes
+- Reintroduce revision hashing to support proper calculation of change sets between two branch points (#219)
+- Allow locally running applications to access embedded ES instance (adbf017)
+- Allow SNOMED CT Descriptions as simple map referenced component types (52b6ca9)
+
+### Bugs
+- Fix ID Filter bug in search requests (773b241)
+- Reduce amount of memory allocated when deserializing SNOMED CT index documents (98c4f2f, 2d4d749)
+- Fix incorrect scroll state checks when scrolling documents (597f36b)
+- Skip logging of script arguments to prevent possible memory leak (3c0c578)
+- Properly prevent deletion of released components (#217)
+- Fix line duplication issue of RF2 export (c7c802e)
+- Fix ECL evaluation issues in RF2 export process (5fcec36)
+
+### Performance
+- Improve index search request execution significantly (5f6d4fe)
+- Improve performance of bulk member create requests (#216)
+- Remove classification results from memory when saving changes (8d2456f)
+
+
+## 6.3.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.3.0.
+
+#### Datasets created before 6.3.0
+All datasets created before 6.3.0 require a full `reindex` due to changes in SNOMED CT index schema. 
+
+### Added
+- Support multiple language code files in RF2 import (#194)
+- Support locale specific term based sorting in SNOMED CT Concept API (#199)
+- Support running a selection of validation rules instead of all of them (#196, #212)
+- Include Additional relationship types when exporting Reference Sets to DSV (#208)
+- Support expansion of `preferredDescriptions()` in SNOMED CT Concept API
+- Support HEAD requests on `/snowowl/admin/info` endpoint (d8e90e5)
+- Track inactive memberships of SNOMED CT core components in `memberOf` index field
+
+### Changed
+- Improve SNOMED CT RF2 Export API (#210)
+- Allow SNOMED CT Relationships with inactive source/destination to be imported (#205)
+- Reference Set identifier concept inactivation automatically inactivates members (e445053)
+- Changed default CDO's soft reference based revision cache to time/size eviction based Guava Cache (#199)
+- Field selection now uses indexed `docValues` instead of `_source` to improve response time of search requests (2895245)
+
+### Removed
+- Deprecated `filteredrefset` API (998368f)
+
+### Bugs
+- Fix conceptToKeep selection logic from equivalent concept sets (#200)
+- Fix singleton module/namespace assigner bug in SNOMED CT Classification (#202)
+- Fix branch timestamp update when importing RF2 with unpublished content (#203)
+- Fix and simplify module dependency member collection logic (#191, #214)
+- Reduce memory usage of revision compare (9d5b355)
+- Reduce memory usage of RF2 import (a3642e9)
+- Improve Validation Whitelist API performance (#206)
+- Improve performance of Validation API (#209)
+- Add `60s` timeout to `EventBus` address synchronization (3cfb315)
+- Fix CDORemoveFeatureDelta bug (0929669)
+- Fix occasionally failing bulk updates in index commits (cba7e18)
+
+## 6.2.0
+
+### Added
+- Set status of stale remote jobs to FAILED during startup (580d3e3)
+
+### Bugs
+- Fix missing searchAfter argument from revision index searches (56a5e03)
+- Serialize ECL expressions in a synchronized block (5d05844)
+
+## 6.1.0
+
+### Added
+- New, generic scripting API module (com.b2international.scripting.api)
+  * Groovy implementation of the new scripting API module (com.b2international.scripting.groovy)
+- SNOMED CT Validation API
+  * Add Groovy based validation rule implementation and execution
+  * Add white list support (#189) 
+- `isActiveMemberOf` filter now supports ECL expressions in SNOMED CT Component search requests
+- Add module and namespace assigner feature from `4.x` branch ()
+- Deleted branches can be reused by creating a branch with the same path (parent + name) (dc53ade) 
+
+### Changed
+- Dependencies:
+  * Kotlin OSGI 1.1.51 has been added
+  * Groovy from `2.0.7` to `2.4.13`
+  * Jackson from `2.8.6` to `2.8.10`
+  * EMF JSON Serializer library has been removed
+
+### Removed
+- Bunch of deprecated, unused API and functionality, related commits:
+  * 1de52b0
+  * 268bc5d
+  * 7a23851
+  * 94db418
+  * 2145d55
+  * 7b63998
+  * bbacfb5
+  * 5d104f8
+  * e8a3323
+  * 6db7221
+  * 4a790d8
+  * a67de24
+  * e274766
+  * 56c9636
+  * 613dd59
+  * b39ffd2
+  * c733563
+  * 3f92263
+- Modules:
+  * `com.b2international.commons.groovy`
+  * `com.b2international.snowowl.scripting.core`
+  * `com.b2international.snowowl.scripting.services`
+  * `com.b2international.snowowl.scripting.server.feature`
+
+### Bugs
+- Fix DSV import bugs (02180b4)
+- Fix component not found exception thrown when trying to look up new components from transaction (97918c5)
+- Fix HTTP method type when communicating with external identifier service (CIS) (32e9e85)
+
+
 ## 6.0.0
 
 ### Breaking changes

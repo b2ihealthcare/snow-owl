@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.api.component.IdProvider;
 
 /**
  * A compact representation of a SNOMED CT concept, used in reasoner change reports.
  */
-public class ChangeConcept implements IdProvider<Long>, IconIdProvider<Long>, Serializable {
+public class ChangeConcept implements IdProvider<Long>, Serializable {
 
 	private static final long serialVersionUID = -1213161598884377108L;
 
@@ -40,7 +39,6 @@ public class ChangeConcept implements IdProvider<Long>, IconIdProvider<Long>, Se
 		return id;
 	}
 
-	@Override 
 	public Long getIconId() {
 		return iconId;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
@@ -59,6 +58,8 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
+import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -233,23 +234,27 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			final Principal principal) throws IOException {
 
 		final SnomedExportRestRun export = getExport(exportId);
+		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
-		final UUID exportedFile = SnomedRequests.rf2().prepareExport()
+		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())
 			.setExtensionOnly(export.isExtensionOnly())
-			.setIncludeUnpublished(export.isIncludeUnpublished())
+			.setIncludePreReleaseContent(includeUnpublished)
 			.setModules(export.getModuleIds())
-			.setNamespace(export.getNamespaceId())
+			.setCountryNamespaceElement(export.getNamespaceId())
+			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())
-			.setStartEffectiveTime(EffectiveTimes.format(export.getStartEffectiveTime(), DateFormats.SHORT))
-			.setEndEffectiveTime(EffectiveTimes.format(export.getEndEffectiveTime(), DateFormats.SHORT))
-			.build(this.repositoryId, export.getBranchPath())
+			.setStartEffectiveTime(export.getStartEffectiveTime())
+			.setEndEffectiveTime(export.getEndEffectiveTime())
+			.setRefSetExportLayout(Rf2RefSetExportLayout.INDIVIDUAL)
+			.setReferenceBranch(export.getBranchPath())
+			.build(this.repositoryId)
 			.execute(bus)
 			.getSync();
 		
-		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile);
+		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile.getRegistryId());
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
@@ -262,6 +267,12 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
+	private boolean isDeltaWithoutRange(final SnomedExportRestConfiguration export) {
+		return Rf2ReleaseType.DELTA.equals(export.getType())
+				&& export.getStartEffectiveTime() == null
+				&& export.getEndEffectiveTime() == null;
+	}
+
 	private URI getExportRunURI(UUID exportId) {
 		return linkTo(methodOn(SnomedExportRestService.class).getExport(exportId)).toUri();
 	}

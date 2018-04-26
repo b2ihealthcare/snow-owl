@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -125,6 +126,19 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 
 	void setId(String id) {
 		this.id = id;
+	}
+	
+	/**
+	 * @return the set of core component SCTIDs mentioned in any reference set member property
+	 */
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		try {
+			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
+			return delegate.getRequiredComponentIds();
+		} catch (ComponentNotFoundException e) {
+			throw e.toBadRequestException();
+		}
 	}
 
 	@Override

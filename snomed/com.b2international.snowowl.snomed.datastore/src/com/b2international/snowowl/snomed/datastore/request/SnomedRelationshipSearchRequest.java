@@ -61,7 +61,8 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
-		addActiveMemberOfClause(queryBuilder);
+		addActiveMemberOfClause(context, queryBuilder);
+		addMemberOfClause(context, queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.SOURCE, SnomedRelationshipIndexEntry.Expressions::sourceIds);
 		addEclFilter(context, queryBuilder, OptionKey.TYPE, SnomedRelationshipIndexEntry.Expressions::typeIds);
 		addEclFilter(context, queryBuilder, OptionKey.DESTINATION, SnomedRelationshipIndexEntry.Expressions::destinationIds);

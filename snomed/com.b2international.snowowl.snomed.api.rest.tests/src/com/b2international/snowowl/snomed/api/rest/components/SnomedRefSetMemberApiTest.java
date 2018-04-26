@@ -39,9 +39,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -51,6 +48,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberBulkRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -443,7 +441,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.statusCode(201)
 				.extract().header("Location"));
 		
-		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
+		final SnomedRefSetMemberBulkRequestBuilder bulk = SnomedRequests.prepareBulkUpdateMembers();
 		
 		bulk.add(SnomedRequests.prepareDeleteMember(member1Id));
 		bulk.add(SnomedRequests.prepareDeleteMember(member3Id));
@@ -455,6 +453,9 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
+		
+		// Check that member 2 still exists
+		getComponent(branchPath, SnomedComponentType.MEMBER, member2Id).statusCode(200);
 	}
 
 	private void executeSyncAction(final String memberId) {

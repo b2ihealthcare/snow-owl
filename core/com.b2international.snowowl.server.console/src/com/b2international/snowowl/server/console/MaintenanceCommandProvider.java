@@ -328,7 +328,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 				.one()
-				.sortBy(new SortField(CommitInfoDocument.Fields.TIME_STAMP, false))
+				.sortBy(SortField.descending(CommitInfoDocument.Fields.TIME_STAMP))
 				.build(repositoryId)
 				.execute(getBus())
 				.getSync()

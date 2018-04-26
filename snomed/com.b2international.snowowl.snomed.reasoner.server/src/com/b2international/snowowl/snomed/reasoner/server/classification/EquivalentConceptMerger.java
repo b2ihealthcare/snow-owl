@@ -26,12 +26,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -39,14 +40,12 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedDeletionPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
@@ -58,7 +57,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -74,9 +72,9 @@ import com.google.common.collect.Sets;
 public class EquivalentConceptMerger {
 
 	private final SnomedEditingContext editingContext;
-	private final List<LongSet> equivalenciesToFix;
+	private final List<LongCollection> equivalenciesToFix;
 	
-	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongSet> equivalenciesToFix) {
+	public EquivalentConceptMerger(final SnomedEditingContext editingContext, final List<LongCollection> equivalenciesToFix) {
 		this.editingContext = editingContext;
 		this.equivalenciesToFix = equivalenciesToFix;
 	}
@@ -85,33 +83,20 @@ public class EquivalentConceptMerger {
 		// First resolve the equivalencies Map, to find the equivalent concept instances
 		final Multimap<Concept, Concept> equivalentConcepts = resolveEquivalencies();
 		final Iterable<Concept> concepts = Iterables.concat(equivalentConcepts.keySet(), equivalentConcepts.values());
+		final Iterable<String> destinationIds = Iterables.transform(concepts, Concept::getId);
+		SnomedRelationships inboundRelationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByDestination(destinationIds)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, editingContext.getBranch())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync();
 		final Multimap<String, Relationship> inboundRelationshipMap = HashMultimap.create(FluentIterable
-				.from(concepts)
-				.transformAndConcat(new Function<Concept, Iterable<SnomedRelationshipIndexEntry>>() {
-					@Override
-					public Iterable<SnomedRelationshipIndexEntry> apply(Concept input) {
-						final SnomedRelationships relationships = SnomedRequests.prepareSearchRelationship()
-							.all()
-							.filterByActive(true)
-							.filterByDestination(input.getId())
-							.build(SnomedDatastoreActivator.REPOSITORY_UUID, editingContext.getBranch())
-							.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-							.getSync();
-						return SnomedRelationshipIndexEntry.fromRelationships(relationships);
-					}
-				})
-				.transform(new Function<SnomedRelationshipIndexEntry, Relationship>() {
-					@Override
-					public Relationship apply(SnomedRelationshipIndexEntry input) {
-						return (Relationship) editingContext.lookup(input.getStorageKey());
-					}
-				})
-				.index(new Function<Relationship, String>() {
-					@Override
-					public String apply(Relationship input) {
-						return input.getDestination().getId();
-					}
-				}));
+				.from(inboundRelationships)
+				.transform(relationship -> (Relationship) editingContext.lookup(relationship.getStorageKey()))
+				//Exclude relationships that were already marked redundant
+				.filter(relationship -> relationship.getSource() != null && relationship.getDestination() != null)
+				.index( relationship -> relationship.getDestination().getId()));
 		for (Relationship relationship : ComponentUtils2.getNewObjects(editingContext.getTransaction(), Relationship.class)) {
 			inboundRelationshipMap.put(relationship.getDestination().getId(), relationship);
 		}
@@ -121,29 +106,27 @@ public class EquivalentConceptMerger {
 		
 		// iterate over the sorted concepts and switch to the equivalent using
 		// the resolved Map
-		final SnomedDeletionPlan deletionPlan = new SnomedDeletionPlan();
-		for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
-			final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
-			switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap);
-			removeOrDeactivate(conceptsToRemove, deletionPlan);
-		}
-		if (!deletionPlan.isEmpty()) {
-			if (!deletionPlan.isRejected()) {
-				this.editingContext.delete(deletionPlan);
-			} else {
-				throw new SnowowlRuntimeException(Joiner.on(",").join(deletionPlan.getRejectionReasons()));
+		try {
+			
+			for (final Concept conceptToKeep : equivalentConcepts.keySet()) {
+				final Collection<Concept> conceptsToRemove = equivalentConcepts.get(conceptToKeep);
+				switchToEquivalentConcept(conceptToKeep, conceptsToRemove, inboundRelationshipMap, equivalentConcepts);
+				removeOrDeactivate(conceptsToRemove);
 			}
+			
+		} catch (ConflictException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
-	private void removeOrDeactivate(Collection<Concept> conceptsToRemove, final SnomedDeletionPlan deletionPlan) {
+	private void removeOrDeactivate(Collection<Concept> conceptsToRemove) {
 		if (!Iterables.isEmpty(conceptsToRemove)) {
 			final SnomedInactivationPlan plan = new SnomedInactivationPlan(this.editingContext);
 			for (final Concept concept : conceptsToRemove) {
 				if (concept.isReleased()) {
 					this.editingContext.inactivateConcepts(plan, new NullProgressMonitor(), concept.cdoID());		
 				} else {
-					this.editingContext.canDelete(concept, deletionPlan, false);
+					this.editingContext.delete(concept, false);
 				}
 			}
 			plan.performInactivation(InactivationReason.RETIRED, null);
@@ -163,7 +146,7 @@ public class EquivalentConceptMerger {
 	private Multimap<Concept, Concept> resolveEquivalencies() {
 		final Multimap<Concept, Concept> processedEquivalencies = HashMultimap.create();
 		
-		for (final LongSet equivalentSet : equivalenciesToFix) {
+		for (final LongCollection equivalentSet : equivalenciesToFix) {
 			
 			final List<Concept> conceptsToRemove = Lists.newArrayList();
 			
@@ -187,26 +170,24 @@ public class EquivalentConceptMerger {
 		return processedEquivalencies;
 	}
 	
-	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
+	private void switchToEquivalentConcept(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
 		removeDeprecatedRelationships(conceptToKeep, conceptsToRemove, inboundRelationshipMap);
 		for (final Concept conceptToRemove : conceptsToRemove) {
-			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap);
-			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap);
+			switchInboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap, equivalentConcepts);
+			switchOutboundRelationships(conceptToKeep, conceptsToRemove, conceptToRemove, inboundRelationshipMap, equivalentConcepts);
 			switchRefSetMembers(conceptToKeep, conceptToRemove);
 		}
 	}
 	
-	private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
-		for (final Relationship relationshipToRemove : newArrayList(conceptToRemove.getOutboundRelationships())) {
-			boolean found = false;
-			for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
-				if (relationshipToRemove.getType().equals(replacementOutboundRelationship.getType())
-						&& relationshipToRemove.getDestination().equals(replacementOutboundRelationship.getDestination())
-						&& relationshipToRemove.getModifier().equals(replacementOutboundRelationship.getModifier())) {
-					found = true;
-					break;
+	 private void switchOutboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
+			for (final Relationship relationshipToRemove : newArrayList(conceptToRemove.getOutboundRelationships())) {
+				boolean found = false;
+				for (final Relationship replacementOutboundRelationship : conceptToKeep.getOutboundRelationships()) {
+					if (isEquivalentOutboundRelationship(equivalentConcepts, relationshipToRemove, replacementOutboundRelationship)) {
+						found = true;
+						break;
+					}
 				}
-			}
 			
 			if (!found) {
 				if (!conceptsToRemove.contains(relationshipToRemove.getSource())) {
@@ -229,13 +210,11 @@ public class EquivalentConceptMerger {
 		}
 	}
 
-	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap) {
+	private void switchInboundRelationships(final Concept conceptToKeep, final Collection<Concept> conceptsToRemove, final Concept conceptToRemove, Multimap<String, Relationship> inboundRelationshipMap, Multimap<Concept, Concept> equivalentConcepts) {
 		for (final Relationship relationshipToRemove : newArrayList(inboundRelationshipMap.get(conceptToRemove.getId()))) {
 			boolean found = false;
 			for (final Relationship replacementInboundRelationship : Sets.newHashSet(inboundRelationshipMap.get(conceptToKeep.getId()))) {
-				if (relationshipToRemove.getType().equals(replacementInboundRelationship.getType())
-						&& relationshipToRemove.getSource().equals(replacementInboundRelationship.getSource())
-						&& relationshipToRemove.getModifier().equals(replacementInboundRelationship.getModifier())) {
+				if (isEquivalentInboundRelationship(equivalentConcepts, relationshipToRemove, replacementInboundRelationship)) {
 					found = true;
 					break;
 				}
@@ -385,6 +364,26 @@ public class EquivalentConceptMerger {
 				SnomedModelExtensions.removeOrDeactivate(outboundRelationship);
 			}
 		}
+	}
+	
+	private boolean isEquivalentInboundRelationship(final Multimap<Concept, Concept> equivalentConcepts, Relationship relationshipToRemove, Relationship relationshipToKeep) {
+		Concept sourceToKeep = relationshipToKeep.getSource();
+		Concept sourceToRemove = relationshipToRemove.getSource();
+		
+		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
+				&& (sourceToRemove.equals(sourceToKeep) || equivalentConcepts.get(sourceToKeep).contains(sourceToRemove))
+				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
+				&& relationshipToRemove.getModifier().equals(relationshipToKeep.getModifier());
+	}
+	
+	private boolean isEquivalentOutboundRelationship(final Multimap<Concept, Concept> equivalentConcepts, Relationship relationshipToRemove, Relationship relationshipToKeep) {
+		Concept destinationToKeep = relationshipToKeep.getDestination();
+		Concept destinationToRemove = relationshipToRemove.getDestination();
+		
+		return relationshipToRemove.getType().equals(relationshipToKeep.getType())
+				&& (destinationToRemove.equals(destinationToKeep) || equivalentConcepts.get(destinationToKeep).contains(destinationToRemove))
+				&& relationshipToRemove.getCharacteristicType().equals(relationshipToKeep.getCharacteristicType())
+				&& relationshipToRemove.getModifier().equals(relationshipToKeep.getModifier());
 	}
 	
 }

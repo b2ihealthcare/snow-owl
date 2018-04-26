@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -61,8 +60,7 @@ public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 			@PathVariable(value="conceptId")
 			final String conceptId) {
 
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return CollectionResource.of(delegate.getHistory(conceptRef));
+		return CollectionResource.of(delegate.getHistory(branchPath, conceptId));
 	}
 
 }

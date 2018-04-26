@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.net4j.signal.IndicationWithMonitoring;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -35,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.Defect;
@@ -142,12 +140,12 @@ public abstract class AbstractImportIndication extends IndicationWithMonitoring 
 			if (result.isOK()) {
 				out.writeBoolean(true);
 				
-				final Set<CDOObject> visitedComponents = importer.getTerminologyImportResult().getVisitedComponents();
+				final Set<String> visitedComponents = importer.getTerminologyImportResult().getVisitedComponents();
 				
 				out.writeInt(visitedComponents.size());
 				
-				for (final CDOObject cdoObject : visitedComponents) {
-					out.writeLong(CDOUtils.getStorageKey(cdoObject));
+				for (final String componentId : visitedComponents) {
+					out.writeUTF(componentId);
 				}
 			} else if (result.equals(Status.CANCEL_STATUS)) {
 				out.writeBoolean(false);

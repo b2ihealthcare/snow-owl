@@ -47,6 +47,17 @@
 		<async-supported>true</async-supported>
 	</filter>
 
+<!-- 	<filter> -->
+<!-- 	  <filter-name>cors</filter-name> -->
+<!-- 	  <filter-class>com.b2international.snowowl.snomed.api.rest.CORSFilter</filter-class> -->
+<!-- 	  <async-supported>true</async-supported> -->
+<!-- 	</filter> -->
+	  
+<!-- 	<filter-mapping> -->
+<!-- 	  	<filter-name>cors</filter-name> -->
+<!-- 	  	<url-pattern>/*</url-pattern> -->
+<!-- 	</filter-mapping> -->
+
 	<servlet-mapping>
 		<servlet-name>restServlet</servlet-name>
 		<url-pattern>/</url-pattern>

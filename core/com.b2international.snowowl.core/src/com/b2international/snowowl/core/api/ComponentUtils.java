@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.browser.IClientTerminologyBrowser;
 import com.b2international.snowowl.core.api.component.IdProvider;
-import com.b2international.snowowl.core.api.component.LabelProvider;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -39,7 +37,7 @@ public final class ComponentUtils {
 	/*
 	 * Default alphabetical label ordering
 	 */
-	private static final Ordering<LabelProvider> LABEL_ORDERING = Ordering
+	private static final Ordering<IComponent<String>> LABEL_ORDERING = Ordering
 			.from(String.CASE_INSENSITIVE_ORDER) // use case insensitive label ordering on Strings
 			.nullsFirst() // allow null Strings
 			.onResultOf(getLabelFunction()) // get labels by extracting them from IComponent<?> instances
@@ -52,29 +50,15 @@ public final class ComponentUtils {
 		}
 	}
 	
-	private enum LabelFunction implements Function<LabelProvider, String> {
+	private enum LabelFunction implements Function<IComponent<String>, String> {
 		INSTANCE;
 		
 		@Override
-		public String apply(final LabelProvider input) {
+		public String apply(final IComponent<String> input) {
 			return input.getLabel(); // XXX: should this be the label sort key instead?
 		}
 	}
 	
-	private static final class ComponentFunction<K, C extends IComponent<K>> implements Function<K, C> {
-
-		private final IClientTerminologyBrowser<C, K> terminologyBrowser;
-		
-		private ComponentFunction(final IClientTerminologyBrowser<C, K> terminologyBrowser) {
-			this.terminologyBrowser = terminologyBrowser;
-		}
-
-		@Override
-		public C apply(final K input) {
-			return terminologyBrowser.getConcept(input);
-		}
-	}
-
 	private ComponentUtils() {
 		// Suppress instantiation 
 	}
@@ -83,12 +67,8 @@ public final class ComponentUtils {
 		return new IdFunction<K>();
 	}
 	
-	public static Function<LabelProvider, String> getLabelFunction() {
+	public static Function<IComponent<String>, String> getLabelFunction() {
 		return LabelFunction.INSTANCE;
-	}
-	
-	public static <K, C extends IComponent<K>> Function<K, C> getComponentFunction(final IClientTerminologyBrowser<C, K> terminologyBrowser) {
-		return new ComponentFunction<K, C>(checkNotNull(terminologyBrowser, "terminologyBrowser"));
 	}
 	
 	public static <K extends Comparable<K>, T extends IdProvider<K>> Ordering<T> getIdOrdering() {
@@ -99,7 +79,7 @@ public final class ComponentUtils {
 				.nullsFirst(); // allow null values of IComponent<K>
 	}
 	
-	public static Ordering<LabelProvider> getLabelOrdering() {
+	public static Ordering<IComponent<String>> getLabelOrdering() {
 		return LABEL_ORDERING;
 	}
 	
@@ -133,7 +113,7 @@ public final class ComponentUtils {
 	 * @return an {@link Iterable iterable} of human readable label.
 	 * @param <K> type of the unique identifier.
 	 */
-	public static <K> Iterable<String> getLabels(final Iterable<? extends IComponent<K>> components) {
+	public static Iterable<String> getLabels(final Iterable<? extends IComponent<String>> components) {
 		checkNotNull(components, "Components argument cannot be null.");
 		return Iterables.transform(components, getLabelFunction());
 	} 
@@ -145,7 +125,7 @@ public final class ComponentUtils {
 	 * @param <K> type of the unique identifier of the terminology independent component.
 	 * @param <T> type of the terminology independent component. 
 	 */
-	public static <K, T extends IComponent<K>> List<T> sortByLabel(final Iterable<T> components) {
+	public static <T extends IComponent<String>> List<T> sortByLabel(final Iterable<T> components) {
 		checkNotNull(components, "Components argument cannot be null");
 		return getLabelOrdering().sortedCopy(components);
 	}
@@ -175,7 +155,7 @@ public final class ComponentUtils {
 	 *         label is greater than, equal to, or less than this component
 	 *         label, ignoring case considerations.
 	 */
-	public static int compareByLabel(final IComponent<?> c1, final IComponent<?> c2) {
+	public static int compareByLabel(final IComponent<String> c1, final IComponent<String> c2) {
 		return getLabelOrdering().compare(c1, c2);
 	}
 	

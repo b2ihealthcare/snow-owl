@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.snowowl.eventbus.IMessage;
@@ -97,7 +98,7 @@ public class EventBusProtocolTest {
 		// verify that the protocol got opened
 		verify(connector).openChannel(protocol);
 		// verify message has been sent
-		verify(requestWithConfirmation).send();
+		verify(requestWithConfirmation).send(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT);
 	}
 	
 	@Test
@@ -122,7 +123,7 @@ public class EventBusProtocolTest {
 		prepareEvent(true);
 		prepareRequestSync(protocol, EventBusConstants.HANDLER_REGISTRATION, addresses, true);
 		protocol.notifyEvent(event);
-		verify(requestWithConfirmation).send();
+		verify(requestWithConfirmation).send(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT);
 	}
 	
 	@Test
@@ -130,7 +131,7 @@ public class EventBusProtocolTest {
 		prepareEvent(false);
 		prepareRequestSync(protocol, EventBusConstants.HANDLER_UNREGISTRATION, addresses, true);
 		protocol.notifyEvent(event);
-		verify(requestWithConfirmation).send();
+		verify(requestWithConfirmation).send(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT);
 	}
 	
 	@Test
@@ -138,7 +139,7 @@ public class EventBusProtocolTest {
 		prepareEvent(true);
 		prepareRequestSync(protocol, EventBusConstants.HANDLER_REGISTRATION, addresses, null);
 		protocol.notifyEvent(event);
-		verify(requestWithConfirmation).send();
+		verify(requestWithConfirmation).send(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT);
 	}
 	
 	private void prepareEvent(boolean isAdded) {
@@ -153,7 +154,7 @@ public class EventBusProtocolTest {
 	
 	private void prepareRequestSync(EventBusProtocol protocol, short signalID, Object message, Object result) throws Exception {
 		when(factory.createRequestWithConfirmation(protocol, signalID, message)).thenReturn(requestWithConfirmation);
-		when(requestWithConfirmation.send()).thenReturn(result);
+		when(requestWithConfirmation.send(Mockito.eq(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT))).thenReturn(result);
 	}
 	
 }

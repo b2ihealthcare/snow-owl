@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public abstract class CollectingService<S, P> extends AbstractDisposableService 
 
 	protected abstract boolean matchesParams(final S service, final P serviceParams);
 
-	protected abstract void retireService(final S service) throws InterruptedException;
+	protected abstract void retireService(final S service);
 
 	private ArrayBlockingQueue<CollectingServiceReference<S>> initQueue(final int maximumServiceCount) {
 		final ArrayBlockingQueue<CollectingServiceReference<S>> result = new ArrayBlockingQueue<CollectingServiceReference<S>>(maximumServiceCount, true);

@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.google.common.collect.Ordering;
@@ -38,9 +38,9 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 
 	protected final ReasonerTaxonomy reasonerTaxonomy;
 	
-	protected final InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
+	protected final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
 
-	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		this.reasonerTaxonomy = reasonerTaxonomy;
 		this.reasonerTaxonomyBuilder = reasonerTaxonomyBuilder;
 	}

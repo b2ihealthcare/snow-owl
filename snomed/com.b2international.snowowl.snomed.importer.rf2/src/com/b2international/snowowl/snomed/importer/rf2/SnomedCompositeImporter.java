@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.functions.UncheckedCastFunction;
-import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -48,22 +47,15 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
-import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
-import com.b2international.snowowl.datastore.version.ITagConfiguration;
-import com.b2international.snowowl.datastore.version.ITagService;
-import com.b2international.snowowl.datastore.version.TagConfigurationBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.taxonomy.IncompleteTaxonomyException;
-import com.b2international.snowowl.snomed.datastore.taxonomy.InvalidRelationship;
 import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.taxonomy.SnomedTaxonomyStatus;
 import com.b2international.snowowl.snomed.importer.AbstractImportUnit;
 import com.b2international.snowowl.snomed.importer.AbstractLoggingImporter;
 import com.b2international.snowowl.snomed.importer.ImportException;
@@ -141,6 +133,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 	private void collectExistingVersions() {
 		CodeSystemEntry codeSystem = getCodeSystem();
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(getEventBus())
@@ -356,7 +349,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		inferredTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		inferredTaxonomyBuilder.applyEdgeChanges(relationshipFilePath);
-		final SnomedTaxonomyStatus inferredTaxonomyResult = inferredTaxonomyBuilder.build();
+		inferredTaxonomyBuilder.build();
 		
 		if (null == statedTaxonomyBuilder) {
 			// First iteration: initialize release file-based builder with existing contents (if any)
@@ -365,14 +358,7 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		
 		statedTaxonomyBuilder.applyNodeChanges(conceptFilePath);
 		statedTaxonomyBuilder.applyEdgeChanges(statedRelationshipFilePath);
-		final SnomedTaxonomyStatus statedTaxonomyResult = statedTaxonomyBuilder.build();
-		
-		if (!inferredTaxonomyResult.getStatus().isOK() || !statedTaxonomyResult.getStatus().isOK()) {
-			throw new IncompleteTaxonomyException(ImmutableList.<InvalidRelationship> builder()
-					.addAll(inferredTaxonomyResult.getInvalidRelationships())
-					.addAll(statedTaxonomyResult.getInvalidRelationships())
-					.build());
-		}
+		statedTaxonomyBuilder.build();
 		
 		final Set<String> synonymAndDescendants = LongSets.toStringSet(inferredTaxonomyBuilder.getAllDescendantNodeIds(Concepts.SYNONYM));
 		synonymAndDescendants.add(Concepts.SYNONYM);
@@ -386,12 +372,12 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 
 	protected void createSnomedVersionFor(final String lastUnitEffectiveTimeKey) {
 		
-		if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
-			return;
-		}
-		
 		try {
 
+			if (AbstractSnomedImporter.UNPUBLISHED_KEY.equals(lastUnitEffectiveTimeKey)) {
+				return;
+			}
+			
 			boolean existingVersionFound = false;
 
 			if (importContext.isVersionCreationEnabled()) {
@@ -417,31 +403,19 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 			}
 			
 			if (!existingVersionFound && importContext.isVersionCreationEnabled()) {
-				// purge index
-//				PurgeRequest.builder()
-//					.setBranchPath(getImportBranchPath().getPath())
-//					.setPurge(Purge.LATEST)
-//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-//					.execute(getEventBus())
-//					.getSync();
-				// optimize index
-//				OptimizeRequest.builder()
-//					.setMaxSegments(8)
-//					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-//					.execute(getEventBus())
-//					.getSync();
 				
 				final IBranchPath snomedBranchPath = getImportBranchPath();
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
 				final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 				
-				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedEffectiveDate)
-					.setBranchPath(snomedBranchPath)
-					.setUserId(importContext.getUserId())
-					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-					.build();
-				
-				ApplicationContext.getInstance().getService(ITagService.class).tag(configuration);
+				RepositoryRequests
+					.branching()
+					.prepareCreate()
+					.setParent(snomedBranchPath.getPath())
+					.setName(formattedEffectiveDate)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
 			}
 			
 		} finally {

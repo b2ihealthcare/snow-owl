@@ -110,4 +110,12 @@ public final class ValidationRepository implements Index, IDisposableService {
 		});
 	}
 	
+	public <T> void remove(Class<T> clazz, String key) {
+		index.write(writer -> {
+			writer.remove(clazz, key);
+			writer.commit();
+			return null;
+		});
+	}
+	
 }

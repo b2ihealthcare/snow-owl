@@ -148,6 +148,16 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	public SnomedDescriptionSearchRequestBuilder filterByType(String typeFilter) {
 		return addOption(OptionKey.TYPE, typeFilter);
 	}
+	
+	/**
+	 * Filters descriptions by their Description Type.
+	 * 
+	 * @param typeIds
+	 * @return
+	 */
+	public SnomedDescriptionSearchRequestBuilder filterByType(Iterable<String> typeIds) {
+		return addOption(OptionKey.TYPE, typeIds);
+	}
 
 	/**
 	 * Filters descriptions by their language code value, eg. <code>"en"</code>.

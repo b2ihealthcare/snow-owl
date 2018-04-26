@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 
@@ -62,4 +63,19 @@ public interface IComponent extends Serializable {
 	 */
 	@JsonIgnore
 	long getStorageKey();
+	
+	/**
+	 * Returns a {@link ComponentIdentifier} instance to identify this component using its {@link #getTerminologyComponentId() type} and {@link #getId() id}.
+	 * @return
+	 */
+	@JsonIgnore
+	default ComponentIdentifier getComponentIdentifier() {
+		return ComponentIdentifier.of(getTerminologyComponentId(), getId());
+	}
+	
+	/**
+	 * @return the associated terminology component type identifier of this component.
+	 */
+	@JsonIgnore
+	short getTerminologyComponentId();
 }

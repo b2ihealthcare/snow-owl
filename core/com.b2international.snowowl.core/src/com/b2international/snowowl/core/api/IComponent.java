@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.api;
 import java.io.Serializable;
 
 import com.b2international.snowowl.core.api.component.IdProvider;
-import com.b2international.snowowl.core.api.component.LabelProvider;
 
 /**
  * Represents a terminology independent component with a unique identifier and a human readable label.
@@ -31,6 +30,11 @@ import com.b2international.snowowl.core.api.component.LabelProvider;
  * </p>
  * @param <K> type of the identifier.
  */
-public interface IComponent<K> extends LabelProvider, IdProvider<K>, Serializable {
+public interface IComponent<K> extends IdProvider<K>, Serializable {
 
+	/**
+	 * @return a human-readable label for this instance
+	 */
+	String getLabel();
+	
 }

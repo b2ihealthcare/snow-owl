@@ -160,7 +160,7 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(df);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixInAnnotations(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
+		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
 		return objectMapper;
 	}
 

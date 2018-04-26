@@ -28,6 +28,7 @@ import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.VerhoeffCheck;
 import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
@@ -101,6 +102,9 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 	@Override
 	public void register(final Set<String> componentIds) {
+		if (CompareUtils.isEmpty(componentIds)) {
+			return;
+		}
 		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);

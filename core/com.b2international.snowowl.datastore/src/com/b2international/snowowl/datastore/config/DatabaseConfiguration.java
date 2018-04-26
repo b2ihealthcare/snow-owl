@@ -42,8 +42,13 @@ public class DatabaseConfiguration {
 	@NotEmpty
 	private String datasourceClass = "org.h2.jdbcx.JdbcDataSource";
 
+	/*
+	 * bbanfai: OSX h2 fails with 'result too large' error message for the snomedStore.db file that is getting close to 30Gb
+	 * changed the default "jdbc:h2:" scheme to the one below. More on the topic please see:
+	 * http://www.h2database.com/html/advanced.html#file_system
+	 */
 	@NotEmpty
-	private String scheme = "jdbc:h2:";
+	private String scheme = "jdbc:h2:split:nio:";
 
 	@NotNull
 	private String location = "";

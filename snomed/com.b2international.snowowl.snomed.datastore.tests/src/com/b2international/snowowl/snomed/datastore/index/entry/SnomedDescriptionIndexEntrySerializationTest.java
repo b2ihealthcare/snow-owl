@@ -94,7 +94,7 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 		
 		assertEquals(STORAGE_KEY1, actual.getStorageKey());
 		assertEquals("finding", actual.getSemanticTag());
-		assertEquals("", actual.getNamespace());
+		assertEquals(null, actual.getNamespace());
 		assertDocEquals(description, actual);
 	}
 	

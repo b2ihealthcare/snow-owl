@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,20 @@
  */
 package com.b2international.snowowl.datastore.history;
 
-import static com.b2international.commons.Pair.of;
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.checkId;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.apply;
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.view.CDOView;
-
-import com.b2international.commons.Pair;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
  * {@link HistoryInfoConfiguration} implementation. 
  */
-public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, Serializable {
+public final class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, Serializable {
 
 	private static final long serialVersionUID = 737924958133045175L;
 	
@@ -47,23 +37,10 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 	private final IBranchPath branchPath;
 	private final String componentId;
 
-	public static HistoryInfoConfiguration create(final IBranchPath branchPath, final long storageKey) {
-		checkArgument(checkId(storageKey), "Invalid storage key of: " + storageKey);
+	public static HistoryInfoConfiguration create(final IBranchPath branchPath, final long storageKey, final ComponentIdentifier componentIdentifier) {
 		checkNotNull(branchPath, "branchPath");
-		
-		final ICDOConnection connection = getConnection(storageKey);
-		final Pair<String, String> idPair = apply(new CDOViewFunction<Pair<String, String>, CDOView>(connection, branchPath) {
-			protected Pair<String, String> apply(final CDOView view) {
-				final CDOObject object = getObjectIfExists(view, storageKey);
-				return null == object ? null : of(getComponentId(object), getTerminologyComponentId(object));
-			}
-		});
-		
-		if (idPair == null) {
-			return NullHistoryInfoConfiguration.INSTANCE;
-		} else {
-			return new HistoryInfoConfigurationImpl(storageKey, idPair.getA(), idPair.getB(), branchPath);
-		}
+		String terminologyComponentId = CoreTerminologyBroker.getInstance().getTerminologyComponentId(componentIdentifier.getTerminologyComponentId());
+		return new HistoryInfoConfigurationImpl(storageKey, componentIdentifier.getComponentId(), terminologyComponentId, branchPath);
 	}
 
 	public HistoryInfoConfigurationImpl(final long storageKey, final String componentId, final String terminologyComponentId, final IBranchPath branchPath) {
@@ -94,15 +71,4 @@ public class HistoryInfoConfigurationImpl implements HistoryInfoConfiguration, S
 		return branchPath;
 	}
 	
-	private static ICDOConnection getConnection(final long storageKey) {
-		return getServiceForClass(ICDOConnectionManager.class).get(storageKey);
-	}
-	
-	private static String getTerminologyComponentId(final CDOObject object) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(object);
-	}
-	
-	private static String getComponentId(final CDOObject object) {
-		return String.valueOf(CoreTerminologyBroker.getInstance().adapt(object).getId());
-	}
 }

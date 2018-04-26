@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,11 +49,15 @@ import org.elasticsearch.script.ScriptType;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -170,7 +174,33 @@ public class EsDocumentWriter implements Writer {
 					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
 					mappingsToRefresh.add(mapping);
-					final byte[] _source = mapper.writeValueAsBytes(obj);
+
+					final Set<String> hashedFields = mapping.getHashedFields();
+					final byte[] _source;
+					
+					if (!hashedFields.isEmpty()) {
+						final ObjectNode objNode = mapper.valueToTree(obj);
+						final ObjectNode hashedNode = mapper.createObjectNode();
+					
+						// Preserve property order, share references with objNode
+						for (String hashedField : hashedFields) {
+							JsonNode value = objNode.get(hashedField);
+							if (value != null && !value.isNull()) {
+								hashedNode.set(hashedField, value);
+							}
+						}
+					
+						final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
+						final HashCode hashCode = Hashing.sha1().hashBytes(hashedBytes);
+						
+						// Inject the result as an extra field into the to-be-indexed JSON content
+						objNode.put(DocumentMapping._HASH, hashCode.toString());
+						_source = mapper.writeValueAsBytes(objNode);
+						
+					} else {
+						_source = mapper.writeValueAsBytes(obj);
+					}
+					
 					processor.add(client
 							.prepareIndex(admin.getTypeIndex(mapping), mapping.typeAsString(), id)
 							.setOpType(OpType.INDEX)
@@ -222,26 +252,25 @@ public class EsDocumentWriter implements Writer {
 			boolean created = r.getCreated() > 0;
 			if (created) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Created {} {} documents with script '{}', params({})", r.getCreated(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Created {} {} documents with script '{}'", r.getCreated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean updated = r.getUpdated() > 0;
 			if (updated) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Updated {} {} documents with script '{}', params({})", r.getUpdated(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Updated {} {} documents with script '{}'", r.getUpdated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean deleted = r.getDeleted() > 0;
 			if (deleted) {
 				mappingsToRefresh.add(mapping);
-				admin.log().info("Deleted {} {} documents with script '{}', params({})", r.getDeleted(), mapping.typeAsString(), update.getScript(), update.getParams());
+				admin.log().info("Deleted {} {} documents with script '{}'", r.getDeleted(), mapping.typeAsString(), update.getScript());
 			}
 			
 			if (!created && !updated && !deleted) {
-				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', params({}), no-ops ({}), conflicts ({})", 
+				admin.log().warn("Couldn't bulk update '{}' documents with script '{}', no-ops ({}), conflicts ({})", 
 						mapping.typeAsString(), 
 						update.getScript(), 
-						update.getParams(), 
 						r.getNoops(), 
 						r.getVersionConflicts());
 			}
@@ -275,6 +304,7 @@ public class EsDocumentWriter implements Writer {
 				--attempts;
 				try {
 					Thread.sleep(100 + random.nextInt(900));
+					admin.refresh(Collections.singleton(mapping));
 				} catch (InterruptedException e) {
 					throw new IndexException("Interrupted", e);
 				}

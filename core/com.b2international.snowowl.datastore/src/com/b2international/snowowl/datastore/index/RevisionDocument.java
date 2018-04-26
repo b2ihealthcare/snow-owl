@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.api.component.IconIdProvider;
-import com.b2international.snowowl.core.api.index.IIndexEntry;
+import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -36,7 +35,7 @@ import com.google.common.base.Objects.ToStringHelper;
 /**
  * @since 4.7
  */
-public abstract class RevisionDocument extends Revision implements IIndexEntry, IconIdProvider<String>, WithScore {
+public abstract class RevisionDocument extends Revision implements IComponent<String>, WithScore {
 
 	public static abstract class Expressions {
 
@@ -156,7 +155,6 @@ public abstract class RevisionDocument extends Revision implements IIndexEntry, 
 		return id;
 	}
 
-	@Override
 	public String getIconId() {
 		return iconId;
 	}

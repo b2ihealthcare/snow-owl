@@ -31,9 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.datastore.server.domain.StorageRef;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserChildConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
@@ -99,8 +97,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final IComponentRef conceptRef = createComponentRef(branchPath, conceptId);
-		return browserService.getConceptDetails(conceptRef, extendedLocales);
+		return browserService.getConceptDetails(branchPath, conceptId, extendedLocales);
 	}
 
 	@ApiOperation(
@@ -221,8 +218,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final IComponentRef ref = createComponentRef(branchPath, conceptId);
-		return browserService.getConceptParents(ref, extendedLocales);
+		return browserService.getConceptParents(branchPath, conceptId, extendedLocales);
 	}
 	
 	@ApiOperation(
@@ -264,8 +260,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		}
 		
 		if ("stated".equals(form) || "inferred".equals(form)) {
-			final IComponentRef ref = createComponentRef(branchPath, conceptId);
-			return browserService.getConceptChildren(ref, extendedLocales, "stated".equals(form));
+			return browserService.getConceptChildren(branchPath, conceptId, extendedLocales, "stated".equals(form));
 		}
 		
 		throw new BadRequestException("Form parameter should be either 'stated' or 'inferred'");
@@ -317,8 +312,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final StorageRef ref = new StorageRef(repositoryId, branchPath);
-		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, scrollKeepAlive, scrollId, limit);
+		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, scrollKeepAlive, scrollId, limit);
 	}
 
 	@ApiOperation(
@@ -367,8 +361,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		final StorageRef ref = new StorageRef(repositoryId, branchPath);
-		return browserService.getDescriptions(ref, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, scrollKeepAlive, scrollId, limit);
+		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, scrollKeepAlive, scrollId, limit);
 	}
 
 	@ApiOperation(

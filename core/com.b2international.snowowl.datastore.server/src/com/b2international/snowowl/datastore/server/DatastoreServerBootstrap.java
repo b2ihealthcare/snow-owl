@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,9 @@ import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepos
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.server.session.LogListener;
-import com.b2international.snowowl.datastore.server.session.VersionProcessor;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.eventbus.Pipe;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.domain.User;
@@ -90,8 +88,9 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		LOG.debug("Preparing RPC communication (config={},gzip={})", rpcConfig, gzip);
 		RpcUtil.prepareContainer(container, rpcConfig, gzip);
 		LOG.debug("Preparing EventBus communication (gzip={})", gzip);
-		EventBusNet4jUtil.prepareContainer(container, gzip);
-		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container));
+		int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
+		EventBusNet4jUtil.prepareContainer(container, gzip, numberOfWorkers);
+		env.services().registerService(IEventBus.class, EventBusNet4jUtil.getBus(container, numberOfWorkers));
 		LOG.debug("Preparing JSON support");
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
@@ -113,7 +112,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
 			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
 			manager.addListener(new LogListener());
-			manager.addListener(new VersionProcessor());
 			
 			env.services().registerService(IApplicationSessionManager.class, manager);
 			env.services().registerService(InternalApplicationSessionManager.class, manager);
@@ -132,7 +130,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
 			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
-			initializeRequestSupport(env, configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers());
+			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
+			initializeRequestSupport(env, numberOfWorkers);
 			
 			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
 		} else {
@@ -177,17 +176,11 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
 		final IEventBus events = env.service(IEventBus.class);
-		final Handlers handlers = new Handlers(numberOfWorkers);
 		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
 		for (int i = 0; i < numberOfWorkers; i++) {
-			handlers.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
+			events.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
 		}
 		
-		// register number of cores event bridge/pipe between events and handlers
-		for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-			events.registerHandler(Request.ADDRESS, new Pipe(handlers, Request.ADDRESS));
-		}
-		env.services().registerService(Handlers.class, handlers);
 		env.services().registerService(RepositoryContextProvider.class, new DefaultRepositoryContextProvider(env.service(RepositoryManager.class)));
 	}
 

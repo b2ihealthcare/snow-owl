@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.Set;
 
 import com.b2international.commons.ExplicitFirstOrdering;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -84,7 +83,7 @@ public abstract class DescriptionRequestHelper {
 	}
 
 	/**
-	 * Retrieves the preferred term for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
+	 * Retrieves the preferred term for the concept identified by the given identifier, if it exists. 
 	 * <p>
 	 * The first active description with "synonym" or descendant as the type will be returned, where all of the following conditions apply:
 	 * <ul>
@@ -117,7 +116,7 @@ public abstract class DescriptionRequestHelper {
 	}
 
 	/**
-	 * Retrieves the fully specified name for the concept identified by the given {@link IComponentRef component reference}, if it exists. 
+	 * Retrieves the fully specified name for the concept identified by the given identifier, if it exists. 
 	 * <p>
 	 * The first active description with "fully specified name" as the type will be returned, where all of the following conditions apply:
 	 * <ul>
@@ -265,15 +264,14 @@ public abstract class DescriptionRequestHelper {
 				.filterByPreferredIn(locales);
 	}
 
-	private Map<String, SnomedDescription> indexBestPreferredByConceptId(SnomedDescriptions descriptions, List<ExtendedLocale> orderedLocales) {
+	public static Map<String, SnomedDescription> indexBestPreferredByConceptId(Iterable<SnomedDescription> descriptions, List<ExtendedLocale> orderedLocales) {
 		List<String> languageRefSetIds = SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(orderedLocales);
 		ExplicitFirstOrdering<String> languageRefSetOrdering = ExplicitFirstOrdering.create(languageRefSetIds);
 		
 		return extractBest(indexByConceptId(descriptions), languageRefSetIds, description -> {
 			Set<String> preferredLanguageRefSetIds = Maps.filterValues(description.getAcceptabilityMap(), Predicates.equalTo(Acceptability.PREFERRED)).keySet();
-			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end. 
-			String firstPriority = languageRefSetOrdering.min(preferredLanguageRefSetIds);
-			return firstPriority;
+			// the explicit first ordering will put the VIP / anticipated / first priority languages codes to the min end.
+			return languageRefSetOrdering.min(preferredLanguageRefSetIds);
 		});
 	}
 	
@@ -285,8 +283,8 @@ public abstract class DescriptionRequestHelper {
 		return extractFirst(indexByConceptId(descriptions));
 	}
 
-	private Multimap<String, SnomedDescription> indexByConceptId(SnomedDescriptions descriptions) {
-		return Multimaps.index(descriptions.getItems(), description -> description.getConceptId());
+	private static Multimap<String, SnomedDescription> indexByConceptId(Iterable<SnomedDescription> descriptions) {
+		return Multimaps.index(descriptions, description -> description.getConceptId());
 	}
 	
 	private Map<String, SnomedDescription> extractFirst(Multimap<String, SnomedDescription> descriptionsByConceptId) {
@@ -294,7 +292,7 @@ public abstract class DescriptionRequestHelper {
 		return ImmutableMap.copyOf(Maps.filterValues(uniqueMap, Predicates.notNull()));
 	}
 	
-	private <T> Map<String, SnomedDescription> extractBest(Multimap<String, SnomedDescription> descriptionsByConceptId, 
+	private static <T> Map<String, SnomedDescription> extractBest(Multimap<String, SnomedDescription> descriptionsByConceptId, 
 			List<T> orderedValues, 
 			Function<SnomedDescription, T> predicateFactory) {
 		

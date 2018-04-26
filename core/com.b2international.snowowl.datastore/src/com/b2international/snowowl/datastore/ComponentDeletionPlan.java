@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 
 import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.google.common.collect.Sets;
 
@@ -40,6 +38,14 @@ public class ComponentDeletionPlan {
 	// keep deletedItems sorted by type for nicer display to the user
 	private final Set<CDOObject> deletedItems = new TreeSet<CDOObject>(ComponentUtils2.CDO_OBJECT_COMPARATOR);
 
+	private final Function<CDOObject, String> idProvider;
+	private final Function<CDOObject, Short> terminologyComponentIdProvider;
+
+	public ComponentDeletionPlan(Function<CDOObject, String> idProvider, Function<CDOObject, Short> terminologyComponentIdProvider) {
+		this.idProvider = idProvider;
+		this.terminologyComponentIdProvider = terminologyComponentIdProvider;
+	}
+	
 	/**
 	 * Marks a component for deletion.
 	 * @param cdoObject the component to delete.
@@ -49,27 +55,10 @@ public class ComponentDeletionPlan {
 	}
 
 	private void internalMarkForDeletion(final Collection<? extends CDOObject> items) {
-		for (final EObject object : items) {
-			final ComponentIdentifier pair = createIdentifierPair(object);
-			if (null == pair) {
-				continue;
-			}
-			deletedComponents.add(pair);
+		for (final CDOObject object : items) {
+			deletedComponents.add(ComponentIdentifier.of(terminologyComponentIdProvider.apply(object), idProvider.apply(object)));
 		}
 		deletedItems.addAll(items);
-	}
-
-	private ComponentIdentifier createIdentifierPair(final Object object) {
-		final IComponent<?> component = CoreTerminologyBroker.getInstance().adapt(object);
-		if (null == component) {
-			return null;
-		}
-		final short terminologyComponentId = getTerminolgyComponentId(object);
-		return ComponentIdentifier.of(terminologyComponentId, String.valueOf(component.getId()));
-	}
-
-	private short getTerminolgyComponentId(final Object object) {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(object);
 	}
 
 	public Set<ComponentIdentifier> getDeletedComponents() {

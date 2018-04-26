@@ -146,7 +146,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	 */
 	@Override
 	public String getDescription() {
-		return String.format("Updated documents %d, deleted documents %d.", rawMappings.size() + revisionMappings.size(), rawDeletions.values().size() + revisionDeletions.values().size());
+		return String.format("Indexed %d documents, deleted %d documents.", rawMappings.size() + revisionMappings.size(), rawDeletions.values().size() + revisionDeletions.values().size());
 	}
 	
 	/**

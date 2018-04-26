@@ -25,6 +25,7 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 /**
@@ -37,7 +38,7 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		// SNOMED CT import is in progress
-		if (isImportInProgress() || isReindexInProgress()) {
+		if (isImportInProgress(branchPath) || isReindexInProgress() || isClassifyInProgress()) {
 			return ICDOChangeProcessor.NULL_IMPL;
 		} else {
 			final RevisionIndex index = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
@@ -46,9 +47,9 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 		}
 	}
 
-	private boolean isImportInProgress() {
+	private boolean isImportInProgress(final IBranchPath branchPath) {
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = SnomedDatastoreActivator.REPOSITORY_UUID + ".import";
+		final String feature = SnomedFeatures.getImportFeatureToggle(branchPath.getPath());
 		
 		return features.exists(feature) && features.check(feature);
 	}
@@ -56,6 +57,13 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 	private boolean isReindexInProgress() {
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
 		final String feature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
+		
+		return features.exists(feature) && features.check(feature);
+	}
+	
+	private boolean isClassifyInProgress() {
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String feature = SnomedFeatures.getClassifyFeatureToggle();
 		
 		return features.exists(feature) && features.check(feature);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import static com.b2international.index.query.Expressions.matchAny;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 
 @Doc(type = "job")
@@ -91,7 +92,15 @@ public final class RemoteJobEntry implements Serializable {
 		}
 
 		public static Expression done() {
-			return matchAny(Fields.STATE, DONE_STATES.stream().map(Enum::name).collect(Collectors.toSet()));
+			return state(DONE_STATES);
+		}
+		
+		public static Expression state(RemoteJobState state) {
+			return state(Collections.singleton(state));
+		}
+		
+		public static Expression state(Iterable<RemoteJobState> states) {
+			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
 		}
 		
 	}

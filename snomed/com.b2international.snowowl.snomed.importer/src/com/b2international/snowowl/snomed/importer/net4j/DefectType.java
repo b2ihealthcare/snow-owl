@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ public enum DefectType {
 	DESCRIPTION_CASE_SIGNIFICANCE_NOT_EXIST("Description refers to a non-existing concept in column 'caseSignificanceId'"),
 	NOT_UNIQUE_RELATIONSHIP_ID("Relationship identifier is not unique"),
 	RELATIONSHIP_SOURCE_DESTINATION_EQUALS("Relationship source and destination identifiers are equal"),
-	RELATIONSHIP_REFERENCED_INVALID_CONCEPT("Relationship refers to a non-existing or inactive component"),
+	RELATIONSHIP_REFERENCED_NONEXISTENT_CONCEPT("Relationship refers to a non-existing component"),
+	RELATIONSHIP_REFERENCED_INACTIVE_CONCEPT("Relationship refers to a inactive component", false),
 	INCORRECT_REFSET_MEMBER_ID("Reference set member identifier is not a valid universally unique identifier"),
 	NOT_UNIQUE_REFSET_MEMBER_ID("Reference set member identifier is not unique"),
 	REFSET_MEMBER_COMPONENT_NOT_EXIST("Reference set member refers to a non-existing component in column 'referencedComponentId'"),
@@ -44,7 +45,7 @@ public enum DefectType {
 	COMPLEX_MAP_REFERENCED_INVALID_CONCEPT("Complex map reference set member refers to a non-existing concept"),
 	EXTENDED_MAP_REFERENCED_INVALID_CONCEPT("Extended map reference set member refers to a non-existing concept"),
 	INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
-	INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known."),
+	INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known.", false),
 	IO_PROBLEM("Encountered an I/O error while running validation."),
 	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty");
 	

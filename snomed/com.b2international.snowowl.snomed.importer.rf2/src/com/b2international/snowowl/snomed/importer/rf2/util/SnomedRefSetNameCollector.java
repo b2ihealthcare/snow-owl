@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,21 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.util;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -34,17 +39,18 @@ import com.b2international.commons.csv.CsvLexer.EOL;
 import com.b2international.commons.csv.CsvParser;
 import com.b2international.commons.csv.CsvSettings;
 import com.b2international.commons.csv.RecordParserCallback;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
-import com.b2international.snowowl.snomed.importer.rf2.refset.ErroneousAustralianReleaseFileNames;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 
 /**
@@ -67,210 +73,214 @@ import com.google.common.io.Closeables;
  */
 public class SnomedRefSetNameCollector {
 	
-	private static final int LARGE_WORK_REMAINING = 10000;
+	private static final String UNLABELED_REFSET_PREFIX = "Reference set ";
+	private static final String UNLABELED_REFSET_SUFFIX = " (unresolved)";
+	private static final String UNLABELED_REFSET_TEMPLATE = UNLABELED_REFSET_PREFIX + "%s" + UNLABELED_REFSET_SUFFIX;
+	public static final String UNLABELED_REFSET_REGEX = UNLABELED_REFSET_PREFIX + "([\\d]*)" + Pattern.quote(UNLABELED_REFSET_SUFFIX);
 
-	private static final Map<String, String> URL_TO_ICON_TYPE_ID_MAP = ImmutableMap.<String, String>builder().
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20120229_STRENGTH_REFSET_NAME, Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20120229_SUBPACK_QUANTITY_FULL_REFSET_NAME, Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20120229_UNIT_OF_USE_QUANTITY_REFSET_NAME, Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20120229_UNIT_OF_USE_SIZE_REFSET_NAME, Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20110531_CTV3_ID_REFSET_NAME, Concepts.REFSET_SIMPLE_MAP_TYPE).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20110531_SNOMED_RT_REFSET_NAME, Concepts.REFSET_SIMPLE_MAP_TYPE).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20110531_SNOMED_LANGUAGE_REFSET_NAME, Concepts.REFSET_LANGUAGE_TYPE).
-			put(ErroneousAustralianReleaseFileNames.ERRONEOUS_AU_20120229_SNOMED_LANGUAGE_REFSET_NAME, Concepts.REFSET_LANGUAGE_TYPE).build();
-	
 	private static final CsvSettings CSV_SETTINGS = new CsvSettings('\0', '\t', EOL.CRLF, true);
+
 	private static final String ACTIVE_STATUS = "1";
-	private static final int DESCRIPTION_FIELD_COUNT = 9;
-	private static final int CONCEPT_ID_COLUMN = 4;
-	private static final int DESCRIPTION_TERM_COLUMN = 7;
+	
 	private static final int STATUS_COLUMN = 2;
+	private static final int REFSET_ID_COLUMN = 4;
+	private static final int DESCRIPTION_CONCEPT_ID_COLUMN = 4;
 	private static final int DESCRIPTION_TYPE_COLUMN = 6;
+	private static final int DESCRIPTION_TERM_COLUMN = 7;
 	
-	private static final String CONCRETE_DOMAIN_TYPE_REFSET_ID = SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class).getConcreteDomainTypeRefsetIdentifier();
+	private static final int DESCRIPTION_FIELD_COUNT = SnomedRf2Headers.DESCRIPTION_HEADER.length;
 	
+	private static final String CONCRETE_DOMAIN_TYPE_REFSET_ID = SnowOwlApplication.INSTANCE.getConfiguration()
+			.getModuleConfig(SnomedCoreConfiguration.class).getConcreteDomainTypeRefsetIdentifier();
+
 	private ImportConfiguration configuration;
-	private SubMonitor convertedMonitor;
-	private Map<String, String> availableLabels = Maps.newHashMap();
-	private String refSetTypeIconId;
+	private IProgressMonitor monitor;
+	private Map<String, String> refsetIdToLabelMap = newHashMap();
+	private Map<String, String> refSetIdToIconIdMap = newHashMap();
+	private Collection<URL> refsetUrls;
 	
-	public SnomedRefSetNameCollector(IProgressMonitor monitor, String taskName) {
-		this(null, monitor, taskName);
-	} 
-	
-	public SnomedRefSetNameCollector(ImportConfiguration configuration, IProgressMonitor monitor, String taskName) {
+	public SnomedRefSetNameCollector(Collection<URL> refsetUrls, ImportConfiguration configuration, IProgressMonitor monitor) {
+		this.refsetUrls = refsetUrls;
 		this.configuration = configuration;
-		this.convertedMonitor = SubMonitor.convert(monitor, taskName, 2);
+		this.monitor = monitor;
 	}
 	
-	/**
-	 * Parses the passed reference set, collects the available reference set IDs from it and
-	 * binds them to their label.
-	 * 
-	 * @param refSetURL
-	 *            the URL of the reference file to parse
-	 */
-	public void parse(URL refSetURL) {
+	public void parse() {
 		
-		if (configuration != null) {
-			parseFilesAndTerminology(refSetURL);
-		} else {
-			parseTerminology(refSetURL);
-		}
-	}
-	
-	private void parseFilesAndTerminology(URL refSetURL) {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Collecting reference set labels...", 2);
 		
 		// Step 1: Find all reference set IDs
-		final Set<String> unlabeledRefSetIds = getUnlabeledRefSetIds(refSetURL, convertedMonitor.newChild(1));
+		final Set<String> unlabeledRefSetIds = getUnlabeledRefSetIds(refsetUrls, subMonitor.newChild(1));
 
-		if (refSetTypeIconId == null) {
-			// Unknown reference set format, ignore
-			convertedMonitor.done();
+		if (unlabeledRefSetIds.isEmpty()) {
+			monitor.done();
 			return;
 		}
 		
-		// Step 2: Get descriptions for reference set IDs using the description file (if present)
-		if (configuration.getDescriptionsFile() != null) {
-			readDescriptionFile(unlabeledRefSetIds, convertedMonitor.newChild(1));
+		// Step 2: Use the general label for refsets that already exist (the client will fill out those labels later)
+		useGeneralLabelForExistingRefsets(unlabeledRefSetIds);
+		
+		if (unlabeledRefSetIds.isEmpty()) {
+			monitor.done();
+			return;
+		}
+		
+		// Step 3: Get descriptions for reference set IDs using the description file (if present)
+		if (!configuration.getDescriptionFiles().isEmpty()) {
+			readDescriptionFiles(unlabeledRefSetIds, subMonitor.newChild(1));
 		}
 
-		// Step 3: Mine the terminology browser for more labels (if registered)
-//		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
-		
 		// Step 4: There may be some reference sets for which we couldn't get a label; initialize these with boilerplate text
 		fillGeneralLabels(unlabeledRefSetIds);
 	}
 
-	private void readDescriptionFile(final Set<String> unlabeledRefSetIds, final SubMonitor subMonitor) {
+	private void useGeneralLabelForExistingRefsets(Set<String> unlabeledRefSetIds) {
 		
-		InputStreamReader descriptionReader = null;
-		subMonitor.setWorkRemaining(LARGE_WORK_REMAINING);
+		Set<String> existingConceptIds = SnomedRequests.prepareSearchConcept()
+			.setLimit(unlabeledRefSetIds.size())
+			.filterByActive(true)
+			.filterByIds(unlabeledRefSetIds)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.then(concepts -> concepts.stream().map(SnomedConcept::getId).collect(Collectors.toSet()))
+			.getSync();
+		
+		fillGeneralLabels(existingConceptIds);
+		unlabeledRefSetIds.removeAll(existingConceptIds);
+	}
 
-		try {
-			RecordParserCallback<String> descriptionParserCallback = new RecordParserCallback<String>() {
+	private void readDescriptionFiles(final Set<String> unlabeledRefSetIds, final IProgressMonitor monitor) {
+		
+		RecordParserCallback<String> descriptionParserCallback = new RecordParserCallback<String>() {
 
-				@Override
-				public void handleRecord(int recordCount, List<String> record) {
+			@Override
+			public void handleRecord(int recordCount, List<String> record) {
 
-					String refSetId = record.get(CONCEPT_ID_COLUMN);
+				if (!unlabeledRefSetIds.isEmpty()) {
+					
+					String refSetId = record.get(DESCRIPTION_CONCEPT_ID_COLUMN);
 					String descriptionType = record.get(DESCRIPTION_TYPE_COLUMN);
 					String status = record.get(STATUS_COLUMN);
-
+					
 					if (unlabeledRefSetIds.contains(refSetId) && 
 							descriptionType.equals(SnomedConstants.Concepts.FULLY_SPECIFIED_NAME) && 
 							status.equals(ACTIVE_STATUS)) {
-
-						unlabeledRefSetIds.remove(refSetId);
-
+						
 						// Remove the part in parentheses for the fully specified term
 						String term = record.get(DESCRIPTION_TERM_COLUMN);
 						String trimmedTerm = StringUtils.substringBeforeLast(term, "(");
-						availableLabels.put(refSetId, trimmedTerm);
+						refsetIdToLabelMap.put(refSetId, trimmedTerm);
+						unlabeledRefSetIds.remove(refSetId);
+						
 					}
 					
-					subMonitor.worked(1);
-					subMonitor.setWorkRemaining(LARGE_WORK_REMAINING);
 				}
-			};
-
-			URL url = configuration.toURL(configuration.getDescriptionsFile());
-			descriptionReader = new InputStreamReader(url.openStream());
-			CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS, descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
-			parser.parse();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			Closeables.closeQuietly(descriptionReader);
-			subMonitor.done();
-		}
-	}
-
-	private Set<String> getUnlabeledRefSetIds(URL refSetURL, final SubMonitor subMonitor)  {
-		
-		final Set<String> unlabeledRefSetIds = Sets.newHashSet();
-		subMonitor.setWorkRemaining(LARGE_WORK_REMAINING);
-		InputStreamReader refSetReader = null;
-		
-		try {
-			
-			int refSetColumnCount = getRefSetColumnCount(refSetURL);
-			
-			//guard against invalid files/folders in the SCT RF2 archive/root folder
-			if (Integer.MIN_VALUE == refSetColumnCount) {
-				
-				return  unlabeledRefSetIds;
 				
 			}
+		};
+
+		
+		if (!configuration.getDescriptionFiles().isEmpty()) {
 			
-			final String url = refSetURL.toString();
-			
-			RecordParserCallback<String> refSetParserCallback = new RecordParserCallback<String>() {
+			SubMonitor subMonitor = SubMonitor.convert(monitor, configuration.getDescriptionFiles().size());
+			subMonitor.setTaskName("Parsing description files for reference set labels...");
+
+			for (File descFile : configuration.getDescriptionFiles()) {
 				
-				@Override
-				public void handleRecord(int recordCount, List<String> record) {
+				if (!unlabeledRefSetIds.isEmpty()) {
 					
-					if (recordCount == 1) {
-						refSetTypeIconId = getRefSetTypeIconIdFromHeader(url, record);
-					} else {					
-						unlabeledRefSetIds.add(record.get(CONCEPT_ID_COLUMN));
+					try {
+						
+						final URL url = configuration.toURL(descFile);
+						
+						try (InputStreamReader descriptionReader = new InputStreamReader(url.openStream())) {
+							final CsvParser parser = new CsvParser(descriptionReader, getFileName(url), CSV_SETTINGS,
+									descriptionParserCallback, DESCRIPTION_FIELD_COUNT);
+							parser.parse();
+						}
+						
+					} catch (IOException e) {
+						throw new RuntimeException(e);
 					}
 					
-					subMonitor.worked(1);
-					subMonitor.setWorkRemaining(LARGE_WORK_REMAINING);
 				}
-			};
+				
+				subMonitor.worked(1);
+			}
 			
-			refSetReader = new InputStreamReader(refSetURL.openStream());
-			
-			CsvParser parser = new CsvParser(refSetReader, getFileName(refSetURL), CSV_SETTINGS, refSetParserCallback, refSetColumnCount);
-			parser.parse();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			Closeables.closeQuietly(refSetReader);
-			subMonitor.done();
 		}
+		
+		monitor.done();
+	}
+
+	private Set<String> getUnlabeledRefSetIds(Collection<URL> urls, final IProgressMonitor monitor)  {
+		
+		final Set<String> unlabeledRefSetIds = newHashSet();
+		final Map<URL, String> urlToIconIdMap = newHashMap();
+		
+		SubMonitor subMonitor = SubMonitor.convert(monitor, urls.size());
+		subMonitor.setTaskName("Collecting available reference sets...");
+		
+		for (URL url : urls) {
+			
+			InputStreamReader refSetReader = null;
+			
+			try {
+				
+				int refSetColumnCount = getRefSetColumnCount(url);
+				
+				//guard against invalid files/folders in the SCT RF2 archive/root folder
+				if (Integer.MIN_VALUE == refSetColumnCount) {
+					subMonitor.worked(1);
+					continue;
+				}
+				
+				RecordParserCallback<String> refSetParserCallback = new RecordParserCallback<String>() {
+					@Override
+					public void handleRecord(int recordCount, List<String> record) {
+						
+						if (recordCount == 1) {
+							urlToIconIdMap.put(url, getRefSetTypeIconIdFromHeader(record));
+						} else {					
+							String refsetId = record.get(REFSET_ID_COLUMN);
+							if (!unlabeledRefSetIds.contains(refsetId)) {
+								unlabeledRefSetIds.add(refsetId);
+								refSetIdToIconIdMap.put(refsetId, urlToIconIdMap.get(url));
+							}
+						}
+						
+					}
+				};
+				
+				refSetReader = new InputStreamReader(url.openStream());
+				
+				CsvParser parser = new CsvParser(refSetReader, getFileName(url), CSV_SETTINGS, refSetParserCallback, refSetColumnCount);
+				parser.parse();
+				
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} finally {
+				Closeables.closeQuietly(refSetReader);
+				subMonitor.worked(1);
+			}
+		}
+		
+		monitor.done();
 		
 		return unlabeledRefSetIds;
 	}
 	
-	//returns with the number of columns for SCT reference set serialized into RF2 format.
-	//if file cannot be read or empty, returns with minimum integer value, indicating invalid file
 	private int getRefSetColumnCount(URL refSetURL) throws IOException  {
-		
-		BufferedReader reader = null;
-		
-		try {
-			
-			reader = new BufferedReader(new InputStreamReader(refSetURL.openStream()));
-			final String readLine = reader.readLine();
-			if (StringUtils.isEmpty(readLine)) {
-				
-				return Integer.MIN_VALUE;
-				
-			} else {
-				
-				return readLine.split("\t").length;
-				
+		try (InputStreamReader inputStreamReader = new InputStreamReader(refSetURL.openStream())) {
+			try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+				final String readLine = reader.readLine();
+				return StringUtils.isEmpty(readLine) ? Integer.MIN_VALUE : readLine.split("\t").length;
 			}
-
-		} finally {
-			Closeables.closeQuietly(reader);
 		}
 	}
 
-	private String getRefSetTypeIconIdFromHeader(String refSetURLAsString, List<String> header) {
+	private String getRefSetTypeIconIdFromHeader(List<String> header) {
 		
-		// Start with the exceptional cases first...
-		for (Entry<String, String> urlToIconTypeEntry : URL_TO_ICON_TYPE_ID_MAP.entrySet()) {
-			if (refSetURLAsString.contains(urlToIconTypeEntry.getKey())) {
-				return urlToIconTypeEntry.getValue();
-			}
-		}
-
-		// ...then carry on with the heuristics based on the release file's header
 		String lastColumnName = header.get(header.size() - 1);
 		
 		if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID)) {
@@ -291,8 +301,6 @@ public class SnomedRefSetNameCollector {
 			return Concepts.REFSET_DESCRIPTION_TYPE;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
 			return CONCRETE_DOMAIN_TYPE_REFSET_ID;
-		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE)) {
-			return Concepts.REFSET_CONCRETE_DOMAIN_TYPE_AU;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 			return Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
@@ -318,30 +326,13 @@ public class SnomedRefSetNameCollector {
 		return null;
 	}
 
-//	private void fillLabelsFromTeminologyBrowser(Set<String> unlabeledRefSetIds) {
-//		Iterator<String> unlabeledRefSetIdIterator = unlabeledRefSetIds.iterator();
-//		
-//		while (unlabeledRefSetIdIterator.hasNext()) {
-//			
-//			String refSetId = unlabeledRefSetIdIterator.next();
-//			SnomedConceptDocument refsetConcept = terminologyBrowser.getConcept(refSetId);
-//			
-//			if (refsetConcept != null) {
-//				String refSetLabel = refsetConcept.getLabel();
-//				availableLabels.put(refSetId, refSetLabel);
-//				unlabeledRefSetIdIterator.remove();
-//			}
-//		}
-//	}
-
 	private void fillGeneralLabels(Set<String> unlabeledRefSetIds) {
-		
 		for (String refSetId : unlabeledRefSetIds) {
-			availableLabels.put(refSetId, "Reference set " + refSetId + " (unresolved)");
+			refsetIdToLabelMap.put(refSetId, String.format(UNLABELED_REFSET_TEMPLATE, refSetId));
 		}
 	}
 
-	/*returns with the file name extracted from the given URL*/
+	/* returns with the file name extracted from the given URL */
 	private Optional<String> getFileName(final URL fileUrl) {
 		
 		String fileName = null;
@@ -354,14 +345,14 @@ public class SnomedRefSetNameCollector {
 
 			try {
 				
-				//assuming zip URL
+				// assuming zip URL
 				if (fileUrl.toString().startsWith("zip")) {
 					final URI uri = URI.create(fileUrl.toString().substring(fileUrl.toString().indexOf('!') + 1));
 					fileName = org.eclipse.emf.common.util.URI.createFileURI(uri.getPath()).lastSegment();
 				}
 				
 			} catch (final Throwable t2) {
-				//ignore it, file name is optional
+				// ignore it, file name is optional
 			}
 
 			
@@ -370,44 +361,12 @@ public class SnomedRefSetNameCollector {
 		return Optional.<String>fromNullable(fileName);
 		
 	}
-	
-	private void parseTerminology(URL refSetURL)  {
-		
-		convertedMonitor.setWorkRemaining(1);
-		
-		// Step 1: Find all reference set IDs
-		Set<String> unlabeledRefSetIds = getUnlabeledRefSetIds(refSetURL, convertedMonitor.newChild(1));
 
-		if (refSetTypeIconId == null) {
-			// Unknown reference set format, ignore
-			return;
-		}
-
-		// Step 2: Mine the terminology browser for more labels (if registered)
-//		fillLabelsFromTeminologyBrowser(unlabeledRefSetIds);
-		
-		// Step 3: There may be some reference sets for which we couldn't get a label; initialize these with boilerplate text
-		fillGeneralLabels(unlabeledRefSetIds);
+	public Map<String, String> getRefsetIdToLabelMap() {
+		return refsetIdToLabelMap;
 	}
 
-	/**
-	 * @return a map containing the parsed reference set ids and their
-	 *         corresponding labels
-	 */
-	public Map<String, String> getAvailableLabels() {
-		return availableLabels;
-	}
-
-	/**
-	 * Each file contains only one kind of reference set; this method returns
-	 * the reference set type id (map, language...) based on the reference set
-	 * header, since at import time we may not have services to traverse trough
-	 * the hierarchy from the reference set id to the parent type identifier.
-	 * 
-	 * @return the concept id of the common base type of the reference sets
-	 *         found in the release file
-	 */
-	public String getRefSetTypeIconId() {
-		return refSetTypeIconId;
+	public String getRefSetTypeIconId(String refsetId) {
+		return refSetIdToIconIdMap.get(refsetId);
 	}
 }

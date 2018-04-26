@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.core.domain.IComponentRef;
 import com.b2international.snowowl.core.history.domain.IHistoryInfo;
 import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -55,10 +54,7 @@ public class SnomedReferenceSetHistoryRestService extends AbstractSnomedRestServ
 	public SnomedReferenceSetHistory getHistory(
 			@PathVariable(value="path") final String branchPath,
 			@PathVariable(value="id") final String refSetId) {
-
-		final IComponentRef refSetRef = createComponentRef(branchPath, refSetId);
-		final List<IHistoryInfo> referenceSetHistory = delegate.getHistory(refSetRef);
-
+		final List<IHistoryInfo> referenceSetHistory = delegate.getHistory(branchPath, refSetId);
 		final SnomedReferenceSetHistory result = new SnomedReferenceSetHistory();
 		result.setReferenceSetHistory(referenceSetHistory);
 		return result;

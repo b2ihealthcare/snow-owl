@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,13 +56,13 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.ICodeSystemVersion;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -359,12 +359,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 					return false;
 				}
 				
-			}).toSortedList(new Comparator<ICodeSystemVersion>() {
-				@Override
-				public int compare(ICodeSystemVersion o1, ICodeSystemVersion o2) {
-					return Longs.compare(o1.getEffectiveDate(), o2.getEffectiveDate());
-				}
-			});
+			}).toSortedList((o1, o2) -> Longs.compare(o1.getEffectiveDate(), o2.getEffectiveDate()));
 			
 			if (sortedVersions.isEmpty()) {
 				String message = null;
@@ -561,7 +556,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Exporting SNOMED CT descriptions into RF1 format");
-			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, includeExtendedDescriptionTypes).execute();
+			final String languageRefSetId = SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference().get(0).getLanguageTag());
+			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, languageRefSetId, includeExtendedDescriptionTypes).execute();
 			
 			if (monitor.isCanceled()) {
 				return;

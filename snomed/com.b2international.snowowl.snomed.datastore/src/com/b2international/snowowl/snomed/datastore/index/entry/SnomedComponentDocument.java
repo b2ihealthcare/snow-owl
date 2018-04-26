@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.b2international.commons.collections.Collections3;
@@ -26,7 +27,6 @@ import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 /**
  * @since 4.7
@@ -45,64 +45,61 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			return matchAny(Fields.NAMESPACE, namespaces);
 		}
 		
-		public static Expression referringRefSet(String referringRefSet) {
-			return exactMatch(Fields.REFERRING_REFSETS, referringRefSet);
+		public static final Expression memberOf(String referenceSetId) {
+			return exactMatch(Fields.MEMBER_OF, referenceSetId);
 		}
 		
-		public static Expression referringRefSets(Iterable<String> referringRefSets) {
-			return matchAny(Fields.REFERRING_REFSETS, referringRefSets);
+		public static final Expression memberOf(Iterable<String> referenceSetIds) {
+			return matchAny(Fields.MEMBER_OF, referenceSetIds);
 		}
 		
-		public static Expression referringMappingRefSet(String referringMappingRefSet) {
-			return exactMatch(Fields.REFERRING_MAPPING_REFSETS, referringMappingRefSet);
+		public static final Expression activeMemberOf(String referenceSetId) {
+			return exactMatch(Fields.ACTIVE_MEMBER_OF, referenceSetId);
 		}
 		
-		public static Expression referringMappingRefSets(Iterable<String> referringMappingRefSets) {
-			return matchAny(Fields.REFERRING_MAPPING_REFSETS, referringMappingRefSets);
+		public static final Expression activeMemberOf(Iterable<String> referenceSetIds) {
+			return matchAny(Fields.ACTIVE_MEMBER_OF, referenceSetIds);
 		}
 		
 	}
 
 	public static class Fields extends SnomedDocument.Fields {
 		public static final String NAMESPACE = "namespace";
-		public static final String REFERRING_REFSETS = "referringRefSets";
-		public static final String REFERRING_MAPPING_REFSETS = "referringMappingRefSets";
+		public static final String MEMBER_OF = "memberOf";
+		public static final String ACTIVE_MEMBER_OF = "activeMemberOf";
 	}
 	
-	protected static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
+	public static abstract class SnomedComponentDocumentBuilder<B extends SnomedComponentDocumentBuilder<B>> extends SnomedDocumentBuilder<B> {
 		
 		protected String namespace;
-		protected List<String> referringRefSets = Lists.newArrayList();
-		protected List<String> referringMappingRefSets = Lists.newArrayList();
+		protected List<String> memberOf = Collections.emptyList();
+		protected List<String> activeMemberOf = Collections.emptyList();
 
 		@Override
 		public B id(String id) {
-			if (!Strings.isNullOrEmpty(id)) {
-				namespace(SnomedIdentifiers.create(id).getNamespace());
-			}
 			return super.id(id);
 		}
 		
-		B namespace(String namespace) {
-			this.namespace = namespace;
+		public B namespace(String namespace) {
+			this.namespace = Strings.emptyToNull(namespace);
 			return getSelf();
 		}
 		
-		public B referringRefSets(Collection<String> referringRefSets) {
-			this.referringRefSets = Collections3.toImmutableList(referringRefSets);
+		public B activeMemberOf(Collection<String> referenceSetIds) {
+			this.activeMemberOf = Collections3.toImmutableList(referenceSetIds);
 			return getSelf();
 		}
 		
-		public B referringMappingRefSets(Collection<String> referringMappingRefSets) {
-			this.referringMappingRefSets = Collections3.toImmutableList(referringMappingRefSets);
+		public B memberOf(Collection<String> referenceSetIds) {
+			this.memberOf = Collections3.toImmutableList(referenceSetIds);
 			return getSelf();
 		}
 		
 	}
 	
 	private final String namespace;
-	private final List<String> referringRefSets;
-	private final List<String> referringMappingRefSets;
+	private final List<String> memberOf;
+	private final List<String> activeMemberOf;
 	
 	SnomedComponentDocument(String id, 
 			String label, 
@@ -112,32 +109,32 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			boolean active,
 			long effectiveTime,
 			String namespace,
-			List<String> referringRefSets,
-			List<String> referringMappingRefSets) {
+			List<String> memberOf,
+			List<String> activeMemberOf) {
 		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.namespace = namespace;
-		this.referringRefSets = referringRefSets;
-		this.referringMappingRefSets = referringMappingRefSets;
+		this.memberOf = memberOf;
+		this.activeMemberOf = activeMemberOf;
 	}
 	
 	public final String getNamespace() {
 		return namespace;
 	}
-	
-	public Collection<String> getReferringRefSets() {
-		return referringRefSets;
+
+	public List<String> getMemberOf() {
+		return memberOf;
 	}
 	
-	public Collection<String> getReferringMappingRefSets() {
-		return referringMappingRefSets;
+	public List<String> getActiveMemberOf() {
+		return activeMemberOf;
 	}
 	
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
 				.add("namespace", namespace)
-				.add("referringRefSets", referringRefSets)
-				.add("referringMappingRefSets", referringMappingRefSets);
+				.add("memberOf", memberOf)
+				.add("activeMemberOf", activeMemberOf);
 	}
 
 }

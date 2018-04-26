@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,10 @@
  */
 package com.b2international.snowowl.core.api;
 
-import java.io.Serializable;
-
 /**
  * Represents the common service interface for all component lookup services.
- * 
- * 
- * @param <K>
- *            serializable unique identifier of the component
- * @param <T>
- *            type of the searched component
- * @param <V>
- *            should be CDO View or its subclass.
  */
-public interface ILookupService<K extends Serializable, T, V> {
+public interface ILookupService<T, V> {
 
 	/**
 	 * Returns with a component looked up in the passed in view with the
@@ -42,7 +32,7 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 * @return the looked up component. May return with {@code null} if no such
 	 *         component exists in that view with the passed in ID.
 	 */
-	T getComponent(final K id, final V view);
+	T getComponent(final String id, V view);
 
 	/**
 	 * Returns {@code true} if the component exists on a particular branch with the given unique ID.
@@ -50,7 +40,7 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 * @param id the unique ID of the component.
 	 * @return {@code true} if the component exists. Otherwise returns with {@code false}.
 	 */
-	boolean exists(final IBranchPath branchPath, final K id);
+	boolean exists(final IBranchPath branchPath, final String id);
 	
 	/**
 	 * Returns with a lightweight representation of a {@link IComponent component} identified by the passed in ID.
@@ -62,7 +52,7 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 * @param id the unique identifier of the terminology independent component.
 	 * @return the lightweight terminology component or {@code null} if no such component exists in the cached store.
 	 */
-	IComponent<K> getComponent(final IBranchPath branchPath, final K id);
+	IComponent<String> getComponent(final IBranchPath branchPath, final String id);
 	
 	/**
 	 * Returns with the unique storage identifier for a terminology independent specified by the component identifier argument
@@ -72,5 +62,5 @@ public interface ILookupService<K extends Serializable, T, V> {
 	 * @param id the unique identifier of component which storage key should be find.
 	 * @return the unique storage key of the component.
 	 */
-	long getStorageKey(final IBranchPath branchPath, final K id);
+	long getStorageKey(final IBranchPath branchPath, final String id);
 }

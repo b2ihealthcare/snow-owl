@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.b2international.snowowl.api.impl.history.AbstractHistoryServiceImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 
@@ -27,7 +28,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService;
 public class SnomedReferenceSetHistoryServiceImpl extends AbstractHistoryServiceImpl implements ISnomedReferenceSetHistoryService {
 
 	public SnomedReferenceSetHistoryServiceImpl() {
-		super(SnomedDatastoreActivator.REPOSITORY_UUID, ComponentCategory.SET);
+		super(SnomedDatastoreActivator.REPOSITORY_UUID, ComponentCategory.SET, SnomedTerminologyComponentConstants.REFSET_NUMBER);
 	}
 
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,39 +21,46 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getValue;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * A transfer object representing a SNOMED CT concept.
@@ -65,14 +72,57 @@ import com.google.common.collect.FluentIterable;
 	script=
 	"double interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0;\n"
 	+ "String id = doc.id.value;\n" 
-	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;", 
-	fields={SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.DOI})
-@Script(name="doi", script="return doc.doi.value", fields={SnomedConceptDocument.Fields.DOI})
-public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
+	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;")
+@Script(name="doi", script="return doc.doi.value")
+@Script(
+	name="termSort", 
+	script=
+	// select first preferred SYNONYM
+	  "for (locale in params.locales) {"
+	+ "	for (description in params._source.preferredDescriptions) {"
+	+ "		if (!params.synonymIds.contains(description.typeId)) {"
+	+ "			continue;"
+	+ "		}"
+	+ "		if (description.languageRefSetIds.contains(locale)) {"
+	+ "			return description.term;"
+	+ "		}"
+	+ "	}"
+	+ "}"
+	// if there is no first preferred synonym then select first preferred FSN
+	+ "for (locale in params.locales) {"
+	+ "	for (description in params._source.preferredDescriptions) {"
+	+ "		if (!\"900000000000003001\".equals(description.typeId)) {"
+	+ "			continue;"
+	+ "		}"
+	+ "		if (description.languageRefSetIds.contains(locale)) {"
+	+ "			return description.term;"
+	+ "		}"
+	+ "	}"
+	+ "}"
+	// if there is no first preferred FSN, then select the first FSN in the list (the index will contain only active description in creation order)
+	+ "for (description in params._source.preferredDescriptions) {"
+	+ "	if (\"900000000000003001\".equals(description.typeId)) {"
+	+ "		return description.term"
+	+ "	}"
+	+ "}"
+	// Otherwise select the ID for sorting
+	+ "return doc.id.value")
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedConceptDocument.Fields.PRIMITIVE,
+	SnomedConceptDocument.Fields.EXHAUSTIVE
+})
+public class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
 
+	public static SortBy sortByTerm(List<String> languageRefSetPreferenceList, Set<String> synonymIds, SortBy.Order order) {
+		return SortBy.script("termSort", ImmutableMap.of("locales", languageRefSetPreferenceList, "synonymIds", synonymIds), order);
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -176,12 +226,15 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
+		public static final String DESCRIPTIONS = "descriptions";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
+		final String id = input.getId();
 		return builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 //				.score(input.getScore())
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
@@ -203,9 +256,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	}
 	
 	public static Builder builder(SnomedConcept input) {
+		String id = input.getId();
 		final Builder builder = builder()
 				.storageKey(input.getStorageKey())
-				.id(input.getId())
+				.id(id)
+				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.moduleId(input.getModuleId())
 				.active(input.isActive())
 				.released(input.isReleased())
@@ -248,6 +303,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		private float doi = DEFAULT_DOI;
 		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 		private boolean structural = false;
+		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
 		@JsonCreator
 		private Builder() {
@@ -269,6 +325,12 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder parents(final long ...parents) {
+			return parents(PrimitiveSets.newLongOpenHashSet(parents));
+		}
+
+		@JsonProperty("parents")
 		public Builder parents(final LongSet parents) {
 			this.parents = parents;
 			return getSelf();
@@ -357,6 +419,14 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			return getSelf();
 		}
 		
+		public Builder preferredDescriptions(List<SnomedDescriptionFragment> preferredDescriptions) {
+			this.preferredDescriptions = Collections3.toImmutableList(preferredDescriptions);
+			for (SnomedDescriptionFragment preferredDescription : this.preferredDescriptions) {
+				checkArgument(!preferredDescription.getLanguageRefSetIds().isEmpty(), "At least one language reference set ID is required to create a preferred description fragment for description %s.", preferredDescription.getId());
+			}
+			return getSelf();
+		}
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
@@ -373,8 +443,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 					mapTargetComponentType,
 					refSetStorageKey,
 					structural,
-					referringRefSets,
-					referringMappingRefSets);
+					memberOf,
+					activeMemberOf,
+					preferredDescriptions);
 			
 			entry.doi = doi;
 			entry.setScore(score);
@@ -412,6 +483,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	private final int mapTargetComponentType;
 	private final boolean structural;
 	private final long refSetStorageKey;
+	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
 	private LongSet ancestors;
@@ -435,7 +507,8 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 			final long refSetStorageKey,
 			final boolean structural,
 			final List<String> referringRefSets,
-			final List<String> referringMappingRefSets) {
+			final List<String> referringMappingRefSets,
+			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
 		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
@@ -445,6 +518,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		this.mapTargetComponentType = mapTargetComponentType;
 		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
+		this.preferredDescriptions = preferredDescriptions;
 	}
 	
 	@Override
@@ -479,7 +553,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return exhaustive;
 	}
 	
-	@Override
 	public LongSet getParents() {
 		return parents;
 	}
@@ -488,7 +561,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return statedParents;
 	}
 	
-	@Override
 	public LongSet getAncestors() {
 		return ancestors;
 	}
@@ -511,6 +583,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 	
 	public boolean isStructural() {
 		return structural;
+	}
+	
+	public List<SnomedDescriptionFragment> getPreferredDescriptions() {
+		return preferredDescriptions;
 	}
 	
 	@Override

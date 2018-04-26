@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.japi.branches.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
+import com.b2international.snowowl.snomed.api.japi.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.api.japi.issue.IssueSO2503RemoteJobDynamicMappingFix;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedListFeaturesTests;
@@ -36,6 +37,7 @@ import com.b2international.snowowl.snomed.api.rest.browser.SnomedBrowserApiTest;
 import com.b2international.snowowl.snomed.api.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedConceptApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedDescriptionApiTest;
+import com.b2international.snowowl.snomed.api.rest.components.SnomedModuleDependencyRefsetTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetBulkApiTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberApiTest;
@@ -84,6 +86,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBrowserApiTest.class,
 	SnomedClassificationApiTest.class,
 	SnomedExportApiTest.class,
+	// Module dependecy test cases
+	SnomedModuleDependencyRefsetTest.class,
 	// Extension test cases
 	SnomedExtensionUpgradeTest.class,
 	SnomedExtensionDowngradeTest.class,
@@ -91,7 +95,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Java API test cases
 	SnomedBranchRequestTest.class,
 	BranchCompareRequestTest.class,
-	SnomedRefSetDSVExportTest.class
+	SnomedRefSetDSVExportTest.class,
+	EclSerializerTest.class
 })
 public class AllSnomedApiTests {
 

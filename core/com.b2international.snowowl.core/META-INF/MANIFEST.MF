@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Core
 Bundle-SymbolicName: com.b2international.snowowl.core;singleton:=true
-Bundle-Version: 6.1.0.qualifier
+Bundle-Version: 6.5.0.qualifier
 Bundle-Activator: com.b2international.snowowl.core.CoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -15,15 +15,13 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  xstream;bundle-version="1.4.7",
  org.eclipse.xtext.util;bundle-version="[2.11.0,2.13.0)",
  io.reactivex.rxjava2.rxjava;bundle-version="2.0.7";visibility:=reexport,
- org.reactivestreams.reactive-streams;bundle-version="1.0.0";visibility:=reexport
+ org.reactivestreams.reactive-streams;bundle-version="1.0.0";visibility:=reexport,
+ org.eclipse.emf.cdo;bundle-version="4.1.10"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.core,
- com.b2international.snowowl.core.annotations,
  com.b2international.snowowl.core.api,
- com.b2international.snowowl.core.api.browser,
  com.b2international.snowowl.core.api.component,
- com.b2international.snowowl.core.api.index,
  com.b2international.snowowl.core.api.preferences,
  com.b2international.snowowl.core.api.preferences.io,
  com.b2international.snowowl.core.branch,
@@ -41,11 +39,8 @@ Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.history,
  com.b2international.snowowl.core.history.domain,
  com.b2international.snowowl.core.inject,
- com.b2international.snowowl.core.jobs,
  com.b2international.snowowl.core.login,
- com.b2international.snowowl.core.markers,
  com.b2international.snowowl.core.merge,
- com.b2international.snowowl.core.propertyhelper,
  com.b2international.snowowl.core.propertytester,
  com.b2international.snowowl.core.request,
  com.b2international.snowowl.core.setup,

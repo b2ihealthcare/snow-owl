@@ -2,6 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="snomedImportPostProcessor" name="SNOMED CT Import Post Processor" schema="schema/snomedImportPostProcessor.exsd"/>
+   <extension-point id="snomedNamespaceAndModuleAssigner" name="SNOMED CT Namespace and Module Assigner" schema="schema/snomedNamespaceAndModuleAssigner.exsd"/>
    <extension
          point="com.b2international.snowowl.core.terminologyComponent">
       <terminologyComponent
@@ -241,147 +242,6 @@
       </lookupService>
    </extension>
    <extension
-         point="org.eclipse.core.runtime.adapters">
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.Concept"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedConceptAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedConceptAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.Description"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedDescriptionAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedDescriptionAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.Relationship"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedRelationshipAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedRelationshipAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedRefSetAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedRefSetMemberAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember"
-            class="com.b2international.snowowl.snomed.datastore.factory.SnomedRefSetMemberAdapterFactory">
-         <adapter
-               type="com.b2international.snowowl.core.api.IComponent">
-         </adapter>
-         <adapter
-               type="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry">
-         </adapter>
-      </factory>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.nameProviderFactory">
-      <nameProviderFactory
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedConceptNameProviderFactory"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </nameProviderFactory>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.nameProviderFactory">
-      <nameProviderFactory
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedDescriptionNameProviderFactory"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
-      </nameProviderFactory>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.nameProviderFactory">
-      <nameProviderFactory
-            class="com.b2international.snowowl.snomed.datastore.services.SnomedRelationshipNameProviderFactory"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </nameProviderFactory>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.LanguageConfigurationProviderConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.LanguageConfigurationProviderConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.SearchProfileManagerConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.ConceptNameProviderClientJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.ConceptNameProviderClientJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.DescriptionNameProviderClientJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.ConceptNameProviderClientJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.datastore.serviceconfig.RelationshipNameProviderClientJob"
-            id="com.b2international.snowowl.snomed.datastore.serviceconfig.ConceptNameProviderClientJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.componentIconIdProvider">
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedConceptIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedRefSetIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedRefSetIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedDescriptionIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedDescriptionIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
-      </provider>
-      <provider
-            class="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
-            id="com.b2international.snowowl.snomed.datastore.SnomedRelationshipIconIdProvider"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </provider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.repository">
       <repository
             name="SNOMED CT Store"
@@ -429,5 +289,11 @@
       <provider
             class="com.b2international.snowowl.snomed.datastore.index.SnomedMappingProvider">
       </provider>
+   </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.validationIssueDetailExtension">
+      <validationIssueDetailExtension
+            class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension">
+      </validationIssueDetailExtension>
    </extension>
 </plugin>

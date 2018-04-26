@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
@@ -37,30 +39,42 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class RevisionCompare {
 
-	static Builder builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare) {
-		return new Builder(index, base, compare);
+	static Builder builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
+		return new Builder(index, base, compare, limit);
 	}
 	
 	static class Builder {
 		
-		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> changedComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> deletedComponents = newHashMap();
 		private final InternalRevisionIndex index;
 		private final RevisionBranch base;
 		private final RevisionBranch compare;
+		private final int limit;
+	
+		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
+		private final Map<Class<? extends Revision>, LongSet> changedComponents = newHashMap();
+		private final Map<Class<? extends Revision>, LongSet> deletedComponents = newHashMap();
 		
-		Builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare) {
+		private final IntValueMap<Class<? extends Revision>> newTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
+		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
+		private final IntValueMap<Class<? extends Revision>> deletedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
+
+		Builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
 			this.index = index;
 			this.base = base;
 			this.compare = compare;
+			this.limit = limit;
 		}
 		
 		public Builder newRevision(Class<? extends Revision> type, long storageKey) {
 			if (!newComponents.containsKey(type)) {
 				newComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
-			newComponents.get(type).add(storageKey);
+			
+			if (newComponents.get(type).size() < limit) {
+				newComponents.get(type).add(storageKey);
+			}
+			
+			newTotals.put(type, newTotals.get(type) + 1);
 			return this;
 		}
 		
@@ -68,7 +82,12 @@ public final class RevisionCompare {
 			if (!changedComponents.containsKey(type)) {
 				changedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
-			changedComponents.get(type).add(storageKey);
+			
+			if (changedComponents.get(type).size() < limit) {
+				changedComponents.get(type).add(storageKey);
+			}
+			
+			changedTotals.put(type, changedTotals.get(type) + 1);
 			return this;
 		}
 		
@@ -76,12 +95,25 @@ public final class RevisionCompare {
 			if (!deletedComponents.containsKey(type)) {
 				deletedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
-			deletedComponents.get(type).add(storageKey);
+			
+			if (deletedComponents.get(type).size() < limit) {
+				deletedComponents.get(type).add(storageKey);
+			}
+			
+			deletedTotals.put(type, deletedTotals.get(type) + 1);
 			return this;
 		}
 		
 		public RevisionCompare build() {
-			return new RevisionCompare(index, base, compare, newComponents, changedComponents, deletedComponents);
+			return new RevisionCompare(index, 
+					base, 
+					compare, 
+					newComponents, 
+					changedComponents, 
+					deletedComponents,
+					newTotals,
+					changedTotals,
+					deletedTotals);
 		}
 		
 	}
@@ -89,20 +121,34 @@ public final class RevisionCompare {
 	private final InternalRevisionIndex index;
 	private final RevisionBranch base;
 	private final RevisionBranch compare;
+
 	private final Map<Class<? extends Revision>, LongSet> newComponents;
 	private final Map<Class<? extends Revision>, LongSet> changedComponents;
 	private final Map<Class<? extends Revision>, LongSet> deletedComponents;
 
-	private RevisionCompare(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare,
+	private final IntValueMap<Class<? extends Revision>> newTotals;
+	private final IntValueMap<Class<? extends Revision>> changedTotals;
+	private final IntValueMap<Class<? extends Revision>> deletedTotals;
+	
+	private RevisionCompare(InternalRevisionIndex index, 
+			RevisionBranch base, 
+			RevisionBranch compare,
 			Map<Class<? extends Revision>, LongSet> newComponents,
 			Map<Class<? extends Revision>, LongSet> changedComponents,
-			Map<Class<? extends Revision>, LongSet> deletedComponents) {
+			Map<Class<? extends Revision>, LongSet> deletedComponents,
+			IntValueMap<Class<? extends Revision>> newTotals,
+			IntValueMap<Class<? extends Revision>> changedTotals,
+			IntValueMap<Class<? extends Revision>> deletedTotals) {
+		
 		this.index = index;
 		this.base = base;
 		this.compare = compare;
 		this.newComponents = newComponents;
 		this.changedComponents = changedComponents;
 		this.deletedComponents = deletedComponents;
+		this.newTotals = newTotals;
+		this.changedTotals = changedTotals;
+		this.deletedTotals = deletedTotals;
 	}
 	
 	public Collection<Class<? extends Revision>> getNewRevisionTypes() {
@@ -115,6 +161,18 @@ public final class RevisionCompare {
 	
 	public Collection<Class<? extends Revision>> getDeletedRevisionTypes() {
 		return ImmutableSet.copyOf(deletedComponents.keySet());
+	}
+	
+	public int getNewTotals(Class<? extends Revision> type) {
+		return newTotals.get(type);
+	}
+	
+	public int getChangedTotals(Class<? extends Revision> type) {
+		return changedTotals.get(type);
+	}
+	
+	public int getDeletedTotals(Class<? extends Revision> type) {
+		return deletedTotals.get(type);
 	}
 	
 	LongSet getNewComponents(Class<? extends Revision> type) {
@@ -185,7 +243,7 @@ public final class RevisionCompare {
 						.must(query.getWhere())
 						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
 						.build())
-				.limit(storageKeys.size())
+				.limit(Math.min(query.getLimit(), storageKeys.size())) // Allow retrieving a subset of these keys, using the query limit
 				.build();
 	}
 	

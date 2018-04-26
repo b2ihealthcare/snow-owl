@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
-import com.b2international.snowowl.datastore.server.domain.StorageRef;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
@@ -219,12 +220,11 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		checkNotNull(configuration, "SNOMED CT import configuration should be specified.");
 		ApiValidation.checkInput(configuration);
 		
-		final StorageRef importStorageRef = new StorageRef(REPOSITORY_UUID, configuration.getBranchPath());
-		
 		// Check version and branch existence in case of DELTA RF2 import
 		// FULL AND SNAPSHOT can be import into empty databases
 		if (Rf2ReleaseType.DELTA == configuration.getRf2ReleaseType()) {
-			importStorageRef.checkStorageExists();
+			// will throw exception internally if the branch is not found
+			RepositoryRequests.branching().prepareGet(configuration.getBranchPath()).build(REPOSITORY_UUID).execute(getEventBus()).getSync(1, TimeUnit.MINUTES);
 		}
 		
 		final UUID importId = randomUUID();

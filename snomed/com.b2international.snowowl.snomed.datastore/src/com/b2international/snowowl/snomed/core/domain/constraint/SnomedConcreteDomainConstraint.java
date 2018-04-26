@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,31 +23,39 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
 public final class SnomedConcreteDomainConstraint extends SnomedConstraint {
 
 	private DataType valueType;
-	private String typeExpression;
+	private String attributeName;
+	private String displayName;
 	private String characteristicTypeExpresion;
-	
-	public String getCharacteristicTypeExpresion() {
-		return characteristicTypeExpresion;
-	}
-	
-	public String getTypeExpression() {
-		return typeExpression;
-	}
-	
+
 	public DataType getValueType() {
 		return valueType;
 	}
-	
-	public void setCharacteristicTypeExpresion(String characteristicTypeExpresion) {
-		this.characteristicTypeExpresion = characteristicTypeExpresion;
+
+	public String getAttributeName() {
+		return attributeName;
 	}
-	
-	public void setTypeExpression(String typeExpression) {
-		this.typeExpression = typeExpression;
+
+	public String getDisplayName() {
+		return displayName;
 	}
-	
+
+	public String getCharacteristicTypeExpresion() {
+		return characteristicTypeExpresion;
+	}
+
 	public void setValueType(DataType valueType) {
 		this.valueType = valueType;
 	}
-	
+
+	public void setAttributeName(String attributeName) {
+		this.attributeName = attributeName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public void setCharacteristicTypeExpresion(String characteristicTypeExpresion) {
+		this.characteristicTypeExpresion = characteristicTypeExpresion;
+	}
 }

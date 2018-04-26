@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -32,20 +33,22 @@ import com.google.common.collect.Multimap;
 /**
  * Represents a SNOMED&nbsp;CT concept.
  * <br>
- * Concepts returned by search requests are populated based on the expand parameters passed into the {@link BaseResourceRequestBuilder#setExpand(String)}
+ * Concepts returned by search requests are populated based on the expand parameters passed into the {@link ResourceRequestBuilder#setExpand(String)}
  * methods. The expand parameters can be nested allowing a fine control for the details returned in the resultset.  
  * 
  * The supported expand parameters are:
  * <p>
  * <ul>
- * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.
- * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link BaseResourceRequestBuilder#setLocales(java.util.List)} method.</li>
+ * <li>{@code pt()} - returns the <i>Preferred Term</i> for the </li> locale set by {@link ResourceRequestBuilder#setLocales(java.util.List)} method.
+ * <li>{@code fsn()} - returns the <i>Fully Specified Name (fsn)</i> for the </li> locale set by {@link ResourceRequestBuilder#setLocales(java.util.List)} method.</li>
  * <li>{@code descriptions()} - returns the descriptions of the concept</li>
  * <li>{@code relationships()} - returns the relationships of the concept</li>
  * <li>{@code descendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the inferred tree.</li> 
  * <li>{@code ancestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the inferred tree.</li>
  * <li>{@code statedDescendants(direct:true|false)} - returns the all or the only the direct descendants of the concept based on the stated tree.</li> 
  * <li>{@code statedAncestors(direct:true|false)} - returns the all or the only the direct ancestors of the concept based on the stated tree.</li>
+ * <li>{@code members()} - returns the reference set members referencing this component</li>
+ * <li>{@code preferredDescriptions()} - expands the preferred descriptions for each matching concept</li>
  * </ul>
  * 
  * The number of expanded fields can be controlled with the {@code limit:} directive.
@@ -87,6 +90,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String DESCRIPTIONS = "descriptions";
 		public static final String FULLY_SPECIFIED_NAME = "fsn";
 		public static final String PREFERRED_TERM = "pt";
+		public static final Object PREFERRED_DESCRIPTIONS = "preferredDescriptions";
 
 	}
 	
@@ -117,6 +121,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	private SnomedDescription fsn;
 	private SnomedDescription pt;
 	private SnomedDescriptions descriptions;
+	private SnomedDescriptions preferredDescriptions;
 	private SnomedRelationships relationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
@@ -181,6 +186,15 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	public SnomedDescriptions getDescriptions() {
 		return descriptions;
 	}
+	
+	/**
+	 * Returns the preferred descriptions (FSN and Synonyms) of the SNOMED CT Concept in creation order.
+	 * 
+	 * @return
+	 */
+	public SnomedDescriptions getPreferredDescriptions() {
+		return preferredDescriptions;
+	}
 
 	/**
 	 * Returns the relationships of the SNOMED CT Concept.
@@ -240,7 +254,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the ancestors
 	 */
-	@JsonIgnore
 	public long[] getAncestorIds() {
 		return ancestorIds;
 	}
@@ -248,7 +261,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the parents
 	 */
-	@JsonIgnore
 	public long[] getParentIds() {
 		return parentIds;
 	}
@@ -256,7 +268,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the stated ancestors
 	 */
-	@JsonIgnore
 	public long[] getStatedAncestorIds() {
 		return statedAncestorIds;
 	}
@@ -264,7 +275,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	/**
 	 * @return the concept IDs of the stated parents
 	 */
-	@JsonIgnore
 	public long[] getStatedParentIds() {
 		return statedParentIds;
 	}
@@ -287,6 +297,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public void setDescriptions(SnomedDescriptions descriptions) {
 		this.descriptions = descriptions;
+	}
+	
+	public void setPreferredDescriptions(SnomedDescriptions preferredDescriptions) {
+		this.preferredDescriptions = preferredDescriptions;
 	}
 	
 	public void setRelationships(SnomedRelationships relationships) {

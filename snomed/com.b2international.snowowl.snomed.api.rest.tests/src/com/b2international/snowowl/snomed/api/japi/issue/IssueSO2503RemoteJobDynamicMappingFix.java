@@ -16,14 +16,12 @@
 package com.b2international.snowowl.snomed.api.japi.issue;
 
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.api.rest.CodeSystemRestRequests.getCodeSystem;
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 
 import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -31,12 +29,8 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.11.3
@@ -49,18 +43,12 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		String codeSystemShortName = "SNOMEDCT-ISSUESO2503";
 		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
 		
-		ValidatableResponse codeSystem = getCodeSystem(codeSystemShortName);
-		final String branchPath = codeSystem.extract().path("branchPath");
-		
 		// 1. create a version with a datelike versionId
 		Request<ServiceProvider, Boolean> v1Req = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemShortName)
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersionId(Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
 			.setEffectiveTime(new Date())
-			.setToolingIds(ImmutableSet.of(SnomedTerminologyComponentConstants.TERMINOLOGY_ID))
-			.setParentBranchPath(branchPath)
-			.setPrimaryToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 			.build();
 
 		scheduleJob(v1Req, "Creating version with datelike versionId")
@@ -71,9 +59,6 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 					.setCodeSystemShortName(codeSystemShortName)
 					.setVersionId("xx-" + Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
 					.setEffectiveTime(new Date())
-					.setToolingIds(ImmutableSet.of(SnomedTerminologyComponentConstants.TERMINOLOGY_ID))
-					.setParentBranchPath(branchPath)
-					.setPrimaryToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 					.build();
 				return scheduleJob(v2Req, "Creating version with non-datelike versionId");
 			})
@@ -102,10 +87,6 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 			job = JobRequests.prepareGet(jobId).buildAsync().execute(getBus()).getSync();
 		} while (!job.isDone());
 		return null;
-	}
-	
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 	
 }
