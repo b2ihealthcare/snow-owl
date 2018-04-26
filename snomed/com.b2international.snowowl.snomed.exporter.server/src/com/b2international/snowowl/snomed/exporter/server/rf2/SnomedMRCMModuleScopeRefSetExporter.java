@@ -20,8 +20,6 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 6.1.0
@@ -46,18 +44,18 @@ public class SnomedMRCMModuleScopeRefSetExporter extends SnomedRefSetExporter {
 		return SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER;
 	}
 
-	@Override
-	public String getFileName() {
-		return new StringBuilder("der2_")
-			.append(SnomedRfFileNameBuilder.getPrefix(SnomedRefSetType.MRCM_MODULE_SCOPE, false))
-			.append("Refset_")
-			.append("MRCMModuleScope")
-			.append(String.valueOf(getExportContext().getContentSubType()))
-			.append('_')
-			.append(getExportContext().getNamespaceId())
-			.append('_')
-			.append(SnomedRfFileNameBuilder.getReleaseDate(getExportContext()))
-			.append(".txt")
-			.toString();
-	}
+//	@Override
+//	public String getFileName() {
+//		return new StringBuilder("der2_")
+//			.append(SnomedRfFileNameBuilder.getPrefix(SnomedRefSetType.MRCM_MODULE_SCOPE, false))
+//			.append("Refset_")
+//			.append("MRCMModuleScope")
+//			.append(String.valueOf(getExportContext().getContentSubType()))
+//			.append('_')
+//			.append(getExportContext().getNamespaceId())
+//			.append('_')
+//			.append(SnomedRfFileNameBuilder.getReleaseDate(getExportContext()))
+//			.append(".txt")
+//			.toString();
+//	}
 }
