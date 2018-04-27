@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.Q
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
 
@@ -85,16 +86,6 @@ public abstract class SnomedRefSetUtil {
 		return DATATYPE_TO_REFSET_MAP;
 	} 
 	
-	// NEHTA AMT SNOMED CT extension
-	// TODO refactor extension data type handling
-	@Deprecated
-	public static final Map<String, DataType> AMT_REFSET_TO_DATATYPE_MAP = ImmutableMap.<String, DataType>builder()
-			.put(Concepts.REFSET_STRENGTH, DataType.DECIMAL)
-			.put(Concepts.REFSET_UNIT_OF_USE_QUANTITY, DataType.DECIMAL)
-			.put(Concepts.REFSET_UNIT_OF_USE_SIZE, DataType.DECIMAL)
-			.put(Concepts.REFSET_SUBPACK_QUANTITY, DataType.INTEGER)
-			.build();
-
 	/**
 	 * The set of all available datatypes.
 	 */
@@ -160,31 +151,6 @@ public abstract class SnomedRefSetUtil {
 			SnomedRefSetPackage.Literals.SNOMED_REGULAR_REF_SET
 	));
 	
-	public static String getTableName(final SnomedRefSetType type) {
-		switch (type) {
-			case SIMPLE:
-				return "SNOMEDREFSET_SNOMEDREFSETMEMBER";
-			case ATTRIBUTE_VALUE:
-				return "SNOMEDREFSET_SNOMEDATTRIBUTEVALUEREFSETMEMBER";
-			case LANGUAGE:
-				return "SNOMEDREFSET_SNOMEDLANGUAGEREFSETMEMBER";
-			case SIMPLE_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP_WITH_DESCRIPTION: 
-				return "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER";
-			case QUERY:
-				return "SNOMEDREFSET_SNOMEDQUERYREFSETMEMBER";
-			case COMPLEX_MAP: //$FALL-THROUGH$
-			case EXTENDED_MAP:
-				return "SNOMEDREFSET_SNOMEDCOMPLEXMAPREFSETMEMBER";
-			case DESCRIPTION_TYPE:
-				return "SNOMEDREFSET_SNOMEDDESCRIPTIONTYPEREFSETMEMBER";
-			case CONCRETE_DATA_TYPE:
-				return "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER";
-			default:
-				throw new IllegalArgumentException("Unsupported reference set type: " + type);
-		}
-	}
-	
 	/**
 	 * Returns with the identifier concept ID of the concrete domain reference set specified by the data type enumeration.
 	 * <br>May return with {@code null}.
@@ -201,11 +167,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return the proper datatype for the specified reference set id
 	 */
 	public static DataType getDataType(String refsetId) {
-		if (getConcreteDomainRefSetMap().inverse().containsKey(refsetId)) {
-			return getConcreteDomainRefSetMap().inverse().get(refsetId);
-		} else {
-			return AMT_REFSET_TO_DATATYPE_MAP.get(refsetId);
-		}
+		return getConcreteDomainRefSetMap().inverse().get(refsetId);
 	}
 	
 	/**
@@ -243,6 +205,16 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetType.ASSOCIATION;
 			case Concepts.REFSET_MODULE_DEPENDENCY_TYPE: 
 				return SnomedRefSetType.MODULE_DEPENDENCY;
+			case Concepts.REFSET_OWL_AXIOM:
+				return SnomedRefSetType.OWL_AXIOM;
+			case Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL:
+				return SnomedRefSetType.MRCM_DOMAIN;
+			case Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL:
+				return SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN;
+			case Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL:
+				return SnomedRefSetType.MRCM_ATTRIBUTE_RANGE;
+			case Concepts.REFSET_MRCM_MODULE_SCOPE:
+				return SnomedRefSetType.MRCM_MODULE_SCOPE;
 			default: 
 				return null;
 		}
@@ -254,8 +226,7 @@ public abstract class SnomedRefSetUtil {
 	 * @return {@code true} if the reference set type is complex or extended map type, otherwise returns with {@code false}.
 	 */
 	public static boolean isComplexMapping(final SnomedRefSetType type) {
-		return COMPLEX_MAP.equals(type) 
-				|| EXTENDED_MAP.equals(type);
+		return COMPLEX_MAP.equals(type) || EXTENDED_MAP.equals(type);
 	}
 	
 	/**
@@ -296,6 +267,11 @@ public abstract class SnomedRefSetUtil {
 			case ASSOCIATION: return "Association type reference set";
 			case CONCRETE_DATA_TYPE: return "Concrete domain type reference set";
 			case MODULE_DEPENDENCY: return "Module dependency type reference set";
+			case OWL_AXIOM: return "OWL axiom type reference set";
+			case MRCM_DOMAIN: return "MRCM domain type reference set";
+			case MRCM_ATTRIBUTE_DOMAIN: return "MRCM attribute domain type reference set";
+			case MRCM_ATTRIBUTE_RANGE: return "MRCM attribute range type reference set";
+			case MRCM_MODULE_SCOPE: return "MRCM module scope type reference set";
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}
@@ -353,10 +329,7 @@ public abstract class SnomedRefSetUtil {
 		checkArgument(null != serializedValue, "Serialized value argument cannot be null.");
 		
 		switch (dataType) {
-			case BOOLEAN: 
-				Boolean booleanValue = BooleanUtils.valueOf(serializedValue);
-				checkArgument(booleanValue != null, String.format("Illegal serialized form of a boolean value. Expected either '0' or '1'. Was: '%s'", serializedValue));
-				return (T) booleanValue;
+			case BOOLEAN: return (T) checkNotNull(BooleanUtils.valueOf(serializedValue));
 			case DECIMAL: return (T) new BigDecimal(serializedValue);
 			case INTEGER: return (T) Integer.valueOf(serializedValue);
 			case DATE: return (T) new Date(Long.valueOf(serializedValue));
