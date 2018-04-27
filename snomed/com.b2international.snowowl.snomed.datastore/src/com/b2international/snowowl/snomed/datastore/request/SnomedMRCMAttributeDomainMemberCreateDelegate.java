@@ -35,7 +35,7 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 	}
 
 	@Override
-	String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);

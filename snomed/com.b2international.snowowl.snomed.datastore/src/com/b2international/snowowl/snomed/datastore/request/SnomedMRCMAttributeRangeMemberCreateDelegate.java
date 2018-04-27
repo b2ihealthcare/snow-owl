@@ -35,7 +35,7 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 	}
 
 	@Override
-	String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT);

@@ -496,12 +496,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
-			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, String>() {
-				@Override
-				public String apply(SnomedRefSetType input) {
-					return input.name();
-				}
-			}).toSet());
+			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(type -> type.name()).toSet());
 		}
 		
 	}

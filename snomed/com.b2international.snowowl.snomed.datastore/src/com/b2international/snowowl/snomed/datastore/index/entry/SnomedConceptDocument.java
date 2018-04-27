@@ -56,7 +56,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -173,12 +172,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 		}
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> types) {
-			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(types).transform(new Function<SnomedRefSetType, String>() {
-				@Override
-				public String apply(SnomedRefSetType input) {
-					return input.name();
-				}
-			}).toSet());
+			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(types).transform(type -> type.name()).toSet());
 		}
 		
 		public static Expression referencedComponentType(int referencedComponentType) {

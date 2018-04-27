@@ -35,7 +35,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 	}
 
 	@Override
-	String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_MODULE_SCOPE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
