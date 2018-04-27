@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 import java.util.Arrays;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -41,7 +42,7 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 		final T component = create();
 		component.setId(values[0]);
 		component.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
-		component.setActive("1".equals(values[2]));
+		component.setActive(BooleanUtils.valueOf(values[2]));
 		component.setModuleId(values[3]);
 		resolve(component, values);
 		return component;

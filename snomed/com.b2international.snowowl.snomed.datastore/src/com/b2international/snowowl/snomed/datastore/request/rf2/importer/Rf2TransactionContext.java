@@ -391,6 +391,16 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
 		case SIMPLE:
 			return SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
+		case OWL_AXIOM:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedAnnotationRefSetMember();
+		case MRCM_DOMAIN:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMDomainRefSetMember();
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMAttributeDomainRefSetMember();
+		case MRCM_ATTRIBUTE_RANGE:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMAttributeRangeRefSetMember();
+		case MRCM_MODULE_SCOPE:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMModuleScopeRefSetMember();
 		default: throw new UnsupportedOperationException("Unknown refset member type: " + type);
 		}
 	}
@@ -441,52 +451,83 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		final Map<String, Object> properties = rf2Component.getProperties();
 		SnomedMemberBuilder<?, ?> builder;
 		switch (rf2Component.type()) {
-		case ASSOCIATION: 
-			builder = SnomedComponents.newAssociationMember()
-					.withTargetComponentId((String) properties.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
-			break;
-		case ATTRIBUTE_VALUE:
-			builder = SnomedComponents.newAttributeValueMember()
-					.withValueId((String) properties.get(SnomedRf2Headers.FIELD_VALUE_ID));
-			break;
-		case DESCRIPTION_TYPE: 
-			builder = SnomedComponents.newDescriptionTypeMember()
-					.withDescriptionFormatId((String) properties.get(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT))
-					.withDescriptionLength((Integer) properties.get(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH));
-			break;
-		case COMPLEX_MAP:
-		case EXTENDED_MAP:
-			builder = SnomedComponents.newComplexMapMember()
-					.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP))
-					.withPriority((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY))
-					.withMapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE))
-					.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
-					.withMapCategoryId((String) properties.get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
-					.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
-					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
-			break;
-		case LANGUAGE: 
-			builder = SnomedComponents.newLanguageMember()
-					.withAcceptability(Acceptability.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)));
-			break;
-		case SIMPLE_MAP_WITH_DESCRIPTION: 
-			builder = SnomedComponents.newSimpleMapMember()
-					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
-					.withMapTargetDescription((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION));
-			break;
-		case SIMPLE_MAP: 
-			builder = SnomedComponents.newSimpleMapMember()
-					.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
-			break;
-		case MODULE_DEPENDENCY:
-			builder = SnomedComponents.newModuleDependencyMember()
-					.withSourceEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
-					.withTargetEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
-			break;
-		case SIMPLE:
-			builder = SnomedComponents.newSimpleMember();
-			break;
-		default: throw new UnsupportedOperationException("Unknown refset member type: " + rf2Component.type());
+			case ASSOCIATION: 
+				builder = SnomedComponents.newAssociationMember()
+						.withTargetComponentId((String) properties.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
+				break;
+			case ATTRIBUTE_VALUE:
+				builder = SnomedComponents.newAttributeValueMember()
+						.withValueId((String) properties.get(SnomedRf2Headers.FIELD_VALUE_ID));
+				break;
+			case DESCRIPTION_TYPE: 
+				builder = SnomedComponents.newDescriptionTypeMember()
+						.withDescriptionFormatId((String) properties.get(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT))
+						.withDescriptionLength((Integer) properties.get(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH));
+				break;
+			case COMPLEX_MAP:
+			case EXTENDED_MAP:
+				builder = SnomedComponents.newComplexMapMember()
+						.withGroup((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP))
+						.withPriority((Integer) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY))
+						.withMapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE))
+						.withCorrelationId((String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID))
+						.withMapCategoryId((String) properties.get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
+						.withMapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE))
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
+				break;
+			case LANGUAGE: 
+				builder = SnomedComponents.newLanguageMember()
+						.withAcceptability(Acceptability.getByConceptId((String) properties.get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)));
+				break;
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				builder = SnomedComponents.newSimpleMapMember()
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET))
+						.withMapTargetDescription((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION));
+				break;
+			case SIMPLE_MAP: 
+				builder = SnomedComponents.newSimpleMapMember()
+						.withMapTargetId((String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET));
+				break;
+			case MODULE_DEPENDENCY:
+				builder = SnomedComponents.newModuleDependencyMember()
+						.withSourceEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
+						.withTargetEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+				break;
+			case SIMPLE:
+				builder = SnomedComponents.newSimpleMember();
+				break;
+			case OWL_AXIOM:
+				builder = SnomedComponents.newOWLAxiomReferenceSetMember()
+						.withOWLExpression((String) properties.get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
+				break;
+			case MRCM_DOMAIN:
+				builder = SnomedComponents.newMRCMDomainReferenceSetMember()
+						.withDomainConstraint((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT))
+						.withParentDomain((String) properties.get(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN))
+						.withProximalPrimitiveConstraint((String) properties.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT))
+						.withProximalPrimitiveRefinement((String) properties.get(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT))
+						.withDomainTemplateForPrecoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION))
+						.withDomainTemplateForPostcoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION))
+						.withEditorialGuideReference((String) properties.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
+			case MRCM_ATTRIBUTE_DOMAIN:
+				builder = SnomedComponents.newMRCMAttributeDomainReferenceSetMember()
+						.withDomainId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID))
+						.withGrouped((Boolean) properties.get(SnomedRf2Headers.FIELD_MRCM_GROUPED))
+						.withAttributeCardinality((String) properties.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY))
+						.withAttributeInGroupCardinality((String) properties.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY))
+						.withRuleStrengthId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID))
+						.withContentTypeId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+			case MRCM_ATTRIBUTE_RANGE:
+				builder = SnomedComponents.newMRCMAttributeRangeReferenceSetMember()
+						.withRangeConstraint((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT))
+						.withAttributeRule((String) properties.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE))
+						.withRuleStrengthId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID))
+						.withContentTypeId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+			case MRCM_MODULE_SCOPE:
+				builder = SnomedComponents.newMRCMModuleScopeReferenceSetMember()
+						.withMRCMRuleRefsetId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
+			default: 
+				throw new UnsupportedOperationException("Unknown refset member type: " + rf2Component.type());
 		}
 		return builder
 				.withId(rf2Component.getId())
