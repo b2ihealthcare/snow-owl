@@ -20,11 +20,13 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 6.5
@@ -43,8 +45,11 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
-		// FIXME: check map target if it's also in SNOMED CT?
 
+		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
+			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
+		}
+		
 		SnomedSimpleMapRefSetMember member = SnomedComponents.newSimpleMapMember()
 				.withId(getId())
 				.withActive(isActive())
@@ -60,6 +65,15 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 
 	@Override
 	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getModuleId(), getReferencedComponentId());
+		
+		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
+			.add(getModuleId())
+			.add(getReferencedComponentId());
+		
+		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
+			requiredComponentIds.add(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET));
+		}
+		
+		return requiredComponentIds.build();
 	}
 }
