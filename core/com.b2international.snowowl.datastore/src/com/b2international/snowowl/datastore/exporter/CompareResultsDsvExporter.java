@@ -80,7 +80,7 @@ public final class CompareResultsDsvExporter {
 			.sortedBy("componentType", "componentId", "componentType", "label", "changeKind", "attribute", "from", "to");
 		
 		try (SequenceWriter writer = mapper.writer(schema).writeValues(outputPath.toFile())) {
-			monitor.beginTask("Exporting compare results to DSV", compareResults.getTotalChanged());
+			monitor.beginTask("Exporting compare results to DSV", compareResults.getTotalNew() + compareResults.getTotalChanged() + compareResults.getTotalDeleted());
 			
 			List<List<ComponentIdentifier>> newComponentIdentifierChunks = Lists.partition(Lists.newArrayList(compareResults.getNewComponents()), BUFFER);
 
