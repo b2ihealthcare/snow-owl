@@ -40,6 +40,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.cre
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -79,13 +80,10 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -97,22 +95,65 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
 	
 	private static void assertArchiveContainsLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
+		
 		Multimap<String, Pair<Boolean, String>> resultMap = collectLines(exportArchive, fileToLinesMap);
 		Set<String> difference = Sets.difference(fileToLinesMap.keySet(), resultMap.keySet());
 
-		assertTrue(String.format("File(s) starting with <%s> are missing from the export archive", Joiner.on(", ").join(difference)), difference.isEmpty());
+		// check if complete files are missing from the result archive
+		assertTrue(String.format("File(s) starting with <%s> are missing from the export archive", Joiner.on(", ").join(difference)),
+				difference.isEmpty());
 
-		for (Entry<String, Collection<Pair<Boolean, String>>> fileNameToLineExistenceEntry : fileToLinesMap.asMap().entrySet()) {
-			for (Pair<Boolean, String> result : resultMap.get(fileNameToLineExistenceEntry.getKey())) {
-				Pair<Boolean, String> originalLine = Iterables.getOnlyElement(FluentIterable.from(fileNameToLineExistenceEntry.getValue()).filter(pair -> pair.getB().equals(result.getB())));
-
-				String message = String.format("Line: %s must %sbe contained in %s", originalLine.getB(), originalLine.getA() ? "" : "not ", fileNameToLineExistenceEntry.getKey());
-				assertEquals(message, true, result.getA());
+		for (Entry<String, Collection<Pair<Boolean, String>>> entry : fileToLinesMap.asMap().entrySet()) {
+			
+			String fileName = entry.getKey();
+			Collection<Pair<Boolean, String>> lines = entry.getValue();
+			
+			for (Pair<Boolean, String> result : resultMap.get(fileName)) {
+				
+				Pair<Boolean, String> originalLine = lines.stream().filter(pair -> pair.getB().equals(result.getB())).findFirst().get();
+				String message = String.format("Line: %s must %sbe contained in %s", originalLine.getB(), originalLine.getA() ? "" : "not ",
+						fileName);
+				
+				assertEquals(message, originalLine.getA(), result.getA());
 			}
 		}
 	}
+	
+	private static void assertArchiveContainsFiles(File exportArchive, Map<String, Boolean> filePrefixes) throws Exception {
+		
+		Set<String> existingFiles = newHashSet();
+		
+		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), null)) {
+			for (Path path : fs.getRootDirectories()) {
+				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						for (String filePrefix : filePrefixes.keySet()) {
+							if (file.getFileName().toString().startsWith(filePrefix)) {
+								existingFiles.add(filePrefix);
+								break;
+							}
+						}
+						return super.visitFile(file, attrs);
+					}
+				});
 
-	private static Multimap<String, Pair<Boolean, String>> collectLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
+			}
+
+		} catch (Exception e) {
+			throw e;
+		}
+		
+		for (Entry<String, Boolean> entry : filePrefixes.entrySet()) {
+			assertEquals(String.format("File: '%s' must %sbe present in the export archive", entry.getKey(), entry.getValue() ? "" : "not "),
+					entry.getValue(), existingFiles.contains(entry.getKey()));
+		}
+		
+	}
+
+	private static Multimap<String, Pair<Boolean, String>> collectLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap)
+			throws Exception {
+	
 		Multimap<String, Pair<Boolean, String>> resultMap = ArrayListMultimap.create();
 
 		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), null)) {
@@ -140,18 +181,16 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		return resultMap;
 	}
 
-	private static void collectLines(Multimap<String, Pair<Boolean, String>> resultMap, Path file, String filePrefix, Collection<Pair<Boolean, String>> expectedLines) throws IOException {
-		List<String> lines = Files.readAllLines(file, Charsets.UTF_8);
+	private static void collectLines(Multimap<String, Pair<Boolean, String>> resultMap, Path file, String filePrefix,
+			Collection<Pair<Boolean, String>> expectedLines) throws IOException {
+	
+		List<String> lines = Files.readAllLines(file);
 
 		for (Pair<Boolean, String> line : expectedLines) {
-			if (lines.contains(line.getB())) {
-				resultMap.put(filePrefix, Pair.of(line.getA(), line.getB()));
-			} else {
-				resultMap.put(filePrefix, Pair.of(!line.getA(), line.getB()));
-			}
+			resultMap.put(filePrefix, Pair.of(lines.contains(line.getB()), line.getB()));
 		}
 	}
-
+	
 	@Test
 	public void createValidExportConfiguration() {
 		Map<?, ?> config = ImmutableMap.builder()
@@ -471,7 +510,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
-		String refsetFileName = "der2_Refset_PTOfConceptSnapshot";
+		String refsetFileName = "der2_Refset_SimpleSnapshot";
 		
 		fileToLinesMap.put(refsetFileName, Pair.of(true, refsetMemberLine));
 		fileToLinesMap.put(refsetFileName, Pair.of(true, newRefsetMemberLine));
@@ -537,7 +576,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
-		String refsetFileName = "der2_Refset_PTOfConceptSnapshot";
+		String refsetFileName = "der2_Refset_SimpleSnapshot";
 		
 		fileToLinesMap.put(refsetFileName, Pair.of(true, refsetMemberLine));
 		fileToLinesMap.put(refsetFileName, Pair.of(true, newRefsetMemberLine));
@@ -628,13 +667,13 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		final File exportArchive = getExportFile(exportId);
 		
-		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_Description", true)
+				.put("sct2_TextDefinition", true)
+				.put("der2_cRefset_Language", true)
+				.build();
 				
-		fileToLinesMap.put("sct2_Description", Pair.of(false, ""));
-		fileToLinesMap.put("sct2_TextDefinition", Pair.of(false, ""));
-		fileToLinesMap.put("der2_cRefset_Language", Pair.of(false, ""));
-		
-		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+		assertArchiveContainsFiles(exportArchive, files);
 	}
 	
 	@Test
@@ -671,6 +710,17 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final String exportId = getExportId(createExport(config));
 		final File exportArchive = getExportFile(exportId);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_Description_Delta-en", true)
+				.put("sct2_Description_Delta-da", true)
+				.put("sct2_TextDefinition_Delta-en", true)
+				.put("sct2_TextDefinition_Delta-da", true)
+				.put("der2_cRefset_LanguageDelta-en", true)
+				.put("der2_cRefset_LanguageDelta-da", true)
+				.build();
+				
+		assertArchiveContainsFiles(exportArchive, files);
 		
 		String englishTextDefinitionLine = createDescriptionLine(englishTextDefinitionId, versionEffectiveTime, conceptId, "en", Concepts.TEXT_DEFINITION, DEFAULT_TERM);
 		String danishTextDefinitionLine = createDescriptionLine(danishTextDefinitionId, versionEffectiveTime, conceptId, "da", Concepts.TEXT_DEFINITION, DEFAULT_TERM);
@@ -1007,7 +1057,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.put("der2_sRefset_OWLAxiomReferenceSet", true)
 				.build();
 				
-		// TODO: assertArchiveContainsFiles(exportArchive, files);
+		assertArchiveContainsFiles(exportArchive, files);
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.create();
 		
@@ -1139,8 +1189,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.put("der2_cRefset_MRCMModuleScopeDelta", true)
 				.build();
 			
-		// TODO add this back when export test changes are migrated
-		// assertArchiveContainsFiles(exportArchive, files);
+		assertArchiveContainsFiles(exportArchive, files);
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
