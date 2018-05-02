@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
@@ -357,6 +358,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return "";
 		} else if (object instanceof SnomedCoreComponent) {
 			return ((SnomedCoreComponent) object).getId();
+		} else if (object instanceof Boolean) {
+			return BooleanUtils.toString((Boolean) object);
 		} else {
 			return String.valueOf(object);
 		}
