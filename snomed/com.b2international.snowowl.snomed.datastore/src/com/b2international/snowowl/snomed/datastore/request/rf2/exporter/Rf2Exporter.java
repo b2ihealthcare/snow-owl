@@ -116,7 +116,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final long effectiveTimeEnd,
 			final Set<String> visitedComponentEffectiveTimes) throws IOException {
 
-		LOG.info("Exporting {} from {} branch...", getFileName(), branch);
+		LOG.info("Exporting {} branch to '{}'", branch, getFileName());
 		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());
