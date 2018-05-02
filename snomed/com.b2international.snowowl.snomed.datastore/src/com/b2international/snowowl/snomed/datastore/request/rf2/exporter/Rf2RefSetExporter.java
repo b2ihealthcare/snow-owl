@@ -94,6 +94,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
 			case ATTRIBUTE_VALUE:
+			case OWL_AXIOM:
 				return Paths.get(releaseType.toString(), "Refset", "Content");
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
@@ -101,7 +102,11 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case COMPLEX_MAP:
 				return Paths.get(releaseType.toString(), "Refset", "Map");
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: 
+			case MODULE_DEPENDENCY:
+			case MRCM_DOMAIN:
+			case MRCM_ATTRIBUTE_DOMAIN:
+			case MRCM_ATTRIBUTE_RANGE:
+			case MRCM_MODULE_SCOPE:
 				return Paths.get(releaseType.toString(), "Refset", "Metadata");
 			case LANGUAGE: 
 				return Paths.get(releaseType.toString(), "Refset", "Language");
@@ -147,6 +152,16 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "iissscc";
 			case MODULE_DEPENDENCY: 
 				return "ss";
+			case OWL_AXIOM:
+				return "s";
+			case MRCM_DOMAIN:
+				return "sssssss";
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return "cisscc";
+			case MRCM_ATTRIBUTE_RANGE:
+				return "sscc";
+			case MRCM_MODULE_SCOPE:
+				return "c";
 			default: 
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 		}
@@ -164,6 +179,16 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		switch (refSetType) {
 			case CONCRETE_DATA_TYPE:
 				return "ConcreteDomainReferenceSet";
+			case OWL_AXIOM:
+				return "OWLAxiom";
+			case MRCM_DOMAIN:
+				return "MRCMDomain";
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return "MRCMAttributeDomain";
+			case MRCM_ATTRIBUTE_RANGE:
+				return "MRCMAttributeRange";
+			case MRCM_MODULE_SCOPE:
+				return "MRCMModuleScope";
 			case ASSOCIATION: //$FALL-THROUGH$
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
@@ -248,6 +273,16 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
 			case MODULE_DEPENDENCY: 
 				return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
+			case OWL_AXIOM:
+				return SnomedRf2Headers.OWL_AXIOM_HEADER;
+			case MRCM_DOMAIN:
+				return SnomedRf2Headers.MRCM_DOMAIN_HEADER;
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return SnomedRf2Headers.MRCM_ATTRIBUTE_DOMAIN_HEADER;
+			case MRCM_ATTRIBUTE_RANGE:
+				return SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER;
+			case MRCM_MODULE_SCOPE:
+				return SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER;
 			default: 
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 		}
@@ -267,6 +302,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	protected Stream<List<String>> getMappedStream(final SnomedReferenceSetMembers results, 
 			final RepositoryContext context, 
 			final String branch) {
