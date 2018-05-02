@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -50,6 +51,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 
 /**
  * Index document of a MRCM rule.
@@ -91,11 +93,12 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		final ConceptSetDefinition domain = constraint.getDomain();
 		final String domainExpression = PredicateUtils.toEclExpression(domain);
 
-		// collect and index domain identifier based on their domain type
+		// Collect and index domain identifier based on their domain type
 		final Set<String> selfIds = newHashSet();
 		final Set<String> descendantIds = newHashSet();
 		final Set<String> refSetIds = newHashSet();
-		PredicateUtils.collectDomainIds(domain, selfIds, descendantIds, refSetIds);
+		final Set<String> relationships = newHashSet();
+		PredicateUtils.collectDomainIds(domain, selfIds, descendantIds, refSetIds, relationships);
 		
 		// TODO index relationship refinements as type#value
 		GroupRule groupRule = GroupRule.ALL_GROUPS;
@@ -148,6 +151,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			.selfIds(selfIds)
 			.descendantIds(descendantIds)
 			.refSetIds(refSetIds)
+			.relationships(relationships)
 			.minCardinality(minCardinality)
 			.maxCardinality(maxCardinality);
 	}
@@ -185,10 +189,16 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		private Collection<String> selfIds;
 		private Collection<String> descendantIds;
 		private Collection<String> refSetIds;
+		private Collection<String> relationships;
 
 		/* Required for Jackson deserialization */
 		@JsonCreator
 		Builder() {
+		}
+
+		public Builder relationships(Collection<String> relationships) {
+			this.relationships = relationships;
+			return getSelf();
 		}
 
 		Builder predicateType(PredicateType predicateType) {
@@ -281,6 +291,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			doc.selfIds = Collections3.toImmutableSet(selfIds);
 			doc.descendantIds = Collections3.toImmutableSet(descendantIds);
 			doc.refSetIds = Collections3.toImmutableSet(refSetIds);
+			doc.relationships = Collections3.toImmutableSet(relationships);
 			doc.setBranchPath(branchPath);
 			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
@@ -322,6 +333,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		public static final String DESCENDANT_IDS = "descendantIds";
 		public static final String REFSET_IDS = "refSetIds";
 		public static final String PREDICATE_TYPE = "predicateType";
+		public static final String RELATIONSHIPS = "relationships";
 	}
 	
 	/**
@@ -348,6 +360,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		
 		public static Expression refSetIds(Collection<String> refSetIds) {
 			return matchAny(Fields.REFSET_IDS, refSetIds);
+		}
+		
+		public static Expression relationships(Collection<String> relationships) {
+			return matchAny(Fields.RELATIONSHIPS, relationships);
 		}
 		
 	}
@@ -384,6 +400,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	private Set<String> selfIds;
 	private Set<String> descendantIds;
 	private Set<String> refSetIds;
+	private Set<String> relationships;
 
 	/**
 	 * Private constructor.
@@ -546,7 +563,15 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	public Set<String> getRefSetIds() {
 		return refSetIds;
 	}
-
+	
+	/**
+	 * Returns all SNOMED CT attribute type identifiers where this predicate can be applied.
+	 * @return
+	 */
+	public Set<String> getRelationships() {
+		return relationships;
+	}
+	
 	/**
 	 * Returns {@code true} if the predicate is required according to the associated MRCM rule.
 	 * 
@@ -589,7 +614,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				.add("maxCardinality", maxCardinality)
 				.add("selfIds", selfIds)
 				.add("descendantIds", descendantIds)
-				.add("refSetIds", refSetIds);
+				.add("refSetIds", refSetIds)
+				.add("relationships", relationships);
 	}
 
 }
