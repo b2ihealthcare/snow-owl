@@ -110,6 +110,7 @@ import org.eclipse.emf.cdo.spi.common.revision.CDOIDMapper;
 import org.eclipse.emf.cdo.spi.common.revision.CDOReferenceAdjuster;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionDelta;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.transaction.CDOCommitContext;
 import org.eclipse.emf.cdo.transaction.CDOConflictResolver;
 import org.eclipse.emf.cdo.transaction.CDOConflictResolver2;
@@ -1112,27 +1113,47 @@ public class CDOTransactionImpl extends CDOViewImpl implements InternalCDOTransa
 
   private void applyNewObjects(List<CDOIDAndVersion> newObjects, List<CDOIDAndVersion> result)
   {
+	List<CDOID> ids = new ArrayList<>();  
+	  
     for (CDOIDAndVersion key : newObjects)
     {
       InternalCDORevision revision = (InternalCDORevision)key;
-      CDOID id = revision.getID();
-      if (getObjectIfExists(id) == null)
-      {
-        // XXX (apeteri): replace actual instances with temp CDOIDs
-        revision.adjustReferences(CDOObjectToCDOIDAdjuster.INSTANCE);
-        InternalCDOObject object = newInstance(revision.getEClass());
-        object.cdoInternalSetView(this);
-        object.cdoInternalSetRevision(revision);
-        object.cdoInternalSetID(id);
-        object.cdoInternalSetState(CDOState.NEW);
-        object.cdoInternalPostLoad();
-
-        registerObject(object);
-        registerAttached(object, true);
-        result.add(revision);
-        dirty = true;
+      if (!getObjects().containsKey(revision.getID())) {
+    	  ids.add(revision.getID());
       }
     }
+    
+    InternalCDORevisionManager revisionManager = getSession().getRevisionManager();
+    int initialChunkSize = getSession().options().getCollectionLoadingPolicy().getInitialChunkSize();
+    CDOBranchPoint branchPoint = getBranchPoint();
+    List<CDORevision> revisions = revisionManager.getRevisions(ids, branchPoint, initialChunkSize, CDORevision.DEPTH_NONE, true);
+    final Map<CDOID, CDORevision> revisionsById = new HashMap<>();
+    for (CDORevision rev : revisions) {
+    	if (rev != null) {
+    		revisionsById.put(rev.getID(), rev);
+    	}
+    }
+    
+    for (CDOIDAndVersion key : newObjects) {
+    	InternalCDORevision revision = (InternalCDORevision) key;
+	    if (!revisionsById.containsKey(revision.getID()))
+	    {
+	    	// XXX (apeteri): replace actual instances with temp CDOIDs
+	    	revision.adjustReferences(CDOObjectToCDOIDAdjuster.INSTANCE);
+	    	InternalCDOObject object = newInstance(revision.getEClass());
+	    	object.cdoInternalSetView(this);
+	    	object.cdoInternalSetRevision(revision);
+	    	object.cdoInternalSetID(revision.getID());
+	    	object.cdoInternalSetState(CDOState.NEW);
+	    	object.cdoInternalPostLoad();
+	    	
+	    	registerObject(object);
+	    	registerAttached(object, true);
+	    	result.add(revision);
+	    	dirty = true;
+	    }
+    }
+    
   }
 
   private Set<CDOObject> applyDetachedObjects(List<CDOIDAndVersion> detachedObjects, List<CDOIDAndVersion> result)
