@@ -343,7 +343,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			        .indices()
 			        .prepareRefresh(indicesToRefresh)
 			        .get();
-			waitForYellowHealth();
+			waitForYellowHealth(indicesToRefresh);
 		}
 	}
 }
