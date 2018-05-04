@@ -51,7 +51,6 @@ import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.spi.cdo.FSMUtil;
 
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.index.revision.Revision;
@@ -742,8 +741,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		} else if (!deletionPlan.isEmpty()) {
 			final Set<String> deletedIds = deletionPlan.getDeletedItems()
 				.stream()
-				.filter(FSMUtil::isTransient)
-				.filter(obj -> !(obj instanceof SnomedRefSetMember) && !(obj instanceof SnomedRefSet))
+				.filter(Component.class::isInstance)
 				.map(Component.class::cast)
 				.map(Component::getId)
 				.collect(Collectors.toSet());
@@ -792,13 +790,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 					return referringMembersToAdd;
 				})
 				.then(referringMembers -> {
-
 					referringMembers.addAll(getMembersByProps(deletedIds));
 					return referringMembers;
 				})
 				.then(referringMembers -> {
 					for (SnomedRefSetMember member : referringMembers) {
-						if (member.getRefSetIdentifierId().equals(REFSET_DESCRIPTION_TYPE)) {
+						if (REFSET_DESCRIPTION_TYPE.equals(member.getRefSetIdentifierId())) {
 							boolean hasRelatedDescriptions = SnomedRequests.prepareSearchDescription()
 									.setLimit(0)
 									.filterById(member.getReferencedComponentId())
@@ -806,10 +803,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 									.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 									.getSync()
 									.getTotal() > 0;
-								
-								if (hasRelatedDescriptions) {
-									deletionPlan.addRejectionReason(UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE);
-								}
+
+							if (hasRelatedDescriptions) {
+								deletionPlan.addRejectionReason(UNABLE_TO_DELETE_DESCRIPTION_TYPE_CONCEPT_MESSAGE);
+							}
 						}
 					}
 					return referringMembers;
