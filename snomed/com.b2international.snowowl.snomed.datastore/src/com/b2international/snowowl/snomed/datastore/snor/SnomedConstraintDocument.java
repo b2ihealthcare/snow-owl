@@ -33,6 +33,7 @@ import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.PredicateUtils;
+import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
@@ -616,6 +617,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				.add("descendantIds", descendantIds)
 				.add("refSetIds", refSetIds)
 				.add("relationships", relationships);
+	}
+	
+	public static String relationshipDomainOf(String typeId, String destinationId) {
+		return typeId + Ecl.EQUAL + destinationId;
 	}
 
 }

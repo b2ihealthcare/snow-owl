@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.ecl.Ecl;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -96,7 +96,7 @@ public abstract class PredicateUtils {
 			
 			@Override
 			public ConceptSetDefinition caseRelationshipConceptSetDefinition(RelationshipConceptSetDefinition domain) {
-				relationships.add(domain.getTypeConceptId() + Ecl.EQUAL + domain.getDestinationConceptId());
+				relationships.add(SnomedConstraintDocument.relationshipDomainOf(domain.getTypeConceptId(), domain.getDestinationConceptId()));
 				return domain;
 			};
 		}.doSwitch(domain);
