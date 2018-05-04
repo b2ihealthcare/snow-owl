@@ -271,8 +271,11 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 				.parents(PrimitiveSets.newLongOpenHashSet(input.getParentIds()))
 				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()))
-				.refSet(input.getReferenceSet());
+				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
+		
+		if (input.getReferenceSet() != null) {
+			builder.refSet(input.getReferenceSet());
+		}
 		
 //		if (input.getScore() != null) {
 //			builder.score(input.getScore());
