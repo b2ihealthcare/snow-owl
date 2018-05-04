@@ -39,14 +39,14 @@ import com.google.common.collect.Multimap;
  * @param <T>
  * @param <R>
  */
-public final class SnomedBulkRequest<C extends TransactionContext, R> extends DelegatingRequest<C, C, R> {
+public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
 
-	SnomedBulkRequest(Request<C, R> next) {
+	SnomedBulkRequest(Request<TransactionContext, R> next) {
 		super(next);
 	}
 
 	@Override
-	public R execute(C context) {
+	public R execute(TransactionContext context) {
 		Multimap<ComponentCategory, SnomedComponentCreateRequest> createRequests = IdRequest.getComponentCreateRequests(next());
 		
 		// Prefetch all component IDs mentioned in reference set member creation requests, abort if any of them can not be found
@@ -72,7 +72,12 @@ public final class SnomedBulkRequest<C extends TransactionContext, R> extends De
 			throw e.toBadRequestException();
 		}
 		
-		return next(context);
+		// bind additional caches to the context
+		TransactionContext newContext = context.inject()
+			.bind(Synonyms.class, new Synonyms(context))
+			.build();
+		
+		return next(newContext);
 	}
-
+	
 }
