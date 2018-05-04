@@ -7,7 +7,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserDescription;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedCoreComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionUpdateRequest;
@@ -68,7 +68,7 @@ public class DescriptionInputCreator extends AbstractInputCreator implements Com
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends SnomedComponentCreateRequest> inputType) {
+	public boolean canCreateInput(Class<? extends SnomedCoreComponentCreateRequest> inputType) {
 		return ClassUtils.isClassAssignableFrom(SnomedDescriptionCreateRequest.class, inputType.getName());
 	}
 

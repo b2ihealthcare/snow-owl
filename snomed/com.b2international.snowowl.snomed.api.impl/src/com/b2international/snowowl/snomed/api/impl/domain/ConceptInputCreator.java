@@ -6,7 +6,7 @@ import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserC
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedCoreComponentCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptUpdateRequest;
@@ -82,7 +82,7 @@ public class ConceptInputCreator extends AbstractInputCreator implements Compone
 	}
 
 	@Override
-	public boolean canCreateInput(Class<? extends SnomedComponentCreateRequest> inputType) {
+	public boolean canCreateInput(Class<? extends SnomedCoreComponentCreateRequest> inputType) {
 		return SnomedConceptCreateRequest.class.isAssignableFrom(inputType);
 	}
 

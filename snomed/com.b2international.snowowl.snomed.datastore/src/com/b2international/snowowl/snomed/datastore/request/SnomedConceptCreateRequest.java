@@ -51,6 +51,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 
 /**
@@ -99,6 +100,16 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	void setRefSet(SnomedRefSetCreateRequest refSet) {
 		this.refSetRequest = refSet;
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		return ImmutableSet.<String>builder()
+				.add(getModuleId())
+				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.build();
 	}
 
 	@Override
@@ -249,8 +260,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	@Override
-	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
-		return ImmutableList.<SnomedComponentCreateRequest>builder()
+	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.<SnomedCoreComponentCreateRequest>builder()
 			.add(this)
 			.addAll(descriptions)
 			.addAll(relationships)

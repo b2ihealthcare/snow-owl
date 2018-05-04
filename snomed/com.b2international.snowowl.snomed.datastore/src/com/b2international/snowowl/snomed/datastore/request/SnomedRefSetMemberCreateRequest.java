@@ -26,7 +26,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -35,7 +34,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberCreateRequest implements Request<TransactionContext, String> {
+final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequest {
 
 	@Nonnull
 	private String id;
@@ -60,11 +59,13 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 		return id;
 	}
 
-	Boolean isActive() {
+	@Override
+	public Boolean isActive() {
 		return active;
 	}
 	
-	String getModuleId() {
+	@Override
+	public String getModuleId() {
 		return moduleId;
 	}
 	
@@ -131,6 +132,7 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 	/**
 	 * @return the set of core component SCTIDs mentioned in any reference set member property
 	 */
+	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		try {
 			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);

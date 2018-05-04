@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Map;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -28,6 +29,8 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.5
@@ -100,6 +103,18 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 
 	public void setAcceptability(final Map<String, Acceptability> acceptability) {
 		this.acceptability = acceptability;
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		Builder<String> result = ImmutableSet.<String>builder().add(getTypeId());
+		if (getModuleId() != null) {
+			result.add(getModuleId());
+		}
+		if (getConceptId() != null) {
+			result.add(getConceptId());
+		}
+		return result.build();
 	}
 
 	@Override

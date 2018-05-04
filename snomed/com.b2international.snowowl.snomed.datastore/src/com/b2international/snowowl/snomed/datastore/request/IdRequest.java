@@ -93,7 +93,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 
 		try {
 
-			final Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
+			final Multimap<ComponentCategory, SnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
 
 			if (!componentCreateRequests.isEmpty()) {
 				final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
@@ -103,9 +103,10 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 
 					for (final ComponentCategory category : componentCreateRequests.keySet()) {
 						final Class<? extends SnomedComponentDocument> documentClass = getDocumentClass(category);
-						final Collection<BaseSnomedComponentCreateRequest> categoryRequests = componentCreateRequests.get(category);
+						final Collection<SnomedComponentCreateRequest> categoryRequests = componentCreateRequests.get(category);
 						
 						final Set<String> userSuppliedIds = FluentIterable.from(categoryRequests)
+								.filter(SnomedCoreComponentCreateRequest.class)
 								.filter(request -> request.getIdGenerationStrategy() instanceof ConstantIdStrategy)
 								.transform(request -> ((ConstantIdStrategy) request.getIdGenerationStrategy()).getId())
 								.toSet();
@@ -119,6 +120,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 						}
 						
 						final Multimap<String, BaseSnomedComponentCreateRequest> requestsByNamespace = FluentIterable.from(categoryRequests)
+								.filter(BaseSnomedComponentCreateRequest.class)
 								.filter(request -> request.getIdGenerationStrategy() instanceof NamespaceIdStrategy)
 								.index(request -> getNamespaceKey(request));
 
@@ -154,13 +156,13 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		}
 	}
 
-	private Multimap<ComponentCategory, BaseSnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
-		final ImmutableMultimap.Builder<ComponentCategory, BaseSnomedComponentCreateRequest> resultBuilder = ImmutableMultimap.builder();
+	static Multimap<ComponentCategory, SnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
+		final ImmutableMultimap.Builder<ComponentCategory, SnomedComponentCreateRequest> resultBuilder = ImmutableMultimap.builder();
 		collectComponentCreateRequests(request, resultBuilder);
 		return resultBuilder.build();
 	}
 	
-	private void collectComponentCreateRequests(Request<?, ?> request, ImmutableMultimap.Builder<ComponentCategory, BaseSnomedComponentCreateRequest> resultBuilder) {
+	private static void collectComponentCreateRequests(Request<?, ?> request, ImmutableMultimap.Builder<ComponentCategory, SnomedComponentCreateRequest> resultBuilder) {
 		
 		if (request instanceof DelegatingRequest) {
 			collectComponentCreateRequests(((DelegatingRequest<?, ?, ?>) request).next(), resultBuilder);
@@ -168,7 +170,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 			collectComponentCreateRequests(((TransactionalRequest) request).getNext(), resultBuilder);
 		} else if (request instanceof BaseSnomedComponentCreateRequest) {
 			final BaseSnomedComponentCreateRequest createRequest = (BaseSnomedComponentCreateRequest) request;
-			for (SnomedComponentCreateRequest nestedRequest : createRequest.getNestedRequests()) {
+			for (SnomedCoreComponentCreateRequest nestedRequest : createRequest.getNestedRequests()) {
 				ComponentCategory category = getComponentCategory(nestedRequest);
 				resultBuilder.put(category, (BaseSnomedComponentCreateRequest) nestedRequest);
 				// XXX: we could recurse here, but only concept creation requests have actual nested requests at the moment
@@ -181,7 +183,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		}
 	}
 
-	private ComponentCategory getComponentCategory(SnomedComponentCreateRequest request) {
+	private static ComponentCategory getComponentCategory(SnomedCoreComponentCreateRequest request) {
 		if (request instanceof SnomedConceptCreateRequest) {
 			return ComponentCategory.CONCEPT;
 		} else if (request instanceof SnomedDescriptionCreateRequest) {
@@ -239,7 +241,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 	 * @return a namespace key intended to be used as a key in a collection;
 	 *         <code>null</code> values are converted to {@link SnomedIdentifiers#INT_NAMESPACE}.
 	 */
-	private String getNamespaceKey(final SnomedComponentCreateRequest createRequest) {
+	private String getNamespaceKey(final SnomedCoreComponentCreateRequest createRequest) {
 		final IdGenerationStrategy idGenerationStrategy = createRequest.getIdGenerationStrategy();
 		final String namespace = idGenerationStrategy.getNamespace();
 		return namespace == null ? SnomedIdentifiers.INT_NAMESPACE : namespace;

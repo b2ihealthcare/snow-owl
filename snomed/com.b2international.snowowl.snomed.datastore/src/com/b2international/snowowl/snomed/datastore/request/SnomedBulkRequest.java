@@ -22,10 +22,10 @@ import java.util.Set;
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
@@ -34,22 +34,23 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Multimap;
 
 /**
- * @since 6.4
+ * @since 6.5
+ * @param <C>
+ * @param <T>
+ * @param <R>
  */
-final class SnomedRefSetMemberBulkRequest implements Request<TransactionContext, BulkResponse> {
+public final class SnomedBulkRequest<C extends TransactionContext, R> extends DelegatingRequest<C, C, R> {
 
-	private final BulkRequest<TransactionContext> bulkRequest;
-
-	public SnomedRefSetMemberBulkRequest(final BulkRequest<TransactionContext> bulkRequest) {
-		this.bulkRequest = bulkRequest;
+	SnomedBulkRequest(Request<C, R> next) {
+		super(next);
 	}
 
 	@Override
-	public BulkResponse execute(final TransactionContext context) {
+	public R execute(C context) {
+		Multimap<ComponentCategory, SnomedComponentCreateRequest> createRequests = IdRequest.getComponentCreateRequests(next());
 		
 		// Prefetch all component IDs mentioned in reference set member creation requests, abort if any of them can not be found
-		final Set<String> requiredComponentIds = FluentIterable.from(bulkRequest.getRequests())
-			.filter(SnomedRefSetMemberCreateRequest.class)
+		final Set<String> requiredComponentIds = FluentIterable.from(createRequests.values())
 			.transformAndConcat(createRequest -> createRequest.getRequiredComponentIds(context))
 			.toSet();
 		
@@ -64,15 +65,14 @@ final class SnomedRefSetMemberBulkRequest implements Request<TransactionContext,
 			});
 		
 		try {
-			
 			for (final Entry<Class<? extends CDOObject>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
 				context.lookup(idsForType.getValue(), idsForType.getKey());	
 			}
-			
 		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
 		
-		return bulkRequest.execute(context);
+		return next(context);
 	}
+
 }

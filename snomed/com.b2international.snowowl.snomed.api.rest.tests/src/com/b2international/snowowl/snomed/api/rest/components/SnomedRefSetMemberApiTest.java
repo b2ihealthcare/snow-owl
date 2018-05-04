@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,17 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.executeMemberAction;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConcreteDomainRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +38,9 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -40,7 +49,6 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberBulkRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -238,7 +246,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.statusCode(201)
 				.extract().header("Location"));
 		
-		final SnomedRefSetMemberBulkRequestBuilder bulk = SnomedRequests.prepareBulkUpdateMembers();
+		final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
 		
 		bulk.add(SnomedRequests.prepareDeleteMember(member1Id));
 		bulk.add(SnomedRequests.prepareDeleteMember(member3Id));

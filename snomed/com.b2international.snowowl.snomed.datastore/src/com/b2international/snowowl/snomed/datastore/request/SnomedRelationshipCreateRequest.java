@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Set;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -30,6 +32,8 @@ import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.0
@@ -124,6 +128,20 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 
 	void setModifier(final RelationshipModifier modifier) {
 		this.modifier = modifier;
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		Builder<String> result = ImmutableSet.<String>builder()
+				.add(getTypeId())
+				.add(getDestinationId());
+		if (getModuleId() != null) {
+			result.add(getModuleId());
+		}
+		if (getSourceId() != null) {
+			result.add(getSourceId());
+		}
+		return result.build();
 	}
 	
 	@Override
