@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -54,15 +54,15 @@ public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifi
 				|| category == ComponentCategory.RELATIONSHIP, "Cannot generate ID for component category %s.", category);
 	}
 
-	private final ISnomedIdentiferReservationService reservationService;
+	private final ISnomedIdentifierReservationService reservationService;
 	private final SnomedIdentifierConfiguration config;
 
-	protected AbstractSnomedIdentifierService(final ISnomedIdentiferReservationService reservationService, SnomedIdentifierConfiguration config) {
+	protected AbstractSnomedIdentifierService(final ISnomedIdentifierReservationService reservationService, SnomedIdentifierConfiguration config) {
 		this.reservationService = checkNotNull(reservationService);
 		this.config = checkNotNull(config);
 	}
 
-	protected final ISnomedIdentiferReservationService getReservationService() {
+	protected final ISnomedIdentifierReservationService getReservationService() {
 		return reservationService;
 	}
 	

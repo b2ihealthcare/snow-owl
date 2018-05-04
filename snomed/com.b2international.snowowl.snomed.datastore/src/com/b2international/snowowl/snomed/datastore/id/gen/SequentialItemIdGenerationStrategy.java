@@ -32,7 +32,7 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationRangeImpl;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
@@ -168,10 +168,10 @@ public class SequentialItemIdGenerationStrategy implements ItemIdGenerationStrat
 	}
 	
 	private final Index store;
-	private final ISnomedIdentiferReservationService reservationService;
+	private final ISnomedIdentifierReservationService reservationService;
 	private final LoadingCache<Pair<String, ComponentCategory>, ItemIdCounter> lastItemIds;
 	
-	public SequentialItemIdGenerationStrategy(final Index store, final ISnomedIdentiferReservationService reservationService) {
+	public SequentialItemIdGenerationStrategy(final Index store, final ISnomedIdentifierReservationService reservationService) {
 		this.store = store;
 		this.reservationService = reservationService;
 		this.lastItemIds = CacheBuilder.newBuilder().build(CacheLoader.from(namespaceCategoryPair -> new ItemIdCounter(namespaceCategoryPair.getA(), namespaceCategoryPair.getB())));

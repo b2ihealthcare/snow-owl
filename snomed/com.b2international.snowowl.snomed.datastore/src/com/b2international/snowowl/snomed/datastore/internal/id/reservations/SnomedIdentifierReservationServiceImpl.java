@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -36,9 +36,9 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.0 
  */
-public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferReservationService {
+public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentifierReservationService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentiferReservationService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentifierReservationService.class);
 	private final Map<String, Reservation> reservations = Collections.synchronizedMap(Maps.<String, Reservation>newHashMap());
 	
 	@Override

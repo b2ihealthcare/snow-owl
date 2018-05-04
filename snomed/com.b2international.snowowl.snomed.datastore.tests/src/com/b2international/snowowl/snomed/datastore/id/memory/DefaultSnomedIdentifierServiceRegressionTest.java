@@ -36,7 +36,7 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,7 +108,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 	@Test
 	public void issue_SO_2138_testItemIdsReturnedInSequence() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 
@@ -126,7 +126,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void issue_SO_2138_testItemIdWraparound() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 		
@@ -141,7 +141,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	@Test
 	public void issue_SO_2138_testSkipReservedRange() throws Exception {
 		
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
@@ -155,7 +155,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void issue_SO_2138_testSkipReservedRangeWithWraparound() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 8999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
@@ -170,7 +170,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	@Test(expected=IllegalStateException.class)
 	public void issue_SO_2138_testCoveringReservedRanges() throws Exception {
 		
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveOneHundredNinetyNine", Reservations.range(200L, 8999_9999_9999_999L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		reservationService.create("nothingBelowOneHundredNinetyNine", Reservations.range(100L, 198L, null, ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
@@ -187,7 +187,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void testQuadraticProbing() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 
@@ -205,7 +205,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void testQuadraticProbing_wraparound() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
 		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(store, idGenerationStrategy, reservationService, new SnomedIdentifierConfiguration());
 
@@ -227,7 +227,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 	@Test
 	public void testQuadraticProbing_skipReservedRange() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("noTwoHundreds", Reservations.range(200L, 299L, "1000004", ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);
@@ -250,7 +250,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	
 	@Test
 	public void testQuadraticProbing_skipReservedRangeWithWraparound() throws Exception {
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		reservationService.create("nothingAboveTwoHundred", Reservations.range(200L, 9999_9999L, "1000133", ImmutableSet.of(ComponentCategory.CONCEPT)));
 		
 		final ItemIdGenerationStrategy idGenerationStrategy = new SequentialItemIdGenerationStrategy(store, reservationService);

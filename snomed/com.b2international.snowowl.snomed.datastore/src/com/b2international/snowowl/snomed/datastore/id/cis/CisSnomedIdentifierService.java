@@ -63,7 +63,7 @@ import com.b2international.snowowl.snomed.datastore.id.cis.request.RequestData;
 import com.b2international.snowowl.snomed.datastore.id.cis.request.ReservationData;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -100,7 +100,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 	private CisClient client;
 	private boolean disposed;
 
-	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final ISnomedIdentiferReservationService reservationService, final ObjectMapper mapper) {
+	public CisSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final ISnomedIdentifierReservationService reservationService, final ObjectMapper mapper) {
 		super(reservationService, conf);
 		
 		this.clientKey = conf.getCisClientSoftwareKey();

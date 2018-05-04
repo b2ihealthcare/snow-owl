@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -146,7 +146,7 @@ final class ComponentIdUniquenessValidator {
 	 * @return {@code true} if the id is unique for the component. Otherwise returns with {@code false}.
 	 */
 	private boolean isUniqueInDatabase(final String componentId) {
-		return !ApplicationContext.getInstance().getService(ISnomedIdentiferReservationService.class).isReserved(componentId);
+		return !ApplicationContext.getInstance().getService(ISnomedIdentifierReservationService.class).isReserved(componentId);
 	}
 	
 }

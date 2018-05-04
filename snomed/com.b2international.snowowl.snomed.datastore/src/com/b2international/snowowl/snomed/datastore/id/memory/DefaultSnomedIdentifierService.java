@@ -48,7 +48,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
@@ -80,7 +80,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
-			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
+			final ISnomedIdentifierReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
 		this.store = store;
 		this.generationStrategy = generationStrategy;
