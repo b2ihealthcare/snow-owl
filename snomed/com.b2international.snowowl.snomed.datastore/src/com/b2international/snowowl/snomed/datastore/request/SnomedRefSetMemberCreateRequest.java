@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -137,7 +138,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 		try {
 			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
-			return delegate.getRequiredComponentIds();
+			return ImmutableSet.<String>builder().addAll(delegate.getRequiredComponentIds()).add(referenceSetId).build();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}

@@ -106,6 +106,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		return ImmutableSet.<String>builder()
 				.add(getModuleId())
+				.add(definitionStatus.getConceptId())
 				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))

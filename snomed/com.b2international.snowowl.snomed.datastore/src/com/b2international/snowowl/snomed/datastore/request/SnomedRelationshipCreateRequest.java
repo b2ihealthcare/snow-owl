@@ -133,6 +133,8 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		Builder<String> result = ImmutableSet.<String>builder()
+				.add(modifier.getConceptId())
+				.add(characteristicType.getConceptId())
 				.add(getTypeId())
 				.add(getDestinationId());
 		if (getModuleId() != null) {

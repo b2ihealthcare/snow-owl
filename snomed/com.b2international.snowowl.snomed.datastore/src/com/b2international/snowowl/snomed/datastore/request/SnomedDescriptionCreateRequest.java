@@ -107,7 +107,15 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
-		Builder<String> result = ImmutableSet.<String>builder().add(getTypeId());
+		Builder<String> result = ImmutableSet.<String>builder()
+				.add(caseSignificance.getConceptId())
+				.add(getTypeId());
+		
+		acceptability.forEach((refSetId, acceptability) -> {
+			result.add(refSetId);
+			result.add(acceptability.getConceptId());
+		});
+		
 		if (getModuleId() != null) {
 			result.add(getModuleId());
 		}
