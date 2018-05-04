@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
@@ -32,7 +31,6 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.spi.cdo.FSMUtil;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -513,32 +511,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return member;
 	}
 
-	/* 
-	 * Reference set member builder methods end here
-	 */
-	 
-	/**
-	 * Retrieves the reference set which has an identifier concept with the
-	 * given ID.
-	 * 
-	 * @param identifierConceptId
-	 *            the unique identifier of the reference set's identifying
-	 *            concept (may not be {@code null}, empty, or blank)
-	 * 
-	 * @return the reference set with the given identifier concept, or
-	 *         {@code null} if no such reference set exists
-	 *         
-	 * @deprecated Use com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService.getComponent(String, CDOView) instead.
-	 */
-	@Deprecated
-	public SnomedRefSet findRefSetByIdentifierConceptId(final String identifierConceptId) {
-		
-		
-		checkArgument(!StringUtils.isEmpty(identifierConceptId), "Identifier SNOMED CT concept ID cannot be null.");
-
-		return new SnomedRefSetLookupService().getComponent(identifierConceptId, transaction);
-	}
-	
 	@Override
 	public void close() {
 		// Disposes of the transaction used here, no need to call super.dispose()
