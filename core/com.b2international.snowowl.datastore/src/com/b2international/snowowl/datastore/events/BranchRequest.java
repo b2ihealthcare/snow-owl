@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.1
@@ -31,6 +32,7 @@ public abstract class BranchRequest<B> implements Request<RepositoryContext, B> 
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 	}
 
+	@JsonProperty
 	protected final String getBranchPath() {
 		return branchPath;
 	}
