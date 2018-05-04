@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdent
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -76,14 +79,16 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentifier
 	}
 
 	@Override
-	public boolean isReserved(String componentId) {
-		final SnomedIdentifier identifier = SnomedIdentifiers.create(componentId);
+	public Set<String> isReserved(Set<String> componentIdsToCheck) {
+		final ImmutableSet.Builder<String> reservedIds = ImmutableSet.builder();
+		final Set<SnomedIdentifier> identifiersToCheck = componentIdsToCheck.stream().map(SnomedIdentifiers::create).collect(Collectors.toSet());
 		for (Reservation reservation : getReservations()) {
-			if (reservation.includes(identifier)) {
-				return true;
-			}
+			reservation.intersection(identifiersToCheck)
+				.stream()
+				.map(SnomedIdentifier::toString)
+				.forEach(reservedIds::add);
 		}
-		return false;
+		return reservedIds.build();
 	}
 
 }

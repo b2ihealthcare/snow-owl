@@ -15,6 +15,8 @@
 package com.b2international.snowowl.snomed.datastore.id.reservations;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * SNOMED CT Identifier reservation service interface. Capable of creating reservation of SNOMED CT Identifiers. A {@link Reservation} is denoted by a
@@ -59,7 +61,19 @@ public interface ISnomedIdentifierReservationService {
 	 * 
 	 * @param componentId - the ID to check
 	 * @return <code>true</code> if reserved, <code>false</code> otherwise
+	 * @deprecated - use {@link #isReserved(Set)} instead
 	 */
-	boolean isReserved(String componentId);
+	default boolean isReserved(String componentId) {
+		return isReserved(Collections.singleton(componentId)).contains(componentId);
+	}
+	
+	/**
+	 * Returns with a {@link Set} of component IDs that are already taken and in use in the system among the given {@link Set} of component IDs.
+	 * 
+	 * @param componentIdsToCheck - the IDs to check
+	 * @return a never <code>null</code> {@link Set} of component IDs that are already in use in the system
+	 * @since 6.5
+	 */
+	Set<String> isReserved(Set<String> componentIdsToCheck);
 
 }
