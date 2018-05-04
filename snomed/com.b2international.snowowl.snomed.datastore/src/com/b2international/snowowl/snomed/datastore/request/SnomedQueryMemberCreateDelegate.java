@@ -103,10 +103,6 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 
 	@Override
 	public Set<String> getRequiredComponentIds() {
-		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
-			return ImmutableSet.of(getModuleId());
-		} else {
-			return ImmutableSet.of(getModuleId(), getReferencedComponentId());
-		}
+		return ImmutableSet.of();
 	}
 }

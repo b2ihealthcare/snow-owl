@@ -61,6 +61,6 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 
 	@Override
 	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getModuleId(), getReferencedComponentId());
+		return ImmutableSet.of();
 	}
 }

@@ -72,9 +72,9 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 
 	@Override
 	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getModuleId(),
-				getReferencedComponentId(), 
-				getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID),
-				getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID));
+		return ImmutableSet.of(
+			getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID),
+			getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)
+		);
 	}
 }
