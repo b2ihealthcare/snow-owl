@@ -65,7 +65,6 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * @beta - this method is subject to changes or even removal in future releases.  
 	 * @return - the icon ID associated with this component
 	 */
-	@JsonIgnore
 	public String getIconId() {
 		return iconId;
 	}
