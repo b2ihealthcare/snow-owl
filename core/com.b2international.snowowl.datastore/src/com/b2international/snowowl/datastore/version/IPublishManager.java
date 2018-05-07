@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,29 +18,25 @@ package com.b2international.snowowl.datastore.version;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 
 /**
  * Service interface for managing the publication process for a concrete terminology.
- *
  */
 public interface IPublishManager {
-
+	
 	/**
 	 * Performs the publication based on the configuration argument.
-	 * @param aggregator the aggregator where the dirty transaction has to be stored after adjusting components and before commit.
-	 * @param toolingId the tooling ID the current publish manager responsible for.
+	 * 
 	 * @param configuration the configuration for the operation.
 	 * @param monitor monitor for the publication process.
 	 * @throws SnowowlServiceException if the publication failed.
 	 */
-	void publish(final ICDOTransactionAggregator aggregator, final String toolingId, 
-			final PublishOperationConfiguration configuration, final IProgressMonitor monitor) 
-		throws SnowowlServiceException;
+	void publish(final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException;
 	
 	/**
 	 * Performs terminology specific actions after the successful commit.
 	 */
-	void postCommit();
+	default void postCommit() {
+	}
 	
 }

@@ -55,7 +55,8 @@ public class RestApiError implements ApiError {
 	 * 
 	 * @return
 	 */
-	public int getStatus() {
+	@Override
+	public Integer getStatus() {
 		return status;
 	}
 

@@ -81,7 +81,7 @@ public abstract class SnomedBranchingRestRequests {
 		List<String> segmentsToCreate = newArrayList();
 
 		// Step upwards until we find an existing branch
-		while (response.extract().statusCode() == 404) {
+		while (response.extract().statusCode() == 404 || response.extract().<Boolean>path("deleted")) {
 			segmentsToCreate.add(segmentsToCreate.size(), currentPath.lastSegment());
 			currentPath = currentPath.getParent();
 			response = getBranch(currentPath);

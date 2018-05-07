@@ -45,14 +45,4 @@ public abstract class LatestCodeSystemVersionUtils {
 				.build();
 	}
 	
-	/**
-	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
-	 * representing the HEAD in the repository.
-	 * @param version the version to check.
-	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
-	 */
-	public static boolean isLatestVersion(final ICodeSystemVersion version) {
-		return MAIN_BRANCH.equals(version.getVersionId());
-	}
-
 }

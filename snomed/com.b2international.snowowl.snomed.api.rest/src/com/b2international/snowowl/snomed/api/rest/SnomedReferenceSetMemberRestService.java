@@ -94,13 +94,13 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			@PathVariable(value="path")
 			final String branchPath,
 
-			@ApiParam(value="The reference set identifier(s) to match, or a single escg expression")
+			@ApiParam(value="The reference set identifier(s) to match, or a single ECL expression")
 			@RequestParam(value="referenceSet", required=false) 
 			final List<String> referenceSetFilter,
 			
-			@ApiParam(value="The referenced component identifier to match")
+			@ApiParam(value="The referenced component identifier(s) to match")
 			@RequestParam(value="referencedComponentId", required=false) 
-			final String referencedComponentId,
+			final List<String> referencedComponentIdFilter,
 			
 			@ApiParam(value="The status to match")
 			@RequestParam(value="active", required=false) 
@@ -154,7 +154,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
 				.filterByRefSet(referenceSetFilter)
-				.filterByReferencedComponent(referencedComponentId)
+				.filterByReferencedComponent(referencedComponentIdFilter)
 				.filterByActive(activeFilter)
 				.filterByModule(moduleFilter)
 				.filterByEffectiveTime(effectiveTimeFilter)
