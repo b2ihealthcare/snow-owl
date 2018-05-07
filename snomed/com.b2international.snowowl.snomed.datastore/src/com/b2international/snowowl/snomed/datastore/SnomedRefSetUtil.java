@@ -25,11 +25,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
@@ -38,6 +41,7 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -45,8 +49,10 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /** 
@@ -84,8 +90,35 @@ public abstract class SnomedRefSetUtil {
 				.build();
 		}
 		return DATATYPE_TO_REFSET_MAP;
-	} 
+	}
 	
+	public static final Multimap<SnomedRF2Folder, SnomedRefSetType> FOLDER_TO_REFSET_TYPE_MAP = ImmutableListMultimap.<SnomedRF2Folder, SnomedRefSetType>builder()
+			.putAll(SnomedRF2Folder.CONTENT, 
+						SnomedRefSetType.SIMPLE,
+						SnomedRefSetType.ASSOCIATION,
+						SnomedRefSetType.ATTRIBUTE_VALUE,
+						SnomedRefSetType.QUERY,
+						SnomedRefSetType.OWL_AXIOM,
+						SnomedRefSetType.CONCRETE_DATA_TYPE)
+			.putAll(SnomedRF2Folder.LANGUAGE, 
+						SnomedRefSetType.LANGUAGE)
+			.putAll(SnomedRF2Folder.MAP, 
+						SnomedRefSetType.SIMPLE_MAP,
+						SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
+						SnomedRefSetType.COMPLEX_MAP,
+						SnomedRefSetType.EXTENDED_MAP)
+			.putAll(SnomedRF2Folder.METADATA, 
+						SnomedRefSetType.MRCM_DOMAIN,
+						SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN,
+						SnomedRefSetType.MRCM_ATTRIBUTE_RANGE,
+						SnomedRefSetType.MRCM_MODULE_SCOPE,
+						SnomedRefSetType.MODULE_DEPENDENCY,
+						SnomedRefSetType.DESCRIPTION_TYPE)
+			.build();
+	
+	public static final Map<SnomedRefSetType, SnomedRF2Folder> REFSET_TYPE_TO_FOLDER_MAP = FOLDER_TO_REFSET_TYPE_MAP.entries().stream()
+			.collect(collectingAndThen(toMap(Entry::getValue, Entry::getKey), ImmutableMap::copyOf));
+
 	/**
 	 * The set of all available datatypes.
 	 */
