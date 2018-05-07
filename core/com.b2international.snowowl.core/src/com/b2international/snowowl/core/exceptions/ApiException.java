@@ -41,9 +41,20 @@ public abstract class ApiException extends FormattedRuntimeException {
 	 * @return {@link ApiError} representation of this {@link ApiException}, never <code>null</code>.
 	 */
 	public final ApiError toApiError() {
-		return ApiError.Builder.of(getMessage()).code(getCode()).developerMessage(getDeveloperMessage()).addInfos(getAdditionalInfo()).build();
+		return ApiError.Builder.of(getMessage())
+				.code(getCode())
+				.status(getStatus())
+				.developerMessage(getDeveloperMessage())
+				.addInfos(getAdditionalInfo())
+				.build();
 	}
 
+	/**
+	 * Returns the HTTP status code associated with this exception.
+	 * @return
+	 */
+	protected abstract Integer getStatus();
+	
 	/**
 	 * Returns the custom application specific code for {@link ApiError} conversion. Subclasses may override.
 	 * 

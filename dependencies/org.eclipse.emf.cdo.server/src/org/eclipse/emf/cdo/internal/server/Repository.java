@@ -15,6 +15,20 @@
  */
 package org.eclipse.emf.cdo.internal.server;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Semaphore;
+
 import org.eclipse.emf.cdo.common.CDOCommonView;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchHandler;
@@ -90,9 +104,13 @@ import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.cdo.spi.server.InternalStore;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.cdo.spi.server.InternalView;
-
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.internal.cdo.object.CDOFactoryImpl;
-
+import org.eclipse.emf.spi.cdo.CDOSessionProtocol.LockObjectsResult;
+import org.eclipse.emf.spi.cdo.CDOSessionProtocol.UnlockObjectsResult;
 import org.eclipse.net4j.util.ReflectUtil.ExcludeFromDump;
 import org.eclipse.net4j.util.StringUtil;
 import org.eclipse.net4j.util.WrappedException;
@@ -107,27 +125,6 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.transaction.TransactionException;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.emf.spi.cdo.CDOSessionProtocol.LockObjectsResult;
-import org.eclipse.emf.spi.cdo.CDOSessionProtocol.UnlockObjectsResult;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Semaphore;
 
 /**
  * @author Eike Stepper
@@ -1365,16 +1362,32 @@ public class Repository extends Container<Object> implements InternalRepository
 
     try
     {
+      final List<CDOID> revisionsToLoad = new ArrayList<>();	
       CDOBranchPoint branchPoint = info.getBranchPoint();
       for (CDOID id : ids)
       {
         if (info.containsRevision(id))
         {
           info.removeRevision(id);
+          monitor.worked();
         }
         else
         {
-          InternalCDORevision revision = getRevisionFromBranch(id, branchPoint);
+          revisionsToLoad.add(id);	
+        }
+
+      }
+      
+      List<CDORevision> loadedRevisions = getRevisionFromBranch(revisionsToLoad, branchPoint);
+      final Map<CDOID, CDORevision> loadedRevisionsById = new HashMap<>();
+      for (CDORevision rev : loadedRevisions) {
+    	  if (rev != null) {
+    		  loadedRevisionsById.put(rev.getID(), rev);
+    	  }
+      }
+      
+      for (CDOID id : revisionsToLoad) {
+    	  InternalCDORevision revision = (InternalCDORevision) loadedRevisionsById.get(id);
           if (revision != null)
           {
             ensureChunks(revision);
@@ -1384,9 +1397,8 @@ public class Repository extends Container<Object> implements InternalRepository
           {
             info.removeRevision(id);
           }
-        }
-
-        monitor.worked();
+          
+          monitor.worked();
       }
     }
     finally
@@ -1395,16 +1407,9 @@ public class Repository extends Container<Object> implements InternalRepository
     }
   }
 
-  private InternalCDORevision getRevisionFromBranch(CDOID id, CDOBranchPoint branchPoint)
+  private List<CDORevision> getRevisionFromBranch(List<CDOID> ids, CDOBranchPoint branchPoint)
   {
-    InternalCDORevision revision = revisionManager.getRevision(id, branchPoint, CDORevision.UNCHUNKED,
-        CDORevision.DEPTH_NONE, true);
-    // if (revision == null || !ObjectUtil.equals(revision.getBranch(), branchPoint.getBranch()))
-    // {
-    // return null;
-    // }
-
-    return revision;
+    return revisionManager.getRevisions(ids, branchPoint, CDORevision.UNCHUNKED, CDORevision.DEPTH_NONE, true);
   }
 
   public void queryLobs(List<byte[]> ids)

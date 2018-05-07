@@ -66,6 +66,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	// RESTful API test cases
 	IssueSO2503RemoteJobDynamicMappingFix.class,
+	Issue3019FixDeletionOfReferringMembersTest.class,
 	SnomedBranchingApiTest.class,
 	SnomedMergeApiTest.class,
 	SnomedListFeaturesTests.class,

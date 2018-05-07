@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.snowowl.core.exceptions.ApiErrorException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -73,6 +75,12 @@ public class ControllerExceptionMapper {
 	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	@ExceptionHandler
+	public ResponseEntity<RestApiError> handle(final ApiErrorException ex) {
+		final ApiError error = ex.toApiError();
+		return new ResponseEntity<>(RestApiError.of(error).build(error.getStatus()), HttpStatus.valueOf(error.getStatus()));
 	}
 
 	/**

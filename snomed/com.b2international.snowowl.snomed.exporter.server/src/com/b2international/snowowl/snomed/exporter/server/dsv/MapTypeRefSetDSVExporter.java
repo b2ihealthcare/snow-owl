@@ -38,7 +38,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -52,6 +51,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.label.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -61,7 +61,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.services.ISnomedConceptNameProvider;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
@@ -295,6 +294,6 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	@Deprecated
 	private String getConceptLabel(String conceptId) {
-		return ApplicationContext.getServiceForClass(ISnomedConceptNameProvider.class).getComponentLabel(branchPath, conceptId);
+		return new SnomedConceptNameProvider(ApplicationContext.getServiceForClass(IEventBus.class), ApplicationContext.getServiceForClass(LanguageSetting.class)).getComponentLabel(branchPath, conceptId);
 	}
 }

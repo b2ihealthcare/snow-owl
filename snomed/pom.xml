@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>6.4.0-SNAPSHOT</version>
+		<version>6.5.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -30,7 +30,6 @@
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
 		<module>com.b2international.snowowl.snomed.datastore.server</module>
-		<module>com.b2international.snowowl.snomed.refset.core</module>
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>

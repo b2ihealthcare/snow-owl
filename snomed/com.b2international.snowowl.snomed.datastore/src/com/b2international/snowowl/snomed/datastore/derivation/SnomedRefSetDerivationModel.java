@@ -53,6 +53,7 @@ public class SnomedRefSetDerivationModel implements Serializable {
 	private final boolean mapTarget;
 	private final SimpleTypeDerivation simpleTypeDerivation;
 	private final SimpleMapTypeDerivation simpleMapTypeDerivation;
+	private final String languageReferenceSetId;
 
 	/**
 	 * 
@@ -62,14 +63,20 @@ public class SnomedRefSetDerivationModel implements Serializable {
 	 * @param userId the ID of the user.
 	 * @param simpleTypeDerivation the derivation type for simple type derivation.
 	 */
-	public SnomedRefSetDerivationModel(final String refSetId, final String refSetName, final String commitMessage, final String userId, final SimpleTypeDerivation simpleTypeDerivation) {
+	public SnomedRefSetDerivationModel(final String refSetId, 
+			final String refSetName, 
+			final String commitMessage, 
+			final String userId, 
+			final SimpleTypeDerivation simpleTypeDerivation,
+			final String languageReferenceSetId) {
 		this.refSetId = refSetId;
 		this.refSetName = refSetName;
 		this.commitMessage = commitMessage;
 		this.userId = userId;
-		this.mapTarget = false;
 		this.simpleTypeDerivation = simpleTypeDerivation;
 		this.simpleMapTypeDerivation = null;
+		this.languageReferenceSetId = languageReferenceSetId;
+		this.mapTarget = false;
 	}
 
 	/**
@@ -81,8 +88,13 @@ public class SnomedRefSetDerivationModel implements Serializable {
 	 * @param mapTarget <code>true</code> if the target of the map should be derived.
 	 * @param simpleMapTypeDerivation the derivation type for simple map derivation.
 	 */
-	public SnomedRefSetDerivationModel(final String refSetId, final String refSetName, final String commitMessage, final String userId, final boolean mapTarget,
-			final SimpleMapTypeDerivation simpleMapTypeDerivation) {
+	public SnomedRefSetDerivationModel(final String refSetId, 
+			final String refSetName, 
+			final String commitMessage, 
+			final String userId, 
+			final SimpleMapTypeDerivation simpleMapTypeDerivation,
+			final String languageReferenceSetId,
+			final boolean mapTarget) {
 		this.refSetId = refSetId;
 		this.refSetName = refSetName;
 		this.commitMessage = commitMessage;
@@ -90,6 +102,11 @@ public class SnomedRefSetDerivationModel implements Serializable {
 		this.mapTarget = mapTarget;
 		this.simpleMapTypeDerivation = simpleMapTypeDerivation;
 		this.simpleTypeDerivation = null;
+		this.languageReferenceSetId = languageReferenceSetId;
+	}
+	
+	public String getLanguageReferenceSetId() {
+		return languageReferenceSetId;
 	}
 
 	public String getRefSetId() {

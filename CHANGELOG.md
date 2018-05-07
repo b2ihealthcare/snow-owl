@@ -1,6 +1,39 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.4.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.4.0.
+
+#### Datasets created before 6.4.0
+All datasets created before 6.4.0 require a full `reindex` due to changes in all codesystem schemas.
+
+### Added
+- Add inferred and stated parent ID arrays to the SNOMED CT Concept representations (a5f1f1f)
+- Support revision expression values in search requests path parameters (6e5ab16) 
+
+### Changes
+- Reintroduce revision hashing to support proper calculation of change sets between two branch points (#219)
+- Allow locally running applications to access embedded ES instance (adbf017)
+- Allow SNOMED CT Descriptions as simple map referenced component types (52b6ca9)
+
+### Bugs
+- Fix ID Filter bug in search requests (773b241)
+- Reduce amount of memory allocated when deserializing SNOMED CT index documents (98c4f2f, 2d4d749)
+- Fix incorrect scroll state checks when scrolling documents (597f36b)
+- Skip logging of script arguments to prevent possible memory leak (3c0c578)
+- Properly prevent deletion of released components (#217)
+- Fix line duplication issue of RF2 export (c7c802e)
+- Fix ECL evaluation issues in RF2 export process (5fcec36)
+
+### Performance
+- Improve index search request execution significantly (5f6d4fe)
+- Improve performance of bulk member create requests (#216)
+- Remove classification results from memory when saving changes (8d2456f)
+
+
 ## 6.3.0
 
 ### Breaking changes
