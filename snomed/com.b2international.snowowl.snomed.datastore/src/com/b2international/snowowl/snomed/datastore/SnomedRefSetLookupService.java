@@ -42,6 +42,9 @@ public final class SnomedRefSetLookupService extends AbstractLookupService<Snome
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(concept -> {
+						if (concept.getReferenceSet() == null) {
+							return null;
+						}
 						final SnomedDescription pt = concept.getPt();
 						final String preferredTerm = pt == null ? concept.getId() : pt.getTerm();
 						return SnomedConceptDocument.builder(concept)
