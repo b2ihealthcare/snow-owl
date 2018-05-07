@@ -35,8 +35,7 @@ public class SnomedIdentifiers {
 	public static final String INT_NAMESPACE = "INT";
 	
 	public static final long MIN_INT_ITEMID = 100L; // inclusive
-	public static final long MIN_INT_METADATA_ITEMID = 9000_0000_0000_000L; // inclusive
-	public static final long MAX_INT_ITEMID = MIN_INT_METADATA_ITEMID; // 15 digits for itemId, restricted to non-metadata IDs, exclusive
+	public static final long MAX_INT_ITEMID = 9999_9999_9999_999L + 1L; // 15 digits for itemId, exclusive
 	
 	public static final long MIN_NAMESPACE_ITEMID = 1L; // inclusive
 	public static final long MAX_NAMESPACE_ITEMID = 9999_9999L + 1L; // 8 digits for itemId, exclusive

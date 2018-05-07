@@ -27,10 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
+import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +45,10 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentifier
 
 	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentifierReservationService.class);
 	private final Map<String, Reservation> reservations = Collections.synchronizedMap(Maps.<String, Reservation>newHashMap());
+	
+	public SnomedIdentifierReservationServiceImpl() {
+		reservations.put("metadata-range", Reservations.range(9000_0000_0000_000L, SnomedIdentifiers.MAX_INT_ITEMID, null, Collections.singleton(ComponentCategory.CONCEPT)));
+	}
 	
 	@Override
 	public void create(String reservationName, Reservation reservation) {

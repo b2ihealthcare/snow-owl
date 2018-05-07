@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
@@ -244,21 +243,16 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	private Set<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
 		final Set<String> generatedComponentIds = newLinkedHashSet(); // important to keep order of generated ids
 		final int maxAttempts = getConfig().getMaxIdGenerationAttempts();
-
-		int remainingQuantity = quantity;
+		
 		for (int attempt = 1; attempt <= maxAttempts && generatedComponentIds.size() != quantity; attempt++) {
-			final int currentAttempt = attempt; 
-			final Set<String> newGeneratedComponentIds = IntStream.range(0, remainingQuantity)
-				.mapToObj(i -> generateId(namespace, category, currentAttempt))
-				.collect(Collectors.toSet());
-			
+			final int remainingQuantity = quantity - generatedComponentIds.size();
+			Set<String> newGeneratedComponentIds = doGenerateIds(namespace, category, remainingQuantity, attempt);
 			// check this newly generated set for reservation
 			Set<String> reservedIds = isReserved(newGeneratedComponentIds, generatedComponentIds);
 			// remove IDs that are reserved from the newly generated set
 			newGeneratedComponentIds.removeAll(reservedIds);
 			// add new generated IDs to the results
 			generatedComponentIds.addAll(newGeneratedComponentIds);
-			// subtract size of newly generated ids from quantity
 		}
 		
 		if (generatedComponentIds.size() != quantity) {
@@ -268,27 +262,31 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		}
 	}
 
-	private String generateId(final String namespace, final ComponentCategory category, final int attempt) {
-		final StringBuilder builder = new StringBuilder();
-	
+	private Set<String> doGenerateIds(final String namespace, final ComponentCategory category, final int quantity, final int attempt) {
 		// generate the item identifier (value can be a function of component category and namespace)
-		builder.append(generationStrategy.generateItemId(namespace, category, attempt));
-	
-		// append namespace and the first digit of the partition-identifier
-		if (Strings.isNullOrEmpty(namespace)) {
-			builder.append('0');
-		} else {
-			builder.append(namespace);
-			builder.append('1');
-		}
-	
-		// append the second digit of the partition-identifier
-		builder.append(category.ordinal());
-	
-		// add Verhoeff check digit last
-		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
-	
-		return builder.toString();
+		return generationStrategy.generateItemIds(namespace, category, quantity, attempt)
+			.stream()
+			.map(itemId -> {
+				final StringBuilder builder = new StringBuilder();
+				builder.append(itemId);
+				
+				// append namespace and the first digit of the partition-identifier
+				if (Strings.isNullOrEmpty(namespace)) {
+					builder.append('0');
+				} else {
+					builder.append(namespace);
+					builder.append('1');
+				}
+				
+				// append the second digit of the partition-identifier
+				builder.append(category.ordinal());
+				
+				// add Verhoeff check digit last
+				builder.append(VerhoeffCheck.calculateChecksum(builder, false));
+				
+				return builder.toString();
+			})
+			.collect(Collectors.toCollection(Sets::newLinkedHashSet));
 	}
 
 	private Set<String> isReserved(Set<String> ids, Set<String> currentGeneratedIds) {
@@ -349,10 +347,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			index.commit();
 			return null;
 		});
-	}
-	
-	private SctId readSctId(final String id) {
-		return store.read(index -> index.get(SctId.class, id));
 	}
 	
 	@Override
