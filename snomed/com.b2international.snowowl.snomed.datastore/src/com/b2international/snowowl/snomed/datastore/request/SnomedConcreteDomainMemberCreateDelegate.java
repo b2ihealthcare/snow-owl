@@ -83,7 +83,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		ImmutableSet.Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
 				.add(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 				.add(getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID));

@@ -68,7 +68,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));
 	}
 }

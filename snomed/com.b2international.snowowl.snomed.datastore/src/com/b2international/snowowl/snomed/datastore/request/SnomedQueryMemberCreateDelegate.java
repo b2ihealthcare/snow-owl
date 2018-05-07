@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Set;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -26,7 +24,6 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.0
@@ -101,8 +98,4 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		return member.getUuid();
 	}
 
-	@Override
-	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of();
-	}
 }

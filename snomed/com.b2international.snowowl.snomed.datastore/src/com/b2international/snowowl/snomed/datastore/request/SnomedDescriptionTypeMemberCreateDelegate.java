@@ -59,7 +59,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 	}
 	
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT));
 	}
 }

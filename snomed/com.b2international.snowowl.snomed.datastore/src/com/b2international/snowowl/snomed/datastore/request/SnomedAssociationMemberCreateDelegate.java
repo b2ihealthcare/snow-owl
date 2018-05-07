@@ -57,7 +57,7 @@ final class SnomedAssociationMemberCreateDelegate extends SnomedRefSetMemberCrea
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
 	}
 }
