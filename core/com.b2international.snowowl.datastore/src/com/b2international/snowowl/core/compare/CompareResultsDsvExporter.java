@@ -1,13 +1,26 @@
-/*******************************************************************************
- * Copyright (c) 2018 B2i Healthcare. All rights reserved.
- *******************************************************************************/
-package com.b2international.snowowl.datastore.exporter;
+/*
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.core.compare;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -88,27 +101,23 @@ public final class CompareResultsDsvExporter {
 				
 				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(newComponentsIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
 				
-				componentsInChunkByTerminologyComponentId.asMap().entrySet().forEach(entriesByTerminologyComponentId -> {
+				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
 					
 					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
 					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
 					
-					fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
-					.build(repositoryUuid, compareBranch)
-					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then((CollectionResource<IComponent> newComponents) -> {
-						newComponents.forEach(component -> {
-							try {
-								writer.write(new CompareData(component, ChangeKind.ADDED));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						});
+					CollectionResource<IComponent> newComponents = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+						.build(repositoryUuid, compareBranch)
+						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+						.getSync();
+					
+					for (IComponent component : newComponents) {
+						writer.write(new CompareData(component, ChangeKind.ADDED));
+					}
 						
-						return null;
-					})
-					.getSync();
-				});
+				};
+				
+				
 				monitor.worked(newComponentsIdentifiersChunk.size());
 			}
 		
@@ -122,47 +131,39 @@ public final class CompareResultsDsvExporter {
 				
 				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(changedComponentIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
 				
-				componentsInChunkByTerminologyComponentId.asMap().entrySet().forEach(entriesByTerminologyComponentId -> {
+				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
 					
 					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
 					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
 					
-					fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					CollectionResource<IComponent> changedComponentsOnBaseBranch = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
 						.build(repositoryUuid, baseBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-						.then((CollectionResource<IComponent> changedComponentsOnBaseBranch) -> {
-							changedComponentsOnBaseBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
-							return null;
-						})
-						.thenWith(nothing -> {
-							return fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
-									.build(repositoryUuid, compareBranch)
-									.execute(ApplicationContext.getServiceForClass(IEventBus.class));
-						}).then((CollectionResource<IComponent> changedComponentsOnCompareBranch) -> {
-							changedComponentsOnCompareBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
-							return null;
-						})
 						.getSync();
-				});
+					
+					changedComponentsOnBaseBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
+					
+					CollectionResource<IComponent> changedComponentsOnCompareBranch = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+						.build(repositoryUuid, compareBranch)
+						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+						.getSync();
+					
+					changedComponentsOnCompareBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
+				};
 				
-				changedComponentsChunk.asMap().entrySet().forEach(entry -> {
+				for (Entry<String, Collection<IComponent>> entry : changedComponentsChunk.asMap().entrySet()) {
 					
 					IComponent baseComponent = ((List<IComponent>) (entry.getValue())).get(0);
 					IComponent compareComponent = ((List<IComponent>) (entry.getValue())).get(1);
 					
-					//Collection<CompareEditorMember> // comparisonResultsOfThisChunk = codeSystemState.get().createCompareEditorMembers(baseComponent, compareComponent);
 					Collection<CompareData> comparisonResultsOfThisChunk = getCompareResultsOfComponent.apply(baseComponent, compareComponent);
 					
-					comparisonResultsOfThisChunk.forEach(t -> {
-						try {
-							writer.write(t);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					});
+					for (CompareData d : comparisonResultsOfThisChunk) {
+						writer.write(d);
+					};
 					
 					
-				});
+				};
 				
 				monitor.worked(changedComponentIdentifiersChunk.size());
 			}
@@ -175,26 +176,20 @@ public final class CompareResultsDsvExporter {
 				
 				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(deletedComponentIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
 				
-				componentsInChunkByTerminologyComponentId.asMap().entrySet().forEach(entriesByTerminologyComponentId -> {
+				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
 
 					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
 					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
 					
-					fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					CollectionResource<IComponent> deletedComponents = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
 						.build(repositoryUuid, baseBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then((CollectionResource<IComponent> deletedComponents) -> {
-						deletedComponents.forEach(component -> {
-							try {
-								writer.write(new CompareData(component, ChangeKind.DELETED));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						});
-						return null;
-					})
-					.getSync();
-				});
+						.getSync();
+					
+					for (IComponent component : deletedComponents) {
+						writer.write(new CompareData(component, ChangeKind.DELETED));
+					};
+				};
 				monitor.worked(deletedComponentIdentifiersChunk.size());
 			}
 			
