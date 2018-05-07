@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public abstract class AbstractSerializableConfiguration <T extends AbstractEntry
 	protected String key;
 	
 	@XStreamImplicit(itemFieldName = "entry")
-	protected Map<String, T> entires;
+	protected Map<String, T> entries;
 	protected List<T> entryList = new ArrayList<T>();
 
 	/**
@@ -46,20 +46,20 @@ public abstract class AbstractSerializableConfiguration <T extends AbstractEntry
 	
 	public AbstractSerializableConfiguration(String key) {
 		this.key = key;
-		this.entires = new LinkedHashMap<String, T>();
+		this.entries = new LinkedHashMap<String, T>();
 	}
 	
 	public void add(T entryConfiguration) {
-		entires.put(entryConfiguration.getEntryKey(), entryConfiguration);
+		entries.put(entryConfiguration.getEntryKey(), entryConfiguration);
 		entryList.add(entryConfiguration);
 	}
 	
 	public Map<String, T> getEntries() {
-		return Collections.unmodifiableMap(entires);
+		return Collections.unmodifiableMap(entries);
 	}
 
 	public Collection<T> getConfigurations() {
-		return entires.values();
+		return entries.values();
 	}
 
 	public T getEntry(int index) {
@@ -67,7 +67,7 @@ public abstract class AbstractSerializableConfiguration <T extends AbstractEntry
 	}
 
 	public T getEntry(String entryKey) {
-		return entires.get(entryKey);
+		return entries.get(entryKey);
 	}
 
 	public final String getKey() {
