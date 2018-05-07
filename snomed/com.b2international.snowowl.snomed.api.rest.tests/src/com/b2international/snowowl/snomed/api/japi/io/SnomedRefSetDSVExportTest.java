@@ -187,7 +187,7 @@ public class SnomedRefSetDSVExportTest {
 	private Set<String> relationshipsOf(SnomedConcepts concepts) {
 		return concepts.getItems()
 				.stream()
-				.flatMap(concept -> concept.getRelationships().stream().map(relationship -> SnomedConstraintDocument.relationshipDomainOf(relationship.getTypeId(), relationship.getTypeId())))
+				.flatMap(concept -> concept.getRelationships().stream().map(relationship -> SnomedConstraintDocument.relationshipDomainOf(relationship.getTypeId(), relationship.getDestinationId())))
 				.collect(Collectors.toSet());
 	}
 
