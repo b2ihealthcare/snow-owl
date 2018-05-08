@@ -20,7 +20,7 @@ import org.junit.Before;
 import com.b2international.snowowl.snomed.datastore.config.SnomedIdentifierConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.AbstractIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -48,7 +48,7 @@ public class CisSnomedIdentifierServiceTest extends AbstractIdentifierServiceTes
 		conf.setCisTimeBetweenPollTries(1000);
 		conf.setCisNumberOfPollTries(5);
 
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
 		service = new CisSnomedIdentifierService(conf, reservationService, mapper);
 	}
 

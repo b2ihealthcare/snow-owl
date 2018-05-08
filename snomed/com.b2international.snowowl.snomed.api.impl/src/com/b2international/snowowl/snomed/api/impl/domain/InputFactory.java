@@ -11,7 +11,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserCompo
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConceptUpdate;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentUpdateRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedComponentCreateRequest;
+import com.b2international.snowowl.snomed.datastore.request.SnomedCoreComponentCreateRequest;
 import com.google.common.collect.Sets;
 
 public class InputFactory {
@@ -25,11 +25,11 @@ public class InputFactory {
 		creators.add(new RelationshipInputCreator());
 	}
 
-	public <I extends SnomedComponentCreateRequest> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
+	public <I extends SnomedCoreComponentCreateRequest> I createComponentInput(String branchPath, ISnomedBrowserComponentWithId component, Class<I> inputType) {
 		return getInputDelegate(inputType).createInput(branchPath, component, this);
 	}
 
-	public <I extends SnomedComponentCreateRequest> List<I> createComponentInputs(String branchPath,
+	public <I extends SnomedCoreComponentCreateRequest> List<I> createComponentInputs(String branchPath,
 			List<? extends ISnomedBrowserComponentWithId> newVersionComponents, Class<I> inputType) {
 		List<I> inputs = new ArrayList<>();
 		for (ISnomedBrowserComponentWithId component : newVersionComponents) {
@@ -75,7 +75,7 @@ public class InputFactory {
 		return ids;
 	}
 
-	private <I extends SnomedComponentCreateRequest> ComponentInputCreator<I, SnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
+	private <I extends SnomedCoreComponentCreateRequest> ComponentInputCreator<I, SnomedComponentUpdateRequest, ISnomedBrowserComponentWithId> getInputDelegate(Class<I> inputType) {
 		for (ComponentInputCreator creator : creators) {
 			if (creator.canCreateInput(inputType)) {
 				return creator;

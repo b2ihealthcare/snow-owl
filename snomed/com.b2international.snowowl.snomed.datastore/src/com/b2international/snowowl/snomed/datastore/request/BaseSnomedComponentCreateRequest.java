@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.0
  */
-public abstract class BaseSnomedComponentCreateRequest implements SnomedComponentCreateRequest {
+public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComponentCreateRequest {
 
 	@Nonnull
 	private Boolean active = Boolean.TRUE;
@@ -66,7 +66,7 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedComponen
 	}
 	
 	@JsonIgnore
-	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
+	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
 		return ImmutableList.of(this);
 	}
 

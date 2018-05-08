@@ -58,9 +58,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getModuleId(),
-				getReferencedComponentId(), 
-				getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+	protected Set<String> getRequiredComponentIds() {
+		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
 	}
 }

@@ -42,6 +42,8 @@ import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
@@ -55,7 +57,6 @@ import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberBulkRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -257,7 +258,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			req.setSource("referenceSetId", refSetId);
 		}
 		
-		final SnomedRefSetMemberBulkRequestBuilder updateRequestBuilder = SnomedRequests.prepareBulkUpdateMembers();
+		final BulkRequestBuilder<TransactionContext> updateRequestBuilder = BulkRequest.create();
 		bulkRequest.resolve(resolver).forEach(updateRequestBuilder::add);
 		
 		SnomedRequests

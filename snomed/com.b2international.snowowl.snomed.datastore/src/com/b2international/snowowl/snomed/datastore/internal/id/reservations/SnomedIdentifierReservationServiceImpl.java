@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,26 +20,35 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.id.reservations.Reservation;
+import com.b2international.snowowl.snomed.datastore.id.reservations.Reservations;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
  * @since 4.0 
  */
-public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferReservationService {
+public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentifierReservationService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentiferReservationService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentifierReservationService.class);
 	private final Map<String, Reservation> reservations = Collections.synchronizedMap(Maps.<String, Reservation>newHashMap());
+	
+	public SnomedIdentifierReservationServiceImpl() {
+		reservations.put("metadata-range", Reservations.range(9000_0000_0000_000L, SnomedIdentifiers.MAX_INT_ITEMID, null, Collections.singleton(ComponentCategory.CONCEPT)));
+	}
 	
 	@Override
 	public void create(String reservationName, Reservation reservation) {
@@ -76,14 +85,16 @@ public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentiferR
 	}
 
 	@Override
-	public boolean isReserved(String componentId) {
-		final SnomedIdentifier identifier = SnomedIdentifiers.create(componentId);
+	public Set<String> isReserved(Set<String> componentIdsToCheck) {
+		final ImmutableSet.Builder<String> reservedIds = ImmutableSet.builder();
+		final Set<SnomedIdentifier> identifiersToCheck = componentIdsToCheck.stream().map(SnomedIdentifiers::create).collect(Collectors.toSet());
 		for (Reservation reservation : getReservations()) {
-			if (reservation.includes(identifier)) {
-				return true;
-			}
+			reservation.intersection(identifiersToCheck)
+				.stream()
+				.map(SnomedIdentifier::toString)
+				.forEach(reservedIds::add);
 		}
-		return false;
+		return reservedIds.build();
 	}
 
 }

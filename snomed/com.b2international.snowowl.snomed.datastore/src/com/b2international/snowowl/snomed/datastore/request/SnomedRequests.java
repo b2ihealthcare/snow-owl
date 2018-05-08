@@ -354,14 +354,6 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
-	 * Returns a SNOMED CT request builder to prepare the updating of multiple reference set members.
-	 * @return SNOMED CT reference set update request builder
-	 */
-	public static SnomedRefSetMemberBulkRequestBuilder prepareBulkUpdateMembers() {
-		return new SnomedRefSetMemberBulkRequestBuilder();
-	}
-
-	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a concept.
 	 * @param concept id of the concept to be updated
 	 * @return SNOMED CT concept update request builder

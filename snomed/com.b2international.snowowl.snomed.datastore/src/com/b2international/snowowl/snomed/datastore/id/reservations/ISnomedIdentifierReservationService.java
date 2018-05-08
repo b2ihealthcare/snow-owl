@@ -1,6 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +15,8 @@
 package com.b2international.snowowl.snomed.datastore.id.reservations;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * SNOMED CT Identifier reservation service interface. Capable of creating reservation of SNOMED CT Identifiers. A {@link Reservation} is denoted by a
@@ -23,7 +24,7 @@ import java.util.Collection;
  * 
  * @since 4.0
  */
-public interface ISnomedIdentiferReservationService {
+public interface ISnomedIdentifierReservationService {
 
 	/**
 	 * Create a SNOMED CT Identifier {@link Reservation} in the system to restrict certain identifiers from being generated for new components.
@@ -60,7 +61,19 @@ public interface ISnomedIdentiferReservationService {
 	 * 
 	 * @param componentId - the ID to check
 	 * @return <code>true</code> if reserved, <code>false</code> otherwise
+	 * @deprecated - use {@link #isReserved(Set)} instead
 	 */
-	boolean isReserved(String componentId);
+	default boolean isReserved(String componentId) {
+		return isReserved(Collections.singleton(componentId)).contains(componentId);
+	}
+	
+	/**
+	 * Returns with a {@link Set} of component IDs that are already taken and in use in the system among the given {@link Set} of component IDs.
+	 * 
+	 * @param componentIdsToCheck - the IDs to check
+	 * @return a never <code>null</code> {@link Set} of component IDs that are already in use in the system
+	 * @since 6.5
+	 */
+	Set<String> isReserved(Set<String> componentIdsToCheck);
 
 }
