@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
@@ -33,8 +35,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Iterables;
@@ -47,7 +47,8 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 	@Override
 	public Collection<MergeConflict> validate(CDOTransaction transaction) {
 		
-		Iterable<Relationship> newOrDirtyRelationships = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Relationship.class), ComponentUtils2.getNewObjects(transaction, Relationship.class));
+		Iterable<Relationship> newOrDirtyRelationships = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Relationship.class),
+				ComponentUtils2.getNewObjects(transaction, Relationship.class));
 
 		Set<String> relationshipConceptIds = newHashSet();
 		
@@ -64,21 +65,17 @@ public class SnomedInvalidRelationshipMergeConflictRule extends AbstractSnomedMe
 			return emptySet();
 		}
 		
-		Set<String> inactiveConceptIds = newHashSet();
-
-		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+		Set<String> inactiveConceptIds = SnomedRequests.prepareSearchConcept()
 				.filterByIds(relationshipConceptIds)
 				.filterByActive(false)
 				.all()
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, BranchPathUtils.createPath(transaction).getPath())
 				.execute(getEventBus())
+				.then(concepts -> concepts.getItems().stream().map(IComponent::getId).collect(toSet()))
 				.getSync();
 
-		for (SnomedConcept concept : snomedConcepts) {
-			inactiveConceptIds.add(concept.getId());
-		}
-		
-		Iterable<Concept> newOrDirtyConcepts = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Concept.class), ComponentUtils2.getNewObjects(transaction, Concept.class));
+		Iterable<Concept> newOrDirtyConcepts = Iterables.concat(ComponentUtils2.getDirtyObjects(transaction, Concept.class),
+				ComponentUtils2.getNewObjects(transaction, Concept.class));
 
 		for (Concept concept : newOrDirtyConcepts) {
 			String conceptId = concept.getId();
