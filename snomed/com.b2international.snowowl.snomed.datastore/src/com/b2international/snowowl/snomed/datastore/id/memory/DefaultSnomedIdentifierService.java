@@ -256,7 +256,8 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		}
 		
 		if (generatedComponentIds.size() != quantity) {
-			throw new BadRequestException("Couldn't generate %s identifiers [%s, %s] in maximum (%s) number of attempts", quantity, category, namespace, maxAttempts);
+			final String namespaceValue = Strings.isNullOrEmpty(namespace) ? SnomedIdentifiers.INT_NAMESPACE : namespace;
+			throw new BadRequestException("Couldn't generate %s identifiers [%s, %s] in maximum (%s) number of attempts", quantity, category, namespaceValue, maxAttempts);
 		} else {
 			return ImmutableSet.<String>copyOf(generatedComponentIds);
 		}
