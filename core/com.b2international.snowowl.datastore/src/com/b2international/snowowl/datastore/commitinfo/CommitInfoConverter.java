@@ -19,13 +19,14 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 
 /**
  * @since 5.2
  */
-public final class CommitInfoConverter extends BaseResourceConverter<CommitInfoDocument, CommitInfo, CommitInfos> {
+public final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo, CommitInfos> {
 
 	public CommitInfoConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -37,7 +38,7 @@ public final class CommitInfoConverter extends BaseResourceConverter<CommitInfoD
 	}
 
 	@Override
-	protected CommitInfo toResource(final CommitInfoDocument doc) {
+	protected CommitInfo toResource(final Commit doc) {
 		return CommitInfo.builder(doc).build();
 	}
 

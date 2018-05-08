@@ -46,6 +46,7 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
@@ -67,7 +68,6 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
@@ -235,7 +235,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		types.add(CodeSystemEntry.class);
 		types.add(CodeSystemVersionEntry.class);
 		types.addAll(getToolingTypes(toolingId));
-		types.add(CommitInfoDocument.class);
+		types.add(Commit.class);
 		
 		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
 		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();

@@ -29,6 +29,7 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repositories;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
 import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
@@ -328,7 +328,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			RepositoryRequests.commitInfos().prepareSearchCommitInfo()
 				.one()
-				.sortBy(SortField.descending(CommitInfoDocument.Fields.TIME_STAMP))
+				.sortBy(SortField.descending(Commit.Fields.TIME_STAMP))
 				.build(repositoryId)
 				.execute(getBus())
 				.getSync()

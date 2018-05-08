@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.functions.LongToStringFunction;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
@@ -51,7 +52,6 @@ import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
@@ -271,7 +271,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		final String uuid = CDOCommitInfoUtils.getUuid(commitComment);
 		final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
 		
-		final CommitInfoDocument commitInfo = CommitInfoDocument.builder()
+		final Commit commitInfo = Commit.builder()
 				.id(uuid)
 				.branch(branchPath.getPath())
 				.comment(comment)

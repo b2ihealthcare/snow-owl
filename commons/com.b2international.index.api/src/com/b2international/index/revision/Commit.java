@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.commitinfo;
+package com.b2international.index.revision;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
@@ -37,9 +37,9 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 5.2
  */
-@Doc
-@JsonDeserialize(builder = CommitInfoDocument.Builder.class)
-public final class CommitInfoDocument implements WithId, WithScore {
+@Doc(type="commitinfodocument")
+@JsonDeserialize(builder = Commit.Builder.class)
+public final class Commit implements WithId, WithScore {
 
 	public static Builder builder() {
 		return new Builder();
@@ -79,8 +79,8 @@ public final class CommitInfoDocument implements WithId, WithScore {
 			return this;
 		}
 
-		public CommitInfoDocument build() {
-			return new CommitInfoDocument(id, branch, userId, comment, timeStamp);
+		public Commit build() {
+			return new Commit(id, branch, userId, comment, timeStamp);
 		}
 
 	}
@@ -137,7 +137,7 @@ public final class CommitInfoDocument implements WithId, WithScore {
 	
 	private float score = 0.0f;
 	
-	private CommitInfoDocument(
+	private Commit(
 			final String id,
 			final String branch,
 			final String userId,

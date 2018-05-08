@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.allCommentPrefixesPresent;
-import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.branch;
-import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.exactComment;
-import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.timeStamp;
-import static com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument.Expressions.userId;
+import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
+import static com.b2international.index.revision.Commit.Expressions.branch;
+import static com.b2international.index.revision.Commit.Expressions.exactComment;
+import static com.b2international.index.revision.Commit.Expressions.timeStamp;
+import static com.b2international.index.revision.Commit.Expressions.userId;
 
 import java.util.List;
 
@@ -27,16 +27,16 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfoConverter;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfoDocument;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.google.common.collect.Lists;
 
 /**
  * @since 5.2
  */
-final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, CommitInfoDocument> {
+final class CommitInfoSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CommitInfos, Commit> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -52,14 +52,14 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	CommitInfoSearchRequest() {}
 
 	@Override
-	protected Class<CommitInfoDocument> getDocumentType() {
-		return CommitInfoDocument.class;
+	protected Class<Commit> getDocumentType() {
+		return Commit.class;
 	}
 	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
-		addIdFilter(queryBuilder, CommitInfoDocument.Expressions::ids);
+		addIdFilter(queryBuilder, Commit.Expressions::ids);
 		addBranchClause(queryBuilder);
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
@@ -73,7 +73,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 
 	@Override
-	protected CommitInfos toCollectionResource(RepositoryContext context, Hits<CommitInfoDocument> hits) {
+	protected CommitInfos toCollectionResource(RepositoryContext context, Hits<Commit> hits) {
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new CommitInfos(context.id(), limit(), hits.getTotal());
 		} else {
