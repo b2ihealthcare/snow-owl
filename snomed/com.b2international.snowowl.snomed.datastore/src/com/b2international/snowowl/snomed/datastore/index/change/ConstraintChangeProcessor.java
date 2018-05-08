@@ -23,7 +23,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelUtils;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
