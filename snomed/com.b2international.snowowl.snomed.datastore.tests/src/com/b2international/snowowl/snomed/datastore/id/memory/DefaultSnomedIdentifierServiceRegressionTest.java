@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.memory;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newLinkedHashSetWithExpectedSize;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -74,7 +74,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 
 		@Override
 		public Set<String> generateItemIds(final String namespace, final ComponentCategory category, int quantity, int attempt) {
-			final Set<String> generatedItemIds = newHashSet();
+			final Set<String> generatedItemIds = newLinkedHashSetWithExpectedSize(quantity);
 			while (quantity > 0) {
 				if (generatedItemIds.add(itr.next())) {
 					quantity--;
@@ -120,7 +120,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 		try {
 			identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1);
 		} catch (final BadRequestException e) {
-			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate 1 identifiers [CONCEPT, ] in maximum (%s) number of attempts",
+			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate 1 identifiers [CONCEPT, INT] in maximum (%s) number of attempts",
 					SnomedIdentifierConfiguration.DEFAULT_ID_GENERATION_ATTEMPTS));
 		}
 	}
