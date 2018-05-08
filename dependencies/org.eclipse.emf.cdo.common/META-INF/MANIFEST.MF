@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.4.0,4.0.0)
  on="[2.4.0,3.0.0)",org.eclipse.emf.ecore.xmi;bundle-version="[2.4.0,3
  .0.0)",org.eclipse.net4j.util;bundle-version="[3.0.0,4.0.0)";visibili
  ty:=reexport
-Bundle-Version: 4.1.11.b2i
+Bundle-Version: 4.1.12.b2i
 Export-Package: org.eclipse.emf.cdo.common;version="4.1.0",org.eclipse
  .emf.cdo.common.admin;version="4.1.0",org.eclipse.emf.cdo.common.bran
  ch;version="4.1.0",org.eclipse.emf.cdo.common.commit;version="4.1.0",
