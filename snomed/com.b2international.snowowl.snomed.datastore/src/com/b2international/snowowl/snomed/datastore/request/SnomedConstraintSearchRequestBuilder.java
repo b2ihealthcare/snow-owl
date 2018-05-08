@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 
 /**
  * 
@@ -60,11 +60,11 @@ public final class SnomedConstraintSearchRequestBuilder
 		return addOption(SnomedConstraintSearchRequest.OptionKey.REFSET, refSetIds);
 	}
 	
-	public SnomedConstraintSearchRequestBuilder filterByType(PredicateType type) {
+	public SnomedConstraintSearchRequestBuilder filterByType(SnomedConstraintPredicateType type) {
 		return addOption(SnomedConstraintSearchRequest.OptionKey.TYPE, type);
 	}
 	
-	public SnomedConstraintSearchRequestBuilder filterByTypes(Collection<PredicateType> type) {
+	public SnomedConstraintSearchRequestBuilder filterByTypes(Collection<SnomedConstraintPredicateType> type) {
 		return addOption(SnomedConstraintSearchRequest.OptionKey.TYPE, type);
 	}
 

@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.descendantIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.refSetIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.types;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.descendantIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.refSetIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.selfIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.predicateTypes;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -28,8 +28,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 4.7
@@ -79,7 +79,7 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 		}
 		
 		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
+			queryBuilder.filter(predicateTypes(getCollection(OptionKey.TYPE, SnomedConstraintPredicateType.class)));
 		}
 		
 		return queryBuilder.build();
