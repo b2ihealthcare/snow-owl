@@ -35,13 +35,14 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.BulkIndexWrite;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
@@ -74,7 +75,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 	private final ObjectMapper mapper;
 	
     public CDOBranchManagerImpl(final InternalRepository repository, ObjectMapper mapper) {
-        super(repository.getIndex());
+        super(repository.getRevisionIndex());
         this.repository = repository;
        	
         final CDOBranch cdoMainBranch = repository.getCdoMainBranch();
@@ -136,7 +137,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     }
 
     private Branch getBranch(Integer branchId) {
-    	return getBranchFromStore(Query.select(BranchDocument.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
+    	return getBranchFromStore(Query.select(RevisionBranch.class).where(Expressions.match(CDO_BRANCH_ID, branchId)));
     }
     
     private CDOBranch loadCDOBranch(Integer branchId) {
@@ -206,14 +207,14 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     }
 
 	private IndexWrite<Void> prepareReplace(final String path, final InternalBranch value) {
-		return update(path, BranchDocument.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value.toDocument().build(), Map.class)));
+		return update(path, RevisionBranch.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value.toDocument().build(), Map.class)));
 	}
 	
 	private IndexWrite<Void> prepareDelete(final String path) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.remove(BranchDocument.class, path);
+				index.remove(RevisionBranch.class, path);
 				return null;
 			}
 		};
@@ -296,7 +297,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     	return commit(new IndexWrite<InternalBranch>() {
 			@Override
 			public InternalBranch execute(Writer index) throws IOException {
-				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) index.searcher().get(BranchDocument.class, parentPath).toBranch();
+				final InternalCDOBasedBranch parentBranch = (InternalCDOBasedBranch) InternalBranch.toBranch(index.searcher().get(RevisionBranch.class, parentPath));
 				final Set<Integer> parentSegments = newHashSet();
 		    	// all branch should know the segment path to the ROOT
 		    	parentSegments.addAll(parentBranch.parentSegments());
@@ -305,7 +306,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 				// the "new" child branch
 				final CDOBranchImpl childBranch = new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, metadata, cdoBranchId, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
 				create(childBranch).execute(index);
-				update(parentPath, BranchDocument.Scripts.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
+				update(parentPath, RevisionBranch.Scripts.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
 				return childBranch;
 			}
 		});

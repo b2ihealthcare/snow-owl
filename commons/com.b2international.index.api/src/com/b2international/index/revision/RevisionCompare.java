@@ -39,15 +39,15 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class RevisionCompare {
 
-	static Builder builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
+	static Builder builder(InternalRevisionIndex index, RevisionBranchSegments base, RevisionBranchSegments compare, int limit) {
 		return new Builder(index, base, compare, limit);
 	}
 	
 	static class Builder {
 		
 		private final InternalRevisionIndex index;
-		private final RevisionBranch base;
-		private final RevisionBranch compare;
+		private final RevisionBranchSegments base;
+		private final RevisionBranchSegments compare;
 		private final int limit;
 	
 		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
@@ -58,7 +58,7 @@ public final class RevisionCompare {
 		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 		private final IntValueMap<Class<? extends Revision>> deletedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 
-		Builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
+		Builder(InternalRevisionIndex index, RevisionBranchSegments base, RevisionBranchSegments compare, int limit) {
 			this.index = index;
 			this.base = base;
 			this.compare = compare;
@@ -119,8 +119,8 @@ public final class RevisionCompare {
 	}
 	
 	private final InternalRevisionIndex index;
-	private final RevisionBranch base;
-	private final RevisionBranch compare;
+	private final RevisionBranchSegments base;
+	private final RevisionBranchSegments compare;
 
 	private final Map<Class<? extends Revision>, LongSet> newComponents;
 	private final Map<Class<? extends Revision>, LongSet> changedComponents;
@@ -131,8 +131,8 @@ public final class RevisionCompare {
 	private final IntValueMap<Class<? extends Revision>> deletedTotals;
 	
 	private RevisionCompare(InternalRevisionIndex index, 
-			RevisionBranch base, 
-			RevisionBranch compare,
+			RevisionBranchSegments base, 
+			RevisionBranchSegments compare,
 			Map<Class<? extends Revision>, LongSet> newComponents,
 			Map<Class<? extends Revision>, LongSet> changedComponents,
 			Map<Class<? extends Revision>, LongSet> deletedComponents,

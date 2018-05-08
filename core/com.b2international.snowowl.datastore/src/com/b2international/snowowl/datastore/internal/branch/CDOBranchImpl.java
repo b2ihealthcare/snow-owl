@@ -19,7 +19,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.commons.options.Metadata;
+import com.b2international.index.revision.RevisionBranch;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
@@ -95,7 +96,7 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 	}
 	
 	@Override
-	public BranchDocument.Builder toDocument() {
+	public RevisionBranch.Builder toDocument() {
 		return super.toDocument()
 				.type(TYPE)
 				.cdoBranchId(cdoBranchId)
@@ -104,7 +105,7 @@ public class CDOBranchImpl extends BranchImpl implements InternalCDOBasedBranch 
 				.parentSegments(parentSegments);
 	}
 	
-	static InternalBranch from(BranchDocument doc) {
+	static InternalBranch from(RevisionBranch doc) {
 		return new CDOBranchImpl(
 				doc.getName(), 
 				doc.getParentPath(), 

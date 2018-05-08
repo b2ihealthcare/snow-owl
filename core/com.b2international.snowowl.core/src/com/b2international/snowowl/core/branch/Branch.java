@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;

@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core;
+package com.b2international.commons.options;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * @since 4.1
  */
-public interface MetadataHolderMixin extends MetadataHolder {
+@JsonDeserialize(as = MetadataImpl.class)
+public interface MetadataMixin extends Metadata {
 
 	@Override
-	@JsonProperty
-	Metadata metadata();
+	@JsonAnySetter
+	public Object put(String key, Object value);
 	
 }

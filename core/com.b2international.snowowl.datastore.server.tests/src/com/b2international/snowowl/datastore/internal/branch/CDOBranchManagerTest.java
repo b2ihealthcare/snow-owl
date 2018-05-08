@@ -42,11 +42,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.b2international.index.Index;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.index.revision.DefaultRevisionIndex;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -54,11 +56,6 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.internal.branch.CDOMainBranchImpl;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -84,7 +81,7 @@ public class CDOBranchManagerTest {
 	
 	private InternalRepository repository;
 	private ServiceProvider context;
-	private Index store;
+	private RevisionIndex store;
 	
 	@Before
 	public void givenCDOBranchManager() {
@@ -100,9 +97,9 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(BranchDocument.class));
+		store = new DefaultRevisionIndex(Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(RevisionBranch.class)));
 		store.admin().create();
-		when(repository.getIndex()).thenReturn(store);
+		when(repository.getRevisionIndex()).thenReturn(store);
 		
 		manager = new CDOBranchManagerImpl(repository, mapper);
 		main = (CDOMainBranchImpl) manager.getMainBranch();
@@ -229,8 +226,8 @@ public class CDOBranchManagerTest {
 	public void updateMetadata() throws Exception {
 		final InternalBranch branchA = (InternalBranch) main.createChild("a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
 		final long commitTimestamp = clock.getTimeStamp();
-		final IndexWrite<Void> timestampUpdate = manager.update(branchA.path(), BranchDocument.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", commitTimestamp));
-		final IndexWrite<Void> metadataUpdate = manager.update(branchA.path(), BranchDocument.Scripts.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
+		final IndexWrite<Void> timestampUpdate = manager.update(branchA.path(), RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", commitTimestamp));
+		final IndexWrite<Void> metadataUpdate = manager.update(branchA.path(), RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
 		final Collection<IndexWrite<Void>> parallelUpdates = ImmutableList.of(timestampUpdate, metadataUpdate);
 		
 		final CyclicBarrier barrier = new CyclicBarrier(parallelUpdates.size());

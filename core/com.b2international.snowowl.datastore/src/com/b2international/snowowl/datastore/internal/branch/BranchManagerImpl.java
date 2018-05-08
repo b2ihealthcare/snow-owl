@@ -24,17 +24,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.DocSearcher;
-import com.b2international.index.Index;
-import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -54,7 +53,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class BranchManagerImpl implements BranchManager {
 
-	private final Index branchStore;
+	private final RevisionIndex branchStore;
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
 			.expireAfterAccess(5L, TimeUnit.MINUTES)
@@ -65,7 +64,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 				}
 			});
 
-	public BranchManagerImpl(final Index branchStore) {
+	public BranchManagerImpl(final RevisionIndex branchStore) {
 		this.branchStore = branchStore;
 	}
 	
@@ -165,7 +164,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return branch;
 	}
 
-	protected final Branch getBranchFromStore(final AfterWhereBuilder<BranchDocument> query) {
+	protected final Branch getBranchFromStore(final AfterWhereBuilder<RevisionBranch> query) {
 		query.limit(1);
 		final InternalBranch branch = Iterables.getOnlyElement(search(query.build()), null);
 		if (branch != null) {
@@ -184,7 +183,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public final Collection<Branch> getBranches() {
-		final Collection<InternalBranch> values = search(Query.select(BranchDocument.class)
+		final Collection<InternalBranch> values = search(Query.select(RevisionBranch.class)
 				.where(Expressions.matchAll())
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -233,14 +232,14 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private InternalBranch doDelete(final InternalBranch branch) {
 		final String path = branch.path();
-		commit(update(path, BranchDocument.Scripts.WITH_DELETED, Collections.emptyMap()));
+		commit(update(path, RevisionBranch.Scripts.WITH_DELETED, Collections.emptyMap()));
 		sendChangeEvent(path); // Explicit notification (delete)
 		return (InternalBranch) getBranch(path);
 	}
 	
 	public final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final String path = branch.path();
-		commit(update(path, BranchDocument.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
+		commit(update(path, RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
 		sendChangeEvent(path); // Explicit notification (commit)
 		return (InternalBranch) getBranch(path);
 	}
@@ -254,7 +253,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = search(Query.select(BranchDocument.class)
+		final Collection<InternalBranch> values = search(Query.select(RevisionBranch.class)
 				.where(Expressions.prefixMatch("path", branchImpl.path() + Branch.SEPARATOR))
 				.limit(Integer.MAX_VALUE)
 				.build());
@@ -262,41 +261,24 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return ImmutableList.copyOf(values);
 	}
 
-	private Collection<InternalBranch> search(final Query<BranchDocument> query) {
-		return ImmutableList.copyOf(branchStore.read(new IndexRead<Iterable<InternalBranch>>() {
-			@Override
-			public Iterable<InternalBranch> execute(DocSearcher index) throws IOException {
-				return index.search(query).stream().map(BranchDocument::toBranch).collect(Collectors.toList());
-			}
-		}));
+	private Collection<InternalBranch> search(final Query<RevisionBranch> query) {
+		return ImmutableList.copyOf(branchStore.branches().getBranches(query).stream().map(InternalBranch::toBranch).collect(Collectors.toList()));
 	}
 	
 	private InternalBranch get(final String path) {
-		return branchStore.read(new IndexRead<InternalBranch>() {
-			@Override
-			public InternalBranch execute(DocSearcher index) throws IOException {
-				BranchDocument doc = index.get(BranchDocument.class, path);
-				return doc == null ? null : doc.toBranch();
-			}
-		});
+		final RevisionBranch doc = branchStore.branches().getBranch(path);
+		return doc == null ? null : InternalBranch.toBranch(doc);
 	}
 	
 	public final <T> T commit(final IndexWrite<T> changes) {
-		return branchStore.write(new IndexWrite<T>() {
-			@Override
-			public T execute(Writer index) throws IOException {
-				final T result = changes.execute(index);
-				index.commit();
-				return result;
-			}
-		});
+		return branchStore.branches().commit(changes);
 	}
 	
 	public final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return new IndexWrite<Void>() {
 			@Override
 			public Void execute(Writer index) throws IOException {
-				index.bulkUpdate(new BulkUpdate<>(BranchDocument.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
+				index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
 				return null;
 			}
 		};

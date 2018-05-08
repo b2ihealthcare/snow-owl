@@ -21,18 +21,18 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.1
  */
-final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, BranchDocument> {
+final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Branches, RevisionBranch> {
 
 	enum OptionKey {
 		
@@ -73,16 +73,16 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	}
 	
 	@Override
-	protected Class<BranchDocument> getDocumentType() {
-		return BranchDocument.class;
+	protected Class<RevisionBranch> getDocumentType() {
+		return RevisionBranch.class;
 	}
 
 	@Override
-	protected Branches toCollectionResource(RepositoryContext context, Hits<BranchDocument> hits) {
+	protected Branches toCollectionResource(RepositoryContext context, Hits<RevisionBranch> hits) {
 		final BranchManager branchManager = context.service(BranchManager.class);
 		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
-		for (BranchDocument doc : hits) {
-			final InternalBranch branch = doc.toBranch();
+		for (RevisionBranch doc : hits) {
+			final InternalBranch branch = InternalBranch.toBranch(doc);
 			branch.setBranchManager(branchManager);
 			branches.add(branch);
 		}

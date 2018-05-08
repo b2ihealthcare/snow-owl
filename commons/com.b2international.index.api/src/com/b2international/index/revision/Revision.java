@@ -126,7 +126,7 @@ public abstract class Revision implements WithId {
 				.add(Revision.REPLACED_INS, replacedIns);
 	}
 
-	public static Expression branchFilter(RevisionBranch branch) {
+	public static Expression branchFilter(RevisionBranchSegments branch) {
 		return branchSegmentFilter(branch.segments());
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ import com.google.common.collect.Sets;
  */
 public class DefaultRevisionWriter implements RevisionWriter {
 
-	private final RevisionBranch branch;
+	private final RevisionBranchSegments branch;
 	private final long commitTimestamp;
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
 	private final Map<Class<? extends Revision>, Collection<Long>> revisionUpdates = newHashMap();
 
-	public DefaultRevisionWriter(final RevisionBranch branch, long commitTimestamp, Writer index, RevisionSearcher searcher) {
+	public DefaultRevisionWriter(final RevisionBranchSegments branch, long commitTimestamp, Writer index, RevisionSearcher searcher) {
 		this.branch = branch;
 		this.commitTimestamp = commitTimestamp;
 		this.index = index;
@@ -63,7 +63,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		checkArgument(!revisionsToUpdate.contains(storageKey), "duplicate revision %s", storageKey);
 		revisionsToUpdate.add(storageKey);
 		
-		object.setBranchPath(branch.path());
+		object.setBranchPath(branch());
 		object.setCommitTimestamp(commitTimestamp);
 		object.setStorageKey(storageKey);
 		object.setSegmentId(branch.segmentId());

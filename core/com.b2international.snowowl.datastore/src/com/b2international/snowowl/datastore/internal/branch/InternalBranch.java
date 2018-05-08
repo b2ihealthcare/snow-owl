@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.commons.options.Metadata;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 
@@ -36,6 +37,16 @@ public interface InternalBranch extends Branch {
 	@Override
 	InternalBranch withMetadata(Metadata metadata);
 
-	BranchDocument.Builder toDocument();
+	RevisionBranch.Builder toDocument();
+	
+	static InternalBranch toBranch(RevisionBranch doc) {
+		switch (doc.getType()) {
+		case BranchImpl.TYPE: return BranchImpl.from(doc);
+		case MainBranchImpl.TYPE: return MainBranchImpl.from(doc);
+		case CDOBranchImpl.TYPE: return CDOBranchImpl.from(doc);
+		case CDOMainBranchImpl.TYPE: return CDOMainBranchImpl.from(doc);
+		default: throw new UnsupportedOperationException("TODO implement me for " + doc.getType()); 
+		}
+	}
 	
 }

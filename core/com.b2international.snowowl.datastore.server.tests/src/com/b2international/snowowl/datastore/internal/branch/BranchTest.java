@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.exceptions.BadRequestException;

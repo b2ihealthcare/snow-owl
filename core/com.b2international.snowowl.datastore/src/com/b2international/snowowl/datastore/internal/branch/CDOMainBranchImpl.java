@@ -22,7 +22,8 @@ import java.util.Set;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.commons.options.Metadata;
+import com.b2international.index.revision.RevisionBranch;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -80,7 +81,7 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 	}
 	
 	@Override
-	public BranchDocument.Builder toDocument() {
+	public RevisionBranch.Builder toDocument() {
 		return super.toDocument()
 				.type(TYPE)
 				.cdoBranchId(cdoBranchId)
@@ -88,7 +89,7 @@ public class CDOMainBranchImpl extends MainBranchImpl implements InternalCDOBase
 				.segments(segments);
 	}
 	
-	static InternalBranch from(BranchDocument doc) {
+	static InternalBranch from(RevisionBranch doc) {
 		return new CDOMainBranchImpl(
 				doc.getBaseTimestamp(), 
 				doc.getHeadTimestamp(), 

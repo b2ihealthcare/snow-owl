@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core;
+package com.b2international.commons.options;
 
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
+ * Simple interface to use when an object requires additional information associated with it.
+ * 
  * @since 4.1
  */
-@JsonDeserialize(as = MetadataImpl.class)
-public interface MetadataMixin extends Metadata {
+public interface MetadataHolder {
 
-	@Override
-	@JsonAnySetter
-	public Object put(String key, Object value);
-	
+	/**
+	 * Returns the {@link Metadata} associated with this {@link MetadataHolder}.
+	 * 
+	 * @return
+	 */
+	Metadata metadata();
+
+	/**
+	 * Returns a new {@link MetadataHolder} object with the specified {@link Metadata}.
+	 * 
+	 * @param metadata
+	 */
+	MetadataHolder withMetadata(Metadata metadata);
+
 }

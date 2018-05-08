@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolderImpl;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolderImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

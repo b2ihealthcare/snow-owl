@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.internal.branch;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
@@ -39,13 +37,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.Doc;
-import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.index.revision.RevisionBranchProvider;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
@@ -53,10 +50,6 @@ import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -77,8 +70,7 @@ public class IssueSO2109Test {
 	private CDOBranchManagerImpl manager;
 
 	private InternalRepository repository;
-	private Index store;
-	private DefaultRevisionIndex revisionIndex;
+	private RevisionIndex store;
 
 	@Before
 	public void givenCDOBranchManager() {
@@ -94,28 +86,10 @@ public class IssueSO2109Test {
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		store = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(BranchDocument.class, Data.class));
+		store = new DefaultRevisionIndex(Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(RevisionBranch.class, Data.class)));
 		store.admin().create();
 
-		revisionIndex = new DefaultRevisionIndex(store, new RevisionBranchProvider() {
-
-			@Override
-			public RevisionBranch getParentBranch(final String branchPath) {
-				return null;
-			}
-
-			@Override
-			public RevisionBranch getBranch(final String branchPath) {
-				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) manager.getBranch(branchPath);
-				final Set<Integer> segments = newHashSet();
-				segments.addAll(branch.segments());
-				segments.addAll(branch.parentSegments());
-				return new RevisionBranch(branchPath, branch.segmentId(), segments);
-			}
-
-		});
-
-		when(repository.getIndex()).thenReturn(store);
+		when(repository.getRevisionIndex()).thenReturn(store);
 
 		manager = new CDOBranchManagerImpl(repository, mapper);
 	}
@@ -132,7 +106,7 @@ public class IssueSO2109Test {
 
 		final long timestamp = clock.getTimeStamp();
 
-		revisionIndex.write(child.path(), timestamp, new RevisionIndexWrite<Void>() {
+		store.write(child.path(), timestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(final RevisionWriter write) throws IOException {
 				write.put(STORAGE_KEY, new Data(DATA_VALUE));
@@ -178,7 +152,7 @@ public class IssueSO2109Test {
 	}
 
 	private Data getData(final String path, final long storageKey) {
-		return revisionIndex.read(path, new RevisionIndexRead<Data>() {
+		return store.read(path, new RevisionIndexRead<Data>() {
 			@Override
 			public Data execute(final RevisionSearcher index) throws IOException {
 				return index.get(Data.class, storageKey);

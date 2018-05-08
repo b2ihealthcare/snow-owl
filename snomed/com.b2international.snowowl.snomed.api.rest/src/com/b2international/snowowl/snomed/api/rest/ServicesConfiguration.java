@@ -39,11 +39,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
+import com.b2international.commons.options.MetadataHolderMixin;
+import com.b2international.commons.options.MetadataMixin;
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolder;
-import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.b2international.snowowl.core.MetadataMixin;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;

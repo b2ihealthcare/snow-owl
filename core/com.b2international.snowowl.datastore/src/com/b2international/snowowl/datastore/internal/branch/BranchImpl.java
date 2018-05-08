@@ -22,8 +22,9 @@ import java.io.ObjectInputStream;
 import java.util.Collection;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolderImpl;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolderImpl;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchData;
@@ -134,7 +135,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	@Override
 	public final void update(final Metadata metadata) {
 		if (!metadata().equals(metadata)) {
-			branchManager.commit(branchManager.update(path(), BranchDocument.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
+			branchManager.commit(branchManager.update(path(), RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
 			branchManager.sendChangeEvent(path());
 		}
 	}
@@ -295,8 +296,8 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 	
 	@Override
-	public BranchDocument.Builder toDocument() {
-		return BranchDocument.builder()
+	public RevisionBranch.Builder toDocument() {
+		return RevisionBranch.builder()
 				.type(TYPE)
 				.parentPath(parentPath)
 				.name(name)
@@ -307,7 +308,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 				.metadata(metadata());
 	}
 
-	static InternalBranch from(BranchDocument doc) {
+	static InternalBranch from(RevisionBranch doc) {
 		return new BranchImpl(doc.getName(), doc.getParentPath(), doc.getBaseTimestamp(), doc.getHeadTimestamp(), doc.isDeleted(), doc.getMetadata());
 	}
 	

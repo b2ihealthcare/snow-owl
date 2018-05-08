@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -48,8 +47,6 @@ import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.DefaultRevisionIndex;
-import com.b2international.index.revision.RevisionBranch;
-import com.b2international.index.revision.RevisionBranchProvider;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -78,9 +75,7 @@ import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -97,8 +92,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Ordering;
-import com.google.inject.Provider;
 
 /**
  * @since 4.1
@@ -237,7 +230,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 	private void initIndex(final ObjectMapper mapper) {
 		final Collection<Class<?>> types = newArrayList();
-		types.add(BranchDocument.class);
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
 		types.add(CodeSystemEntry.class);
@@ -250,24 +242,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
 		final Index index = new DefaultIndex(indexClient);
-		final Provider<BranchManager> branchManager = provider(BranchManager.class);
-		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, new RevisionBranchProvider() {
-			@Override
-			public RevisionBranch getBranch(String branchPath) {
-				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
-				final Set<Integer> segments = newHashSet();
-				segments.addAll(branch.segments());
-				segments.addAll(branch.parentSegments());
-				return new RevisionBranch(branchPath, branch.segmentId(), segments);
-			}
-			
-			@Override
-			public RevisionBranch getParentBranch(String branchPath) {
-				final InternalCDOBasedBranch branch = (InternalCDOBasedBranch) branchManager.get().getBranch(branchPath);
-				return new RevisionBranch(branch.parent().path(), Ordering.natural().max(branch.parentSegments()), branch.parentSegments());
-			}
-
-		});
+		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index);
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);

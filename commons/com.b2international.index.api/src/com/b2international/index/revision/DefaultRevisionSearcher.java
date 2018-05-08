@@ -34,10 +34,10 @@ import com.google.common.collect.Iterables;
  */
 public class DefaultRevisionSearcher implements RevisionSearcher {
 
-	private final RevisionBranch branch;
+	private final RevisionBranchSegments branch;
 	private final DocSearcher searcher;
 
-	public DefaultRevisionSearcher(RevisionBranch branch, DocSearcher searcher) {
+	public DefaultRevisionSearcher(RevisionBranchSegments branch, DocSearcher searcher) {
 		this.branch = branch;
 		this.searcher = searcher;
 	}

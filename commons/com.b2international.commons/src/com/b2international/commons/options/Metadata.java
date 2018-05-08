@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core;
+package com.b2international.commons.options;
 
+import java.util.Map;
 
 /**
  * @since 4.1
  */
-public abstract class MetadataHolderImpl implements MetadataHolder {
+public interface Metadata extends Map<String, Object> {
 
-	private final Metadata metadata;
+	<T> T get(String key, Class<T> type);
 	
-	public MetadataHolderImpl(Metadata metadata) {
-		this.metadata = metadata;
-	}
-	
-	@Override
-	public Metadata metadata() {
-		return metadata;
-	}
-	
-	@Override
-	public MetadataHolder withMetadata(Metadata metadata) {
-		throw new UnsupportedOperationException();
-	}
-	
+	String getString(String key);
+
+	Integer getInt(String key);
+
+	Boolean getBoolean(String key);
+
+	Float getFloat(String key);
+
+	Double getDouble(String key);
+
+	Short getShort(String key);
+
+	Character getChar(String key);
+
+	Byte getByte(String key);
+
 }

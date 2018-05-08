@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataHolder;
-import com.b2international.snowowl.core.MetadataHolderMixin;
-import com.b2international.snowowl.core.MetadataMixin;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
+import com.b2international.commons.options.MetadataHolderMixin;
+import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewMixin;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

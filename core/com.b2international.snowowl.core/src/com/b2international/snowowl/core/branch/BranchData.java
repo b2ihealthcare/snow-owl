@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.branch;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.commons.options.Metadata;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 

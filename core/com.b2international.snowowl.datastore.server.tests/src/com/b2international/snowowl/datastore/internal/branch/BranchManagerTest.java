@@ -33,11 +33,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.index.Index;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.index.revision.DefaultRevisionIndex;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
@@ -48,11 +50,6 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
-import com.b2international.snowowl.datastore.internal.branch.BranchImpl;
-import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
-import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -64,7 +61,7 @@ public class BranchManagerTest {
 
 	private class BranchManagerImplTest extends BranchManagerImpl {
 
-		private BranchManagerImplTest(Index branchStore, long mainBranchTimestamp) {
+		private BranchManagerImplTest(RevisionIndex branchStore, long mainBranchTimestamp) {
 			super(branchStore);
 			initBranchStore(new MainBranchImpl(mainBranchTimestamp));
 		}
@@ -89,13 +86,13 @@ public class BranchManagerTest {
 	private BranchManagerImpl manager;
 	private InternalBranch main;
 	private InternalBranch a;
-	private Index store;
+	private RevisionIndex store;
 	private ServiceProvider context;
 
 	@Before
 	public void givenBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		store = Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(BranchDocument.class));
+		store = new DefaultRevisionIndex(Indexes.createIndex(UUID.randomUUID().toString(), JsonSupport.getDefaultObjectMapper(), new Mappings(RevisionBranch.class)));
 		store.admin().create();
 		manager = new BranchManagerImplTest(store, clock.getTimestamp());
 		

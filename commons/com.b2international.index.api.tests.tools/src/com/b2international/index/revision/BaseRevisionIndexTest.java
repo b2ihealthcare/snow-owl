@@ -15,18 +15,13 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
@@ -44,7 +39,6 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Ordering;
 
 /**
  * @since 4.7
@@ -61,27 +55,7 @@ public abstract class BaseRevisionIndexTest {
 	private Mappings mappings;
 	private Index rawIndex;
 	private RevisionIndex index;
-	private Map<String, RevisionBranch> branches = newHashMap();
 	private AtomicLong clock = new AtomicLong(0L);
-	private AtomicInteger segmentIds = new AtomicInteger(0);
-	private RevisionBranchProvider branchProvider = new RevisionBranchProvider() {
-		@Override
-		public RevisionBranch getBranch(String branchPath) {
-			return branches.get(branchPath);
-		}
-		
-		@Override
-		public RevisionBranch getParentBranch(String branchPath) {
-			final RevisionBranch branch = branches.get(branchPath);
-			final Set<Integer> segments = newHashSet(branch.segments());
-			segments.remove(branch.segmentId());
-			return new RevisionBranch(branchPath.substring(0, branchPath.lastIndexOf(RevisionBranch.SEPARATOR)), Ordering.natural().max(segments), segments);
-		}
-	};
-	
-	private int nextSegmentId() {
-		return segmentIds.getAndIncrement();
-	}
 	
 	protected final long nextStorageKey() {
 		return storageKeys.getAndIncrement();
@@ -89,19 +63,15 @@ public abstract class BaseRevisionIndexTest {
 	
 	@Before
 	public void setup() {
-		// initially the MAIN is only one segment long
-		final Set<Integer> segments = newHashSet();
-		final int initialSegment = nextSegmentId();
-		segments.add(initialSegment);
-		branches.put(MAIN, new RevisionBranch(MAIN, initialSegment, segments));
-		
 		mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex, branchProvider);
+		index = new DefaultRevisionIndex(rawIndex);
 		index.admin().create();
+		// TODO remove this line after fixing merging branch services into RevisionIndex
+		index.branches().init();
 	}
 
 	@After
@@ -119,25 +89,7 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected String createBranch(String parent, String child) {
-		RevisionBranch parentBranch = branches.get(parent);
-		if (parentBranch == null) {
-			throw new IllegalArgumentException("Parent could not be found at path: " + parent);
-		}
-		final String path = String.format("%s/%s", parent, child);
-		// register child with new segment ID
-		final int initialSegment = nextSegmentId();
-		final Set<Integer> segments = newHashSet();
-		// add parent segments
-		segments.add(initialSegment);
-		segments.addAll(parentBranch.segments());
-		branches.put(path, new RevisionBranch(path, initialSegment, segments));
-		// reregister parent branch with updated segment information
-		final int newParentSegment = nextSegmentId();
-		final Set<Integer> newParentSegments = newHashSet();
-		newParentSegments.add(newParentSegment);
-		newParentSegments.addAll(parentBranch.segments());
-		branches.put(parent, new RevisionBranch(parent, newParentSegment, newParentSegments));
-		return path;
+		return index().branches().create(parent, child);
 	}
 	
 	protected final long currentTime() {

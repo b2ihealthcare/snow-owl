@@ -20,13 +20,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Arrays;
 
 import com.b2international.index.admin.Administrable;
-import com.b2international.index.admin.IndexAdmin;
 import com.google.common.base.Strings;
 
 /**
  * @since 4.7
  */
-public interface RevisionIndex extends Administrable<IndexAdmin> {
+public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 
 	/**
 	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch). 
@@ -115,7 +114,14 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	RevisionCompare compare(String baseBranch, String compareBranch, int limit);
-
+	
+	/**
+	 * Returns the revision branching API that can be used to access the branches available in this {@link RevisionIndex}.
+	 * @return
+	 * @since 6.5
+	 */
+	RevisionBranches branches();
+	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.
 	 * @param base
@@ -156,5 +162,6 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	static boolean isRevRangePath(String revisionRangePath) {
 		return revisionRangePath.contains(REV_RANGE);
 	}
+
 
 }

@@ -46,8 +46,7 @@ public final class Mappings {
 		final Multiset<String> duplicates = HashMultiset.create();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
-			DocumentMapping mapping = new DocumentMapping(type);
-			mappingsByType.put(type, mapping);
+			DocumentMapping mapping = putMapping(type);
 			duplicates.add(mapping.typeAsString());
 		}
 		for (Entry<String> duplicate : duplicates.entrySet()) {
@@ -57,6 +56,12 @@ public final class Mappings {
 		}
 	}
 	
+	public DocumentMapping putMapping(Class<?> type) {
+		final DocumentMapping mapping = new DocumentMapping(type);
+		mappingsByType.put(type, mapping);
+		return mapping;
+	}
+
 	public Collection<DocumentMapping> getMappings() {
 		return ImmutableList.copyOf(mappingsByType.values());
 	}

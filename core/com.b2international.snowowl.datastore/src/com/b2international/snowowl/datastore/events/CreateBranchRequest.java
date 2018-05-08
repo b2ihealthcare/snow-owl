@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.MetadataImpl;
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;

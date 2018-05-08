@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.core.Metadata;
+import com.b2international.commons.options.Metadata;
 
 /**
  * @since 5.0
