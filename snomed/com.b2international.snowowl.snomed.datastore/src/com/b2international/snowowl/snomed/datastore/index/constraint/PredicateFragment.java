@@ -91,7 +91,7 @@ public abstract class PredicateFragment {
 					((ConcreteDomainElementPredicate) predicate).getLabel(), 
 					((ConcreteDomainElementPredicate) predicate).getName(), 
 					((ConcreteDomainElementPredicate) predicate).getType(), 
-					((ConcreteDomainElementPredicate) predicate).getCharacteristicTypeId());
+					((ConcreteDomainElementPredicate) predicate).getCharacteristicTypeConceptId());
 			
 		} else if (predicate instanceof DependencyPredicate) {
 			return new DependencyPredicateFragment(predicate.getUuid(), 
