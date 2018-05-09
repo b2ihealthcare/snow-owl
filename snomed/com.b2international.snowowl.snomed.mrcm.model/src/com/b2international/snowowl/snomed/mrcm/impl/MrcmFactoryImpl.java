@@ -1,47 +1,31 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS, 
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
+import com.b2international.snowowl.snomed.mrcm.*;
+
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.impl.EFactoryImpl;
-import org.eclipse.emf.ecore.plugin.EcorePlugin;
 
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
-import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConceptModel;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
-import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
-import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
-import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
-import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
-import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
-import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import org.eclipse.emf.ecore.impl.EFactoryImpl;
+
+import org.eclipse.emf.ecore.plugin.EcorePlugin;
 
 /**
  * <!-- begin-user-doc -->
@@ -123,6 +107,8 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 				return createConstraintStrengthFromString(eDataType, initialValue);
 			case MrcmPackage.CONSTRAINT_FORM:
 				return createConstraintFormFromString(eDataType, initialValue);
+			case MrcmPackage.DATA_TYPE:
+				return createDataTypeFromString(eDataType, initialValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -146,6 +132,8 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 				return convertConstraintStrengthToString(eDataType, instanceValue);
 			case MrcmPackage.CONSTRAINT_FORM:
 				return convertConstraintFormToString(eDataType, instanceValue);
+			case MrcmPackage.DATA_TYPE:
+				return convertDataTypeToString(eDataType, instanceValue);
 			default:
 				throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
 		}
@@ -379,6 +367,24 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	 */
 	public String convertConstraintFormToString(EDataType eDataType, Object instanceValue) {
 		return instanceValue == null ? null : instanceValue.toString();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public DataType createDataTypeFromString(EDataType eDataType, String initialValue) {
+		return (DataType)super.createFromString(eDataType, initialValue);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public String convertDataTypeToString(EDataType eDataType, Object instanceValue) {
+		return super.convertToString(eDataType, instanceValue);
 	}
 
 	/**
