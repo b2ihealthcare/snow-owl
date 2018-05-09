@@ -198,8 +198,8 @@ public final class RevisionBranch implements WithId {
 		this.metadata = metadata;
 		this.cdoBranchId = cdoBranchId;
 		this.segmentId = segmentId;
-		this.segments = segments;
-		this.parentSegments = parentSegments;
+		this.segments = Collections3.toImmutableSet(segments);
+		this.parentSegments = Collections3.toImmutableSet(parentSegments);
 	}
 	
     @Override
@@ -263,7 +263,10 @@ public final class RevisionBranch implements WithId {
     
     @JsonIgnore
     public RevisionBranchSegments getRevisionBranchSegments() {
-    	return new RevisionBranchSegments(path, segmentId, ImmutableSet.<Integer>builder().addAll(segments).addAll(parentSegments).build());
+    	return new RevisionBranchSegments(path, segmentId, ImmutableSet.<Integer>builder()
+    			.addAll(segments)
+    			.addAll(parentSegments)
+    			.build());
     }
     
     @JsonIgnore
