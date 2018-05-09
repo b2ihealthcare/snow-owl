@@ -30,6 +30,7 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -89,31 +91,11 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected final Path getRelativeDirectory() {
-		switch (refSetType) {
-			case SIMPLE: //$FALL-THROUGH$
-			case ASSOCIATION: //$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
-			case QUERY: //$FALL-THROUGH$
-			case ATTRIBUTE_VALUE:
-			case OWL_AXIOM:
-				return Paths.get(releaseType.toString(), "Refset", "Content");
-			case EXTENDED_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
-			case COMPLEX_MAP:
-				return Paths.get(releaseType.toString(), "Refset", "Map");
-			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY:
-			case MRCM_DOMAIN:
-			case MRCM_ATTRIBUTE_DOMAIN:
-			case MRCM_ATTRIBUTE_RANGE:
-			case MRCM_MODULE_SCOPE:
-				return Paths.get(releaseType.toString(), "Refset", "Metadata");
-			case LANGUAGE: 
-				return Paths.get(releaseType.toString(), "Refset", "Language");
-			default: 
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
+		SnomedRF2Folder folder = SnomedRefSetUtil.REFSET_TYPE_TO_FOLDER_MAP.get(refSetType);
+		if (folder != null) {
+			return Paths.get(releaseType.toString(), "Refset", folder.getDisplayName());
 		}
+		throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 	}
 
 	@Override
