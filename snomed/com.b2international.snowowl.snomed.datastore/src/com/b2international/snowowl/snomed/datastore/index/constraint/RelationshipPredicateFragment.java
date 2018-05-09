@@ -29,11 +29,6 @@ public final class RelationshipPredicateFragment extends PredicateFragment {
 	private final ConceptSetDefinitionFragment attribute;
 	private final ConceptSetDefinitionFragment range;
 	private final String characteristicTypeId;
-	
-	// Expressions are computed on first access
-	private String attributeExpression;
-	private String rangeExpression;
-	private String characteristicTypeExpression;
 
 	@JsonCreator
 	RelationshipPredicateFragment(
@@ -66,27 +61,18 @@ public final class RelationshipPredicateFragment extends PredicateFragment {
 
 	@JsonIgnore
 	public String getAttributeExpression() {
-		if (attributeExpression == null) {
-			attributeExpression = attribute.toEcl();
-		}
-		return attributeExpression;
+		return attribute.toEcl();
 	}
 
 	@JsonIgnore
 	public String getRangeExpression() {
-		if (rangeExpression == null) {
-			rangeExpression = range.toEcl();
-		}
-		return rangeExpression;
+		return range.toEcl();
 	}
 
 	@JsonIgnore
 	public String getCharacteristicTypeExpression() {
-		if (characteristicTypeExpression == null) {
-			characteristicTypeExpression = Strings.isNullOrEmpty(characteristicTypeId) 
-					? "<" + Concepts.CHARACTERISTIC_TYPE 
-					: "<<" + characteristicTypeId;
-		}
-		return characteristicTypeExpression;
+		return Strings.isNullOrEmpty(characteristicTypeId) 
+				? "<" + Concepts.CHARACTERISTIC_TYPE 
+				: "<<" + characteristicTypeId;
 	}
 }

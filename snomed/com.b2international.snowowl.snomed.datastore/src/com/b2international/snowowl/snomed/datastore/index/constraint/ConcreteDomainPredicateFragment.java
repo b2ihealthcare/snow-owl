@@ -31,9 +31,6 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 	private final String name; // "canBeTaggedWithVaccine"
 	private final DataType type;
 	private final String characteristicTypeId;
-
-	// Expression is computed on first access
-	private String characteristicTypeExpression;
 	
 	@JsonCreator
 	ConcreteDomainPredicateFragment(
@@ -72,11 +69,8 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 
 	@JsonIgnore
 	public String getCharacteristicTypeExpression() {
-		if (characteristicTypeExpression == null) {
-			characteristicTypeExpression = Strings.isNullOrEmpty(characteristicTypeId) 
+		return Strings.isNullOrEmpty(characteristicTypeId) 
 					? "<" + Concepts.CHARACTERISTIC_TYPE 
 					: "<<" + characteristicTypeId;
-		}
-		return characteristicTypeExpression;
 	}
 }
