@@ -52,6 +52,7 @@ public final class CompositeDefinitionFragment extends ConceptSetDefinitionFragm
 				.map(ConceptSetDefinitionFragment::toEcl)
 				.collect(Collectors.toSet());
 
-		return Joiner.on(" OR ").join(subExpressions);
+		// Wrap each sub-expression into parentheses
+		return "(" + Joiner.on(") OR (").join(subExpressions) + ")";
 	}
 }
