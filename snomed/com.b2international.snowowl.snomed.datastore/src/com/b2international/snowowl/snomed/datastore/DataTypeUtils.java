@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,61 +15,44 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Iterator;
+import java.util.Locale;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 
 /**
  * Collection of utility methods related to data types.
- * 
  */
-abstract public class DataTypeUtils {
-	
-	public static final String BIG_DECIMAL_EDIT_PATTERN = "#,###,###,###,###,###.#########";
-	public static final String INTEGER_EDIT_PATTERN = "###,###,###.";
-	
-	/**
-	 * Returns with the human readable name of the concrete domain type concept attribute predicate identified by the specified unique name. 
-	 * @param dataTypeName the unique camel-case name of the concrete domain type predicate mini.
-	 * @param predicates the predicates applicable for the concept
-	 * @return the human readable name of the concrete domain type predicate.
-	 */
-	public static String getDataTypePredicateLabel(final String dataTypeName, final Iterable<SnomedConstraintDocument> predicates) {
-		
-		checkNotNull(dataTypeName, "Data type name argument cannot be null.");
-		
-		final Iterable<SnomedConstraintDocument> applicablePredicates = Iterables.filter(predicates, new Predicate<SnomedConstraintDocument>() {
-			@Override public boolean apply(final SnomedConstraintDocument predicateMini) {
-				return PredicateType.DATATYPE.equals(predicateMini.getPredicateType()) && dataTypeName.equals(predicateMini.getDataTypeName());
-			}
-		});
-		
-		final Iterator<SnomedConstraintDocument> applicablePredicatesIterator = applicablePredicates.iterator();
-		
-		if (!applicablePredicatesIterator.hasNext()) {
-			return getDefaultDataTypeLabel(dataTypeName);
-		} else {
-			return applicablePredicatesIterator.next().getDataTypeLabel();
-		}
-	}
+public abstract class DataTypeUtils {
 
 	/**
-	 * Returns with the human readable name of the concrete domain type concept attribute predicate identified by the specified unique name. 
-	 * @param dataTypeName the unique camel-case name of the concrete domain type predicate mini.
-	 * @return the human readable name of the concrete domain type predicate.
+	 * Formatted text editing pattern for BigDecimals (25 digits with thousands separators, 9 decimal places)
+	 */
+	public static final String BIG_DECIMAL_EDIT_PATTERN = "#,###,###,###,###,###.#########";
+
+	/**
+	 * Formatted text editing pattern for integers (12 digits with thousands separators)
+	 */
+	public static final String INTEGER_EDIT_PATTERN = "###,###,###.";
+
+	/**
+	 * Returns the human-readable (default) label of a concrete domain attribute, suitable for UI display.
+	 * 
+	 * @param dataTypeName the attribute name, in camel-case form (eg. "isaVitamin")
+	 * @return the computed human-readable attribute label (eg. "Vitamin")
 	 */
 	public static String getDefaultDataTypeLabel(final String dataTypeName) {
-		
-		return StringUtils.isEmpty(dataTypeName) 
-				? StringUtils.EMPTY_STRING
-				: StringUtils.capitalizeFirstLetter(StringUtils.splitCamelCase(dataTypeName.replaceFirst("canBeTaggedWith|isa|is|does|has", "")).toLowerCase());
+		if (StringUtils.isEmpty(dataTypeName)) {
+			return StringUtils.EMPTY_STRING;
+		}
+
+		final String suffixesRemoved = dataTypeName.replaceFirst("canBeTaggedWith|isa|is|does|has", "");
+		final String camelCaseSplit = StringUtils.splitCamelCase(suffixesRemoved);
+		final String lowerCased = camelCaseSplit.toLowerCase(Locale.ENGLISH);
+
+		return StringUtils.capitalizeFirstLetter(lowerCased);
 	}
-	
-	private DataTypeUtils() {} 
+
+	private DataTypeUtils() {
+		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
+	}
 }
