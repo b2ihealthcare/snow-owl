@@ -134,7 +134,6 @@ public class SnomedRfFileNameBuilder {
 			case SIMPLE_MAP: return "s";
 			case SIMPLE_MAP_WITH_DESCRIPTION: return "ss";
 			case MODULE_DEPENDENCY: return "ss";
-			case OWL_AXIOM: return "s";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + type);
 	}
