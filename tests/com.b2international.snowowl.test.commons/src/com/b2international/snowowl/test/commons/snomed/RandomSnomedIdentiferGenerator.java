@@ -44,7 +44,7 @@ public abstract class RandomSnomedIdentiferGenerator {
 		final String selectedNamespace = "";
 		final StringBuilder builder = new StringBuilder();
 		// generate the SCT Item ID
-		builder.append(new RandomItemIdGenerationStrategy().generateItemId(selectedNamespace, category, 1));
+		builder.append(new RandomItemIdGenerationStrategy().generateItemIds(selectedNamespace, category, 1, 1).stream().findFirst().get());
 
 		// append namespace and the first part of the partition-identifier
 		if (Strings.isNullOrEmpty(selectedNamespace)) {

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
 /**
@@ -137,4 +138,9 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	void clearContents();
 
+	@Override
+	default Builder<? extends TransactionContext> inject() {
+		return new DelegatingContext.Builder<TransactionContext>(this, TransactionContext.class);
+	}
+	
 }

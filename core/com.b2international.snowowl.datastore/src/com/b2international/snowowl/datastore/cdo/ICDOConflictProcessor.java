@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.cdo;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -63,15 +64,17 @@ public interface ICDOConflictProcessor {
 	/**
 	 * Checks if the specified {@link CDOFeatureDelta} from the target change set conflicts with the corresponding 
 	 * {@code CDOFeatureDelta} on the source.
-	 * 
+	 * @param targetDelta the revision delta on the target
 	 * @param targetFeatureDelta the single-value change on the target
+	 * @param sourceDelta the revision delta on the source
 	 * @param sourceFeatureDelta the single-value change on the source
 	 * @return <ul>
 	 * <li>{@code null} if a conflict should be reported;
 	 * <li>a {@link CDOFeatureDelta} containing the "winning" change otherwise.
 	 * </ul>
 	 */
-	CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta);
+	CDOFeatureDelta changedInSourceAndTargetSingleValued(CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta,
+			CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta);
 
 	/**
 	 * Checks if the object with the removed {@link CDOID} from the target change set conflicts with an item in the
@@ -105,7 +108,7 @@ public interface ICDOConflictProcessor {
 	
 	Object detachedInTarget(CDOID id);
 	
-	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase);
+	void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase);
 
 	/**
 	 * Post-processes the resulting change set. This usually removes cross-references from objects queued for removal
@@ -126,4 +129,9 @@ public interface ICDOConflictProcessor {
 	 * @return
 	 */
 	Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts);
+	
+	/**
+	 * Returns a set of conflict rules to validate against
+	 */
+	Collection<IMergeConflictRule> getConflictRules();
 }

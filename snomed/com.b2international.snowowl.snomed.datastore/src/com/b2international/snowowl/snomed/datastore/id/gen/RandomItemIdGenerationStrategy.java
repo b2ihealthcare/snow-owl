@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.gen;
 
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
+
 import java.util.Random;
+import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
@@ -28,9 +31,16 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 public class RandomItemIdGenerationStrategy implements ItemIdGenerationStrategy {
 
 	@Override
-	public String generateItemId(String namespace, ComponentCategory category, int attempt) {
+	public Set<String> generateItemIds(String namespace, ComponentCategory category, int quantity, int attempt) {
 		// nextInt excludes top value, add 1 to make it inclusive
-		return Integer.toString(new Random().nextInt(9999_9999 - 100 + 1) + 100);
+		final Set<String> generatedItemIds = newHashSetWithExpectedSize(quantity);
+		while (quantity > 0) {
+			final String itemId = Integer.toString(new Random().nextInt(9999_9999 - 100 + 1) + 100);
+			if (generatedItemIds.add(itemId)) {
+				quantity--;
+			}
+		}
+		return generatedItemIds;
 	}
 
 }

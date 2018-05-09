@@ -500,10 +500,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return member;
 	}
 
-	/* 
-	 * Reference set member builder methods end here
-	 */
-	 
 	@Override
 	public void close() {
 		// Disposes of the transaction used here, no need to call super.dispose()

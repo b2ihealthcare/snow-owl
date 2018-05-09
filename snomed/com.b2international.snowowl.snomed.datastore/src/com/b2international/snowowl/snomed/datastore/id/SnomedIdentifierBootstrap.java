@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.gen.SequentialItemIdGenerationStrategy;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.UniqueInStoreReservation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,8 +53,8 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	public void init(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		checkIdGenerationSource(configuration);
 
-		final ISnomedIdentiferReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
-		env.services().registerService(ISnomedIdentiferReservationService.class, reservationService);
+		final ISnomedIdentifierReservationService reservationService = new SnomedIdentifierReservationServiceImpl();
+		env.services().registerService(ISnomedIdentifierReservationService.class, reservationService);
 
 		registerTerminologyBrowser(env, reservationService);
 	}
@@ -62,13 +62,13 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-			final ISnomedIdentiferReservationService reservationService = env.service(ISnomedIdentiferReservationService.class);
+			final ISnomedIdentifierReservationService reservationService = env.service(ISnomedIdentifierReservationService.class);
 			final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedCoreConfiguration.class).getIds();
 			registerSnomedIdentifierService(conf, env, reservationService);
 		}
 	}
 
-	private void registerTerminologyBrowser(final Environment env, final ISnomedIdentiferReservationService reservationService) {
+	private void registerTerminologyBrowser(final Environment env, final ISnomedIdentifierReservationService reservationService) {
 		final UniqueInStoreReservation storeReservation = new UniqueInStoreReservation(env.provider(IEventBus.class));
 		reservationService.create(STORE_RESERVATIONS, storeReservation);
 	}
@@ -82,14 +82,14 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 		}
 	}
 
-	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env, final ISnomedIdentiferReservationService reservationService) {
+	private void registerSnomedIdentifierService(final SnomedIdentifierConfiguration conf, final Environment env, final ISnomedIdentifierReservationService reservationService) {
 		ISnomedIdentifierService identifierService = null;
 
 		switch (conf.getStrategy()) {
 		case EMBEDDED:
 			final Index index = Indexes.createIndex(SNOMED_IDS_INDEX, env.service(ObjectMapper.class), new Mappings(SctId.class), env.service(IndexSettings.class));
 			index.admin().create();
-			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(index, reservationService); 
+			final ItemIdGenerationStrategy generationStrategy = new SequentialItemIdGenerationStrategy(reservationService); 
 			identifierService = new DefaultSnomedIdentifierService(index, generationStrategy, reservationService, conf);
 			break;
 		case CIS:

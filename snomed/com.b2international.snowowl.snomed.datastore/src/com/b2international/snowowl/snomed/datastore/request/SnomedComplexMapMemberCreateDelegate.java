@@ -73,11 +73,9 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
-			.add(getModuleId())
-			.add(getReferencedComponentId())
 			.add(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));
 		
 		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {

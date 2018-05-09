@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.id.gen;
+
+import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
@@ -30,11 +32,12 @@ public interface ItemIdGenerationStrategy {
 	 * 
 	 * @param namespace the namespace identifier
 	 * @param category the terminology independent category of the component
-	 * @param attempt the number of the current attempt to generate an identifier, starting with 1
+	 * @param quantity the number of requested item IDs
+	 * @param attempt the current attempt to generate quantity amount of item IDs
 	 *   
-	 * @return the generated item identifier
+	 * @return the generated item identifiers, never <code>null</code>
 	 */
-	String generateItemId(String namespace, ComponentCategory category, int attempt);
+	Set<String> generateItemIds(String namespace, ComponentCategory category, int quantity, int attempt);
 
 	/**
 	 * {@link ItemIdGenerationStrategy} implementation which generates a random Item identifier, independent of the given namespace and category.

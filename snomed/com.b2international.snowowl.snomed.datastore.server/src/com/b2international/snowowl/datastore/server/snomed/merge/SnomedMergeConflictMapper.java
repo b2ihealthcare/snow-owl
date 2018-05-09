@@ -97,10 +97,13 @@ public class SnomedMergeConflictMapper {
 	}
 
 	public static MergeConflict from(final AddedInSourceAndTargetConflict conflict, final CDOView targetView) {
+		String type = getType(targetView, conflict.getTargetId());
+		CDOID idToUse = Strings.isNullOrEmpty(type) ? conflict.getSourceId() : conflict.getTargetId();
 		return MergeConflictImpl.builder()
-				.componentId(getComponentId(targetView, conflict.getTargetId()))
-				.componentType(getType(targetView, conflict.getTargetId()))
+				.componentId(getComponentId(targetView, idToUse))
+				.componentType(getType(targetView, idToUse))
 				.conflictingAttribute(ConflictingAttributeImpl.builder().property("id").build())
+				.message(conflict.getMessage())
 				.type(ConflictType.CONFLICTING_CHANGE)
 				.build();
 	}

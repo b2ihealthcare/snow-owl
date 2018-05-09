@@ -55,6 +55,14 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		this.commitComment = commitComment;
 		return getSelf();
 	}
+	
+	/**
+	 * Subclasses may override to provide additional request where the wrapper request requires {@link TransactionContext} for its functionality.
+	 * @return
+	 */
+	protected Request<TransactionContext, ?> getBody() {
+		return body;
+	}
 
 	/**
 	 * Set additional preparation time for this commit. The caller is responsible for measuring the time properly before setting it in this builder
@@ -75,7 +83,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new TransactionalRequest(userId, commitComment, body, preparationTime, parentContextDescription);
+		return new TransactionalRequest(userId, commitComment, getBody(), preparationTime, parentContextDescription);
 	}
 	
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {

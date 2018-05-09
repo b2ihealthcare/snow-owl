@@ -220,7 +220,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
-		public static final String DESCRIPTIONS = "descriptions";
+		public static final String DESCRIPTIONS = "preferredDescriptions";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -244,6 +244,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
+				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
 				.structural(input.isStructural())
 				.doi(input.getDoi());
@@ -266,6 +267,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
+		
+		if (input.getReferenceSet() != null) {
+			builder.refSet(input.getReferenceSet());
+		}
 		
 //		if (input.getScore() != null) {
 //			builder.score(input.getScore());

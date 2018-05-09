@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.identity.file;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,6 +55,7 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	
 	private final Map<String, FileUser> users;
 	private final Path usersFile;
+	private final Map<String, String> verifiedTokens;
 	
 	public FileIdentityProvider(Path usersFile) throws IOException {
 		final File file = usersFile.toFile();
@@ -60,12 +64,21 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 		}
 		this.usersFile = usersFile;
 		this.users = readUsers(this.usersFile);
+		this.verifiedTokens = newHashMap();
 	}
 
 	@Override
 	public boolean auth(String username, String token) {
-		final FileUser user = getFileUser(username);
-		return user != null && BCrypt.checkpw(token, user.getHashedPassword());
+		if (verifiedTokens.containsKey(username)) {
+			return Objects.equals(token, verifiedTokens.get(username));
+		} else {
+			final FileUser user = getFileUser(username);
+			boolean success = user != null && BCrypt.checkpw(token, user.getHashedPassword());
+			if (success) {
+				verifiedTokens.put(username, token);
+			}
+			return success;
+		}
 	}
 
 	@Override

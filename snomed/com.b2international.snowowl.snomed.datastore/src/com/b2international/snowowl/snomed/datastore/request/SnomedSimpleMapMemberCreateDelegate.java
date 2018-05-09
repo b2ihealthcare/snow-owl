@@ -62,11 +62,9 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 
-		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
-			.add(getModuleId())
-			.add(getReferencedComponentId());
+		Builder<String> requiredComponentIds = ImmutableSet.<String>builder();
 		
 		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
 			requiredComponentIds.add(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET));
@@ -74,4 +72,5 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 		
 		return requiredComponentIds.build();
 	}
+	
 }

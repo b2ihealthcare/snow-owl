@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.cdo;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -35,18 +34,21 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.ChangedInTargetAndDetachedInSourceConflict;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -57,11 +59,12 @@ import com.google.common.collect.Iterables;
  */
 public abstract class AbstractCDOConflictProcessor implements ICDOConflictProcessor {
 
+	protected static final Logger LOGGER = LoggerFactory.getLogger(ICDOConflictProcessor.class);
+	
 	private static final Map<EClass, EAttribute> EMPTY_MAP = ImmutableMap.of();
 
 	private final String repositoryUuid;
 	private final Map<EClass, EAttribute> releasedAttributeMap;
-	private final Set<CDOID> idsToUnlink = newHashSet();
 	
 	private final IMergeConflictRuleProvider conflictRuleProvider;
 
@@ -114,12 +117,12 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 		return id;
 	}
 
-	protected Set<CDOID> getDetachedIdsInTarget(final Map<CDOID, Object> targetMap) {
-		return ImmutableSet.copyOf(Iterables.filter(targetMap.values(), CDOID.class));
+	protected Set<CDOID> getDetachedIds(final Map<CDOID, Object> revisionMap) {
+		return ImmutableSet.copyOf(Iterables.filter(revisionMap.values(), CDOID.class));
 	}
 
-	protected Iterable<InternalCDORevision> getNewRevisionsInTarget(final Map<CDOID, Object> targetMap) {
-		return Iterables.filter(targetMap.values(), InternalCDORevision.class);
+	protected Set<InternalCDORevision> getNewRevisions(final Map<CDOID, Object> revisionMap) {
+		return ImmutableSet.copyOf(Iterables.filter(revisionMap.values(), InternalCDORevision.class));
 	}
 
 	@Override
@@ -135,20 +138,16 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	}
 	
 	@Override
-	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, boolean isRebase) {
+	public void preProcess(Map<CDOID, Object> sourceMap, Map<CDOID, Object> targetMap, CDOBranch sourceBranch, CDOBranch targetBranch, boolean isRebase) {
 	}
 	
 	@Override
 	public void postProcess(final CDOTransaction transaction) throws ConflictException {
 		
-		for (final CDOID idToUnlink : idsToUnlink) {
-			final CDOObject objectIfExists = CDOUtils.getObjectIfExists(transaction, idToUnlink);
-			if (objectIfExists != null) {
-				unlinkObject(objectIfExists);
-			}
-		}
+		LOGGER.info("Post-processing merge/rebase operation...");
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		
-		List<MergeConflict> conflicts = FluentIterable.from(conflictRuleProvider.getRules())
+		List<MergeConflict> conflicts = FluentIterable.from(getConflictRules())
 				.transformAndConcat(new Function<IMergeConflictRule, Collection<MergeConflict>>() {
 					@Override
 					public Collection<MergeConflict> apply(IMergeConflictRule input) {
@@ -156,13 +155,16 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 					}
 				}).toList();
 
+		LOGGER.info("Post-processing took {}", TimeUtil.toString(stopwatch));
+		
 		if (!conflicts.isEmpty()) {
 			throw new MergeConflictException(conflicts, "Domain specific conflicts detected while post-processing merge changes.");
 		}
 	}
 
-	protected void unlinkObject(final CDOObject object) {
-		EcoreUtil.remove(object);
+	@Override
+	public Collection<IMergeConflictRule> getConflictRules() {
+		return conflictRuleProvider.getRules();
 	}
 
 	/**
@@ -171,8 +173,9 @@ public abstract class AbstractCDOConflictProcessor implements ICDOConflictProces
 	 * The default case implements the same behavior as {@link DefaultCDOMerger.PerFeature}.
 	 */
 	@Override
-	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDOFeatureDelta targetFeatureDelta, CDOFeatureDelta sourceFeatureDelta) {
-		
+	public CDOFeatureDelta changedInSourceAndTargetSingleValued(CDORevisionDelta targetDelta, CDOFeatureDelta targetFeatureDelta,
+			CDORevisionDelta sourceDelta, CDOFeatureDelta sourceFeatureDelta) {
+
 		if (targetFeatureDelta.isStructurallyEqual(sourceFeatureDelta)) {
 			return targetFeatureDelta;
 		}
