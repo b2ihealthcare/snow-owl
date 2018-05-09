@@ -65,9 +65,8 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getModuleId(),
-				getReferencedComponentId(),
+	protected Set<String> getRequiredComponentIds() {
+		return ImmutableSet.of(
 				getComponentId(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID),
 				getComponentId(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 	}
