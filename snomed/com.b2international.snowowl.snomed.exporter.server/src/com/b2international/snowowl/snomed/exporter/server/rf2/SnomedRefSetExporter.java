@@ -96,11 +96,7 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 			case COMPLEX_MAP: 
 				return RF2_MAP_REFERENCE_SET_RELATIVE_DIR;
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY:
-			case MRCM_DOMAIN:
-			case MRCM_ATTRIBUTE_DOMAIN:
-			case MRCM_ATTRIBUTE_RANGE:
-			case MRCM_MODULE_SCOPE:
+			case MODULE_DEPENDENCY: 
 				return RF2_METADATA_REFERENCE_SET_RELATIVE_DIR;
 			case LANGUAGE: 
 				return RF2_LANGUAGE_REFERENCE_SET_RELATIVE_DIR;
