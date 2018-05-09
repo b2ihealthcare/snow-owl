@@ -47,7 +47,9 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
         defaultValueLiteral=""/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="ecore:EEnum ../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.ecore#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="characteristicTypeConceptId"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DependencyPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -291,4 +293,5 @@
       </eAnnotations>
     </eLiterals>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="DataType" instanceClassName="com.b2international.snowowl.snomed.snomedrefset.DataType"/>
 </ecore:EPackage>
