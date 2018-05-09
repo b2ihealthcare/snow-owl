@@ -73,7 +73,7 @@ public class SnomedRefSetRestInput {
 		SnomedConceptCreateRequestBuilder conceptRequest = conceptRestInput.toRequestBuilder();
 		
 		if (conceptRestInput.getRelationships().isEmpty()) {
-			conceptRequest.addParent(SnomedRefSetUtil.getConceptId(getType()));
+			conceptRequest.addParent(SnomedRefSetUtil.getParentConceptId(getType()));
 		}
 		conceptRequest.setRefSet(refsetCreateRequest);
 		

@@ -222,7 +222,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	private void checkParent(TransactionContext context) {
 		final SnomedRefSetType refSetType = refSetRequest.getRefSetType();
-		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(refSetType);
+		final String refSetTypeRootParent = SnomedRefSetUtil.getParentConceptId(refSetType);
 		final Set<String> parents = getParents();
 		if (!isValidParentage(context, refSetTypeRootParent, parents)) {
 			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept.", refSetType, refSetTypeRootParent);

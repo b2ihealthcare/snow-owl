@@ -154,7 +154,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createMRCMDomainMemberWithMandatoryAndOptionalFields() {
 		
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_DOMAIN));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
 		createNewRefSet(branchPath, SnomedRefSetType.MRCM_DOMAIN, newIdentifierConceptId);
 
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
@@ -185,7 +185,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createMRCMDomainMemberWithOnlyMandatoryFields() {
 		
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_DOMAIN));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
 		createNewRefSet(branchPath, SnomedRefSetType.MRCM_DOMAIN, newIdentifierConceptId);
 
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
@@ -213,7 +213,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createMRCMAttributeDomainMember() {
 		
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
 		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, newIdentifierConceptId);
 
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
@@ -278,7 +278,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createMRMCAttributeRangeMember() {
 		
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
 		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, newIdentifierConceptId);
 
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
@@ -323,7 +323,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createMRCMModuleScopeMember() {
 		
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
 		createNewRefSet(branchPath, SnomedRefSetType.MRCM_MODULE_SCOPE, newIdentifierConceptId);
 
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)

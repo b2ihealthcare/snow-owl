@@ -95,7 +95,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void acceptValidRequest() {
-		final String parentConceptId = SnomedRefSetUtil.getConceptId(refSetType);
+		final String parentConceptId = SnomedRefSetUtil.getParentConceptId(refSetType);
 		for (String referencedComponentType : RefSetSupport.getSupportedReferencedComponentTypes(refSetType)) {
 
 			IBranchPath subPath = BranchPathUtils.createPath(branchPath, Iterables.getLast(SPLITTER.split(referencedComponentType)));
@@ -113,7 +113,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createWithExistingIdentifierConcept() {
-		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getConceptId(refSetType));
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(refSetType));
 		assertEquals(newIdentifierConceptId, createNewRefSet(branchPath, refSetType, newIdentifierConceptId));
 	}
 	

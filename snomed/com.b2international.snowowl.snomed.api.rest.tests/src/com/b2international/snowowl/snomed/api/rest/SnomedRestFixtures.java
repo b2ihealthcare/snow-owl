@@ -255,7 +255,7 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type) {
-		String parentConceptId = SnomedRefSetUtil.getConceptId(type);
+		String parentConceptId = SnomedRefSetUtil.getParentConceptId(type);
 		String referencedComponentType = getFirstAllowedReferencedComponentType(type);
 		Map<?, ?> refSetRequestBody = createConceptRequestBody(parentConceptId)
 				.put("type", type)

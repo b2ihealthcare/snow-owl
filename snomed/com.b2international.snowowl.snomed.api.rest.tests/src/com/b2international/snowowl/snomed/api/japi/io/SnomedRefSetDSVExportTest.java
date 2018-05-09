@@ -217,8 +217,8 @@ public class SnomedRefSetDSVExportTest {
 		SnomedDescriptionCreateRequestBuilder fsn = toDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "term-test");
 		SnomedDescriptionCreateRequestBuilder pt = toDescriptionRequest(Concepts.SYNONYM, "test");
 
-		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
-		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
+		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
+		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
 
 		SnomedRefSetCreateRequestBuilder refSet = toRefSetRequest(type);
 		

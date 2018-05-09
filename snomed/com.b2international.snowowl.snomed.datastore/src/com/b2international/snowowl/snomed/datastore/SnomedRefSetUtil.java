@@ -316,7 +316,7 @@ public abstract class SnomedRefSetUtil {
 	 * @param type
 	 * @return
 	 */
-	public static String getConceptId(SnomedRefSetType type) {
+	public static String getParentConceptId(SnomedRefSetType type) {
 		switch (type) {
 			case ATTRIBUTE_VALUE:
 				return Concepts.REFSET_ATTRIBUTE_VALUE_TYPE;
