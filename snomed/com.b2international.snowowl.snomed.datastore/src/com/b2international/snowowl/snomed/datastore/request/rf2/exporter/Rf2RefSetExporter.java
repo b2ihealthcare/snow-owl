@@ -93,7 +93,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	protected final Path getRelativeDirectory() {
 		SnomedRF2Folder folder = SnomedRefSetUtil.REFSET_TYPE_TO_FOLDER_MAP.get(refSetType);
 		if (folder != null) {
-			return Paths.get(releaseType.toString(), "Refset", folder.getDisplayName());
+			return Paths.get(releaseType.toString(), SnomedRF2Folder.REFSET.getDisplayName(), folder.getDisplayName());
 		}
 		throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 	}
