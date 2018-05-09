@@ -80,7 +80,7 @@ public class SnomedMRCMAttributeRangeRefSetImporter extends AbstractSnomedRefSet
 
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
-		return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
+		return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_ROOT;
 	}
 
 	@Override

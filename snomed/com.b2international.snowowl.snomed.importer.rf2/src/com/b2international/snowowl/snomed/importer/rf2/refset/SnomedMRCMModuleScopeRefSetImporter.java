@@ -77,7 +77,7 @@ public class SnomedMRCMModuleScopeRefSetImporter extends AbstractSnomedRefSetImp
 
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
-		return Concepts.REFSET_MRCM_MODULE_SCOPE;
+		return Concepts.REFSET_MRCM_ROOT;
 	}
 
 	@Override

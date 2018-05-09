@@ -342,15 +342,15 @@ public abstract class SnomedRefSetUtil {
 			case EXTENDED_MAP:
 				return Concepts.EXTENDED_MAP_TYPE;
 			case OWL_AXIOM:
-				return Concepts.REFSET_OWL_AXIOM;
+				return Concepts.REFSET_ANNOTATION_TYPE;
 			case MRCM_DOMAIN:
-				return Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+				return Concepts.REFSET_MRCM_DOMAIN_ROOT;
 			case MRCM_ATTRIBUTE_DOMAIN:
-				return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+				return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_ROOT;
 			case MRCM_ATTRIBUTE_RANGE:
-				return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
+				return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_ROOT;
 			case MRCM_MODULE_SCOPE:
-				return Concepts.REFSET_MRCM_MODULE_SCOPE;
+				return Concepts.REFSET_MRCM_ROOT;
 			default:
 				throw new IllegalArgumentException("Unexpected reference set type: " + type);
 		}

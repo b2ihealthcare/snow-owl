@@ -73,7 +73,7 @@ public class SnomedOWLAxiomRefSetImporter extends AbstractSnomedRefSetImporter<O
 
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
-		return Concepts.REFSET_OWL_AXIOM;
+		return Concepts.REFSET_ANNOTATION_TYPE;
 	}
 
 	@Override

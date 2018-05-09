@@ -82,7 +82,7 @@ public class SnomedMRCMAttributeDomainRefSetImporter extends AbstractSnomedRefSe
 
 	@Override
 	protected String getIdentifierParentConceptId(final String refSetId) {
-		return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+		return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_ROOT;
 	}
 
 	@Override
