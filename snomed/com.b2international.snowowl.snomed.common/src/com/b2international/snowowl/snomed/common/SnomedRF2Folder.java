@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.common;
 
 /**
- * @since 6.5.0
+ * @since 6.5
  */
 public enum SnomedRF2Folder {
 

@@ -99,12 +99,12 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY:
-			case OWL_AXIOM:
-			case MRCM_DOMAIN:
-			case MRCM_ATTRIBUTE_DOMAIN:
-			case MRCM_ATTRIBUTE_RANGE:
-			case MRCM_MODULE_SCOPE:
+			case MODULE_DEPENDENCY: //$FALL-THROUGH$
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case MRCM_DOMAIN: //$FALL-THROUGH$
+			case MRCM_ATTRIBUTE_DOMAIN: //$FALL-THROUGH$
+			case MRCM_ATTRIBUTE_RANGE: //$FALL-THROUGH$
+			case MRCM_MODULE_SCOPE: //$FALL-THROUGH$
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:
@@ -116,7 +116,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				refSet = createMappingRefSet(context);
 				break;
-			case ASSOCIATION:
+			case ASSOCIATION: //$FALL-THROUGH$
 			case LANGUAGE:
 				refSet = createStructuralRefSet(context);
 				break;

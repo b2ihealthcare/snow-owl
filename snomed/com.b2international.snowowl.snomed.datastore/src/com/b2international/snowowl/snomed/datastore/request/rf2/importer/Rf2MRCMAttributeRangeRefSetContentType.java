@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * @since 6.5.0
+ * @since 6.5
  */
 public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentType {
 
