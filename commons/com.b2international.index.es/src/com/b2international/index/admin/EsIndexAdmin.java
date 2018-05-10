@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
+import com.b2international.index.IP;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
@@ -280,6 +281,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			return "long";
 		} else if (Boolean.class.isAssignableFrom(Primitives.wrap(fieldType))) {
 			return "boolean";
+		} else if (fieldType.isAnnotationPresent(IP.class)) {
+			return "ip";
 		}
 		return null;
 	}
