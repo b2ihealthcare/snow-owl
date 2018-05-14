@@ -191,7 +191,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		} else if (revision instanceof SnomedRelationshipIndexEntry) {
 			return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 		} else if (revision instanceof SnomedConstraintDocument) {
-			return SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
+			return SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER;
 		} else if (revision instanceof SnomedRefSetMemberIndexEntry) {
 			return SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 		}
