@@ -48,6 +48,7 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
+import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -85,6 +86,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.ConceptModel;
+import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
@@ -244,6 +248,22 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		}
 		return ((Concepts) getObjectIfExists(transaction, cdoid)).getConcepts(); 
 	} 
+	
+	@Override
+	public void add(EObject object) {
+		if (object instanceof AttributeConstraint) {
+			getConstraints().add((AttributeConstraint) object);
+		} else {
+			super.add(object);
+		}
+	}
+
+	public List<ConstraintBase> getConstraints() {
+		// XXX: The concept model root object should always exist at this point, thanks to the repository initializer
+		final CDOResource mrcmResource = transaction.getOrCreateResource(SnomedDatastoreActivator.MRCM_ROOT_RESOURCE_NAME);
+		final ConceptModel conceptModel = (ConceptModel) mrcmResource.getContents().get(0);
+		return conceptModel.getConstraints();
+	}
 	
 	public SnomedRefSetEditingContext getRefSetEditingContext() {
 		return refSetEditingContext;
@@ -546,6 +566,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			tryDelete((SnomedRefSet) object, force);
 		} else if (object instanceof SnomedRefSetMember) {
 			tryDelete((SnomedRefSetMember) object, force);
+		} else if (object instanceof AttributeConstraint) {
+			tryDelete((AttributeConstraint) object, force);
 		} else {
 			super.delete(object, force);
 		}
@@ -647,6 +669,10 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		deletionPlan.markForDeletion(member);
 	}
 
+	private void tryDelete(AttributeConstraint object, boolean force) {
+		deletionPlan.markForDeletion(object);
+	}
+
 	public final List<Relationship> getInboundRelationships(String conceptId) {
 		return FluentIterable.from(getInboundRelationshipsFromIndex(conceptId)).transform(new Function<SnomedRelationship, Relationship>() {
 			@Override
@@ -702,6 +728,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return (ILookupService<T, CDOView>) new SnomedRefSetLookupService();
 		} else if (SnomedRefSetMember.class.isAssignableFrom(type)) {
 			return (ILookupService<T, CDOView>) new SnomedRefSetMemberLookupService();
+		} else if (AttributeConstraint.class.isAssignableFrom(type)) {
+			return (ILookupService<T, CDOView>) new SnomedConstraintLookupService();
 		} else {
 			return super.getComponentLookupService(type);
 		}
@@ -865,10 +893,14 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			int index = -1;
 			
 			if (item instanceof Concept) {
+				// from unordered concept wrapper
 				index = getIndexFromDatabase(item, (Concepts) item.eContainer(), "SNOMED_CONCEPTS_CONCEPTS_LIST");
 			} else if (item instanceof SnomedRefSet) {
 				// from cdoRootResource
 				index = getIndexFromDatabase(item, item.cdoResource(), "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
+			} else if (item instanceof AttributeConstraint) {
+				// from mrcm concept model
+				index = getIndexFromDatabase(item, (ConceptModel) item.eContainer(), "CONCEPT_MODEL_CONSTRAINTS_LIST");
 			} else if (item instanceof SnomedRefSetMember) {
 				// from the refset list
 				final SnomedRefSetMember member = (SnomedRefSetMember) item;
@@ -909,8 +941,11 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				final Concepts concepts = (Concepts) eObject.eContainer();
 				concepts.getConcepts().remove(index);
 			} 
-			else if (eObject instanceof SnomedRefSet){
+			else if (eObject instanceof SnomedRefSet) {
 				refSetEditingContext.getContents().remove(index);
+			}
+			else if (eObject instanceof AttributeConstraint) {
+				getConstraints().remove(index);
 			}
 			else if (eObject instanceof SnomedRefSetMember) {
 				// get the refset and remove the member from its list

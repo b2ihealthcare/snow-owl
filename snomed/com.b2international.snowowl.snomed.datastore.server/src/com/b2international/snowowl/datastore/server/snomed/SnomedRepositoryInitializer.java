@@ -39,6 +39,7 @@ import org.eclipse.emf.cdo.util.CommitException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.server.RepositoryInitializer;
 import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemCreateRequestBuilder;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.ImmutableSet;
@@ -53,12 +54,19 @@ public final class SnomedRepositoryInitializer extends RepositoryInitializer {
 	@Override
 	protected void checkContent(String userId, String repositoryUuid, CDOTransaction transaction) throws CommitException {
 		transaction.rollback();
-
+		
+		// Add unordered SNOMED CT Concept list wrapper objects
 		for (final String path : UNORDERED_ENVELOPE_RESOURCES) {
 			CDOResource resource = transaction.getOrCreateResource(path);
 			if (resource.getContents().size() < 1) {
 				resource.getContents().add(SnomedFactory.eINSTANCE.createConcepts());
 			}
+		}
+		
+		// Add MRCM concept model wrapper object
+		CDOResource mrcmResource = transaction.getOrCreateResource(MRCM_ROOT_RESOURCE_NAME);
+		if (mrcmResource.getContents().size() < 1) {
+			mrcmResource.getContents().add(MrcmFactory.eINSTANCE.createConceptModel());
 		}
 
 		if (transaction.isDirty()) {

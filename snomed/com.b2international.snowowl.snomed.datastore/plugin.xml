@@ -156,6 +156,10 @@
    <extension
          point="com.b2international.snowowl.core.lookupService">
       <lookupService
+            class="com.b2international.snowowl.snomed.datastore.SnomedConstraintLookupService"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
+      </lookupService>
+      <lookupService
             class="com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
       </lookupService>
