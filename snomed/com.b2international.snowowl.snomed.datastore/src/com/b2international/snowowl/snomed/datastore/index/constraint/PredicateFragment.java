@@ -42,9 +42,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 	@Type(value = DescriptionPredicateFragment.class, name = "description"), 
 	@Type(value = RelationshipPredicateFragment.class, name = "relationship"), 
 })
-public abstract class PredicateFragment {
-
-	private final ConceptModelComponentData componentData;
+public abstract class PredicateFragment extends ConceptModelComponentFragment {
 
 	protected PredicateFragment(
 			final String uuid, 
@@ -52,23 +50,7 @@ public abstract class PredicateFragment {
 			final long effectiveTime, 
 			final String author) {
 
-		this.componentData = new ConceptModelComponentData(uuid, active, effectiveTime, author);
-	}
-
-	public String getUuid() {
-		return componentData.getUuid();
-	}
-
-	public boolean isActive() {
-		return componentData.isActive();
-	}
-
-	public long getEffectiveTime() {
-		return componentData.getEffectiveTime();
-	}
-
-	public String getAuthor() {
-		return componentData.getAuthor();
+		super(uuid, active, effectiveTime, author);
 	}
 
 	public static PredicateFragment from(final ConceptModelPredicate predicate) {

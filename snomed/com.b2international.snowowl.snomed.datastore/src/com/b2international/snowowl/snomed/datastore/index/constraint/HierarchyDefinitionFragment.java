@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
+
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,7 +30,7 @@ public final class HierarchyDefinitionFragment extends ConceptSetDefinitionFragm
 	private final HierarchyInclusionType inclusionType;
 
 	@JsonCreator
-	HierarchyDefinitionFragment(
+	public HierarchyDefinitionFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -48,5 +50,22 @@ public final class HierarchyDefinitionFragment extends ConceptSetDefinitionFragm
 
 	public HierarchyInclusionType getInclusionType() {
 		return inclusionType;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(conceptId, inclusionType);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		final HierarchyDefinitionFragment other = (HierarchyDefinitionFragment) obj;
+		
+		return Objects.equals(conceptId, other.conceptId)
+				&& Objects.equals(inclusionType, other.inclusionType);
 	}
 }

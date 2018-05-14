@@ -363,7 +363,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		}
 	}
 
-	private final ConceptModelComponentData componentData;
+	private final boolean active;
+	private final long effectiveTime;
+	@Keyword(index=false)
+	private final String author;
 	private final ConstraintStrength strength;
 	@Keyword(index=false) 
 	private final String validationMessage;
@@ -399,7 +402,9 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 		super(uuid, Strings.nullToEmpty(description), null);
 
-		this.componentData = new ConceptModelComponentData(uuid, active, effectiveTime, author);
+		this.active = active;
+		this.effectiveTime = effectiveTime;
+		this.author = author;
 		this.strength = strength;
 		this.validationMessage = validationMessage;
 		this.description = description;
@@ -414,15 +419,15 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	}
 
 	public boolean isActive() {
-		return componentData.isActive();
+		return active;
 	}
 
 	public long getEffectiveTime() {
-		return componentData.getEffectiveTime();
+		return effectiveTime;
 	}
 
 	public String getAuthor() {
-		return componentData.getAuthor();
+		return author;
 	}
 
 	public ConstraintStrength getStrength() {
@@ -490,10 +495,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("uuid", componentData.getUuid())
-				.add("active", componentData.isActive())
-				.add("effectiveTime", componentData.getEffectiveTime())
-				.add("author", componentData.getAuthor())
+				.add("uuid", getId())
+				.add("active", isActive())
+				.add("effectiveTime", getEffectiveTime())
+				.add("author", getAuthor())
 				.add("strength", getStrength())
 				.add("validationMessage", getValidationMessage())
 				.add("description", getDescription())

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -26,7 +28,7 @@ public final class ReferenceSetDefinitionFragment extends ConceptSetDefinitionFr
 	private final String refSetId;
 
 	@JsonCreator
-	ReferenceSetDefinitionFragment(
+	public ReferenceSetDefinitionFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -39,5 +41,21 @@ public final class ReferenceSetDefinitionFragment extends ConceptSetDefinitionFr
 
 	public String getRefSetId() {
 		return refSetId;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(refSetId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		final ReferenceSetDefinitionFragment other = (ReferenceSetDefinitionFragment) obj;
+		
+		return Objects.equals(refSetId, other.refSetId);
 	}
 }

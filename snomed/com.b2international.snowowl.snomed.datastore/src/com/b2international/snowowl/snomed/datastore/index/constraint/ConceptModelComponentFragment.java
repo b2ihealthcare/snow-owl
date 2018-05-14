@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
+
 /**
  * Captures properties required for change tracking on individual components of the MRCM concept model.
  * 
  * @since 6.5
  */
-public final class ConceptModelComponentData {
+public abstract class ConceptModelComponentFragment {
 
 	private final String uuid;
 	private final boolean active;
 	private final long effectiveTime;
 	private final String author;
 
-	ConceptModelComponentData(
+	protected ConceptModelComponentFragment(
 			final String uuid, 
 			final boolean active, 
 			final long effectiveTime, 
@@ -39,19 +41,40 @@ public final class ConceptModelComponentData {
 		this.author = author;
 	}
 
-	public String getUuid() {
+	public final String getUuid() {
 		return uuid;
 	}
 
-	public boolean isActive() {
+	public final boolean isActive() {
 		return active;
 	}
 
-	public long getEffectiveTime() {
+	public final long getEffectiveTime() {
 		return effectiveTime;
 	}
 
-	public String getAuthor() {
+	public final String getAuthor() {
 		return author;
+	}
+
+	// XXX: Overriding equals and hashCode implementations are mandatory for each subclass
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(active, author, effectiveTime, uuid);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		final ConceptModelComponentFragment other = (ConceptModelComponentFragment) obj;
+		
+		return active == other.active
+				&& Objects.equals(author, other.author)
+				&& effectiveTime == other.effectiveTime
+				&& Objects.equals(uuid, other.uuid);
 	}
 }

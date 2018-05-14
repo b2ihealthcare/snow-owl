@@ -43,9 +43,7 @@ import com.google.common.collect.ImmutableSet;
 	@Type(value = ReferenceSetDefinitionFragment.class, name = "referenceSet"), 
 	@Type(value = RelationshipDefinitionFragment.class, name = "relationship"), 
 })
-public abstract class ConceptSetDefinitionFragment {
-
-	private final ConceptModelComponentData componentData;
+public abstract class ConceptSetDefinitionFragment extends ConceptModelComponentFragment {
 
 	protected ConceptSetDefinitionFragment(
 			final String uuid, 
@@ -53,23 +51,7 @@ public abstract class ConceptSetDefinitionFragment {
 			final long effectiveTime, 
 			final String author) {
 
-		this.componentData = new ConceptModelComponentData(uuid, active, effectiveTime, author);
-	}
-
-	public String getUuid() {
-		return componentData.getUuid();
-	}
-
-	public boolean isActive() {
-		return componentData.isActive();
-	}
-
-	public long getEffectiveTime() {
-		return componentData.getEffectiveTime();
-	}
-
-	public String getAuthor() {
-		return componentData.getAuthor();
+		super(uuid, active, effectiveTime, author);
 	}
 
 	public static ConceptSetDefinitionFragment from(final ConceptSetDefinition definition) {

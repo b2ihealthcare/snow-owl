@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -29,7 +30,7 @@ public final class CompositeDefinitionFragment extends ConceptSetDefinitionFragm
 	private final Set<ConceptSetDefinitionFragment> children;
 
 	@JsonCreator
-	CompositeDefinitionFragment(
+	public CompositeDefinitionFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -42,5 +43,21 @@ public final class CompositeDefinitionFragment extends ConceptSetDefinitionFragm
 
 	public Set<ConceptSetDefinitionFragment> getChildren() {
 		return children;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(children);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		final CompositeDefinitionFragment other = (CompositeDefinitionFragment) obj;
+		
+		return Objects.equals(children, other.children);
 	}
 }

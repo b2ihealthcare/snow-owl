@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
@@ -33,7 +34,7 @@ public final class DependencyPredicateFragment extends PredicateFragment {
 	private final Set<PredicateFragment> children;
 
 	@JsonCreator
-	DependencyPredicateFragment(
+	public DependencyPredicateFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -59,5 +60,23 @@ public final class DependencyPredicateFragment extends PredicateFragment {
 
 	public Set<PredicateFragment> getChildren() {
 		return children;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(groupRule, dependencyOperator, children);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		DependencyPredicateFragment other = (DependencyPredicateFragment) obj;
+		
+		return Objects.equals(groupRule, other.groupRule)
+				&& Objects.equals(dependencyOperator, other.dependencyOperator)
+				&& Objects.equals(children, other.children);
 	}
 }

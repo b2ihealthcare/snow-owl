@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
+
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +32,7 @@ public final class CardinalityPredicateFragment extends PredicateFragment {
 	private final PredicateFragment predicate;
 
 	@JsonCreator
-	CardinalityPredicateFragment(
+	public CardinalityPredicateFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -62,5 +64,24 @@ public final class CardinalityPredicateFragment extends PredicateFragment {
 
 	public PredicateFragment getPredicate() {
 		return predicate;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(groupRule, maxCardinality, minCardinality, predicate);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		CardinalityPredicateFragment other = (CardinalityPredicateFragment) obj;
+		
+		return Objects.equals(groupRule, other.groupRule)
+				&& maxCardinality == other.maxCardinality
+				&& minCardinality == other.minCardinality
+				&& Objects.equals(predicate, other.predicate);
 	}
 }

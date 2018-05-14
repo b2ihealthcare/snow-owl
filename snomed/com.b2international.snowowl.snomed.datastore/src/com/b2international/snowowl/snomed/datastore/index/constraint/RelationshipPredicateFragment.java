@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -28,7 +30,7 @@ public final class RelationshipPredicateFragment extends PredicateFragment {
 	private final String characteristicTypeId;
 
 	@JsonCreator
-	RelationshipPredicateFragment(
+	public RelationshipPredicateFragment(
 			@JsonProperty("uuid") final String uuid, 
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
@@ -55,4 +57,22 @@ public final class RelationshipPredicateFragment extends PredicateFragment {
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
 	}
+	
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(attribute, range, characteristicTypeId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (!super.equals(obj)) return false;
+		if (getClass() != obj.getClass()) return false;
+		
+		RelationshipPredicateFragment other = (RelationshipPredicateFragment) obj;
+		
+		return Objects.equals(attribute, other.attribute)
+				&& Objects.equals(range, other.range)
+				&& Objects.equals(characteristicTypeId, other.characteristicTypeId);
+	}	
 }
