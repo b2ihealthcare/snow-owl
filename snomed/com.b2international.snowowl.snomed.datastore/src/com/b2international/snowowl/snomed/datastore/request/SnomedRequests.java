@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBui
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableSet;
@@ -147,6 +148,15 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return an MRCM attribute constraint.
+	 * @param constraintId - the identifier of the MRCM constraint to return
+	 * @return SNOMED CT constraint get request builder
+	 */
+	public static SnomedConstraintGetRequestBuilder prepareGetConstraint(String constraintId) {
+		return new SnomedConstraintGetRequestBuilder(constraintId);
+	}
+	
+	/**
 	 * Returns a SNOMED CT request builder to prepare a request to return a concept.
 	 * @param conceptId - the identifier of the concept to return
 	 * @return SNOMED CT concept get request builder
@@ -196,6 +206,15 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes an MRCM attribute constraint.
+	 * @param constraintId - the identifier of the constraint
+	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given constraint
+	 */
+	public static DeleteRequestBuilder prepareDeleteConstraint(String constraintId) {
+		return prepareDelete(constraintId, AttributeConstraint.class);
+	}
+	
+	/**
 	 * Returns a SNOMED CT request builder to prepare a request that deletes a concept.
 	 * @param conceptId - the identifier of the concept
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given concept
@@ -238,6 +257,14 @@ public abstract class SnomedRequests {
 	 */
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
 		return prepareDelete(memberId, SnomedRefSetMember.class);
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates an MRCM attribute constraint.
+	 * @return SNOMED CT constraint create request builder
+	 */
+	public static SnomedConstraintCreateRequestBuilder prepareNewConstraint() {
+		return new SnomedConstraintCreateRequestBuilder();
 	}
 
 	/**
@@ -351,6 +378,14 @@ public abstract class SnomedRequests {
 	 */
 	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember() {
 		return new SnomedRefSetMemberUpdateRequestBuilder();
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of a single MRCM attribute constraint.
+	 * @return SNOMED CT constraint update request builder
+	 */
+	public static SnomedConstraintUpdateRequestBuilder prepareUpdateConstraint() {
+		return new SnomedConstraintUpdateRequestBuilder();
 	}
 	
 	/**
