@@ -70,7 +70,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			predicate = ((CardinalityPredicate) predicate).getPredicate();
 		}
 
-		final SnomedConstraintPredicateType predicateType = SnomedConstraintPredicateType.valueOf(predicate);
+		final SnomedConstraintPredicateType predicateType = SnomedConstraintPredicateType.typeOf(predicate);
 		final ConceptSetDefinitionFragment domainFragment = ConceptSetDefinitionFragment.from(constraint.getDomain());
 		final PredicateFragment predicateFragment = PredicateFragment.from(constraint.getPredicate());
 
@@ -484,7 +484,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	@Override
 	@JsonIgnore
 	public String getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.PREDICATE_TYPE;
+		return SnomedTerminologyComponentConstants.CONSTRAINT;
 	}
 
 	@Override

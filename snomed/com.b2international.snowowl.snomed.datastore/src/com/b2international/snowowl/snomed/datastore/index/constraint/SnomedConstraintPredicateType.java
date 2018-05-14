@@ -32,7 +32,7 @@ public enum SnomedConstraintPredicateType {
 	DESCRIPTION,
 	RELATIONSHIP;
 
-	public static SnomedConstraintPredicateType valueOf(final ConceptModelPredicate predicate) {
+	public static SnomedConstraintPredicateType typeOf(final ConceptModelPredicate predicate) {
 		checkNotNull(predicate, "Predicate instance may not be null.");
 		
 		if (predicate instanceof ConcreteDomainElementPredicate) {
