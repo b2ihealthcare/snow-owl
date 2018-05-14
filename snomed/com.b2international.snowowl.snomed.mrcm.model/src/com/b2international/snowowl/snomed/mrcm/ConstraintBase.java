@@ -78,7 +78,7 @@ public interface ConstraintBase extends ConceptModelComponent {
 	 * @return the value of the '<em>Validation Message</em>' attribute.
 	 * @see #setValidationMessage(String)
 	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConstraintBase_ValidationMessage()
-	 * @model required="true"
+	 * @model
 	 * @generated
 	 */
 	String getValidationMessage();
@@ -104,7 +104,7 @@ public interface ConstraintBase extends ConceptModelComponent {
 	 * @return the value of the '<em>Description</em>' attribute.
 	 * @see #setDescription(String)
 	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConstraintBase_Description()
-	 * @model required="true"
+	 * @model
 	 * @generated
 	 */
 	String getDescription();

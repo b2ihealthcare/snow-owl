@@ -49,7 +49,7 @@
         defaultValueLiteral=""/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="#//DataType"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="characteristicTypeConceptId"
-        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DependencyPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -78,7 +78,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="range" lowerBound="1" eType="#//ConceptSetDefinition"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="characteristicTypeConceptId"
-        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConceptSetDefinition" abstract="true"
       eSuperTypes="#//ConceptModelComponent">
@@ -138,10 +138,8 @@
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="strength" lowerBound="1"
         eType="#//ConstraintStrength"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="validationMessage" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="validationMessage" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//ConstraintBase">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">

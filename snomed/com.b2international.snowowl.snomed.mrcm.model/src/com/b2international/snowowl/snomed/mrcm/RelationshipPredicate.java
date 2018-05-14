@@ -101,7 +101,7 @@ public interface RelationshipPredicate extends ConceptModelPredicate {
 	 * @return the value of the '<em>Characteristic Type Concept Id</em>' attribute.
 	 * @see #setCharacteristicTypeConceptId(String)
 	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getRelationshipPredicate_CharacteristicTypeConceptId()
-	 * @model required="true"
+	 * @model
 	 * @generated
 	 */
 	String getCharacteristicTypeConceptId();
