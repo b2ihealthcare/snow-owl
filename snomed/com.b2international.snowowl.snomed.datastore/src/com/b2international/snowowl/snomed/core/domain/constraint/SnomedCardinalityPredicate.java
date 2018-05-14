@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,45 +18,44 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 
 /**
- * @since 5.7
+ * @since 6.5
  */
-public final class SnomedRelationshipConstraint extends SnomedConstraint {
+public final class SnomedCardinalityPredicate extends SnomedPredicate {
 
-	private String type;
-	private String destinationExpression;
-	private String characteristicTypeExpression;
+	private int minCardinality;
+	private int maxCardinality;
 	private GroupRule groupRule;
-	
-	public String getCharacteristicTypeExpression() {
-		return characteristicTypeExpression;
+	private SnomedPredicate predicate;
+
+	public int getMinCardinality() {
+		return minCardinality;
 	}
 	
-	public String getDestinationExpression() {
-		return destinationExpression;
+	public void setMinCardinality(int minCardinality) {
+		this.minCardinality = minCardinality;
+	}
+
+	public int getMaxCardinality() {
+		return maxCardinality;
 	}
 	
-	public String getType() {
-		return type;
+	public void setMaxCardinality(int maxCardinality) {
+		this.maxCardinality = maxCardinality;
 	}
-	
+
 	public GroupRule getGroupRule() {
 		return groupRule;
-	}
-	
-	public void setCharacteristicTypeExpression(String characteristicTypeExpression) {
-		this.characteristicTypeExpression = characteristicTypeExpression;
-	}
-	
-	public void setDestinationExpression(String destinationExpression) {
-		this.destinationExpression = destinationExpression;
-	}
-	
-	public void setType(String type) {
-		this.type = type;
 	}
 	
 	public void setGroupRule(GroupRule groupRule) {
 		this.groupRule = groupRule;
 	}
+
+	public SnomedPredicate getPredicate() {
+		return predicate;
+	}
 	
+	public void setPredicate(SnomedPredicate predicate) {
+		this.predicate = predicate;
+	}
 }

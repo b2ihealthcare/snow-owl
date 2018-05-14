@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,75 +15,69 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
-import java.util.Collections;
-import java.util.Set;
-
-import com.b2international.snowowl.core.domain.BaseComponent;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
+import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
 
 /**
- * @since 5.7
+ * The component representation of an MRCM constraint.
+ * 
+ * @since 6.5
  */
-public abstract class SnomedConstraint extends BaseComponent {
+public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
-	private String domain;
-	private int minCardinality;
-	private int maxCardinality;
-	private Set<String> selfIds = Collections.emptySet();
-	private Set<String> descendantIds = Collections.emptySet();
-	private Set<String> refSetIds = Collections.emptySet();
+	private ConstraintStrength strength;
+	private String validationMessage;
+	private String description;
+	private ConstraintForm form;
+	private SnomedConceptSetDefinition domain;
+	private SnomedPredicate predicate;
 	
-	@Override
-	public final short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
+	public ConstraintStrength getStrength() {
+		return strength;
 	}
 	
-	public final String getDomain() {
+	public void setStrength(ConstraintStrength strength) {
+		this.strength = strength;
+	}
+	
+	public String getValidationMessage() {
+		return validationMessage;
+	}
+	
+	public void setValidationMessage(String validationMessage) {
+		this.validationMessage = validationMessage;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public ConstraintForm getForm() {
+		return form;
+	}
+	
+	public void setForm(ConstraintForm form) {
+		this.form = form;
+	}
+	
+	public SnomedConceptSetDefinition getDomain() {
 		return domain;
 	}
 	
-	public final int getMinCardinality() {
-		return minCardinality;
-	}
-	
-	public final int getMaxCardinality() {
-		return maxCardinality;
-	}
-	
-	public Set<String> getSelfIds() {
-		return selfIds;
-	}
-	
-	public Set<String> getDescendantIds() {
-		return descendantIds;
-	}
-	
-	public Set<String> getRefSetIds() {
-		return refSetIds;
-	}
-	
-	public final void setDomain(String domain) {
+	public void setDomain(SnomedConceptSetDefinition domain) {
 		this.domain = domain;
 	}
 	
-	public final void setMinCardinality(int minCardinality) {
-		this.minCardinality = minCardinality;
+	public SnomedPredicate getPredicate() {
+		return predicate;
 	}
 	
-	public final void setMaxCardinality(int maxCardinality) {
-		this.maxCardinality = maxCardinality;
+	public void setPredicate(SnomedPredicate predicate) {
+		this.predicate = predicate;
 	}
-	
-	public void setSelfIds(Set<String> selfIds) {
-		this.selfIds = selfIds;
-	}
-	
-	public void setDescendantIds(Set<String> descendantIds) {
-		this.descendantIds = descendantIds;
-	}
-	
-	public void setRefSetIds(Set<String> refSetIds) {
-		this.refSetIds = refSetIds;
-	}
-	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,22 @@
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
 /**
- * @since 5.7
+ * @since 6.5
  */
-public final class SnomedDescriptionConstraint extends SnomedConstraint {
+public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefinition {
 
-	private String typeId;
-	
-	public void setTypeId(String typeId) {
-		this.typeId = typeId;
+	private String refSetId;
+
+	public String getRefSetId() {
+		return refSetId;
 	}
 	
-	public String getTypeId() {
-		return typeId;
+	public void setRefSetId(String refSetId) {
+		this.refSetId = refSetId;
 	}
 	
+	@Override
+	public String toEcl() {
+		return String.format("^%s", refSetId);
+	}
 }
