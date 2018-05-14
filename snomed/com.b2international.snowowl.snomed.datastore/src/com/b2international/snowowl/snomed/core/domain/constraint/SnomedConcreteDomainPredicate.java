@@ -24,7 +24,7 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
 	private String label; // "Vaccine"
 	private String name; // "canBeTaggedWithVaccine"
-	private DataType type;
+	private DataType dataType;
 	private String characteristicTypeId;
 
 	public String getLabel() {
@@ -43,12 +43,12 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 		this.name = name;
 	}
 
-	public DataType getType() {
-		return type;
+	public DataType getDataType() {
+		return dataType;
 	}
 	
-	public void setType(DataType type) {
-		this.type = type;
+	public void setDataType(DataType dataType) {
+		this.dataType = dataType;
 	}
 
 	public String getCharacteristicTypeId() {
