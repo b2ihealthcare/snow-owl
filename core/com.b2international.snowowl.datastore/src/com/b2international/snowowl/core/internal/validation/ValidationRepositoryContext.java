@@ -47,7 +47,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	// actual raw mapping changes
 	private final Map<String, Object> newObjects = newHashMap();
 	private final Multimap<Class<?>, String> objectsToDelete = HashMultimap.create();
-	private final Set<String> ruleIdsAffectedByDeletion = Sets.newHashSet();
+	
 	
 	// higher level aggregated changes
 	
@@ -75,6 +75,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	
 	void commit() {
 		if (!newObjects.isEmpty() || !objectsToDelete.isEmpty()) {
+			final Set<String> ruleIdsAffectedByDeletion = Sets.newHashSet();
 			service(ValidationRepository.class).write(writer -> {
 				writer.putAll(newObjects);
 				
