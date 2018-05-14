@@ -68,23 +68,19 @@ public class CompositeConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public boolean addChild(ConceptSetDefinition child) {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
-		throw new UnsupportedOperationException();
+		return getChildren().add(child);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public boolean removeChild(ConceptSetDefinition child) {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
-		throw new UnsupportedOperationException();
+		return getChildren().remove(child);
 	}
 
 } //CompositeConceptSetDefinitionImpl
