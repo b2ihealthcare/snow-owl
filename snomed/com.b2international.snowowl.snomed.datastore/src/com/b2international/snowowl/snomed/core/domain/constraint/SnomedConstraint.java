@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
 import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 
 /**
  * The component representation of an MRCM constraint.
@@ -79,5 +83,30 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 	
 	public void setPredicate(SnomedPredicate predicate) {
 		this.predicate = predicate;
+	}
+	
+	@Override
+	public AttributeConstraint createModel() {
+		return MrcmFactory.eINSTANCE.createAttributeConstraint();
+	}
+	
+	@Override
+	public AttributeConstraint applyChangesTo(ConceptModelComponent existingModel) {
+		final AttributeConstraint updatedModel = (existingModel instanceof AttributeConstraint)
+				? (AttributeConstraint) existingModel
+				: createModel();
+		
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setDescription(getDescription());
+		updatedModel.setDomain(getDomain().applyChangesTo(updatedModel.getDomain()));
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setForm(getForm());
+		updatedModel.setPredicate(getPredicate().applyChangesTo(updatedModel.getPredicate()));
+		updatedModel.setStrength(getStrength());
+		updatedModel.setUuid(getId());
+		updatedModel.setValidationMessage(getValidationMessage());
+		
+		return updatedModel;
 	}
 }

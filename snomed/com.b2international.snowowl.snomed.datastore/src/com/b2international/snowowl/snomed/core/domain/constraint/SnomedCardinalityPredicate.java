@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 
 /**
  * @since 6.5
@@ -57,5 +61,28 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 	
 	public void setPredicate(SnomedPredicate predicate) {
 		this.predicate = predicate;
+	}
+	
+	@Override
+	public CardinalityPredicate createModel() {
+		return MrcmFactory.eINSTANCE.createCardinalityPredicate();
+	}
+	
+	@Override
+	public CardinalityPredicate applyChangesTo(final ConceptModelComponent existingModel) {
+		final CardinalityPredicate updatedModel = (existingModel instanceof CardinalityPredicate)
+				? (CardinalityPredicate) existingModel
+				: createModel();
+		
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setGroupRule(getGroupRule());
+		updatedModel.setMaxCardinality(getMaxCardinality());
+		updatedModel.setMinCardinality(getMinCardinality());
+		updatedModel.setPredicate(getPredicate().applyChangesTo(updatedModel.getPredicate()));
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

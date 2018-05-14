@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+
 /**
  * @since 6.5
  */
@@ -54,5 +59,27 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 
 	public String getRangeExpression() {
 		return range.toEcl();
+	}
+	
+	@Override
+	public RelationshipPredicate createModel() {
+		return MrcmFactory.eINSTANCE.createRelationshipPredicate();
+	}
+	
+	@Override
+	public RelationshipPredicate applyChangesTo(ConceptModelComponent existingModel) {
+		final RelationshipPredicate updatedModel = (existingModel instanceof RelationshipPredicate)
+				? (RelationshipPredicate) existingModel
+				: createModel();
+		
+		updatedModel.setActive(isActive());
+		updatedModel.setAttribute(getAttribute().applyChangesTo(updatedModel.getAttribute()));
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setRange(getRange().applyChangesTo(updatedModel.getAttribute()));
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

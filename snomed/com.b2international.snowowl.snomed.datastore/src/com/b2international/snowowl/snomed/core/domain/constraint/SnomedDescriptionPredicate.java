@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+
 /**
  * @since 6.5
  */
@@ -28,5 +33,25 @@ public final class SnomedDescriptionPredicate extends SnomedPredicate {
 	
 	public void setTypeId(String typeId) {
 		this.typeId = typeId;
+	}
+	
+	@Override
+	public DescriptionPredicate createModel() {
+		return MrcmFactory.eINSTANCE.createDescriptionPredicate();
+	}
+	
+	@Override
+	public DescriptionPredicate applyChangesTo(ConceptModelComponent existingModel) {
+		final DescriptionPredicate updatedModel = (existingModel instanceof DescriptionPredicate)
+				? (DescriptionPredicate) existingModel
+				: createModel();
+		
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setTypeId(getTypeId());
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

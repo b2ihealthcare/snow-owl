@@ -16,6 +16,8 @@
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.google.common.base.Strings;
 
 /**
@@ -28,6 +30,12 @@ public abstract class SnomedConceptSetDefinition extends SnomedConceptModelCompo
 	 * @return the built ECL expression as a String
 	 */
 	public abstract String toEcl();
+	
+	@Override
+	public abstract ConceptSetDefinition createModel();
+	
+	@Override
+	public abstract ConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel);
 	
 	public static String getCharacteristicTypeExpression(String characteristicTypeId) {
 		return Strings.isNullOrEmpty(characteristicTypeId) 

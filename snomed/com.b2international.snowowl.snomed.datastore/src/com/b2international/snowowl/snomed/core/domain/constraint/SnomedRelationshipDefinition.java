@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 
 /**
  * @since 6.5
@@ -45,5 +49,26 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 	public String toEcl() {
 		// Attribute refinement; any descendant of the SNOMED CT root concept is applicable 
 		return String.format("<<%s:%s=%s", Concepts.ROOT_CONCEPT, typeId, destinationId);
+	}
+	
+	@Override
+	public RelationshipConceptSetDefinition createModel() {
+		return MrcmFactory.eINSTANCE.createRelationshipConceptSetDefinition();
+	}
+	
+	@Override
+	public RelationshipConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel) {
+		final RelationshipConceptSetDefinition updatedModel = (existingModel instanceof RelationshipConceptSetDefinition)
+				? (RelationshipConceptSetDefinition) existingModel
+				: createModel();
+				
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setTypeConceptId(getTypeId());
+		updatedModel.setDestinationConceptId(getDestinationId());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

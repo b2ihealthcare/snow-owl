@@ -16,12 +16,20 @@
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
 public abstract class SnomedPredicate extends SnomedConceptModelComponent {
+	
+	@Override
+	public abstract ConceptModelPredicate createModel();
+	
+	@Override
+	public abstract ConceptModelPredicate applyChangesTo(ConceptModelComponent existingModel);
 	
 	static String getCharacteristicTypeExpression(final String characteristicTypeId) {
 		return Strings.isNullOrEmpty(characteristicTypeId) 

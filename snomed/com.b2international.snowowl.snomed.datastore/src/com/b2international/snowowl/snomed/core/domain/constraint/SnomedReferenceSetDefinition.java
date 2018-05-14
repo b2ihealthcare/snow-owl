@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
+
 /**
  * @since 6.5
  */
@@ -33,5 +38,25 @@ public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefiniti
 	@Override
 	public String toEcl() {
 		return String.format("^%s", refSetId);
+	}
+	
+	@Override
+	public ReferenceSetConceptSetDefinition createModel() {
+		return MrcmFactory.eINSTANCE.createReferenceSetConceptSetDefinition();
+	}
+	
+	@Override
+	public ReferenceSetConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel) {
+		final ReferenceSetConceptSetDefinition updatedModel = (existingModel instanceof ReferenceSetConceptSetDefinition)
+				? (ReferenceSetConceptSetDefinition) existingModel
+				: createModel();
+				
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setRefSetIdentifierConceptId(getRefSetId());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

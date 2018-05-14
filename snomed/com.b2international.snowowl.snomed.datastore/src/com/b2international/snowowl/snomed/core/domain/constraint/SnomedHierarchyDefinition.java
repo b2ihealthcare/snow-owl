@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 
 /**
  * @since 6.5
@@ -53,5 +57,26 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 			default: 
 				throw new IllegalArgumentException("Unknown inclusion type: " + inclusionType);
 		}
+	}
+	
+	@Override
+	public HierarchyConceptSetDefinition createModel() {
+		return MrcmFactory.eINSTANCE.createHierarchyConceptSetDefinition();
+	}
+	
+	@Override
+	public HierarchyConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel) {
+		final HierarchyConceptSetDefinition updatedModel = (existingModel instanceof HierarchyConceptSetDefinition)
+				? (HierarchyConceptSetDefinition) existingModel
+				: createModel();
+				
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setConceptId(getConceptId());
+		updatedModel.setInclusionType(getInclusionType());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }

@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
@@ -57,5 +61,28 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 	
 	public void setCharacteristicTypeId(String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
+	}
+	
+	@Override
+	public ConcreteDomainElementPredicate createModel() {
+		return MrcmFactory.eINSTANCE.createConcreteDomainElementPredicate();
+	}
+	
+	@Override
+	public ConcreteDomainElementPredicate applyChangesTo(ConceptModelComponent existingModel) {
+		final ConcreteDomainElementPredicate updateModel = (existingModel instanceof ConcreteDomainElementPredicate)
+				? (ConcreteDomainElementPredicate) existingModel
+				: createModel();
+		
+		updateModel.setActive(isActive());
+		updateModel.setAuthor(getAuthor());
+		updateModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
+		updateModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updateModel.setLabel(getLabel());
+		updateModel.setName(getName());
+		updateModel.setType(getDataType());
+		updateModel.setUuid(getId());
+		
+		return updateModel;
 	}
 }

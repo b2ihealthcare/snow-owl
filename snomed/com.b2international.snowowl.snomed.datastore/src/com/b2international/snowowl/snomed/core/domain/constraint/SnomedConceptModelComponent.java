@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 
 /**
  * Captures properties required for change tracking on individual components of the MRCM concept model.
@@ -58,4 +59,19 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 		// XXX: Returning the same component type ID for all parts
 		return SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER;
 	}
+	
+	/**
+	 * @return the ECore model representation of this definition
+	 */
+	public abstract ConceptModelComponent createModel();
+	
+	/**
+	 * Copies properties over to the specified ECore model representation,
+	 * preserving the instance if the type matches.
+	 * 
+	 * @param existingModel the model to modify
+	 * @return the same instance with modified properties, or a new instance if the
+	 *         input type did not meet expectations
+	 */
+	public abstract ConceptModelComponent applyChangesTo(ConceptModelComponent existingModel);
 }

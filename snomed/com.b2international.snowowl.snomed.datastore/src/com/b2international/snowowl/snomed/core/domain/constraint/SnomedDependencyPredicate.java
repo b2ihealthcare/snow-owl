@@ -15,10 +15,20 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
+import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.google.common.collect.Maps;
 
 /**
  * @since 6.5
@@ -51,5 +61,64 @@ public final class SnomedDependencyPredicate extends SnomedPredicate {
 	
 	public void setChildren(Set<SnomedPredicate> children) {
 		this.children = children;
+	}
+	
+	@Override
+	public DependencyPredicate createModel() {
+		return MrcmFactory.eINSTANCE.createDependencyPredicate();
+	}
+	
+	@Override
+	public DependencyPredicate applyChangesTo(ConceptModelComponent existingModel) {
+		final DependencyPredicate updatedModel = (existingModel instanceof DependencyPredicate)
+				? (DependencyPredicate) existingModel
+				: createModel();
+		
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+
+		/* 
+		 * We will update this list in place; on an existing instance, it will be already populated by some predicates,
+		 * on a new instance, it is completely empty.
+		 */
+		final List<ConceptModelPredicate> updatedModelChildren = updatedModel.getChildren();
+		
+		// Index predicate keys by list position
+		final Map<String, Integer> existingPredicatesByIdx = newHashMap();
+		for (int i = 0; i < updatedModelChildren.size(); i++) {
+			final ConceptModelPredicate existingPredicate = updatedModelChildren.get(i);
+			existingPredicatesByIdx.put(existingPredicate.getUuid(), i);
+		}
+		
+		// Index new predicates by key
+		final Map<String, SnomedPredicate> updatedPredicates = newHashMap(Maps.uniqueIndex(children, SnomedPredicate::getId));
+		
+		// Iterate backwards over the list so that removals don't mess up the the list index map
+		for (int j = updatedModelChildren.size() - 1; j >= 0; j--) {
+			final ConceptModelPredicate existingPredicate = updatedModelChildren.get(j);
+			final String uuid = existingPredicate.getUuid();
+			
+			// Consume entries from "updatedPredicates" by using remove(Object key)
+			final SnomedPredicate updatedPredicate = updatedPredicates.remove(uuid);
+			
+			// Was there a child with the same key? If not, remove the original from the list, if it is still there, update in place
+			if (updatedPredicate == null) {
+				updatedModelChildren.remove(j);
+			} else {
+				updatedModelChildren.set(j, updatedPredicate.applyChangesTo(existingPredicate));
+			}
+		}
+		
+		// Remaining entries in "updatedPredicates" are new; add them to the end of the list
+		for (SnomedPredicate newChild : updatedPredicates.values()) {
+			updatedModelChildren.add(newChild.applyChangesTo(newChild.createModel()));
+		}
+		
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setGroupRule(getGroupRule());
+		updatedModel.setOperator(getDependencyOperator());
+		updatedModel.setUuid(getId());
+		
+		return updatedModel;
 	}
 }
