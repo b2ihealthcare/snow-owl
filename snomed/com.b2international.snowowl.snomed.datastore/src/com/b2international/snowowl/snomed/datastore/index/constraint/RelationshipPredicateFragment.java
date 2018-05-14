@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -57,22 +54,5 @@ public final class RelationshipPredicateFragment extends PredicateFragment {
 
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
-	}
-
-	@JsonIgnore
-	public String getAttributeExpression() {
-		return attribute.toEcl();
-	}
-
-	@JsonIgnore
-	public String getRangeExpression() {
-		return range.toEcl();
-	}
-
-	@JsonIgnore
-	public String getCharacteristicTypeExpression() {
-		return Strings.isNullOrEmpty(characteristicTypeId) 
-				? "<" + Concepts.CHARACTERISTIC_TYPE 
-				: "<<" + characteristicTypeId;
 	}
 }

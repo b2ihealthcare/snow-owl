@@ -40,9 +40,4 @@ public final class ReferenceSetDefinitionFragment extends ConceptSetDefinitionFr
 	public String getRefSetId() {
 		return refSetId;
 	}
-	
-	@Override
-	public String toEcl() {
-		return String.format("^%s", refSetId);
-	}
 }

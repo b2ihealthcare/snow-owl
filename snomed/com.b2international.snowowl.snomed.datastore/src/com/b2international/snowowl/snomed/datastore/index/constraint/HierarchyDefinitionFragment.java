@@ -49,18 +49,4 @@ public final class HierarchyDefinitionFragment extends ConceptSetDefinitionFragm
 	public HierarchyInclusionType getInclusionType() {
 		return inclusionType;
 	}
-	
-	@Override
-	public String toEcl() {
-		switch (inclusionType) {
-			case SELF: 
-				return conceptId;
-			case DESCENDANT: 
-				return String.format("<%s", conceptId); 
-			case SELF_OR_DESCENDANT: 
-				return String.format("<<%s", conceptId); 
-			default: 
-				throw new IllegalArgumentException("Unknown inclusion type: " + inclusionType);
-		}
-	}
 }

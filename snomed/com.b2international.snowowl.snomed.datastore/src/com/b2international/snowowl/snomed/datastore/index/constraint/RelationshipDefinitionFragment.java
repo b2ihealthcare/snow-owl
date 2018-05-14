@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -48,11 +47,5 @@ public final class RelationshipDefinitionFragment extends ConceptSetDefinitionFr
 
 	public String getDestinationId() {
 		return destinationId;
-	}
-	
-	@Override
-	public String toEcl() {
-		// Attribute refinement; any descendant of the SNOMED CT root concept is applicable 
-		return String.format("<<%s:%s=%s", Concepts.ROOT_CONCEPT, typeId, destinationId);
 	}
 }

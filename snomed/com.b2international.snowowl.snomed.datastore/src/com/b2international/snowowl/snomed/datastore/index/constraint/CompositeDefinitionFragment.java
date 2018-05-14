@@ -16,11 +16,9 @@
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -44,15 +42,5 @@ public final class CompositeDefinitionFragment extends ConceptSetDefinitionFragm
 
 	public Set<ConceptSetDefinitionFragment> getChildren() {
 		return children;
-	}
-
-	@Override
-	public String toEcl() {
-		final Set<String> subExpressions = children.stream()
-				.map(ConceptSetDefinitionFragment::toEcl)
-				.collect(Collectors.toSet());
-
-		// Wrap each sub-expression into parentheses
-		return "(" + Joiner.on(") OR (").join(subExpressions) + ")";
 	}
 }

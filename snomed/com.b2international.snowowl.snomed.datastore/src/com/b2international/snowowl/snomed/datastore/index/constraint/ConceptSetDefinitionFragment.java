@@ -72,12 +72,6 @@ public abstract class ConceptSetDefinitionFragment {
 		return componentData.getAuthor();
 	}
 
-	/**
-	 * Builds an ECL expression that matches concepts which fall into the specified concept set definition.
-	 * @return the built ECL expression as a String
-	 */
-	public abstract String toEcl();
-
 	public static ConceptSetDefinitionFragment from(final ConceptSetDefinition definition) {
 
 		if (definition instanceof CompositeConceptSetDefinition) {

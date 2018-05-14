@@ -19,7 +19,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -43,10 +42,5 @@ public final class EnumeratedDefinitionFragment extends ConceptSetDefinitionFrag
 
 	public Set<String> getConceptIds() {
 		return conceptIds;
-	}
-	
-	@Override
-	public String toEcl() {
-		return Joiner.on(" OR ").join(conceptIds);
 	}
 }
