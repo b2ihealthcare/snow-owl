@@ -28,7 +28,7 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 
 	private final String label; // "Vaccine"
 	private final String name; // "canBeTaggedWithVaccine"
-	private final DataType type;
+	private final DataType dataType;
 	private final String characteristicTypeId;
 	
 	@JsonCreator
@@ -39,14 +39,14 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 			@JsonProperty("author") final String author,
 			@JsonProperty("label") final String label, 
 			@JsonProperty("name") final String name, 
-			@JsonProperty("type") final DataType type, 
+			@JsonProperty("dataType") final DataType dataType, 
 			@JsonProperty("characteristicTypeId") final String characteristicTypeId) {
 
 		super(uuid, active, effectiveTime, author);
 
 		this.label = label;
 		this.name = name;
-		this.type = type;
+		this.dataType = dataType;
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
@@ -58,8 +58,8 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 		return name;
 	}
 
-	public DataType getType() {
-		return type;
+	public DataType getDataType() {
+		return dataType;
 	}
 
 	public String getCharacteristicTypeId() {
@@ -68,7 +68,7 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 	
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + Objects.hash(label, name, type, characteristicTypeId);
+		return 31 * super.hashCode() + Objects.hash(label, name, dataType, characteristicTypeId);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 		
 		return Objects.equals(label, other.label)
 				&& Objects.equals(name, other.name)
-				&& Objects.equals(type, other.type)
+				&& Objects.equals(dataType, other.dataType)
 				&& Objects.equals(characteristicTypeId, other.characteristicTypeId);
 	}
 }
