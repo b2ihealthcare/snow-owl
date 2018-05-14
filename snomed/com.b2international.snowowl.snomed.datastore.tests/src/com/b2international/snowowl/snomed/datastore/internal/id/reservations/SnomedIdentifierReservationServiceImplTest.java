@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class SnomedIdentifierReservationServiceImplTest {
 	public void whenReservingASingleSnomedIdentifier_ThenServiceMustStoreIt() throws Exception {
 		final Reservation reservation = Reservations.single(Concepts.ROOT_CONCEPT);
 		this.reservationService.create(SINGLE_RESERVATION, reservation);
-		assertThat(this.reservationService.getReservations()).containsOnly(reservation);
+		assertThat(this.reservationService.getReservations()).contains(reservation);
 		assertThat(this.reservationService.getReservation(SINGLE_RESERVATION)).isEqualTo(reservation);
 	}
 	
@@ -56,7 +56,7 @@ public class SnomedIdentifierReservationServiceImplTest {
 		final Reservation range = Reservations.range(100, 200, null, Collections.singleton(ComponentCategory.CONCEPT));
 		this.reservationService.create(SINGLE_RESERVATION, single);
 		this.reservationService.create(RANGE_RESERVATION, range);
-		assertThat(this.reservationService.getReservations()).containsOnly(single, range);
+		assertThat(this.reservationService.getReservations()).contains(single, range);
 	}
 	
 	@Test

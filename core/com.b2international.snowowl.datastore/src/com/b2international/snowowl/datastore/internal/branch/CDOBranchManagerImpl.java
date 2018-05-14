@@ -246,7 +246,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     	final CDOBranch sourceBranch = getCDOBranch(from);
     	final CDOBranch targetBranch = getCDOBranch(to);
     	final ICDOConnection connection = repository.getConnection();
-    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor(), isRebase);
+    	final CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor(), sourceBranch, targetBranch, isRebase);
     	final CDOTransaction targetTransaction = connection.createTransaction(targetBranch);
 
     	try {

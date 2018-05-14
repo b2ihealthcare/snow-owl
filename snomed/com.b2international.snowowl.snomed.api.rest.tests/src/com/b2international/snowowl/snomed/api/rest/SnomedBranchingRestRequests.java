@@ -61,7 +61,7 @@ public abstract class SnomedBranchingRestRequests {
 
 	public static ValidatableResponse getAllBranches() {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/branches")
+				.get("/branches?limit=" + Integer.MAX_VALUE)
 				.then();
 	}
 

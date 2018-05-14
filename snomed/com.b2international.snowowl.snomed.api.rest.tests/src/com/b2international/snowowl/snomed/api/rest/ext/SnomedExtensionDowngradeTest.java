@@ -28,6 +28,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import java.util.Map;
 
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
@@ -51,7 +52,8 @@ import com.google.common.collect.ImmutableMap;
 public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 
 	@Test
-	public void downgradeWithoutChanges() {
+	@Ignore // donation made this obsolete / invalid 
+	public void downgradeB2iExtensionWithoutChanges() {
 		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2016-01-31")
 				.statusCode(200)
 				.extract().as(CodeSystemVersion.class);
@@ -75,7 +77,8 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void downgradeWithNewConcept() {
+	@Ignore // donation made this obsolete / invalid
+	public void downgradeB2iExtensionWithNewConceptOnUpgradedBranch() {
 		CodeSystemVersion version = getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, "2015-07-31")
 				.statusCode(200)
 				.extract().as(CodeSystemVersion.class);

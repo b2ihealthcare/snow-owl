@@ -31,6 +31,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.0
@@ -153,7 +154,14 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		}
 	}
 
-	public abstract Set<String> getRequiredComponentIds();
+	/**
+	 * Subclasses may override to return additional required component IDs, like special IDs that are required to execute the delegate properly. 
+	 * Common reference set properties (like moduleId and referencedComponentId) can be excluded, they are already checked externally.
+	 * @return
+	 */
+	protected Set<String> getRequiredComponentIds() {
+		return ImmutableSet.of();
+	}
 
 	abstract String execute(SnomedRefSet refSet, TransactionContext context);
 }

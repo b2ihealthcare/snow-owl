@@ -23,7 +23,11 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.*;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -79,10 +83,8 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	}
 
 	@Override
-	public Set<String> getRequiredComponentIds() {
+	protected Set<String> getRequiredComponentIds() {
 		ImmutableSet.Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
-				.add(getModuleId())
-				.add(getReferencedComponentId()) 
 				.add(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 				.add(getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID));
 		

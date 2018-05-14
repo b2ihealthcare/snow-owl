@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.internal.branch;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -41,14 +42,20 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 
 	private final ICDOConflictProcessor delegate;
 	private final boolean isRebase;
+	private CDOBranch sourceBranch;
+	private CDOBranch targetBranch;
 
 	/**
 	 * Creates a new instance using the specified repository identifier.
 	 * 
 	 * @param delegate the CDO conflict processor handling terminology-specific merge decisions 
+	 * @param targetBranch 
+	 * @param sourceBranch 
 	 */
-	public CDOBranchMerger(final ICDOConflictProcessor delegate, final boolean isRebase) {
+	public CDOBranchMerger(final ICDOConflictProcessor delegate, CDOBranch sourceBranch, CDOBranch targetBranch, final boolean isRebase) {
 		this.delegate = delegate;
+		this.sourceBranch = sourceBranch;
+		this.targetBranch = targetBranch;
 		this.isRebase = isRebase;
 	}
 
@@ -78,16 +85,18 @@ public class CDOBranchMerger extends DefaultCDOMerger.PerFeature.ManyValued {
 	}
 	
 	@Override
-	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature, 
-			final CDOFeatureDelta targetFeatureDelta, 
+	protected CDOFeatureDelta changedInSourceAndTargetSingleValued(final EStructuralFeature feature,
+			final CDORevisionDelta targetDelta,
+			final CDOFeatureDelta targetFeatureDelta,
+			final CDORevisionDelta sourceDelta,
 			final CDOFeatureDelta sourceFeatureDelta) {
 
-		return delegate.changedInSourceAndTargetSingleValued(targetFeatureDelta, sourceFeatureDelta);
+		return delegate.changedInSourceAndTargetSingleValued(targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
 	}
 	
 	@Override
 	protected void preProcess() {
-		delegate.preProcess(getSourceMap(), getTargetMap(), isRebase);
+		delegate.preProcess(getSourceMap(), getTargetMap(), sourceBranch, targetBranch, isRebase);
 	}
 
 	@Override

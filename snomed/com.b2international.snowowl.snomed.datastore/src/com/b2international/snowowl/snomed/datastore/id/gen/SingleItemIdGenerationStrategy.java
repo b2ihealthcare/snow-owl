@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.gen;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collections;
+import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 
@@ -34,7 +38,8 @@ public class SingleItemIdGenerationStrategy implements ItemIdGenerationStrategy 
 	}
 	
 	@Override
-	public String generateItemId(String namespace, ComponentCategory category, int attempt) {
-		return itemId;
+	public Set<String> generateItemIds(String namespace, ComponentCategory category, int quantity, int attempt) {
+		checkArgument(quantity == 1, "Only a single item identifier can be requested at once from this service");
+		return Collections.singleton(itemId);
 	}
 }
