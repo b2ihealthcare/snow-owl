@@ -4,6 +4,18 @@
    <extension-point id="snomedImportPostProcessor" name="SNOMED CT Import Post Processor" schema="schema/snomedImportPostProcessor.exsd"/>
    <extension-point id="snomedNamespaceAndModuleAssigner" name="SNOMED CT Namespace and Module Assigner" schema="schema/snomedNamespaceAndModuleAssigner.exsd"/>
    <extension
+         point="com.b2international.snowowl.core.terminology">
+      <terminology
+            icon="icons/terminology_icon.png"
+            id="com.b2international.snowowl.terminology.snomed"
+            name="SNOMED CT"
+            oid="2.16.840.1.113883.6.96"
+            primaryComponentId="com.b2international.snowowl.terminology.snomed.concept"
+            supportsEffectiveTime="true"
+            topLevel="2">
+      </terminology>
+   </extension>
+   <extension
          point="com.b2international.snowowl.core.terminologyComponent">
       <terminologyComponent
             decorator="icons/snomed_concept_decorator.png"
@@ -81,99 +93,14 @@
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </terminologyComponent>
       <terminologyComponent
-            decorator="icons/snomed_concept_decorator.png"
-            hierarchical="false"
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed.datatype.string"
-            intId="105"
-            name="String Data Type"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyComponent>
-      <terminologyComponent
-            decorator="icons/snomed_concept_decorator.png"
-            hierarchical="false"
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed.datatype.integer"
-            intId="106"
-            name="Integer Data Type"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyComponent>
-      <terminologyComponent
-            decorator="icons/snomed_concept_decorator.png"
-            hierarchical="false"
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed.datatype.float"
-            intId="107"
-            name="Float Data Type"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyComponent>
-      <terminologyComponent
-            decorator="icons/snomed_concept_decorator.png"
-            hierarchical="false"
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed.datatype.boolean"
-            intId="108"
-            name="Boolean Data Type"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyComponent>
-      <terminologyComponent
-            decorator="icons/snomed_concept_decorator.png"
-            hierarchical="false"
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed.datatype.date"
-            intId="109"
-            name="Date Data Type"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </terminologyComponent>
-      
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.terminologyComponent">
-      <terminologyComponent
             decorator="icons/mrcm_editor.gif"
             hierarchical="false"
             icon="icons/mrcm_editor.gif"
-            id="com.b2international.snowowl.terminology.snomed.predicate"
-            intId="999"
-            name="MRCM Predicate"
+            id="com.b2international.snowowl.terminology.snomed.constraint"
+            intId="105"
+            name="SNOMED CT MRCM Constraint"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </terminologyComponent>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.representation">
-      <representation
-            class="com.b2international.snowowl.snomed.mrcm.AttributeConstraint"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.predicate">
-      </representation>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.terminology">
-      <terminology
-            icon="icons/terminology_icon.png"
-            id="com.b2international.snowowl.terminology.snomed"
-            name="SNOMED CT"
-            oid="2.16.840.1.113883.6.96"
-            primaryComponentId="com.b2international.snowowl.terminology.snomed.concept"
-            supportsEffectiveTime="true"
-            topLevel="2">
-      </terminology>
    </extension>
    <extension
          point="com.b2international.snowowl.core.representation">
@@ -194,11 +121,11 @@
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
+            class="com.b2international.snowowl.snomed.Relationship"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.Relationship"
+            class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
       </representation>
       <representation
@@ -216,6 +143,14 @@
       <representation
             class="com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMappingRefSetImpl"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
+      </representation>
+      <representation
+            class="com.b2international.snowowl.snomed.mrcm.AttributeConstraint"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
+      </representation>
+      <representation
+            class="com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument"
+            terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
       </representation>
    </extension>
    <extension
@@ -284,6 +219,19 @@
             type="java.lang.Object">
       </propertyTester>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.serviceConfigJob">
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+      <serviceConfigJob
+            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
+            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
+            terminologyId="com.b2international.snowowl.terminology.snomed">
+      </serviceConfigJob>
+   </extension>  
    <extension
          point="com.b2international.snowowl.datastore.mappingProvider">
       <provider
