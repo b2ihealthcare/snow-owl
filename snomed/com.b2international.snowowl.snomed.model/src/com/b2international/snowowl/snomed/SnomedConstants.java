@@ -324,7 +324,7 @@ public abstract class SnomedConstants {
 		public static final String UK_DRUG_EXTENSION_REFERENCE_SET_MODULE = "999000021000001108";
 		
 		public static final String UK_EXCLUDE_FROM_CLINICAL_RELEASE_MODULE = "15211000000101";
-		public static final String UK_EXCLUDE_FROM_DRUG_EXTENSION_RELEASE_MODULE = "11000001102";
+		public static final String UK_EXCLUDE_FROM_DRUG_EXTENSION_RELEASE_MODULE = "13088301000001107";
 		
 		public static final Set<String> UK_MODULES = ImmutableSet.of(
 			UK_MAINTAINED_CLINICAL_MODULE, 
