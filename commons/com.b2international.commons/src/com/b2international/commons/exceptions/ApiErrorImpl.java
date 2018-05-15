@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.internal.exceptions;
+package com.b2international.commons.exceptions;
 
 import java.util.Collections;
 import java.util.Map;
-
-import com.b2international.snowowl.core.exceptions.ApiError;
 
 /**
  * @since 4.1

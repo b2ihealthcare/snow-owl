@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 
 /**

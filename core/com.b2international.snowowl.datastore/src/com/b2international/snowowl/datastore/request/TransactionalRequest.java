@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -27,7 +28,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
-import com.b2international.snowowl.core.exceptions.ApiException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

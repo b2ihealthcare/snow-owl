@@ -21,8 +21,8 @@ import java.util.Collections;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
-import com.b2international.snowowl.core.exceptions.ApiException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.google.common.base.Predicate;

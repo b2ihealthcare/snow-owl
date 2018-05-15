@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 import java.util.Collections;
 import java.util.Map;
-
-import com.b2international.commons.exceptions.FormattedRuntimeException;
 
 /**
  * Represents a high-level API call exception. This exception should be thrown in all cases when a service would like to indicate problems with the

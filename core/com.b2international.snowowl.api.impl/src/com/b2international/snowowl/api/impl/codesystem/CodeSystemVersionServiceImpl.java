@@ -23,6 +23,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import com.b2international.commons.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiErrorException;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
@@ -34,8 +36,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.ApiError;
-import com.b2international.snowowl.core.exceptions.ApiErrorException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;

@@ -29,9 +29,9 @@ import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.PermissionIdConstant;
 import com.b2international.snowowl.identity.domain.User;

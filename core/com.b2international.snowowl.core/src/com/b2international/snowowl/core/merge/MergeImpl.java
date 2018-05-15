@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiError;
 
 /**
  * @since 4.6

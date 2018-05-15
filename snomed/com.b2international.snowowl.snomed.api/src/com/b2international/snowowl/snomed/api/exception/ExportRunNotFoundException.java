@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.exception;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 
 /**
  * Thrown when details of an export run can not be retrieved.

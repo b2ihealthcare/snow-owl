@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.datastore;
 
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.AbstractLookupService;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.eventbus.IEventBus;

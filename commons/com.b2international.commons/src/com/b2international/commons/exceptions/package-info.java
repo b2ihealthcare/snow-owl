@@ -13,23 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.exception;
-
-import com.b2international.commons.exceptions.NotFoundException;
-
 /**
- * Thrown when a fully specified name can not be retrieved.
+ * @since 4.1 
  */
-public class FullySpecifiedNameNotFoundException extends NotFoundException {
-
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * Creates a new exception instance with the specified argument.
-	 * 
-	 * @param key the identifier of the concept for which a fully specified name could not be retrieved
-	 */
-	public FullySpecifiedNameNotFoundException(final String key) {
-		super("Fully specified name for concept", key);
-	}
-}
+package com.b2international.commons.exceptions;

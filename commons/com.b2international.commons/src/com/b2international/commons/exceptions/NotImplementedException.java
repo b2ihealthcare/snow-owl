@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 /**
- * Thrown when a request contains incorrect parameters or is otherwise malformed.
+ * Indicates that some functionality has not been implemented yet.
  * 
- * @since 4.0
+ * @since 4.1
  */
-public class BadRequestException extends ApiException {
+public class NotImplementedException extends ApiException {
 
-	private static final long serialVersionUID = 7998450893448621719L;
+	private static final long serialVersionUID = 7181851559047430580L;
 
-	public BadRequestException(final String message, final Object...args) {
+	public NotImplementedException() {
+		this("Not implemented yet");
+	}
+	
+	public NotImplementedException(String message, Object...args) {
 		super(message, args);
 	}
 	
 	@Override
-	protected String getDeveloperMessage() {
-		return "Input representation syntax or validation errors. Check input values.";
-	}
-	
-	@Override
 	protected Integer getStatus() {
-		return 400;
+		return 501;
 	}
 	
 }

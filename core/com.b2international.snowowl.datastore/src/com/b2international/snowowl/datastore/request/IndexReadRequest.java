@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.request;
 
 import java.io.IOException;
 
+import com.b2international.commons.exceptions.IllegalQueryParameterException;
 import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
@@ -25,7 +26,6 @@ import com.b2international.index.query.QueryParseException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.IllegalQueryParameterException;
 
 /**
  * A subclass of {@link DelegatingRequest} that:

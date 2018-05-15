@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.admin.exception;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 
 /**
  * Thrown when a version within a repository can not be found for a given version identifier.

@@ -18,8 +18,8 @@ package com.b2international.snowowl.datastore.server.internal.merge;
 import java.util.List;
 import java.util.UUID;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.core.merge.MergeService;

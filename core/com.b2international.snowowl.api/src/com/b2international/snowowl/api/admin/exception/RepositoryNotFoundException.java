@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.api.admin.exception;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 
 /**
  * Thrown when a terminology repository can not be found for a given repository unique identifier.

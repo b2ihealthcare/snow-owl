@@ -23,9 +23,9 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;

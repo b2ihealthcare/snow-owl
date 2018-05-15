@@ -24,6 +24,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
@@ -161,10 +165,7 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	public final String createBranch(final String parent, final String name, final Metadata metadata) {
-		RevisionBranch parentBranch = get(parent);
-		if (parentBranch == null) {
-			throw new NotFoundException();
-		}
+		RevisionBranch parentBranch = getBranch(parent);
 		if (parentBranch.isDeleted()) {
 			throw new BadRequestException("Cannot create '%s' child branch under deleted '%s' parent.", name, parentBranch.getPath());
 		}
@@ -172,7 +173,7 @@ public abstract class BaseRevisionBranching {
 		RevisionBranch existingBranch = get(path);
 		if (existingBranch != null && !existingBranch.isDeleted()) {
 			// throw AlreadyExistsException if exists before trying to enter the sync block
-			throw new AlreadyExistsException(Branch.class.getSimpleName(), path);
+			throw new AlreadyExistsException("Branch", path);
 		} else {
 			return create(parentBranch, name, metadata);
 		}

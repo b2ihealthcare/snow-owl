@@ -13,7 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.commons.exceptions;
+
 /**
- * @since 4.1 
+ * Thrown when a request can not be processed due to a lock existing on the underlying repository. The client
+ * has to send the request again, after the lock was released.
+ * 
+ * @since 4.0
  */
-package com.b2international.snowowl.core.exceptions;
+public class LockedException extends ConflictException {
+
+	private static final long serialVersionUID = 185734899707722505L;
+
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 */
+	public LockedException(final String message) {
+		super(message);
+	}
+}

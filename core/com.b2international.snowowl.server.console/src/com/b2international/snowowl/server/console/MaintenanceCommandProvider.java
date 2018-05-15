@@ -28,6 +28,7 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;

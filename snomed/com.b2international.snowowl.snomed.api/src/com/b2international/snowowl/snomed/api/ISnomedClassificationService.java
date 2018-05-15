@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api;
 
 import java.util.List;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
 import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;

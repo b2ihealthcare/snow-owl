@@ -23,9 +23,9 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;

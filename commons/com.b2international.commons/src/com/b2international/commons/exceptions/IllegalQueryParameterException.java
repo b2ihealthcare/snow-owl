@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 /**
- * Thrown when a request can not be processed due to a lock existing on the underlying repository. The client
- * has to send the request again, after the lock was released.
- * 
- * @since 4.0
+ * Thrown when the supplied query parameters are not acceptable.
  */
-public class LockedException extends ConflictException {
+public class IllegalQueryParameterException extends BadRequestException {
 
-	private static final long serialVersionUID = 185734899707722505L;
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Creates a new exception instance with the specified message.
 	 * 
 	 * @param message the exception message
+	 * @param args - the arguments of the message template
 	 */
-	public LockedException(final String message) {
-		super(message);
+	public IllegalQueryParameterException(final String message, Object...args) {
+		super(message, args);
 	}
+	
+	@Override
+	protected String getDeveloperMessage() {
+		return "One or more supplied query parameters were invalid. Check input values.";
+	}
+	
 }

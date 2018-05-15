@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.api.rest.request;
 
 import java.util.Map;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**

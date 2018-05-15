@@ -30,9 +30,9 @@ import java.util.stream.Collectors;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.identity.IdentityWriter;
 import com.b2international.snowowl.identity.domain.Role;

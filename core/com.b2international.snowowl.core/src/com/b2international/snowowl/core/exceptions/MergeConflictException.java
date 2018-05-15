@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.google.common.base.Objects;
 

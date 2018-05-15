@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.internal.exceptions.ApiErrorImpl;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

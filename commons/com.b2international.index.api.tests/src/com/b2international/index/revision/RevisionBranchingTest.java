@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.query.Expressions;

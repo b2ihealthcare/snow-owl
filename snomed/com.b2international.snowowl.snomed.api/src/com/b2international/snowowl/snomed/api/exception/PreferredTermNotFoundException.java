@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.exception;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 
 /**
  * Thrown when a preferred term can not be retrieved using the given language preferences.

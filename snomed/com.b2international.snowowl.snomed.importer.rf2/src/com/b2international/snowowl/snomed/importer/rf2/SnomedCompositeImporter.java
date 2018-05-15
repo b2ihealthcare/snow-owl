@@ -35,12 +35,12 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.collect.LongSets;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.functions.UncheckedCastFunction;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;

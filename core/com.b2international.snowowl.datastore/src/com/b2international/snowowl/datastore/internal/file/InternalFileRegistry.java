@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.internal.file;
 import java.io.File;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 
 /**

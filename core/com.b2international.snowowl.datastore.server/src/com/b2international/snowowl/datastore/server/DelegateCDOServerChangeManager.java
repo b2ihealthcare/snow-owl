@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
@@ -44,7 +45,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.events.metrics.Metrics;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
-import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;

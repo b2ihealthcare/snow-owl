@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.events;
 
+import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.exceptions.ApiValidation;
 
 /**
  * Base class of {@link RequestBuilder} implementations. Validates the resulting {@link Request} via {@link ApiValidation#checkInput(Object)}.

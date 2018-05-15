@@ -19,10 +19,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.google.common.collect.ImmutableList;

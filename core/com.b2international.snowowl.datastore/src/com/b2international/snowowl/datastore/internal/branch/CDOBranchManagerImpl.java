@@ -29,6 +29,7 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.BulkIndexWrite;
@@ -42,7 +43,6 @@ import com.b2international.index.revision.BranchMergeException;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;

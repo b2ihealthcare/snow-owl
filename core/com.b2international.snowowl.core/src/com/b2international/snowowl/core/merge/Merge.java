@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiError;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

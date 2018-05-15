@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;

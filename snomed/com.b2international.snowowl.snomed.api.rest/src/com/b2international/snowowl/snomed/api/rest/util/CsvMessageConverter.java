@@ -12,8 +12,8 @@ import org.springframework.http.converter.AbstractHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;

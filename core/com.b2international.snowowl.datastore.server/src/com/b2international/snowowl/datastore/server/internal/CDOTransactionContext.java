@@ -24,14 +24,14 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.util.CommitException;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.Exceptions;
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.core.exceptions.CycleDetectedException;
-import com.b2international.snowowl.core.exceptions.LockedException;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;

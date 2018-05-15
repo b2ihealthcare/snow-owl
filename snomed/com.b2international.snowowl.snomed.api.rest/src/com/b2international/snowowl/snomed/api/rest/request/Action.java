@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.request;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.BadRequestException;
 
 /**
  * @since 4.5

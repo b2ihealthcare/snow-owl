@@ -27,7 +27,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
-import com.b2international.snowowl.core.exceptions.ConflictException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**

@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.request;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;

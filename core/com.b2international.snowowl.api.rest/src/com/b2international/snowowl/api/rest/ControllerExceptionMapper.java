@@ -25,14 +25,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.commons.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiErrorException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
-import com.b2international.snowowl.core.exceptions.ApiError;
-import com.b2international.snowowl.core.exceptions.ApiErrorException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
-import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**

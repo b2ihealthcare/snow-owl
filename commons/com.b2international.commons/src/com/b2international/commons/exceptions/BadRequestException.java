@@ -13,30 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 /**
- * Thrown when the same component is modified concurrently by multiple clients, or the request is based on an outdated
- * version of a component.
+ * Thrown when a request contains incorrect parameters or is otherwise malformed.
  * 
  * @since 4.0
  */
-public class ConflictException extends ApiException {
+public class BadRequestException extends ApiException {
 
-	private static final long serialVersionUID = -2887608541911973086L;
+	private static final long serialVersionUID = 7998450893448621719L;
 
-	/**
-	 * Creates a new exception instance with the specified message.
-	 * 
-	 * @param message the exception message
-	 * @param args format string arguments (used when the exception message contains {@code %s} placeholders)
-	 */
-	public ConflictException(String message, Object... args) {
+	public BadRequestException(final String message, final Object...args) {
 		super(message, args);
 	}
 	
 	@Override
-	protected Integer getStatus() {
-		return 409;
+	protected String getDeveloperMessage() {
+		return "Input representation syntax or validation errors. Check input values.";
 	}
+	
+	@Override
+	protected Integer getStatus() {
+		return 400;
+	}
+	
 }

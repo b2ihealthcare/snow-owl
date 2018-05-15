@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
+package com.b2international.commons.exceptions;
 
 /**
- * Indicates that some functionality has not been implemented yet.
+ * Thrown when the same component is modified concurrently by multiple clients, or the request is based on an outdated
+ * version of a component.
  * 
- * @since 4.1
+ * @since 4.0
  */
-public class NotImplementedException extends ApiException {
+public class ConflictException extends ApiException {
 
-	private static final long serialVersionUID = 7181851559047430580L;
+	private static final long serialVersionUID = -2887608541911973086L;
 
-	public NotImplementedException() {
-		this("Not implemented yet");
-	}
-	
-	public NotImplementedException(String message, Object...args) {
+	/**
+	 * Creates a new exception instance with the specified message.
+	 * 
+	 * @param message the exception message
+	 * @param args format string arguments (used when the exception message contains {@code %s} placeholders)
+	 */
+	public ConflictException(String message, Object... args) {
 		super(message, args);
 	}
 	
 	@Override
 	protected Integer getStatus() {
-		return 501;
+		return 409;
 	}
-	
 }

@@ -29,13 +29,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.api.admin.IRepositoryService;
 import com.b2international.snowowl.api.admin.exception.LockException;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.core.exceptions.ApiError;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;

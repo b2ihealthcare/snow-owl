@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.test.commons.rest
 
+import com.b2international.commons.exceptions.AlreadyExistsException
 import com.b2international.commons.platform.PlatformUtil
 import com.b2international.snowowl.core.ApplicationContext
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException
 import com.b2international.snowowl.identity.IdentityProvider
 import com.b2international.snowowl.identity.IdentityWriter
 import com.google.common.base.Joiner

@@ -28,11 +28,11 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.eventbus.IEventBus;

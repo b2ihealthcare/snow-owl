@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.datastore.review;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * @since 4.2

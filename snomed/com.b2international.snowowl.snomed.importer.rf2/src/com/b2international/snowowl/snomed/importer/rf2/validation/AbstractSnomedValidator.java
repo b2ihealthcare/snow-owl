@@ -41,9 +41,9 @@ import org.supercsv.io.CsvListWriter;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;

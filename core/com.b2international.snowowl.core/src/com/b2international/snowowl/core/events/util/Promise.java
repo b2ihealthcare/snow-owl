@@ -22,9 +22,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.exceptions.ApiException;
-import com.b2international.snowowl.core.exceptions.RequestTimeoutException;
 import com.google.common.annotations.Beta;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.AbstractFuture;

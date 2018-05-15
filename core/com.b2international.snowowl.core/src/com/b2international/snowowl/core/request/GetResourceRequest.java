@@ -18,9 +18,9 @@ package com.b2international.snowowl.core.request;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

@@ -31,7 +31,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.internal.file.DefaultFileRegistry;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.google.common.io.Resources;

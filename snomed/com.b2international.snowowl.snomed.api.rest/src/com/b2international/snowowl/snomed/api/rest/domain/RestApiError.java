@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.exceptions.ApiError;
+import com.b2international.commons.exceptions.ApiError;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
