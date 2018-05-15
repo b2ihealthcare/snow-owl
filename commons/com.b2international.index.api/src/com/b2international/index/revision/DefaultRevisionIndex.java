@@ -15,12 +15,9 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,8 +37,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 4.7
@@ -57,13 +53,13 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
 	
 	private final Index index;
-	private final RevisionBranches branches;
+	private final RevisionBranching branches;
 	private final RevisionIndexAdmin admin;
 
 	public DefaultRevisionIndex(Index index) {
 		this.index = index;
 		this.index.admin().mappings().putMapping(RevisionBranch.class);
-		this.branches = new RevisionBranches(index);
+		this.branches = new RevisionBranching(index);
 		this.admin = new RevisionIndexAdmin(this, index.admin());
 	}
 	
@@ -84,26 +80,21 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			if (RevisionBranch.MAIN_PATH.equals(branchPathWithoutBaseRef)) {
 				throw new IllegalArgumentException("Cannot query base of MAIN branch");
 			}
-			final RevisionBranchSegments parent = getParentBranchSegments(branchPathWithoutBaseRef);
-			final RevisionBranchSegments branch = getBranchSegments(branchPathWithoutBaseRef);
-			final Set<Integer> commonPath = Sets.intersection(branch.segments(), parent.segments());
-			final RevisionBranchSegments baseOfBranch = new RevisionBranchSegments(parent.path(), Ordering.natural().max(commonPath), commonPath);
-			return read(baseOfBranch, read);
+			return read(getBaseRef(branchPathWithoutBaseRef), read);
 		} else if (RevisionIndex.isRevRangePath(branchPath)) {
 			final String[] branches = RevisionIndex.getRevisionRangePaths(branchPath);
 			final String basePath = branches[0];
 			final String comparePath = branches[1];
-			final RevisionBranchSegments base = getBranchSegments(basePath);
-			final RevisionBranchSegments compare = getBranchSegments(comparePath);
-			final Set<Integer> compareSegments = Sets.difference(compare.segments(), base.segments());
-			return read(new RevisionBranchSegments(comparePath, compare.segmentId(), compareSegments), read);
+			final RevisionBranchRef base = getBranchRef(basePath);
+			final RevisionBranchRef compare = getBranchRef(comparePath);
+			return read(compare.difference(base), read);
 		} else {
-			return read(getBranchSegments(branchPath), read);
+			return read(getBranchRef(branchPath), read);
 		}
 	}
 	
 	@Override
-	public <T> T read(final RevisionBranchSegments branch, final RevisionIndexRead<T> read) {
+	public <T> T read(final RevisionBranchRef branch, final RevisionIndexRead<T> read) {
 		return index.read(index -> read.execute(new DefaultRevisionSearcher(branch, index)));
 	}
 	
@@ -113,7 +104,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			throw new IllegalArgumentException(String.format("It is illegal to modify a branch's base point (%s).", branchPath));
 		}
 		return index.write(index -> {
-			final RevisionBranchSegments branch = getBranchSegments(branchPath);
+			final RevisionBranchRef branch = getBranchRef(branchPath);
 			final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
 			return write.execute(writer);
 		});
@@ -121,36 +112,45 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public RevisionCompare compare(final String branch) {
-		return compare(getParentBranchSegments(branch), getBranchSegments(branch), COMPARE_DEFAULT_LIMIT);
+		return compare(branch, COMPARE_DEFAULT_LIMIT);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String branch, final int limit) {
-		return compare(getParentBranchSegments(branch), getBranchSegments(branch), limit);
+		return compare(getBaseRef(branch), getBranchRef(branch), limit);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
-		return compare(getBranchSegments(baseBranch), getBranchSegments(compareBranch), COMPARE_DEFAULT_LIMIT);
+		return compare(baseBranch, compareBranch, COMPARE_DEFAULT_LIMIT);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch, final int limit) {
-		return compare(getBranchSegments(baseBranch), getBranchSegments(compareBranch), limit);
+		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit);
 	}
 	
-	private RevisionCompare compare(final RevisionBranchSegments base, final RevisionBranchSegments compare, final int limit) {
+	private RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
 		return index.read(searcher -> {
-			final Set<Integer> commonPath = Sets.intersection(compare.segments(), base.segments());
-			final Set<Integer> segmentsToCompare = Sets.difference(compare.segments(), base.segments());
-			final RevisionBranchSegments baseOfCompareBranch = new RevisionBranchSegments(base.path(), Ordering.natural().max(commonPath), commonPath);
+			
+			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
+			final RevisionSegment lastSegment = baseOfCompareRef.segments().last();
+			final RevisionBranchRef compareRef = new RevisionBranchRef(compare.branchId(), compare.path(), ImmutableSortedSet.<RevisionSegment>naturalOrder()
+					.addAll(compare.difference(base).segments())
+					.add(new RevisionSegment(lastSegment.branchId(), lastSegment.end(), Long.MAX_VALUE))
+					.build());
+			
 
-			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
 			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, 
-					baseOfCompareBranch, 
-					compare,
+					baseOfCompareRef, 
+					compareRef,
 					limit);
 			
+			if (base.branchId() == compare.branchId()) {
+				return result.build();
+			}
+			
+			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
 			int added = 0;
 			int changed = 0;
 			int deleted = 0;
@@ -168,7 +168,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.select(String[].class)
 						.from(type)
 						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
-						.where(Revision.branchSegmentFilter(segmentsToCompare))
+						.where(compareRef.toRevisionFilter())
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(SCROLL_LIMIT)
 						.build();
@@ -197,9 +197,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 							.from(type)
 							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
 							.where(Expressions.builder()
-									.filter(matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(newOrChangedKeys)))
-									.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
-									.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+									.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(newOrChangedKeys)))
+									.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
+									.filter(Revision.toRevisedInFilter(compareRef.segments()))
 									.build())
 							.scroll(SCROLL_KEEP_ALIVE)
 							.limit(SCROLL_LIMIT)
@@ -238,14 +238,14 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				
 				} // newOrChangedHits
 
-				// Revisions which existed on "base", but where replaced by another revision on "compare" segments
+				// Revisions which existed on "base", but were replaced by another revision on "compare" segments
 				final Query<String[]> deletedOrChangedQuery = Query
 						.select(String[].class)
 						.from(type)
 						.fields(Revision.STORAGE_KEY)
 						.where(Expressions.builder()
-								.filter(matchAnyInt(Revision.SEGMENT_ID, commonPath))
-								.filter(matchAnyInt(Revision.REPLACED_INS, segmentsToCompare))
+								.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
+								.filter(Revision.toRevisedInFilter(compareRef.segments()))
 								.build())
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(SCROLL_LIMIT)
@@ -269,8 +269,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 							.from(type)
 							.fields(Revision.STORAGE_KEY)
 							.where(Expressions.builder()
-									.filter(matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(deletedOrChangedKeys)))
-									.filter(Revision.branchSegmentFilter(segmentsToCompare))
+									.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(deletedOrChangedKeys)))
+									.filter(compareRef.toRevisionFilter())
 									.build())
 							.scroll(SCROLL_KEEP_ALIVE)
 							.limit(SCROLL_LIMIT)
@@ -309,22 +309,20 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public void purge(final String branchPath, final Purge purge) {
-		final RevisionBranchSegments branch = getBranchSegments(branchPath);
+		final RevisionBranchRef branch = getBranchRef(branchPath);
 		index.write(index -> {
 			// TODO support selective type purging
 			final Set<Class<? extends Revision>> typesToPurge = getRevisionTypes();
 			
 			switch (purge) {
 			case ALL: 
-				purge(branch.path(), index, typesToPurge, branch.segments());
+				purge(index, branch, typesToPurge);
 				break;
 			case HISTORY:
-				final Set<Integer> segmentsToPurge = newHashSet(branch.segments());
-				segmentsToPurge.remove(branch.segmentId());
-				purge(branch.path(), index, typesToPurge, segmentsToPurge);
+				purge(index, branch.historyRef(), typesToPurge);
 				break;
 			case LATEST:
-				purge(branch.path(), index, typesToPurge, Collections.singleton(branch.segmentId()));
+				purge(index, branch.lastRef(), typesToPurge);
 				break;
 			default: throw new UnsupportedOperationException("Unsupported purge: " + purge);
 			}
@@ -332,20 +330,20 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		});
 	}
 	
-	private void purge(final String branchToPurge, Writer writer, Set<Class<? extends Revision>> typesToPurge, Set<Integer> segmentsToPurge) throws IOException {
+	private void purge(Writer writer, final RevisionBranchRef refToPurge, Set<Class<? extends Revision>> typesToPurge) throws IOException {
 		// if nothing to purge return
-		if (typesToPurge.isEmpty() || segmentsToPurge.isEmpty()) {
+		if (typesToPurge.isEmpty() || refToPurge.segments().isEmpty()) {
 			return;
 		}
 		
 		final Searcher searcher = writer.searcher();
+		
 		final ExpressionBuilder purgeQuery = Expressions.builder();
 		// purge only documents added to the selected branch
-		purgeQuery.filter(Expressions.exactMatch(Revision.BRANCH_PATH, branchToPurge));
-		for (Integer segmentToPurge : segmentsToPurge) {
+		for (RevisionSegment segmentToPurge : refToPurge.segments()) {
 			purgeQuery.should(Expressions.builder()
-				.filter(Expressions.match(Revision.SEGMENT_ID, segmentToPurge))
-				.filter(Expressions.match(Revision.REPLACED_INS, segmentToPurge))
+				.filter(segmentToPurge.toRangeExpression(Revision.CREATED))
+				.filter(segmentToPurge.toRangeExpression(Revision.REVISED))
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
@@ -371,16 +369,20 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	@Override
-	public RevisionBranches branches() {
+	public RevisionBranching branching() {
 		return branches;
 	}
 
-	private RevisionBranchSegments getBranchSegments(final String branchPath) {
-		return branches.getBranch(branchPath).getRevisionBranchSegments();
+	private RevisionBranchRef getBranchRef(final String branchPath) {
+		return getBranch(branchPath).ref();
+	}
+
+	private RevisionBranchRef getBaseRef(final String branchPath) {
+		return getBranch(branchPath).baseRef();
 	}
 	
-	private RevisionBranchSegments getParentBranchSegments(final String branchPath) {
-		return branches.getBranch(branchPath).getParentRevisionBranchSegments();
+	private RevisionBranch getBranch(final String branchPath) {
+		return branches.getBranch(branchPath);
 	}
 	
 	private Set<Class<? extends Revision>> getRevisionTypes() {

@@ -67,6 +67,8 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 */
 	<T> T write(String branchPath, long commitTimestamp, RevisionIndexWrite<T> write);
+	
+//	StagingArea prepareCommit();
 
 	/**
 	 * Purges selected revisions from the given branch in this index. When the purge completes only document revisions applicable for the selected
@@ -120,7 +122,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 * @since 6.5
 	 */
-	RevisionBranches branches();
+	RevisionBranching branching();
 	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.
@@ -146,7 +148,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	}
 
 	/**
-	 * Returns <code>true</code> if the given branch path can evaluate to its base segments.
+	 * Returns <code>true</code> if the given branch path can evaluate to its base points.
 	 * @param branchPath
 	 * @return
 	 */
@@ -155,7 +157,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its segments.
+	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its branch points.
 	 * @param revisionRangePath
 	 * @return
 	 */

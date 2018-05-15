@@ -42,7 +42,6 @@ public final class Mappings {
 	}
 	
 	public Mappings(Collection<Class<?>> types) {
-		checkArgument(!types.isEmpty(), "At least one document type should be specified");
 		final Multiset<String> duplicates = HashMultiset.create();
 		for (Class<?> type : ImmutableSet.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping

@@ -20,6 +20,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
@@ -27,6 +28,7 @@ import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -73,10 +75,8 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		
 		// XXX only for JSON deserialization
 		protected long storageKey;
-		protected String branchPath;
-		protected long commitTimestamp;
-		protected Collection<Integer> replacedIns = Collections.emptyList();
-		protected int segmentId;
+		protected RevisionBranchPoint created;
+		protected List<RevisionBranchPoint> revised = Collections.emptyList();
 
 		/**
 		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
@@ -109,23 +109,13 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			return getSelf();
 		}
 		
-		B commitTimestamp(final long commitTimestamp) {
-			this.commitTimestamp = commitTimestamp;
+		B revised(final List<RevisionBranchPoint> revised) {
+			this.revised = revised;
 			return getSelf();
 		}
 		
-		B branchPath(final String branchPath) {
-			this.branchPath = branchPath;
-			return getSelf();
-		}
-		
-		B replacedIns(final Collection<Integer> replacedIns) {
-			this.replacedIns = replacedIns;
-			return getSelf();
-		}
-		
-		B segmentId(final int segmentId) {
-			this.segmentId = segmentId;
+		B created(final RevisionBranchPoint created) {
+			this.created = created;
 			return getSelf();
 		}
 		

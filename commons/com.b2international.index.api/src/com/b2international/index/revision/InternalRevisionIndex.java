@@ -20,6 +20,6 @@ package com.b2international.index.revision;
  */
 interface InternalRevisionIndex extends RevisionIndex {
 
-	<T> T read(RevisionBranchSegments branch, RevisionIndexRead<T> read);
+	<T> T read(RevisionBranchRef branch, RevisionIndexRead<T> read);
 	
 }

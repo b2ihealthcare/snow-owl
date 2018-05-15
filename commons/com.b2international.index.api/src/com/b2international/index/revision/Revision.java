@@ -15,19 +15,18 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+import java.util.SortedSet;
 
 import com.b2international.index.Script;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -35,29 +34,27 @@ import com.google.common.base.Objects.ToStringHelper;
 /**
  * @since 4.7
  */
-@Script(name=Revision.UPDATE_REPLACED_INS, script=""
-		+ "if (!ctx._source.replacedIns.contains(params.segmentId)) {"
-		+ "    ctx._source.replacedIns.add(params.segmentId);"
+@Script(name=Revision.UPDATE_REVISED, script=""
+		+ "int idx = ctx._source.revised.indexOf(params.oldRevised);"
+		+ "if (idx > -1) {"
+		+ "    ctx._source.revised.set(idx, params.newRevised);"
+		+ "} else {"
+		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}")
 public abstract class Revision implements WithId {
 	
 	public static final String STORAGE_KEY = "storageKey";
-	public static final String BRANCH_PATH = "branchPath";
-	public static final String COMMIT_TIMESTAMP = "commitTimestamp";
-	public static final String SEGMENT_ID = "segmentId";
-	public static final String REPLACED_INS = "replacedIns";
+	public static final String CREATED = "created";
+	public static final String REVISED = "revised";
 	
 	// scripts
-	public static final String UPDATE_REPLACED_INS = "updateReplacedIns";
+	public static final String UPDATE_REVISED = "updateRevised";
 
 	private String _id;
 	
 	private long storageKey;
-	private long commitTimestamp;
-	private String branchPath;
-	
-	private int segmentId;
-	private Collection<Integer> replacedIns = Collections.emptySet();
+	private RevisionBranchPoint created;
+	private List<RevisionBranchPoint> revised = Collections.emptyList();
 	
 	@Override
 	public final void set_id(String _id) {
@@ -71,46 +68,30 @@ public abstract class Revision implements WithId {
 		return _id;
 	}
 	
-	protected final void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	protected final void setCommitTimestamp(long createdTimestamp) {
-		this.commitTimestamp = createdTimestamp;
-	}
-	
 	protected final void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
 	}
 	
-	protected final void setReplacedIns(Collection<Integer> replacedIns) {
-		this.replacedIns = replacedIns;
+	protected final void setCreated(RevisionBranchPoint created) {
+		this.created = created;
 	}
 	
-	protected final void setSegmentId(int segmentId) {
-		this.segmentId = segmentId;
+	protected final void setRevised(List<RevisionBranchPoint> revised) {
+		this.revised = revised;
 	}
 	
-	public final int getSegmentId() {
-		return segmentId;
+	public RevisionBranchPoint getCreated() {
+		return created;
+	}
+	
+	public List<RevisionBranchPoint> getRevised() {
+		return revised;
 	}
 	
 	public final long getStorageKey() {
 		return storageKey;
 	}
-	
-	public final Collection<Integer> getReplacedIns() {
-		return replacedIns;
-	}
 
-	public final String getBranchPath() {
-		return branchPath;
-	}
-	
-	public final long getCommitTimestamp() {
-		return commitTimestamp;
-	}
-	
 	@Override
 	public final String toString() {
 		return doToString().toString();
@@ -120,27 +101,40 @@ public abstract class Revision implements WithId {
 		return Objects.toStringHelper(this)
 				.add(DocumentMapping._ID, _id)
 				.add(STORAGE_KEY, storageKey)
-				.add(Revision.BRANCH_PATH, branchPath)
-				.add(Revision.COMMIT_TIMESTAMP, commitTimestamp)
-				.add(Revision.SEGMENT_ID, segmentId)
-				.add(Revision.REPLACED_INS, replacedIns);
-	}
-
-	public static Expression branchFilter(RevisionBranchSegments branch) {
-		return branchSegmentFilter(branch.segments());
-	}
-
-	public static Expression branchSegmentFilter(final Integer segment) {
-		return Expressions.builder()
-				.filter(match(Revision.SEGMENT_ID, segment))
-				.mustNot(match(Revision.REPLACED_INS, segment))
-				.build();
+				.add(Revision.CREATED, created)
+				.add(Revision.REVISED, revised);
 	}
 	
-	public static Expression branchSegmentFilter(final Set<Integer> segments) {
-		return Expressions.builder()
-				.filter(matchAnyInt(Revision.SEGMENT_ID, segments))
-				.mustNot(matchAnyInt(Revision.REPLACED_INS, segments))
+	public static Expression toRevisionFilter(SortedSet<RevisionSegment> segments) {
+		final ExpressionBuilder query = Expressions.builder();
+		final ExpressionBuilder created = Expressions.builder();
+		
+		for (RevisionSegment segment : segments) {
+			final String start = segment.getStartAddress();
+			final String end = segment.getEndAddress();
+			created.should(Expressions.matchRange(Revision.CREATED, start, end));
+			query.mustNot(Expressions.matchRange(Revision.REVISED, start, end));
+		}
+		
+		return query
+				.filter(created.build())
 				.build();
 	}
+
+	public static Expression toCreatedInFilter(SortedSet<RevisionSegment> segments) {
+		final ExpressionBuilder createdIn = Expressions.builder();
+		for (RevisionSegment segment : segments) {
+			createdIn.should(segment.toRangeExpression(Revision.CREATED));
+		}
+		return createdIn.build(); 
+	}
+
+	public static Expression toRevisedInFilter(SortedSet<RevisionSegment> segments) {
+		final ExpressionBuilder revisedIn = Expressions.builder();
+		for (RevisionSegment segment : segments) {
+			revisedIn.should(segment.toRangeExpression(Revision.REVISED));
+		}
+		return revisedIn.build();
+	}
+
 }

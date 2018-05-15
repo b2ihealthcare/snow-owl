@@ -62,9 +62,6 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertTrue(compare.getNewComponents().get(Data.class).contains(STORAGE_KEY1));
 		assertTrue(compare.getChangedComponents().isEmpty());
 		assertTrue(compare.getDeletedComponents().isEmpty());
-		// verify that comparing just the branch produces the same result
-		final RevisionCompare compareOnlyBranch = index().compare(branch);
-		assertEquals(compare, compareOnlyBranch);
 	}
 	
 	@Test
@@ -89,6 +86,20 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		final RevisionCompare compare = index().compare(branch, MAIN);
 		assertTrue(compare.getNewComponents().isEmpty());
 		assertTrue(compare.getChangedComponents().isEmpty());
+		assertTrue(compare.getDeletedComponents().isEmpty());
+	}
+	
+	@Test
+	public void compareChangeOnMainSinceBranchBasePoint_Reverse() throws Exception {
+		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		final String branch = createBranch(MAIN, "a");
+		indexRevision(branch, STORAGE_KEY2, new Data("field1", "field2"));
+		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		
+		final RevisionCompare compare = index().compare(branch, MAIN);
+		assertTrue(compare.getNewComponents().isEmpty());
+		assertEquals(1, compare.getChangedComponents().size());
+		assertTrue(compare.getChangedComponents(Data.class).contains(STORAGE_KEY1));
 		assertTrue(compare.getDeletedComponents().isEmpty());
 	}
 	

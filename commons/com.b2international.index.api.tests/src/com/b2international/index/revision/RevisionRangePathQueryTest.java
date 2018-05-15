@@ -61,7 +61,7 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 		final Data data1 = new Data("field1", "field2");
 		final Data data2 = new Data("field1", "field2Changed");
 		indexRevision(MAIN, STORAGE_KEY1, data1);
-		indexRevision(branchA, STORAGE_KEY1, data2);
+		indexRevision(branchA, STORAGE_KEY2, data2);
 		final Iterable<Data> hits = search(RevisionIndex.toRevisionRange(MAIN, branchA), Query.select(Data.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data2);
 	}

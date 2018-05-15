@@ -135,15 +135,15 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertEquals(3, Iterables.size(revisions));
 		int revisionsInSegment0 = 0;
 		int revisionsInSegment2 = 0;
-		for (Data rev : revisions) {
-			if (rev.getSegmentId() == 0) {
-				revisionsInSegment0++;
-			} else if (rev.getSegmentId() == 2) {
-				revisionsInSegment2++;
-			} else {
-				throw new AssertionFailedError("Unexpected segment ID: " + rev.getSegmentId());
-			}
-		}
+//		for (Data rev : revisions) {
+//			if (rev.getSegmentId() == 0) {
+//				revisionsInSegment0++;
+//			} else if (rev.getSegmentId() == 2) {
+//				revisionsInSegment2++;
+//			} else {
+//				throw new AssertionFailedError("Unexpected segment ID: " + rev.getSegmentId());
+//			}
+//		}
 		assertEquals(1, revisionsInSegment0);
 		assertEquals(2, revisionsInSegment2);
 	}

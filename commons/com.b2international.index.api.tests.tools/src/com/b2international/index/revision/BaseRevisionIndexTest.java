@@ -18,9 +18,10 @@ package com.b2international.index.revision;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,7 +56,6 @@ public abstract class BaseRevisionIndexTest {
 	private Mappings mappings;
 	private Index rawIndex;
 	private RevisionIndex index;
-	private AtomicLong clock = new AtomicLong(0L);
 	
 	protected final long nextStorageKey() {
 		return storageKeys.getAndIncrement();
@@ -71,7 +71,7 @@ public abstract class BaseRevisionIndexTest {
 		index = new DefaultRevisionIndex(rawIndex);
 		index.admin().create();
 		// TODO remove this line after fixing merging branch services into RevisionIndex
-		index.branches().init();
+		index.branching().init();
 	}
 
 	@After
@@ -89,11 +89,11 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected String createBranch(String parent, String child) {
-		return index().branches().create(parent, child);
+		return branching().create(parent, child);
 	}
 	
 	protected final long currentTime() {
-		return clock.incrementAndGet();
+		return System.nanoTime();
 	}
 
 	protected final RevisionIndex index() {
@@ -104,11 +104,17 @@ public abstract class BaseRevisionIndexTest {
 		return rawIndex;
 	}
 	
+	protected final RevisionBranching branching() {
+		return index().branching();
+	}
+	
 	/**
-	 * Returns the document types used by this test case.
+	 * Subclasses may override to provide additional mappings for the underlying index.
 	 * @return
 	 */
-	protected abstract Collection<Class<?>> getTypes();
+	protected Collection<Class<?>> getTypes() {
+		return Collections.emptySet();
+	}
 	
 	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
 		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
@@ -123,35 +129,29 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final long storageKey) {
-		return index().read(branch, new RevisionIndexRead<T>() {
-			@Override
-			public T execute(RevisionSearcher index) throws IOException {
-				return index.get(type, storageKey);
-			}
-		});
+		return index().read(branch, index -> index.get(type, storageKey));
 	}
 	
 	protected final void indexRevision(final String branchPath, final long storageKey, final Revision data) {
+		commit(branchPath, Collections.singletonMap(storageKey, data));
+	}
+
+	protected final long commit(final String branchPath, final Map<Long, Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter index) throws IOException {
-				index.put(storageKey, data);
-				index.commit();
-				return null;
-			}
+		index().write(branchPath, commitTimestamp, index -> {
+			newRevisions.forEach((storageKey, data) -> index.put(storageKey, data));
+			index.commit();
+			return null;
 		});
+		return commitTimestamp;
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
 		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter index) throws IOException {
-				index.remove(type, storageKey);
-				index.commit();
-				return null;
-			}
+		index().write(branchPath, commitTimestamp, index -> {
+			index.remove(type, storageKey);
+			index.commit();
+			return null;
 		});
 	}
 	
@@ -166,10 +166,8 @@ public abstract class BaseRevisionIndexTest {
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
 		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
-			if (Revision.REPLACED_INS.equals(f.getName()) 
-					|| Revision.SEGMENT_ID.equals(f.getName())
-					|| Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
-					|| Revision.BRANCH_PATH.equals(f.getName()) 
+			if (Revision.CREATED.equals(f.getName()) 
+					|| Revision.REVISED.equals(f.getName())
 					|| Revision.STORAGE_KEY.equals(f.getName()) 
 					|| DocumentMapping._ID.equals(f.getName())) {
 				// skip revision fields from equality check

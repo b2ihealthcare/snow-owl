@@ -38,22 +38,30 @@ import com.google.common.collect.Sets;
  */
 public class DefaultRevisionWriter implements RevisionWriter {
 
-	private final RevisionBranchSegments branch;
-	private final long commitTimestamp;
+	private final RevisionBranchRef branch;
+	
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
+	private final RevisionBranchPoint created;
+	private final RevisionBranchPoint revised;
+	
 	private final Map<Class<? extends Revision>, Collection<Long>> revisionUpdates = newHashMap();
 
-	public DefaultRevisionWriter(final RevisionBranchSegments branch, long commitTimestamp, Writer index, RevisionSearcher searcher) {
+	public DefaultRevisionWriter(
+			final RevisionBranchRef branch,
+			long commitTimestamp,
+			Writer index, 
+			RevisionSearcher searcher) {
 		this.branch = branch;
-		this.commitTimestamp = commitTimestamp;
 		this.index = index;
 		this.searcher = searcher;
+		this.created = new RevisionBranchPoint(branch.branchId(), commitTimestamp);
+		this.revised = new RevisionBranchPoint(branch.branchId(), Long.MAX_VALUE);
 	}
 
 	@Override
-	public void put(long storageKey, Revision object) throws IOException {
+	public void put(long storageKey, Revision object) {
 		checkArgument(storageKey > 0, "StorageKey cannot be negative or zero");
 		if (!revisionUpdates.containsKey(object.getClass())) {
 			revisionUpdates.put(object.getClass(), Sets.<Long>newHashSet());
@@ -63,40 +71,40 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		checkArgument(!revisionsToUpdate.contains(storageKey), "duplicate revision %s", storageKey);
 		revisionsToUpdate.add(storageKey);
 		
-		object.setBranchPath(branch());
-		object.setCommitTimestamp(commitTimestamp);
 		object.setStorageKey(storageKey);
-		object.setSegmentId(branch.segmentId());
+		object.setCreated(created);
 		index.put(generateRevisionId(), object);
 	}
 
 	@Override
-	public void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException {
+	public void putAll(Map<Long, Revision> revisionsByStorageKey) {
 		for (Entry<Long, Revision> doc : revisionsByStorageKey.entrySet()) {
 			put(doc.getKey(), doc.getValue());
 		}
 	}
 
 	@Override
-	public void remove(Class<? extends Revision> type, long storageKey) throws IOException {
+	public void remove(Class<? extends Revision> type, long storageKey) {
 		remove(type, Collections.singleton(storageKey));
 	}
 	
 	@Override
-	public void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException {
+	public void remove(Class<? extends Revision> type, Collection<Long> storageKeys) {
 		removeAll(ImmutableMap.<Class<? extends Revision>, Collection<Long>>of(type, storageKeys));
 	}
 
 	@Override
-	public void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException {
+	public void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) {
+		final String oldRevised = revised.toIpAddress();
+		final String newRevised = created.toIpAddress();
 		for (Class<? extends Revision> type : storageKeysByType.keySet()) {
 			final Collection<Long> storageKeysToUpdate = storageKeysByType.get(type);
 			if (!storageKeysToUpdate.isEmpty()) {
 				final Expression filter = Expressions.builder()
 							.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeysToUpdate))
-							.filter(Revision.branchFilter(branch))
+							.filter(Revision.toRevisionFilter(branch.segments()))
 							.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, DocumentMapping._ID, Revision.UPDATE_REPLACED_INS, ImmutableMap.of("segmentId", branch.segmentId()));
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>(type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
 				index.bulkUpdate(update);
 			}
 		}
@@ -106,6 +114,15 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	public void commit() throws IOException {
 		// before commit, mark all previous revisions as replaced
 		removeAll(revisionUpdates);
+		index.bulkUpdate(
+			new BulkUpdate<>(
+				RevisionBranch.class, 
+				DocumentMapping.matchId(branch()), 
+				DocumentMapping._ID, 
+				RevisionBranch.Scripts.WITH_HEADTIMESTAMP, 
+				ImmutableMap.of("headTimestamp", created.getTimestamp())
+			)
+		);
 		index.commit();
 	}
 

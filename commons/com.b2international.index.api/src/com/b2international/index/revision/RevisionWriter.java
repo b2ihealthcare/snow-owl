@@ -28,15 +28,15 @@ import com.b2international.index.Writer;
  */
 public interface RevisionWriter {
 
-	void put(long storageKey, Revision object) throws IOException;
+	void put(long storageKey, Revision object);
 
-	void putAll(Map<Long, Revision> revisionsByStorageKey) throws IOException;
+	void putAll(Map<Long, Revision> revisionsByStorageKey);
 
-	void remove(Class<? extends Revision> type, long storageKey) throws IOException;
+	void remove(Class<? extends Revision> type, long storageKey);
 
-	void remove(Class<? extends Revision> type, Collection<Long> storageKeys) throws IOException;
+	void remove(Class<? extends Revision> type, Collection<Long> storageKeys);
 
-	void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType) throws IOException;
+	void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType);
 
 	void commit() throws IOException;
 

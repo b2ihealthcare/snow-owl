@@ -88,27 +88,27 @@ public class EsDocumentWriter implements Writer {
 	}
 	
 	@Override
-	public void put(String key, Object object) throws IOException {
+	public void put(String key, Object object) {
 		indexOperations.put(key, object);
 	}
 
 	@Override
-	public <T> void putAll(Map<String, T> objectsByKey) throws IOException {
+	public <T> void putAll(Map<String, T> objectsByKey) {
 		indexOperations.putAll(objectsByKey);
 	}
 
 	@Override
-	public <T> void bulkUpdate(BulkUpdate<T> update) throws IOException {
+	public <T> void bulkUpdate(BulkUpdate<T> update) {
 		updateOperations.add(update);
 	}
 
 	@Override
-	public void remove(Class<?> type, String key) throws IOException {
+	public void remove(Class<?> type, String key) {
 		removeAll(Collections.singletonMap(type, ImmutableSet.of(key)));
 	}
 
 	@Override
-	public void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException {
+	public void removeAll(Map<Class<?>, Set<String>> keysByType) {
 		for (Class<?> type : keysByType.keySet()) {
 			deleteOperations.putAll(type, keysByType.get(type));
 		}

@@ -39,15 +39,15 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class RevisionCompare {
 
-	static Builder builder(InternalRevisionIndex index, RevisionBranchSegments base, RevisionBranchSegments compare, int limit) {
+	static Builder builder(InternalRevisionIndex index, RevisionBranchRef base, RevisionBranchRef compare, int limit) {
 		return new Builder(index, base, compare, limit);
 	}
 	
 	static class Builder {
 		
 		private final InternalRevisionIndex index;
-		private final RevisionBranchSegments base;
-		private final RevisionBranchSegments compare;
+		private final RevisionBranchRef base;
+		private final RevisionBranchRef compare;
 		private final int limit;
 	
 		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
@@ -58,7 +58,7 @@ public final class RevisionCompare {
 		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 		private final IntValueMap<Class<? extends Revision>> deletedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 
-		Builder(InternalRevisionIndex index, RevisionBranchSegments base, RevisionBranchSegments compare, int limit) {
+		Builder(InternalRevisionIndex index, RevisionBranchRef base, RevisionBranchRef compare, int limit) {
 			this.index = index;
 			this.base = base;
 			this.compare = compare;
@@ -119,8 +119,8 @@ public final class RevisionCompare {
 	}
 	
 	private final InternalRevisionIndex index;
-	private final RevisionBranchSegments base;
-	private final RevisionBranchSegments compare;
+	private final RevisionBranchRef base;
+	private final RevisionBranchRef compare;
 
 	private final Map<Class<? extends Revision>, LongSet> newComponents;
 	private final Map<Class<? extends Revision>, LongSet> changedComponents;
@@ -131,8 +131,8 @@ public final class RevisionCompare {
 	private final IntValueMap<Class<? extends Revision>> deletedTotals;
 	
 	private RevisionCompare(InternalRevisionIndex index, 
-			RevisionBranchSegments base, 
-			RevisionBranchSegments compare,
+			RevisionBranchRef base, 
+			RevisionBranchRef compare,
 			Map<Class<? extends Revision>, LongSet> newComponents,
 			Map<Class<? extends Revision>, LongSet> changedComponents,
 			Map<Class<? extends Revision>, LongSet> deletedComponents,
@@ -249,7 +249,7 @@ public final class RevisionCompare {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(newComponents, changedComponents, deletedComponents);
+		return Objects.hash(base, compare, newComponents, changedComponents, deletedComponents);
 	}
 	
 	@Override

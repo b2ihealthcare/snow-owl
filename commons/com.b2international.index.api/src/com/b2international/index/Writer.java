@@ -24,15 +24,15 @@ import java.util.Set;
  */
 public interface Writer extends AutoCloseable {
 
-	void put(String key, Object object) throws IOException;
+	void put(String key, Object object);
 	
-	<T> void putAll(Map<String, T> objectsByKey) throws IOException;
+	<T> void putAll(Map<String, T> objectsByKey);
 
-	<T> void bulkUpdate(BulkUpdate<T> update) throws IOException;
+	<T> void bulkUpdate(BulkUpdate<T> update);
 	
-	void remove(Class<?> type, String key) throws IOException;
+	void remove(Class<?> type, String key);
 	
-	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
+	void removeAll(Map<Class<?>, Set<String>> keysByType);
 
 	void commit() throws IOException;
 

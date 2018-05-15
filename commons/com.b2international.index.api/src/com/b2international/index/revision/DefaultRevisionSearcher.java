@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ import com.google.common.collect.Iterables;
  */
 public class DefaultRevisionSearcher implements RevisionSearcher {
 
-	private final RevisionBranchSegments branch;
+	private final RevisionBranchRef branch;
 	private final DocSearcher searcher;
 
-	public DefaultRevisionSearcher(RevisionBranchSegments branch, DocSearcher searcher) {
+	public DefaultRevisionSearcher(RevisionBranchRef branch, DocSearcher searcher) {
 		this.branch = branch;
 		this.searcher = searcher;
 	}
@@ -73,7 +73,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.where(
 						Expressions.builder()
 							.must(query.getWhere())
-							.filter(Revision.branchFilter(branch))
+							.filter(branch.toRevisionFilter())
 						.build()
 					)
 					.sortBy(query.getSortBy())
@@ -90,7 +90,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 					.fields(query.getFields())
 					.where(Expressions.builder()
 							.must(query.getWhere())
-							.filter(Expressions.hasParent(query.getParentType(), Revision.branchFilter(branch)))
+							.filter(Expressions.hasParent(query.getParentType(), branch.toRevisionFilter()))
 							.build())
 					.sortBy(query.getSortBy())
 					.limit(query.getLimit())
@@ -106,7 +106,7 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 		aggregation.query(Expressions.builder()
 				.must(aggregation.getQuery())
-				.filter(Revision.branchFilter(branch))
+				.filter(branch.toRevisionFilter())
 			.build());
 		return searcher.aggregate(aggregation);
 	}
