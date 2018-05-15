@@ -15,8 +15,6 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.RequestTimeoutException;
@@ -92,17 +91,15 @@ public abstract class BaseRevisionBranching {
 			}
 		} catch (RequestTimeoutException e) {
 			throw e;
+		} catch (ApiException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-		
-	/**
-	 * Must be called after index initialization.
-	 */
-	public final void init() {
-		this.index.get().admin().mappings().putMapping(RevisionBranch.class);
-		RevisionBranch mainBranch = getBranch(RevisionBranch.MAIN_PATH);
+	
+	final void init() {
+		RevisionBranch mainBranch = get(RevisionBranch.MAIN_PATH);
 		if (mainBranch == null) {
 			final long branchId = getMainBranchId();
 			final long baseTimestamp = getMainBaseTimestamp();
@@ -200,7 +197,7 @@ public abstract class BaseRevisionBranching {
 
 	public final void delete(String branchPath) {
 		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
-			throw new IllegalArgumentException("MAIN cannot be deleted");
+			throw new BadRequestException("MAIN cannot be deleted");
 		}
 		for (RevisionBranch child : getChildren(branchPath)) {
 			doDelete(child.getPath());
@@ -224,29 +221,39 @@ public abstract class BaseRevisionBranching {
 
 	public String merge(String fromPath, String toPath, String commitMessage) {
 		if (toPath.equals(fromPath)) {
-			throw new IllegalArgumentException(String.format("Can't merge branch '%s' onto itself.", toPath));
+			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
 		}
 		RevisionBranch to = getBranch(toPath);
 		RevisionBranch from = getBranch(fromPath);
 		BranchState changesFromState = from.state(to);
-		checkArgument(changesFromState == BranchState.FORWARD, "Branch %s should be in FORWARD state to be merged into %s. It's currently %s", fromPath, toPath, changesFromState);
-		final String mergedToPath = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
-		// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
-		if (from.getParentPath().equals(mergedToPath)) {
-			final RevisionBranch reopenedFrom = reopen(getBranch(mergedToPath), from.getName(), from.metadata());
-			sendChangeEvent(reopenedFrom.getPath()); // Explicit notification (reopen)
-			return reopenedFrom.getPath();
+		
+		if (changesFromState == BranchState.FORWARD) {
+			final String mergedToPath = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
+			// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
+			if (from.getParentPath().equals(mergedToPath)) {
+				final RevisionBranch reopenedFrom = reopen(getBranch(mergedToPath), from.getName(), from.metadata());
+				sendChangeEvent(reopenedFrom.getPath()); // Explicit notification (reopen)
+				return reopenedFrom.getPath();
+			}
+			return mergedToPath;
+		} else {
+			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", fromPath, toPath, changesFromState);
 		}
-		return mergedToPath;
 	}
 	
 	public final String rebase(final String branchPath, final String onTopOfPath, final String commitMessage, final Runnable postReopen) {
 		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
-			throw new IllegalArgumentException("MAIN cannot be rebased");
+			throw new BadRequestException("MAIN cannot be rebased");
 		}
-		final RevisionBranch branch = getBranch(branchPath);
-		final RevisionBranch onTopOf = getBranch(onTopOfPath);
-		return doRebase(branch, onTopOf, commitMessage, postReopen);
+		final RevisionBranch revisionBranch = getBranch(branchPath);
+		final BranchState state = revisionBranch.state(getBranch(revisionBranch.getParentPath()));
+		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
+			final RevisionBranch branch = getBranch(branchPath);
+			final RevisionBranch onTopOf = getBranch(onTopOfPath);
+			return doRebase(branch, onTopOf, commitMessage, postReopen);
+		} else {
+			return branchPath;
+		}
 	}
 
 	protected String doRebase(final RevisionBranch branch, final RevisionBranch onTopOf, final String commitMessage, final Runnable postReopen) {

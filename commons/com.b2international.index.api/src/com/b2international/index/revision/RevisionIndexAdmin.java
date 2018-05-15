@@ -48,6 +48,7 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void create() {
+		this.index.admin().mappings().putMapping(RevisionBranch.class);
 		rawIndexAdmin.create();
 		index.branching().init();
 	}

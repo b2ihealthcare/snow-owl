@@ -21,6 +21,7 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
 import com.b2international.index.Doc;
@@ -94,12 +95,12 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
 
 		/**
-		 * Validates a branch name and throws {@link IllegalArgumentException} if not valid.
+		 * Validates a branch name and throws {@link BadRequestException} if not valid.
 		 * 
 		 * @param name
-		 * @throws IllegalArgumentException
+		 * @throws BadRequestException
 		 */
-		void checkName(String name) throws IllegalArgumentException;
+		void checkName(String name) throws BadRequestException;
 
 		/**
 		 * @since 6.5
@@ -123,12 +124,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			@Override
 			public void checkName(String name) {
 				if (Strings.isNullOrEmpty(name)) {
-					throw new IllegalArgumentException("Name cannot be empty");
+					throw new BadRequestException("Name cannot be empty");
 				}
 				if (!pattern.matcher(name).matches()) {
-					throw new IllegalArgumentException(String.format(
-							"'%s' is either too long (max %s characters) or it contains invalid characters (only '%s' characters are allowed).", name,
-							maximumLength, allowedCharacterSet));
+					throw new BadRequestException("'%s' is either too long (max %s characters) or it contains invalid characters (only '%s' characters are allowed).", name,
+							maximumLength, allowedCharacterSet);
 				}
 			}
 

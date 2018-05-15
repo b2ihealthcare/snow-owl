@@ -62,6 +62,7 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 						.add(parentSegment.withEnd(currentTime))
 						.add(new RevisionSegment(newBranchId, currentTime, currentTime))
 						.build())
+				.metadata(metadata)
 				.build();
 		return commit(create(branch));
 	}

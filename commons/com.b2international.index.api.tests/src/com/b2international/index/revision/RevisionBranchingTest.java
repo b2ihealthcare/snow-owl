@@ -278,8 +278,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		
 		assertState(a, BranchState.FORWARD);
 		assertLaterBase(a, MAIN);
-		
-		assertState(b, BranchState.BEHIND);
+		assertState(b, BranchState.STALE);
 	}
 	
 	@Test
@@ -296,9 +295,8 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().rebase(a, MAIN, "Rebase A", () -> {});
 		
 		assertState(a, BranchState.UP_TO_DATE);
-		
 		assertLaterBase(a, MAIN);
-		assertState(b, BranchState.FORWARD);
+		assertState(b, BranchState.STALE);
 	}
 	
 	@Test
@@ -314,8 +312,8 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().rebase(a, MAIN, "Rebase A", () -> {});
 		
 		assertState(a, BranchState.FORWARD);
-		assertState(b, BranchState.BEHIND);
-		assertState(c, BranchState.UP_TO_DATE);
+		assertState(b, BranchState.STALE);
+		assertState(c, BranchState.STALE);
 	}
 	
 	@Test
