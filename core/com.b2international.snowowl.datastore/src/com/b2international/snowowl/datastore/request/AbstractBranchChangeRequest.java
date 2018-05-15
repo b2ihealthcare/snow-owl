@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -51,9 +50,8 @@ public abstract class AbstractBranchChangeRequest<R> implements Request<Reposito
 	public R execute(RepositoryContext context) {
 		
 		try {
-			final BranchManager branchManager = context.service(BranchManager.class);
-			final Branch source = branchManager.getBranch(sourcePath);
-			final Branch target = branchManager.getBranch(targetPath);
+			final Branch source = RepositoryRequests.branching().prepareGet(sourcePath).build().execute(context);
+			final Branch target = RepositoryRequests.branching().prepareGet(targetPath).build().execute(context);
 			
 			if (reviewId != null) {
 				final ReviewManager reviewManager = context.service(ReviewManager.class);

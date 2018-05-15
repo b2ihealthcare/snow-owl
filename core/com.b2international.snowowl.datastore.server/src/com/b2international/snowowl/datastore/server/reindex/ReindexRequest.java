@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,18 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
-import java.util.Collection;
-
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**
  * @since 4.7
@@ -49,14 +47,15 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		
-		int maxCdoBranchId = -1;
-		final BranchManager branchManager = context.service(BranchManager.class);
-		final Collection<? extends Branch> branches = branchManager.getBranches();
+		long maxCdoBranchId = -1L;
+		final Branches branches = RepositoryRequests.branching().prepareSearch()
+				.all()
+				.build()
+				.execute(context);
 		
 		for (final Branch branch : branches) {
-			final InternalCDOBasedBranch cdoBranch = (InternalCDOBasedBranch) branch;
-			if (cdoBranch.cdoBranchId() > maxCdoBranchId) {
-				maxCdoBranchId = cdoBranch.cdoBranchId();
+			if (branch.branchId() > maxCdoBranchId) {
+				maxCdoBranchId = branch.branchId();
 			}
 		}
 		
@@ -70,7 +69,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
 			//right now index is fully recreated
-			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, maxCdoBranchId, failedCommitTimestamp - 1, session);
+			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, (int) maxCdoBranchId, failedCommitTimestamp - 1, session);
 			cdoRepository.replicate(replicationContext);
 			// update repository state after the re-indexing
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),

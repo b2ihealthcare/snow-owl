@@ -24,7 +24,6 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -57,7 +56,6 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	}
 	
 	private Branch ensureAvailability(RepositoryContext context) {
-		final BranchManager branchManager = context.service(BranchManager.class);
 		final ICDOConnectionManager connectionManager = context.service(ICDOConnectionManager.class);
 		
 		final List<String> branchesToCheck = newArrayList();
@@ -71,7 +69,7 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 		
 		Branch branch = null; 
 		for (String branchToCheck : branchesToCheck) {
-			branch = branchManager.getBranch(branchToCheck);
+			branch = RepositoryRequests.branching().prepareGet(branchToCheck).build().execute(context);
 			
 			if (branch.isDeleted()) {
 				throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchToCheck);

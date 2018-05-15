@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
@@ -30,7 +33,10 @@ public final class ReadBranchRequest extends BranchRequest<Branch> {
 	
 	@Override
 	public Branch execute(RepositoryContext context) {
-		return context.service(BranchManager.class).getBranch(getBranchPath());
+		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		final RevisionBranch branch = branching.getBranch(getBranchPath());
+		final BranchState state = branch.state(branching.getBranch(branch.getParentPath()));
+		return new BranchData(branch, state);
 	}
 	
 }

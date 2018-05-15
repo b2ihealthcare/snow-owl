@@ -246,14 +246,14 @@ public class ReviewManagerImpl implements ReviewManager {
 	public Review createReview(final Branch source, final Branch target) {
 		if (source.path().equals(target.path())) {
 			throw new BadRequestException("Cannot create a review with the same source and target '%s'.", source.path());
-		} else if (!source.parent().equals(target) && !target.parent().equals(source)){
+		} else if (!source.parentPath().equals(target.path()) && !target.parentPath().equals(source.path())){
 			throw new BadRequestException("Cannot create review for source '%s' and target '%s', because there is no relation between them.", source.path(), target.path());
 		}
 
 		// the compared branch is always the source branch
 		final String branchToCompare = source.path();
 		// if target is parent of source, then this is a merge review otherwise this is a rebase review
-		final String branchAsBase = source.parent().equals(target) ? null : target.path();
+		final String branchAsBase = source.parentPath().equals(target.path()) ? null : target.path();
 		
 		final String reviewId = UUID.randomUUID().toString();
 		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex, branchAsBase, branchToCompare);

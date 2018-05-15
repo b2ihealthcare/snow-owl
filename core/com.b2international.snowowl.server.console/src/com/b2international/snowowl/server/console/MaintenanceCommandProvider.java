@@ -19,7 +19,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -55,10 +54,8 @@ import com.b2international.snowowl.datastore.server.reindex.ReindexResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -403,34 +400,27 @@ public class MaintenanceCommandProvider implements CommandProvider {
 			
 			if (parentBranch != null) {
 				interpreter.println(String.format("Branch hierarchy for %s in repository %s:", parentBranchPath, repositoryUUID));
-				print(parentBranch, getDepthOfBranch(parentBranch), interpreter);
+				print(repositoryUUID, parentBranch, getDepthOfBranch(parentBranch), interpreter);
 			}
 			
 		}
 	}
 	
-	private void print(final Branch branch, final int parentDepth, CommandInterpreter interpreter) {
-		
+	private void print(final String repositoryId, final Branch branch, final int parentDepth, CommandInterpreter interpreter) {
 		printBranch(branch, getDepthOfBranch(branch) - parentDepth, interpreter);
 		
-		List<? extends Branch> children = FluentIterable.from(branch.children()).filter(new Predicate<Branch>() {
-			@Override
-			public boolean apply(Branch input) {
-				return input.parentPath().equals(branch.path());
-			}
-		}).toSortedList(new Comparator<Branch>() {
-			@Override
-			public int compare(Branch o1, Branch o2) {
-				return Longs.compare(o1.baseTimestamp(), o2.baseTimestamp());
-			}
-		});
-		
-		if (children.size() != 0) {
-			for (Branch child : children) {
-				print(child, parentDepth, interpreter);
-			}
-		}
-		
+		RepositoryRequests.branching().prepareSearch()
+				.all()
+				.filterByParent(branch.path())
+				.build(repositoryId)
+				.execute(getBus())
+				.getSync()
+				.stream()
+				.filter(child -> child.parentPath().equals(branch.path()))
+				.sorted((c1, c2) -> Longs.compare(c1.baseTimestamp(), c2.baseTimestamp()))
+				.forEach(child -> {
+					print(repositoryId, child, parentDepth, interpreter);
+				});
 	}
 
 	private void printBranch(Branch branch, int depth, CommandInterpreter interpreter) {

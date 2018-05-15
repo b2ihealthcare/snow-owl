@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package com.b2international.snowowl.datastore.server.internal.merge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.BranchMergeException;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -37,7 +38,7 @@ import com.google.common.base.Strings;
  */
 public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 
-	private static class SyncRebaseRequest extends AbstractBranchChangeRequest<Branch> {
+	private static class SyncRebaseRequest extends AbstractBranchChangeRequest<Boolean> {
 
 		private static final Logger LOG = LoggerFactory.getLogger(SyncRebaseRequest.class);
 		
@@ -46,14 +47,14 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		}
 
 		@Override
-		protected Branch execute(final RepositoryContext context, final Branch source, final Branch target) {
+		protected Boolean execute(final RepositoryContext context, final Branch source, final Branch target) {
 
-			if (!target.parent().equals(source)) {
+			if (!target.parentPath().equals(source.path())) {
 				throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 			}
 
 			try (Locks locks = new Locks(context, source, target)) {
-				return target.rebase(source, commitMessage, new Runnable() {
+				context.service(BaseRevisionBranching.class).rebase(target.path(), source.path(), commitMessage, new Runnable() {
 					@Override
 					public void run() {
 						try {
@@ -63,6 +64,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 						}
 					}
 				});
+				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);
 			} catch (OperationLockException e) {

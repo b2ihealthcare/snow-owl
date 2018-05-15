@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,29 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * @since 4.1
  */
-public final class ReopenBranchRequest extends BranchRequest<Branch> {
+public final class ReopenBranchRequest extends BranchRequest<Boolean> {
 	
 	public ReopenBranchRequest(final String path) {
 		super(path);
 	}
 	
 	@Override
-	public Branch execute(RepositoryContext context) {
+	public Boolean execute(RepositoryContext context) {
+		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		final RevisionBranch branch = branching.getBranch(getBranchPath());
+		
 		try {
-			final Branch branch = context.service(BranchManager.class).getBranch(getBranchPath());
-			return branch.reopen();
+			final RevisionBranch parentBranch = branching.getBranch(branch.getParentPath());
+			branching.reopen(parentBranch, branch.getName(), branch.metadata());
+			return true;
 		} catch (NotFoundException e) {
 			// if parent not found, convert it to BadRequestException
 			throw e.toBadRequestException();

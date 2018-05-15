@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,22 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collections;
+import java.util.Map;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -79,12 +83,16 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 
 	@Override
 	protected Branches toCollectionResource(RepositoryContext context, Hits<RevisionBranch> hits) {
-		final BranchManager branchManager = context.service(BranchManager.class);
 		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
+		final Map<String, RevisionBranch> branchesById = newHashMap();
 		for (RevisionBranch doc : hits) {
-			final InternalBranch branch = InternalBranch.toBranch(doc);
-			branch.setBranchManager(branchManager);
-			branches.add(branch);
+			final String parentPath = doc.getParentPath();
+			if (!branchesById.containsKey(parentPath)) {
+				branchesById.put(parentPath, context.service(BaseRevisionBranching.class).getBranch(parentPath));
+			}
+			// compute state
+			final BranchState state = doc.state(branchesById.get(parentPath));
+			branches.add(new BranchData(doc, state));
 		}
 		return new Branches(branches.build(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}

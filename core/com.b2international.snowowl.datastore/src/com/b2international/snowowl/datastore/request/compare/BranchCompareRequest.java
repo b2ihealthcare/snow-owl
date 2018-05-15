@@ -28,10 +28,10 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -69,7 +69,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
 		final CoreTerminologyBroker terminologyBroker = context.service(CoreTerminologyBroker.class);
-		final Branch branchToCompare = context.service(BranchManager.class).getBranch(compare);
+		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
 		final RevisionCompare compareResult;

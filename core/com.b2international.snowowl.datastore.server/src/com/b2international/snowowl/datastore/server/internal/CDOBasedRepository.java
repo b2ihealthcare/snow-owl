@@ -46,11 +46,11 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -113,10 +113,12 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		this.repositoryId = repositoryId;
 		getCdoRepository().getRepository().addCommitInfoHandler(this);
 		final ObjectMapper mapper = service(ObjectMapper.class);
-		initIndex(mapper);
-		initializeBranchingSupport(mergeMaxResults);
+		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
+		initIndex(mapper, branching);
 		bind(Repository.class, this);
 		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
+		// initialize the index
+		getIndex().admin().create();
 		checkHealth();
 	}
 
@@ -214,11 +216,10 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
 	}
 	
-	private void initializeBranchingSupport(int mergeMaxResults) {
+	private BaseRevisionBranching initializeBranchingSupport(int mergeMaxResults) {
 		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this, service(ObjectMapper.class));
-		bind(BranchManager.class, branchManager);
+		bind(BaseRevisionBranching.class, branchManager);
 		bind(BranchReplicator.class, branchManager);
-		
 		
 		final ReviewConfiguration reviewConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
@@ -226,9 +227,11 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
 		bind(MergeService.class, mergeService);
+		
+		return branchManager;
 	}
 
-	private void initIndex(final ObjectMapper mapper) {
+	private void initIndex(final ObjectMapper mapper, BaseRevisionBranching branching) {
 		final Collection<Class<?>> types = newArrayList();
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
@@ -242,12 +245,10 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
 		final Index index = new DefaultIndex(indexClient);
-		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index);
+		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, branching);
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
-		// initialize the index
-		index.admin().create();
 	}
 
 	private Collection<Class<?>> getToolingTypes(String toolingId) {
@@ -280,7 +281,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
 			final CDOBranch branch = commitInfo.getBranch();
 			final long commitTimestamp = commitInfo.getTimeStamp();
-			((CDOBranchManagerImpl) service(BranchManager.class)).handleCommit(branch.getID(), commitTimestamp);
 			// send out the currently enqueued commit notification, if there is any (import might skip sending commit notifications until a certain point)
 			RepositoryCommitNotification notification = commitNotifications.remove(commitTimestamp);
 			if (notification == null) {

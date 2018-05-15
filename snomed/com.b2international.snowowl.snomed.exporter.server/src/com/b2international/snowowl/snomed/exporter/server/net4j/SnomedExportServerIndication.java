@@ -734,13 +734,19 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync();
-				 
+				
+				Branch codeSystemParentBranch = RepositoryRequests.branching()
+						.prepareGet(codeSystemBranch.parentPath())
+						.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+						.execute(getEventBus())
+						.getSync();
+				
 				final CodeSystemEntry parentCodeSystem = getCodeSystem(codeSystem.getExtensionOf());
 				
 				final CodeSystemVersionEntry parentVersion = Iterables.getOnlyElement(CodeSystemRequests.prepareSearchCodeSystemVersion()
 					.one()
 					.filterByCodeSystemShortName(parentCodeSystem.getShortName())
-					.filterByVersionId(codeSystemBranch.parent().name()) // must be a version branch of the parent extension 
+					.filterByVersionId(codeSystemParentBranch.name()) // must be a version branch of the parent extension 
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(getEventBus())
 					.getSync());

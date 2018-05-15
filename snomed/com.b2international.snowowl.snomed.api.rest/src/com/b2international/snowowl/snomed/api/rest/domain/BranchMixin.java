@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.commons.options.MetadataHolderMixin;
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.index.revision.RevisionBranch;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -37,6 +37,6 @@ public interface BranchMixin extends MetadataHolderMixin {
 	String path();
 	
 	@JsonProperty
-	Branch.BranchState state();
+	RevisionBranch.BranchState state();
 	
 }

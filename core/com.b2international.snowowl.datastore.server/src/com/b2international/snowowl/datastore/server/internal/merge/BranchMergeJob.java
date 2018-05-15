@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
  */
 package com.b2international.snowowl.datastore.server.internal.merge;
 
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.BranchMergeException;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.exceptions.ConflictException;
@@ -33,16 +34,17 @@ import com.google.common.base.Strings;
  */
 public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 
-	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Branch> {
+	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Boolean> {
 
 		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId) {
 			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
 		}
 
 		@Override
-		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
+		protected Boolean execute(RepositoryContext context, Branch source, Branch target) {
 			try (Locks locks = new Locks(context, source, target)) {
-				return target.merge(source, commitMessage);
+				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage);
+				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
 			} catch (DatastoreOperationLockException e) {

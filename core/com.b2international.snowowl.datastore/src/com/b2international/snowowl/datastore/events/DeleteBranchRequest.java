@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,27 @@
  */
 package com.b2international.snowowl.datastore.events;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * @since 4.1
  */
-public final class DeleteBranchRequest extends BranchRequest<Branch> {
+public final class DeleteBranchRequest extends BranchRequest<Boolean> {
 
 	public DeleteBranchRequest(final String branchPath) {
 		super(branchPath);
 	}
 
 	@Override
-	public Branch execute(RepositoryContext context) {
-		return context.service(BranchManager.class).getBranch(getBranchPath()).delete();
+	public Boolean execute(RepositoryContext context) {
+		try {
+			context.service(BaseRevisionBranching.class).delete(getBranchPath());
+		} catch (NotFoundException e) {
+			// ignore
+		}
+		return true;
 	}
-
+	
 }

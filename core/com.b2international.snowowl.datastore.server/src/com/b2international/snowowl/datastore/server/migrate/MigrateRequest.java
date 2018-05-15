@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.migrate;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +42,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -53,7 +52,7 @@ import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDORepository;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
@@ -93,14 +92,15 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		
-		int maxCdoBranchId = -1;
-		final BranchManager branchManager = context.service(BranchManager.class);
-		final Collection<? extends Branch> branches = branchManager.getBranches();
+		long maxCdoBranchId = -1L;
+		final Branches branches = RepositoryRequests.branching().prepareSearch()
+				.all()
+				.build()
+				.execute(context);
 		
 		for (final Branch branch : branches) {
-			final InternalCDOBasedBranch cdoBranch = (InternalCDOBasedBranch) branch;
-			if (cdoBranch.cdoBranchId() > maxCdoBranchId) {
-				maxCdoBranchId = cdoBranch.cdoBranchId();
+			if (branch.branchId() > maxCdoBranchId) {
+				maxCdoBranchId = branch.branchId();
 			}
 		}
 		
@@ -123,7 +123,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
 			features.enable(ReindexRequest.featureFor(context.id()));
-			MigrationReplicationContext delegate = new MigrationReplicationContext(context, maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
+			MigrationReplicationContext delegate = new MigrationReplicationContext(context, (int) maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
 			final AsyncReplicationContext replicationContext = new AsyncReplicationContext(delegate);
 
 			remoteSession.setSignalTimeout(context.config().getModuleConfig(RepositoryConnectionConfiguration.class).getSignalTimeout());

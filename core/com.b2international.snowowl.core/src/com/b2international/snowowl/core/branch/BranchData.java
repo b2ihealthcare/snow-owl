@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
  */
 package com.b2international.snowowl.core.branch;
 
-import java.util.Collection;
-
 import com.b2international.commons.options.Metadata;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 
 /**
  * @since 5.0
@@ -27,6 +26,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 public final class BranchData implements Branch {
 
 	private static final long serialVersionUID = -3522105063636381152L;
+	private final long branchId;
 	private final boolean isDeleted;
 	private final Metadata metadata;
 	private final String name;
@@ -34,8 +34,13 @@ public final class BranchData implements Branch {
 	private final long baseTimestamp;
 	private final long headTimestamp;
 	private final BranchState state;
-
-	public BranchData(String name, String parentPath, long baseTimestamp, long headTimestamp, BranchState state, boolean isDeleted, Metadata metadata) {
+	
+	public BranchData(RevisionBranch branch, BranchState state) {
+		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), state, branch.isDeleted(), branch.metadata());
+	}
+	
+	private BranchData(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, BranchState state, boolean isDeleted, Metadata metadata) {
+		this.branchId = branchId;
 		this.name = name;
 		this.parentPath = parentPath;
 		this.baseTimestamp = baseTimestamp;
@@ -43,6 +48,11 @@ public final class BranchData implements Branch {
 		this.state = state;
 		this.isDeleted = isDeleted;
 		this.metadata = metadata;
+	}
+	
+	@Override
+	public long branchId() {
+		return branchId;
 	}
 
 	@Override
@@ -71,11 +81,6 @@ public final class BranchData implements Branch {
 	}
 
 	@Override
-	public Branch parent() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public long baseTimestamp() {
 		return baseTimestamp;
 	}
@@ -96,67 +101,12 @@ public final class BranchData implements Branch {
 	}
 
 	@Override
-	public boolean canRebase() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean canRebase(Branch onTopOf) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch createChild(String name) throws AlreadyExistsException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch createChild(String name, Metadata metadata) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Collection<Branch> children() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch reopen() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch delete() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public IBranchPath branchPath() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Branch withMetadata(Metadata metadata) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void update(Metadata metadata) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -84,8 +84,7 @@ public class SnomedContentRule extends ExternalResource {
 				.setName(csPath.lastSegment())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.execute(getBus())
-				.getSync()
-				.path();
+				.getSync();
 		}
 	}
 

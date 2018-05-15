@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package com.b2international.snowowl.datastore.events;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 
@@ -42,11 +42,10 @@ public final class CreateReviewRequest implements Request<RepositoryContext, Rev
 	@Override
 	public Review execute(RepositoryContext context) {
 		try {
-			final BranchManager branchManager = context.service(BranchManager.class);
 			final ReviewManager reviewManager = context.service(ReviewManager.class);
 			
-			final Branch source = branchManager.getBranch(sourcePath);
-			final Branch target = branchManager.getBranch(targetPath);
+			final Branch source = RepositoryRequests.branching().prepareGet(sourcePath).build().execute(context);
+			final Branch target = RepositoryRequests.branching().prepareGet(targetPath).build().execute(context);
 			
 			return reviewManager.createReview(source, target);
 		} catch (final NotFoundException e) {
