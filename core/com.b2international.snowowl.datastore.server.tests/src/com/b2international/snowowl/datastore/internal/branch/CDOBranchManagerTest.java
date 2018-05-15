@@ -40,9 +40,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.commons.options.MetadataImpl;
+import com.b2international.index.Index;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -66,6 +68,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.inject.util.Providers;
 
 /**
  * @since 4.1
@@ -77,7 +80,6 @@ public class CDOBranchManagerTest {
 	private MockInternalCDOBranchManager cdoBranchManager;
 	
 	private CDOBranchManagerImpl manager;
-	private CDOMainBranchImpl main;
 	
 	private InternalRepository repository;
 	private ServiceProvider context;
@@ -97,12 +99,12 @@ public class CDOBranchManagerTest {
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		store = new DefaultRevisionIndex(Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(RevisionBranch.class)));
-		store.admin().create();
-		when(repository.getRevisionIndex()).thenReturn(store);
-		
+		Index rawIndex = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings());
+		store = new DefaultRevisionIndex(rawIndex, manager);
+		when(repository.provider(Mockito.eq(Index.class))).thenReturn(Providers.of(rawIndex));
 		manager = new CDOBranchManagerImpl(repository, mapper);
-		main = (CDOMainBranchImpl) manager.getMainBranch();
+		
+		store.admin().create();
 		
 		context = mock(ServiceProvider.class);
 		final RepositoryContextProvider repositoryContextProvider = mock(RepositoryContextProvider.class);
@@ -113,7 +115,6 @@ public class CDOBranchManagerTest {
 		
 		when(repositoryContext.service(IDatastoreOperationLockManager.class)).thenReturn(lockManager);
 		when(repositoryContext.service(ReviewManager.class)).thenReturn(reviewManager);
-		when(repositoryContext.service(BranchManager.class)).thenReturn(manager);
 		
 		when(repositoryContextProvider.get(repository.id())).thenReturn(repositoryContext);
 		when(context.service(RepositoryContextProvider.class)).thenReturn(repositoryContextProvider);
@@ -122,18 +123,6 @@ public class CDOBranchManagerTest {
 	@After
 	public void after() {
 		store.admin().delete();
-	}
-	
-	@Test
-	public void updateMetadataShouldReturnNewInstanceWithProperType() throws Exception {
-		final InternalBranch newMain = main.withMetadata(new MetadataImpl());
-		assertTrue(newMain instanceof CDOMainBranchImpl);
-	}
-	
-	@Test
-	public void whenGettingMainBranch_ThenItShouldBeReturned_AndAssociatedWithItsCDOBranch() throws Exception {
-		final CDOBranch cdoBranch = manager.getCDOBranch(main);
-		assertEquals(main.path(), cdoBranch.getPathName());
 	}
 	
 	@Test
@@ -171,19 +160,6 @@ public class CDOBranchManagerTest {
 		
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
-	}
-	
-	@Test
-	public void whenCreatingBranchThenAssignNewSegmentsToParentAndChild() throws Exception {
-		final InternalCDOBasedBranch a = (InternalCDOBasedBranch) main.createChild("a");
-		final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) a.parent();
-		assertThat(a.segmentId()).isEqualTo(1);
-		assertThat(a.segments()).containsOnly(1);
-		assertThat(a.parentSegments()).containsOnly(0);
-		
-		assertThat(parent.segmentId()).isEqualTo(2);
-		assertThat(parent.segments()).containsOnly(0, 2);
-		assertThat(parent.parentSegments()).isEmpty();
 	}
 	
 	@Test

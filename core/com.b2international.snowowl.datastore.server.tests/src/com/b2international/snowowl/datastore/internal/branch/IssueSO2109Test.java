@@ -24,8 +24,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -35,13 +35,17 @@ import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Doc;
+import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionIndexWrite;
@@ -54,6 +58,7 @@ import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.util.Providers;
 
 /**
  * @since 5.4
@@ -86,12 +91,14 @@ public class IssueSO2109Test {
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
 		when(repository.getConflictProcessor()).thenReturn(conflictProcessor);
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		store = new DefaultRevisionIndex(Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(RevisionBranch.class, Data.class)));
-		store.admin().create();
+		Index rawIndex = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(Data.class));
 
-		when(repository.getRevisionIndex()).thenReturn(store);
+		when(repository.provider(Mockito.eq(Index.class))).thenReturn(Providers.of(rawIndex));
 
 		manager = new CDOBranchManagerImpl(repository, mapper);
+		
+		store = new DefaultRevisionIndex(rawIndex, manager);
+		store.admin().create();
 	}
 
 	@After
@@ -102,11 +109,11 @@ public class IssueSO2109Test {
 	@Test
 	public void branchContentMustNotBeNullAfterFailedRebase() throws Exception {
 
-		final InternalCDOBasedBranch child = (InternalCDOBasedBranch) manager.getMainBranch().createChild("a");
+		final String childBranch = manager.createBranch(Branch.MAIN_PATH, "a", new MetadataImpl());
 
 		final long timestamp = clock.getTimeStamp();
 
-		store.write(child.path(), timestamp, new RevisionIndexWrite<Void>() {
+		store.write(childBranch, timestamp, new RevisionIndexWrite<Void>() {
 			@Override
 			public Void execute(final RevisionWriter write) throws IOException {
 				write.put(STORAGE_KEY, new Data(DATA_VALUE));
@@ -115,15 +122,16 @@ public class IssueSO2109Test {
 			}
 		});
 
-		final InternalCDOBasedBranch childWithChanges = (InternalCDOBasedBranch) manager.handleCommit(child, timestamp);
+		manager.handleCommit(childBranch, timestamp);
 
-		final Data actual = getData(childWithChanges.path(), STORAGE_KEY);
+		final RevisionBranch child = manager.getBranch(childBranch);
+		final Data actual = getData(childBranch, STORAGE_KEY);
 
-		assertEquals(new Data(DATA_VALUE, STORAGE_KEY, childWithChanges.path(), timestamp, childWithChanges.segmentId(),
-				Collections.<Integer> emptyList()), actual);
+		assertEquals(new Data(DATA_VALUE, STORAGE_KEY, childBranch, timestamp, new RevisionBranchPoint(child.getId(), timestamp),
+				Collections.emptyList()), actual);
 
 		try {
-			manager.rebase(childWithChanges, (InternalBranch) childWithChanges.parent(), "commit message", new Runnable() {
+			manager.rebase(childBranch, child.getParentPath(), "commit message", new Runnable() {
 				@Override
 				public void run() {
 					throw new RuntimeException(INTERRUPT_MESSAGE);
@@ -135,18 +143,18 @@ public class IssueSO2109Test {
 			}
 		}
 
-		final Data dataAfterRebase = getData(child.path(), STORAGE_KEY);
+		final Data dataAfterRebase = getData(childBranch, STORAGE_KEY);
 
 		assertNotNull("Data most not be null after failed rebase attempt", dataAfterRebase);
 
-		final InternalCDOBasedBranch currentChild = (InternalCDOBasedBranch) manager.getBranch(child.path());
+		final RevisionBranch currentChild = manager.getBranch(childBranch);
 
 		final CDOBranch currentCDOChild = manager.getCDOBranch(currentChild);
 
-		assertEquals(currentCDOChild.getPathName(), currentChild.path());
+		assertEquals(currentCDOChild.getPathName(), childBranch);
 		
-		for (Branch parentChild : child.parent().children()) {
-			assertFalse(parentChild.name().startsWith(Branch.TEMP_PREFIX));
+		for (RevisionBranch parentChild : manager.getChildren(currentChild.getParentPath())) {
+			assertFalse(parentChild.getName().startsWith(RevisionBranch.TEMP_PREFIX));
 		}
 
 	}
@@ -173,13 +181,11 @@ public class IssueSO2109Test {
 		@JsonCreator
 		public Data(@JsonProperty("field") final String field, @JsonProperty("storageKey") final long storageKey,
 				@JsonProperty("branchPath") final String branchPath, @JsonProperty("commitTimestamp") final long commitTimestamp,
-				@JsonProperty("segmentId") final int segmentId, @JsonProperty("replacedIns") final Collection<Integer> replacedIns) {
+				@JsonProperty("created") final RevisionBranchPoint created, @JsonProperty("revised") final List<RevisionBranchPoint> revised) {
 			this.field = field;
 			setStorageKey(storageKey);
-			setBranchPath(branchPath);
-			setCommitTimestamp(commitTimestamp);
-			setSegmentId(segmentId);
-			setReplacedIns(replacedIns);
+			setCreated(created);
+			setRevised(revised);
 		}
 
 		@Override

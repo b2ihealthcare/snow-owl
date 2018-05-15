@@ -139,7 +139,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	/**
 	 * Scripts that can be used to update {@link RevisionBranch} documents.
 	 */
-	public static final class Scripts {
+	protected static final class Scripts {
 		/**
 		 * @param headTimestamp - the new headTimestamp value of this branch
 		 */
@@ -156,7 +156,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder {
 		
-		private int id;
+		private long id;
 		private String parentPath;
 		private String name;
 		private boolean deleted;
@@ -165,7 +165,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		
 		Builder() {}
 		
-		public Builder id(int id) {
+		public Builder id(long id) {
 			this.id = id;
 			return this;
 		}
@@ -211,7 +211,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		
 	}
 	
-	private final int id;
+	private final long id;
 	private final String name;
     private final String parentPath;
     private final String path;
@@ -219,7 +219,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	private final SortedSet<RevisionSegment> segments;
 
     private RevisionBranch(
-    		int id,
+    		long id,
     		String parentPath, 
     		String name, 
     		boolean deleted, 
@@ -240,7 +240,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
      * Returns the unique integer ID of this {@link RevisionBranch}.
      * @return
      */
-    public int getId() {
+    public long getId() {
     	return id;
     }
     
@@ -293,7 +293,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return getSegment(getId()).end();
 	}
     
-    private RevisionSegment getSegment(int branchId) {
+    private RevisionSegment getSegment(long branchId) {
 		return segments.stream().filter(segment -> segment.branchId() == branchId).findFirst().get();
 	}
 

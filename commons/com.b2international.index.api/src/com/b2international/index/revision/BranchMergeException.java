@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.branch;
+package com.b2international.index.revision;
+
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 
 /**
  * @since 4.1
  */
-public interface Deletable {
+public class BranchMergeException extends FormattedRuntimeException {
 
-	/**
-	 * @return whether this object is deleted or not
-	 */
-	boolean isDeleted();
-
-	/**
-	 * Deletes this object. Calling {@link #isDeleted()} on the returned object should return <code>true</code> after a call to this method.
-	 * @return 
-	 */
-	Deletable delete();
+	private static final long serialVersionUID = -119878531358715593L;
+	
+	public BranchMergeException(String template, Object... args) {
+		super(template, args);
+	}
 }

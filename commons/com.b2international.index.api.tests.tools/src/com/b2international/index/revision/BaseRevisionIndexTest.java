@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.After;
 import org.junit.Before;
 
+import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
@@ -40,6 +41,7 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.util.Providers;
 
 /**
  * @since 4.7
@@ -68,10 +70,8 @@ public abstract class BaseRevisionIndexTest {
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex);
+		index = new DefaultRevisionIndex(rawIndex, new DefaultRevisionBranching(Providers.of(rawIndex), mapper));
 		index.admin().create();
-		// TODO remove this line after fixing merging branch services into RevisionIndex
-		index.branching().init();
 	}
 
 	@After
@@ -89,7 +89,7 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected String createBranch(String parent, String child) {
-		return branching().create(parent, child);
+		return branching().createBranch(parent, child, new MetadataImpl());
 	}
 	
 	protected final long currentTime() {
@@ -104,8 +104,16 @@ public abstract class BaseRevisionIndexTest {
 		return rawIndex;
 	}
 	
-	protected final RevisionBranching branching() {
+	protected final BaseRevisionBranching branching() {
 		return index().branching();
+	}
+	
+	protected RevisionBranch getMainBranch() {
+		return getBranch(MAIN);
+	}
+	
+	protected RevisionBranch getBranch(String branchPath) {
+		return branching().getBranch(branchPath);
 	}
 	
 	/**

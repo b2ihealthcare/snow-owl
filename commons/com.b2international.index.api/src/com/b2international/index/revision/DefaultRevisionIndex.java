@@ -53,13 +53,12 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
 	
 	private final Index index;
-	private final RevisionBranching branches;
+	private final BaseRevisionBranching branches;
 	private final RevisionIndexAdmin admin;
 
-	public DefaultRevisionIndex(Index index) {
+	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching) {
 		this.index = index;
-		this.index.admin().mappings().putMapping(RevisionBranch.class);
-		this.branches = new RevisionBranching(index);
+		this.branches = branching;
 		this.admin = new RevisionIndexAdmin(this, index.admin());
 	}
 	
@@ -369,7 +368,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	@Override
-	public RevisionBranching branching() {
+	public BaseRevisionBranching branching() {
 		return branches;
 	}
 

@@ -122,7 +122,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 * @since 6.5
 	 */
-	RevisionBranching branching();
+	BaseRevisionBranching branching();
 	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.

@@ -49,8 +49,7 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	@Override
 	public void create() {
 		rawIndexAdmin.create();
-		// FIXME fix CDO vs non-CDO branch classes and move the whole branch infrastructure to this module first
-//		index.branches().init();
+		index.branching().init();
 	}
 
 	@Override
