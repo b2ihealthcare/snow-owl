@@ -87,8 +87,7 @@ final class ReferringMemberChangeProcessor {
 		final Iterable<SnomedRefSetMemberIndexEntry> detachedMembers = searcher.get(SnomedRefSetMemberIndexEntry.class, detachedMemberStorageKeys);
 		
 		StreamSupport.stream(detachedMembers.spliterator(), false)
-			.filter(doc ->
-				doc.isActive() && referencedComponentType == doc.getReferencedComponentType())
+			.filter(doc -> referencedComponentType == doc.getReferencedComponentType())
 			.forEach(doc -> {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
