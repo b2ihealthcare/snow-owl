@@ -18,46 +18,46 @@ package com.b2international.snowowl.snomed.snomedrefset;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Snomed Annotation Ref Set Member</b></em>'.
+ * A representation of the model object '<em><b>Snomed OWL Expression Ref Set Member</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation <em>Annotation</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember#getOwlExpression <em>Owl Expression</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedAnnotationRefSetMember()
+ * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedOWLExpressionRefSetMember()
  * @model
  * @generated
  */
-public interface SnomedAnnotationRefSetMember extends SnomedRefSetMember {
+public interface SnomedOWLExpressionRefSetMember extends SnomedRefSetMember {
 	/**
-	 * Returns the value of the '<em><b>Annotation</b></em>' attribute.
+	 * Returns the value of the '<em><b>Owl Expression</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Annotation</em>' attribute isn't clear,
+	 * If the meaning of the '<em>Owl Expression</em>' attribute isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Annotation</em>' attribute.
-	 * @see #setAnnotation(String)
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedAnnotationRefSetMember_Annotation()
+	 * @return the value of the '<em>Owl Expression</em>' attribute.
+	 * @see #setOwlExpression(String)
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedOWLExpressionRefSetMember_OwlExpression()
 	 * @model required="true"
 	 *        annotation="http://www.eclipse.org/CDO/DBStore columnType='LONG VARCHAR' columnLength='32768'"
 	 * @generated
 	 */
-	String getAnnotation();
+	String getOwlExpression();
 
 	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember#getAnnotation <em>Annotation</em>}' attribute.
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember#getOwlExpression <em>Owl Expression</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Annotation</em>' attribute.
-	 * @see #getAnnotation()
+	 * @param value the new value of the '<em>Owl Expression</em>' attribute.
+	 * @see #getOwlExpression()
 	 * @generated
 	 */
-	void setAnnotation(String value);
+	void setOwlExpression(String value);
 
-} // SnomedAnnotationRefSetMember
+} // SnomedOWLExpressionRefSetMember

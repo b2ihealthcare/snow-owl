@@ -1,12 +1,12 @@
-/*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,27 +16,13 @@
 package com.b2international.snowowl.snomed.snomedrefset.util;
 
 import com.b2international.snowowl.snomed.snomedrefset.*;
+
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
-import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
-import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
+
+import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -157,6 +143,10 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
 				return createSnomedAnnotationRefSetMemberAdapter();
+			}
+			@Override
+			public Adapter caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember object) {
+				return createSnomedOWLExpressionRefSetMemberAdapter();
 			}
 			@Override
 			public Adapter caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember object) {
@@ -415,6 +405,20 @@ public class SnomedRefSetAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createSnomedAnnotationRefSetMemberAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember <em>Snomed OWL Expression Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember
+	 * @generated
+	 */
+	public Adapter createSnomedOWLExpressionRefSetMemberAdapter() {
 		return null;
 	}
 

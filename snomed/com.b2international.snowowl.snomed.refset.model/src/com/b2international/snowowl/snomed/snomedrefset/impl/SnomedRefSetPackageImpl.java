@@ -1,12 +1,12 @@
-/*
+/**
  * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.snomedrefset.impl;
-
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
@@ -37,6 +30,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMem
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -46,6 +40,14 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -165,6 +167,13 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * @generated
 	 */
 	private EClass snomedAnnotationRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedOWLExpressionRefSetMemberEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -778,6 +787,24 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getSnomedOWLExpressionRefSetMember() {
+		return snomedOWLExpressionRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedOWLExpressionRefSetMember_OwlExpression() {
+		return (EAttribute)snomedOWLExpressionRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getSnomedMRCMDomainRefSetMember() {
 		return snomedMRCMDomainRefSetMemberEClass;
 	}
@@ -1089,6 +1116,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		snomedAnnotationRefSetMemberEClass = createEClass(SNOMED_ANNOTATION_REF_SET_MEMBER);
 		createEAttribute(snomedAnnotationRefSetMemberEClass, SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION);
 
+		snomedOWLExpressionRefSetMemberEClass = createEClass(SNOMED_OWL_EXPRESSION_REF_SET_MEMBER);
+		createEAttribute(snomedOWLExpressionRefSetMemberEClass, SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION);
+
 		snomedMRCMDomainRefSetMemberEClass = createEClass(SNOMED_MRCM_DOMAIN_REF_SET_MEMBER);
 		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT);
 		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN);
@@ -1162,6 +1192,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		snomedAssociationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedModuleDependencyRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedAnnotationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedOWLExpressionRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedMRCMDomainRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedMRCMAttributeDomainRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedMRCMAttributeRangeRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
@@ -1240,6 +1271,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		initEClass(snomedAnnotationRefSetMemberEClass, SnomedAnnotationRefSetMember.class, "SnomedAnnotationRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedAnnotationRefSetMember_Annotation(), ecorePackage.getEString(), "annotation", null, 1, 1, SnomedAnnotationRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		initEClass(snomedOWLExpressionRefSetMemberEClass, SnomedOWLExpressionRefSetMember.class, "SnomedOWLExpressionRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedOWLExpressionRefSetMember_OwlExpression(), ecorePackage.getEString(), "owlExpression", null, 1, 1, SnomedOWLExpressionRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		initEClass(snomedMRCMDomainRefSetMemberEClass, SnomedMRCMDomainRefSetMember.class, "SnomedMRCMDomainRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getSnomedMRCMDomainRefSetMember_DomainConstraint(), ecorePackage.getEString(), "domainConstraint", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedMRCMDomainRefSetMember_ParentDomain(), ecorePackage.getEString(), "parentDomain", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -1281,10 +1315,12 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.EXTENDED_MAP);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.OWL_AXIOM);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.OWL_ONTOLOGY);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_DOMAIN);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_MODULE_SCOPE);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ANNOTATION);
 
 		initEEnum(dataTypeEEnum, DataType.class, "DataType");
 		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);
@@ -1331,6 +1367,13 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		   });	
 		addAnnotation
 		  (getSnomedAnnotationRefSetMember_Annotation(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedOWLExpressionRefSetMember_OwlExpression(), 
 		   source, 
 		   new String[] {
 			 "columnType", "LONG VARCHAR",

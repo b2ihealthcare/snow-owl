@@ -1,12 +1,12 @@
-/*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -1688,6 +1688,115 @@ public interface SnomedRefSetPackage extends EPackage {
 	int SNOMED_ANNOTATION_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
 
 	/**
+	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedOWLExpressionRefSetMemberImpl <em>Snomed OWL Expression Ref Set Member</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedOWLExpressionRefSetMemberImpl
+	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedOWLExpressionRefSetMember()
+	 * @generated
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER = 16;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Effective Time</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__EFFECTIVE_TIME = SNOMED_REF_SET_MEMBER__EFFECTIVE_TIME;
+
+	/**
+	 * The feature id for the '<em><b>Active</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__ACTIVE = SNOMED_REF_SET_MEMBER__ACTIVE;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__REF_SET = SNOMED_REF_SET_MEMBER__REF_SET;
+
+	/**
+	 * The feature id for the '<em><b>Released</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__RELEASED = SNOMED_REF_SET_MEMBER__RELEASED;
+
+	/**
+	 * The feature id for the '<em><b>Referenced Component Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__REFERENCED_COMPONENT_ID = SNOMED_REF_SET_MEMBER__REFERENCED_COMPONENT_ID;
+
+	/**
+	 * The feature id for the '<em><b>Module Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__MODULE_ID = SNOMED_REF_SET_MEMBER__MODULE_ID;
+
+	/**
+	 * The feature id for the '<em><b>Ref Set Identifier Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID = SNOMED_REF_SET_MEMBER__REF_SET_IDENTIFIER_ID;
+
+	/**
+	 * The feature id for the '<em><b>Uuid</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
+
+	/**
+	 * The feature id for the '<em><b>Owl Expression</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Snomed OWL Expression Ref Set Member</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_OWL_EXPRESSION_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
+
+	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl <em>Snomed MRCM Domain Ref Set Member</em>}' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1695,7 +1804,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMDomainRefSetMember()
 	 * @generated
 	 */
-	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER = 16;
+	int SNOMED_MRCM_DOMAIN_REF_SET_MEMBER = 17;
 
 	/**
 	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
@@ -1858,7 +1967,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeDomainRefSetMember()
 	 * @generated
 	 */
-	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER = 17;
+	int SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER = 18;
 
 	/**
 	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
@@ -2012,7 +2121,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMAttributeRangeRefSetMember()
 	 * @generated
 	 */
-	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER = 18;
+	int SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER = 19;
 
 	/**
 	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
@@ -2148,7 +2257,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedMRCMModuleScopeRefSetMember()
 	 * @generated
 	 */
-	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER = 19;
+	int SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER = 20;
 
 	/**
 	 * The feature id for the '<em><b>Referenced Component Type</b></em>' attribute.
@@ -2257,7 +2366,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedRefSetType()
 	 * @generated
 	 */
-	int SNOMED_REF_SET_TYPE = 20;
+	int SNOMED_REF_SET_TYPE = 21;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.DataType <em>Data Type</em>}' enum.
@@ -2267,7 +2376,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getDataType()
 	 * @generated
 	 */
-	int DATA_TYPE = 21;
+	int DATA_TYPE = 22;
 
 
 	/**
@@ -2869,6 +2978,27 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getSnomedAnnotationRefSetMember_Annotation();
+
+	/**
+	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember <em>Snomed OWL Expression Ref Set Member</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Snomed OWL Expression Ref Set Member</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember
+	 * @generated
+	 */
+	EClass getSnomedOWLExpressionRefSetMember();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember#getOwlExpression <em>Owl Expression</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Owl Expression</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember#getOwlExpression()
+	 * @see #getSnomedOWLExpressionRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedOWLExpressionRefSetMember_OwlExpression();
 
 	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember <em>Snomed MRCM Domain Ref Set Member</em>}'.
@@ -3629,6 +3759,24 @@ public interface SnomedRefSetPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION = eINSTANCE.getSnomedAnnotationRefSetMember_Annotation();
+
+		/**
+		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedOWLExpressionRefSetMemberImpl <em>Snomed OWL Expression Ref Set Member</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedOWLExpressionRefSetMemberImpl
+		 * @see com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl#getSnomedOWLExpressionRefSetMember()
+		 * @generated
+		 */
+		EClass SNOMED_OWL_EXPRESSION_REF_SET_MEMBER = eINSTANCE.getSnomedOWLExpressionRefSetMember();
+
+		/**
+		 * The meta object literal for the '<em><b>Owl Expression</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION = eINSTANCE.getSnomedOWLExpressionRefSetMember_OwlExpression();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMRCMDomainRefSetMemberImpl <em>Snomed MRCM Domain Ref Set Member</em>}' class.

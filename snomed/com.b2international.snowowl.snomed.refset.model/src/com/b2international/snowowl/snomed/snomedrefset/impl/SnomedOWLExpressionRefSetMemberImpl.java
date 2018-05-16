@@ -15,31 +15,31 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.impl;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
 import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Snomed Annotation Ref Set Member</b></em>'.
+ * An implementation of the model object '<em><b>Snomed OWL Expression Ref Set Member</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAnnotationRefSetMemberImpl#getAnnotation <em>Annotation</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedOWLExpressionRefSetMemberImpl#getOwlExpression <em>Owl Expression</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl implements SnomedAnnotationRefSetMember {
+public class SnomedOWLExpressionRefSetMemberImpl extends SnomedRefSetMemberImpl implements SnomedOWLExpressionRefSetMember {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	protected SnomedAnnotationRefSetMemberImpl() {
+	protected SnomedOWLExpressionRefSetMemberImpl() {
 		super();
 	}
 
@@ -50,7 +50,7 @@ public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 */
 	@Override
 	protected EClass eStaticClass() {
-		return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
+		return SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER;
 	}
 
 	/**
@@ -58,8 +58,8 @@ public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getAnnotation() {
-		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION, true);
+	public String getOwlExpression() {
+		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION, true);
 	}
 
 	/**
@@ -67,8 +67,8 @@ public class SnomedAnnotationRefSetMemberImpl extends SnomedRefSetMemberImpl imp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setAnnotation(String newAnnotation) {
-		eSet(SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION, newAnnotation);
+	public void setOwlExpression(String newOwlExpression) {
+		eSet(SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION, newOwlExpression);
 	}
 
-} //SnomedAnnotationRefSetMemberImpl
+} //SnomedOWLExpressionRefSetMemberImpl

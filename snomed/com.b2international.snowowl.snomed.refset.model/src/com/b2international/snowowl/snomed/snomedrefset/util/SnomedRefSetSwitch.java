@@ -1,12 +1,12 @@
-/*
+/**
  * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,26 +16,11 @@
 package com.b2international.snowowl.snomed.snomedrefset.util;
 
 import com.b2international.snowowl.snomed.snomedrefset.*;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.util.Switch;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import org.eclipse.emf.ecore.util.Switch;
 
 /**
  * <!-- begin-user-doc -->
@@ -204,6 +189,13 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 				SnomedAnnotationRefSetMember snomedAnnotationRefSetMember = (SnomedAnnotationRefSetMember)theEObject;
 				T result = caseSnomedAnnotationRefSetMember(snomedAnnotationRefSetMember);
 				if (result == null) result = caseSnomedRefSetMember(snomedAnnotationRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER: {
+				SnomedOWLExpressionRefSetMember snomedOWLExpressionRefSetMember = (SnomedOWLExpressionRefSetMember)theEObject;
+				T result = caseSnomedOWLExpressionRefSetMember(snomedOWLExpressionRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedOWLExpressionRefSetMember);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -476,6 +468,21 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed OWL Expression Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed OWL Expression Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember object) {
 		return null;
 	}
 

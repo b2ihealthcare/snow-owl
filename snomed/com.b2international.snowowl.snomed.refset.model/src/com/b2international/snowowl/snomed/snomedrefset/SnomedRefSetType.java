@@ -1,12 +1,12 @@
-/*
+/**
  * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -132,9 +132,15 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"),
-	
-	/**
+	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"), /**
+	 * The '<em><b>OWL ONTOLOGY</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #OWL_ONTOLOGY_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	OWL_ONTOLOGY(13, "OWL_ONTOLOGY", "OWL_ONTOLOGY"), /**
 	 * The '<em><b>MRCM DOMAIN</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -142,7 +148,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MRCM_DOMAIN(13, "MRCM_DOMAIN", "MRCM_DOMAIN"),
+	MRCM_DOMAIN(14, "MRCM_DOMAIN", "MRCM_DOMAIN"),
 	
 	/**
 	 * The '<em><b>MRCM ATTRIBUTE DOMAIN</b></em>' literal object.
@@ -152,7 +158,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MRCM_ATTRIBUTE_DOMAIN(14, "MRCM_ATTRIBUTE_DOMAIN", "MRCM_ATTRIBUTE_DOMAIN"),
+	MRCM_ATTRIBUTE_DOMAIN(15, "MRCM_ATTRIBUTE_DOMAIN", "MRCM_ATTRIBUTE_DOMAIN"),
 	
 	/**
 	 * The '<em><b>MRCM ATTRIBUTE RANGE</b></em>' literal object.
@@ -162,7 +168,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MRCM_ATTRIBUTE_RANGE(15, "MRCM_ATTRIBUTE_RANGE", "MRCM_ATTRIBUTE_RANGE"),
+	MRCM_ATTRIBUTE_RANGE(16, "MRCM_ATTRIBUTE_RANGE", "MRCM_ATTRIBUTE_RANGE"),
 	
 	/**
 	 * The '<em><b>MRCM MODULE SCOPE</b></em>' literal object.
@@ -172,7 +178,17 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	MRCM_MODULE_SCOPE(16, "MRCM_MODULE_SCOPE", "MRCM_MODULE_SCOPE");
+	MRCM_MODULE_SCOPE(17, "MRCM_MODULE_SCOPE", "MRCM_MODULE_SCOPE"),
+
+	/**
+	 * The '<em><b>ANNOTATION</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #ANNOTATION_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	ANNOTATION(18, "ANNOTATION", "ANNOTATION");
 
 	/**
 	 * The '<em><b>SIMPLE</b></em>' literal value.
@@ -310,6 +326,21 @@ public enum SnomedRefSetType implements Enumerator {
 	public static final int OWL_AXIOM_VALUE = 12;
 
 	/**
+	 * The '<em><b>OWL ONTOLOGY</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>OWL ONTOLOGY</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #OWL_ONTOLOGY
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int OWL_ONTOLOGY_VALUE = 13;
+
+	/**
 	 * The '<em><b>MRCM DOMAIN</b></em>' literal value.
 	 * <!-- begin-user-doc -->
 	 * <p>
@@ -322,7 +353,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	public static final int MRCM_DOMAIN_VALUE = 13;
+	public static final int MRCM_DOMAIN_VALUE = 14;
 
 	/**
 	 * The '<em><b>MRCM ATTRIBUTE DOMAIN</b></em>' literal value.
@@ -337,7 +368,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	public static final int MRCM_ATTRIBUTE_DOMAIN_VALUE = 14;
+	public static final int MRCM_ATTRIBUTE_DOMAIN_VALUE = 15;
 
 	/**
 	 * The '<em><b>MRCM ATTRIBUTE RANGE</b></em>' literal value.
@@ -352,7 +383,7 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	public static final int MRCM_ATTRIBUTE_RANGE_VALUE = 15;
+	public static final int MRCM_ATTRIBUTE_RANGE_VALUE = 16;
 
 	/**
 	 * The '<em><b>MRCM MODULE SCOPE</b></em>' literal value.
@@ -367,7 +398,22 @@ public enum SnomedRefSetType implements Enumerator {
 	 * @generated
 	 * @ordered
 	 */
-	public static final int MRCM_MODULE_SCOPE_VALUE = 16;
+	public static final int MRCM_MODULE_SCOPE_VALUE = 17;
+
+	/**
+	 * The '<em><b>ANNOTATION</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>ANNOTATION</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @see #ANNOTATION
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int ANNOTATION_VALUE = 18;
 
 	/**
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
@@ -390,10 +436,12 @@ public enum SnomedRefSetType implements Enumerator {
 			EXTENDED_MAP,
 			SIMPLE_MAP_WITH_DESCRIPTION,
 			OWL_AXIOM,
+			OWL_ONTOLOGY,
 			MRCM_DOMAIN,
 			MRCM_ATTRIBUTE_DOMAIN,
 			MRCM_ATTRIBUTE_RANGE,
 			MRCM_MODULE_SCOPE,
+			ANNOTATION,
 		};
 
 	/**
@@ -451,10 +499,12 @@ public enum SnomedRefSetType implements Enumerator {
 			case EXTENDED_MAP_VALUE: return EXTENDED_MAP;
 			case SIMPLE_MAP_WITH_DESCRIPTION_VALUE: return SIMPLE_MAP_WITH_DESCRIPTION;
 			case OWL_AXIOM_VALUE: return OWL_AXIOM;
+			case OWL_ONTOLOGY_VALUE: return OWL_ONTOLOGY;
 			case MRCM_DOMAIN_VALUE: return MRCM_DOMAIN;
 			case MRCM_ATTRIBUTE_DOMAIN_VALUE: return MRCM_ATTRIBUTE_DOMAIN;
 			case MRCM_ATTRIBUTE_RANGE_VALUE: return MRCM_ATTRIBUTE_RANGE;
 			case MRCM_MODULE_SCOPE_VALUE: return MRCM_MODULE_SCOPE;
+			case ANNOTATION_VALUE: return ANNOTATION;
 		}
 		return null;
 	}
