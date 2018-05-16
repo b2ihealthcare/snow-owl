@@ -210,7 +210,7 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
 				releaseFileValidators.add(new SnomedSimpleMapWithDescriptionRefSetValidator(configuration, url, this));	
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
-				releaseFileValidators.add(new SnomedOWLAxiomRefSetValidator(configuration, url, this));
+				releaseFileValidators.add(new SnomedOWLExpressionRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE)) {
 				releaseFileValidators.add(new SnomedMRCMDomainRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {

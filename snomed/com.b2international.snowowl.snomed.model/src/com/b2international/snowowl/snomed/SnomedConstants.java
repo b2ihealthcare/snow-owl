@@ -168,6 +168,8 @@ public abstract class SnomedConstants {
 		public static final String REFSET_MODULE_DEPENDENCY_TYPE = "900000000000534007";
 		
 		public static final String REFSET_ANNOTATION_TYPE = "900000000000516008";
+		public static final String REFSET_OWL_EXPRESSION_TYPE = "762676003";
+		public static final String REFSET_OWL_ONTOLOGY = "762103008";
 		public static final String REFSET_OWL_AXIOM = "733073007";
 		
 		public static final String REFSET_MRCM_ROOT = "723564002";

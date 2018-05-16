@@ -33,7 +33,7 @@ public final class Rf2Format {
 			.add(new Rf2AssociationRefSetContentType())
 			.add(new Rf2AttributeValueRefSetContentType())
 			.add(new Rf2SimpleRefSetContentType())
-			.add(new Rf2OwlAxiomRefSetContentType())
+			.add(new Rf2OwlExpressionRefSetContentType())
 			// Refset/Language
 			.add(new Rf2LanguageRefSetContentType())
 			// Refset/Map

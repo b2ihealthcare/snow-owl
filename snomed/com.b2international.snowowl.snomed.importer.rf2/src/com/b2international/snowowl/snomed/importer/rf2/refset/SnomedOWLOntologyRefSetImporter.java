@@ -23,15 +23,15 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 6.5
  */
-public class SnomedOWLAxiomRefSetImporter extends AbstractSnomedOWLExpressionRefSetImporter {
+public class SnomedOWLOntologyRefSetImporter extends AbstractSnomedOWLExpressionRefSetImporter {
 
-	public SnomedOWLAxiomRefSetImporter(SnomedImportContext importContext, InputStream releaseFileStream, String releaseFileIdentifier) {
+	public SnomedOWLOntologyRefSetImporter(SnomedImportContext importContext, InputStream releaseFileStream, String releaseFileIdentifier) {
 		super(importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
 	protected SnomedRefSetType getRefSetType() {
-		return SnomedRefSetType.OWL_AXIOM;
+		return SnomedRefSetType.OWL_ONTOLOGY;
 	}
 
 }

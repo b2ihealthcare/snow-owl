@@ -16,10 +16,11 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_OWL_EXPRESSION;
-import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.OWL_AXIOM_HEADER;
+import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.OWL_EXPRESSION_HEADER;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -28,12 +29,16 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2OwlAxiomRefSetContentType implements Rf2RefSetContentType {
+public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
-		component.setType(SnomedRefSetType.OWL_AXIOM);
 		component.setReferenceSetId(values[4]);
+		if (Concepts.REFSET_OWL_AXIOM.equals(component.getReferenceSetId())) {
+			component.setType(SnomedRefSetType.OWL_AXIOM);
+		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getReferenceSetId())) {
+			component.setType(SnomedRefSetType.OWL_ONTOLOGY);
+		}
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		component.setProperties(ImmutableMap.of(FIELD_OWL_EXPRESSION, values[6]));
@@ -49,12 +54,12 @@ public class Rf2OwlAxiomRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public String getType() {
-		return "owl-axiom";
+		return "owl-expression";
 	}
 
 	@Override
 	public String[] getHeaderColumns() {
-		return OWL_AXIOM_HEADER;
+		return OWL_EXPRESSION_HEADER;
 	}
 
 }

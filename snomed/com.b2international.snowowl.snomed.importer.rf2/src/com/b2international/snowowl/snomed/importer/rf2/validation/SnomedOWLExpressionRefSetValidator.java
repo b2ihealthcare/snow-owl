@@ -30,12 +30,12 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
 /**
  * @since 6.5
  */
-public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
+public class SnomedOWLExpressionRefSetValidator extends SnomedRefSetValidator {
 
 	private final List<String> defects = newArrayList();
 
-	public SnomedOWLAxiomRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
-		super(configuration, releaseUrl, ComponentImportType.OWL_AXIOM_REFSET, context, SnomedRf2Headers.OWL_AXIOM_HEADER);
+	public SnomedOWLExpressionRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
+		super(configuration, releaseUrl, ComponentImportType.OWL_EXPRESSION_REFSET, context, SnomedRf2Headers.OWL_EXPRESSION_HEADER);
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class SnomedOWLAxiomRefSetValidator extends SnomedRefSetValidator {
 
 	@Override
 	protected String getName() {
-		return "OWL Axiom";
+		return "OWL Expression";
 	}
 
 	private void validateRow(final List<String> row) {

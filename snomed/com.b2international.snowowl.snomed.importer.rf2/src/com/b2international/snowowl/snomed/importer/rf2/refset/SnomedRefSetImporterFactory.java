@@ -79,7 +79,11 @@ public abstract class SnomedRefSetImporterFactory {
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 			return new SnomedModuleDependencyRefSetImporter(importContext, url.openStream(), urlIdentifier);
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
-			return new SnomedOWLAxiomRefSetImporter(importContext, url.openStream(), urlIdentifier);
+			if (urlIdentifier.contains("Axiom")) {
+				return new SnomedOWLAxiomRefSetImporter(importContext, url.openStream(), urlIdentifier);
+			} else if (urlIdentifier.contains("Ontology")) {
+				return new SnomedOWLOntologyRefSetImporter(importContext, url.openStream(), urlIdentifier);
+			}
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE)) {
 			return new SnomedMRCMDomainRefSetImporter(importContext, url.openStream(), urlIdentifier);
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {

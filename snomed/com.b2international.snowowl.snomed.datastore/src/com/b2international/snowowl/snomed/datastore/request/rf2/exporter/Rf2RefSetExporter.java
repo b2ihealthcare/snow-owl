@@ -257,7 +257,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case MODULE_DEPENDENCY: 
 				return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
 			case OWL_AXIOM:
-				return SnomedRf2Headers.OWL_AXIOM_HEADER;
+				return SnomedRf2Headers.OWL_EXPRESSION_HEADER;
 			case MRCM_DOMAIN:
 				return SnomedRf2Headers.MRCM_DOMAIN_HEADER;
 			case MRCM_ATTRIBUTE_DOMAIN:

@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.snomed.importer.rf2.refset.AbstractSnomedOWLExpressionRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAssociationRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAttributeValueRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTypeRefSetImporter;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttribut
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttributeRangeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMDomainRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMModuleScopeRefSetImporter;
-import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedOWLAxiomRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedQueryRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleMapTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleTypeRefSetImporter;
@@ -67,7 +67,7 @@ public class IndexConfiguration {
 			.put(ComponentImportType.RELATIONSHIP, SnomedRelationshipImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
-			.put(ComponentImportType.OWL_AXIOM_REFSET, SnomedOWLAxiomRefSetImporter.INDEXES)
+			.put(ComponentImportType.OWL_EXPRESSION_REFSET, AbstractSnomedOWLExpressionRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_DOMAIN_REFSET, SnomedMRCMDomainRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_ATTRIBUTE_DOMAIN_REFSET, SnomedMRCMAttributeDomainRefSetImporter.INDEXES)
 			.put(ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, SnomedMRCMAttributeRangeRefSetImporter.INDEXES)

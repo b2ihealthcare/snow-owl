@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.importer.rf2.csv;
 /**
  * @since 6.5
  */
-public class OWLAxiomRefSetRow extends RefSetRow {
+public class OWLExpressionRefSetRow extends RefSetRow {
 
 	private String owlExpression;
 
@@ -33,7 +33,7 @@ public class OWLAxiomRefSetRow extends RefSetRow {
 	@Override
 	public String toString() {
 		return String.format(
-				"OWLAxiomRefSetRow [uuid=%s, effectiveTime=%s, active=%s, moduleId=%s, refsetId=%s, referencedComponentId=%s, owlExpression=%s]",
+				"OWLExpressionRefSetRow [uuid=%s, effectiveTime=%s, active=%s, moduleId=%s, refsetId=%s, referencedComponentId=%s, owlExpression=%s]",
 				getUuid(), getEffectiveTime(), isActive(), getModuleId(), getRefSetId(), getReferencedComponentId(), getOwlExpression());
 	}
 
