@@ -32,9 +32,4 @@ public abstract class MetadataHolderImpl implements MetadataHolder {
 		return metadata;
 	}
 	
-	@Override
-	public MetadataHolder withMetadata(Metadata metadata) {
-		throw new UnsupportedOperationException();
-	}
-	
 }

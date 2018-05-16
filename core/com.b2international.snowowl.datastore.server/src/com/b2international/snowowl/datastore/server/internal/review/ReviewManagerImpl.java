@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.server.internal.review;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -40,12 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
-import com.b2international.index.IndexRead;
-import com.b2international.index.IndexWrite;
-import com.b2international.index.Writer;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -63,6 +58,7 @@ import com.b2international.snowowl.datastore.review.ReviewStatus;
 import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Provider;
 
 import io.reactivex.disposables.Disposable;
 
@@ -120,35 +116,32 @@ public class ReviewManagerImpl implements ReviewManager {
 		public void run() {
 			final long now = System.currentTimeMillis();
 			try {
-				store.write(new IndexWrite<Void>() {
-					@Override
-					public Void execute(Writer index) throws IOException {
-						final Hits<Review> affectedReviews = index.searcher().search(Query.select(Review.class)
-								.where(Expressions.builder()
-										.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
-										.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
-										.should(buildQuery(ReviewStatus.PENDING, now - keepOtherMillis))
-										.should(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis))
-										.build())
-								.limit(Integer.MAX_VALUE)
-								.build());
-						
-						
-						if (affectedReviews.getTotal() > 0) {
-							final Set<String> ids = newHashSet();
-							for (Review r : affectedReviews) {
-								ids.add(r.id());
-							}
-						
-							index.removeAll(ImmutableMap.of(
-									Review.class, ids,
-									ConceptChanges.class, ids
-									));
-							
-							index.commit();
+				store.get().write(index -> {
+					final Hits<Review> affectedReviews = index.searcher().search(Query.select(Review.class)
+							.where(Expressions.builder()
+									.should(buildQuery(ReviewStatus.FAILED, now - keepOtherMillis))
+									.should(buildQuery(ReviewStatus.STALE, now - keepOtherMillis))
+									.should(buildQuery(ReviewStatus.PENDING, now - keepOtherMillis))
+									.should(buildQuery(ReviewStatus.CURRENT, now - keepCurrentMillis))
+									.build())
+							.limit(Integer.MAX_VALUE)
+							.build());
+					
+					
+					if (affectedReviews.getTotal() > 0) {
+						final Set<String> ids = newHashSet();
+						for (Review r : affectedReviews) {
+							ids.add(r.id());
 						}
-						return null;
+					
+						index.removeAll(ImmutableMap.of(
+								Review.class, ids,
+								ConceptChanges.class, ids
+								));
+						
+						index.commit();
 					}
+					return null;
 				});
 			} catch (final Exception e) {
 				LOG.error("Exception in review cleanup task when searching for outdated reviews.", e);
@@ -166,8 +159,8 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ReviewManagerImpl.class);
 
-	private final Index store;
-	private final RevisionIndex revisionIndex;
+	private final Provider<Index> store;
+	private final Provider<RevisionIndex> revisionIndex;
 	private final IJobChangeListener jobChangeListener = new ReviewJobChangeListener();
 	private final TimerTask cleanupTask = new CleanupTask();
 	private final Disposable notificationSubscription;
@@ -187,8 +180,8 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	public ReviewManagerImpl(final InternalRepository repository, final ReviewConfiguration config) {
-		this.store = repository.getIndex();
-		this.revisionIndex = repository.getRevisionIndex();
+		this.store = repository.provider(Index.class);
+		this.revisionIndex = repository.provider(RevisionIndex.class);
 
 		this.keepCurrentMillis = TimeUnit.MINUTES.toMillis(config.getKeepCurrentMins());
 		this.keepOtherMillis = TimeUnit.MINUTES.toMillis(config.getKeepOtherMins());
@@ -215,30 +208,27 @@ public class ReviewManagerImpl implements ReviewManager {
 	/*Handles repository specific branch change events*/
 	private void onBranchChange(BranchChangedEvent event) {
 		final String path = event.getBranch();
-		store.write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				final Hits<Review> affectedReviews = index.searcher().search(
-						Query.select(Review.class)
-						.where(Expressions.builder()
-								.should(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
-								.should(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
-								.build()
-								)
-						.limit(Integer.MAX_VALUE)
-						.build());
-				
-				if (affectedReviews.getTotal() > 0) {
-					for (final Review affectedReview : affectedReviews) {
-						Review newReview = updateStatus(affectedReview, ReviewStatus.STALE);
-						if (newReview != null) {
-							index.put(newReview.id(), newReview);
-						}
+		store.get().write(index -> {
+			final Hits<Review> affectedReviews = index.searcher().search(
+					Query.select(Review.class)
+					.where(Expressions.builder()
+							.should(Expressions.nestedMatch("source", Expressions.exactMatch("path", path)))
+							.should(Expressions.nestedMatch("target", Expressions.exactMatch("path", path)))
+							.build()
+							)
+					.limit(Integer.MAX_VALUE)
+					.build());
+			
+			if (affectedReviews.getTotal() > 0) {
+				for (final Review affectedReview : affectedReviews) {
+					Review newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+					if (newReview != null) {
+						index.put(newReview.id(), newReview);
 					}
-					index.commit();
 				}
-				return null;
+				index.commit();
 			}
+			return null;
 		});
 	}
 	
@@ -256,7 +246,7 @@ public class ReviewManagerImpl implements ReviewManager {
 		final String branchAsBase = source.parentPath().equals(target.path()) ? null : target.path();
 		
 		final String reviewId = UUID.randomUUID().toString();
-		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex, branchAsBase, branchToCompare);
+		final CreateReviewJob compareJob = new CreateReviewJob(reviewId, revisionIndex.get(), branchAsBase, branchToCompare);
 
 		final Review review = Review.builder(reviewId.toString(), source, target).build();
 
@@ -292,13 +282,10 @@ public class ReviewManagerImpl implements ReviewManager {
 	}
 
 	private void putReview(final Review newReview) {
-		store.write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.put(newReview.id(), newReview);
-				index.commit();
-				return null;
-			}
+		store.get().write(index -> {
+			index.put(newReview.id(), newReview);
+			index.commit();
+			return null;
 		});
 	}
 
@@ -380,13 +367,10 @@ public class ReviewManagerImpl implements ReviewManager {
 
 		try {
 			getReview(id);
-			store.write(new IndexWrite<Void>() {
-				@Override
-				public Void execute(Writer index) throws IOException {
-					index.put(id, convertedChanges);
-					index.commit();
-					return null;
-				}
+			store.get().write(index -> {
+				index.put(id, convertedChanges);
+				index.commit();
+				return null;
 			});
 		} catch (NotFoundException ignored) {
 		}
@@ -394,12 +378,7 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	@Override
 	public Review getReview(final String id) {
-		final Review review= store.read(new IndexRead<Review>() {
-			@Override
-			public Review execute(DocSearcher index) throws IOException {
-				return index.get(Review.class, id);
-			}
-		});
+		final Review review= store.get().read(index -> index.get(Review.class, id));
 
 		if (review == null) {
 			throw new NotFoundException(Review.class.getSimpleName(), id);
@@ -410,12 +389,7 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	@Override
 	public ConceptChanges getConceptChanges(final String id) {
-		final ConceptChanges conceptChanges = store.read(new IndexRead<ConceptChanges>() {
-			@Override
-			public ConceptChanges execute(DocSearcher index) throws IOException {
-				return index.get(ConceptChanges.class, id);
-			}
-		});
+		final ConceptChanges conceptChanges = store.get().read(index -> index.get(ConceptChanges.class, id));
 
 		if (conceptChanges == null) {
 			throw new NotFoundException("Concept changes", id);
@@ -426,15 +400,12 @@ public class ReviewManagerImpl implements ReviewManager {
 
 	@Override
 	public void delete(final String reviewId) {
-		store.write(new IndexWrite<Review>() {
-			@Override
-			public Review execute(Writer index) throws IOException {
-				index.removeAll(ImmutableMap.of(
-						Review.class, Collections.singleton(reviewId),
-						ConceptChanges.class, Collections.singleton(reviewId)));
-				index.commit();
-				return null;
-			}
+		store.get().write(index -> {
+			index.removeAll(ImmutableMap.of(
+					Review.class, Collections.singleton(reviewId),
+					ConceptChanges.class, Collections.singleton(reviewId)));
+			index.commit();
+			return null;
 		});
 	}
 

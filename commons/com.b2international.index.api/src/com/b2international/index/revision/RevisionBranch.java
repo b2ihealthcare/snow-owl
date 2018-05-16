@@ -311,6 +311,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
     public SortedSet<RevisionSegment> getSegments() {
     	return segments;
     }
+    
+    /**
+     * Returns the segments common with the parent branch.
+     * @return
+     */
+    @JsonIgnore
+    public SortedSet<RevisionSegment> getParentSegments() {
+    	return getSegments().headSet(getSegments().last());
+    }
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
@@ -319,7 +328,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef baseRef() {
-		return new RevisionBranchRef(getId(), getParentPath(), getSegments().headSet(getSegments().last()));
+		return new RevisionBranchRef(getId(), getParentPath(), getParentSegments());
+	}
+    
+    /**
+     * @return whether this branch is the MAIN branch or a child branch.
+     */
+    @JsonIgnore
+    public boolean isMain() {
+		return MAIN_PATH.equals(path);
 	}
     
     /**
@@ -350,5 +367,5 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	    return BranchState.UP_TO_DATE;
         }
     }
-    
+
 }

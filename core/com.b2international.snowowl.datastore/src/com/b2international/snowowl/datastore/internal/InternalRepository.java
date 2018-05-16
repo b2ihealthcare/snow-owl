@@ -18,8 +18,6 @@ package com.b2international.snowowl.datastore.internal;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 
-import com.b2international.index.Index;
-import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
@@ -35,10 +33,6 @@ public interface InternalRepository extends Repository {
 	CDOBranchManager getCdoBranchManager();
 
 	CDOBranch getCdoMainBranch();
-
-	Index getIndex();
-
-	RevisionIndex getRevisionIndex();
 
 	ICDORepository getCdoRepository();
 

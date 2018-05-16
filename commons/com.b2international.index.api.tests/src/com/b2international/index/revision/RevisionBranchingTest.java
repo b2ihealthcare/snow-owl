@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,6 +23,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -30,9 +36,16 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
+import com.b2international.index.IndexWrite;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 /**
  * @since 6.5
@@ -321,6 +334,42 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		rebaseDivergedWithBehindChild();
 		branching().rebase("MAIN/a/b", "MAIN/a", "Rebase A", () -> {});
 		assertState("MAIN/a/b", BranchState.UP_TO_DATE);
+	}
+	
+	@Test
+	public void updateMetadata() throws Exception {
+		final BaseRevisionBranching branching = branching();
+		final String branchA = branching.createBranch(MAIN, "a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
+		final long commitTimestamp = currentTime();
+		final IndexWrite<Void> timestampUpdate = branching.update(branchA, RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", commitTimestamp));
+		final IndexWrite<Void> metadataUpdate = branching.update(branchA, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
+		final Collection<IndexWrite<Void>> parallelUpdates = ImmutableList.of(timestampUpdate, metadataUpdate);
+		
+		final CyclicBarrier barrier = new CyclicBarrier(parallelUpdates.size());
+		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(parallelUpdates.size()));
+		final Collection<ListenableFuture<?>> futures = newArrayList();
+		for (final IndexWrite<Void> parallelUpdate : parallelUpdates) {
+			futures.add(executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						barrier.await(1000, TimeUnit.MILLISECONDS);
+						branching.commit(parallelUpdate);
+					} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
+						throw new RuntimeException("Failed to wait for all parties");
+					}
+				}
+			}));
+		}
+		
+		// wait all runnables to complete
+		Futures.allAsList(futures).get();
+		executor.shutdown();
+
+		// after parallel updates, both timestamp and metadata should be changed and recorded
+		final RevisionBranch branch = getBranch("MAIN/a");
+		assertEquals(branch.getHeadTimestamp(), commitTimestamp);
+		assertEquals(branch.metadata(), ImmutableMap.<String, Object>of("test", 1));
 	}
 	
 	private void assertLaterBase(String branch, String other) {

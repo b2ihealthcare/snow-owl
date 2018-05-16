@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.api.japi.branches;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -32,6 +32,9 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
@@ -39,7 +42,7 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merge.Status;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Merging;
@@ -57,7 +60,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.7
@@ -84,8 +86,8 @@ public class SnomedBranchRequestTest {
 		
 		// try to create two branches at the same time
 		final String branchName = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
-		final Promise<Branch> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
+		final Promise<String> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
+		final Promise<String> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
 		final String error = Promise.all(first, second)
 			.then(new Function<List<Object>, String>() {
 				@Override
@@ -113,13 +115,13 @@ public class SnomedBranchRequestTest {
 		// try to create two branches at the same time
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
-		final Promise<Branch> first = branches.prepareCreate()
+		final Promise<String> first = branches.prepareCreate()
 				.setParent(Branch.MAIN_PATH)
 				.setName(branchA)
 				.build(REPOSITORY_ID)
 				.execute(bus);
 		
-		final Promise<Branch> second = branches.prepareCreate()
+		final Promise<String> second = branches.prepareCreate()
 				.setParent(Branch.MAIN_PATH)
 				.setName(branchB)
 				.build(REPOSITORY_ID)
@@ -128,24 +130,12 @@ public class SnomedBranchRequestTest {
 		Promise.all(first, second).then(new Function<List<Object>, String>() {
 			@Override
 			public String apply(List<Object> input) {
-				final InternalCDOBasedBranch main = (InternalCDOBasedBranch) branches.prepareGet(Branch.MAIN_PATH)
-						.build(REPOSITORY_ID)
-						.execute(bus)
-						.getSync();
 				
-				final InternalCDOBasedBranch createdFirst;
-				final InternalCDOBasedBranch createdSecond;
+				final Branch firstBranch = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
+				final Branch secondBranch = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
 				
-				if (((Branch) input.get(0)).headTimestamp() > ((Branch) input.get(1)).headTimestamp()) {
-					createdFirst = (InternalCDOBasedBranch) input.get(1);
-					createdSecond = (InternalCDOBasedBranch) input.get(0);
-				} else {
-					createdFirst = (InternalCDOBasedBranch) input.get(0);
-					createdSecond = (InternalCDOBasedBranch) input.get(1);
-				}
-				
-				assertBranchesCreated(branchA, branchB, ((Branch) input.get(0)), ((Branch) input.get(1)));
-				assertBranchSegmentsValid(main, createdFirst, createdSecond);
+				assertBranchesCreated(branchA, branchB, firstBranch, secondBranch);
+				assertBranchSegmentsValid(Branch.MAIN_PATH, firstBranch.path(), secondBranch.path());
 				return null;
 			}
 		})
@@ -160,7 +150,7 @@ public class SnomedBranchRequestTest {
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
 
-		final Branch first = branches.prepareCreate()
+		final String first = branches.prepareCreate()
 				.setParent(Branch.MAIN_PATH)
 				.setName(branchA)
 				.build(REPOSITORY_ID)
@@ -187,14 +177,15 @@ public class SnomedBranchRequestTest {
 				.addParent(Concepts.ROOT_CONCEPT)
 				.addDescription(fsnBuilder)
 				.addDescription(ptBuilder)
-				.build(REPOSITORY_ID, first.path(), "user", "Created new concept");
+				.build(REPOSITORY_ID, first, "user", "Created new concept");
 		
 		final CommitResult info = conceptRequest.execute(bus).getSync();
 		final String conceptId = info.getResultAs(String.class);
 		
+		final String firstParentPath = BranchPathUtils.createPath(first).getParentPath();
 		Promise<Merge> merge = merges.prepareCreate()
-				.setSource(first.path())
-				.setTarget(first.parentPath())
+				.setSource(first)
+				.setTarget(firstParentPath)
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
 				.execute(bus);
@@ -213,8 +204,8 @@ public class SnomedBranchRequestTest {
 					.execute(bus);
 		}
 		
-		final Promise<Branch> second = branches.prepareCreate()
-				.setParent(first.parentPath())
+		final Promise<String> second = branches.prepareCreate()
+				.setParent(firstParentPath)
 				.setName(branchB)
 				.build(REPOSITORY_ID)
 				.execute(bus);
@@ -225,30 +216,11 @@ public class SnomedBranchRequestTest {
 				final Merge merge = (Merge) input.get(0);
 				assertEquals(Status.COMPLETED, merge.getStatus());
 				
-				final InternalCDOBasedBranch target = (InternalCDOBasedBranch) branches.prepareGet(merge.getTarget())
-						.build(REPOSITORY_ID)
-						.execute(bus)
-						.getSync();
-				
-				final InternalCDOBasedBranch first = (InternalCDOBasedBranch) branches.prepareGet(merge.getSource())
-						.build(REPOSITORY_ID)
-						.execute(bus)
-						.getSync();
-				
-				final InternalCDOBasedBranch second = (InternalCDOBasedBranch) input.get(1);
-				final InternalCDOBasedBranch createdFirst;
-				final InternalCDOBasedBranch createdSecond;
-				
-				if (first.headTimestamp() > second.headTimestamp()) {
-					createdFirst = second;
-					createdSecond = first;
-				} else {
-					createdFirst = first;
-					createdSecond = second;
-				}
+				final Branch first = branches.prepareGet(merge.getSource()).build(REPOSITORY_ID).execute(bus).getSync();
+				final Branch second = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
 				
 				assertBranchesCreated(branchA, branchB, first, second);
-				assertBranchSegmentsValid(target, createdFirst, createdSecond);
+				assertBranchSegmentsValid(merge.getTarget(), first.path(), second.path());
 				return null;
 			}
 		})
@@ -256,7 +228,7 @@ public class SnomedBranchRequestTest {
 		
 		// Check that the concept is visible on parent
 		SnomedRequests.prepareGetConcept(conceptId)
-				.build(REPOSITORY_ID, first.parentPath())
+				.build(REPOSITORY_ID, firstParentPath)
 				.execute(bus)
 				.getSync();
 	}
@@ -272,19 +244,24 @@ public class SnomedBranchRequestTest {
 		assertEquals(branchB, second.name());
 	}
 	
-	private void assertBranchSegmentsValid(final InternalCDOBasedBranch parent, final InternalCDOBasedBranch createdFirst, final InternalCDOBasedBranch createdSecond) {
-		// All segments of the parent except the last should be present in the second child branch's parentSegment collection
-//		SortedSet<Integer> parentSegments = Sets.newTreeSet(parent.segments());
-//		parentSegments.remove(parent.segmentId());
-//
-//		assertEquals(createdSecond.parentSegments().size(), parentSegments.size());
-//		assertTrue(createdSecond.parentSegments().containsAll(parentSegments));
-//		
-//		// Remove the greatest value to get the first child branch's parentSegments
-//		parentSegments = parentSegments.headSet(parentSegments.last());
-//
-//		assertEquals(createdFirst.parentSegments().size(), parentSegments.size());
-//		assertTrue(createdFirst.parentSegments().containsAll(parentSegments));
+	// assert the low level segments
+	private void assertBranchSegmentsValid(final String parentPath, final String createdFirstPath, final String createdSecondPath) {
+	
+		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class).get(REPOSITORY_ID).service(BaseRevisionBranching.class);
+		
+		RevisionBranch parent = branching.getBranch(parentPath);
+		RevisionBranch createdFirst = branching.getBranch(createdFirstPath);
+		RevisionBranch createdSecond = branching.getBranch(createdSecondPath);
+
+		SortedSet<RevisionSegment> firstParentSegments = createdFirst.getParentSegments();
+		SortedSet<RevisionSegment> secondParentSegments = createdSecond.getParentSegments();
+		
+		// verify that first and second has a common parent start address (END address is their base timestamp, so that will be different)
+		assertEquals(firstParentSegments.last().getStartAddress(), secondParentSegments.last().getStartAddress());
+		assertNotEquals(firstParentSegments.last().getEndAddress(), secondParentSegments.last().getEndAddress());
+		
+		// and parent-parent-segments of first and second are equal
+		assertEquals(firstParentSegments.headSet(firstParentSegments.last()), secondParentSegments.headSet(secondParentSegments.last()));
 	}
 
 	private Set<CDOBranch> getCdoBranches(final String branchName) {

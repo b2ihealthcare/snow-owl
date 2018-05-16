@@ -454,11 +454,9 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 			
 			entry.doi = doi;
 			entry.setScore(score);
-			entry.setBranchPath(branchPath);
-			entry.setCommitTimestamp(commitTimestamp);
+			entry.setCreated(created);
+			entry.setRevised(revised);
 			entry.setStorageKey(storageKey);
-			entry.setReplacedIns(replacedIns);
-			entry.setSegmentId(segmentId);
 			
 			if (parents != null) {
 				entry.parents = parents;

@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.branch;
 
 import java.io.Serializable;
 
-import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
@@ -93,89 +92,9 @@ public interface Branch extends MetadataHolder, Serializable {
 	RevisionBranch.BranchState state();
 	
 	/**
-	 * Returns the {@link BranchState} of this {@link Branch} compared to the given target {@link Branch}.
-	 * 
-	 * @param target
-	 * @return
-	 */
-	RevisionBranch.BranchState state(Branch target);
-	
-	/**
 	 * @return whether this branch is deleted or not
 	 */
 	boolean isDeleted();
-
-//	boolean canRebase();
-//
-//	boolean canRebase(Branch onTopOf);
-
-//	/**
-//	 * Rebases this branch {@link Branch} on top of the specified {@link Branch}.
-//	 * <p>
-//	 * Rebasing this branch does not actually modify this {@link Branch} state, instead it will create a new {@link Branch} representing the rebased
-//	 * form of this {@link Branch} and returns it. Commits available on the target {@link Branch} will be available on the resulting {@link Branch}
-//	 * after successful rebase.
-//	 * 
-//	 * @param onTopOf
-//	 *            - the branch on top of which this branch should be lifted
-//	 * @param commitMessage
-//	 *            - the commit message
-//	 * @return
-//	 */
-//	Branch rebase(Branch onTopOf, String commitMessage);
-//
-//	Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen);
-
-//	/**
-//	 * Merges changes to this {@link Branch} by squashing the change set of the specified {@link Branch} into a single commit.
-//	 * 
-//	 * @param changesFrom
-//	 *            - the branch to take changes from
-//	 * @param commitMessage
-//	 *            - the commit message
-//	 * @return
-//	 * @throws BranchMergeException
-//	 *             - if the branch cannot be merged for some reason
-//	 */
-//	Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException;
-
-//	/**
-//	 * Creates a new child branch.
-//	 * 
-//	 * @param name
-//	 *            - the name of the new child {@link Branch}
-//	 * @return
-//	 * @throws AlreadyExistsException
-//	 *             - if the child branch already exists
-//	 */
-//	Branch createChild(String name) throws AlreadyExistsException;
-
-//	/**
-//	 * Creates a new child branch with the given name and metadata.
-//	 * 
-//	 * @param name
-//	 *            - the name of the new child {@link Branch}, may not be <code>null</code>
-//	 * @param metadata
-//	 *            - optional metadata map
-//	 * @return
-//	 * @throws AlreadyExistsException
-//	 *             - if the child branch already exists
-//	 */
-//	Branch createChild(String name, Metadata metadata);
-
-//	/**
-//	 * Returns all child branches created on this {@link Branch}.
-//	 * 
-//	 * @return a {@link Collection} of child {@link Branch} instances or an empty collection, never <code>null</code>.
-//	 */
-//	Collection<Branch> children();
-
-//	/**
-//	 * Reopens the branch with the same name and parent, on the parent head.
-//	 * 
-//	 * @return the reopened branch
-//	 */
-//	Branch reopen();
 
 	/**
 	 * @return
@@ -183,19 +102,4 @@ public interface Branch extends MetadataHolder, Serializable {
 	 */
 	IBranchPath branchPath();
 
-	/**
-	 * Returns a new version of this branch with updated {@link Metadata}.
-	 * 
-	 * @param metadata
-	 * @return
-	 */
-	@Override
-	Branch withMetadata(Metadata metadata);
-
-//	/**
-//	 * Updates the branch with the specified properties. Currently {@link Metadata} supported only.
-//	 * 
-//	 * @param metadata
-//	 */
-//	void update(Metadata metadata);
 }

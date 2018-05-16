@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -85,14 +86,20 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 	protected Branches toCollectionResource(RepositoryContext context, Hits<RevisionBranch> hits) {
 		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
 		final Map<String, RevisionBranch> branchesById = newHashMap();
+		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
 		for (RevisionBranch doc : hits) {
-			final String parentPath = doc.getParentPath();
-			if (!branchesById.containsKey(parentPath)) {
-				branchesById.put(parentPath, context.service(BaseRevisionBranching.class).getBranch(parentPath));
+			final BranchState state; 
+			if (doc.isMain()) {
+				// XXX MAIN branch is always up to date
+				state = BranchState.UP_TO_DATE;
+			} else {
+				final String parentPath = doc.getParentPath();
+				if (!branchesById.containsKey(parentPath)) {
+					branchesById.put(parentPath, branching.getBranch(parentPath));
+				}
+				state = doc.state(branchesById.get(parentPath));
 			}
-			// compute state
-			final BranchState state = doc.state(branchesById.get(parentPath));
-			branches.add(new BranchData(doc, state));
+			branches.add(new BranchData(doc, state, BranchPathUtils.createPath(doc.getPath())));
 		}
 		return new Branches(branches.build(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 	}

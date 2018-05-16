@@ -114,11 +114,11 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		getCdoRepository().getRepository().addCommitInfoHandler(this);
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
-		initIndex(mapper, branching);
+		RevisionIndex index = initIndex(mapper, branching);
 		bind(Repository.class, this);
 		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
 		// initialize the index
-		getIndex().admin().create();
+		index.admin().create();
 		checkHealth();
 	}
 
@@ -187,16 +187,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 	}
 	
 	@Override
-	public Index getIndex() {
-		return service(Index.class);
-	}
-	
-	@Override
-	public RevisionIndex getRevisionIndex() {
-		return service(RevisionIndex.class);
-	}
-	
-	@Override
 	public ICDORepository getCdoRepository() {
 		return getDelegate().service(ICDORepositoryManager.class).getByUuid(repositoryId);
 	}
@@ -231,7 +221,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		return branchManager;
 	}
 
-	private void initIndex(final ObjectMapper mapper, BaseRevisionBranching branching) {
+	private RevisionIndex initIndex(final ObjectMapper mapper, BaseRevisionBranching branching) {
 		final Collection<Class<?>> types = newArrayList();
 		types.add(Review.class);
 		types.add(ConceptChanges.class);
@@ -249,6 +239,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
+		return revisionIndex;
 	}
 
 	private Collection<Class<?>> getToolingTypes(String toolingId) {
@@ -265,7 +256,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 	@Override
 	public void doDispose() {
 		getCdoRepository().getRepository().removeCommitInfoHandler(this);
-		getIndex().admin().close();
+		service(RevisionIndex.class).admin().close();
 	}
 	
 	
@@ -400,7 +391,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 	private CommitInfos getAllIndexCommits() {
 		final RepositoryContext repositoryContext = new DefaultRepositoryContext(this, this);
-		return getIndex().read(new IndexRead<CommitInfos>() {
+		return service(Index.class).read(new IndexRead<CommitInfos>() {
 			@Override
 			public CommitInfos execute(DocSearcher index) throws IOException {
 				return new IndexReadRequest<>(RepositoryRequests.commitInfos().prepareSearchCommitInfo()

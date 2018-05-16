@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.Index;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.inject.Provider;
 
@@ -38,13 +37,11 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
 	}
 	
-	@Override
-	protected long currentTime() {
+	public long currentTime() {
 		return System.nanoTime();
 	}
 
-	@Override
-	protected long nextBranchId() {
+	public long nextBranchId() {
 		return branchIds.getAndIncrement();
 	}
 	

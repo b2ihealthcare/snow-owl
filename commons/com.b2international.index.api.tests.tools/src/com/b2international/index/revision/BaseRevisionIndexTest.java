@@ -70,8 +70,12 @@ public abstract class BaseRevisionIndexTest {
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex, new DefaultRevisionBranching(Providers.of(rawIndex), mapper));
+		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, mapper));
 		index.admin().create();
+	}
+
+	protected BaseRevisionBranching createBranchingSupport(Index rawIndex, ObjectMapper mapper) {
+		return new DefaultRevisionBranching(Providers.of(rawIndex), mapper);
 	}
 
 	@After
@@ -92,8 +96,8 @@ public abstract class BaseRevisionIndexTest {
 		return branching().createBranch(parent, child, new MetadataImpl());
 	}
 	
-	protected final long currentTime() {
-		return System.nanoTime();
+	protected long currentTime() {
+		return ((DefaultRevisionBranching) branching()).currentTime();
 	}
 
 	protected final RevisionIndex index() {
@@ -104,7 +108,7 @@ public abstract class BaseRevisionIndexTest {
 		return rawIndex;
 	}
 	
-	protected final BaseRevisionBranching branching() {
+	protected BaseRevisionBranching branching() {
 		return index().branching();
 	}
 	

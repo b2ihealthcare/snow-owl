@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,17 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeCaseSignificance;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToAcceptable;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToDefining;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewDescription;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewLanguageRefSetMember;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSetMember;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewTextDefinition;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateConcept;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -40,8 +50,8 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Test;
 
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
@@ -69,7 +79,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 
 	@After
 	public void noTempBranchVisibleAfter() {
-		getBranchChildren(branchPath).statusCode(200).body("items.name", not(hasItem(startsWith(Branch.TEMP_PREFIX))));
+		getBranchChildren(branchPath).statusCode(200).body("items.name", not(hasItem(startsWith(RevisionBranch.TEMP_PREFIX))));
 	}
 
 	@Test

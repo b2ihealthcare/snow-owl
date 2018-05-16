@@ -297,11 +297,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
+			doc.setCreated(created);
+			doc.setRevised(revised);
 			return doc;
 		}
 	}

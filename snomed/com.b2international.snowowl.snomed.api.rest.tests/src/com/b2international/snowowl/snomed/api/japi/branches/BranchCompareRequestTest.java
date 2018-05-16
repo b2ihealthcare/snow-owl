@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class BranchCompareRequestTest {
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
-		branchPath = createBranch(Branch.MAIN_PATH, methodName.get()).path();
+		branchPath = createBranch(Branch.MAIN_PATH, methodName.get());
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class BranchCompareRequestTest {
 		final String newConceptId = createNewConcept(branch);
 		final SnomedConcept concept = getComponent(branch, SnomedComponentType.CONCEPT, newConceptId).extract().as(SnomedConcept.class);
 		
-		final String taskBranchPath = createBranch(branchPath, "taskBranch").path();
+		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
 		SnomedRequests.prepareUpdateConcept(concept.getId())
 			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
@@ -125,7 +125,7 @@ public class BranchCompareRequestTest {
 	public void compareBranchWithDeletedComponents() throws Exception {
 		final Set<ComponentIdentifier> deletedIds = prepareBranchWithNewChanges(branchPath);
 		
-		final String taskBranchPath = createBranch(branchPath, "taskBranch").path();
+		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
 		final ComponentIdentifier concept = deletedIds.stream()
 				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
@@ -191,7 +191,7 @@ public class BranchCompareRequestTest {
 				.build(REPOSITORY_ID);
 	}
 	
-	private Branch createBranch(String parent, String name) {
+	private String createBranch(String parent, String name) {
 		return RepositoryRequests.branching().prepareCreate()
 				.setParent(parent)
 				.setName(name)

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.snor;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -24,10 +24,10 @@ import java.util.Set;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -281,11 +281,9 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			doc.selfIds = Collections3.toImmutableSet(selfIds);
 			doc.descendantIds = Collections3.toImmutableSet(descendantIds);
 			doc.refSetIds = Collections3.toImmutableSet(refSetIds);
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
 			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
+			doc.setCreated(created);
+			doc.setRevised(revised);
 			
 			switch (predicateType) {
 			case DESCRIPTION:

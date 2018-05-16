@@ -19,6 +19,7 @@ import com.b2international.commons.options.Metadata;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.0
@@ -34,12 +35,13 @@ public final class BranchData implements Branch {
 	private final long baseTimestamp;
 	private final long headTimestamp;
 	private final BranchState state;
+	private final IBranchPath branchPath;
 	
-	public BranchData(RevisionBranch branch, BranchState state) {
-		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), state, branch.isDeleted(), branch.metadata());
+	public BranchData(RevisionBranch branch, BranchState state, IBranchPath branchPath) {
+		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath);
 	}
 	
-	private BranchData(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, BranchState state, boolean isDeleted, Metadata metadata) {
+	private BranchData(long branchId, String name, String parentPath, long baseTimestamp, long headTimestamp, boolean isDeleted, Metadata metadata, BranchState state, IBranchPath branchPath) {
 		this.branchId = branchId;
 		this.name = name;
 		this.parentPath = parentPath;
@@ -48,6 +50,7 @@ public final class BranchData implements Branch {
 		this.state = state;
 		this.isDeleted = isDeleted;
 		this.metadata = metadata;
+		this.branchPath = branchPath;
 	}
 	
 	@Override
@@ -67,7 +70,7 @@ public final class BranchData implements Branch {
 
 	@Override
 	public String path() {
-		return parentPath + Branch.SEPARATOR + name;
+		return Strings.isNullOrEmpty(parentPath) ? name : parentPath + Branch.SEPARATOR + name;
 	}
 
 	@Override
@@ -96,18 +99,8 @@ public final class BranchData implements Branch {
 	}
 
 	@Override
-	public BranchState state(Branch target) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public IBranchPath branchPath() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Branch withMetadata(Metadata metadata) {
-		throw new UnsupportedOperationException();
+		return branchPath;
 	}
 
 }

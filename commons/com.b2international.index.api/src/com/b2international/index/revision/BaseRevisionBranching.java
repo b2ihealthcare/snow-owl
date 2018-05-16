@@ -69,14 +69,15 @@ public abstract class BaseRevisionBranching {
 		this.mapper = mapper;
 	}
 	
+	/**
+	 * Reopens the branch with the same name and parent, on the parent head.
+	 * 
+	 * @return the reopened branch
+	 */
 	public final RevisionBranch reopen(final RevisionBranch parentBranch, final String name, final Metadata metadata) {
 		return locked(parentBranch.getPath(), () -> doReopen(parentBranch, name, metadata));
 	}
 
-	protected abstract long nextBranchId();
-	
-	protected abstract long currentTime();
-	
 	private <T> T locked(final String lockPath, Callable<T> callable) {
 		final ReentrantLock lock = locks.getUnchecked(lockPath);
 		try {
@@ -161,6 +162,18 @@ public abstract class BaseRevisionBranching {
 		return parentPath.concat(RevisionBranch.SEPARATOR).concat(name);
 	}
 	
+	/**
+	 * Creates a new child branch with the given name and metadata under the specified parent branch.
+	 * 
+	 * @param parent - the path of the parent branch where the new branch should be created, may not be <code>null</code>
+	 * @param name
+	 *            - the name of the new child branch, may not be <code>null</code>
+	 * @param metadata
+	 *            - optional metadata map
+	 * @return
+	 * @throws AlreadyExistsException
+	 *             - if the child branch already exists
+	 */
 	public final String createBranch(final String parent, final String name, final Metadata metadata) {
 		RevisionBranch parentBranch = getBranch(parent);
 		if (parentBranch.isDeleted()) {
@@ -211,14 +224,28 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	public BranchState getBranchState(String branchPath) {
-		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
+		return getBranchState(getBranch(branchPath));
+	}
+	
+	public BranchState getBranchState(RevisionBranch branch) {
+		if (RevisionBranch.MAIN_PATH.equals(branch.getPath())) {
 			return BranchState.UP_TO_DATE;
 		} else {
-			final RevisionBranch revisionBranch = get(branchPath);
-			return revisionBranch.state(get(revisionBranch.getParentPath()));
+			return branch.state(getBranch(branch.getParentPath()));
 		}
 	}
 
+	/**
+	 * Merges changes to the toPath branch by squashing the change set of the specified fromPath into a single commit.
+	 * 
+	 * @param fromPath - the branch to take changes from 
+	 * @param toPath - the branch to push the changes to
+	 * @param commitMessage
+	 *            - the commit message
+	 * @return
+	 * @throws BranchMergeException
+	 *             - if the branch cannot be merged for some reason
+	 */
 	public String merge(String fromPath, String toPath, String commitMessage) {
 		if (toPath.equals(fromPath)) {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
@@ -241,6 +268,20 @@ public abstract class BaseRevisionBranching {
 		}
 	}
 	
+	/**
+	 * Rebases the branch associated with the given path on top of the branch specified with the onTopOfPath argument.
+	 * <p>
+	 * Commits available on the target branch will be available on the resulting branch after successful rebase.
+	 * 
+	 * @param branchPath - the branch to rebase
+	 * @param onTopOf 
+	 *            - the branch on top of which this branch should be lifted
+	 * @param commitMessage
+	 *            - the commit message
+	 * @param postReopen - any additional code to run after postReopen phase
+	 * 
+	 * @return
+	 */
 	public final String rebase(final String branchPath, final String onTopOfPath, final String commitMessage, final Runnable postReopen) {
 		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
 			throw new BadRequestException("MAIN cannot be rebased");
@@ -293,6 +334,11 @@ public abstract class BaseRevisionBranching {
 	protected void sendChangeEvent(final String branchPath) {
 	}
 	
+	/**
+	 * Returns all child branches created under the specified parent path (including transitively created branches).
+	 * 
+	 * @return a {@link Collection} of child {@link RevisionBranch} instances or an empty collection, never <code>null</code>.
+	 */
 	public final List<RevisionBranch> getChildren(String parentPath) {
 		return ImmutableList.copyOf(search(Query.select(RevisionBranch.class)
 				.where(Expressions.prefixMatch("path", parentPath + RevisionBranch.SEPARATOR))
@@ -308,6 +354,13 @@ public abstract class BaseRevisionBranching {
 		return update(path, RevisionBranch.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
 	}
 
+	
+	/**
+	 * Updates the branch with the specified properties. Currently {@link Metadata} supported only.
+	 *
+	 * @param branchPath - the branch to update with new metadata
+	 * @param metadata - the metadata instance to set on the branch
+	 */
 	public final void updateMetadata(String branchPath, Metadata metadata) {
 		update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata));
 	}

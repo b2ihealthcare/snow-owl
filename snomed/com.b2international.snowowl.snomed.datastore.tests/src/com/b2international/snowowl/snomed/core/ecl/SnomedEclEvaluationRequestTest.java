@@ -1123,6 +1123,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			writer.put(nextStorageKey(), integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build());
 			writer.put(nextStorageKey(), decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build());
 			writer.put(nextStorageKey(), decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build());
+			writer.commit();
 			return null;
 		});
 	}
@@ -1189,6 +1190,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			
 			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
 			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6).group(2).build());
+			writer.commit();
 			return null;
 		});
 	}

@@ -21,6 +21,7 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchData;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 
 /**
  * @since 4.1
@@ -35,8 +36,8 @@ public final class ReadBranchRequest extends BranchRequest<Branch> {
 	public Branch execute(RepositoryContext context) {
 		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
 		final RevisionBranch branch = branching.getBranch(getBranchPath());
-		final BranchState state = branch.state(branching.getBranch(branch.getParentPath()));
-		return new BranchData(branch, state);
+		final BranchState state = branching.getBranchState(branch);
+		return new BranchData(branch, state, BranchPathUtils.createPath(branch.getPath()));
 	}
 	
 }

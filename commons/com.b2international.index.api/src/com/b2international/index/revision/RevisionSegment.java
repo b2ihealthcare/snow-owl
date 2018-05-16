@@ -17,6 +17,8 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Objects;
+
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -81,6 +83,22 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 		return new RevisionSegment(branchId, start, newEnd);
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(branchId, start, end);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		RevisionSegment other = (RevisionSegment) obj;
+		return Objects.equals(branchId, other.branchId)
+				&& Objects.equals(start, other.start)
+				&& Objects.equals(end, other.end);
+	}
+	
 	public Expression toRangeExpression(String field) {
 		return Expressions.matchRange(field, getStartAddress(), getEndAddress());
 	}

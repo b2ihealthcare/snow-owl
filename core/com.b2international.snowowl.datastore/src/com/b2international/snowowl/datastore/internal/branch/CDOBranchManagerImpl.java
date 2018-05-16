@@ -77,16 +77,6 @@ public final class CDOBranchManagerImpl extends BaseRevisionBranching implements
     }
     
     @Override
-    protected long nextBranchId() {
-    	throw new UnsupportedOperationException("CDO manages branch IDs by itself");
-    }
-    
-    @Override
-    protected long currentTime() {
-    	throw new UnsupportedOperationException("CDO manages timestamps by itself");
-    }
-    
-    @Override
     protected long getMainBaseTimestamp() {
     	return repository.getBaseTimestamp(repository.getCdoMainBranch());
     }
