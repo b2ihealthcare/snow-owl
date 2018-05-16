@@ -143,8 +143,9 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 				return new SnomedSimpleMapMemberUpdateDelegate(this);
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return new SnomedSimpleMapMemberWithDescriptionUpdateDelegate(this);
-			case OWL_AXIOM:
-				return new SnomedOWLAxiomMemberUpdateDelegate(this);
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return new SnomedOWLExpressionMemberUpdateDelegate(this);
 			case MRCM_DOMAIN:
 				return new SnomedMRCMDomainMemberUpdateDelegate(this);
 			case MRCM_ATTRIBUTE_DOMAIN:

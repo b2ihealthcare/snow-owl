@@ -20,15 +20,15 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 /**
  * @since 6.5
  */
-final class SnomedOWLAxiomMemberCreateDelegate extends AbstractSnomedOWLExpressionMemberCreateDelegate {
+final class SnomedOWLOntologyMemberCreateDelegate extends AbstractSnomedOWLExpressionMemberCreateDelegate {
 
-	SnomedOWLAxiomMemberCreateDelegate(SnomedRefSetMemberCreateRequest request) {
+	SnomedOWLOntologyMemberCreateDelegate(SnomedRefSetMemberCreateRequest request) {
 		super(request);
 	}
 
 	@Override
 	protected SnomedRefSetType getRefsetType() {
-		return SnomedRefSetType.OWL_AXIOM;
+		return SnomedRefSetType.OWL_ONTOLOGY;
 	}
 
 }

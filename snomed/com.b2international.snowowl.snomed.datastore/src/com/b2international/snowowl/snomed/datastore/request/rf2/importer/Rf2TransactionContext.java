@@ -391,8 +391,9 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
 		case SIMPLE:
 			return SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
-		case OWL_AXIOM:
-			return SnomedRefSetFactory.eINSTANCE.createSnomedAnnotationRefSetMember();
+		case OWL_AXIOM: //$FALL-THROUGH$
+		case OWL_ONTOLOGY:
+			return SnomedRefSetFactory.eINSTANCE.createSnomedOWLExpressionRefSetMember();
 		case MRCM_DOMAIN:
 			return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMDomainRefSetMember();
 		case MRCM_ATTRIBUTE_DOMAIN:
@@ -496,8 +497,9 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 			case SIMPLE:
 				builder = SnomedComponents.newSimpleMember();
 				break;
-			case OWL_AXIOM:
-				builder = SnomedComponents.newOWLAxiomReferenceSetMember()
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				builder = SnomedComponents.newOWLExpressionReferenceSetMember()
 						.withOWLExpression((String) properties.get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 				break;
 			case MRCM_DOMAIN:

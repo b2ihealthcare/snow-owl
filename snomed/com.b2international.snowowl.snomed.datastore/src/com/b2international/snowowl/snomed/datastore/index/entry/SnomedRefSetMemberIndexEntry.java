@@ -51,7 +51,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -63,6 +62,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeR
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -309,11 +309,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 						.field(Fields.SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getSourceEffectiveTime()))
 						.field(Fields.TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getTargetEffectiveTime()));
 			}
-			
+
 			@Override
-			public Builder caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember member) {
+			public Builder caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember member) {
 				return builder
-						.field(Fields.OWL_EXPRESSION, member.getAnnotation());
+						.field(Fields.OWL_EXPRESSION, member.getOwlExpression());
 			};
 			
 			@Override

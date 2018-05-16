@@ -17,26 +17,26 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
-public class SnomedOWLAxiomMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
+public class SnomedOWLExpressionMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 
-	SnomedOWLAxiomMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
+	SnomedOWLExpressionMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
 		super(request);
 	}
 
 	@Override
 	boolean execute(final SnomedRefSetMember member, final TransactionContext context) {
-		final SnomedAnnotationRefSetMember annotationMember = (SnomedAnnotationRefSetMember) member;
+		final SnomedOWLExpressionRefSetMember owlExpressionMember = (SnomedOWLExpressionRefSetMember) member;
 		final String owlExpression = getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
 
-		if (!Strings.isNullOrEmpty(owlExpression) && !owlExpression.equals(annotationMember.getAnnotation())) {
-			annotationMember.setAnnotation(owlExpression);
+		if (!Strings.isNullOrEmpty(owlExpression) && !owlExpression.equals(owlExpressionMember.getOwlExpression())) {
+			owlExpressionMember.setOwlExpression(owlExpression);
 			return true;
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,29 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 
 /**
- * @since 6.1.0
+ * @since 6.5
  */
-public class SnomedOWLAxiomReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedOWLAxiomReferenceSetMemberBuilder, SnomedAnnotationRefSetMember> {
+public class SnomedOWLExpressionReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedOWLExpressionReferenceSetMemberBuilder, SnomedOWLExpressionRefSetMember> {
 
 	private String owlExpression;
 
-	public SnomedOWLAxiomReferenceSetMemberBuilder withOWLExpression(final String owlExpression) {
+	public SnomedOWLExpressionReferenceSetMemberBuilder withOWLExpression(final String owlExpression) {
 		this.owlExpression = owlExpression;
 		return getSelf();
 	}
 
 	@Override
-	protected SnomedAnnotationRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedAnnotationRefSetMember();
+	protected SnomedOWLExpressionRefSetMember create() {
+		return SnomedRefSetFactory.eINSTANCE.createSnomedOWLExpressionRefSetMember();
 	}
 
 	@Override
-	public void init(final SnomedAnnotationRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedOWLExpressionRefSetMember component, final TransactionContext context) {
 		super.init(component, context);
-		component.setAnnotation(owlExpression);
+		component.setOwlExpression(owlExpression);
 	}
 }

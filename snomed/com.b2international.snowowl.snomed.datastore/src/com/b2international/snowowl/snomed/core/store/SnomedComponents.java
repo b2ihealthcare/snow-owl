@@ -176,12 +176,12 @@ public class SnomedComponents {
 	}
 
 	/**
-	 * Creates and returns a new {@link SnomedOWLAxiomReferenceSetMemberBuilder SNOMED CT OWL Axiom Reference set member builder}.
+	 * Creates and returns a new {@link SnomedOWLExpressionReferenceSetMemberBuilder SNOMED CT OWL Expression Reference set member builder}.
 	 * 
 	 * @return
 	 */
-	public static SnomedOWLAxiomReferenceSetMemberBuilder newOWLAxiomReferenceSetMember() {
-		return new SnomedOWLAxiomReferenceSetMemberBuilder();
+	public static SnomedOWLExpressionReferenceSetMemberBuilder newOWLExpressionReferenceSetMember() {
+		return new SnomedOWLExpressionReferenceSetMemberBuilder();
 	}
 	
 	/**
