@@ -117,11 +117,11 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.hashCode() + Objects.hash(destinationId, typeId);
+		return 31 * super.structuralHashCode() + structuralHashCode(destinationId, typeId);
 	}
 
 	@Override
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
 		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }

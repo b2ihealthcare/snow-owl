@@ -134,11 +134,11 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.hashCode() + Objects.hash(characteristicTypeId, dataType, label, name);
+		return 31 * super.structuralHashCode() + structuralHashCode(characteristicTypeId, dataType, label, name);
 	}
 
 	@Override
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
 		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }

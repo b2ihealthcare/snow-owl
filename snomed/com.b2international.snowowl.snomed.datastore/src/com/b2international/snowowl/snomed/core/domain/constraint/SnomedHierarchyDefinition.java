@@ -124,18 +124,18 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.hashCode() + Objects.hash(conceptId, inclusionType);
+		return 31 * super.structuralHashCode() + structuralHashCode(conceptId, inclusionType);
 	}
 
 	@Override
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
 		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedHierarchyDefinition other = (SnomedHierarchyDefinition) obj;
 
-		if (Objects.equals(conceptId, other.conceptId)) { return false; }
+		if (!Objects.equals(conceptId, other.conceptId)) { return false; }
 		if (inclusionType != other.inclusionType) { return false; }
 		return true;
 	}

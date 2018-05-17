@@ -164,11 +164,11 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.hashCode() + Objects.hash(description, domain, form, predicate, strength, validationMessage);
+		return 31 * super.structuralHashCode() + structuralHashCode(description, domain, form, predicate, strength, validationMessage);
 	}
 
 	@Override
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
 		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
@@ -176,9 +176,9 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		final SnomedConstraint other = (SnomedConstraint) obj;
 
 		if (!Objects.equals(description, other.description)) { return false; }
-		if (structurallyEquals(domain, other.domain)) { return false; }
+		if (!structurallyEquals(domain, other.domain)) { return false; }
 		if (form != other.form) { return false; }
-		if (structurallyEquals(predicate, other.predicate)) { return false; }
+		if (!structurallyEquals(predicate, other.predicate)) { return false; }
 		if (strength != other.strength) { return false; }
 		if (!Objects.equals(validationMessage, other.validationMessage)) { return false; }
 		return true;

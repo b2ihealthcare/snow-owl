@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -135,13 +134,13 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.hashCode() + Objects.hash(groupRule, maxCardinality, minCardinality, predicate);
+		return 31 * super.structuralHashCode() + structuralHashCode(groupRule, maxCardinality, minCardinality, predicate);
 	}
 
 	@Override
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
-		if (obj == null) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedCardinalityPredicate other = (SnomedCardinalityPredicate) obj;

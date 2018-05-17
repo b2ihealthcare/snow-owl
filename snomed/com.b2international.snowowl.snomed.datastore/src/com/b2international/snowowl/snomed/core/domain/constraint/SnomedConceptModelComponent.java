@@ -124,10 +124,10 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 	}
 
 	public int structuralHashCode() {
-		return Objects.hash(active, author, effectiveTime);
+		return structuralHashCode(active, author, effectiveTime);
 	}
 
-	public boolean structurallyEquals(final Object obj) {
+	public boolean structurallyEquals(final SnomedConceptModelComponent obj) {
 		if (this == obj) { return true; }
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
@@ -143,6 +143,21 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 	public static boolean structurallyEquals(final SnomedConceptModelComponent left, final SnomedConceptModelComponent right) {
 		if (left == right) { return true; }
 		if (left == null) { return false; }
-		return (left.structurallyEquals(right));
+		return left.structurallyEquals(right);
+	}
+	
+	public static int structuralHashCode(Object... items) {
+		int result = 1;
+		
+		for (Object item : items) {
+			result = 31 * result;
+			if (item instanceof SnomedConceptModelComponent) {
+				result += ((SnomedConceptModelComponent) item).structuralHashCode();
+			} else if (item != null) {
+				result += item.hashCode();
+			}
+		}
+		
+		return result;
 	}
 }
