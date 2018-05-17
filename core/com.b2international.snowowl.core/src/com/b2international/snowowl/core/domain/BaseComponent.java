@@ -28,7 +28,7 @@ public abstract class BaseComponent implements IComponent {
 	public final String getId() {
 		return id;
 	}
-
+	
 	@Override
 	public final Boolean isReleased() {
 		return released;
