@@ -17,6 +17,7 @@ package com.b2international.snowowl.core;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -339,6 +340,15 @@ public class CoreTerminologyBroker {
 		}
 		throw new RuntimeException("No configuration element has been registered for '" + extensionPointId + "' extension with the '" + terminologyComponentId
 				+ "' terminology component identifier.");
+	}
+	
+	public String getRepositoryUuidForTooling (String toolingId) {
+		return Arrays.stream(Platform.getExtensionRegistry().getConfigurationElementsFor("com.b2international.snowowl.datastore.repository"))
+			.filter(element -> element.getAttribute("toolingId").equals(toolingId))
+			.findFirst()
+			.orElseThrow(RuntimeException::new)
+			.getAttribute("uuid");
+			
 	}
 	
 	/**Returns with the primary terminology component ID for the given terminology argument.*/
