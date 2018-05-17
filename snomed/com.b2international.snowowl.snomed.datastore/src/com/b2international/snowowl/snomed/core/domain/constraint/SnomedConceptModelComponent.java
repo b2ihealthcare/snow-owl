@@ -123,13 +123,11 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 		return StringUtils.splitCamelCase(withoutPrefix).toLowerCase(Locale.ENGLISH); // eg. "cardinality predicate"
 	}
 
-	@Override
-	public int hashCode() {
+	public int structuralHashCode() {
 		return Objects.hash(active, author, effectiveTime);
 	}
 
-	@Override
-	public boolean equals(final Object obj) {
+	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }

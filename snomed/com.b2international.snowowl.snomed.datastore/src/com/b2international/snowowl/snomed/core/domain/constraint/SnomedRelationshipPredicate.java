@@ -133,12 +133,12 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 	}
 
 	@Override
-	public int hashCode() {
+	public int structuralHashCode() {
 		return 31 * super.hashCode() + Objects.hash(attribute, characteristicTypeId, range);
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
+	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
 		if (!super.equals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
