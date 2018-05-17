@@ -900,7 +900,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				index = getIndexFromDatabase(item, item.cdoResource(), "ERESOURCE_CDORESOURCE_CONTENTS_LIST");
 			} else if (item instanceof AttributeConstraint) {
 				// from mrcm concept model
-				index = getIndexFromDatabase(item, (ConceptModel) item.eContainer(), "CONCEPT_MODEL_CONSTRAINTS_LIST");
+				index = getIndexFromDatabase(item, (ConceptModel) item.eContainer(), "MRCM_CONCEPTMODEL_CONSTRAINTS_LIST");
 			} else if (item instanceof SnomedRefSetMember) {
 				// from the refset list
 				final SnomedRefSetMember member = (SnomedRefSetMember) item;
