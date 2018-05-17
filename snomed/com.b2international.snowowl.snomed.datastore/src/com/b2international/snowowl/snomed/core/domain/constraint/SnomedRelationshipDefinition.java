@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -95,7 +96,7 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		conceptIds.add(getTypeId());
-		conceptIds.add(getDestinationId());
+		if (!Strings.isNullOrEmpty(getTypeId())) { conceptIds.add(getTypeId()); }
+		if (!Strings.isNullOrEmpty(getDestinationId())) {conceptIds.add(getDestinationId()); }
 	}
 }

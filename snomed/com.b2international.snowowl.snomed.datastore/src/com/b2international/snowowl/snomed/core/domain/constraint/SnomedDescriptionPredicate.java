@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -76,6 +77,6 @@ public final class SnomedDescriptionPredicate extends SnomedPredicate {
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		conceptIds.add(getTypeId());
+		if (!Strings.isNullOrEmpty(typeId)) { conceptIds.add(getTypeId()); }
 	}
 }

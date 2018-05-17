@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Date;
@@ -41,7 +42,7 @@ public final class SnomedDependencyPredicate extends SnomedPredicate {
 
 	private GroupRule groupRule;
 	private DependencyOperator dependencyOperator;
-	private Set<SnomedPredicate> children;
+	private Set<SnomedPredicate> children = newHashSet();
 
 	public GroupRule getGroupRule() {
 		return groupRule;

@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -81,6 +82,6 @@ public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefiniti
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		conceptIds.add(getRefSetId());
+		if (!Strings.isNullOrEmpty(getRefSetId())) { conceptIds.add(getRefSetId()); }
 	}
 }

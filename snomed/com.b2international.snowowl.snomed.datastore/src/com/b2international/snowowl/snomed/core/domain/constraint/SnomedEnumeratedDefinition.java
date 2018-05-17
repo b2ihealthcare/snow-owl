@@ -34,7 +34,7 @@ import com.google.common.base.Joiner;
  */
 public final class SnomedEnumeratedDefinition extends SnomedConceptSetDefinition {
 
-	private Set<String> conceptIds;
+	private Set<String> conceptIds = newHashSet();
 
 	public Set<String> getConceptIds() {
 		return conceptIds;

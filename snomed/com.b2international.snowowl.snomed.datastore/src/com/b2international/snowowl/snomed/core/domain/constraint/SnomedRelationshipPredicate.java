@@ -23,12 +23,15 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
 public final class SnomedRelationshipPredicate extends SnomedPredicate {
 
+	public static final String PROP_CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
+	
 	private SnomedConceptSetDefinition attribute;
 	private SnomedConceptSetDefinition range;
 	private String characteristicTypeId;
@@ -92,20 +95,20 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		final SnomedRelationshipPredicate copy = new SnomedRelationshipPredicate();
 		
 		copy.setActive(isActive());
-		copy.setAttribute(getAttribute().deepCopy(date, userName));
+		if (getAttribute() != null) { copy.setAttribute(getAttribute().deepCopy(date, userName)); }
 		copy.setAuthor(userName);
 		copy.setCharacteristicTypeId(getCharacteristicTypeId());
 		copy.setEffectiveTime(date.getTime());
 		copy.setId(UUID.randomUUID().toString());
-		copy.setRange(getRange().deepCopy(date, userName));
+		if (getRange() != null) { copy.setRange(getRange().deepCopy(date, userName)); }
 		
 		return copy;
 	}
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		attribute.collectConceptIds(conceptIds);
-		range.collectConceptIds(conceptIds);
-		conceptIds.add(getCharacteristicTypeId());
+		if (getAttribute() != null) { getAttribute().collectConceptIds(conceptIds); }
+		if (getRange() != null) { getRange().collectConceptIds(conceptIds); }
+		if (!Strings.isNullOrEmpty(getCharacteristicTypeId())) { conceptIds.add(getCharacteristicTypeId()); }
 	}	
 }

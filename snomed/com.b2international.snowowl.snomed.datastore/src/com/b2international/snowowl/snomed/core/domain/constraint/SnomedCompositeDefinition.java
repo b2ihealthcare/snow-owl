@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Date;
@@ -38,7 +39,7 @@ import com.google.common.collect.Maps;
  */
 public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition {
 
-	private Set<SnomedConceptSetDefinition> children;
+	private Set<SnomedConceptSetDefinition> children = newHashSet();
 
 	public Set<SnomedConceptSetDefinition> getChildren() {
 		return children;

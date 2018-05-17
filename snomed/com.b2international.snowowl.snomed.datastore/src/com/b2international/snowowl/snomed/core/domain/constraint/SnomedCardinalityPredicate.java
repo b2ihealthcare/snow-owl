@@ -105,13 +105,13 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 		copy.setId(UUID.randomUUID().toString());
 		copy.setMaxCardinality(getMaxCardinality());
 		copy.setMinCardinality(getMinCardinality());
-		copy.setPredicate(predicate.deepCopy(date, userName));
+		if (getPredicate() != null) { copy.setPredicate(getPredicate().deepCopy(date, userName)); }
 		
 		return copy;
 	}
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		predicate.collectConceptIds(conceptIds);
+		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
 }

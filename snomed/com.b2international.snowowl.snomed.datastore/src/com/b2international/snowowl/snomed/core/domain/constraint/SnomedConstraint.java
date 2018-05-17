@@ -126,11 +126,11 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		copy.setActive(isActive());
 		copy.setAuthor(userName);
 		copy.setDescription(getDescription());
-		copy.setDomain(getDomain().deepCopy(date, userName));
+		if (getDomain() != null) { copy.setDomain(getDomain().deepCopy(date, userName)); }
 		copy.setEffectiveTime(date.getTime());
 		copy.setForm(getForm());
 		copy.setId(UUID.randomUUID().toString());
-		copy.setPredicate(getPredicate().deepCopy(date, userName));
+		if (getPredicate() != null) { copy.setPredicate(getPredicate().deepCopy(date, userName)); }
 		copy.setStrength(getStrength());
 		copy.setValidationMessage(getValidationMessage());
 
@@ -139,7 +139,7 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 
 	@Override
 	public void collectConceptIds(final Collection<String> conceptIds) {
-		domain.collectConceptIds(conceptIds);
-		predicate.collectConceptIds(conceptIds);
+		if (getDomain() != null) { getDomain().collectConceptIds(conceptIds); }
+		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
 }

@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -103,6 +104,6 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 	
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
-		conceptIds.add(getConceptId());
+		if (!Strings.isNullOrEmpty(getConceptId())) { conceptIds.add(getConceptId()); }
 	}
 }
