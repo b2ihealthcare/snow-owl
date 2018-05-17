@@ -90,7 +90,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	/**
 	 * @since 6.5
 	 */
-	interface BranchNameValidator {
+	public static interface BranchNameValidator {
 
 		BranchNameValidator DEFAULT = new BranchNameValidatorImpl();
 
