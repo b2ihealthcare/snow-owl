@@ -17,9 +17,13 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
@@ -120,5 +124,27 @@ public final class SnomedDependencyPredicate extends SnomedPredicate {
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedDependencyPredicate deepCopy(Date date, String userName) {
+		final SnomedDependencyPredicate copy = new SnomedDependencyPredicate();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setChildren(getChildren().stream()
+				.map(p -> p.deepCopy(date, userName))
+				.collect(Collectors.toSet()));
+		copy.setDependencyOperator(getDependencyOperator());
+		copy.setEffectiveTime(date.getTime());
+		copy.setGroupRule(getGroupRule());
+		copy.setId(UUID.randomUUID().toString());
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		children.forEach(p -> p.collectConceptIds(conceptIds));
 	}
 }

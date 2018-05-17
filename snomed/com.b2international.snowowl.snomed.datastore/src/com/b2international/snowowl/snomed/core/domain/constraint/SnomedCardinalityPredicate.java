@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
@@ -26,6 +30,10 @@ import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
  */
 public final class SnomedCardinalityPredicate extends SnomedPredicate {
 
+	public static final String PROP_GROUP_RULE = "groupRule";
+	public static final String PROP_MIN_CARDINALITY = "minCardinality";
+	public static final String PROP_MAX_CARDINALITY = "maxCardinality";
+	
 	private int minCardinality;
 	private int maxCardinality;
 	private GroupRule groupRule;
@@ -84,5 +92,26 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedCardinalityPredicate deepCopy(Date date, String userName) {
+		final SnomedCardinalityPredicate copy = new SnomedCardinalityPredicate();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setEffectiveTime(date.getTime());
+		copy.setGroupRule(getGroupRule());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setMaxCardinality(getMaxCardinality());
+		copy.setMinCardinality(getMinCardinality());
+		copy.setPredicate(predicate.deepCopy(date, userName));
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		predicate.collectConceptIds(conceptIds);
 	}
 }

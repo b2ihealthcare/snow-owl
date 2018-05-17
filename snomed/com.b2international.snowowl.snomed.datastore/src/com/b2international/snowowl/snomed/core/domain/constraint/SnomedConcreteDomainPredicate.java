@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
@@ -26,6 +30,11 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
  */
 public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
+	public static final String PROP_DATA_TYPE = "dataType";
+	public static final String PROP_NAME = "name";
+	public static final String PROP_LABEL = "label";
+	public static final String PROP_CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
+	
 	private String label; // "Vaccine"
 	private String name; // "canBeTaggedWithVaccine"
 	private DataType dataType;
@@ -84,5 +93,26 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 		updateModel.setUuid(getId());
 		
 		return updateModel;
+	}
+	
+	@Override
+	public SnomedConcreteDomainPredicate deepCopy(Date date, String userName) {
+		final SnomedConcreteDomainPredicate copy = new SnomedConcreteDomainPredicate();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setCharacteristicTypeId(getCharacteristicTypeId());
+		copy.setDataType(getDataType());
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setLabel(getLabel());
+		copy.setName(getName());
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		return;
 	}
 }

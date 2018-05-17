@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
@@ -30,72 +34,77 @@ import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
  */
 public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
+	public static final String PROP_STRENGTH = "strength";
+	public static final String PROP_FORM = "form";
+	public static final String PROP_VALIDATION_MESSAGE = "validationMessage";
+	public static final String PROP_DESCRIPTION = "description";
+
 	private ConstraintStrength strength;
 	private String validationMessage;
 	private String description;
 	private ConstraintForm form;
 	private SnomedConceptSetDefinition domain;
 	private SnomedPredicate predicate;
-	
+
 	public ConstraintStrength getStrength() {
 		return strength;
 	}
-	
-	public void setStrength(ConstraintStrength strength) {
+
+	public void setStrength(final ConstraintStrength strength) {
 		this.strength = strength;
 	}
-	
+
 	public String getValidationMessage() {
 		return validationMessage;
 	}
-	
-	public void setValidationMessage(String validationMessage) {
+
+	public void setValidationMessage(final String validationMessage) {
 		this.validationMessage = validationMessage;
 	}
-	
+
 	public String getDescription() {
 		return description;
 	}
-	
-	public void setDescription(String description) {
+
+	public void setDescription(final String description) {
 		this.description = description;
 	}
-	
+
 	public ConstraintForm getForm() {
 		return form;
 	}
-	
-	public void setForm(ConstraintForm form) {
+
+	public void setForm(final ConstraintForm form) {
 		this.form = form;
 	}
-	
+
 	public SnomedConceptSetDefinition getDomain() {
 		return domain;
 	}
-	
-	public void setDomain(SnomedConceptSetDefinition domain) {
+
+	public void setDomain(final SnomedConceptSetDefinition domain) {
 		this.domain = domain;
 	}
-	
+
 	public SnomedPredicate getPredicate() {
 		return predicate;
 	}
-	
-	public void setPredicate(SnomedPredicate predicate) {
+
+	public void setPredicate(final SnomedPredicate predicate) {
 		this.predicate = predicate;
 	}
-	
+
 	@Override
 	public AttributeConstraint createModel() {
 		return MrcmFactory.eINSTANCE.createAttributeConstraint();
 	}
-	
+
 	@Override
-	public AttributeConstraint applyChangesTo(ConceptModelComponent existingModel) {
+	public AttributeConstraint applyChangesTo(final ConceptModelComponent existingModel) {
 		final AttributeConstraint updatedModel = (existingModel instanceof AttributeConstraint)
 				? (AttributeConstraint) existingModel
 				: createModel();
-		
+
 		updatedModel.setActive(isActive());
 		updatedModel.setAuthor(getAuthor());
 		updatedModel.setDescription(getDescription());
@@ -106,7 +115,31 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		updatedModel.setStrength(getStrength());
 		updatedModel.setUuid(getId());
 		updatedModel.setValidationMessage(getValidationMessage());
-		
+
 		return updatedModel;
+	}
+
+	@Override
+	public SnomedConstraint deepCopy(final Date date, final String userName) {
+		final SnomedConstraint copy = new SnomedConstraint();
+
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setDescription(getDescription());
+		copy.setDomain(getDomain().deepCopy(date, userName));
+		copy.setEffectiveTime(date.getTime());
+		copy.setForm(getForm());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setPredicate(getPredicate().deepCopy(date, userName));
+		copy.setStrength(getStrength());
+		copy.setValidationMessage(getValidationMessage());
+
+		return copy;
+	}
+
+	@Override
+	public void collectConceptIds(final Collection<String> conceptIds) {
+		domain.collectConceptIds(conceptIds);
+		predicate.collectConceptIds(conceptIds);
 	}
 }

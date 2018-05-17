@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
@@ -25,6 +29,8 @@ import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
  */
 public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefinition {
 
+	public static final String PROP_REFSET_ID = "refSetId";
+	
 	private String refSetId;
 
 	public String getRefSetId() {
@@ -58,5 +64,23 @@ public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefiniti
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedReferenceSetDefinition deepCopy(Date date, String userName) {
+		final SnomedReferenceSetDefinition copy = new SnomedReferenceSetDefinition();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setRefSetId(getRefSetId());
+
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		conceptIds.add(getRefSetId());
 	}
 }

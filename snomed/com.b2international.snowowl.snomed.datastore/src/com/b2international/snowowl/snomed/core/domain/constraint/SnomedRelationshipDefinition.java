@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
@@ -26,6 +30,9 @@ import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
  */
 public final class SnomedRelationshipDefinition extends SnomedConceptSetDefinition {
 
+	public static final String PROP_TYPE_ID = "typeId";
+	public static final String PROP_DESTINATION_ID = "typeId";
+	
 	private String typeId;
 	private String destinationId;
 
@@ -70,5 +77,25 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedRelationshipDefinition deepCopy(Date date, String userName) {
+		final SnomedRelationshipDefinition copy = new SnomedRelationshipDefinition();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setDestinationId(getDestinationId());
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setTypeId(getTypeId());
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		conceptIds.add(getTypeId());
+		conceptIds.add(getDestinationId());
 	}
 }

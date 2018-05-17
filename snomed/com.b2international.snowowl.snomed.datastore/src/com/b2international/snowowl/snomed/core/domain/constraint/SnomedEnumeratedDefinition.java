@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
@@ -88,5 +91,23 @@ public final class SnomedEnumeratedDefinition extends SnomedConceptSetDefinition
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedEnumeratedDefinition deepCopy(Date date, String userName) {
+		final SnomedEnumeratedDefinition copy = new SnomedEnumeratedDefinition();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setConceptIds(newHashSet(getConceptIds()));
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		conceptIds.addAll(getConceptIds());
 	}
 }

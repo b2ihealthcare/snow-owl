@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
@@ -26,6 +30,9 @@ import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
  */
 public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition {
 
+	public static final String PROP_CONCEPT_ID = "conceptId";
+	public static final String PROP_INCLUSION_TYPE = "inclusionType";
+	
 	private String conceptId;
 	private HierarchyInclusionType inclusionType;
 	
@@ -78,5 +85,24 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;
+	}
+	
+	@Override
+	public SnomedHierarchyDefinition deepCopy(Date date, String userName) {
+		final SnomedHierarchyDefinition copy = new SnomedHierarchyDefinition();
+		
+		copy.setActive(isActive());
+		copy.setAuthor(userName);
+		copy.setConceptId(getConceptId());
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setInclusionType(getInclusionType());
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		conceptIds.add(getConceptId());
 	}
 }

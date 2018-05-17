@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
@@ -82,4 +86,26 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		
 		return updatedModel;
 	}
+	
+	@Override
+	public SnomedRelationshipPredicate deepCopy(Date date, String userName) {
+		final SnomedRelationshipPredicate copy = new SnomedRelationshipPredicate();
+		
+		copy.setActive(isActive());
+		copy.setAttribute(getAttribute().deepCopy(date, userName));
+		copy.setAuthor(userName);
+		copy.setCharacteristicTypeId(getCharacteristicTypeId());
+		copy.setEffectiveTime(date.getTime());
+		copy.setId(UUID.randomUUID().toString());
+		copy.setRange(getRange().deepCopy(date, userName));
+		
+		return copy;
+	}
+	
+	@Override
+	public void collectConceptIds(Collection<String> conceptIds) {
+		attribute.collectConceptIds(conceptIds);
+		range.collectConceptIds(conceptIds);
+		conceptIds.add(getCharacteristicTypeId());
+	}	
 }

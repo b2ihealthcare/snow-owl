@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Date;
+
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
@@ -24,16 +26,19 @@ import com.google.common.base.Strings;
  * @since 6.5
  */
 public abstract class SnomedPredicate extends SnomedConceptModelComponent {
-	
+
 	@Override
 	public abstract ConceptModelPredicate createModel();
-	
+
 	@Override
 	public abstract ConceptModelPredicate applyChangesTo(ConceptModelComponent existingModel);
-	
+
+	@Override
+	public abstract SnomedPredicate deepCopy(Date date, String userName);
+
 	static String getCharacteristicTypeExpression(final String characteristicTypeId) {
 		return Strings.isNullOrEmpty(characteristicTypeId) 
-					? "<" + Concepts.CHARACTERISTIC_TYPE 
-					: "<<" + characteristicTypeId;
+				? "<" + Concepts.CHARACTERISTIC_TYPE 
+				: "<<" + characteristicTypeId;
 	}
 }

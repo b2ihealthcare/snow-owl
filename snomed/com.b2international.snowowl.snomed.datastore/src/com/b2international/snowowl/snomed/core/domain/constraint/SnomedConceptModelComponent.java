@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import java.util.Collection;
+import java.util.Date;
+
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
@@ -26,6 +29,11 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
  */
 public abstract class SnomedConceptModelComponent extends BaseComponent {
 
+	public static final String PROP_ID = "id";
+	public static final String PROP_AUTHOR = "author";
+	public static final String PROP_ACTIVE = "active";
+	public static final String PROP_EFFECTIVE_TIME = "effectiveTime";
+	
 	private boolean active;
 	private long effectiveTime;
 	private String author;
@@ -74,4 +82,21 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 	 *         input type did not meet expectations
 	 */
 	public abstract ConceptModelComponent applyChangesTo(ConceptModelComponent existingModel);
+	
+	/**
+	 * Creates a deep copy of the given model component object hierarchy, updating
+	 * the effective time and the author on each copy.
+	 * 
+	 * @param date
+	 * @param userName
+	 * @return
+	 */
+	public abstract SnomedConceptModelComponent deepCopy(Date date, String userName);
+	
+	/**
+	 * Adds all referenced SNOMED CT concept identifiers to the specified set.
+	 * 
+	 * @param conceptIds
+	 */
+	public abstract void collectConceptIds(Collection<String> conceptIds);
 }
