@@ -1,12 +1,12 @@
-/*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,26 +15,12 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.util;
 
+import com.b2international.snowowl.snomed.snomedrefset.*;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.util.Switch;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import org.eclipse.emf.ecore.util.Switch;
 
 /**
  * <!-- begin-user-doc -->
@@ -74,7 +60,7 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @parameter ePackage the package in question.
+	 * @param ePackage the package in question.
 	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
@@ -196,6 +182,48 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 				SnomedModuleDependencyRefSetMember snomedModuleDependencyRefSetMember = (SnomedModuleDependencyRefSetMember)theEObject;
 				T result = caseSnomedModuleDependencyRefSetMember(snomedModuleDependencyRefSetMember);
 				if (result == null) result = caseSnomedRefSetMember(snomedModuleDependencyRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_ANNOTATION_REF_SET_MEMBER: {
+				SnomedAnnotationRefSetMember snomedAnnotationRefSetMember = (SnomedAnnotationRefSetMember)theEObject;
+				T result = caseSnomedAnnotationRefSetMember(snomedAnnotationRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedAnnotationRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER: {
+				SnomedOWLExpressionRefSetMember snomedOWLExpressionRefSetMember = (SnomedOWLExpressionRefSetMember)theEObject;
+				T result = caseSnomedOWLExpressionRefSetMember(snomedOWLExpressionRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedOWLExpressionRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER: {
+				SnomedMRCMDomainRefSetMember snomedMRCMDomainRefSetMember = (SnomedMRCMDomainRefSetMember)theEObject;
+				T result = caseSnomedMRCMDomainRefSetMember(snomedMRCMDomainRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMDomainRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER: {
+				SnomedMRCMAttributeDomainRefSetMember snomedMRCMAttributeDomainRefSetMember = (SnomedMRCMAttributeDomainRefSetMember)theEObject;
+				T result = caseSnomedMRCMAttributeDomainRefSetMember(snomedMRCMAttributeDomainRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMAttributeDomainRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER: {
+				SnomedMRCMAttributeRangeRefSetMember snomedMRCMAttributeRangeRefSetMember = (SnomedMRCMAttributeRangeRefSetMember)theEObject;
+				T result = caseSnomedMRCMAttributeRangeRefSetMember(snomedMRCMAttributeRangeRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMAttributeRangeRefSetMember);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case SnomedRefSetPackage.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER: {
+				SnomedMRCMModuleScopeRefSetMember snomedMRCMModuleScopeRefSetMember = (SnomedMRCMModuleScopeRefSetMember)theEObject;
+				T result = caseSnomedMRCMModuleScopeRefSetMember(snomedMRCMModuleScopeRefSetMember);
+				if (result == null) result = caseSnomedRefSetMember(snomedMRCMModuleScopeRefSetMember);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -425,6 +453,96 @@ public class SnomedRefSetSwitch<T> extends Switch<T> {
 	 * @generated
 	 */
 	public T caseSnomedModuleDependencyRefSetMember(SnomedModuleDependencyRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed Annotation Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed Annotation Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedAnnotationRefSetMember(SnomedAnnotationRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed OWL Expression Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed OWL Expression Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Domain Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Domain Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMAttributeDomainRefSetMember(SnomedMRCMAttributeDomainRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Attribute Range Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMAttributeRangeRefSetMember(SnomedMRCMAttributeRangeRefSetMember object) {
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>Snomed MRCM Module Scope Ref Set Member</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseSnomedMRCMModuleScopeRefSetMember(SnomedMRCMModuleScopeRefSetMember object) {
 		return null;
 	}
 

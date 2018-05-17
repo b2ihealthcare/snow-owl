@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -104,7 +105,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	}
 
 	protected final String getActive(final SnomedComponent component) {
-		return component.isActive() ? "1" : "0";
+		return BooleanUtils.toString(component.isActive());
 	}
 
 	public final void exportBranch(
@@ -115,7 +116,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 			final long effectiveTimeEnd,
 			final Set<String> visitedComponentEffectiveTimes) throws IOException {
 
-		LOG.info("Exporting {} from {} branch...", getFileName(), branch);
+		LOG.info("Exporting {} branch to '{}'", branch, getFileName());
 		
 		// Ensure that the path leading to the export file exists
 		final Path exportFileDirectory = releaseDirectory.resolve(getRelativeDirectory());

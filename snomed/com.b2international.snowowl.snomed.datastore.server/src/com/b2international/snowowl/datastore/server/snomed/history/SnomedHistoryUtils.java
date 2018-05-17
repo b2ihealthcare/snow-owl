@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,43 +30,20 @@ import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 
 /**
  * Utility class for the history framework.
- *
  */
 public abstract class SnomedHistoryUtils {
-
-//	private static final List<String> TOP_LEVEL_REFSET_IDS = Collections.unmodifiableList(Arrays.asList(new String[] {
-//			Concepts.REFSET_SIMPLE_TYPE,
-//			Concepts.REFSET_ATTRIBUTE_VALUE_TYPE,
-//			Concepts.REFSET_LANGUAGE_TYPE,
-//			Concepts.REFSET_QUERY_SPECIFICATION_TYPE,
-//			Concepts.REFSET_SIMPLE_MAP_TYPE,
-//			Concepts.AUSTRALIAN_LANGUAGE_REFERENCE_SET,
-//			Concepts.REFSET_LANGUAGE_TYPE_UK,
-//			Concepts.REFSET_LANGUAGE_TYPE_US
-//	}));
 	
-	private SnomedHistoryUtils() {
-	}
+	private SnomedHistoryUtils() { }
 	
 	public static String getLabelForConcept(final Concept concept) {
-		
 		checkArgument(CDOUtils.checkObject(concept));
 		
 		// TODO this code belongs to the client where lang.refset preference is actually available
@@ -105,19 +82,6 @@ public abstract class SnomedHistoryUtils {
 	public static Description getDescription(final String id, final CDOView view) {
 		return new SnomedDescriptionLookupService().getComponent(id, view);
 	}
-	
-	/**
-	 * Returns the reference set member class for the specified
-	 * {@link CDOObject}, if it represents a reference set.
-	 * 
-	 * @param cdoObject
-	 *            the object to inspect
-	 * 
-	 * @return the reference set member class of the object, or {@code null}
-	 */
-	public static Class<?> getRefSetMemberClass(final CDOObject cdoObject) {
-		return (cdoObject instanceof SnomedRefSet) ? getRefSetMemberClass(((SnomedRefSet) cdoObject).getType()) : null;
-	}
 
 	/**
 	 * Returns the reference set class of the specified {@link CDOObject}.
@@ -128,7 +92,6 @@ public abstract class SnomedHistoryUtils {
 	 * @return the reference set class of the object, or {@code null}
 	 */
 	public static Class<?> getRefSetClass(final CDOObject cdoObject) {
-
 		if (SnomedMappingRefSet.class.isAssignableFrom(cdoObject.getClass())) {
 			return SnomedMappingRefSet.class;
 		} else if (SnomedRefSet.class.isAssignableFrom(cdoObject.getClass())) {
@@ -136,30 +99,5 @@ public abstract class SnomedHistoryUtils {
 		}
 
 		throw new RuntimeException("Could not determine reference set class type for passed in object: " + cdoObject + " [" + cdoObject.getClass() + "]");
-	}
-
-	private static Class<?> getRefSetMemberClass(final SnomedRefSetType refSetType) {
-		
-		switch (refSetType) {
-		
-			case ATTRIBUTE_VALUE:
-				return SnomedAttributeValueRefSetMember.class;
-			case ASSOCIATION:
-				return SnomedAssociationRefSetMember.class;
-			case LANGUAGE:
-				return SnomedLanguageRefSetMember.class;
-			case QUERY:
-				return SnomedQueryRefSetMember.class;
-			case SIMPLE_MAP:
-				return SnomedSimpleMapRefSetMember.class;
-			case SIMPLE:
-				return SnomedRefSetMember.class;
-			case COMPLEX_MAP:
-				return SnomedComplexMapRefSetMember.class;
-			case DESCRIPTION_TYPE : 
-				return SnomedDescriptionTypeRefSetMember.class;
-			default:
-				throw new IllegalArgumentException("Could not determine reference set member class type for reference set type argument: " + refSetType);
-		}
 	}
 }

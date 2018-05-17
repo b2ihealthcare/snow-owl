@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import com.google.common.collect.ImmutableSet;
 public class SnomedConceptHistoryInfoQueryExecutor extends HistoryInfoQueryExecutorImpl {
 
 	private static final Set<SnomedRefSetType> REFSET_MEMBER_TYPES = ImmutableSet.of(SnomedRefSetType.SIMPLE_MAP, 
+			SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, 
 			SnomedRefSetType.SIMPLE, 
 			SnomedRefSetType.ATTRIBUTE_VALUE, 
 			SnomedRefSetType.QUERY, 

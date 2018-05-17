@@ -13,24 +13,16 @@
             intId="100"
             name="SNOMED CT Concept"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="SIMPLE_MAP">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="SIMPLE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="ATTRIBUTE_VALUE">
-         </supportedRefSetType>
-         <supportedMapTargetType
-               type="SIMPLE_MAP">
-         </supportedMapTargetType>
-         <supportedRefSetType
-               type="COMPLEX_MAP">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="EXTENDED_MAP">
-         </supportedRefSetType>
+         <!-- Referenced components -->
+         <supportedRefSetType type="SIMPLE_MAP" />
+         <supportedRefSetType type="SIMPLE_MAP_WITH_DESCRIPTION" />
+         <supportedRefSetType type="SIMPLE" />
+         <supportedRefSetType type="ATTRIBUTE_VALUE" />
+         <supportedRefSetType type="COMPLEX_MAP" />
+         <supportedRefSetType type="EXTENDED_MAP" />
+         <!-- Map targets -->
+         <supportedMapTargetType type="SIMPLE_MAP" />
+         <supportedMapTargetType type="SIMPLE_MAP_WITH_DESCRIPTION" />
       </terminologyComponent>
       <terminologyComponent
             decorator="icons/snomed_description_decorator.png"
@@ -40,15 +32,11 @@
             intId="101"
             name="SNOMED CT Description"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="SIMPLE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="ATTRIBUTE_VALUE">
-         </supportedRefSetType>
-         <supportedRefSetType
-               type="SIMPLE_MAP">
-         </supportedRefSetType>
+         <!-- Referenced components -->
+         <supportedRefSetType type="SIMPLE" />
+         <supportedRefSetType type="ATTRIBUTE_VALUE" />
+         <supportedRefSetType type="SIMPLE_MAP" />
+         <supportedRefSetType type="SIMPLE_MAP_WITH_DESCRIPTION" />
       </terminologyComponent>
       <terminologyComponent
             decorator="icons/snomed_relationship_decorator.png"
@@ -67,9 +55,8 @@
             intId="103"
             name="SNOMED CT Reference Set"
             terminologyId="com.b2international.snowowl.terminology.snomed">
-         <supportedRefSetType
-               type="QUERY">
-         </supportedRefSetType>
+         <!-- Referenced components -->
+         <supportedRefSetType type="QUERY" />
       </terminologyComponent>
       <terminologyComponent
             decorator="icons/snomed_refset_decorator.png"

@@ -20,10 +20,12 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 5.0
@@ -47,9 +49,12 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
-		// FIXME: check map target if it's also in SNOMED CT?
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CORRELATION_ID);
-
+		
+		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
+			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
+		}
+		
 		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
 				.withId(getId())
 				.withActive(isActive())
@@ -69,6 +74,14 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
-		return ImmutableSet.of(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));
+		
+		Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
+			.add(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID));
+		
+		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
+			requiredComponentIds.add(getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET));
+		}
+		
+		return requiredComponentIds.build();
 	}
 }

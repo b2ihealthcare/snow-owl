@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,19 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefSetImporter<SimpleMapRefSetRow> {
 
+	private static final Map<String, CellProcessor> CELL_PROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
+			.put(AssociatingRefSetRow.PROP_UUID, new ParseUuid())
+			.put(AssociatingRefSetRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
+			.put(AssociatingRefSetRow.PROP_ACTIVE, new ParseBool("1", "0"))
+			.put(AssociatingRefSetRow.PROP_MODULE_ID, NullObjectPattern.INSTANCE)
+			.put(AssociatingRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
+			.put(AssociatingRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
+			.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE)
+			.build();
+	
 	public static final List<IndexConfiguration> INDEXES = ImmutableList.<IndexConfiguration>builder()
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1000", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "CDO_CREATED"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1001", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "CDO_CONTAINER", "CDO_BRANCH", "CDO_VERSION"))
@@ -49,44 +58,16 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1003", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "UUID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER_IDX1004", "SNOMEDREFSET_SNOMEDSIMPLEMAPREFSETMEMBER", "MAPTARGETCOMPONENTID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.build();
-	private boolean hasMapTargetDescription;
 	
-	public SnomedSimpleMapTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, boolean hasMapTargetDescription, final String releaseFileIdentifier) {
-		super(createImportConfiguration(hasMapTargetDescription), importContext, releaseFileStream, releaseFileIdentifier);
-		this.hasMapTargetDescription = hasMapTargetDescription;
-	}
-
-	private static SnomedImportConfiguration<SimpleMapRefSetRow> createImportConfiguration(boolean extended) {
-		
-		final Builder<String, CellProcessor> builder = ImmutableMap.<String, CellProcessor>builder()
-				.put(AssociatingRefSetRow.PROP_UUID, new ParseUuid())
-				.put(AssociatingRefSetRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
-				.put(AssociatingRefSetRow.PROP_ACTIVE, new ParseBool("1", "0"))
-				.put(AssociatingRefSetRow.PROP_MODULE_ID, NullObjectPattern.INSTANCE)
-				.put(AssociatingRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
-				.put(AssociatingRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
-				.put(AssociatingRefSetRow.PROP_ASSOCIATED_COMPONENT_ID, NullObjectPattern.INSTANCE);
-		
-		if (extended) {
-			builder.put(SimpleMapRefSetRow.PROP_MAP_TARGET_DESCRIPTION, NullObjectPattern.INSTANCE);
-		}
-		
-		final Map<String, CellProcessor> cellProcessorMapping = builder.build();
-		
-		final ComponentImportType type = (extended) 
-				? ComponentImportType.SIMPLE_MAP_TYPE_REFSET_WITH_DESCRIPTION
-				: ComponentImportType.SIMPLE_MAP_TYPE_REFSET;
-		
-		final String[] expectedHeader = (extended)
-				? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION
-				: SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
-		
-		return new SnomedImportConfiguration<SimpleMapRefSetRow>(
-				type, 
-				cellProcessorMapping, 
-				SimpleMapRefSetRow.class, 
-				expectedHeader, 
-				INDEXES);
+	private static final SnomedImportConfiguration<SimpleMapRefSetRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<SimpleMapRefSetRow>(
+			ComponentImportType.SIMPLE_MAP_TYPE_REFSET, 
+			CELL_PROCESSOR_MAPPING, 
+			SimpleMapRefSetRow.class, 
+			SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER, 
+			INDEXES); 
+	
+	public SnomedSimpleMapTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
+		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 	
 	@Override
@@ -108,10 +89,6 @@ public class SnomedSimpleMapTypeRefSetImporter extends AbstractSnomedMapTypeRefS
 		member.setModuleId(row.getModuleId());
 		member.setReferencedComponentId(row.getReferencedComponentId());
 		member.setMapTargetComponentId(row.getAssociatedComponentId());
-		
-		if (hasMapTargetDescription) {
-			member.setMapTargetComponentDescription(((SimpleMapRefSetRow) row).getMapTargetDescription());
-		}		
 	}
 	
 	@Override

@@ -57,7 +57,12 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMem
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -137,6 +142,28 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String TARGET_EFFECTIVE_TIME = SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME;
 		private static final String DATA_VALUE = SnomedRf2Headers.FIELD_VALUE;
 		public static final String ATTRIBUTE_NAME = SnomedRf2Headers.FIELD_ATTRIBUTE_NAME;
+		public static final String OWL_EXPRESSION = SnomedRf2Headers.FIELD_OWL_EXPRESSION;
+		
+		public static final String MRCM_DOMAIN_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT;
+		public static final String MRCM_PARENT_DOMAIN = SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN;
+		public static final String MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT;
+		public static final String MRCM_PROXIMAL_PRIMITIVE_REFINEMENT = SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT;
+		public static final String MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION = SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
+		public static final String MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
+		public static final String MRCM_EDITORIAL_GUIDE_REFERENCE = SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE;
+		
+		public static final String MRCM_DOMAIN_ID = SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID;
+		public static final String MRCM_GROUPED = SnomedRf2Headers.FIELD_MRCM_GROUPED;
+		public static final String MRCM_ATTRIBUTE_CARDINALITY = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY;
+		public static final String MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY;
+		public static final String MRCM_RULE_STRENGTH_ID = SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID;
+		public static final String MRCM_CONTENT_TYPE_ID = SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID;
+		
+		public static final String MRCM_RANGE_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT;
+		public static final String MRCM_ATTRIBUTE_RULE = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE;
+		
+		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
+		
 		// extra index fields to store datatype and map target type
 		public static final String DATA_TYPE = "dataType";
 		public static final String REFSET_TYPE = "referenceSetType";
@@ -282,6 +309,50 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 						.field(Fields.SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getSourceEffectiveTime()))
 						.field(Fields.TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(member.getTargetEffectiveTime()));
 			}
+
+			@Override
+			public Builder caseSnomedOWLExpressionRefSetMember(SnomedOWLExpressionRefSetMember member) {
+				return builder
+						.field(Fields.OWL_EXPRESSION, member.getOwlExpression());
+			};
+			
+			@Override
+			public Builder caseSnomedMRCMDomainRefSetMember(SnomedMRCMDomainRefSetMember member) {
+				return builder
+						.field(Fields.MRCM_DOMAIN_CONSTRAINT, member.getDomainConstraint())
+						.field(Fields.MRCM_PARENT_DOMAIN, member.getParentDomain())
+						.field(Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, member.getProximalPrimitiveConstraint())
+						.field(Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, member.getProximalPrimitiveRefinement())
+						.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, member.getDomainTemplateForPrecoordination())
+						.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, member.getDomainTemplateForPostcoordination())
+						.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, member.getEditorialGuideReference());
+			};
+			
+			@Override
+			public Builder caseSnomedMRCMAttributeDomainRefSetMember(SnomedMRCMAttributeDomainRefSetMember member) {
+				return builder
+						.field(Fields.MRCM_DOMAIN_ID, member.getDomainId())
+						.field(Fields.MRCM_GROUPED, member.isGrouped())
+						.field(Fields.MRCM_ATTRIBUTE_CARDINALITY, member.getAttributeCardinality())
+						.field(Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, member.getAttributeInGroupCardinality())
+						.field(Fields.MRCM_RULE_STRENGTH_ID, member.getRuleStrengthId())
+						.field(Fields.MRCM_CONTENT_TYPE_ID, member.getContentTypeId());
+			};
+			
+			@Override
+			public Builder caseSnomedMRCMAttributeRangeRefSetMember(SnomedMRCMAttributeRangeRefSetMember member) {
+				return builder
+						.field(Fields.MRCM_RANGE_CONSTRAINT, member.getRangeConstraint())
+						.field(Fields.MRCM_ATTRIBUTE_RULE, member.getAttributeRule())
+						.field(Fields.MRCM_RULE_STRENGTH_ID, member.getRuleStrengthId())
+						.field(Fields.MRCM_CONTENT_TYPE_ID, member.getContentTypeId());
+			};
+			
+			@Override
+			public Builder caseSnomedMRCMModuleScopeRefSetMember(SnomedMRCMModuleScopeRefSetMember member) {
+				return builder
+						.field(Fields.MRCM_RULE_REFSET_ID, member.getMrcmRuleRefsetId());
+			};
 			
 			@Override
 			public Builder caseSnomedRefSetMember(SnomedRefSetMember object) {
@@ -425,12 +496,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
-			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(new Function<SnomedRefSetType, String>() {
-				@Override
-				public String apply(SnomedRefSetType input) {
-					return input.name();
-				}
-			}).toSet());
+			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(type -> type.name()).toSet());
 		}
 		
 	}
@@ -476,6 +542,28 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private Integer mapPriority;
 		// QUERY
 		private String query;
+		// OWL Axiom
+		private String owlExpression;
+		// MRCM Domain
+		private String domainConstraint;
+		private String parentDomain;
+		private String proximalPrimitiveConstraint;
+		private String proximalPrimitiveRefinement;
+		private String domainTemplateForPrecoordination;
+		private String domainTemplateForPostcoordination;
+		private String editorialGuideReference;
+		// MRCM Attribute Domain		
+		private String domainId;
+		private Boolean grouped;
+		private String attributeCardinality;
+		private String attributeInGroupCardinality;
+		private String ruleStrengthId;
+		private String contentTypeId;
+		// MRCM Attribute Range
+		private String rangeConstraint;
+		private String attributeRule;
+		// MRCM Module Scope
+		private String mrcmRuleRefsetId;
 
 		@JsonCreator
 		private Builder() {
@@ -513,6 +601,28 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.TARGET_EFFECTIVE_TIME: this.targetEffectiveTime = (Long) value; break;
 			case Fields.UNIT_ID: this.unitId = (String) value; break;
 			case Fields.VALUE_ID: this.valueId = (String) value; break;
+			case Fields.OWL_EXPRESSION: this.owlExpression = (String) value; break;
+			
+			case Fields.MRCM_DOMAIN_CONSTRAINT: this.domainConstraint = (String) value; break;
+			case Fields.MRCM_PARENT_DOMAIN: this.parentDomain = (String) value; break;
+			case Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT: this.proximalPrimitiveConstraint = (String) value; break;
+			case Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT: this.proximalPrimitiveRefinement = (String) value; break;
+			case Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION: this.domainTemplateForPrecoordination = (String) value; break;
+			case Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION: this.domainTemplateForPostcoordination = (String) value; break;
+			case Fields.MRCM_EDITORIAL_GUIDE_REFERENCE: this.editorialGuideReference = (String) value; break;
+			
+			case Fields.MRCM_DOMAIN_ID: this.domainId = (String) value; break;
+			case Fields.MRCM_GROUPED: this.grouped = (Boolean) value; break;
+			case Fields.MRCM_ATTRIBUTE_CARDINALITY: this.attributeCardinality = (String) value; break;
+			case Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY: this.attributeInGroupCardinality = (String) value; break;
+			case Fields.MRCM_RULE_STRENGTH_ID: this.ruleStrengthId = (String) value; break;
+			case Fields.MRCM_CONTENT_TYPE_ID: this.contentTypeId = (String) value; break;
+			
+			case Fields.MRCM_RANGE_CONSTRAINT: this.rangeConstraint = (String) value; break;
+			case Fields.MRCM_ATTRIBUTE_RULE: this.attributeRule = (String) value; break;
+
+			case Fields.MRCM_RULE_REFSET_ID: this.mrcmRuleRefsetId = (String) value; break;
+			
 			default: throw new UnsupportedOperationException("Unknown RF2 member field: " + fieldName);
 			}
 			return this;
@@ -676,6 +786,90 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
+		Builder owlExpression(String owlExpression) {
+			this.owlExpression = owlExpression;
+			return getSelf();
+		}
+		
+		Builder domainConstraint(String domainConstraint) {
+			this.domainConstraint = domainConstraint;
+			return getSelf();
+		}
+		
+		Builder parentDomain(String parentDomain) {
+			this.parentDomain = parentDomain;
+			return getSelf();
+		}
+		
+		Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
+			this.proximalPrimitiveConstraint = proximalPrimitiveConstraint;
+			return getSelf();
+		}
+		
+		Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
+			this.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
+			return getSelf();
+		}
+		
+		Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
+			this.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
+			return getSelf();
+		}
+		Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
+			this.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
+			return getSelf();
+		}
+		
+		Builder editorialGuideReference(String editorialGuideReference) {
+			this.editorialGuideReference = editorialGuideReference;
+			return getSelf();
+		}
+		
+		Builder domainId(String domainId) {
+			this.domainId = domainId;
+			return getSelf();
+		}
+		
+		Builder grouped(Boolean grouped) {
+			this.grouped = grouped;
+			return getSelf();
+		}
+		
+		Builder attributeCardinality(String attributeCardinality) {
+			this.attributeCardinality = attributeCardinality;
+			return getSelf();
+		}
+		
+		Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
+			this.attributeInGroupCardinality = attributeInGroupCardinality;
+			return getSelf();
+		}
+		
+		Builder ruleStrengthId(String ruleStrengthId) {
+			this.ruleStrengthId = ruleStrengthId;
+			return getSelf();
+		}
+		
+		Builder contentTypeId(String contentTypeId) {
+			this.contentTypeId = contentTypeId;
+			return getSelf();
+		}
+		
+		Builder rangeConstraint(String rangeConstraint) {
+			this.rangeConstraint = rangeConstraint;
+			return getSelf();
+		}
+		
+		Builder attributeRule(String attributeRule) {
+			this.attributeRule = attributeRule;
+			return getSelf();
+		}
+		
+		Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
+			this.mrcmRuleRefsetId = mrcmRuleRefsetId;
+			return getSelf();
+		}
+		
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
@@ -746,6 +940,32 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.mapRule = mapRule;
 			// query
 			doc.query = query;
+			// OWL Axiom
+			doc.owlExpression = owlExpression;
+			
+			// MRCM Domain
+			doc.domainConstraint = domainConstraint;
+			doc.parentDomain = parentDomain;
+			doc.proximalPrimitiveConstraint = proximalPrimitiveConstraint;
+			doc.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
+			doc.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
+			doc.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
+			doc.editorialGuideReference = editorialGuideReference;
+			
+			// MRCM Attribute Domain
+			doc.domainId = domainId;
+			doc.grouped = grouped;
+			doc.attributeCardinality = attributeCardinality;
+			doc.attributeInGroupCardinality = attributeInGroupCardinality;
+			doc.ruleStrengthId = ruleStrengthId;
+			doc.contentTypeId = contentTypeId;
+			
+			// MRCM Attribute Range			
+			doc.rangeConstraint = rangeConstraint;
+			doc.attributeRule = attributeRule;
+			
+			// MRCM Module Scope
+			doc.mrcmRuleRefsetId = mrcmRuleRefsetId;
 			
 			doc.setScore(score);
 			// metadata
@@ -802,6 +1022,29 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	// QUERY
 	@Keyword(index = false)
 	private String query;
+	// OWL Axiom
+	private String owlExpression;
+
+	// MRCM Domain
+	private String domainConstraint;
+	private String parentDomain;
+	private String proximalPrimitiveConstraint;
+	private String proximalPrimitiveRefinement;
+	private String domainTemplateForPrecoordination;
+	private String domainTemplateForPostcoordination;
+	private String editorialGuideReference;
+	// MRCM Attribute Domain		
+	private String domainId;
+	private Boolean grouped;
+	private String attributeCardinality;
+	private String attributeInGroupCardinality;
+	private String ruleStrengthId;
+	private String contentTypeId;
+	// MRCM Attribute Range
+	private String rangeConstraint;
+	private String attributeRule;
+	// MRCM Module Scope
+	private String mrcmRuleRefsetId;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
@@ -989,6 +1232,74 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return referencedComponentType;
 	}
 	
+	public String getOwlExpression() {
+		return owlExpression;
+	}
+	
+	public String getDomainConstraint() {
+		return domainConstraint;
+	}
+	
+	public String getParentDomain() {
+		return parentDomain;
+	}
+	
+	public String getProximalPrimitiveConstraint() {
+		return proximalPrimitiveConstraint;
+	}
+	
+	public String getProximalPrimitiveRefinement() {
+		return proximalPrimitiveRefinement;
+	}
+	
+	public String getDomainTemplateForPrecoordination() {
+		return domainTemplateForPrecoordination;
+	}
+	
+	public String getDomainTemplateForPostcoordination() {
+		return domainTemplateForPostcoordination;
+	}
+	
+	public String getEditorialGuideReference() {
+		return editorialGuideReference;
+	}
+	
+	public String getDomainId() {
+		return domainId;
+	}
+	
+	public Boolean isGrouped() {
+		return grouped;
+	}
+	
+	public String getAttributeCardinality() {
+		return attributeCardinality;
+	}
+	
+	public String getAttributeInGroupCardinality() {
+		return attributeInGroupCardinality;
+	}
+	
+	public String getRuleStrengthId() {
+		return ruleStrengthId;
+	}
+	
+	public String getContentTypeId() {
+		return contentTypeId;
+	}
+	
+	public String getRangeConstraint() {
+		return rangeConstraint;
+	}
+	
+	public String getAttributeRule() {
+		return attributeRule;
+	}
+	
+	public String getMrcmRuleRefsetId() {
+		return mrcmRuleRefsetId;
+	}
+	
 	// model helper methods
 	
 	@JsonIgnore
@@ -1062,6 +1373,29 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.MAP_PRIORITY, getMapPriority());
 		// QUERY
 		putIfPresent(builder, Fields.QUERY, getQuery());
+		// OWL Axiom
+		putIfPresent(builder, Fields.OWL_EXPRESSION, getOwlExpression());
+		// MRCM Domain
+		putIfPresent(builder, Fields.MRCM_DOMAIN_CONSTRAINT, getDomainConstraint());
+		putIfPresent(builder, Fields.MRCM_PARENT_DOMAIN, getParentDomain());
+		putIfPresent(builder, Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, getProximalPrimitiveConstraint());
+		putIfPresent(builder, Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, getProximalPrimitiveRefinement());
+		putIfPresent(builder, Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, getDomainTemplateForPrecoordination());
+		putIfPresent(builder, Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, getDomainTemplateForPostcoordination());
+		putIfPresent(builder, Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, getEditorialGuideReference());
+		// MRCM Attribute Domain
+		putIfPresent(builder, Fields.MRCM_DOMAIN_ID, getDomainId());
+		putIfPresent(builder, Fields.MRCM_GROUPED, isGrouped());
+		putIfPresent(builder, Fields.MRCM_ATTRIBUTE_CARDINALITY, getAttributeCardinality());
+		putIfPresent(builder, Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, getAttributeInGroupCardinality());
+		putIfPresent(builder, Fields.MRCM_RULE_STRENGTH_ID, getRuleStrengthId());
+		putIfPresent(builder, Fields.MRCM_CONTENT_TYPE_ID, getContentTypeId());
+		// MRCM Attribute Range
+		putIfPresent(builder, Fields.MRCM_RANGE_CONSTRAINT, getRangeConstraint());
+		putIfPresent(builder, Fields.MRCM_ATTRIBUTE_RULE, getAttributeRule());
+		// MRCM Module Scope
+		putIfPresent(builder, Fields.MRCM_RULE_REFSET_ID, getMrcmRuleRefsetId());
+		
 		return builder.build();
 	}
 	
@@ -1099,6 +1433,28 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("mapRule", mapRule)
 				.add("mapGroup", mapGroup)
 				.add("mapPriority", mapPriority)
-				.add("query", query);
+				.add("query", query)
+				.add("owlExpression", owlExpression)
+				
+				.add("domainConstraint", domainConstraint)
+				.add("parentDomain", parentDomain)
+				.add("proximalPrimitiveConstraint", proximalPrimitiveConstraint)
+				.add("proximalPrimitiveRefinement", proximalPrimitiveRefinement)
+				.add("domainTemplateForPrecoordination", domainTemplateForPrecoordination)
+				.add("domainTemplateForPostcoordination", domainTemplateForPostcoordination)
+				.add("editorialGuideReference", editorialGuideReference)
+				
+				.add("domainId", domainId)
+				.add("grouped", grouped)
+				.add("attributeCardinality", attributeCardinality)
+				.add("attributeInGroupCardinality", attributeInGroupCardinality)
+				.add("ruleStrengthId", ruleStrengthId)
+				.add("contentTypeId", contentTypeId)
+				
+				.add("rangeConstraint", rangeConstraint)
+				.add("attributeRule", attributeRule)
+				
+				.add("mrcmRuleRefsetId", mrcmRuleRefsetId);
+		
 	}
 }

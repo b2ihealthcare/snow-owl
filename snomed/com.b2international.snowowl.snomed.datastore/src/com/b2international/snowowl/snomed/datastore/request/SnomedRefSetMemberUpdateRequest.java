@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,19 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 				return new SnomedSimpleMemberUpdateDelegate(this);
 			case SIMPLE_MAP:
 				return new SnomedSimpleMapMemberUpdateDelegate(this);
+			case SIMPLE_MAP_WITH_DESCRIPTION:
+				return new SnomedSimpleMapMemberWithDescriptionUpdateDelegate(this);
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return new SnomedOWLExpressionMemberUpdateDelegate(this);
+			case MRCM_DOMAIN:
+				return new SnomedMRCMDomainMemberUpdateDelegate(this);
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return new SnomedMRCMAttributeDomainMemberUpdateDelegate(this);
+			case MRCM_ATTRIBUTE_RANGE:
+				return new SnomedMRCMAttributeRangeMemberUpdateDelegate(this);
+			case MRCM_MODULE_SCOPE:
+				return new SnomedMRCMModuleScopeMemberUpdateDelegate(this);
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}

@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdenti
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import java.util.Collections;
 import java.util.Date;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveSets;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMembe
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -741,10 +742,34 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
-	@Ignore("Unsupported")
 	@Test
 	public void createRefSetForExistingConcept() throws Exception {
-		// TODO implement if required
+		final String identifierId = generateConceptId();
+		final Concept identifierConcept = createConcept(identifierId);
+		final long conceptStorageKey = CDOIDUtil.getLong(identifierConcept.cdoID());
+		indexRevision(MAIN, conceptStorageKey, doc(identifierConcept).build());
+
+		SnomedConceptDocument before = getRevision(MAIN, SnomedConceptDocument.class, conceptStorageKey);
+		assertNull(before.getRefSetType());
+		assertEquals(0, before.getReferencedComponentType());
+		assertEquals(-1L, before.getRefSetStorageKey());
+		
+		final SnomedRefSet refSet = getRegularRefSet(identifierId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		final long refsetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
+		registerNew(refSet);
+		
+		final ConceptChangeProcessor processor = process();
+		
+		final SnomedConceptDocument expected = doc(identifierConcept).refSet(refSet).build();
+		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+		
+		assertEquals(1, processor.getChangedMappings().size());
+		final SnomedConceptDocument actual = (SnomedConceptDocument) processor.getChangedMappings().get(conceptStorageKey);
+		assertDocEquals(expected, actual);
+		assertEquals(SnomedRefSetType.SIMPLE, actual.getRefSetType());
+		assertEquals(100, actual.getReferencedComponentType());
+		assertEquals(refsetStorageKey, actual.getRefSetStorageKey());
 	}
 	
 	@Test

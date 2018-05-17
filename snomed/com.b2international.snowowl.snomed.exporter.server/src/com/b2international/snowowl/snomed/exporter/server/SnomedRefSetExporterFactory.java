@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedModuleDepend
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedQueryRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedRefSetExporter;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedSimpleMapRefSetExporter;
+import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedSimpleMapWithDescriptionRefSetExporter;
 import com.google.common.collect.Sets;
 
 /**
@@ -51,7 +52,9 @@ public class SnomedRefSetExporterFactory {
 		
 		switch (refset.getType()) {
 			case SIMPLE_MAP:
-				return new SnomedSimpleMapRefSetExporter(exportContext, refset, exportContext.includeMapTargetDescription(), revisionSearcher);
+				return new SnomedSimpleMapRefSetExporter(exportContext, refset, revisionSearcher);
+			case SIMPLE_MAP_WITH_DESCRIPTION:
+				return new SnomedSimpleMapWithDescriptionRefSetExporter(exportContext, refset, revisionSearcher);
 			case COMPLEX_MAP:
 				return new SnomedComplexMapRefSetExporter(exportContext, refset, revisionSearcher);
 			case EXTENDED_MAP:
@@ -100,6 +103,7 @@ public class SnomedRefSetExporterFactory {
 		switch (refset.getType()) {
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case COMPLEX_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case SIMPLE_MAP: 
 				return Sets.<SnomedExporter>newHashSet(
 					new SnomedCrossMapExporter(configuration, refset.getId(), mapSetSetting, revisionSearcher),

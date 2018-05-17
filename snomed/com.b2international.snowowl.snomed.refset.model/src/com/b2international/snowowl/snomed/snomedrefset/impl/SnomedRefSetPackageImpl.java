@@ -1,12 +1,12 @@
-/*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +15,8 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.impl;
 
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
-
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAnnotationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
@@ -30,8 +24,13 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRef
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -41,6 +40,14 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -153,6 +160,48 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * @generated
 	 */
 	private EClass snomedModuleDependencyRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedAnnotationRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedOWLExpressionRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedMRCMDomainRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedMRCMAttributeDomainRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedMRCMAttributeRangeRefSetMemberEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass snomedMRCMModuleScopeRefSetMemberEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -720,6 +769,240 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EClass getSnomedAnnotationRefSetMember() {
+		return snomedAnnotationRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedAnnotationRefSetMember_Annotation() {
+		return (EAttribute)snomedAnnotationRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedOWLExpressionRefSetMember() {
+		return snomedOWLExpressionRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedOWLExpressionRefSetMember_OwlExpression() {
+		return (EAttribute)snomedOWLExpressionRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedMRCMDomainRefSetMember() {
+		return snomedMRCMDomainRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_DomainConstraint() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_ParentDomain() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(5);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMDomainRefSetMember_EditorialGuideReference() {
+		return (EAttribute)snomedMRCMDomainRefSetMemberEClass.getEStructuralFeatures().get(6);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedMRCMAttributeDomainRefSetMember() {
+		return snomedMRCMAttributeDomainRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_DomainId() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_Grouped() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeCardinality() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_AttributeInGroupCardinality() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_RuleStrengthId() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeDomainRefSetMember_ContentTypeId() {
+		return (EAttribute)snomedMRCMAttributeDomainRefSetMemberEClass.getEStructuralFeatures().get(5);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedMRCMAttributeRangeRefSetMember() {
+		return snomedMRCMAttributeRangeRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint() {
+		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_AttributeRule() {
+		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_RuleStrengthId() {
+		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMAttributeRangeRefSetMember_ContentTypeId() {
+		return (EAttribute)snomedMRCMAttributeRangeRefSetMemberEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getSnomedMRCMModuleScopeRefSetMember() {
+		return snomedMRCMModuleScopeRefSetMemberEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getSnomedMRCMModuleScopeRefSetMember_MrcmRuleRefsetId() {
+		return (EAttribute)snomedMRCMModuleScopeRefSetMemberEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EEnum getSnomedRefSetType() {
 		return snomedRefSetTypeEEnum;
 	}
@@ -830,6 +1113,38 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		createEAttribute(snomedModuleDependencyRefSetMemberEClass, SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__SOURCE_EFFECTIVE_TIME);
 		createEAttribute(snomedModuleDependencyRefSetMemberEClass, SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER__TARGET_EFFECTIVE_TIME);
 
+		snomedAnnotationRefSetMemberEClass = createEClass(SNOMED_ANNOTATION_REF_SET_MEMBER);
+		createEAttribute(snomedAnnotationRefSetMemberEClass, SNOMED_ANNOTATION_REF_SET_MEMBER__ANNOTATION);
+
+		snomedOWLExpressionRefSetMemberEClass = createEClass(SNOMED_OWL_EXPRESSION_REF_SET_MEMBER);
+		createEAttribute(snomedOWLExpressionRefSetMemberEClass, SNOMED_OWL_EXPRESSION_REF_SET_MEMBER__OWL_EXPRESSION);
+
+		snomedMRCMDomainRefSetMemberEClass = createEClass(SNOMED_MRCM_DOMAIN_REF_SET_MEMBER);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_CONSTRAINT);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PARENT_DOMAIN);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_CONSTRAINT);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__PROXIMAL_PRIMITIVE_REFINEMENT);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_PRECOORDINATION);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__DOMAIN_TEMPLATE_FOR_POSTCOORDINATION);
+		createEAttribute(snomedMRCMDomainRefSetMemberEClass, SNOMED_MRCM_DOMAIN_REF_SET_MEMBER__EDITORIAL_GUIDE_REFERENCE);
+
+		snomedMRCMAttributeDomainRefSetMemberEClass = createEClass(SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__DOMAIN_ID);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__GROUPED);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_CARDINALITY);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__ATTRIBUTE_IN_GROUP_CARDINALITY);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__RULE_STRENGTH_ID);
+		createEAttribute(snomedMRCMAttributeDomainRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER__CONTENT_TYPE_ID);
+
+		snomedMRCMAttributeRangeRefSetMemberEClass = createEClass(SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER);
+		createEAttribute(snomedMRCMAttributeRangeRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RANGE_CONSTRAINT);
+		createEAttribute(snomedMRCMAttributeRangeRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__ATTRIBUTE_RULE);
+		createEAttribute(snomedMRCMAttributeRangeRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__RULE_STRENGTH_ID);
+		createEAttribute(snomedMRCMAttributeRangeRefSetMemberEClass, SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER__CONTENT_TYPE_ID);
+
+		snomedMRCMModuleScopeRefSetMemberEClass = createEClass(SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER);
+		createEAttribute(snomedMRCMModuleScopeRefSetMemberEClass, SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER__MRCM_RULE_REFSET_ID);
+
 		// Create enums
 		snomedRefSetTypeEEnum = createEEnum(SNOMED_REF_SET_TYPE);
 		dataTypeEEnum = createEEnum(DATA_TYPE);
@@ -876,6 +1191,12 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		snomedConcreteDataTypeRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedAssociationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 		snomedModuleDependencyRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedAnnotationRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedOWLExpressionRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedMRCMDomainRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedMRCMAttributeDomainRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedMRCMAttributeRangeRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
+		snomedMRCMModuleScopeRefSetMemberEClass.getESuperTypes().add(this.getSnomedRefSetMember());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(snomedRefSetEClass, SnomedRefSet.class, "SnomedRefSet", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -947,6 +1268,38 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		initEAttribute(getSnomedModuleDependencyRefSetMember_SourceEffectiveTime(), ecorePackage.getEDate(), "sourceEffectiveTime", null, 1, 1, SnomedModuleDependencyRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedModuleDependencyRefSetMember_TargetEffectiveTime(), ecorePackage.getEDate(), "targetEffectiveTime", null, 1, 1, SnomedModuleDependencyRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+		initEClass(snomedAnnotationRefSetMemberEClass, SnomedAnnotationRefSetMember.class, "SnomedAnnotationRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedAnnotationRefSetMember_Annotation(), ecorePackage.getEString(), "annotation", null, 1, 1, SnomedAnnotationRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedOWLExpressionRefSetMemberEClass, SnomedOWLExpressionRefSetMember.class, "SnomedOWLExpressionRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedOWLExpressionRefSetMember_OwlExpression(), ecorePackage.getEString(), "owlExpression", null, 1, 1, SnomedOWLExpressionRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedMRCMDomainRefSetMemberEClass, SnomedMRCMDomainRefSetMember.class, "SnomedMRCMDomainRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_DomainConstraint(), ecorePackage.getEString(), "domainConstraint", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_ParentDomain(), ecorePackage.getEString(), "parentDomain", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint(), ecorePackage.getEString(), "proximalPrimitiveConstraint", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement(), ecorePackage.getEString(), "proximalPrimitiveRefinement", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination(), ecorePackage.getEString(), "domainTemplateForPrecoordination", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination(), ecorePackage.getEString(), "domainTemplateForPostcoordination", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMDomainRefSetMember_EditorialGuideReference(), ecorePackage.getEString(), "editorialGuideReference", null, 1, 1, SnomedMRCMDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedMRCMAttributeDomainRefSetMemberEClass, SnomedMRCMAttributeDomainRefSetMember.class, "SnomedMRCMAttributeDomainRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_DomainId(), ecorePackage.getEString(), "domainId", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_Grouped(), ecorePackage.getEBoolean(), "grouped", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_AttributeCardinality(), ecorePackage.getEString(), "attributeCardinality", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_AttributeInGroupCardinality(), ecorePackage.getEString(), "attributeInGroupCardinality", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_RuleStrengthId(), ecorePackage.getEString(), "ruleStrengthId", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeDomainRefSetMember_ContentTypeId(), ecorePackage.getEString(), "contentTypeId", null, 1, 1, SnomedMRCMAttributeDomainRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedMRCMAttributeRangeRefSetMemberEClass, SnomedMRCMAttributeRangeRefSetMember.class, "SnomedMRCMAttributeRangeRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint(), ecorePackage.getEString(), "rangeConstraint", null, 1, 1, SnomedMRCMAttributeRangeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeRangeRefSetMember_AttributeRule(), ecorePackage.getEString(), "attributeRule", null, 1, 1, SnomedMRCMAttributeRangeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeRangeRefSetMember_RuleStrengthId(), ecorePackage.getEString(), "ruleStrengthId", null, 1, 1, SnomedMRCMAttributeRangeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedMRCMAttributeRangeRefSetMember_ContentTypeId(), ecorePackage.getEString(), "contentTypeId", null, 1, 1, SnomedMRCMAttributeRangeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(snomedMRCMModuleScopeRefSetMemberEClass, SnomedMRCMModuleScopeRefSetMember.class, "SnomedMRCMModuleScopeRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedMRCMModuleScopeRefSetMember_MrcmRuleRefsetId(), ecorePackage.getEString(), "mrcmRuleRefsetId", null, 1, 1, SnomedMRCMModuleScopeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
 		// Initialize enums and add enum literals
 		initEEnum(snomedRefSetTypeEEnum, SnomedRefSetType.class, "SnomedRefSetType");
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.SIMPLE);
@@ -960,6 +1313,14 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ASSOCIATION);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MODULE_DEPENDENCY);
 		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.EXTENDED_MAP);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.OWL_AXIOM);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.OWL_ONTOLOGY);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_DOMAIN);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.MRCM_MODULE_SCOPE);
+		addEEnumLiteral(snomedRefSetTypeEEnum, SnomedRefSetType.ANNOTATION);
 
 		initEEnum(dataTypeEEnum, DataType.class, "DataType");
 		addEEnumLiteral(dataTypeEEnum, DataType.INTEGER);
@@ -1003,6 +1364,76 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		   source, 
 		   new String[] {
 			 "columnName", "label0"
+		   });	
+		addAnnotation
+		  (getSnomedAnnotationRefSetMember_Annotation(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedOWLExpressionRefSetMember_OwlExpression(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_DomainConstraint(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_ParentDomain(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
+		   });	
+		addAnnotation
+		  (getSnomedMRCMAttributeRangeRefSetMember_AttributeRule(), 
+		   source, 
+		   new String[] {
+			 "columnType", "LONG VARCHAR",
+			 "columnLength", "32768"
 		   });
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,8 +239,23 @@ public abstract class SnomedRestFixtures {
 		return createNewRefSet(refSetPath, SnomedRefSetType.SIMPLE);
 	}
 
+	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type, String identifierConceptId) {
+		
+		Map<?, ?> refSetRequestBody = ImmutableMap.<String, Object>builder()
+				.put("id", identifierConceptId)
+				.put("type", type)
+				.put("referencedComponentType", getFirstAllowedReferencedComponentType(type))
+				.put("commitComment", "Created new reference set")
+				.build();
+		
+		return lastPathSegment(createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody)
+				.statusCode(201)
+				.body(equalTo(""))
+				.extract().header("Location"));
+	}
+	
 	public static String createNewRefSet(IBranchPath refSetPath, SnomedRefSetType type) {
-		String parentConceptId = SnomedRefSetUtil.getConceptId(type);
+		String parentConceptId = SnomedRefSetUtil.getParentConceptId(type);
 		String referencedComponentType = getFirstAllowedReferencedComponentType(type);
 		Map<?, ?> refSetRequestBody = createConceptRequestBody(parentConceptId)
 				.put("type", type)
