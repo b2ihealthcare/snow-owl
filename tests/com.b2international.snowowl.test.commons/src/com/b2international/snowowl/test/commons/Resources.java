@@ -37,7 +37,7 @@ public class Resources {
 	public static class Snomed {
 
 		public static final String SNOMED_RESOURCES = createResourcePath(RESOURCES, "snomed");
-		public static final String MINI_RF2_INT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20170731T150000Z-minified.zip");
+		public static final String MINI_RF2_INT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20180131T120000Z-minified.zip");
 		public static final String MINI_RF2_EXT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_RF2Release_INT_20160501_B2i_cd_refsets.zip");
 		
 		private Snomed() {
