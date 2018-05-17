@@ -130,7 +130,7 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedHierarchyDefinition other = (SnomedHierarchyDefinition) obj;

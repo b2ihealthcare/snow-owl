@@ -170,15 +170,15 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedConstraint other = (SnomedConstraint) obj;
 
 		if (!Objects.equals(description, other.description)) { return false; }
-		if (!Objects.equals(domain, other.domain)) { return false; }
+		if (structurallyEquals(domain, other.domain)) { return false; }
 		if (form != other.form) { return false; }
-		if (!Objects.equals(predicate, other.predicate)) { return false; }
+		if (structurallyEquals(predicate, other.predicate)) { return false; }
 		if (strength != other.strength) { return false; }
 		if (!Objects.equals(validationMessage, other.validationMessage)) { return false; }
 		return true;

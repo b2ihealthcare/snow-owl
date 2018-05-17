@@ -133,7 +133,7 @@ public final class SnomedEnumeratedDefinition extends SnomedConceptSetDefinition
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedEnumeratedDefinition other = (SnomedEnumeratedDefinition) obj;

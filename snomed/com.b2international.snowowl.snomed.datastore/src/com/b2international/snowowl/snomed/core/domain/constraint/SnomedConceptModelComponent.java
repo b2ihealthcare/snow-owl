@@ -139,4 +139,10 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 		if (!Objects.equals(author, other.author)) { return false; }
 		return true;
 	}
+	
+	public static boolean structurallyEquals(final SnomedConceptModelComponent left, final SnomedConceptModelComponent right) {
+		if (left == right) { return true; }
+		if (left == null) { return false; }
+		return (left.structurallyEquals(right));
+	}
 }

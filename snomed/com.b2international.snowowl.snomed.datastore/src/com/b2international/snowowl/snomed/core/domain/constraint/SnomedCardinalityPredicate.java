@@ -149,7 +149,7 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 		if (groupRule != other.groupRule) { return false; }
 		if (maxCardinality != other.maxCardinality) { return false; }
 		if (minCardinality != other.minCardinality) { return false; }
-		if (!Objects.equals(predicate, other.predicate)) { return false; }
+		if (!structurallyEquals(predicate, other.predicate)) { return false; }
 		return true;
 	}
 }

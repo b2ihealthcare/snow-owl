@@ -163,12 +163,28 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedCompositeDefinition other = (SnomedCompositeDefinition) obj;
 
-		if (!Objects.equals(children, other.children)) { return false; }
+		if (children.size() != other.children.size()) { return false; }
+		// Compare child definitions pairwise, as regular equals cannot be used here
+		for (final SnomedConceptSetDefinition child : children) {
+			boolean matchFound = false;
+			
+			for (final SnomedConceptSetDefinition otherChild : other.children) {
+				if (structurallyEquals(child, otherChild)) {
+					matchFound = true;
+					break;
+				}
+			}
+			
+			if (!matchFound) {
+				return false;
+			}
+		}
+		
 		return true;
 	}
 }

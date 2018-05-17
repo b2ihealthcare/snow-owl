@@ -140,7 +140,7 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedConcreteDomainPredicate other = (SnomedConcreteDomainPredicate) obj;

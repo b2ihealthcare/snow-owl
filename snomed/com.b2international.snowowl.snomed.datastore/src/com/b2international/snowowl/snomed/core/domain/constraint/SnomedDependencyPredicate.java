@@ -178,14 +178,31 @@ public final class SnomedDependencyPredicate extends SnomedPredicate {
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedDependencyPredicate other = (SnomedDependencyPredicate) obj;
 
-		if (!children.equals(other.children)) { return false; }
 		if (dependencyOperator != other.dependencyOperator) { return false; }
 		if (groupRule != other.groupRule) { return false; }
+		
+		if (children.size() != other.children.size()) { return false; }
+		// Compare child definitions pairwise, as regular equals cannot be used here
+		for (final SnomedPredicate child : children) {
+			boolean matchFound = false;
+			
+			for (final SnomedPredicate otherChild : other.children) {
+				if (structurallyEquals(child, otherChild)) {
+					matchFound = true;
+					break;
+				}
+			}
+			
+			if (!matchFound) {
+				return false;
+			}
+		}
+		
 		return true;
 	}
 }

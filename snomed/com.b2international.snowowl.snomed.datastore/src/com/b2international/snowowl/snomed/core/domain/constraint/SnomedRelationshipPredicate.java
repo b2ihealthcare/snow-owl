@@ -140,14 +140,14 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 	@Override
 	public boolean structurallyEquals(final Object obj) {
 		if (this == obj) { return true; }
-		if (!super.equals(obj)) { return false; }
+		if (!super.structurallyEquals(obj)) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
 		final SnomedRelationshipPredicate other = (SnomedRelationshipPredicate) obj;
 
-		if (!Objects.equals(attribute, other.attribute)) { return false; }
+		if (!structurallyEquals(attribute, other.attribute)) { return false; }
 		if (!Objects.equals(characteristicTypeId, other.characteristicTypeId)) { return false; }
-		if (!Objects.equals(range, other.range)) { return false; }
+		if (!structurallyEquals(range, other.range)) { return false; }
 		return true;
 	}
 }
