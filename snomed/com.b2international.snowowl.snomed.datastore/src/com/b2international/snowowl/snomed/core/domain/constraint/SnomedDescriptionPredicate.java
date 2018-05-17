@@ -79,4 +79,17 @@ public final class SnomedDescriptionPredicate extends SnomedPredicate {
 	public void collectConceptIds(Collection<String> conceptIds) {
 		if (!Strings.isNullOrEmpty(typeId)) { conceptIds.add(getTypeId()); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (Strings.isNullOrEmpty(getTypeId())) { return String.format("Description type ID should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

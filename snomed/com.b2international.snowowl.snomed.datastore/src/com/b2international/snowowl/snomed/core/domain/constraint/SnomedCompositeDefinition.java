@@ -135,4 +135,17 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 	public void collectConceptIds(Collection<String> conceptIds) {
 		children.forEach(d -> d.collectConceptIds(conceptIds));
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (getChildren().isEmpty()) { return String.format("%s with UUID %s should include at least one child definition.", displayName(), getId()); }
+		
+		return null;
+	}
 }

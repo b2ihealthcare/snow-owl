@@ -110,4 +110,17 @@ public final class SnomedEnumeratedDefinition extends SnomedConceptSetDefinition
 	public void collectConceptIds(Collection<String> conceptIds) {
 		conceptIds.addAll(getConceptIds());
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (getConceptIds().isEmpty()) { return String.format("%s with UUID %s should include at least one concept ID.", displayName(), getId()); }
+		
+		return null;
+	}
 }

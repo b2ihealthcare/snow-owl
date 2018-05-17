@@ -148,4 +148,19 @@ public final class SnomedDependencyPredicate extends SnomedPredicate {
 	public void collectConceptIds(Collection<String> conceptIds) {
 		children.forEach(p -> p.collectConceptIds(conceptIds));
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (getGroupRule() == null) { return String.format("Group rule should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (getDependencyOperator() == null) { return String.format("Dependency operator should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (getChildren().isEmpty()) { return String.format("%s with UUID %s should include at least one child predicate.", displayName(), getId()); }
+		
+		return null;
+	}
 }

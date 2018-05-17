@@ -84,7 +84,7 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		updatedModel.setAuthor(getAuthor());
 		updatedModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
 		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setRange(getRange().applyChangesTo(updatedModel.getAttribute()));
+		updatedModel.setRange(getRange().applyChangesTo(updatedModel.getRange()));
 		updatedModel.setUuid(getId());
 		
 		return updatedModel;

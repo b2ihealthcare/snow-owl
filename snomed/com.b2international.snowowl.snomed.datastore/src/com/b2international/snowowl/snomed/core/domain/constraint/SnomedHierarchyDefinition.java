@@ -106,4 +106,18 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 	public void collectConceptIds(Collection<String> conceptIds) {
 		if (!Strings.isNullOrEmpty(getConceptId())) { conceptIds.add(getConceptId()); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (Strings.isNullOrEmpty(getConceptId())) { return String.format("Concept ID should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (inclusionType == null) { return String.format("Inclusion type should be set for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

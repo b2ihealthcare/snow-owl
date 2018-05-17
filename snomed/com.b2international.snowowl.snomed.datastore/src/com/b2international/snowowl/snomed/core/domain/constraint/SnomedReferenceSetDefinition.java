@@ -84,4 +84,17 @@ public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefiniti
 	public void collectConceptIds(Collection<String> conceptIds) {
 		if (!Strings.isNullOrEmpty(getRefSetId())) { conceptIds.add(getRefSetId()); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (Strings.isNullOrEmpty(getRefSetId())) { return String.format("Reference set ID should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

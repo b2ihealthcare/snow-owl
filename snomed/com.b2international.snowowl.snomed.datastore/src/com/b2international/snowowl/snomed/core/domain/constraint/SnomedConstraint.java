@@ -142,4 +142,20 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		if (getDomain() != null) { getDomain().collectConceptIds(conceptIds); }
 		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (getStrength() == null) { return String.format("Strength should be set on %s with UUID %s.", displayName(), getId()); }
+		if (getForm() == null) { return String.format("Applicable form should be set on %s with UUID %s.", displayName(), getId()); }
+		if (getDomain() == null) { return String.format("A domain should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (getPredicate() == null) { return String.format("A predicate should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

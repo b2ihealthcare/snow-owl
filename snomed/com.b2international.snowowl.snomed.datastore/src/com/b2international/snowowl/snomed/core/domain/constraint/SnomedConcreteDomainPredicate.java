@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -114,5 +115,19 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 	@Override
 	public void collectConceptIds(Collection<String> conceptIds) {
 		return;
+	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (Strings.isNullOrEmpty(getName())) { return String.format("Concrete domain name should be set on %s with UUID %s.", displayName(), getId()); }
+		if (getDataType() == null) { return String.format("Concrete domain type should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
 	}
 }

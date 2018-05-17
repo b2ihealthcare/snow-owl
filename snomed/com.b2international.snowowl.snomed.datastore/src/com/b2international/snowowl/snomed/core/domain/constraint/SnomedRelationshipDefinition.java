@@ -99,4 +99,18 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 		if (!Strings.isNullOrEmpty(getTypeId())) { conceptIds.add(getTypeId()); }
 		if (!Strings.isNullOrEmpty(getDestinationId())) {conceptIds.add(getDestinationId()); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (Strings.isNullOrEmpty(getTypeId())) { return String.format("Relationship type ID should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (Strings.isNullOrEmpty(getDestinationId())) { return String.format("Relationship destination ID should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

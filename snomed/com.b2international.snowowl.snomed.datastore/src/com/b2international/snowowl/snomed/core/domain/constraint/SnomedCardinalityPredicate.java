@@ -114,4 +114,18 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 	public void collectConceptIds(Collection<String> conceptIds) {
 		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
+	
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+		
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+		
+		if (getGroupRule() == null) { return String.format("Group rule should be set on %s with UUID %s.", displayName(), getId()); }
+		if (getPredicate() == null) { return String.format("A predicate should be specified for %s with UUID %s.", displayName(), getId()); }
+		
+		return null;
+	}
 }

@@ -17,10 +17,13 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Locale;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
+import com.google.common.base.Strings;
 
 /**
  * Captures properties required for change tracking on individual components of the MRCM concept model.
@@ -99,4 +102,23 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 	 * @param conceptIds
 	 */
 	public abstract void collectConceptIds(Collection<String> conceptIds);
+	
+	/**
+	 * Checks whether the concept model component is fully populated with valid input.
+	 * 
+	 * @return an error message, or <code>null</code> if no issues could be found
+	 */
+	public String validate() {
+		if (Strings.isNullOrEmpty(getAuthor())) {
+			return String.format("Author should not be empty on %s with UUID %s.", displayName(), getId());
+		}
+		
+		return null;
+	}
+
+	protected final String displayName() {
+		final String className = getClass().getSimpleName(); // eg. "SnomedCardinalityPredicate"
+		final String withoutPrefix = className.substring("Snomed".length()); // eg. "CardinalityPredicate"
+		return StringUtils.splitCamelCase(withoutPrefix.toLowerCase(Locale.ENGLISH)); // eg. "cardinality predicate"
+	}
 }
