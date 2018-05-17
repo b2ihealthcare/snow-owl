@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.mrcm.impl;
 import com.b2international.snowowl.snomed.mrcm.*;
 
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
@@ -372,19 +374,19 @@ public class MrcmFactoryImpl extends EFactoryImpl implements MrcmFactory {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public DataType createDataTypeFromString(EDataType eDataType, String initialValue) {
-		return (DataType)super.createFromString(eDataType, initialValue);
+		return (DataType) SnomedRefSetFactory.eINSTANCE.createFromString(SnomedRefSetPackage.eINSTANCE.getDataType(), initialValue);
 	}
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
+	 * @generated NOT
 	 */
 	public String convertDataTypeToString(EDataType eDataType, Object instanceValue) {
-		return super.convertToString(eDataType, instanceValue);
+		return SnomedRefSetFactory.eINSTANCE.convertToString(SnomedRefSetPackage.eINSTANCE.getDataType(), instanceValue);
 	}
 
 	/**
