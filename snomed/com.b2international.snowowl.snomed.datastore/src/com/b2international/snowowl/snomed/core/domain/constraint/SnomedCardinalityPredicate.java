@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -33,7 +34,7 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 	public static final String PROP_GROUP_RULE = "groupRule";
 	public static final String PROP_MIN_CARDINALITY = "minCardinality";
 	public static final String PROP_MAX_CARDINALITY = "maxCardinality";
-	
+
 	private int minCardinality;
 	private int maxCardinality;
 	private GroupRule groupRule;
@@ -42,46 +43,46 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 	public int getMinCardinality() {
 		return minCardinality;
 	}
-	
-	public void setMinCardinality(int minCardinality) {
+
+	public void setMinCardinality(final int minCardinality) {
 		this.minCardinality = minCardinality;
 	}
 
 	public int getMaxCardinality() {
 		return maxCardinality;
 	}
-	
-	public void setMaxCardinality(int maxCardinality) {
+
+	public void setMaxCardinality(final int maxCardinality) {
 		this.maxCardinality = maxCardinality;
 	}
 
 	public GroupRule getGroupRule() {
 		return groupRule;
 	}
-	
-	public void setGroupRule(GroupRule groupRule) {
+
+	public void setGroupRule(final GroupRule groupRule) {
 		this.groupRule = groupRule;
 	}
 
 	public SnomedPredicate getPredicate() {
 		return predicate;
 	}
-	
-	public void setPredicate(SnomedPredicate predicate) {
+
+	public void setPredicate(final SnomedPredicate predicate) {
 		this.predicate = predicate;
 	}
-	
+
 	@Override
 	public CardinalityPredicate createModel() {
 		return MrcmFactory.eINSTANCE.createCardinalityPredicate();
 	}
-	
+
 	@Override
 	public CardinalityPredicate applyChangesTo(final ConceptModelComponent existingModel) {
 		final CardinalityPredicate updatedModel = (existingModel instanceof CardinalityPredicate)
 				? (CardinalityPredicate) existingModel
 				: createModel();
-		
+
 		updatedModel.setActive(isActive());
 		updatedModel.setAuthor(getAuthor());
 		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
@@ -90,14 +91,14 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 		updatedModel.setMinCardinality(getMinCardinality());
 		updatedModel.setPredicate(getPredicate().applyChangesTo(updatedModel.getPredicate()));
 		updatedModel.setUuid(getId());
-		
+
 		return updatedModel;
 	}
-	
+
 	@Override
-	public SnomedCardinalityPredicate deepCopy(Date date, String userName) {
+	public SnomedCardinalityPredicate deepCopy(final Date date, final String userName) {
 		final SnomedCardinalityPredicate copy = new SnomedCardinalityPredicate();
-		
+
 		copy.setActive(isActive());
 		copy.setAuthor(userName);
 		copy.setEffectiveTime(date.getTime());
@@ -106,26 +107,49 @@ public final class SnomedCardinalityPredicate extends SnomedPredicate {
 		copy.setMaxCardinality(getMaxCardinality());
 		copy.setMinCardinality(getMinCardinality());
 		if (getPredicate() != null) { copy.setPredicate(getPredicate().deepCopy(date, userName)); }
-		
+
 		return copy;
 	}
-	
+
 	@Override
-	public void collectConceptIds(Collection<String> conceptIds) {
+	public void collectConceptIds(final Collection<String> conceptIds) {
 		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
-	
+
 	@Override
 	public String validate() {
 		final String parentMessage = super.validate();
-		
+
 		if (parentMessage != null) {
 			return parentMessage;
 		}
-		
+
 		if (getGroupRule() == null) { return String.format("Group rule should be set on %s with UUID %s.", displayName(), getId()); }
 		if (getPredicate() == null) { return String.format("A predicate should be specified for %s with UUID %s.", displayName(), getId()); }
-		
+
+		final String predicateMessage = getPredicate().validate();
+		if (predicateMessage != null) { return predicateMessage; }
+
 		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(groupRule, maxCardinality, minCardinality, predicate);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedCardinalityPredicate other = (SnomedCardinalityPredicate) obj;
+
+		if (groupRule != other.groupRule) { return false; }
+		if (maxCardinality != other.maxCardinality) { return false; }
+		if (minCardinality != other.minCardinality) { return false; }
+		if (!Objects.equals(predicate, other.predicate)) { return false; }
+		return true;
 	}
 }

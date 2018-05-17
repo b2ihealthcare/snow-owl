@@ -20,6 +20,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -122,5 +123,22 @@ public final class SnomedEnumeratedDefinition extends SnomedConceptSetDefinition
 		if (getConceptIds().isEmpty()) { return String.format("%s with UUID %s should include at least one concept ID.", displayName(), getId()); }
 		
 		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(conceptIds);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedEnumeratedDefinition other = (SnomedEnumeratedDefinition) obj;
+
+		if (!Objects.equals(conceptIds, other.conceptIds)) { return false; }
+		return true;
 	}
 }

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,8 +45,8 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 	public Set<SnomedConceptSetDefinition> getChildren() {
 		return children;
 	}
-	
-	public void setChildren(Set<SnomedConceptSetDefinition> children) {
+
+	public void setChildren(final Set<SnomedConceptSetDefinition> children) {
 		this.children = children;
 	}
 
@@ -58,18 +59,18 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 		// Wrap each sub-expression into parentheses
 		return "(" + Joiner.on(") OR (").join(subExpressions) + ")";
 	}
-	
+
 	@Override
 	public CompositeConceptSetDefinition createModel() {
 		return MrcmFactory.eINSTANCE.createCompositeConceptSetDefinition();
 	}
-	
+
 	@Override
-	public CompositeConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel) {
+	public CompositeConceptSetDefinition applyChangesTo(final ConceptModelComponent existingModel) {
 		final CompositeConceptSetDefinition updatedModel = (existingModel instanceof CompositeConceptSetDefinition)
 				? (CompositeConceptSetDefinition) existingModel
 				: createModel();
-				
+
 		updatedModel.setActive(isActive());
 		updatedModel.setAuthor(getAuthor());
 
@@ -78,25 +79,25 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 		 * on a new instance, it is completely empty.
 		 */
 		final List<ConceptSetDefinition> updatedModelChildren = updatedModel.getChildren();
-		
+
 		// Index concept set definition keys by list position
 		final Map<String, Integer> existingDefinitionsByIdx = newHashMap();
 		for (int i = 0; i < updatedModelChildren.size(); i++) {
 			final ConceptSetDefinition existingDefinition = updatedModelChildren.get(i);
 			existingDefinitionsByIdx.put(existingDefinition.getUuid(), i);
 		}
-		
+
 		// Index new definitions by key
 		final Map<String, SnomedConceptSetDefinition> updatedDefinitions = newHashMap(Maps.uniqueIndex(children, SnomedConceptSetDefinition::getId));
-		
+
 		// Iterate backwards over the list so that removals don't mess up the the list index map
 		for (int j = updatedModelChildren.size() - 1; j >= 0; j--) {
 			final ConceptSetDefinition existingDefinition = updatedModelChildren.get(j);
 			final String uuid = existingDefinition.getUuid();
-			
+
 			// Consume entries from "updatedDefinitions" by using remove(Object key)
 			final SnomedConceptSetDefinition updatedDefinition = updatedDefinitions.remove(uuid);
-			
+
 			// Was there a child with the same key? If not, remove the original from the list, if it is still there, update in place
 			if (updatedDefinition == null) {
 				updatedModelChildren.remove(j);
@@ -104,22 +105,22 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 				updatedModelChildren.set(j, updatedDefinition.applyChangesTo(existingDefinition));
 			}
 		}
-		
+
 		// Remaining entries in "updatedDefinitions" are new; add them to the end of the list
-		for (SnomedConceptSetDefinition newChild : updatedDefinitions.values()) {
+		for (final SnomedConceptSetDefinition newChild : updatedDefinitions.values()) {
 			updatedModelChildren.add(newChild.applyChangesTo(newChild.createModel()));
 		}
-		
+
 		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
 		updatedModel.setUuid(getId());
-		
+
 		return updatedModel;
 	}
-	
+
 	@Override
-	public SnomedCompositeDefinition deepCopy(Date date, String userName) {
+	public SnomedCompositeDefinition deepCopy(final Date date, final String userName) {
 		final SnomedCompositeDefinition copy = new SnomedCompositeDefinition();
-		
+
 		copy.setActive(isActive());
 		copy.setAuthor(userName);
 		copy.setChildren(getChildren().stream()
@@ -127,25 +128,47 @@ public final class SnomedCompositeDefinition extends SnomedConceptSetDefinition 
 				.collect(Collectors.toSet()));
 		copy.setEffectiveTime(date.getTime());
 		copy.setId(UUID.randomUUID().toString());
-		
+
 		return copy;
 	}
-	
+
 	@Override
-	public void collectConceptIds(Collection<String> conceptIds) {
+	public void collectConceptIds(final Collection<String> conceptIds) {
 		children.forEach(d -> d.collectConceptIds(conceptIds));
 	}
-	
+
 	@Override
 	public String validate() {
 		final String parentMessage = super.validate();
-		
+
 		if (parentMessage != null) {
 			return parentMessage;
 		}
-		
+
 		if (getChildren().isEmpty()) { return String.format("%s with UUID %s should include at least one child definition.", displayName(), getId()); }
-		
+
+		for (final SnomedConceptSetDefinition child : getChildren()) {
+			final String childMessage = child.validate();
+			if (childMessage != null) { return childMessage; }
+		}
+
 		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(children);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedCompositeDefinition other = (SnomedCompositeDefinition) obj;
+
+		if (!Objects.equals(children, other.children)) { return false; }
+		return true;
 	}
 }

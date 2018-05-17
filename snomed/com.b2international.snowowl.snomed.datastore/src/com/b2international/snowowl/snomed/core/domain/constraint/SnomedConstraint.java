@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -142,20 +143,44 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		if (getDomain() != null) { getDomain().collectConceptIds(conceptIds); }
 		if (getPredicate() != null) { getPredicate().collectConceptIds(conceptIds); }
 	}
-	
+
 	@Override
 	public String validate() {
 		final String parentMessage = super.validate();
-		
-		if (parentMessage != null) {
-			return parentMessage;
-		}
-		
+		if (parentMessage != null) { return parentMessage; }
+
 		if (getStrength() == null) { return String.format("Strength should be set on %s with UUID %s.", displayName(), getId()); }
 		if (getForm() == null) { return String.format("Applicable form should be set on %s with UUID %s.", displayName(), getId()); }
 		if (getDomain() == null) { return String.format("A domain should be specified for %s with UUID %s.", displayName(), getId()); }
 		if (getPredicate() == null) { return String.format("A predicate should be specified for %s with UUID %s.", displayName(), getId()); }
-		
+
+		final String domainMessage = getDomain().validate();
+		if (domainMessage != null) { return domainMessage; }
+		final String predicateMessage = getPredicate().validate();
+		if (predicateMessage != null) { return predicateMessage; }
+
 		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(description, domain, form, predicate, strength, validationMessage);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedConstraint other = (SnomedConstraint) obj;
+
+		if (!Objects.equals(description, other.description)) { return false; }
+		if (!Objects.equals(domain, other.domain)) { return false; }
+		if (form != other.form) { return false; }
+		if (!Objects.equals(predicate, other.predicate)) { return false; }
+		if (strength != other.strength) { return false; }
+		if (!Objects.equals(validationMessage, other.validationMessage)) { return false; }
+		return true;
 	}
 }

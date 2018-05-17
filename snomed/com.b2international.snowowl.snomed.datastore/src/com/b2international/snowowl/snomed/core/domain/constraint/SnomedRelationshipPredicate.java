@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -31,7 +32,7 @@ import com.google.common.base.Strings;
 public final class SnomedRelationshipPredicate extends SnomedPredicate {
 
 	public static final String PROP_CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
-	
+
 	private SnomedConceptSetDefinition attribute;
 	private SnomedConceptSetDefinition range;
 	private String characteristicTypeId;
@@ -39,24 +40,24 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 	public SnomedConceptSetDefinition getAttribute() {
 		return attribute;
 	}
-	
-	public void setAttribute(SnomedConceptSetDefinition attribute) {
+
+	public void setAttribute(final SnomedConceptSetDefinition attribute) {
 		this.attribute = attribute;
 	}
 
 	public SnomedConceptSetDefinition getRange() {
 		return range;
 	}
-	
-	public void setRange(SnomedConceptSetDefinition range) {
+
+	public void setRange(final SnomedConceptSetDefinition range) {
 		this.range = range;
 	}
 
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
 	}
-	
-	public void setCharacteristicTypeId(String characteristicTypeId) {
+
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
@@ -67,18 +68,18 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 	public String getRangeExpression() {
 		return range.toEcl();
 	}
-	
+
 	@Override
 	public RelationshipPredicate createModel() {
 		return MrcmFactory.eINSTANCE.createRelationshipPredicate();
 	}
-	
+
 	@Override
-	public RelationshipPredicate applyChangesTo(ConceptModelComponent existingModel) {
+	public RelationshipPredicate applyChangesTo(final ConceptModelComponent existingModel) {
 		final RelationshipPredicate updatedModel = (existingModel instanceof RelationshipPredicate)
 				? (RelationshipPredicate) existingModel
 				: createModel();
-		
+
 		updatedModel.setActive(isActive());
 		updatedModel.setAttribute(getAttribute().applyChangesTo(updatedModel.getAttribute()));
 		updatedModel.setAuthor(getAuthor());
@@ -86,14 +87,14 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
 		updatedModel.setRange(getRange().applyChangesTo(updatedModel.getRange()));
 		updatedModel.setUuid(getId());
-		
+
 		return updatedModel;
 	}
-	
+
 	@Override
-	public SnomedRelationshipPredicate deepCopy(Date date, String userName) {
+	public SnomedRelationshipPredicate deepCopy(final Date date, final String userName) {
 		final SnomedRelationshipPredicate copy = new SnomedRelationshipPredicate();
-		
+
 		copy.setActive(isActive());
 		if (getAttribute() != null) { copy.setAttribute(getAttribute().deepCopy(date, userName)); }
 		copy.setAuthor(userName);
@@ -101,14 +102,52 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		copy.setEffectiveTime(date.getTime());
 		copy.setId(UUID.randomUUID().toString());
 		if (getRange() != null) { copy.setRange(getRange().deepCopy(date, userName)); }
-		
+
 		return copy;
 	}
-	
+
 	@Override
-	public void collectConceptIds(Collection<String> conceptIds) {
+	public void collectConceptIds(final Collection<String> conceptIds) {
 		if (getAttribute() != null) { getAttribute().collectConceptIds(conceptIds); }
 		if (getRange() != null) { getRange().collectConceptIds(conceptIds); }
 		if (!Strings.isNullOrEmpty(getCharacteristicTypeId())) { conceptIds.add(getCharacteristicTypeId()); }
-	}	
+	}
+
+	@Override
+	public String validate() {
+		final String parentMessage = super.validate();
+
+		if (parentMessage != null) {
+			return parentMessage;
+		}
+
+		if (getAttribute() == null) { return String.format("Relationship attribute definition should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (getRange() == null) { return String.format("Relationship range should be specified for %s with UUID %s.", displayName(), getId()); }
+
+		final String attributeMessage = getAttribute().validate();
+		if (attributeMessage != null) { return attributeMessage; }
+		final String rangeMessage = getRange().validate();
+		if (rangeMessage != null) { return rangeMessage; }
+
+		return null;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * super.hashCode() + Objects.hash(attribute, characteristicTypeId, range);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (!super.equals(obj)) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedRelationshipPredicate other = (SnomedRelationshipPredicate) obj;
+
+		if (!Objects.equals(attribute, other.attribute)) { return false; }
+		if (!Objects.equals(characteristicTypeId, other.characteristicTypeId)) { return false; }
+		if (!Objects.equals(range, other.range)) { return false; }
+		return true;
+	}
 }
