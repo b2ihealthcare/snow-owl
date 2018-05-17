@@ -31,8 +31,8 @@ public class WhiteListNotification extends SystemNotification {
 	 */
 	private static final class Added extends WhiteListNotification {
 		
-		public Added(Set<String> whiteListIds) {
-			super(whiteListIds);
+		public Added(Set<String> whiteListIds, Set<String> affectedRuleIds) {
+			super(whiteListIds, affectedRuleIds);
 		}
 		
 	}
@@ -42,25 +42,28 @@ public class WhiteListNotification extends SystemNotification {
 	 */
 	private static final class Removed extends WhiteListNotification {
 		
-		public Removed(Set<String> whiteListIds) {
-			super(whiteListIds);
+		public Removed(Set<String> whiteListIds, Set<String> affectedRuleIds) {
+			super(whiteListIds, affectedRuleIds);
 		}
 	
 	}
 	
 	private final Set<String> whiteListIds;
+	private final Set<String> affectedRuleIds;
 	
-	public WhiteListNotification(final Set<String> whiteListIds) {
-		checkArgument(!whiteListIds.isEmpty(), "At least one Whitelist id must be specified");
+	public WhiteListNotification(final Set<String> whiteListIds, final Set<String> affectedRuleIds) {
+		checkArgument(!whiteListIds.isEmpty(), "At least one whitelist id must be specified");
+		checkArgument(!affectedRuleIds.isEmpty(), "At least one affected rule id must be specified");
 		this.whiteListIds = whiteListIds;
+		this.affectedRuleIds = affectedRuleIds;
 	}
 	
-	public static WhiteListNotification added(Set<String> whiteListIds) {
-		return new Added(whiteListIds);
+	public static WhiteListNotification added(Set<String> whiteListIds, Set<String> affectedRuleIds) {
+		return new Added(whiteListIds, affectedRuleIds);
 	}
 
-	public static WhiteListNotification removed(Set<String> whiteListIds) {
-		return new Removed(whiteListIds);
+	public static WhiteListNotification removed(Set<String> whiteListIds, Set<String> affectedRuleIds) {
+		return new Removed(whiteListIds, affectedRuleIds);
 	}
 	
 	public final boolean isAdded() {
@@ -73,6 +76,10 @@ public class WhiteListNotification extends SystemNotification {
 	
 	public Set<String> getWhiteListIds() {
 		return whiteListIds;
+	}
+	
+	public Set<String> getAffectedRuleIds() {
+		return affectedRuleIds;
 	}
 	
 }
