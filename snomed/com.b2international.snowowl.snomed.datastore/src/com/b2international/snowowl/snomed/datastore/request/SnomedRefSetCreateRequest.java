@@ -101,6 +101,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case MODULE_DEPENDENCY: //$FALL-THROUGH$
 			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY: //$FALL-THROUGH$
 			case MRCM_DOMAIN: //$FALL-THROUGH$
 			case MRCM_ATTRIBUTE_DOMAIN: //$FALL-THROUGH$
 			case MRCM_ATTRIBUTE_RANGE: //$FALL-THROUGH$

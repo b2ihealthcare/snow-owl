@@ -70,8 +70,9 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 			case SIMPLE_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
-			case OWL_AXIOM: 
-				return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
+			case OWL_AXIOM:  //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER;
 			case MRCM_DOMAIN: 
 				return SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER;
 			case MRCM_ATTRIBUTE_DOMAIN: 

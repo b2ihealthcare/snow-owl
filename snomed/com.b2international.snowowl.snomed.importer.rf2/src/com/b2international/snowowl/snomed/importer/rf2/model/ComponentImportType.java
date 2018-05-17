@@ -43,7 +43,7 @@ public enum ComponentImportType {
 	EXTENDED_MAP_TYPE_REFSET("extended map type reference set member"),
 	TERMINOLOGY_REGISTRY("terminology registry"),
 	MODULE_DEPENDENCY_REFSET("module dependency reference set member"),
-	OWL_EXPRESSION_REFSET("owl expression reference set member"),
+	OWL_EXPRESSION_REFSET("OWL expression reference set member"),
 	MRCM_DOMAIN_REFSET("MRCM domain refset member"),
 	MRCM_ATTRIBUTE_DOMAIN_REFSET("MRCM attribute domain refset member"),
 	MRCM_ATTRIBUTE_RANGE_REFSET("MRCM attribute range refset member"),

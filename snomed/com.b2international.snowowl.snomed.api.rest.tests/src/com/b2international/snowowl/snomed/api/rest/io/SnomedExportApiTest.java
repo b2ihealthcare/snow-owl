@@ -1279,6 +1279,71 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
 	
+	@Test
+	public void exportUnpublishedOWLExpressionRefsetMembers() throws Exception {
+		
+		Map<?, ?> owlOntologyRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_ONTOLOGY, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "test expression")
+				.put("commitComment", "Created new OWL Ontology reference set member")
+				.build();
+
+		String owlOntologyRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, owlOntologyRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		Map<?, ?> owlAxiomRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "test axiom")
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+
+		String owlAxiomRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, owlAxiomRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		Map<?, ?> config = ImmutableMap.builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("branchPath", branchPath.getPath())
+				.build();
+
+		String exportId = getExportId(createExport(config));
+
+		getExport(exportId).statusCode(200)
+			.body("type", equalTo(Rf2ReleaseType.DELTA.name()))
+			.body("branchPath", equalTo(branchPath.getPath()));
+
+		File exportArchive = getExportFile(exportId);
+
+		String owlOntologyMemberLine = TAB_JOINER.join(owlOntologyRefsetMemberId, 
+				"", 
+				"1",
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.REFSET_OWL_ONTOLOGY, 
+				Concepts.ROOT_CONCEPT,
+				"test expression"); 
+
+		String owlAxiomMemberLine = TAB_JOINER.join(owlAxiomRefsetMemberId, 
+				"", 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.REFSET_OWL_AXIOM,
+				Concepts.ROOT_CONCEPT,
+				"test axiom");
+
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("der2_sRefset_OWLAxiomDelta", true)
+				.put("der2_sRefset_OWLOntologyDelta", true)
+				.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+
+		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
+
+		fileToLinesMap.put("der2_sRefset_OWLOntologyDelta", Pair.of(true, owlOntologyMemberLine));
+		fileToLinesMap.put("der2_sRefset_OWLAxiomDelta", Pair.of(true, owlAxiomMemberLine));
+
+		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
 		final Collection<Map<String, Object>> members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").extract().body().path("members.items");
 		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("referenceSetId"))).findFirst().get().get("id"));

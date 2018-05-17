@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  */
 final class SnomedOWLOntologyMemberCreateDelegate extends AbstractSnomedOWLExpressionMemberCreateDelegate {
 
-	SnomedOWLOntologyMemberCreateDelegate(SnomedRefSetMemberCreateRequest request) {
+	SnomedOWLOntologyMemberCreateDelegate(final SnomedRefSetMemberCreateRequest request) {
 		super(request);
 	}
 

@@ -87,6 +87,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.SIMPLE_MAP						},
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	},
 			{ 	SnomedRefSetType.OWL_AXIOM				},
+			{ 	SnomedRefSetType.OWL_ONTOLOGY			},
 			{ 	SnomedRefSetType.MRCM_DOMAIN			},
 			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN	},
 			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE	},
@@ -354,7 +355,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.build();
 		case OWL_AXIOM:
 			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_1)
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_AXIOM_1)
+					.build();
+		case OWL_ONTOLOGY:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_ONTOLOGY_1)
 					.build();
 		case MRCM_DOMAIN:
 			return ImmutableMap.<String, Object>builder()
@@ -447,7 +452,11 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.build();
 		case OWL_AXIOM:
 			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_EXPRESSION_2)
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_AXIOM_2)
+					.build();
+		case OWL_ONTOLOGY:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_ONTOLOGY_2)
 					.build();
 		case MRCM_DOMAIN:
 			return ImmutableMap.<String, Object>builder()
@@ -536,7 +545,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
 					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
 					.build();
-		case OWL_AXIOM:
+		case OWL_AXIOM: //$FALL-THROUGH$
+		case OWL_ONTOLOGY:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "")
 					.build();

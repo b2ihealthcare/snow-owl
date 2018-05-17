@@ -135,7 +135,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "iissscc";
 			case MODULE_DEPENDENCY: 
 				return "ss";
-			case OWL_AXIOM:
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
 				return "s";
 			case MRCM_DOMAIN:
 				return "sssssss";
@@ -164,6 +165,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "ConcreteDomainReferenceSet";
 			case OWL_AXIOM:
 				return "OWLAxiom";
+			case OWL_ONTOLOGY:
+				return "OWLOntology";
 			case MRCM_DOMAIN:
 				return "MRCMDomain";
 			case MRCM_ATTRIBUTE_DOMAIN:
@@ -256,7 +259,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
 			case MODULE_DEPENDENCY: 
 				return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
-			case OWL_AXIOM:
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
 				return SnomedRf2Headers.OWL_EXPRESSION_HEADER;
 			case MRCM_DOMAIN:
 				return SnomedRf2Headers.MRCM_DOMAIN_HEADER;

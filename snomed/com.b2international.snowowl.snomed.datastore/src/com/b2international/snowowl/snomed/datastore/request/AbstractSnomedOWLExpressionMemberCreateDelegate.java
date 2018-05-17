@@ -32,7 +32,7 @@ abstract class AbstractSnomedOWLExpressionMemberCreateDelegate extends SnomedRef
 	}
 
 	abstract protected SnomedRefSetType getRefsetType();
-	
+
 	@Override
 	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, getRefsetType());

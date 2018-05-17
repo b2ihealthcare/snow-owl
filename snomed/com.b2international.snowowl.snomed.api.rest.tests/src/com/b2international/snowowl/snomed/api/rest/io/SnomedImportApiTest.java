@@ -333,20 +333,36 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void import26OWLAxiomReferenceSetMember() {
+	public void import26OWLExpressionReferenceSetMembers() {
+		
 		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
-		assertTrue(StreamSupport.stream(oldRoot.getMembers().spliterator(), false).noneMatch(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM)));
-		importArchive("SnomedCT_Release_INT_20170731_owl_axiom_member.zip");
+		assertTrue(oldRoot.getMembers().getItems().stream()
+			.noneMatch(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM) || m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY)));
+		
+		importArchive("SnomedCT_Release_INT_20170731_new_owl_expression_members.zip");
 		SnomedConcept root = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
-		Optional<SnomedReferenceSetMember> member = StreamSupport.stream(root.getMembers().spliterator(), false)
+		
+		Optional<SnomedReferenceSetMember> axiomMember = root.getMembers().getItems().stream()
 			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM))
 			.findFirst();
-		assertTrue(member.isPresent());
-		assertEquals("ec2cc6be-a10b-44b1-a2cc-42a3f11d406e", member.get().getId());
-		assertEquals(Concepts.MODULE_SCT_CORE, member.get().getModuleId());
-		assertEquals(Concepts.REFSET_OWL_AXIOM, member.get().getReferenceSetId());
-		assertEquals(Concepts.ROOT_CONCEPT, member.get().getReferencedComponent().getId());
-		assertEquals(OWL_EXPRESSION, member.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
+		
+		assertTrue(axiomMember.isPresent());
+		assertEquals("ec2cc6be-a10b-44b1-a2cc-42a3f11d406e", axiomMember.get().getId());
+		assertEquals(Concepts.MODULE_SCT_CORE, axiomMember.get().getModuleId());
+		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, axiomMember.get().getReferencedComponent().getId());
+		assertEquals(OWL_EXPRESSION, axiomMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
+		
+		Optional<SnomedReferenceSetMember> ontologyMember = root.getMembers().getItems().stream()
+				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
+				.findFirst();
+			
+		assertTrue(ontologyMember.isPresent());
+		assertEquals("f81c24fb-c40a-4b28-9adb-85f748f71395", ontologyMember.get().getId());
+		assertEquals(Concepts.MODULE_SCT_CORE, ontologyMember.get().getModuleId());
+		assertEquals(Concepts.REFSET_OWL_ONTOLOGY, ontologyMember.get().getReferenceSetId());
+		assertEquals(Concepts.ROOT_CONCEPT, ontologyMember.get().getReferencedComponent().getId());
+		assertEquals("Ontology(<http://snomed.info/sct/900000000000207008>)", ontologyMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 	}
 
 	@Test

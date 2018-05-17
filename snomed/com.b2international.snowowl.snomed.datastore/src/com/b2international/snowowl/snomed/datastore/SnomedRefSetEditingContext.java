@@ -108,6 +108,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			SnomedRefSetType.EXTENDED_MAP,
 			SnomedRefSetType.QUERY,
 			SnomedRefSetType.OWL_AXIOM,
+			SnomedRefSetType.OWL_ONTOLOGY,
 			SnomedRefSetType.MRCM_DOMAIN,
 			SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN,
 			SnomedRefSetType.MRCM_ATTRIBUTE_RANGE,

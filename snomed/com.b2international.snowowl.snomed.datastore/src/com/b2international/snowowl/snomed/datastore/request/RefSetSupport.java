@@ -55,6 +55,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.OWL_AXIOM, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.OWL_ONTOLOGY, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedTerminologyComponentConstants.CONCEPT)

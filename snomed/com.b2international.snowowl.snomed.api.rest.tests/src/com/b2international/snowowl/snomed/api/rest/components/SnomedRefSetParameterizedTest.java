@@ -80,6 +80,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
 			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
 			{ 	SnomedRefSetType.OWL_AXIOM						},
+			{ 	SnomedRefSetType.OWL_ONTOLOGY					},
 			{ 	SnomedRefSetType.MRCM_DOMAIN					},
 			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN			},
 			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE			},

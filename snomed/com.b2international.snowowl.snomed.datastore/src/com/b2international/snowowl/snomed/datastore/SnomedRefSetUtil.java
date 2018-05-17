@@ -99,6 +99,7 @@ public abstract class SnomedRefSetUtil {
 						SnomedRefSetType.ATTRIBUTE_VALUE,
 						SnomedRefSetType.QUERY,
 						SnomedRefSetType.OWL_AXIOM,
+						SnomedRefSetType.OWL_ONTOLOGY,
 						SnomedRefSetType.CONCRETE_DATA_TYPE)
 			.putAll(SnomedRF2Folder.LANGUAGE, 
 						SnomedRefSetType.LANGUAGE)
@@ -163,8 +164,9 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
 			case MODULE_DEPENDENCY:
 				return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
-			case OWL_AXIOM:
-				return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER;
 			case MRCM_DOMAIN:
 				return SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER;
 			case MRCM_ATTRIBUTE_DOMAIN:
@@ -240,6 +242,8 @@ public abstract class SnomedRefSetUtil {
 				return SnomedRefSetType.MODULE_DEPENDENCY;
 			case Concepts.REFSET_OWL_AXIOM:
 				return SnomedRefSetType.OWL_AXIOM;
+			case Concepts.REFSET_OWL_ONTOLOGY:
+				return SnomedRefSetType.OWL_ONTOLOGY;
 			case Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL:
 				return SnomedRefSetType.MRCM_DOMAIN;
 			case Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL:
@@ -301,6 +305,7 @@ public abstract class SnomedRefSetUtil {
 			case CONCRETE_DATA_TYPE: return "Concrete domain type reference set";
 			case MODULE_DEPENDENCY: return "Module dependency type reference set";
 			case OWL_AXIOM: return "OWL axiom type reference set";
+			case OWL_ONTOLOGY: return "OWL ontology type reference set";
 			case MRCM_DOMAIN: return "MRCM domain type reference set";
 			case MRCM_ATTRIBUTE_DOMAIN: return "MRCM attribute domain type reference set";
 			case MRCM_ATTRIBUTE_RANGE: return "MRCM attribute range type reference set";
@@ -341,8 +346,9 @@ public abstract class SnomedRefSetUtil {
 				return Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 			case EXTENDED_MAP:
 				return Concepts.EXTENDED_MAP_TYPE;
-			case OWL_AXIOM:
-				return Concepts.REFSET_ANNOTATION_TYPE;
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return Concepts.REFSET_OWL_EXPRESSION_TYPE;
 			case MRCM_DOMAIN:
 				return Concepts.REFSET_MRCM_DOMAIN_ROOT;
 			case MRCM_ATTRIBUTE_DOMAIN:
