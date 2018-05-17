@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
 public final class SnomedRelationshipDefinition extends SnomedConceptSetDefinition {
 
 	public static final String PROP_TYPE_ID = "typeId";
-	public static final String PROP_DESTINATION_ID = "typeId";
+	public static final String PROP_DESTINATION_ID = "destinationId";
 
 	private String typeId;
 	private String destinationId;
