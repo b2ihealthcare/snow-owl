@@ -173,6 +173,7 @@ public class SnomedRefSetDSVExportTest {
 			SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEcl(String.format("^%s", refsetId))
+				.setExpand("relationships()")
 				.build(REPOSITORY_ID, MAIN_BRANCH)
 				.execute(bus)
 				.getSync();
