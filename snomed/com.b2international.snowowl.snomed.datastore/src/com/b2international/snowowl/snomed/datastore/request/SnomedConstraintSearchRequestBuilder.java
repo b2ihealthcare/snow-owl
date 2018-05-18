@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -71,6 +72,10 @@ public final class SnomedConstraintSearchRequestBuilder
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedConstraints> createSearch() {
 		return new SnomedConstraintSearchRequest();
+	}
+
+	public SnomedConstraintSearchRequestBuilder filterByRelationships(Set<String> relationships) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.RELATIONSHIP, relationships);
 	}
 
 }

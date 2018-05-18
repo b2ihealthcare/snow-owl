@@ -62,6 +62,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Charsets;
@@ -180,7 +181,14 @@ public class SnomedRefSetDSVExportTest {
 
 	private Iterable<SnomedConstraint> getConstraints(SnomedConcepts concepts) {
 		return SnomedRequests
-				.prepareGetApplicablePredicates(MAIN_BRANCH, idsOf(concepts), ancestorsOf(concepts), Collections.emptySet()).getSync();
+				.prepareGetApplicablePredicates(MAIN_BRANCH, idsOf(concepts), ancestorsOf(concepts), Collections.emptySet(), relationshipsOf(concepts)).getSync();
+	}
+
+	private Set<String> relationshipsOf(SnomedConcepts concepts) {
+		return concepts.getItems()
+				.stream()
+				.flatMap(concept -> concept.getRelationships().stream().map(relationship -> SnomedConstraintDocument.relationshipDomainOf(relationship.getTypeId(), relationship.getDestinationId())))
+				.collect(Collectors.toSet());
 	}
 
 	private Set<String> idsOf(SnomedConcepts concepts) {

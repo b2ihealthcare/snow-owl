@@ -21,6 +21,7 @@ package com.b2international.snowowl.snomed.ecl;
 public final class Ecl {
 
 	public static final String ANY = "*";
+	public static final String EQUAL = "=";
 	
 	private Ecl() {}
 	

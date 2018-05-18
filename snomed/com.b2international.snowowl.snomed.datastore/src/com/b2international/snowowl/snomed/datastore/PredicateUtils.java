@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore;
 import java.util.Set;
 
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
@@ -51,7 +52,8 @@ public abstract class PredicateUtils {
 	 */
 	public static final String OR = "OR";
 
-	public static void collectDomainIds(ConceptSetDefinition domain, final Set<String> selfIds, final Set<String> descendantIds, final Set<String> refSetIds) {
+	public static void collectDomainIds(ConceptSetDefinition domain, final Set<String> selfIds, final Set<String> descendantIds, 
+			final Set<String> refSetIds, final Set<String> relationships) {
 		new MrcmSwitch<ConceptSetDefinition>() {
 			@Override
 			public ConceptSetDefinition caseHierarchyConceptSetDefinition(HierarchyConceptSetDefinition domain) {
@@ -87,10 +89,16 @@ public abstract class PredicateUtils {
 			@Override
 			public ConceptSetDefinition caseCompositeConceptSetDefinition(CompositeConceptSetDefinition domain) {
 				for (ConceptSetDefinition childDomain : domain.getChildren()) {
-					collectDomainIds(childDomain, selfIds, descendantIds, refSetIds);
+					collectDomainIds(childDomain, selfIds, descendantIds, refSetIds, relationships);
 				}
 				return domain;
 			}
+			
+			@Override
+			public ConceptSetDefinition caseRelationshipConceptSetDefinition(RelationshipConceptSetDefinition domain) {
+				relationships.add(SnomedConstraintDocument.relationshipDomainOf(domain.getTypeConceptId(), domain.getDestinationConceptId()));
+				return domain;
+			};
 		}.doSwitch(domain);
 	}
 	

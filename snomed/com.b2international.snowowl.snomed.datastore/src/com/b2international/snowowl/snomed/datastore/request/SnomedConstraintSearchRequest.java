@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraint
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.refSetIds;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
 import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.types;
+import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.relationships;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -56,7 +57,12 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 		/**
 		 * Match MRCM constraints that has any of the given {@link PredicateType}.
 		 */
-		TYPE
+		TYPE,
+		
+		/**
+		* Match MRCM constraints that are applicable to the given relationship type and destination identifiers.
+		*/
+		RELATIONSHIP
 		
 	}
 	
@@ -80,6 +86,10 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 		
 		if (containsKey(OptionKey.TYPE)) {
 			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
+		}
+		
+		if (containsKey(OptionKey.RELATIONSHIP)) {
+			queryBuilder.filter(relationships(getCollection(OptionKey.RELATIONSHIP, String.class)));
 		}
 		
 		return queryBuilder.build();

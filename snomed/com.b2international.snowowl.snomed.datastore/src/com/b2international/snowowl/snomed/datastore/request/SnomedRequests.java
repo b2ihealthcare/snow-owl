@@ -404,7 +404,8 @@ public abstract class SnomedRequests {
 	 * @param refSetIds - optional reference set identifiers to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds, final Set<String> refSetIds) {
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds,
+			final Set<String> refSetIds, final Set<String> relationships) {
 		// query constraint domains three times, on for each concept domain set
 		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
@@ -434,6 +435,10 @@ public abstract class SnomedRequests {
 				
 				if (!CompareUtils.isEmpty(refSetIds)) {
 					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRefSetIds(refSetIds));
+				}
+				
+				if (!CompareUtils.isEmpty(relationships)) {
+					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRelationships(relationships));
 				}
 				
 				return RepositoryRequests.prepareBulkRead()
