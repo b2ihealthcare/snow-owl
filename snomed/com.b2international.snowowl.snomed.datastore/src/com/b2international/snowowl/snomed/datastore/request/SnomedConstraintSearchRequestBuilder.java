@@ -60,6 +60,10 @@ public final class SnomedConstraintSearchRequestBuilder
 		return addOption(SnomedConstraintSearchRequest.OptionKey.REFSET, refSetIds);
 	}
 	
+	public SnomedConstraintSearchRequestBuilder filterByRelationshipKeys(Collection<String> relationships) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.RELATIONSHIP, relationships);
+	}
+	
 	public SnomedConstraintSearchRequestBuilder filterByType(SnomedConstraintPredicateType type) {
 		return addOption(SnomedConstraintSearchRequest.OptionKey.TYPE, type);
 	}
@@ -72,5 +76,4 @@ public final class SnomedConstraintSearchRequestBuilder
 	protected SearchResourceRequest<BranchContext, SnomedConstraints> createSearch() {
 		return new SnomedConstraintSearchRequest();
 	}
-
 }

@@ -339,6 +339,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		public static final String SELF_IDS = "selfIds";
 		public static final String DESCENDANT_IDS = "descendantIds";
 		public static final String REFSET_IDS = "refSetIds";
+		public static final String RELATIONSHIP_KEYS = "relationshipKeys";
 	}
 
 	/**
@@ -360,6 +361,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 		public static Expression refSetIds(final Collection<String> refSetIds) {
 			return matchAny(Fields.REFSET_IDS, refSetIds);
+		}
+		
+		public static Expression relationshipKeys(final Collection<String> relationshipKeys) {
+			return matchAny(Fields.RELATIONSHIP_KEYS, relationshipKeys);
 		}
 	}
 

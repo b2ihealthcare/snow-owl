@@ -182,7 +182,12 @@ public class SnomedRefSetDSVExportTest {
 
 	private Iterable<SnomedConstraint> getConstraints(SnomedConcepts concepts) {
 		return SnomedRequests
-				.prepareGetApplicablePredicates(MAIN_BRANCH, idsOf(concepts), ancestorsOf(concepts), Collections.emptySet()).getSync();
+				.prepareGetApplicablePredicates(MAIN_BRANCH, 
+						idsOf(concepts), 
+						ancestorsOf(concepts), 
+						Collections.emptySet(), 
+						relationshipKeysOf(concepts))
+				.getSync();
 	}
 
 	private Set<String> idsOf(SnomedConcepts concepts) {
@@ -196,6 +201,15 @@ public class SnomedRefSetDSVExportTest {
 					.stream()
 					.flatMap(item -> SnomedConcept.GET_ANCESTORS.apply(item).stream())
 					.collect(Collectors.toSet());
+	}
+
+	private Set<String> relationshipKeysOf(SnomedConcepts concepts) {
+		return concepts.getItems().stream()
+				.flatMap(concept -> concept.getRelationships().stream()
+						.map(relationship -> String.format("%s=%s", 
+								relationship.getTypeId(), 
+								relationship.getDestinationId())))
+				.collect(Collectors.toSet());
 	}
 
 	private void addMember(String refsetId, String referencedComponentId) {
