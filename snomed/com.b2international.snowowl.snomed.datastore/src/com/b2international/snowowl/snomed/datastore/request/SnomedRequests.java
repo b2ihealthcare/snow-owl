@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBui
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableSet;
@@ -147,6 +148,15 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
+	 * Returns a SNOMED CT request builder to prepare a request to return an MRCM attribute constraint.
+	 * @param constraintId - the identifier of the MRCM constraint to return
+	 * @return SNOMED CT constraint get request builder
+	 */
+	public static SnomedConstraintGetRequestBuilder prepareGetConstraint(String constraintId) {
+		return new SnomedConstraintGetRequestBuilder(constraintId);
+	}
+	
+	/**
 	 * Returns a SNOMED CT request builder to prepare a request to return a concept.
 	 * @param conceptId - the identifier of the concept to return
 	 * @return SNOMED CT concept get request builder
@@ -196,6 +206,15 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
+	 * Returns a SNOMED CT request builder to prepare a request that deletes an MRCM attribute constraint.
+	 * @param constraintId - the identifier of the constraint
+	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given constraint
+	 */
+	public static DeleteRequestBuilder prepareDeleteConstraint(String constraintId) {
+		return prepareDelete(constraintId, AttributeConstraint.class);
+	}
+	
+	/**
 	 * Returns a SNOMED CT request builder to prepare a request that deletes a concept.
 	 * @param conceptId - the identifier of the concept
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given concept
@@ -238,6 +257,14 @@ public abstract class SnomedRequests {
 	 */
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
 		return prepareDelete(memberId, SnomedRefSetMember.class);
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare a request that creates an MRCM attribute constraint.
+	 * @return SNOMED CT constraint create request builder
+	 */
+	public static SnomedConstraintCreateRequestBuilder prepareNewConstraint() {
+		return new SnomedConstraintCreateRequestBuilder();
 	}
 
 	/**
@@ -354,6 +381,14 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of a single MRCM attribute constraint.
+	 * @return SNOMED CT constraint update request builder
+	 */
+	public static SnomedConstraintUpdateRequestBuilder prepareUpdateConstraint() {
+		return new SnomedConstraintUpdateRequestBuilder();
+	}
+	
+	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a concept.
 	 * @param concept id of the concept to be updated
 	 * @return SNOMED CT concept update request builder
@@ -401,10 +436,15 @@ public abstract class SnomedRequests {
 	 * @param branch - the branch to query for the constraints
 	 * @param selfIds - set of SNOMED CT identifiers to use for getting self rules
 	 * @param ruleParentIds - set of parent IDs to use for getting the descendant rules, also fetches and applies all ancestors of these
-	 * @param refSetIds - optional reference set identifiers to match
+	 * @param refSetIds - reference set identifiers to match
+	 * @param relationshipKeys - relationship keys (in "type=value" format) to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, final Set<String> selfIds, final Set<String> ruleParentIds, final Set<String> refSetIds) {
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final String branch, 
+			final Set<String> selfIds, 
+			final Set<String> ruleParentIds, 
+			final Set<String> refSetIds,
+			final Set<String> relationshipKeys) {
 		// query constraint domains three times, on for each concept domain set
 		final IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		return SnomedRequests.prepareSearchConcept()
@@ -434,6 +474,10 @@ public abstract class SnomedRequests {
 				
 				if (!CompareUtils.isEmpty(refSetIds)) {
 					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRefSetIds(refSetIds));
+				}
+				
+				if (!CompareUtils.isEmpty(relationshipKeys)) {
+					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByRelationshipKeys(relationshipKeys));
 				}
 				
 				return RepositoryRequests.prepareBulkRead()

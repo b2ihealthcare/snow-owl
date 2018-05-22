@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.descendantIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.refSetIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.selfIds;
-import static com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.Expressions.types;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.descendantIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.refSetIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.relationshipKeys;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.selfIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.predicateTypes;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -28,8 +29,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument.PredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 4.7
@@ -39,25 +40,33 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 	public enum OptionKey {
 		
 		/**
-		 * Match MRCM constraints that are applicable to the given identifiers.
+		 * Match MRCM constraints that are applicable to concepts having the given
+		 * identifiers.
 		 */
 		SELF,
 		
 		/**
-		 * Match MRCM constraints that are applicable to the hierarchy of the given identifiers.
+		 * Match MRCM constraints that are applicable to concepts that are descendants
+		 * of other concepts with the given identifiers.
 		 */
 		DESCENDANT,
 		
 		/**
-		 * Match MRCM constraints that are applicable to the given reference set identifiers.
+		 * Match MRCM constraints that are applicable to concepts that are members of 
+		 * reference sets with the specified identifiers.
 		 */
 		REFSET, 
+		
+		/**
+		 * Match MRCM constraints that are applicable to concepts that have a relationship
+		 * with the specified type and destination identifiers.
+		 */
+		RELATIONSHIP,
 		
 		/**
 		 * Match MRCM constraints that has any of the given {@link PredicateType}.
 		 */
 		TYPE
-		
 	}
 	
 	@Override
@@ -78,8 +87,12 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 			queryBuilder.filter(refSetIds(getCollection(OptionKey.REFSET, String.class)));
 		}
 		
+		if (containsKey(OptionKey.RELATIONSHIP)) {
+			queryBuilder.filter(relationshipKeys(getCollection(OptionKey.RELATIONSHIP, String.class)));
+		}
+		
 		if (containsKey(OptionKey.TYPE)) {
-			queryBuilder.filter(types(getCollection(OptionKey.TYPE, PredicateType.class)));
+			queryBuilder.filter(predicateTypes(getCollection(OptionKey.TYPE, SnomedConstraintPredicateType.class)));
 		}
 		
 		return queryBuilder.build();

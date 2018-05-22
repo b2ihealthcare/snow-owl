@@ -1,14 +1,13 @@
-/*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS, 
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -17,6 +16,7 @@ package com.b2international.snowowl.snomed.mrcm;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
@@ -372,13 +372,22 @@ public interface MrcmPackage extends EPackage {
 	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 2;
 
 	/**
+	 * The feature id for the '<em><b>Characteristic Type Concept Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 3;
+
+	/**
 	 * The number of structural features of the '<em>Concrete Domain Element Predicate</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE_FEATURE_COUNT = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 3;
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE_FEATURE_COUNT = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 4;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.impl.DependencyPredicateImpl <em>Dependency Predicate</em>}' class.
@@ -1242,6 +1251,16 @@ public interface MrcmPackage extends EPackage {
 	 */
 	int CONSTRAINT_FORM = 20;
 
+	/**
+	 * The meta object id for the '<em>Data Type</em>' data type.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
+	 * @generated
+	 */
+	int DATA_TYPE = 21;
+
 
 	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.mrcm.ConceptModel <em>Concept Model</em>}'.
@@ -1424,6 +1443,17 @@ public interface MrcmPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getConcreteDomainElementPredicate_Type();
+
+	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getCharacteristicTypeConceptId <em>Characteristic Type Concept Id</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Characteristic Type Concept Id</em>'.
+	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getCharacteristicTypeConceptId()
+	 * @see #getConcreteDomainElementPredicate()
+	 * @generated
+	 */
+	EAttribute getConcreteDomainElementPredicate_CharacteristicTypeConceptId();
 
 	/**
 	 * Returns the meta object for class '{@link com.b2international.snowowl.snomed.mrcm.DependencyPredicate <em>Dependency Predicate</em>}'.
@@ -1806,6 +1836,17 @@ public interface MrcmPackage extends EPackage {
 	EEnum getConstraintForm();
 
 	/**
+	 * Returns the meta object for data type '{@link com.b2international.snowowl.snomed.snomedrefset.DataType <em>Data Type</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for data type '<em>Data Type</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+	 * @model instanceClass="com.b2international.snowowl.snomed.snomedrefset.DataType"
+	 * @generated
+	 */
+	EDataType getDataType();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1972,6 +2013,14 @@ public interface MrcmPackage extends EPackage {
 		 * @generated
 		 */
 		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE = eINSTANCE.getConcreteDomainElementPredicate_Type();
+
+		/**
+		 * The meta object literal for the '<em><b>Characteristic Type Concept Id</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID = eINSTANCE.getConcreteDomainElementPredicate_CharacteristicTypeConceptId();
 
 		/**
 		 * The meta object literal for the '{@link com.b2international.snowowl.snomed.mrcm.impl.DependencyPredicateImpl <em>Dependency Predicate</em>}' class.
@@ -2292,6 +2341,16 @@ public interface MrcmPackage extends EPackage {
 		 * @generated
 		 */
 		EEnum CONSTRAINT_FORM = eINSTANCE.getConstraintForm();
+
+		/**
+		 * The meta object literal for the '<em>Data Type</em>' data type.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+		 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
+		 * @generated
+		 */
+		EDataType DATA_TYPE = eINSTANCE.getDataType();
 
 	}
 

@@ -4,14 +4,14 @@
     nsPrefix="mrcm">
   <eClassifiers xsi:type="ecore:EClass" name="ConceptModel">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="The top-level container for various types of constraints.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="The top-level container for various types of constraints."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="constraints" upperBound="-1"
         eType="#//ConstraintBase" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConceptModelComponent">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Abstract base class for various concept model components.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Abstract base class for various concept model components."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="uuid" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="active" lowerBound="1"
@@ -24,12 +24,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="ConceptModelPredicate" abstract="true"
       eSuperTypes="#//ConceptModelComponent">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Abstract base class for concept model predicates.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Abstract base class for concept model predicates."/>
     </eAnnotations>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CardinalityPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Predicate representing an MRCM cardinality check.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Predicate representing an MRCM cardinality check."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="minCardinality" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
@@ -42,16 +42,18 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConcreteDomainElementPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Predicate to check for the presence of a concrete model element.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Predicate to check for the presence of a concrete model element."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"
         defaultValueLiteral=""/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="ecore:EEnum ../../com.b2international.snowowl.snomed.refset.model/model/snomedrefset.ecore#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="#//DataType"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="characteristicTypeConceptId"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DependencyPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Predicate to check for a group of child predicates.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Predicate to check for a group of child predicates."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="children" upperBound="-1"
         eType="#//ConceptModelPredicate" containment="true"/>
@@ -62,31 +64,31 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="DescriptionPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Predicate to check for the presence of a description of a specific type (e.g. fully specified name, synonym, etc.).&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Predicate to check for the presence of a description of a specific type (e.g. fully specified name, synonym, etc.)."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="typeId" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RelationshipPredicate" eSuperTypes="#//ConceptModelPredicate">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Predicate to check for a relationship with the specified type and value.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Predicate to check for a relationship with the specified type and value."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" lowerBound="1"
         eType="#//ConceptSetDefinition" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="range" lowerBound="1" eType="#//ConceptSetDefinition"
         containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="characteristicTypeConceptId"
-        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConceptSetDefinition" abstract="true"
       eSuperTypes="#//ConceptModelComponent">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Represents a set of concepts, specified based on different kinds of criteria.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Represents a set of concepts, specified based on different kinds of criteria."/>
     </eAnnotations>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CompositeConceptSetDefinition" eSuperTypes="#//ConceptSetDefinition">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Represents a composite concept set definition.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Represents a composite concept set definition."/>
     </eAnnotations>
     <eOperations name="addChild" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
       <eParameters name="child" lowerBound="1" eType="#//ConceptSetDefinition"/>
@@ -99,7 +101,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumeratedConceptSetDefinition" eSuperTypes="#//ConceptSetDefinition">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Concept set definition for explicitly enumerating the included concepts.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Concept set definition for explicitly enumerating the included concepts."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="conceptIds" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -116,14 +118,14 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ReferenceSetConceptSetDefinition" eSuperTypes="#//ConceptSetDefinition">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Concept set definition for using the members of an existing concept reference set.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Concept set definition for using the members of an existing concept reference set."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="refSetIdentifierConceptId"
         lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="RelationshipConceptSetDefinition" eSuperTypes="#//ConceptSetDefinition">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Concept set definition describing concepts which include a relationship of the given type and destination.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Concept set definition describing concepts which include a relationship of the given type and destination."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="typeConceptId" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -132,18 +134,16 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ConstraintBase" abstract="true" eSuperTypes="#//ConceptModelComponent">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Abstract base class for concept model constraints.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Abstract base class for concept model constraints."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="strength" lowerBound="1"
         eType="#//ConstraintStrength"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="validationMessage" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="validationMessage" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="description" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeConstraint" eSuperTypes="#//ConstraintBase">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Represents an constraint on an attribute (e.g. relationship or description) of a concept.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Represents an constraint on an attribute (e.g. relationship or description) of a concept."/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="form" lowerBound="1" eType="#//ConstraintForm"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="domain" lowerBound="1"
@@ -153,7 +153,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="GroupRule">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates whether a predicate applies to ungrouped relationships, relationships in a group, all relationships or a set of groups.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Indicates whether a predicate applies to ungrouped relationships, relationships in a group, all relationships or a set of groups."/>
     </eAnnotations>
     <eLiterals name="UNGROUPED" literal="UNGROUPED">
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -178,7 +178,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="DependencyOperator">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates how many child predicates of a dependency predicate are required to be true.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Indicates how many child predicates of a dependency predicate are required to be true."/>
     </eAnnotations>
     <eLiterals name="ONE">
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -198,7 +198,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="HierarchyInclusionType">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates whether the given concept and/or its subtypes are included in a concept set definition.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Indicates whether the given concept and/or its subtypes are included in a concept set definition."/>
     </eAnnotations>
     <eLiterals name="SELF">
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -218,7 +218,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ConstraintStrength">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates the strength and applicability of a constraint.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Indicates the strength and applicability of a constraint."/>
     </eAnnotations>
     <eLiterals name="MANDATORY_CM">
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -258,7 +258,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ConstraintForm">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-      <details key="documentation" value="Indicates the model or post-coordinated form to which a constraint applies.&#xD;&#xA;&#xD;&#xA;@author zstorok"/>
+      <details key="documentation" value="Indicates the model or post-coordinated form to which a constraint applies."/>
     </eAnnotations>
     <eLiterals name="ALL_FORMS">
       <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
@@ -291,4 +291,5 @@
       </eAnnotations>
     </eLiterals>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="DataType" instanceClassName="com.b2international.snowowl.snomed.snomedrefset.DataType"/>
 </ecore:EPackage>

@@ -1,27 +1,18 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS, 
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
-
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EOperation;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
@@ -46,8 +37,18 @@ import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.impl.SnomedRefSetPackageImpl;
+
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EOperation;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -204,6 +205,13 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	private EEnum constraintFormEEnum = null;
 
 	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EDataType dataTypeEDataType = null;
+
+	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
 	 * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the package
 	 * package URI value.
@@ -249,16 +257,11 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 
 		isInited = true;
 
-		// Obtain or create and register interdependencies
-		SnomedRefSetPackageImpl theSnomedrefsetPackage = (SnomedRefSetPackageImpl)(EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI) instanceof SnomedRefSetPackageImpl ? EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI) : SnomedRefSetPackage.eINSTANCE);
-
 		// Create package meta-data objects
 		theMrcmPackage.createPackageContents();
-		theSnomedrefsetPackage.createPackageContents();
 
 		// Initialize created meta-data
 		theMrcmPackage.initializePackageContents();
-		theSnomedrefsetPackage.initializePackageContents();
 
 		// Mark meta-data to indicate it can't be changed
 		theMrcmPackage.freeze();
@@ -420,6 +423,15 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 */
 	public EAttribute getConcreteDomainElementPredicate_Type() {
 		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getConcreteDomainElementPredicate_CharacteristicTypeConceptId() {
+		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(3);
 	}
 
 	/**
@@ -751,6 +763,15 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EDataType getDataType() {
+		return dataTypeEDataType;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public MrcmFactory getMrcmFactory() {
 		return (MrcmFactory)getEFactoryInstance();
 	}
@@ -795,6 +816,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME);
 		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL);
 		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE);
+		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID);
 
 		dependencyPredicateEClass = createEClass(DEPENDENCY_PREDICATE);
 		createEReference(dependencyPredicateEClass, DEPENDENCY_PREDICATE__CHILDREN);
@@ -844,6 +866,9 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		hierarchyInclusionTypeEEnum = createEEnum(HIERARCHY_INCLUSION_TYPE);
 		constraintStrengthEEnum = createEEnum(CONSTRAINT_STRENGTH);
 		constraintFormEEnum = createEEnum(CONSTRAINT_FORM);
+
+		// Create data types
+		dataTypeEDataType = createEDataType(DATA_TYPE);
 	}
 
 	/**
@@ -868,9 +893,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		setName(eNAME);
 		setNsPrefix(eNS_PREFIX);
 		setNsURI(eNS_URI);
-
-		// Obtain other dependent packages
-		SnomedRefSetPackage theSnomedrefsetPackage = (SnomedRefSetPackage)EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI);
 
 		// Create type parameters
 
@@ -913,7 +935,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		initEClass(concreteDomainElementPredicateEClass, ConcreteDomainElementPredicate.class, "ConcreteDomainElementPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getConcreteDomainElementPredicate_Name(), ecorePackage.getEString(), "name", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getConcreteDomainElementPredicate_Label(), ecorePackage.getEString(), "label", "", 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConcreteDomainElementPredicate_Type(), theSnomedrefsetPackage.getDataType(), "type", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConcreteDomainElementPredicate_Type(), this.getDataType(), "type", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConcreteDomainElementPredicate_CharacteristicTypeConceptId(), ecorePackage.getEString(), "characteristicTypeConceptId", null, 0, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(dependencyPredicateEClass, DependencyPredicate.class, "DependencyPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getDependencyPredicate_Children(), this.getConceptModelPredicate(), null, "children", null, 0, -1, DependencyPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -926,7 +949,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		initEClass(relationshipPredicateEClass, RelationshipPredicate.class, "RelationshipPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getRelationshipPredicate_Attribute(), this.getConceptSetDefinition(), null, "attribute", null, 1, 1, RelationshipPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getRelationshipPredicate_Range(), this.getConceptSetDefinition(), null, "range", null, 1, 1, RelationshipPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getRelationshipPredicate_CharacteristicTypeConceptId(), ecorePackage.getEString(), "characteristicTypeConceptId", null, 1, 1, RelationshipPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getRelationshipPredicate_CharacteristicTypeConceptId(), ecorePackage.getEString(), "characteristicTypeConceptId", null, 0, 1, RelationshipPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(conceptSetDefinitionEClass, ConceptSetDefinition.class, "ConceptSetDefinition", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -957,8 +980,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 
 		initEClass(constraintBaseEClass, ConstraintBase.class, "ConstraintBase", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getConstraintBase_Strength(), this.getConstraintStrength(), "strength", null, 1, 1, ConstraintBase.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConstraintBase_ValidationMessage(), ecorePackage.getEString(), "validationMessage", null, 1, 1, ConstraintBase.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConstraintBase_Description(), ecorePackage.getEString(), "description", null, 1, 1, ConstraintBase.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintBase_ValidationMessage(), ecorePackage.getEString(), "validationMessage", null, 0, 1, ConstraintBase.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConstraintBase_Description(), ecorePackage.getEString(), "description", null, 0, 1, ConstraintBase.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(attributeConstraintEClass, AttributeConstraint.class, "AttributeConstraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getAttributeConstraint_Form(), this.getConstraintForm(), "form", null, 1, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -998,6 +1021,9 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		addEEnumLiteral(constraintFormEEnum, ConstraintForm.CLOSE_TO_USER_FORM);
 		addEEnumLiteral(constraintFormEEnum, ConstraintForm.LONG_NORMAL_FORM);
 		addEEnumLiteral(constraintFormEEnum, ConstraintForm.SHORT_NORMAL_FORM);
+
+		// Initialize data types
+		initEDataType(dataTypeEDataType, DataType.class, "DataType", IS_SERIALIZABLE, !IS_GENERATED_INSTANCE_CLASS);
 
 		// Create resource
 		createResource(eNS_URI);

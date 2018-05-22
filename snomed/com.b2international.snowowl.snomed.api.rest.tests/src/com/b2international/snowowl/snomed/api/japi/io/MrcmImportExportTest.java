@@ -38,8 +38,8 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
-import com.b2international.snowowl.snomed.datastore.MrcmEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 
@@ -60,8 +60,8 @@ public class MrcmImportExportTest {
 		
 		
 		// verify CDO content
-		try (MrcmEditingContext context = new MrcmEditingContext(branch)) {
-			assertEquals(58, context.getOrCreateConceptModel().getConstraints().size());
+		try (SnomedEditingContext context = new SnomedEditingContext(branch)) {
+			assertEquals(58, context.getConstraints().size());
 		}
 		// verify index
 		final SnomedConstraints allPredicates = SnomedRequests.prepareSearchConstraint()
