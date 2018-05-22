@@ -42,8 +42,12 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
-		
-		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, ImmutableMap.<String, Object>of("ctx", context));
+		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
+			ImmutableMap.<String, Object>of(
+				"ctx", context,
+				"resourcesDir", validationResourcesDirectory
+			)
+		);
 	}
 
 	@Override

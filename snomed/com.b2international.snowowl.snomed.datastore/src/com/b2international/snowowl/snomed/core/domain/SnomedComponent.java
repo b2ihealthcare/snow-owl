@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
+import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * Holds common properties of SNOMED CT components.
  * @since 4.0
  */
-public abstract class SnomedComponent extends BaseComponent {
+public abstract class SnomedComponent extends BaseComponent implements IconIdProvider {
 
 	private Boolean active;
 	private Date effectiveTime;
@@ -65,6 +66,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * @beta - this method is subject to changes or even removal in future releases.  
 	 * @return - the icon ID associated with this component
 	 */
+	@Override
 	public String getIconId() {
 		return iconId;
 	}

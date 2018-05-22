@@ -307,6 +307,20 @@ public class SnomedRefSetNameCollector {
 			return Concepts.EXTENDED_MAP_TYPE;
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
 			return Concepts.REFSET_SIMPLE_MAP_TYPE;
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
+			return Concepts.REFSET_OWL_AXIOM;
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE)) {
+			return Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
+			return Concepts.REFSET_MRCM_MODULE_SCOPE;
+		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID)) {
+			
+			if (header.contains(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
+				return Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+			} else if (header.contains(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)) {
+				return Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
+			}
+			
 		}
 		
 		return null;

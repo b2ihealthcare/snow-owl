@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import java.util.Optional;
+import java.util.Random;
 
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
@@ -33,6 +34,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 @BranchBase(Branch.MAIN_PATH)
 public abstract class AbstractSnomedApiTest {
 
+	private static final Random RANDOM = new Random();
+	
 	private final class CustomTestWatcher extends TestWatcher {
 		@Override
 		protected void starting(Description description) {
@@ -48,6 +51,12 @@ public abstract class AbstractSnomedApiTest {
 						.replace("[", "_") // Remove special characters from parameterized test names
 						.replace("]", "");
 
+				// Also add a random suffix if it would go over the 50 character branch name limit
+				if (testMethodName.length() > 50) {
+					String suffix = Integer.toString(RANDOM.nextInt(Integer.MAX_VALUE), 36);
+					testMethodName = testMethodName.substring(0, 44) + suffix;
+				}
+				
 				branchPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(testBasePath, testClassName, testMethodName));
 			} else {
 				branchPath = BranchPathUtils.createPath(testBasePath);

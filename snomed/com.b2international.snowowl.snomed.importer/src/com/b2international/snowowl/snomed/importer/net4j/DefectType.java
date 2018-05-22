@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,8 @@ public enum DefectType {
 	EXTENDED_MAP_REFERENCED_INVALID_CONCEPT("Extended map reference set member refers to a non-existing concept"),
 	INVALID_EFFECTIVE_TIME_FORMAT("Effective time format is not valid. Acceptable effective time format is 'yyyyMMdd'."),
 	INCONSISTENT_TAXONOMY("The concepts below are referenced in active IS A relationships, but are inactive or otherwise not known.", false),
-	IO_PROBLEM("Encountered an I/O error while running validation.");
+	IO_PROBLEM("Encountered an I/O error while running validation."),
+	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty");
 	
 	private final String label;
 	private final boolean critical;

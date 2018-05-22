@@ -55,6 +55,7 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -65,6 +66,8 @@ import com.google.common.collect.Ordering;
  * Provides utility methods for validating the release files.
  */
 public final class SnomedValidationContext {
+	
+	private static final Splitter TAB_SPLITTER = Splitter.on("\t");
 	
 	private final Map<String, Multimap<DefectType, String>> defects = newHashMap();
 	private final ImportConfiguration configuration;
@@ -174,12 +177,13 @@ public final class SnomedValidationContext {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charsets.UTF_8))) {
 			final String header = reader.readLine();
 			
-			//guard against invalid files/folders in the SCT RF2 archive/root folder
+			// guard against invalid files/folders in the SCT RF2 archive/root folder
 			if (StringUtils.isEmpty(header)) {
 				return;
 			}
 			
-			final String lastColumn = header.substring(header.lastIndexOf("\t") + 1);
+			List<String> headerElements = TAB_SPLITTER.splitToList(header);
+			final String lastColumn = Iterables.getLast(headerElements);
 			
 			if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID)) {
 				releaseFileValidators.add(new SnomedSimpleTypeRefSetValidator(configuration, url, this));
@@ -190,7 +194,7 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE)) { // AU CDT refset
 				releaseFileValidators.add(new SnomedConcreteDataTypeRefSetValidator(configuration, url, this, false));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET)) {
-				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this, false));
+				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
 				releaseFileValidators.add(new SnomedComplexMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH)) {
@@ -204,7 +208,19 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equals(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
 				releaseFileValidators.add(new SnomedExtendedMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
-				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this, true));	
+				releaseFileValidators.add(new SnomedSimpleMapWithDescriptionRefSetValidator(configuration, url, this));	
+			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
+				releaseFileValidators.add(new SnomedOWLExpressionRefSetValidator(configuration, url, this));
+			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE)) {
+				releaseFileValidators.add(new SnomedMRCMDomainRefSetValidator(configuration, url, this));
+			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
+				releaseFileValidators.add(new SnomedMRCMModuleScopeRefSetValidator(configuration, url, this));
+			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID)) {
+				if (headerElements.contains(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
+					releaseFileValidators.add(new SnomedMRCMAttributeDomainRefSetValidator(configuration, url, this));
+				} else if (headerElements.contains(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT)) {
+					releaseFileValidators.add(new SnomedMRCMAttributeRangeRefSetValidator(configuration, url, this));
+				}
 			} else {
 				logger.warn("Couldn't determine reference set type for file '" + configuration.getMappedName(url.getPath()) + "', not validating.");
 			}

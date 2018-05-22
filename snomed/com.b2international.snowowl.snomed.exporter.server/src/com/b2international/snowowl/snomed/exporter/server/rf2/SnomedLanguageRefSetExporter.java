@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class SnomedLanguageRefSetExporter extends AbstractSnomedCoreExporter<Sno
 	public String getFileName() {
 		return new StringBuilder("der2")
 				.append('_')
-				.append(SnomedRfFileNameBuilder.getPrefix(SnomedRefSetType.LANGUAGE, false))
+				.append(SnomedRfFileNameBuilder.getPrefix(SnomedRefSetType.LANGUAGE))
 				.append("Refset")
 				.append('_')
 				.append("Language")

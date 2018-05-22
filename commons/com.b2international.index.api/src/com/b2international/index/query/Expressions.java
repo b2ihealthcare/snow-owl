@@ -25,6 +25,7 @@ import java.util.Map;
 
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -163,6 +164,11 @@ public class Expressions {
 
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
 		return new IntSetPredicate(field, values);
+	}
+	
+	public static Expression matchAnyEnum(String field, Iterable<? extends Enum<?>> values) {
+		final Iterable<String> names = Iterables.transform(values, Enum::name);
+		return matchAny(field, names);
 	}
 	
 	public static Expression matchAny(String field, Iterable<String> values) {

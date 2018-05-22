@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
-	
-	// FIXME always false, clients should specify the value
-	private boolean includeMapTargetDescription = false; 
 	
 	//the modules to export
 	private Set<String> moduleIds;
@@ -106,11 +103,6 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	@Override
 	public void setEndEffectiveTime(Date endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
-	}
-	
-	@Override
-	public boolean includeMapTargetDescription() {
-		return includeMapTargetDescription;
 	}
 	
 	@Override

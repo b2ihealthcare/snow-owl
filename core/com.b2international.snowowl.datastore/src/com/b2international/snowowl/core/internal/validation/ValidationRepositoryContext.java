@@ -37,6 +37,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.3
@@ -46,6 +47,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	// actual raw mapping changes
 	private final Map<String, Object> newObjects = newHashMap();
 	private final Multimap<Class<?>, String> objectsToDelete = HashMultimap.create();
+	
 	
 	// higher level aggregated changes
 	
@@ -73,6 +75,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	
 	void commit() {
 		if (!newObjects.isEmpty() || !objectsToDelete.isEmpty()) {
+			final Set<String> ruleIdsAffectedByDeletion = Sets.newHashSet();
 			service(ValidationRepository.class).write(writer -> {
 				writer.putAll(newObjects);
 				
@@ -105,6 +108,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 				if (!removeFromWhitelist.isEmpty()) {
 					ExpressionBuilder filter = Expressions.builder();
 					for (String ruleId : removeFromWhitelist.keySet()) {
+						ruleIdsAffectedByDeletion.add(ruleId);
 						filter.should(Expressions.builder()
 							.filter(Expressions.exactMatch(ValidationIssue.Fields.RULE_ID, ruleId))
 							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, removeFromWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
@@ -122,22 +126,24 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 			});
 			
 			if (!newObjects.isEmpty()) {
-				// TODO refactor notification validation support
 				final Set<String> addedWhiteLists = newHashSet();
+				final Set<String> affectedRuleIds = newHashSet();
 				newObjects.forEach((id, doc) -> {
 					if (doc instanceof ValidationWhiteList) {
+						ValidationWhiteList whitelistedDoc = (ValidationWhiteList) doc;
+						affectedRuleIds.add(whitelistedDoc.getRuleId());
 						addedWhiteLists.add(id);
 					}
 				});
 				if (!addedWhiteLists.isEmpty()) {
-					WhiteListNotification.added(addedWhiteLists).publish(service(IEventBus.class));
+					WhiteListNotification.added(addedWhiteLists, affectedRuleIds).publish(service(IEventBus.class));
 				}
 			}
 			
 			if (!objectsToDelete.isEmpty()) {
 				final Set<String> removedWhiteLists = ImmutableSet.copyOf(objectsToDelete.get(ValidationWhiteList.class));
 				if (!removedWhiteLists.isEmpty()) {
-					WhiteListNotification.removed(removedWhiteLists).publish(service(IEventBus.class));
+					WhiteListNotification.removed(removedWhiteLists, ruleIdsAffectedByDeletion).publish(service(IEventBus.class));
 				}
 			}
 		}

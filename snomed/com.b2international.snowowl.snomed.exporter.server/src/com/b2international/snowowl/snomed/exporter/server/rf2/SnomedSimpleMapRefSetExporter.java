@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,19 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import static com.google.common.base.Strings.nullToEmpty;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
-import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
 
 /**
- * SNOMED CT simple map type reference set exporter (optionally with map target description).
+ * SNOMED CT simple map type reference set exporter.
  */
 public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 
-	private final boolean includeMapTargetDescription;
-	
-	public SnomedSimpleMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final boolean includeMapTargetDescription, 
-			final RevisionSearcher revisionSearcher) {
+	public SnomedSimpleMapRefSetExporter(final SnomedExportContext exportContext, SnomedReferenceSet refset, final RevisionSearcher revisionSearcher) {
 		super(exportContext, refset, revisionSearcher);
-		this.includeMapTargetDescription = includeMapTargetDescription;
-	}
-	
-	@Override
-	public String getFileName() {
-		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), getRefsetName(), getRefset(), includeMapTargetDescription);
 	}
 
 	@Override
@@ -48,17 +36,11 @@ public class SnomedSimpleMapRefSetExporter extends SnomedRefSetExporter {
 		sb.append(super.convertToString(doc));
 		sb.append(HT);
 		sb.append(doc.getMapTarget());
-		if (includeMapTargetDescription) {
-			sb.append(HT);
-			sb.append(nullToEmpty(doc.getMapTargetDescription()));
-		}
 		return sb.toString();
 	}
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return includeMapTargetDescription 
-			? SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION
-			: SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+		return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
 	}
 }

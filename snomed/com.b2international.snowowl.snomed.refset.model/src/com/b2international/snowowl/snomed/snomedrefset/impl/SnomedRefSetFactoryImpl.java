@@ -1,12 +1,12 @@
-/*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+/**
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,31 +15,16 @@
  */
 package com.b2international.snowowl.snomed.snomedrefset.impl;
 
+import com.b2international.snowowl.snomed.snomedrefset.*;
+
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.impl.EFactoryImpl;
-import org.eclipse.emf.ecore.plugin.EcorePlugin;
 
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
+import org.eclipse.emf.ecore.impl.EFactoryImpl;
+
+import org.eclipse.emf.ecore.plugin.EcorePlugin;
 
 /**
  * <!-- begin-user-doc -->
@@ -99,6 +84,12 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 			case SnomedRefSetPackage.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER: return (EObject)createSnomedConcreteDataTypeRefSetMember();
 			case SnomedRefSetPackage.SNOMED_ASSOCIATION_REF_SET_MEMBER: return (EObject)createSnomedAssociationRefSetMember();
 			case SnomedRefSetPackage.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER: return (EObject)createSnomedModuleDependencyRefSetMember();
+			case SnomedRefSetPackage.SNOMED_ANNOTATION_REF_SET_MEMBER: return (EObject)createSnomedAnnotationRefSetMember();
+			case SnomedRefSetPackage.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER: return (EObject)createSnomedOWLExpressionRefSetMember();
+			case SnomedRefSetPackage.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER: return (EObject)createSnomedMRCMDomainRefSetMember();
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER: return (EObject)createSnomedMRCMAttributeDomainRefSetMember();
+			case SnomedRefSetPackage.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER: return (EObject)createSnomedMRCMAttributeRangeRefSetMember();
+			case SnomedRefSetPackage.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER: return (EObject)createSnomedMRCMModuleScopeRefSetMember();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -276,6 +267,66 @@ public class SnomedRefSetFactoryImpl extends EFactoryImpl implements SnomedRefSe
 	public SnomedModuleDependencyRefSetMember createSnomedModuleDependencyRefSetMember() {
 		SnomedModuleDependencyRefSetMemberImpl snomedModuleDependencyRefSetMember = new SnomedModuleDependencyRefSetMemberImpl();
 		return snomedModuleDependencyRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedAnnotationRefSetMember createSnomedAnnotationRefSetMember() {
+		SnomedAnnotationRefSetMemberImpl snomedAnnotationRefSetMember = new SnomedAnnotationRefSetMemberImpl();
+		return snomedAnnotationRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedOWLExpressionRefSetMember createSnomedOWLExpressionRefSetMember() {
+		SnomedOWLExpressionRefSetMemberImpl snomedOWLExpressionRefSetMember = new SnomedOWLExpressionRefSetMemberImpl();
+		return snomedOWLExpressionRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedMRCMDomainRefSetMember createSnomedMRCMDomainRefSetMember() {
+		SnomedMRCMDomainRefSetMemberImpl snomedMRCMDomainRefSetMember = new SnomedMRCMDomainRefSetMemberImpl();
+		return snomedMRCMDomainRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedMRCMAttributeDomainRefSetMember createSnomedMRCMAttributeDomainRefSetMember() {
+		SnomedMRCMAttributeDomainRefSetMemberImpl snomedMRCMAttributeDomainRefSetMember = new SnomedMRCMAttributeDomainRefSetMemberImpl();
+		return snomedMRCMAttributeDomainRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedMRCMAttributeRangeRefSetMember createSnomedMRCMAttributeRangeRefSetMember() {
+		SnomedMRCMAttributeRangeRefSetMemberImpl snomedMRCMAttributeRangeRefSetMember = new SnomedMRCMAttributeRangeRefSetMemberImpl();
+		return snomedMRCMAttributeRangeRefSetMember;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public SnomedMRCMModuleScopeRefSetMember createSnomedMRCMModuleScopeRefSetMember() {
+		SnomedMRCMModuleScopeRefSetMemberImpl snomedMRCMModuleScopeRefSetMember = new SnomedMRCMModuleScopeRefSetMemberImpl();
+		return snomedMRCMModuleScopeRefSetMember;
 	}
 
 	/**

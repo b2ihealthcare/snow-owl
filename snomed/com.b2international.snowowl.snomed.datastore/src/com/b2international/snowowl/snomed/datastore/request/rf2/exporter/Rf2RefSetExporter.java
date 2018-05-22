@@ -26,9 +26,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.b2international.commons.BooleanUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -88,25 +91,11 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected final Path getRelativeDirectory() {
-		switch (refSetType) {
-			case SIMPLE: //$FALL-THROUGH$
-			case ASSOCIATION: //$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
-			case QUERY: //$FALL-THROUGH$
-			case ATTRIBUTE_VALUE:
-				return Paths.get(releaseType.toString(), "Refset", "Content");
-			case EXTENDED_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP: //$FALL-THROUGH$
-			case COMPLEX_MAP:
-				return Paths.get(releaseType.toString(), "Refset", "Map");
-			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: 
-				return Paths.get(releaseType.toString(), "Refset", "Metadata");
-			case LANGUAGE: 
-				return Paths.get(releaseType.toString(), "Refset", "Language");
-			default: 
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
+		SnomedRF2Folder folder = SnomedRefSetUtil.REFSET_TYPE_TO_FOLDER_MAP.get(refSetType);
+		if (folder != null) {
+			return Paths.get(releaseType.toString(), SnomedRF2Folder.REFSET.getDisplayName(), folder.getDisplayName());
 		}
+		throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 	}
 
 	@Override
@@ -124,8 +113,10 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		switch (refSetType) {
 			case SIMPLE: 
 				return "";
-			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
-			case LANGUAGE: //$FALL-THROUGH$
+			case ATTRIBUTE_VALUE:
+				return "c";
+			case LANGUAGE:
+				return "c";
 			case ASSOCIATION:
 				return "c";
 			case CONCRETE_DATA_TYPE: 
@@ -136,12 +127,25 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return "ci";
 			case SIMPLE_MAP: 
 				return "s";
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				return "ss";
 			case COMPLEX_MAP: 
 				return "iisssc";
 			case EXTENDED_MAP: 
 				return "iissscc";
 			case MODULE_DEPENDENCY: 
 				return "ss";
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return "s";
+			case MRCM_DOMAIN:
+				return "sssssss";
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return "cisscc";
+			case MRCM_ATTRIBUTE_RANGE:
+				return "sscc";
+			case MRCM_MODULE_SCOPE:
+				return "c";
 			default: 
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 		}
@@ -159,12 +163,25 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		switch (refSetType) {
 			case CONCRETE_DATA_TYPE:
 				return "ConcreteDomainReferenceSet";
+			case OWL_AXIOM:
+				return "OWLAxiom";
+			case OWL_ONTOLOGY:
+				return "OWLOntology";
+			case MRCM_DOMAIN:
+				return "MRCMDomain";
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return "MRCMAttributeDomain";
+			case MRCM_ATTRIBUTE_RANGE:
+				return "MRCMAttributeRange";
+			case MRCM_MODULE_SCOPE:
+				return "MRCMModuleScope";
 			case ASSOCIATION: //$FALL-THROUGH$
 			case SIMPLE: //$FALL-THROUGH$
 			case QUERY: //$FALL-THROUGH$
 			case ATTRIBUTE_VALUE: //$FALL-THROUGH$
 			case EXTENDED_MAP: //$FALL-THROUGH$
 			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION: //$FALL-THROUGH$
 			case COMPLEX_MAP: //$FALL-THROUGH$
 			case DESCRIPTION_TYPE: //$FALL-THROUGH$
 			case MODULE_DEPENDENCY: //$FALL-THROUGH$ 
@@ -234,12 +251,25 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 				return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
 			case SIMPLE_MAP: 
 				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
 			case COMPLEX_MAP: 
 				return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
 			case EXTENDED_MAP: 
 				return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
 			case MODULE_DEPENDENCY: 
 				return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return SnomedRf2Headers.OWL_EXPRESSION_HEADER;
+			case MRCM_DOMAIN:
+				return SnomedRf2Headers.MRCM_DOMAIN_HEADER;
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return SnomedRf2Headers.MRCM_ATTRIBUTE_DOMAIN_HEADER;
+			case MRCM_ATTRIBUTE_RANGE:
+				return SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER;
+			case MRCM_MODULE_SCOPE:
+				return SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER;
 			default: 
 				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
 		}
@@ -259,6 +289,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	protected Stream<List<String>> getMappedStream(final SnomedReferenceSetMembers results, 
 			final RepositoryContext context, 
 			final String branch) {
@@ -313,6 +344,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return "";
 		} else if (object instanceof SnomedCoreComponent) {
 			return ((SnomedCoreComponent) object).getId();
+		} else if (object instanceof Boolean) {
+			return BooleanUtils.toString((Boolean) object);
 		} else {
 			return String.valueOf(object);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestReq
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createConceptRequestBody;
+import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSet;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT;
@@ -28,6 +29,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,17 +67,24 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ 	SnomedRefSetType.ASSOCIATION		}, 
-			{ 	SnomedRefSetType.ATTRIBUTE_VALUE	}, 
+			{ 	SnomedRefSetType.ASSOCIATION					}, 
+			{ 	SnomedRefSetType.ATTRIBUTE_VALUE				}, 
 			//  Concrete data type reference sets are tested separately 
-			{ 	SnomedRefSetType.COMPLEX_MAP		},
-			{ 	SnomedRefSetType.DESCRIPTION_TYPE	}, 
-			{ 	SnomedRefSetType.EXTENDED_MAP		},
-			{ 	SnomedRefSetType.LANGUAGE			},
-			{ 	SnomedRefSetType.MODULE_DEPENDENCY	},
-			{ 	SnomedRefSetType.QUERY				}, 
-			{ 	SnomedRefSetType.SIMPLE				}, 
-			{ 	SnomedRefSetType.SIMPLE_MAP			}, 
+			{ 	SnomedRefSetType.COMPLEX_MAP					},
+			{ 	SnomedRefSetType.DESCRIPTION_TYPE				}, 
+			{ 	SnomedRefSetType.EXTENDED_MAP					},
+			{ 	SnomedRefSetType.LANGUAGE						},
+			{ 	SnomedRefSetType.MODULE_DEPENDENCY				},
+			{ 	SnomedRefSetType.QUERY							}, 
+			{ 	SnomedRefSetType.SIMPLE							}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP						}, 
+			{ 	SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION	}, 
+			{ 	SnomedRefSetType.OWL_AXIOM						},
+			{ 	SnomedRefSetType.OWL_ONTOLOGY					},
+			{ 	SnomedRefSetType.MRCM_DOMAIN					},
+			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN			},
+			{ 	SnomedRefSetType.MRCM_ATTRIBUTE_RANGE			},
+			{ 	SnomedRefSetType.MRCM_MODULE_SCOPE				},
 		});
 	}
 
@@ -87,7 +96,7 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void acceptValidRequest() {
-		final String parentConceptId = SnomedRefSetUtil.getConceptId(refSetType);
+		final String parentConceptId = SnomedRefSetUtil.getParentConceptId(refSetType);
 		for (String referencedComponentType : RefSetSupport.getSupportedReferencedComponentTypes(refSetType)) {
 
 			IBranchPath subPath = BranchPathUtils.createPath(branchPath, Iterables.getLast(SPLITTER.split(referencedComponentType)));
@@ -103,6 +112,12 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 		}
 	}
 
+	@Test
+	public void createWithExistingIdentifierConcept() {
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(refSetType));
+		assertEquals(newIdentifierConceptId, createNewRefSet(branchPath, refSetType, newIdentifierConceptId));
+	}
+	
 	@Test
 	public void rejectInvalidParent() {
 		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
@@ -143,5 +158,4 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 
 		return createComponent(refSetPath, SnomedComponentType.REFSET, refSetRequestBody);
 	}
-
 }

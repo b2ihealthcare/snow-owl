@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,12 @@ public enum ComponentImportType {
 	EXTENDED_CONCRETE_DOMAIN_REFSET("concrete domain reference set member"), // XXX: display name intentionally duplicated
 	EXTENDED_MAP_TYPE_REFSET("extended map type reference set member"),
 	TERMINOLOGY_REGISTRY("terminology registry"),
-	MODULE_DEPENDENCY_REFSET("module dependency reference set member");
+	MODULE_DEPENDENCY_REFSET("module dependency reference set member"),
+	OWL_EXPRESSION_REFSET("OWL expression reference set member"),
+	MRCM_DOMAIN_REFSET("MRCM domain refset member"),
+	MRCM_ATTRIBUTE_DOMAIN_REFSET("MRCM attribute domain refset member"),
+	MRCM_ATTRIBUTE_RANGE_REFSET("MRCM attribute range refset member"),
+	MRCM_MODULE_SCOPE_REFSET("MRCM module scope refset member");
 	
 	private final String displayName;
 

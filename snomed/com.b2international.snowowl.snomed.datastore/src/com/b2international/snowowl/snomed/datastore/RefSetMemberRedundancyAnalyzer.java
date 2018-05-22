@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.QUERY;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.unmodifiableSet;
@@ -96,7 +95,7 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 		}
 		
 		//no member redundancy check is required for either SNOMED CT simple map type or SNOMED CT complex map type reference sets.
-		if (isMappingType(refSet)) {
+		if (SnomedRefSetUtil.isMapping(refSet.getType())) {
 			return ReferencedComponentIdSet.createWithoutRedundantMembers(componentIds);
 		}
 		
@@ -185,21 +184,6 @@ public abstract class RefSetMemberRedundancyAnalyzer {
 	/*returns with the new reference set members from the CDO view*/
 	private static Set<SnomedRefSetMember> getNewMembers(final CDOView view) {
 		return Sets.newHashSet(ComponentUtils2.getNewObjects(view, SnomedRefSetMember.class));
-	}
-
-	/*returns true if the reference set is either complex or simple map type*/
-	private static boolean isMappingType(final SnomedRegularRefSet refSet) {
-		return isSimplyMapType(refSet) || isComplexMapType(refSet);
-	}
-
-	/*returns true if the specified reference set is a complex map type*/
-	private static boolean isComplexMapType(final SnomedRegularRefSet refSet) {
-		return SnomedRefSetUtil.isComplexMapping(refSet.getType());
-	}
-
-	/*returns true if the reference set is a simple map type*/
-	private static boolean isSimplyMapType(final SnomedRegularRefSet refSet) {
-		return SIMPLE_MAP.equals(refSet.getType());
 	}
 
 	/**

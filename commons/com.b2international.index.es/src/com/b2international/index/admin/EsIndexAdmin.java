@@ -163,9 +163,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			checkState(fieldType != Object.class, "Dynamic mappings are not supported with Object type fields");
 			if (Map.class.isAssignableFrom(fieldType)) {
-				// allow dynamic mappings for dynamic objects like field using Map or Object
+				// allow dynamic mappings for dynamic objects like field using Map
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");
 				prop.put("dynamic", "true");
@@ -184,11 +183,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
 				
 				if (textFields.isEmpty() && keywordFields.isEmpty()) {
-					final String esType = toEsType(fieldType);
-					if (!Strings.isNullOrEmpty(esType)) {
-						prop.put("type", esType);
-						properties.put(property, prop);
-					}
+					addFieldProperties(prop, fieldType);
+					properties.put(property, prop);
 				} else {
 					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
 					
@@ -268,23 +264,26 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return ImmutableMap.of("properties", properties);
 	}
 
-	private String toEsType(Class<?> fieldType) {
+	private void addFieldProperties(Map<String, Object> fieldProperties, Class<?> fieldType) {
 		if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
-			return "keyword";
+			fieldProperties.put("type", "keyword");
 		} else if (NumericClassUtils.isFloat(fieldType)) {
-			return "float";
+			fieldProperties.put("type", "float");
 		} else if (NumericClassUtils.isInt(fieldType)) {
-			return "integer";
+			fieldProperties.put("type", "integer");
 		} else if (NumericClassUtils.isShort(fieldType)) {
-			return "short";
+			fieldProperties.put("type", "short");
 		} else if (NumericClassUtils.isDate(fieldType) || NumericClassUtils.isLong(fieldType)) {
-			return "long";
+			fieldProperties.put("type", "long");
 		} else if (Boolean.class.isAssignableFrom(Primitives.wrap(fieldType))) {
-			return "boolean";
+			fieldProperties.put("type", "boolean");
 		} else if (fieldType.isAnnotationPresent(IP.class)) {
-			return "ip";
+			fieldProperties.put("type", "ip");
+		} else {
+			// Any other type will result in a sub-object that only appears in _source
+			fieldProperties.put("type", "object");
+			fieldProperties.put("enabled", false);
 		}
-		return null;
 	}
 
 	@Override

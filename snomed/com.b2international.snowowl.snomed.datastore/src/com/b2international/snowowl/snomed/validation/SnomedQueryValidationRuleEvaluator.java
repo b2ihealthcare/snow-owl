@@ -138,6 +138,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final class SnomedConceptValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedConceptSearchRequestBuilder, SnomedConcepts, SnomedConcept> {
 		
 		@JsonProperty private String ecl;
+		@JsonProperty private String parent;
+		@JsonProperty private String statedParent;
 		@JsonProperty private String definitionStatus;
 		
 		@Override
@@ -148,6 +150,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedConceptSearchRequestBuilder prepareSearch(SnomedConceptSearchRequestBuilder req) {
 			return super.prepareSearch(req)
+					.filterByParent(parent)
+					.filterByStatedParent(statedParent)
 					.filterByDefinitionStatus(definitionStatus)
 					.filterByEcl(ecl);
 		}

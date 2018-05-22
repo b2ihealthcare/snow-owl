@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ package com.b2international.commons;
  */
 public final class BooleanUtils {
 
+	public static final String YES = "yes";
+	public static final String NO = "no";
+	
 	/**
 	 * Converts a primitive integer to boolean by assuming 0 is false and everything else (1) is true.
 	 * 
@@ -70,17 +73,30 @@ public final class BooleanUtils {
 	}
 	
 	/**
-	 * Converts a {@link String} object to {@link Boolean} by assuming '0' is false and '1' is true. If the parameter is
-	 * <code>null</code> or something else than ['0', '1'] then it returns <code>null</code>.
+	 * Converts a {@link String} object to {@link Boolean} by assuming the following mappings:
+	 * <p>
+	 * '0' -> false, 'no' -> false, '1' -> true, 'yes' -> true
+	 * </p>
+	 * Equality is checked in a case insensitive manner. If the parameter is <code>null</code> or something else than ['0', '1', 'yes', 'no'] then it
+	 * returns <code>null</code>.
 	 * 
 	 * @param value
-	 * @return <code>null</code> if the parameter is <code>null</code> or the value is neither '0' nor '1', <code>true</code> or <code>false</code> otherwise.
+	 * @return <code>null</code> if the parameter is <code>null</code> or the value is not in '0', '1', 'yes', 'no', <code>true</code> or
+	 *         <code>false</code> otherwise.
 	 */
 	public static Boolean valueOf(String value) {
+		
 		if (null == value) {
 			return null;
 		}
-		return "0".equals(value) ? Boolean.FALSE : "1".equals(value) ? Boolean.TRUE : null;
+		
+		if ("1".equals(value) || YES.equalsIgnoreCase(value)) {
+			return Boolean.TRUE;
+		} else if ("0".equals(value) || NO.equalsIgnoreCase(value)) {
+			return Boolean.FALSE;
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -105,5 +121,29 @@ public final class BooleanUtils {
 	 */
 	public static String toString(boolean bool) {
 		return bool ? "1" : "0";
+	}
+	
+	/**
+	 * Converts a {@link Boolean} object to {@link String} by assuming 'no' is false and 'yes' is true. If the parameter is <code>null</code> then it
+	 * returns <code>null</code>.
+	 * 
+	 * @param bool
+	 * @return <code>null</code> if the parameter is <code>null</code>, 'no' if false, 'yes' if true.
+	 */
+	public static String toYesOrNoString(Boolean bool) {
+		if (null == bool) {
+			return null;
+		}
+		return toYesOrNoString(bool.booleanValue());
+	}
+	
+	/**
+	 * Converts a primitive boolean to {@link String} by assuming 'no' is false and 'yes' is true.
+	 * 
+	 * @param bool
+	 * @return 'no' if the parameter is false, 'yes' otherwise.
+	 */
+	public static String toYesOrNoString(boolean bool) {
+		return bool ? YES : NO;
 	}
 }

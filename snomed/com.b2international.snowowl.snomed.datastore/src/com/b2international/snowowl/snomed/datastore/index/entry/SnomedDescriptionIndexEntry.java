@@ -190,6 +190,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
 		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
+		public static final String EXACT_TERM = Fields.TERM + ".exact";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
