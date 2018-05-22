@@ -315,11 +315,9 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 					refSetIds,
 					relationshipKeys);
 
-			doc.setBranchPath(branchPath);
-			doc.setCommitTimestamp(commitTimestamp);
+			doc.setCreated(created);
+			doc.setRevised(revised);
 			doc.setStorageKey(storageKey);
-			doc.setReplacedIns(replacedIns);
-			doc.setSegmentId(segmentId);
 
 			return doc;
 		}

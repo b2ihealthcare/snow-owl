@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 
