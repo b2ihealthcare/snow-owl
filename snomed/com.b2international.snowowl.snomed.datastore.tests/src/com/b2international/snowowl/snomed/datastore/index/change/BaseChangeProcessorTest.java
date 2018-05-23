@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -74,7 +75,9 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 4.7
@@ -82,6 +85,7 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
+	private final AtomicLong storageKeys = new AtomicLong();
 	// fixtures
 	private final Map<String, Concept> conceptsById = newHashMap();
 	private final Map<String, SnomedRefSet> refSetsById = newHashMap();
@@ -89,7 +93,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	private CDOView view = mock(CDOView.class);
 	private Collection<CDOObject> newComponents = newHashSet();
 	private Collection<CDOObject> dirtyComponents = newHashSet();
-	private Map<CDOID, EClass> detachedComponents = newHashMap();
+	private Multimap<EClass, String> detachedComponents = HashMultimap.create();
 	private Map<CDOID, CDORevisionDelta> revisionDeltas = newHashMap();
 	
 	@Override
@@ -109,6 +113,10 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	
+	protected final long nextStorageKey() {
+		return storageKeys.getAndIncrement();
+	}
+	
 	protected final void registerExistingObject(CDOObject object) {
 		when(view.getObject(eq(object.cdoID()))).thenReturn(object);
 		when(view.getObject(eq(object.cdoID()), anyBoolean())).thenReturn(object);
@@ -122,8 +130,8 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		dirtyComponents.add(object);
 	}
 	
-	protected final void registerDetached(CDOID storageKey, EClass type) {
-		detachedComponents.put(storageKey, type);
+	protected final void registerDetached(EClass type, String componentId) {
+		detachedComponents.put(type, componentId);
 	}
 	
 	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {

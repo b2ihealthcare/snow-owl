@@ -47,7 +47,6 @@ import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -177,7 +176,7 @@ public final class ReasonerTaxonomyBuilder {
 			final Query<String[]> query = Query.select(String[].class)
 					.from(SnomedRelationshipIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0
-							Revision.STORAGE_KEY, // 1
+							SnomedRelationshipIndexEntry.Fields.STORAGE_KEY, // 1
 							SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 2
 							SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
 							SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4 

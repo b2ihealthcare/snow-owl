@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
@@ -48,7 +47,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry.builder(relationship).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -63,7 +62,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry.builder(relationship).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -71,8 +70,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedRelationship() throws Exception {
-		final CDOID deletedRelationshipStorageKey = nextStorageKeyAsCDOID();
-		registerDetached(deletedRelationshipStorageKey, SnomedPackage.Literals.RELATIONSHIP);
+		registerDetached(SnomedPackage.Literals.RELATIONSHIP, nextId());
 		
 		process(processor);
 		
@@ -99,7 +97,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -119,7 +117,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 					.activeMemberOf(ImmutableList.of(referringRefSetId))
 					.build());
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
-		registerDetached(member.cdoID(), member.eClass());
+		registerDetached(member.eClass(), member.getUuid());
 		
 		process(processor);
 		
@@ -127,7 +125,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.builder(relationship)
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -153,7 +151,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member1).storageKey(CDOIDUtil.getLong(member1.cdoID())).build());
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member2).storageKey(CDOIDUtil.getLong(member2.cdoID())).build());
 		
-		registerDetached(member1.cdoID(), member1.eClass());
+		registerDetached(member1.eClass(), member1.getUuid());
 		
 		process(processor);
 		
@@ -163,7 +161,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());

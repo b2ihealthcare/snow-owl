@@ -20,9 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
-import java.util.Map.Entry;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.junit.Test;
 
@@ -55,7 +53,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -76,7 +74,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -97,7 +95,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -127,7 +125,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		description.getLanguageRefSetMembers().remove(acceptableMember);
 		registerDirty(description);
 		// delete the acceptable member of the description
-		registerDetached(acceptableMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER, acceptableMember.getUuid());
 		
 		process(processor);
 		
@@ -135,7 +133,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		// XXX the deleted member handled by another processor
 		assertEquals(0, processor.getNewMappings().size());
@@ -166,7 +164,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		description.getLanguageRefSetMembers().remove(preferredMember);
 		registerDirty(description);
 		// delete the acceptable member of the description
-		registerDetached(preferredMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER, preferredMember.getUuid());
 		
 		process(processor);
 		
@@ -174,7 +172,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
 				.build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		// XXX the deleted member handled by another processor
 		assertEquals(0, processor.getNewMappings().size());
@@ -193,7 +191,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -221,7 +219,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		// description doc must be reindexed with change acceptabilityMap
 		final SnomedDescriptionIndexEntry expectedDoc = SnomedDescriptionIndexEntry.builder(description).
 				acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED).build();
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -229,17 +227,16 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 
 	@Test
 	public void deleteDescription() throws Exception {
-		final CDOID storageKey = nextStorageKeyAsCDOID();
-		registerDetached(storageKey, SnomedPackage.Literals.DESCRIPTION);
+		String id = nextId();
+		registerDetached(SnomedPackage.Literals.DESCRIPTION, id);
 		
 		process(processor);
 		
 		assertThat(processor.getNewMappings()).isEmpty();
 		assertThat(processor.getChangedMappings()).isEmpty();
 		assertEquals(1, processor.getDeletions().size());
-		final Entry<Class<? extends Revision>, Long> deletionEntry = Iterables.getOnlyElement(processor.getDeletions().entries());
-		assertEquals(SnomedDescriptionIndexEntry.class, deletionEntry.getKey());
-		assertEquals(CDOIDUtil.getLong(storageKey), deletionEntry.getValue().longValue());
+		final String deletedId = Iterables.getOnlyElement(processor.getDeletions().get(SnomedDescriptionIndexEntry.class));
+		assertEquals(id, deletedId);
 	}
 	
 	@Test
@@ -259,7 +256,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -285,7 +282,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -303,7 +300,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description).storageKey(CDOIDUtil.getLong(description.cdoID())).build());
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
 		
-		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, member.getUuid());
 		
 		process(processor);
 		
@@ -311,7 +308,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.builder(description)
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -336,7 +333,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member1).storageKey(CDOIDUtil.getLong(member1.cdoID())).build());
 		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member2).storageKey(CDOIDUtil.getLong(member2.cdoID())).build());
 		
-		registerDetached(member1.cdoID(), member1.eClass());
+		registerDetached(member1.eClass(), member1.getUuid());
 		
 		process(processor);
 		
@@ -346,7 +343,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringRefSetId))
 				.build();
 		
-		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision currentDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, currentDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());

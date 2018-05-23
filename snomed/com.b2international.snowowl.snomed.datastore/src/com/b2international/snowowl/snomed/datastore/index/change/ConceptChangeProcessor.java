@@ -26,24 +26,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -73,6 +67,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 /**
  * @since 4.3
@@ -139,19 +134,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					}
 				}));
 		// collect deleted reference sets
-		final Set<Long> deletedRefSets = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET)));
+		final Collection<String> deletedRefSetIds = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
 		
 		// index new concepts
 		for (final Concept concept : commitChangeSet.getNewComponents(Concept.class)) {
 			final String id = concept.getId();
-			final Builder doc = SnomedConceptDocument.builder().id(id);
+			final Builder doc = SnomedConceptDocument.builder()
+					.storageKey(CDOIDUtil.getLong(concept.cdoID()))
+					.id(id);
 			update(doc, concept, null);
 			SnomedRefSet refSet = newAndDirtyRefSetsById.remove(id);
 			if (refSet != null) {
 				doc.refSet(refSet);
 			}
 			doc.preferredDescriptions(toDescriptionFragments(concept));
-			indexNewRevision(concept.cdoID(), doc.build());
+			indexNewRevision(doc.build());
 		}
 		
 		// collect dirty concepts for reindex
@@ -187,7 +184,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					doc.refSet(refSet);
 				}
 				// clear refset props when deleting refset
-				if (deletedRefSets.contains(currentDoc.getRefSetStorageKey())) {
+				if (deletedRefSetIds.contains(id)) {
 					doc.clearRefSet();
 				}
 				
@@ -210,10 +207,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				if (concept != null) {
-					indexChangedRevision(concept.cdoID(), doc.build());				
+					doc.storageKey(CDOIDUtil.getLong(concept.cdoID()));
 				} else {
-					indexChangedRevision(currentDoc.getStorageKey(), doc.build());
+					doc.storageKey(currentDoc.getStorageKey());
 				}
+				
+				indexChangedRevision(doc.build());
 			}
 		}
 	}
@@ -337,23 +336,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDetachedEdges(), statedTaxonomy.getOldTaxonomy()));
 
 		// collect detached reference sets where the concept itself hasn't been detached
-		Collection<CDOID> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
-		Set<Long> detachedRefSetStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedRefSets));
-		Collection<CDOID> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
-		Set<Long> detachedConceptStorageKeys = ImmutableSet.copyOf(CDOIDUtils.createCdoIdToLong(detachedConcepts));
+		Set<String> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
+		Set<String> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
 		
-		final Query<String> query = Query.select(String.class)
-				.from(SnomedConceptDocument.class)
-				.fields(RevisionDocument.Fields.ID)
-				.where(Expressions.builder()
-						.filter(SnomedConceptDocument.Expressions.refSetStorageKeys(detachedRefSetStorageKeys))
-						.mustNot(Expressions.matchAnyLong(Revision.STORAGE_KEY, detachedConceptStorageKeys))
-						.build())
-				.limit(detachedRefSets.size())
-				.build();
-
-		final Hits<String> hits = searcher.search(query);
-		dirtyConceptIds.addAll(hits.getHits());
+		dirtyConceptIds.addAll(Sets.difference(detachedRefSets, detachedConcepts));
 		
 		// remove all new concept IDs
 		dirtyConceptIds.removeAll(FluentIterable.from(commitChangeSet.getNewComponents(Concept.class)).transform(Concept::getId).toSet());

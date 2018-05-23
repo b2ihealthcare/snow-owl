@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
+
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 
@@ -39,13 +40,11 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER));
 		
 		for (SnomedRefSetMember member : commitChangeSet.getNewComponents(SnomedRefSetMember.class)) {
-			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
-			indexNewRevision(member.cdoID(), doc.build());
+			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
 		}
 		
 		for (SnomedRefSetMember member : commitChangeSet.getDirtyComponents(SnomedRefSetMember.class)) {
-			final Builder doc = SnomedRefSetMemberIndexEntry.builder(member);
-			indexChangedRevision(member.cdoID(), doc.build());
+			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
 		}
 	}
 	

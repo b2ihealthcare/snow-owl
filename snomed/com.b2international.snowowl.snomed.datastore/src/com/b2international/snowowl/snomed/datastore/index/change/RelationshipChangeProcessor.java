@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
@@ -64,8 +66,9 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
 		
 		for (Relationship relationship : commitChangeSet.getNewComponents(Relationship.class)) {
-			final Builder doc = SnomedRelationshipIndexEntry.builder(relationship);
-			indexNewRevision(relationship.cdoID(), doc.build());
+			indexNewRevision(SnomedRelationshipIndexEntry.builder(relationship)
+					.storageKey(CDOIDUtil.getLong(relationship.cdoID()))
+					.build());
 		}
 		
 		final Map<String, Relationship> changedRelationshipsById = StreamSupport
@@ -105,7 +108,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 			new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 					.update(doc);
 			
-			indexChangedRevision(currentDoc.getStorageKey(), doc.build());
+			indexChangedRevision(doc.storageKey(currentDoc.getStorageKey()).build());
 		}
 	}
 	

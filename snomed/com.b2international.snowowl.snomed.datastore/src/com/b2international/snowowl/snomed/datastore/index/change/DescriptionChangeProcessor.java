@@ -112,7 +112,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				final long storageKey = CDOIDUtil.getLong(description.cdoID());
 				final Builder doc = SnomedDescriptionIndexEntry.builder(description);
 				processChanges(id, doc, null, acceptabilityChangesByDescription.get(id), referringRefSets);
-				indexNewRevision(storageKey, doc.build());
+				indexNewRevision(doc.storageKey(storageKey).build());
 			} else if (changedDescriptionIds.contains(id)) {
 				final SnomedDescriptionIndexEntry currentDoc = changedDescriptionRevisionsById.get(id);
 				if (currentDoc == null) {
@@ -128,7 +128,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				processChanges(id, doc, currentDoc, acceptabilityChangesByDescription.get(id), referringRefSets);
-				indexChangedRevision(currentDoc.getStorageKey(), doc.build());
+				indexChangedRevision(doc.storageKey(currentDoc.getStorageKey()).build());
 			} else {
 				throw new IllegalStateException(String.format("Description %s is missing from new and dirty maps", id));
 			}
@@ -146,7 +146,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				processChanges(unchangedDescription.getId(), doc, unchangedDescription,
 						acceptabilityChangesByDescription.get(unchangedDescription.getId()),
 						HashMultimap.<String, RefSetMemberChange> create());
-				indexChangedRevision(unchangedDescription.getStorageKey(), doc.build());
+				indexChangedRevision(doc.storageKey(unchangedDescription.getStorageKey()).build());
 			}
 		}
 	}

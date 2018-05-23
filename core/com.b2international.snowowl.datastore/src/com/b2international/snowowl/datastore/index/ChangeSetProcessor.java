@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.Collection;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
@@ -51,20 +51,20 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Map<Long, Revision> getNewMappings();
+	Collection<Revision> getNewMappings();
 	
 	/**
 	 * Returns the new mappings made by this {@link ChangeSetProcessor} on existing documents.
 	 * 
 	 * @return
 	 */
-	Map<Long, Revision> getChangedMappings();
+	Collection<Revision> getChangedMappings();
 
 	/**
 	 * Returns the deletions made by this {@link ChangeSetProcessor}
 	 * 
 	 * @return
 	 */
-	Multimap<Class<? extends Revision>, Long> getDeletions();
+	Multimap<Class<? extends Revision>, String> getDeletions();
 
 }

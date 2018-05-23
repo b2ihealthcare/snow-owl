@@ -38,9 +38,10 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 
 /**
  * An implementation of the {@link ICDOCommitChangeSet} interface.
@@ -52,7 +53,7 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	private final String commitComment;
 	private final Collection<CDOObject> newComponents;
 	private final Collection<CDOObject> dirtyComponents;
-	private final Map<CDOID, EClass> detachedComponents;
+	private final Multimap<EClass, String> detachedComponents;
 	private final Map<CDOID, CDORevisionDelta> revisionDeltas;
 	private final long timestamp;
 	
@@ -61,7 +62,7 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 			final String commitComment,
 			final Collection<CDOObject> newComponents, 
 			final Collection<CDOObject> dirtyComponents, 
-			final Map<CDOID, EClass> detachedComponents, 
+			final Multimap<EClass, String> detachedComponents, 
 			final Map<CDOID, CDORevisionDelta> revisionDeltas, 
 			final long timestamp) {
 		
@@ -75,9 +76,9 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 		this.view = view;
 		this.userId = userId;
 		this.commitComment = commitComment;
-		this.newComponents = ImmutableList.copyOf(newComponents);
-		this.dirtyComponents = ImmutableList.copyOf(dirtyComponents);
-		this.detachedComponents = ImmutableMap.copyOf(detachedComponents);
+		this.newComponents = Collections3.toImmutableList(newComponents);
+		this.dirtyComponents = Collections3.toImmutableList(dirtyComponents);
+		this.detachedComponents = detachedComponents;
 		this.revisionDeltas = ImmutableMap.copyOf(revisionDeltas);
 		this.timestamp = timestamp;
 	}
@@ -95,11 +96,6 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	@Override
 	public Collection<CDOObject> getDirtyComponents() {
 		return dirtyComponents;
-	}
-	
-	@Override
-	public Map<CDOID, EClass> getDetachedComponents() {
-		return detachedComponents;
 	}
 	
 	@Override
@@ -128,25 +124,25 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	}
 	
 	@Override
-	public <T extends CDOObject> Iterable<T> getNewComponents(final Class<T> type) {
+	public <T extends CDOObject> Set<T> getNewComponents(final Class<T> type) {
 		return FluentIterable.from(getNewComponents()).filter(type).toSet();
 	}
 	
 	@Override
-	public <T extends CDOObject> Iterable<T> getDirtyComponents(final Class<T> type) {
+	public <T extends CDOObject> Set<T> getDirtyComponents(final Class<T> type) {
 		return FluentIterable.from(getDirtyComponents()).filter(type).toSet();
 	}
 	
 	@Override
-	public Collection<CDOID> getDetachedComponents(final EClass eClass) {
-		return FluentIterable.from(getDetachedComponents().entrySet())
-				.filter(input -> eClass.isSuperTypeOf(input.getValue()))
-				.transform(input -> input.getKey())
+	public Set<String> getDetachedComponents(final EClass eClass) {
+		return FluentIterable.from(detachedComponents.keySet())
+				.filter(eClass::isSuperTypeOf)
+				.transformAndConcat(detachedComponents::get)
 				.toSet();
 	}
 	
 	@Override
-	public <T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures) {
+	public <T extends CDOObject> Set<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures) {
 		return FluentIterable.from(getDirtyComponents(type))
 			.filter(input -> {
 				final DirtyFeatureDeltaVisitor visitor = new DirtyFeatureDeltaVisitor(allowedFeatures);
@@ -157,7 +153,8 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 				} else {
 					return false;
 				}
-			});
+			})
+			.toSet();
 	}
 	
 	/**

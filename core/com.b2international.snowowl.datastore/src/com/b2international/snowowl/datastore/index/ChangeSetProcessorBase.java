@@ -15,28 +15,11 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDeltaVisitor;
-import org.eclipse.emf.cdo.common.revision.delta.CDOListFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOMoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDORemoveFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOUnsetFeatureDelta;
-import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -46,9 +29,9 @@ import com.google.common.collect.Multimap;
 public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 
 	private final String description;
-	private final Map<Long, Revision> newMappings = newHashMap();
-	private final Map<Long, Revision> changedMappings = newHashMap();
-	private final Multimap<Class<? extends Revision>, Long> deletions = HashMultimap.create();
+	private final Collection<Revision> newMappings = newArrayList();
+	private final Collection<Revision> changedMappings = newArrayList();
+	private final Multimap<Class<? extends Revision>, String> deletions = HashMultimap.create();
 
 	protected ChangeSetProcessorBase(String description) {
 		this.description = description;
@@ -59,38 +42,30 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 		return description;
 	}
 	
-	protected final void indexNewRevision(CDOID storageKey, Revision revision) {
-		indexNewRevision(CDOIDUtil.getLong(storageKey), revision);
+	protected final void indexNewRevision(Revision revision) {
+		newMappings.add(revision);
 	}
 	
-	protected final void indexNewRevision(long storageKey, Revision revision) {
-		newMappings.put(storageKey, revision);
+	protected final void indexChangedRevision(Revision revision) {
+		changedMappings.add(revision);
 	}
 	
-	protected final void indexChangedRevision(CDOID storageKey, Revision revision) {
-		indexChangedRevision(CDOIDUtil.getLong(storageKey), revision);
-	}
-	
-	protected final void indexChangedRevision(long storageKey, Revision revision) {
-		changedMappings.put(storageKey, revision);
-	}
-	
-	protected final void deleteRevisions(Class<? extends Revision> type, Collection<CDOID> storageKeys) {
-		deletions.putAll(type, CDOIDUtils.createCdoIdToLong(storageKeys));
+	protected final void deleteRevisions(Class<? extends Revision> type, Collection<String> keys) {
+		deletions.putAll(type, keys);
 	}
 	
 	@Override
-	public final Map<Long, Revision> getNewMappings() {
+	public final Collection<Revision> getNewMappings() {
 		return newMappings;
 	}
 	
 	@Override
-	public final Map<Long, Revision> getChangedMappings() {
+	public final Collection<Revision> getChangedMappings() {
 		return changedMappings;
 	}
 	
 	@Override
-	public final Multimap<Class<? extends Revision>, Long> getDeletions() {
+	public final Multimap<Class<? extends Revision>, String> getDeletions() {
 		return deletions;
 	}
 	

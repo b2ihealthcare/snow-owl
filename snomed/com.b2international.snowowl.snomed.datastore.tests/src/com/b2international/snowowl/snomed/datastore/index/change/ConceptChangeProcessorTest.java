@@ -92,7 +92,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -112,7 +112,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -136,7 +136,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -159,7 +159,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -187,7 +187,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -216,7 +216,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(synonym.getId(), CDOIDUtil.getLong(synonym.cdoID()), Concepts.SYNONYM, synonym.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -241,7 +241,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -265,7 +265,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -289,7 +289,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -322,7 +322,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -351,7 +351,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = doc(concept).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -410,7 +410,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.SYNONYM, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -445,7 +445,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -481,7 +481,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -517,7 +517,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -544,7 +544,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -576,7 +576,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -620,7 +620,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -629,9 +629,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void deleteLeafConcept() throws Exception {
 		final String conceptId = generateConceptId();
-		final Concept concept = createConcept(conceptId);
+		createConcept(conceptId);
 		
-		registerDetached(concept.cdoID(), SnomedPackage.Literals.CONCEPT);
+		registerDetached(SnomedPackage.Literals.CONCEPT, conceptId);
 		
 		final ConceptChangeProcessor processor = process();
 		
@@ -673,8 +673,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(childConcept);
 		
 		// delete parent concept and its single relationship
-		registerDetached(parentConcept.cdoID(), SnomedPackage.Literals.CONCEPT);
-		registerDetached(childToParentIsa.cdoID(), SnomedPackage.Literals.RELATIONSHIP);
+		registerDetached(SnomedPackage.Literals.CONCEPT, parentId);
+		registerDetached(SnomedPackage.Literals.RELATIONSHIP, childToParentIsa.getId());
 		
 		statedChangedConceptIds.add(parentIdLong);
 		statedChangedConceptIds.add(childIdLong);
@@ -687,7 +687,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// and the child concept needs to be reindexed as child of the invisible ROOT ID
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision newChildRevision = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision newChildRevision = Iterables.getOnlyElement(processor.getChangedMappings());
 		final SnomedConceptDocument expectedChildRevision = doc(childConcept)
 				.iconId(Concepts.NAMESPACE_ROOT)
 				.statedParents(PrimitiveSets.newLongOpenHashSet(namespaceRootLong))
@@ -731,7 +731,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
-		final Revision changedDoc = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision changedDoc = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expectedDoc, changedDoc);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -749,7 +749,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		final SnomedConceptDocument expected = doc(identifierConcept).refSet(refSet).build();
 		assertEquals(1, processor.getNewMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -787,10 +787,10 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void deleteRefSetButKeepIdentifierConcept() throws Exception {
-		final String generateConceptId = generateConceptId();
-		final SnomedRefSet refSet = getRegularRefSet(generateConceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
-		indexRevision(MAIN, doc(createConcept(generateConceptId)).storageKey(nextStorageKey()).refSet(refSet).build());
-		registerDetached(refSet.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET);
+		final String refSetConceptId = generateConceptId();
+		final SnomedRefSet refSet = getRegularRefSet(refSetConceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		indexRevision(MAIN, doc(createConcept(refSetConceptId)).storageKey(nextStorageKey()).refSet(refSet).build());
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET, refSetConceptId);
 		
 		final ConceptChangeProcessor processor = process();
 		
@@ -857,7 +857,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -885,7 +885,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.memberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -913,7 +913,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(ImmutableSet.of(referringMappingReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -950,7 +950,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.memberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -988,7 +988,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -1014,14 +1014,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.storageKey(CDOIDUtil.getLong(member.cdoID()))
 				.build());
 		
-		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, member.getUuid());
 		
 		final ConceptChangeProcessor processor = process();
 		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept).build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -1052,7 +1052,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.storageKey(CDOIDUtil.getLong(member2.cdoID()))
 				.build());
 		
-		registerDetached(member1.cdoID(), member1.eClass());
+		registerDetached(member1.eClass(), member1.getUuid());
 		
 		final ConceptChangeProcessor processor = process();
 		
@@ -1062,7 +1062,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.activeMemberOf(Collections.singleton(referringReferenceSetId))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -1088,14 +1088,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.storageKey(CDOIDUtil.getLong(member.cdoID()))
 				.build());
 		
-		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, member.getUuid());
 		
 		final ConceptChangeProcessor processor = process();
 		
 		// the concept needs to be reindexed with the referring member value
 		final SnomedConceptDocument expected = doc(concept).build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -1127,7 +1127,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// expected index changes, concept should be inactive now
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = doc(concept).active(false).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -1176,7 +1176,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 				.parents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());

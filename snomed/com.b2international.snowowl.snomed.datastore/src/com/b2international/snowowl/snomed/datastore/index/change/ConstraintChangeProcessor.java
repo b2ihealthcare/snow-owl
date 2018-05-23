@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
+
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -67,11 +69,15 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 		}
 		
 		for (AttributeConstraint newConstraint : newConstraints) {
-			indexNewRevision(newConstraint.cdoID(), SnomedConstraintDocument.builder(newConstraint).build());
+			indexNewRevision(SnomedConstraintDocument.builder(newConstraint)
+					.storageKey(CDOIDUtil.getLong(newConstraint.cdoID()))
+					.build());
 		}
 		
 		for (AttributeConstraint changedConstraint : changedConstraints) {
-			indexChangedRevision(changedConstraint.cdoID(), SnomedConstraintDocument.builder(changedConstraint).build());
+			indexChangedRevision(SnomedConstraintDocument.builder(changedConstraint)
+					.storageKey(CDOIDUtil.getLong(changedConstraint.cdoID()))
+					.build());
 		}
 
 		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));

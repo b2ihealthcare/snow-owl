@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -33,7 +32,6 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
-import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -64,22 +62,17 @@ public class DescriptionAcceptabilityChangeProcessor {
 		}
 		
 		// remove dirty inactive (and/or changed in acceptability) members
-		final Iterable<SnomedLanguageRefSetMember> dirtyMembers = commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class);
+		final Set<SnomedLanguageRefSetMember> dirtyMembers = commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class);
 		
-		final Iterable<Long> dirtyMemberStorageKeys = CDOIDUtils.createCdoIdToLong(CDOIDUtils.getIds(dirtyMembers));
-		final Iterable<Long> detachedMemberStorageKeys = CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER));
-		final Map<Long, SnomedRefSetMemberIndexEntry> currentRevisionsByStorageKey = Maps.uniqueIndex(searcher.get(SnomedRefSetMemberIndexEntry.class, Iterables.concat(dirtyMemberStorageKeys, detachedMemberStorageKeys)), new Function<SnomedRefSetMemberIndexEntry, Long>() {
-			@Override
-			public Long apply(SnomedRefSetMemberIndexEntry input) {
-				return input.getStorageKey();
-			}
-		});
+		final Set<String> dirtyMemberIds = dirtyMembers.stream().map(SnomedLanguageRefSetMember::getUuid).collect(Collectors.toSet());
+		final Set<String> detachedMemberIds = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		final Map<String, SnomedRefSetMemberIndexEntry> currentRevisionsByStorageKey = Maps.uniqueIndex(searcher.get(SnomedRefSetMemberIndexEntry.class, Iterables.concat(dirtyMemberIds, detachedMemberIds)), Revision::getId);
 		
 		for (SnomedLanguageRefSetMember member : dirtyMembers) {
 			final String uuid = member.getUuid();
 			final String refSetId = member.getRefSetIdentifierId();
 			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.isActive());
-			final SnomedRefSetMemberIndexEntry before = currentRevisionsByStorageKey.get(CDOIDUtil.getLong(member.cdoID()));
+			final SnomedRefSetMemberIndexEntry before = currentRevisionsByStorageKey.get(member.getUuid());
 			if (before != null) {
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
 				final boolean beforeActive = before.isActive();
@@ -97,8 +90,8 @@ public class DescriptionAcceptabilityChangeProcessor {
 		
 		// remove earlier active detached members
 		
-		for (CDOID cdoid : commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER)) {
-			final SnomedRefSetMemberIndexEntry before = currentRevisionsByStorageKey.get(CDOIDUtil.getLong(cdoid));
+		for (String memberId : commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER)) {
+			final SnomedRefSetMemberIndexEntry before = currentRevisionsByStorageKey.get(memberId);
 			if (before.isActive()) {
 				final String uuid = before.getId();
 				final String refSetId = before.getReferenceSetId();

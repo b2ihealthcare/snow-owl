@@ -53,14 +53,14 @@ public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedConstraintDocument expected = SnomedConstraintDocument.builder(constraint).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	@Test
 	public void detachedDescriptionConstraint() throws Exception {
-		registerDetached(nextStorageKeyAsCDOID(), MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT);
+		registerDetached(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT, nextId());
 		process(processor);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getChangedMappings().size());

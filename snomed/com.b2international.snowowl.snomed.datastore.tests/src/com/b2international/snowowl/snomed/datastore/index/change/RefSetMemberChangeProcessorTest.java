@@ -41,7 +41,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -55,7 +55,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -63,7 +63,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedMember() throws Exception {
-		registerDetached(nextStorageKeyAsCDOID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, nextId());
 		
 		process(processor);
 		
@@ -74,8 +74,8 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedMultipleMembersWithDifferentType() throws Exception {
-		registerDetached(nextStorageKeyAsCDOID(), SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER);
-		registerDetached(nextStorageKeyAsCDOID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER, nextId());
+		registerDetached(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER, nextId());
 		
 		process(processor);
 		

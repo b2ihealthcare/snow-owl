@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,16 @@ package com.b2international.snowowl.snomed.datastore.taxonomy;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.ecore.EClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Component;
@@ -42,8 +38,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 /**
@@ -53,18 +47,6 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
 
-	private static final Function<CDOObject, EClass> GET_ECLASS_FUNCTION = new Function<CDOObject, EClass>() {
-		@Override public EClass apply(CDOObject input) {
-			return input.eClass();
-		}
-	};
-	
-	private static Function<Component, String> GET_SCT_ID_FUNCTION = new Function<Component, String>() {
-		@Override public String apply(final Component component) {
-			return Preconditions.checkNotNull(component, "Component argument cannot be null.").getId();
-		}
-	};
-
 	private final ICDOCommitChangeSet commitChangeSet;
 	private final ISnomedTaxonomyBuilder taxonomyBuilder;
 	private final String characteristicTypeId;
@@ -72,22 +54,6 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 	
 	private SnomedTaxonomyStatus status;
 
-	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, CDOTransaction transaction,
-			ISnomedTaxonomyBuilder taxonomyBuilder, 
-			String characteristicTypeId) {
-		
-		this(searcher, new CDOCommitChangeSet(transaction, 
-						transaction.getSession().getUserID(), 
-						transaction.getCommitComment(), 
-						transaction.getNewObjects().values(), 
-						transaction.getDirtyObjects().values(), 
-						Maps.transformValues(transaction.getDetachedObjects(), GET_ECLASS_FUNCTION), 
-						transaction.getRevisionDeltas(), 
-						-1L),
-				taxonomyBuilder,
-				characteristicTypeId);
-	}
-			
 	public SnomedTaxonomyUpdateRunnable(RevisionSearcher searcher, 
 			ICDOCommitChangeSet commitChangeSet, 
 			ISnomedTaxonomyBuilder taxonomyBuilder, 
@@ -117,16 +83,16 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		
 		final Iterable<Concept> newConcepts = commitChangeSet.getNewComponents(Concept.class);
 		final Iterable<Concept> dirtyConcepts = commitChangeSet.getDirtyComponents(Concept.class);
-		final Iterable<CDOID> deletedConceptStorageKeys = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
+		final Set<String> deletedConceptIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
 		final Iterable<Relationship> newRelationships = commitChangeSet.getNewComponents(Relationship.class);
 		final Iterable<Relationship> dirtyRelationships = commitChangeSet.getDirtyComponents(Relationship.class);
-		final Iterable<CDOID> deletedRelationships = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
+		final Set<String> deletedRelationshipIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
 		
 		//SCT ID - relationships
-		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, GET_SCT_ID_FUNCTION));
+		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, Component::getId));
 		
 		//SCT ID - concepts
-		final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, GET_SCT_ID_FUNCTION));
+		final Map<String, Concept> _newConcepts = Maps.newHashMap(Maps.uniqueIndex(newConcepts, Component::getId));
 		
 		for (final Relationship newRelationship : newRelationships) {
 			taxonomyBuilder.addEdge(createEdge(newRelationship));
@@ -139,7 +105,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		// lookup all deleted relationship documents
 		final Iterable<SnomedRelationshipIndexEntry> deletedRelationshipEntries;
 		try {
-			deletedRelationshipEntries = searcher.get(SnomedRelationshipIndexEntry.class, CDOIDUtils.createCdoIdToLong(deletedRelationships));
+			deletedRelationshipEntries = searcher.get(SnomedRelationshipIndexEntry.class, deletedRelationshipIds);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
@@ -170,7 +136,7 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		}
 		
 		try {
-			final Iterable<SnomedConceptDocument> deletedConcepts = searcher.get(SnomedConceptDocument.class, CDOIDUtils.createCdoIdToLong(deletedConceptStorageKeys));
+			final Iterable<SnomedConceptDocument> deletedConcepts = searcher.get(SnomedConceptDocument.class, deletedConceptIds);
 			for (final SnomedConceptDocument concept : deletedConcepts) {
 				//consider the same as for relationship
 				//we have to decide if deletion is the 'stronger' modification or not

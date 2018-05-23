@@ -60,12 +60,6 @@ public interface ICDOCommitChangeSet {
 	Collection<CDOObject> getDirtyComponents();
 
 	/**
-	 * Returns with the detached components.
-	 * @return the detached components.
-	 */
-	Map<CDOID, EClass> getDetachedComponents();
-	
-	/**
 	 * Returns with a map of revision deltas mapped via {@link CDOID}s.
 	 * @return the revision deltas.
 	 */
@@ -79,12 +73,12 @@ public interface ICDOCommitChangeSet {
 
 	boolean isEmpty();
 
-	<T extends CDOObject> Iterable<T> getNewComponents(Class<T> type);
+	<T extends CDOObject> Set<T> getNewComponents(Class<T> type);
 	
-	<T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type);
+	<T extends CDOObject> Set<T> getDirtyComponents(Class<T> type);
 
-	<T extends CDOObject> Iterable<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures);
+	<T extends CDOObject> Set<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures);
 	
-	Collection<CDOID> getDetachedComponents(EClass eClass);
+	Set<String> getDetachedComponents(EClass eClass);
 	
 }
