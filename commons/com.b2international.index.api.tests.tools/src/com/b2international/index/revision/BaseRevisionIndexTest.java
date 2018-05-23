@@ -150,21 +150,18 @@ public abstract class BaseRevisionIndexTest {
 
 	protected final long commit(final String branchPath, final Map<Long, Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, index -> {
-			newRevisions.forEach((storageKey, data) -> index.put(storageKey, data));
-			index.commit();
-			return null;
-		});
-		return commitTimestamp;
+		StagingArea staging = index().prepareCommit();
+		newRevisions.forEach(staging::stageNew);
+		return staging
+				.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+				.getTimestamp();
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
 		final long commitTimestamp = currentTime();
-		index().write(branchPath, commitTimestamp, index -> {
-			index.remove(type, storageKey);
-			index.commit();
-			return null;
-		});
+		StagingArea staging = index().prepareCommit();
+		staging.stageRemove(type, storageKey);	
+		staging.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
 	protected final <T> Hits<T> search(final String branchPath, final Query<T> query) {

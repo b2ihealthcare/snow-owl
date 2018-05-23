@@ -33,11 +33,11 @@ public final class CommitInfo implements Serializable {
 	
 	public static Builder builder(final Commit doc) {
 		return builder()
-			.id(doc._id())
+			.id(doc.getId())
 			.branch(doc.getBranch())
 			.userId(doc.getUserId())
 			.comment(doc.getComment())
-			.timeStamp(doc.getTimeStamp());
+			.timeStamp(doc.getTimestamp());
 	}
 	
 	public static Builder builder(final RepositoryCommitNotification notification) {

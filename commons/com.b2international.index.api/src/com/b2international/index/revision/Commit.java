@@ -19,14 +19,12 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
-import com.b2international.index.Text;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.WithId;
+import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
@@ -39,7 +37,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc(type="commitinfodocument")
 @JsonDeserialize(builder = Commit.Builder.class)
-public final class Commit implements WithId, WithScore {
+public final class Commit implements WithScore {
 
 	public static Builder builder() {
 		return new Builder();
@@ -52,7 +50,7 @@ public final class Commit implements WithId, WithScore {
 		private String branch;
 		private String userId;
 		private String comment;
-		private long timeStamp;
+		private long timestamp;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -74,13 +72,13 @@ public final class Commit implements WithId, WithScore {
 			return this;
 		}
 
-		public Builder timeStamp(final long timeStamp) {
-			this.timeStamp = timeStamp;
+		public Builder timestamp(final long timestamp) {
+			this.timestamp = timestamp;
 			return this;
 		}
 
 		public Commit build() {
-			return new Commit(id, branch, userId, comment, timeStamp);
+			return new Commit(id, branch, userId, comment, timestamp);
 		}
 
 	}
@@ -123,17 +121,16 @@ public final class Commit implements WithId, WithScore {
 		public static final String BRANCH = "branch";
 		public static final String USER_ID = "userId";
 		public static final String COMMENT = "comment";
-		public static final String TIME_STAMP = "timeStamp";
+		public static final String TIME_STAMP = "timestamp";
 	}
 
-	private String _id;
-	
+	private final String id;
 	private final String branch;
 	private final String userId;
 	@Text(analyzer=Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
-	private final long timeStamp;
+	private final long timestamp;
 	
 	private float score = 0.0f;
 	
@@ -142,23 +139,16 @@ public final class Commit implements WithId, WithScore {
 			final String branch,
 			final String userId,
 			final String comment,
-			final long timeStamp) {
-		this._id = id;
+			final long timestamp) {
+		this.id = id;
 		this.branch = branch;
 		this.userId = userId;
 		this.comment = comment;
-		this.timeStamp = timeStamp;
+		this.timestamp = timestamp;
 	}
-	
-	@Override
-	public final void set_id(String _id) {
-		this._id = _id;
-	}
-	
-	@Override
-	@JsonIgnore
-	public final String _id() {
-		return checkNotNull(_id);
+
+	public String getId() {
+		return id;
 	}
 	
 	@Override
@@ -184,8 +174,8 @@ public final class Commit implements WithId, WithScore {
 		return comment;
 	}
 
-	public long getTimeStamp() {
-		return timeStamp;
+	public long getTimestamp() {
+		return timestamp;
 	}
 
 }

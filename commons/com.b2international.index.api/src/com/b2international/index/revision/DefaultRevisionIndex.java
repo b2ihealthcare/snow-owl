@@ -371,6 +371,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	public BaseRevisionBranching branching() {
 		return branches;
 	}
+	
+	@Override
+	public StagingArea prepareCommit() {
+		return new StagingArea(this);
+	}
 
 	private RevisionBranchRef getBranchRef(final String branchPath) {
 		return getBranch(branchPath).ref();

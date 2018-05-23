@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -55,23 +56,15 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 		final long childCommitTime = currentTime();
 		
 		final RevisionIndex index = index();
-		index.write(MAIN, mainCommitTime, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(RevisionWriter writer) throws IOException {
-				writer.put(STORAGE_KEY1, new Data("field1ChangedOnMAIN", "field2"));
-				// simulate another transaction when the first transaction is open, but still not committed
-				index.write("MAIN/a", childCommitTime, new RevisionIndexWrite<Void>() {
-					@Override
-					public Void execute(RevisionWriter writer) throws IOException {
-						writer.put(STORAGE_KEY1, new Data("field1", "field2ChangedOnChild"));
-						writer.commit();
-						return null;
-					}
-				});
-				writer.commit();
-				return null;
-			}
-		});
+		
+		StagingArea mainCommit = index.prepareCommit();
+		StagingArea childCommit = index.prepareCommit();
+		
+		mainCommit.stageNew(STORAGE_KEY1, new Data("field1ChangedOnMAIN", "field2"));
+		childCommit.stageNew(STORAGE_KEY1, new Data("field1", "field2ChangedOnChild"));
+		
+		mainCommit.commit(UUID.randomUUID().toString(), MAIN, mainCommitTime, UUID.randomUUID().toString(), "Commit on MAIN");
+		childCommit.commit(UUID.randomUUID().toString(), "MAIN/a", childCommitTime, UUID.randomUUID().toString(), "Commit on MAIN/a");
 		
 		// after both tx commit query the branches for the latest revision
 		final Data childRevision = getRevision("MAIN/a", Data.class, STORAGE_KEY1);

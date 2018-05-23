@@ -65,11 +65,10 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @param write
 	 *            - transactional write operation
 	 * @return
+	 * @deprecated - use {@link #prepareCommit()} instead
 	 */
 	<T> T write(String branchPath, long commitTimestamp, RevisionIndexWrite<T> write);
 	
-//	StagingArea prepareCommit();
-
 	/**
 	 * Purges selected revisions from the given branch in this index. When the purge completes only document revisions applicable for the selected
 	 * purge strategy remain in each segments of the given branch. This effectively reduces the amount of documents in a single segment to only one.
@@ -123,6 +122,15 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @since 6.5
 	 */
 	BaseRevisionBranching branching();
+	
+	/**
+	 * Prepare a commit by staging changes to the {@link StagingArea} then calling
+	 * {@link StagingArea#commit(String, String, long, String, String) commit} to
+	 * push that changes into the underlying repository.
+	 * 
+	 * @return
+	 */
+	StagingArea prepareCommit();
 	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.

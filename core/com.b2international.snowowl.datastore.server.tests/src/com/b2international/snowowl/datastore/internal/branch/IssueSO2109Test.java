@@ -48,9 +48,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.RevisionWriter;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
@@ -113,14 +111,9 @@ public class IssueSO2109Test {
 
 		final long timestamp = clock.getTimeStamp();
 
-		store.write(childBranch, timestamp, new RevisionIndexWrite<Void>() {
-			@Override
-			public Void execute(final RevisionWriter write) throws IOException {
-				write.put(STORAGE_KEY, new Data(DATA_VALUE));
-				write.commit();
-				return null;
-			}
-		});
+		store.prepareCommit()
+			.stageNew(STORAGE_KEY, new Data(DATA_VALUE))
+			.commit(UUID.randomUUID().toString(), childBranch, timestamp, UUID.randomUUID().toString(), "Commit");
 
 		manager.handleCommit(childBranch, timestamp);
 

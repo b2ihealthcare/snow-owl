@@ -275,7 +275,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 				.id(uuid)
 				.branch(branchPath.getPath())
 				.comment(comment)
-				.timeStamp(commitChangeSet.getTimestamp())
+				.timestamp(commitChangeSet.getTimestamp())
 				.userId(commitChangeSet.getUserId())
 				.build();
 		

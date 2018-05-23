@@ -33,6 +33,7 @@ import static org.junit.Assert.fail;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -1098,34 +1099,32 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * </ul>
 	 */
 	private void generateDrugHierarchy() {
-		index().write(MAIN, currentTime(), writer -> {
-			// substances
-			writer.put(nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
-			writer.put(nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
-			writer.put(nextStorageKey(), concept(INGREDIENT3).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		index()
+			.prepareCommit()
+			.stageNew(nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
+			.stageNew(nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
+			.stageNew(nextStorageKey(), concept(INGREDIENT3).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			// drugs
-			writer.put(nextStorageKey(), concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(AMOXICILLIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+			.stageNew(nextStorageKey(), concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(AMOXICILLIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
 			// has active ingredient relationships
-			writer.put(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(0).build());
-			writer.put(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(0).build());
-			writer.put(nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build());
+			.stageNew(nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build())
+			.stageNew(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).build())
+			.stageNew(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(0).build())
+			.stageNew(nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(0).build())
+			.stageNew(nextStorageKey(), relationship(AMOXICILLIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(0).characteristicTypeId(Concepts.STATED_RELATIONSHIP).build())
 			// trade names
-			writer.put(nextStorageKey(), stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL").build());
-			writer.put(nextStorageKey(), stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL").build());
-			writer.put(nextStorageKey(), stringMember(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN").build());
+			.stageNew(nextStorageKey(), stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL").build())
+			.stageNew(nextStorageKey(), stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL").build())
+			.stageNew(nextStorageKey(), stringMember(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN").build())
 			// strengths
-			writer.put(nextStorageKey(), integerMember(PANADOL_TABLET, PREFERRED_STRENGTH, 500).build());
-			writer.put(nextStorageKey(), integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build());
-			writer.put(nextStorageKey(), decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build());
-			writer.put(nextStorageKey(), decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build());
-			writer.commit();
-			return null;
-		});
+			.stageNew(nextStorageKey(), integerMember(PANADOL_TABLET, PREFERRED_STRENGTH, 500).build())
+			.stageNew(nextStorageKey(), integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build())
+			.stageNew(nextStorageKey(), decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build())
+			.stageNew(nextStorageKey(), decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build())
+			.commit(UUID.randomUUID().toString(), MAIN, currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
 	}
 
 	/**
@@ -1169,30 +1168,29 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * </ul>
 	 */
 	private void generateDrugsWithGroups() {
-		index().write(MAIN, currentTime(), writer -> {
-			writer.put(nextStorageKey(), concept(INGREDIENT5).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
-			writer.put(nextStorageKey(), concept(INGREDIENT6).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		index()
+			.prepareCommit()
+			.stageNew(nextStorageKey(), concept(INGREDIENT5).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
+			.stageNew(nextStorageKey(), concept(INGREDIENT6).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			
-			writer.put(nextStorageKey(), concept(EPOX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(ASPIRIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(ALGOFLEX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-			writer.put(nextStorageKey(), concept(TRIPLEX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+			.stageNew(nextStorageKey(), concept(EPOX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(ASPIRIN_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(ALGOFLEX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
+			.stageNew(nextStorageKey(), concept(TRIPLEX_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build())
 			
-			writer.put(nextStorageKey(), relationship(EPOX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(0).build());
+			.stageNew(nextStorageKey(), relationship(EPOX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(0).build())
 			
-			writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
-			writer.put(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_BOSS, INGREDIENT6).group(1).build());
+			.stageNew(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build())
+			.stageNew(nextStorageKey(), relationship(ASPIRIN_TABLET, HAS_BOSS, INGREDIENT6).group(1).build())
 			
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT6).group(1).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT6).group(2).build());
-			writer.put(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT5).group(2).build());
+			.stageNew(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build())
+			.stageNew(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT6).group(1).build())
+			.stageNew(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT6).group(2).build())
+			.stageNew(nextStorageKey(), relationship(ALGOFLEX_TABLET, HAS_BOSS, INGREDIENT5).group(2).build())
 			
-			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build());
-			writer.put(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6).group(2).build());
-			writer.commit();
-			return null;
-		});
+			.stageNew(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build())
+			.stageNew(nextStorageKey(), relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6).group(2).build())
+			.commit(UUID.randomUUID().toString(), MAIN, currentTime(), UUID.randomUUID().toString(), "Initialize Drugs with groups");
 	}
 	
 	private void generateDrugWithIntegerStrengthOfValueOne() {
