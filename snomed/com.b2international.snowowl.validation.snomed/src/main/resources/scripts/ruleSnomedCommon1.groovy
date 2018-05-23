@@ -10,50 +10,46 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.ImmutableMap
-import com.google.common.collect.Sets
+import com.google.common.collect.Lists
 
-Hits<String> inactiveConceptHits = ctx.service(RevisionSearcher.class)
-		.search(Query.select(String.class)
+RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
+
+Iterable<Hits<String>> inactiveConceptBatches = searcher.scroll(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
-		.where(SnomedConceptDocument.Expressions.active(false))
-		.limit(Integer.MAX_VALUE)
-		.build())
-		
-Set<String> inactiveConceptIds = Sets.newHashSet(inactiveConceptHits);
-		
-Expression expression = Expressions.builder()
-		.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
-		.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
-		.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
-		.filter(SnomedRelationshipIndexEntry.Expressions.active())
-		.build()
-		
-
-Iterable<Hits<String[]>> invalidRelationshipHits = ctx.service(RevisionSearcher.class)
-		.scroll(Query.select(String[].class)
-		.from(SnomedRelationshipIndexEntry.class)
-		.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.MODULE_ID)
-		.where(expression)
+		.where(SnomedConceptDocument.Expressions.inactive())
 		.limit(10_000)
 		.build())
-		
-Collection<IssueDetail> invalidRelationshipIds = Sets.newHashSet();
-invalidRelationshipHits.each( { hits ->
-	for (String[] hit : hits) {
-		invalidRelationshipIds.add(
-			new IssueDetail(
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, hit[0]),
-				ImmutableMap.of(
-					SnomedRf2Headers.FIELD_ACTIVE, true,
-					SnomedRf2Headers.FIELD_MODULE_ID, hit[1]
-				) 
-			)
-		);
-	}
+
+List<IssueDetail> issueDetails = Lists.newArrayList()
+
+inactiveConceptBatches.each({ conceptBatch ->
+	List<String> inactiveConceptIds = conceptBatch.getHits()
+
+	Expression invalidRelationshipExpression = Expressions.builder()
+			.filter(SnomedRelationshipIndexEntry.Expressions.active())
+			.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
+			.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
+			.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
+			.build()
+
+	Iterable<Hits<String[]>> invalidRelationshipBatches = searcher.scroll(Query.select(String[].class)
+			.from(SnomedRelationshipIndexEntry.class)
+			.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.MODULE_ID)
+			.where(invalidRelationshipExpression)
+			.limit(10_000)
+			.build())
+
+	invalidRelationshipBatches.each({ relationshipBatch ->
+		relationshipBatch.each({ relationship ->
+			issueDetails.add(
+					new IssueDetail(
+						ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship[0]),
+						ImmutableMap.of(
+							SnomedRf2Headers.FIELD_ACTIVE, true,
+							SnomedRf2Headers.FIELD_MODULE_ID, relationship[1])))
+		})
+	})
 })
-		
-return new ArrayList<>(invalidRelationshipIds)
 
-
-		
+return issueDetails
