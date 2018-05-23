@@ -15,7 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
@@ -111,8 +111,12 @@ public final class Commit implements WithScore {
 			return matchTextAll(Fields.COMMENT+".prefix", comment);
 		}
 		
-		public static Expression timeStamp(final long timeStamp) {
+		public static Expression timestamp(final long timeStamp) {
 			return exactMatch(Fields.TIME_STAMP, timeStamp);
+		}
+		
+		public static Expression timestampRange(final long from, final long to) {
+			return matchRange(Fields.TIME_STAMP, from, to);
 		}
 		
 	}

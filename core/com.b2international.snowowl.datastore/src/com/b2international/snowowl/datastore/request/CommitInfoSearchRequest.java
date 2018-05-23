@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
 import static com.b2international.index.revision.Commit.Expressions.branch;
 import static com.b2international.index.revision.Commit.Expressions.exactComment;
-import static com.b2international.index.revision.Commit.Expressions.timeStamp;
+import static com.b2international.index.revision.Commit.Expressions.timestampRange;
 import static com.b2international.index.revision.Commit.Expressions.userId;
 
 import java.util.List;
@@ -45,7 +45,8 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		BRANCH,
 		USER_ID,
 		COMMENT,
-		TIME_STAMP
+		TIME_STAMP_FROM,
+		TIME_STAMP_TO
 		
 	}
 	
@@ -113,9 +114,10 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	}
 
 	private void addTimeStampClause(final ExpressionBuilder builder) {
-		if (containsKey(OptionKey.TIME_STAMP)) {
-			final Long timeStamp = get(OptionKey.TIME_STAMP, Long.class);
-			builder.filter(timeStamp(timeStamp));
+		if (containsKey(OptionKey.TIME_STAMP_FROM) || containsKey(OptionKey.TIME_STAMP_TO)) {
+			final Long timestampFrom = containsKey(OptionKey.TIME_STAMP_FROM) ? get(OptionKey.TIME_STAMP_FROM, Long.class) : 0L;
+			final Long timestampTo = containsKey(OptionKey.TIME_STAMP_TO) ? get(OptionKey.TIME_STAMP_TO, Long.class) : Long.MAX_VALUE;
+			builder.filter(timestampRange(timestampFrom, timestampTo));
 		}
 	}
 

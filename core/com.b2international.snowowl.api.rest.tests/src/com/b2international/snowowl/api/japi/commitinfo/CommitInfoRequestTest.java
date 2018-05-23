@@ -158,7 +158,7 @@ public class CommitInfoRequestTest {
 		final CommitInfos commitInfos = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByTimeStamp(commitInfo.getTimeStamp())
+				.filterByTimestamp(commitInfo.getTimeStamp())
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();

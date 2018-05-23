@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package com.b2international.snowowl.datastore.request;
 
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.BRANCH;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.COMMENT;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP;
+import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
+import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.USER_ID;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -46,8 +47,13 @@ public final class CommitInfoSearchRequestBuilder
 		return addOption(COMMENT, comment);
 	}
 
-	public CommitInfoSearchRequestBuilder filterByTimeStamp(final long timeStamp) {
-		return addOption(TIME_STAMP, timeStamp);
+	public CommitInfoSearchRequestBuilder filterByTimestamp(final long timestamp) {
+		return filterByTimestamp(timestamp, timestamp);
+	}
+	
+	public CommitInfoSearchRequestBuilder filterByTimestamp(final long timestampFrom, final long timestampTo) {
+		return addOption(TIME_STAMP_FROM, timestampFrom)
+				.addOption(TIME_STAMP_TO, timestampTo);
 	}
 
 	@Override
