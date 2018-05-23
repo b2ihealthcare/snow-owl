@@ -97,8 +97,18 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		return index.read(index -> read.execute(new DefaultRevisionSearcher(branch, index)));
 	}
 	
-	@Override
-	public <T> T write(final String branchPath, final long commitTimestamp, final RevisionIndexWrite<T> write) {
+	/**
+	 * Writes to this index via an {@link RevisionIndexWrite write transaction}.
+	 * 
+	 * @param branchPath
+	 *            - put all modifications to this branch
+	 * @param commitTimestamp
+	 *            - all modifications should appear with this timestamp
+	 * @param write
+	 *            - transactional write operation
+	 * @return
+	 */
+	<T> T write(final String branchPath, final long commitTimestamp, final RevisionIndexWrite<T> write) {
 		if (branchPath.endsWith(BASE_REF_CHAR)) {
 			throw new IllegalArgumentException(String.format("It is illegal to modify a branch's base point (%s).", branchPath));
 		}

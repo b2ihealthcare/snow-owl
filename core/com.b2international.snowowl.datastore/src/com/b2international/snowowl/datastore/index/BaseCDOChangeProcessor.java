@@ -34,13 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.functions.LongToStringFunction;
-import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionIndexWrite;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.RevisionWriter;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -245,43 +243,25 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	public final IndexCommitChangeSet commit() throws SnowowlServiceException {
 		final Timer indexTimer = MetricsThreadLocal.get().timer("indexing");
 		try {
-			indexTimer.start();
 			checkState(commitChangeSet.getTimestamp() > 0, "Commit timestamp should be greater than zero");
-			return index.write(branchPath.getPath(), commitChangeSet.getTimestamp(), new RevisionIndexWrite<IndexCommitChangeSet>() {
-				@Override
-				public IndexCommitChangeSet execute(RevisionWriter writer) throws IOException {
-					log.info("Persisting changes...");
-					try {
-						indexChangeSet.apply(writer);
-						indexCommitInfo(writer, commitChangeSet);
-						writer.commit();
-						return indexChangeSet;
-					} finally {
-						log.info("Changes have been successfully persisted.");
-					}
-				}
-			});
+			indexTimer.start();
+			log.info("Persisting changes to revision index...");
+			
+			StagingArea stagingArea = index.prepareCommit();
+
+			indexChangeSet.apply(stagingArea);
+			
+			final String commitComment = commitChangeSet.getCommitComment();
+			final String commitId = CDOCommitInfoUtils.getUuid(commitComment);
+			final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
+			stagingArea.commit(commitId, branchPath.getPath(), commitChangeSet.getTimestamp(), commitChangeSet.getUserId(), comment);
+			return indexChangeSet;
 		} finally {
+			log.info("Changes have been successfully persisted.");
 			indexTimer.stop();
 		}
 	}
 	
-	private void indexCommitInfo(final RevisionWriter writer, final ICDOCommitChangeSet commitChangeSet) throws IOException {
-		final String commitComment = commitChangeSet.getCommitComment();
-		final String uuid = CDOCommitInfoUtils.getUuid(commitComment);
-		final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
-		
-		final Commit commitInfo = Commit.builder()
-				.id(uuid)
-				.branch(branchPath.getPath())
-				.comment(comment)
-				.timestamp(commitChangeSet.getTimestamp())
-				.userId(commitChangeSet.getUserId())
-				.build();
-		
-		writer.writer().put(uuid, commitInfo);
-	}
-
 	/**
 	 * @deprecated - would be great to use a single revision searcher
 	 */

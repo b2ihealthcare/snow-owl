@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = Commit.Builder.class)
 public final class Commit implements WithScore {
 
-	public static Builder builder() {
+	static Builder builder() {
 		return new Builder();
 	}
 

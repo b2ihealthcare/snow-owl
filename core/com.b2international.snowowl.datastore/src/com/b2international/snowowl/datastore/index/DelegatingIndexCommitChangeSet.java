@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionWriter;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.Multimap;
 
@@ -81,8 +80,8 @@ public class DelegatingIndexCommitChangeSet implements IndexCommitChangeSet {
 	}
 	
 	@Override
-	public void apply(RevisionWriter writer) throws IOException {
-		delegate.apply(writer);
+	public void apply(StagingArea staging) {
+		delegate.apply(staging);
 	}
 	
 	@Override

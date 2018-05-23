@@ -17,19 +17,17 @@ package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionWriter;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * @since 5.0
@@ -111,32 +109,25 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	/**
 	 * Apply this {@link ImmutableIndexCommitChangeSet} on the given {@link RevisionWriter index transaction}.
 	 * 
-	 * @param index
+	 * @param staging
 	 * @throws IOException
 	 */
 	@Override
-	public void apply(RevisionWriter index) throws IOException {
+	public void apply(StagingArea staging) {
 		for (final Class<?> type : rawDeletions.keySet()) {
-			final Map<Class<?>, Set<String>> map = Collections.<Class<?>, Set<String>> singletonMap(type,
-					Sets.newHashSet(rawDeletions.get(type)));
-			index.writer().removeAll(map);
+			rawDeletions.get(type).forEach(key -> staging.stageRemove(type, key));
 		}
 		
 		for (Entry<String, Object> doc : rawMappings.entrySet()) {
-			if (!rawDeletions.containsValue(doc.getKey())) {
-				index.writer().put(doc.getKey(), doc.getValue());
-			}
+			staging.stageNew(doc.getKey(), doc);
 		}
 
-		final Multimap<Class<? extends Revision>, Long> copiedRevision = ImmutableMultimap.copyOf(revisionDeletions);
-		for (Class<? extends Revision> type : copiedRevision.keySet()) {
-			index.remove(type, copiedRevision.get(type));
+		for (Class<? extends Revision> type : revisionDeletions.keySet()) {
+			staging.stageRemoveAll(type, revisionDeletions.get(type));
 		}
 
 		for (Entry<Long, Revision> doc : revisionMappings.entrySet()) {
-			if (!revisionDeletions.containsValue(doc.getKey())) {
-				index.put(doc.getKey(), doc.getValue());
-			}
+			staging.stageNew(doc.getKey(), doc.getValue());
 		}
 	}
 	

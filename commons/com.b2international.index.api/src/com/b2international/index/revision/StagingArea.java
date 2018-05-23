@@ -17,10 +17,13 @@ package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -31,12 +34,14 @@ import com.google.common.collect.Multimap;
  */
 public final class StagingArea {
 
-	private final RevisionIndex index;
+	private final DefaultRevisionIndex index;
 
+	private final Map<String, Object> newDocuments = newHashMap();
 	private final Map<Long, Revision> newRevisions = newHashMap();
+	private final Multimap<Class<?>, String> removedDocuments = HashMultimap.create();
 	private final Multimap<Class<? extends Revision>, Long> removedRevisions = HashMultimap.create();
 	
-	StagingArea(RevisionIndex index) {
+	StagingArea(DefaultRevisionIndex index) {
 		this.index = index;
 	}
 	
@@ -49,7 +54,6 @@ public final class StagingArea {
 	 * @param commitComment
 	 * @return
 	 */
-	@SuppressWarnings("deprecation")
 	public Commit commit(String commitId, String branchPath, long timestamp, String userId, String commitComment) {
 		return index.write(branchPath, timestamp, writer -> {
 			Commit commit = Commit.builder()
@@ -61,11 +65,21 @@ public final class StagingArea {
 				.build();
 			
 			// apply removals first
+			for (Class<?> type : removedDocuments.keySet()) {
+				writer.writer().removeAll(Collections.singletonMap(type, ImmutableSet.copyOf(removedDocuments.get(type))));
+			}
+			
 			for (Class<? extends Revision> type : removedRevisions.keySet()) {
 				writer.remove(type, removedRevisions.get(type));
 			}
-
-			// then new revisions
+			
+			// then new documents and revisions
+			for (Entry<String, Object> doc : newDocuments.entrySet()) {
+				if (!removedDocuments.containsValue(doc.getKey())) {
+					writer.writer().put(doc.getKey(), doc.getValue());
+				}
+			}
+			
 			for (Entry<Long, Revision> doc : newRevisions.entrySet()) {
 				if (!removedRevisions.containsValue(doc.getKey())) {
 					writer.put(doc.getKey(), doc.getValue());
@@ -76,6 +90,11 @@ public final class StagingArea {
 			writer.commit();
 			return commit;
 		});
+	}
+	
+	public StagingArea stageNew(String key, Object newDocument) {
+		newDocuments.put(key, newDocument);
+		return this;
 	}
 
 	public StagingArea stageNew(long storageKey, Revision newRevision) {
@@ -88,4 +107,14 @@ public final class StagingArea {
 		return this;
 	}
 	
+	public StagingArea stageRemove(Class<?> type, String key) {
+		removedDocuments.put(type, key);
+		return this;
+	}
+
+	public StagingArea stageRemoveAll(Class<? extends Revision> type, Collection<Long> storageKeys) {
+		removedRevisions.putAll(type, storageKeys);
+		return this;
+	}
+
 }

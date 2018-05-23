@@ -56,20 +56,6 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	<T> T read(String branchPath, RevisionIndexRead<T> read);
 
 	/**
-	 * Writes to this index via an {@link RevisionIndexWrite write transaction}.
-	 * 
-	 * @param branchPath
-	 *            - put all modifications to this branch
-	 * @param commitTimestamp
-	 *            - all modifications should appear with this timestamp
-	 * @param write
-	 *            - transactional write operation
-	 * @return
-	 * @deprecated - use {@link #prepareCommit()} instead
-	 */
-	<T> T write(String branchPath, long commitTimestamp, RevisionIndexWrite<T> write);
-	
-	/**
 	 * Purges selected revisions from the given branch in this index. When the purge completes only document revisions applicable for the selected
 	 * purge strategy remain in each segments of the given branch. This effectively reduces the amount of documents in a single segment to only one.
 	 * 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionWriter;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.Multimap;
 
@@ -47,7 +46,7 @@ public interface IndexCommitChangeSet {
 	
 	boolean isEmpty();
 
-	void apply(RevisionWriter writer) throws IOException;
+	void apply(StagingArea staging);
 	
 	IndexCommitChangeSet merge(IndexCommitChangeSet indexCommitChangeSet);
 
