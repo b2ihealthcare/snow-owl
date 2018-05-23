@@ -36,7 +36,6 @@ import org.mapdb.Serializer;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -129,13 +128,13 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
 					for (Hits<Map> hits : context.service(RevisionSearcher.class).scroll(Query.select(Map.class)
 							.from(type)
-							.fields(RevisionDocument.Fields.ID, Revision.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
+							.fields(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
 							.where(Expressions.matchAll())
 							.limit(10_000)
 							.build())) {
 						for (Map hit : hits) {
 							final String componentId = (String) hit.get(RevisionDocument.Fields.ID);
-							final long storageKey = (long) hit.get(Revision.STORAGE_KEY);
+							final long storageKey = (long) hit.get(RevisionDocument.Fields.STORAGE_KEY);
 							storageKeysByComponent.put(componentId, storageKey);
 							// add refset storagekey if this concept has a non negative value
 							if (type == SnomedConceptDocument.class && hit.containsKey(SnomedConceptDocument.Fields.REFSET_STORAGEKEY)) {

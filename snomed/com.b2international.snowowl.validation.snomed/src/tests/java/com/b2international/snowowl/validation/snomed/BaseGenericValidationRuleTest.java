@@ -93,33 +93,33 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 		index()
 			.prepareCommit()
-			.stageNew(nextStorageKey(), concept(Concepts.ROOT_CONCEPT).build())
+			.stageNew(concept(Concepts.ROOT_CONCEPT).build())
 			// Attributes
-			.stageNew(nextStorageKey(), concept(ATTRIBUTE).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.IS_A).parents(ATTRIBUTEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.CONCEPT_MODEL_ATTRIBUTE).parents(ATTRIBUTEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.HAS_ACTIVE_INGREDIENT).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.FINDING_SITE).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
+			.stageNew(concept(ATTRIBUTE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.IS_A).parents(ATTRIBUTEL).build())
+			.stageNew(concept(Concepts.CONCEPT_MODEL_ATTRIBUTE).parents(ATTRIBUTEL).build())
+			.stageNew(concept(Concepts.HAS_ACTIVE_INGREDIENT).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
+			.stageNew(concept(Concepts.FINDING_SITE).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
 			// Char Types
-			.stageNew(nextStorageKey(), concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
+			.stageNew(concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
 			// Description types
-			.stageNew(nextStorageKey(), concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.TEXT_DEFINITION).parents(DESCRIPTION_TYPEL).build())
+			.stageNew(concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build())
+			.stageNew(concept(Concepts.TEXT_DEFINITION).parents(DESCRIPTION_TYPEL).build())
 			// Case significance
-			.stageNew(nextStorageKey(), concept(Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build())
+			.stageNew(concept(Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
+			.stageNew(concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
+			.stageNew(concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			// Modules
-			.stageNew(nextStorageKey(), concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
+			.stageNew(concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
 			// Refsets
-			.stageNew(nextStorageKey(), concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
-			.stageNew(nextStorageKey(), concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
+			.stageNew(concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
 			.commit(UUID.randomUUID().toString(), MAIN, 1L, UUID.randomUUID().toString(), "Initialize test data");
 	}
 

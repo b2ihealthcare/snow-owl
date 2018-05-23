@@ -873,6 +873,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
+					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -969,7 +970,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			
 			doc.setScore(score);
 			// metadata
-			doc.setStorageKey(storageKey);
 			doc.setCreated(created);
 			doc.setRevised(revised);
 			return doc;
@@ -1046,6 +1046,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
+			final long storageKey,
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -1058,6 +1059,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		super(id, 
 				label,
 				referencedComponentId, // XXX: iconId is the referenced component identifier
+				storageKey,
 				moduleId, 
 				released, 
 				active, 

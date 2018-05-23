@@ -58,7 +58,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 	public void changedRelationship() throws Exception {
 		final Relationship relationship = createRandomRelationship();
 		registerDirty(relationship);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()), SnomedRelationshipIndexEntry.builder(relationship).build());
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(relationship).storageKey(CDOIDUtil.getLong(relationship.cdoID())).build());
 		
 		process(processor);
 		
@@ -88,8 +88,7 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedRefSetMember member = createSimpleMember(relationship.getId(), referringRefSetId);
 		
 		registerExistingObject(relationship);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship).build());
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(relationship).storageKey(CDOIDUtil.getLong(relationship.cdoID())).build());
 		registerNew(member);
 		
 		process(processor);
@@ -114,13 +113,12 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		registerExistingObject(relationship);
 		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship)
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(relationship)
+					.storageKey(CDOIDUtil.getLong(relationship.cdoID()))
 					.memberOf(ImmutableList.of(referringRefSetId))
 					.activeMemberOf(ImmutableList.of(referringRefSetId))
 					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), 
-				SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
 		registerDetached(member.cdoID(), member.eClass());
 		
 		process(processor);
@@ -147,13 +145,13 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member1);
 		registerExistingObject(member2);
 		
-		indexRevision(MAIN, CDOIDUtil.getLong(relationship.cdoID()),
-				SnomedRelationshipIndexEntry.builder(relationship)
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(relationship)
+					.storageKey(CDOIDUtil.getLong(relationship.cdoID()))
 					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
 					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
 					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member1).storageKey(CDOIDUtil.getLong(member1.cdoID())).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member2).storageKey(CDOIDUtil.getLong(member2.cdoID())).build());
 		
 		registerDetached(member1.cdoID(), member1.eClass());
 		

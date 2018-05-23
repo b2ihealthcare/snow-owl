@@ -113,7 +113,7 @@ import com.google.common.collect.ImmutableMap;
 	SnomedConceptDocument.Fields.PRIMITIVE,
 	SnomedConceptDocument.Fields.EXHAUSTIVE
 })
-public class SnomedConceptDocument extends SnomedComponentDocument {
+public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
@@ -430,6 +430,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
 					iconId, 
+					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -450,7 +451,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 			entry.setScore(score);
 			entry.setCreated(created);
 			entry.setRevised(revised);
-			entry.setStorageKey(storageKey);
 			
 			if (parents != null) {
 				entry.parents = parents;
@@ -488,9 +488,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 	private LongSet statedAncestors;
 	private float doi;
 
-	protected SnomedConceptDocument(final String id,
+	private SnomedConceptDocument(final String id,
 			final String label,
-			final String iconId, 
+			final String iconId,
+			final long storageKey,
 			final String moduleId,
 			final boolean released,
 			final boolean active,
@@ -507,7 +508,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument {
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
-		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
+		super(id, label, iconId, storageKey, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;

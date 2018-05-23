@@ -170,7 +170,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(generateConceptId());
 		registerExistingObject(concept);
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
-		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(conceptStorageKey).build());
 		
 		final Concept changedConcept = createConcept(concept.getId());
 		withCDOID(changedConcept, conceptStorageKey);
@@ -198,7 +198,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(generateConceptId());
 		registerExistingObject(concept);
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
-		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(conceptStorageKey).build());
 		
 		final Concept changedConcept = createConcept(concept.getId());
 		withCDOID(changedConcept, conceptStorageKey);
@@ -227,7 +227,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(generateConceptId());
 		registerExistingObject(concept);
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
-		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(conceptStorageKey).build());
 		
 		final Concept changedConcept = createConcept(concept.getId());
 		withCDOID(changedConcept, conceptStorageKey);
@@ -252,7 +252,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(generateConceptId());
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
 		registerExistingObject(concept);
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.FULLY_SPECIFIED_NAME, "Term", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -275,7 +276,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(generateConceptId());
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
 		registerExistingObject(concept);
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(generateDescriptionId(), nextStorageKey(), Concepts.SYNONYM, "Hello", Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -302,7 +304,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(fsn);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -334,7 +337,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(fsn);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -362,7 +366,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(fsn);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(fsn.getId(), CDOIDUtil.getLong(fsn.cdoID()), Concepts.FULLY_SPECIFIED_NAME, fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -387,7 +392,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(description);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -419,7 +425,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(concept);
 		registerExistingObject(description);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_UK)
 				))
@@ -456,7 +463,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(description);
 		registerExistingObject(memberToInactivate);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
@@ -491,7 +499,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(description);
 		registerExistingObject(memberToChange);
 		
-		indexRevision(MAIN, conceptStorageKey, doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(conceptStorageKey)
 				.preferredDescriptions(ImmutableList.of(
 					new SnomedDescriptionFragment(description.getId(), CDOIDUtil.getLong(description.cdoID()), Concepts.FULLY_SPECIFIED_NAME, description.getTerm(), ImmutableList.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
 				))
@@ -590,11 +599,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Relationship statedRelationship = createStatedRelationship(concept1.getId(), Concepts.IS_A, Concepts.ROOT_CONCEPT);
 		concept1.getOutboundRelationships().add(statedRelationship);
 		
-		indexRevision(MAIN, nextStorageKey(), SnomedRelationshipIndexEntry.builder(statedRelationship).build());
-		indexRevision(MAIN, nextStorageKey(), doc(concept1)
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(statedRelationship).storageKey(nextStorageKey()).build());
+		indexRevision(MAIN, doc(concept1)
+				.storageKey(nextStorageKey())
 				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
 				.build());
-		indexRevision(MAIN, nextStorageKey(), doc(concept2).build());
+		indexRevision(MAIN, doc(concept2)
+				.storageKey(nextStorageKey())
+				.build());
 		
 		// change destination from ROOT to concept 2
 		statedRelationship.setDestination(concept2);
@@ -645,16 +657,17 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final long childIdLong = Long.parseLong(childId);
 		
 		// index the child and parent concept documents as current state
-		indexRevision(MAIN, CDOIDUtil.getLong(parentConcept.cdoID()), doc(parentConcept).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(childConcept.cdoID()), doc(childConcept)
+		indexRevision(MAIN, doc(parentConcept).storageKey(CDOIDUtil.getLong(parentConcept.cdoID())).build());
+		indexRevision(MAIN, doc(childConcept)
+				.storageKey(CDOIDUtil.getLong(childConcept.cdoID()))
 				// child concept has stated parent and ROOT ancestor
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
 		
 		// index existing stated relationships
-		indexRevision(MAIN, CDOIDUtil.getLong(childToParentIsa.cdoID()), SnomedRelationshipIndexEntry.builder(childToParentIsa).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(childToAnotherConceptIsa.cdoID()), SnomedRelationshipIndexEntry.builder(childToAnotherConceptIsa).build());
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(childToParentIsa).storageKey(CDOIDUtil.getLong(childToParentIsa.cdoID())).build());
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(childToAnotherConceptIsa).storageKey(CDOIDUtil.getLong(childToAnotherConceptIsa.cdoID())).build());
 		
 		// register child concept as existing concept in view, so it can be loaded via CDO
 		registerExistingObject(childConcept);
@@ -700,8 +713,8 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		statedChangedConceptIds.add(childIdLong);
 
 		// index the child and parent concept documents as current state
-		indexRevision(MAIN, CDOIDUtil.getLong(parentConcept.cdoID()), doc(parentConcept).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(childConcept.cdoID()), doc(childConcept).build());
+		indexRevision(MAIN, doc(parentConcept).storageKey(CDOIDUtil.getLong(parentConcept.cdoID())).build());
+		indexRevision(MAIN, doc(childConcept).storageKey(CDOIDUtil.getLong(childConcept.cdoID())).build());
 		
 		registerExistingObject(childConcept);
 		registerExistingObject(parentConcept);
@@ -747,9 +760,9 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final String identifierId = generateConceptId();
 		final Concept identifierConcept = createConcept(identifierId);
 		final long conceptStorageKey = CDOIDUtil.getLong(identifierConcept.cdoID());
-		indexRevision(MAIN, conceptStorageKey, doc(identifierConcept).build());
+		indexRevision(MAIN, doc(identifierConcept).storageKey(conceptStorageKey).build());
 
-		SnomedConceptDocument before = getRevision(MAIN, SnomedConceptDocument.class, conceptStorageKey);
+		SnomedConceptDocument before = getRevision(MAIN, SnomedConceptDocument.class, identifierId);
 		assertNull(before.getRefSetType());
 		assertEquals(0, before.getReferencedComponentType());
 		assertEquals(-1L, before.getRefSetStorageKey());
@@ -776,7 +789,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 	public void deleteRefSetButKeepIdentifierConcept() throws Exception {
 		final String generateConceptId = generateConceptId();
 		final SnomedRefSet refSet = getRegularRefSet(generateConceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
-		indexRevision(MAIN, nextStorageKey(), doc(createConcept(generateConceptId)).refSet(refSet).build());
+		indexRevision(MAIN, doc(createConcept(generateConceptId)).storageKey(nextStorageKey()).refSet(refSet).build());
 		registerDetached(refSet.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET);
 		
 		final ConceptChangeProcessor processor = process();
@@ -792,7 +805,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final long conceptStorageKey = nextStorageKey();
 		final SnomedRefSet refSet = getRegularRefSet(conceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 		final long refSetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
-		indexRevision(MAIN, conceptStorageKey, doc(createConcept(conceptId)).refSet(refSet).build());
+		indexRevision(MAIN, doc(createConcept(conceptId)).storageKey(conceptStorageKey).refSet(refSet).build());
 		
 		// change set
 		// XXX intentionally not registering this object to the concept map
@@ -832,7 +845,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// set current state
 		registerExistingObject(concept);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(CDOIDUtil.getLong(concept.cdoID())).build());
 		
 		registerNew(member);
 		
@@ -861,7 +874,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// set current state
 		registerExistingObject(concept);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(CDOIDUtil.getLong(concept.cdoID())).build());
 		
 		registerNew(member);
 		
@@ -888,7 +901,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		// set current state
 		registerExistingObject(concept);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(CDOIDUtil.getLong(concept.cdoID())).build());
 		
 		registerNew(member);
 		
@@ -917,11 +930,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// set current state
 		registerExistingObject(concept);
 		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(CDOIDUtil.getLong(concept.cdoID()))
 				.memberOf(Collections.singleton(referringReferenceSetId))
 				.activeMemberOf(Collections.singleton(referringReferenceSetId))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member)
+				.storageKey(CDOIDUtil.getLong(member.cdoID()))
+				.build());
 		
 		member.setActive(false);
 		registerDirty(member);
@@ -952,10 +968,13 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// set current state
 		registerExistingObject(concept);
 		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(CDOIDUtil.getLong(concept.cdoID()))
 				.memberOf(Collections.singleton(referringReferenceSetId))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member)
+				.storageKey(CDOIDUtil.getLong(member.cdoID()))
+				.build());
 		
 		member.setActive(true);
 		registerDirty(member);
@@ -986,11 +1005,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// set current state
 		registerExistingObject(concept);
 		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(CDOIDUtil.getLong(concept.cdoID()))
 				.memberOf(ImmutableSet.of(referringReferenceSetId))
 				.activeMemberOf(ImmutableSet.of(referringReferenceSetId))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member)
+				.storageKey(CDOIDUtil.getLong(member.cdoID()))
+				.build());
 		
 		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
 		
@@ -1018,12 +1040,17 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member1);
 		registerExistingObject(member2);
 		
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(CDOIDUtil.getLong(concept.cdoID()))
 				.memberOf(ImmutableList.of(referringReferenceSetId, referringReferenceSetId))
 				.activeMemberOf(ImmutableList.of(referringReferenceSetId, referringReferenceSetId))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member1)
+				.storageKey(CDOIDUtil.getLong(member1.cdoID()))
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member2)
+				.storageKey(CDOIDUtil.getLong(member2.cdoID()))
+				.build());
 		
 		registerDetached(member1.cdoID(), member1.eClass());
 		
@@ -1052,11 +1079,14 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		// set current state
 		registerExistingObject(concept);
 		registerExistingObject(member);
-		indexRevision(MAIN, CDOIDUtil.getLong(concept.cdoID()), doc(concept)
+		indexRevision(MAIN, doc(concept)
+				.storageKey(CDOIDUtil.getLong(concept.cdoID()))
 				.memberOf(ImmutableSet.of(referringMappingReferenceSetId))
 				.activeMemberOf(ImmutableSet.of(referringMappingReferenceSetId))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member)
+				.storageKey(CDOIDUtil.getLong(member.cdoID()))
+				.build());
 		
 		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
 		
@@ -1078,7 +1108,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final Concept concept = createConcept(conceptId);
 		final long conceptStorageKey = CDOIDUtil.getLong(concept.cdoID());
 		registerExistingObject(concept);
-		indexRevision(MAIN, conceptStorageKey, doc(concept).build());
+		indexRevision(MAIN, doc(concept).storageKey(conceptStorageKey).build());
 		
 		// change set
 		// XXX intentionally not registering this object to the concept map
@@ -1117,12 +1147,15 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 		final long childIdLong = Long.parseLong(childId);
 
 		// index the child and parent concept documents as current state
-		indexRevision(MAIN, CDOIDUtil.getLong(parentConcept.cdoID()), doc(parentConcept).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(childConcept.cdoID()), doc(childConcept)
+		indexRevision(MAIN, doc(parentConcept).storageKey(CDOIDUtil.getLong(parentConcept.cdoID())).build());
+		indexRevision(MAIN, doc(childConcept)
+				.storageKey(CDOIDUtil.getLong(childConcept.cdoID()))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(statedIsa.cdoID()), SnomedRelationshipIndexEntry.builder(statedIsa).build());
+		indexRevision(MAIN, SnomedRelationshipIndexEntry.builder(statedIsa)
+				.storageKey(CDOIDUtil.getLong(statedIsa.cdoID()))
+				.build());
 		
 		registerExistingObject(childConcept);
 		registerExistingObject(parentConcept);

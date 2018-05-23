@@ -48,8 +48,9 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 	
 	@Test
 	public void indexDescription() throws Exception {
+		final String id = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -61,10 +62,11 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 				.languageCode("en")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
+				.storageKey(1L)
 				.build();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
-		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, description);
+		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
+		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(description, actual);
 	}
 	
@@ -72,8 +74,9 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 	public void indexFsn() throws Exception {
 		assertEquals("finding", SnomedDescriptionIndexEntry.extractSemanticTag("New Finding (finding)"));
 		
+		final String id = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final SnomedDescriptionIndexEntry description = SnomedDescriptionIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateDescriptionId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -85,14 +88,15 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 				.languageCode("en")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
+				.storageKey(1L)
 				.build();
 		
 		assertEquals("finding", description.getSemanticTag());
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, description);
-		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, STORAGE_KEY1);
+		indexRevision(RevisionBranch.MAIN_PATH, description);
+		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
 		
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		assertEquals(1L, actual.getStorageKey());
 		assertEquals("finding", actual.getSemanticTag());
 		assertEquals(null, actual.getNamespace());
 		assertDocEquals(description, actual);

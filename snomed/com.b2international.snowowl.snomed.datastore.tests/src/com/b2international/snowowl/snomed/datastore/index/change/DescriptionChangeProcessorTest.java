@@ -111,12 +111,17 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
 		
 		// index current revisions, so change processor can find them (both the description and the members)
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description)
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description)
+				.storageKey(CDOIDUtil.getLong(description.cdoID()))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(preferredMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(preferredMember).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(acceptableMember)
+				.storageKey(CDOIDUtil.getLong(acceptableMember.cdoID()))
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(preferredMember)
+				.storageKey(CDOIDUtil.getLong(preferredMember.cdoID()))
+				.build());
 		
 		// remove the acceptableMember and mark the description as dirty
 		description.getLanguageRefSetMembers().remove(acceptableMember);
@@ -145,12 +150,17 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedLanguageRefSetMember preferredMember = getFirstMember(description, Acceptability.PREFERRED);
 		
 		// index current revisions, so change processor can find them (both the description and the members)
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description)
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description)
+				.storageKey(CDOIDUtil.getLong(description.cdoID()))
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
 				.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(preferredMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(preferredMember).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(acceptableMember)
+				.storageKey(CDOIDUtil.getLong(acceptableMember.cdoID()))
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(preferredMember)
+				.storageKey(CDOIDUtil.getLong(preferredMember.cdoID()))
+				.build());
 		
 		// remove the acceptableMember and mark the description as dirty
 		description.getLanguageRefSetMembers().remove(preferredMember);
@@ -174,7 +184,9 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void changeDescriptionCasesignificance() throws Exception {
 		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description).build());
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description)
+				.storageKey(CDOIDUtil.getLong(description.cdoID()))
+				.build());
 		description.setCaseSignificance(getConcept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
 		registerDirty(description);
 		
@@ -193,8 +205,12 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_UK);
 		description.getLanguageRefSetMembers().add(acceptableMember);
 		// index revisions for previous state
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()), SnomedDescriptionIndexEntry.builder(description).acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(acceptableMember.cdoID()), SnomedRefSetMemberIndexEntry.builder(acceptableMember).build());
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description).acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)
+				.storageKey(CDOIDUtil.getLong(description.cdoID()))
+				.build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(acceptableMember)
+				.storageKey(CDOIDUtil.getLong(acceptableMember.cdoID()))
+				.build());
 		
 		// make the change
 		acceptableMember.setAcceptabilityId(Acceptability.PREFERRED.getConceptId());
@@ -256,8 +272,9 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		final SnomedRefSetMember member = createSimpleMember(description.getId(), referringRefSetId);
 		
 		registerExistingObject(description);
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description).build());
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description)
+				.storageKey(CDOIDUtil.getLong(description.cdoID()))
+				.build());
 		registerNew(member);
 		
 		process(processor);
@@ -283,9 +300,8 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(description);
 		registerExistingObject(member);
 		
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member.cdoID()), SnomedRefSetMemberIndexEntry.builder(member).build());
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description).storageKey(CDOIDUtil.getLong(description.cdoID())).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
 		
 		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
 		
@@ -312,13 +328,13 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		registerExistingObject(member1);
 		registerExistingObject(member2);
 		
-		indexRevision(MAIN, CDOIDUtil.getLong(description.cdoID()),
-				SnomedDescriptionIndexEntry.builder(description)
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder(description)
+					.storageKey(CDOIDUtil.getLong(description.cdoID()))
 					.memberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
 					.activeMemberOf(ImmutableList.of(referringRefSetId, referringRefSetId))
 					.build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member1.cdoID()), SnomedRefSetMemberIndexEntry.builder(member1).build());
-		indexRevision(MAIN, CDOIDUtil.getLong(member2.cdoID()), SnomedRefSetMemberIndexEntry.builder(member2).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member1).storageKey(CDOIDUtil.getLong(member1.cdoID())).build());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member2).storageKey(CDOIDUtil.getLong(member2.cdoID())).build());
 		
 		registerDetached(member1.cdoID(), member1.eClass());
 		

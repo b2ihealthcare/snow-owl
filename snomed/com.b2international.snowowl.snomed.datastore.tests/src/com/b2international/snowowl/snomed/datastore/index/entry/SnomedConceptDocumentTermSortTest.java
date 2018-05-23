@@ -96,10 +96,10 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 					)
 				)
 				.build();
-		indexRevision(MAIN, nextStorageKey(), conceptA);
-		indexRevision(MAIN, nextStorageKey(), conceptB);
-		indexRevision(MAIN, nextStorageKey(), conceptC);
-		indexRevision(MAIN, nextStorageKey(), conceptD);
+		indexRevision(MAIN, conceptA);
+		indexRevision(MAIN, conceptB);
+		indexRevision(MAIN, conceptC);
+		indexRevision(MAIN, conceptD);
 	}
 	
 	@Test
@@ -145,7 +145,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 
 	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId) {
-		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), nextStorageKey(), typeId, term, languageRefSetId);
+		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), -1L, typeId, term, languageRefSetId);
 	}
 
 }

@@ -67,6 +67,7 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CDOEditingContext;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.Component;
@@ -177,7 +178,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
@@ -185,7 +186,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
@@ -193,7 +194,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchRelationship()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
@@ -201,7 +202,7 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return SnomedRequests.prepareSearchMember()
 					.all()
 					.filterByIds(componentIds)
-					.setFields(SnomedDocument.Fields.ID, Revision.STORAGE_KEY)
+					.setFields(SnomedDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();

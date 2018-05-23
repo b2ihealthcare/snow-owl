@@ -30,10 +30,10 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -72,8 +72,8 @@ public class ReasonerTaxonomy implements Serializable {
 		String persistedEquivalentId = SnomedRequests.prepareSearchConcept()
 					.one()
 					.filterByIds(LongSets.toStringSet(conceptIds))
-					.setFields(SnomedConceptDocument.Fields.ID, Revision.STORAGE_KEY)
-					.sortBy(SortField.ascending(Revision.STORAGE_KEY))
+					.setFields(SnomedConceptDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
+					.sortBy(SortField.ascending(RevisionDocument.Fields.STORAGE_KEY))
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.then(concepts -> concepts.first().map(SnomedConcept::getId).orElse(null))

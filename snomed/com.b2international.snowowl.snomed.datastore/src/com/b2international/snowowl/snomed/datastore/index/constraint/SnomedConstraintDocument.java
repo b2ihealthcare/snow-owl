@@ -299,7 +299,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		}
 
 		public SnomedConstraintDocument build() {
-			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id, 
+			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id,
+					storageKey,
 					active, 
 					effectiveTime, 
 					author, 
@@ -317,7 +318,6 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 			doc.setCreated(created);
 			doc.setRevised(revised);
-			doc.setStorageKey(storageKey);
 
 			return doc;
 		}
@@ -388,6 +388,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 	private SnomedConstraintDocument(
 			String uuid, 
+			long storageKey,
 			boolean active,
 			long effectiveTime,
 			String author,
@@ -403,7 +404,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			Collection<String> refSetIds, 
 			Collection<String> relationshipKeys) {
 
-		super(uuid, Strings.nullToEmpty(description), null);
+		super(uuid, Strings.nullToEmpty(description), null, storageKey);
 
 		this.active = active;
 		this.effectiveTime = effectiveTime;

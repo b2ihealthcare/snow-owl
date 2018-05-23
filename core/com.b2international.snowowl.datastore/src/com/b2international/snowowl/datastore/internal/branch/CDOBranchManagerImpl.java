@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.SortedSet;
 
@@ -35,7 +34,6 @@ import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.BulkIndexWrite;
 import com.b2international.index.Index;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -195,12 +193,9 @@ public final class CDOBranchManagerImpl extends BaseRevisionBranching implements
     }
 
 	private IndexWrite<Void> prepareDelete(final String path) {
-		return new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.remove(RevisionBranch.class, path);
-				return null;
-			}
+		return index -> {
+			index.remove(RevisionBranch.class, path);
+			return null;
 		};
 	}
     

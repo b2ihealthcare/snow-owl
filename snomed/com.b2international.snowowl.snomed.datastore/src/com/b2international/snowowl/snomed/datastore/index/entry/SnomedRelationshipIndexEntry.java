@@ -281,6 +281,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		public SnomedRelationshipIndexEntry build() {
 			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
 					label,
+					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -297,7 +298,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setStorageKey(storageKey);
 			doc.setCreated(created);
 			doc.setRevised(revised);
 			return doc;
@@ -315,6 +315,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
+			final long storageKey,
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -334,6 +335,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		super(id, 
 				label,
 				typeId, // XXX: iconId is the same as typeId 
+				storageKey,
 				moduleId, 
 				released, 
 				active, 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.index;
 import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.google.common.collect.Multimap;
@@ -50,25 +49,15 @@ public class DelegatingIndexCommitChangeSet implements IndexCommitChangeSet {
 	}
 
 	@Override
-	public Map<String, Object> getRawMappings() {
-		return delegate.getRawMappings();
+	public Map<String, Object> getMappings() {
+		return delegate.getMappings();
 	}
 
 	@Override
-	public Multimap<Class<?>, String> getRawDeletions() {
-		return delegate.getRawDeletions();
+	public Multimap<Class<?>, String> getDeletions() {
+		return delegate.getDeletions();
 	}
 
-	@Override
-	public Map<Long, Revision> getRevisionMappings() {
-		return delegate.getRevisionMappings();
-	}
-
-	@Override
-	public Multimap<Class<? extends Revision>, Long> getRevisionDeletions() {
-		return delegate.getRevisionDeletions();
-	}
-	
 	@Override
 	public String getDescription() {
 		return delegate.getDescription();

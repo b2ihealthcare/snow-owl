@@ -141,11 +141,12 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 	protected SnomedDocument(final String id,
 			final String label,
 			final String iconId,
+			final long storageKey,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
 			final long effectiveTime) {
-		super(id, label, iconId);
+		super(id, label, iconId, storageKey);
 		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = moduleId;
 		this.released = released;

@@ -49,8 +49,9 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 	
 	@Test
 	public void indexRelationship() throws Exception {
+		String id = RandomSnomedIdentiferGenerator.generateRelationshipId();
 		final SnomedRelationshipIndexEntry relationship = SnomedRelationshipIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.id(id)
 				.active(true)
 				.released(true)
 				.effectiveTime(new Date().getTime())
@@ -63,10 +64,11 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 				.destinationNegated(true)
 				.group(1)
 				.unionGroup(1)
+				.storageKey(1L)
 				.build();
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, relationship);
-		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, relationship);
+		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, id);
+		assertEquals(1L, actual.getStorageKey());
 		assertEquals(null, actual.getNamespace());
 		assertDocEquals(relationship, actual);
 	}

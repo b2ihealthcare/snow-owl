@@ -23,7 +23,6 @@ import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -47,8 +46,6 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
@@ -63,7 +60,7 @@ import com.google.inject.util.Providers;
  */
 public class IssueSO2109Test {
 
-	private static final long STORAGE_KEY = 1L;
+	private static final String STORAGE_KEY = "1";
 	private static final String DATA_VALUE = "1";
 	private static final String INTERRUPT_MESSAGE = "Interrupting rebase";
 
@@ -112,7 +109,7 @@ public class IssueSO2109Test {
 		final long timestamp = clock.getTimeStamp();
 
 		store.prepareCommit()
-			.stageNew(STORAGE_KEY, new Data(DATA_VALUE))
+			.stageNew(new Data(STORAGE_KEY, DATA_VALUE))
 			.commit(UUID.randomUUID().toString(), childBranch, timestamp, UUID.randomUUID().toString(), "Commit");
 
 		manager.handleCommit(childBranch, timestamp);
@@ -152,13 +149,8 @@ public class IssueSO2109Test {
 
 	}
 
-	private Data getData(final String path, final long storageKey) {
-		return store.read(path, new RevisionIndexRead<Data>() {
-			@Override
-			public Data execute(final RevisionSearcher index) throws IOException {
-				return index.get(Data.class, storageKey);
-			}
-		});
+	private Data getData(final String path, final String storageKey) {
+		return store.read(path, index -> index.get(Data.class, storageKey));
 	}
 
 	@Doc
@@ -167,16 +159,21 @@ public class IssueSO2109Test {
 		@JsonProperty
 		private final String field;
 
-		public Data(final String field) {
+		public Data(final String id, final String field) {
+			super(id);
 			this.field = field;
 		}
 
 		@JsonCreator
-		public Data(@JsonProperty("field") final String field, @JsonProperty("storageKey") final long storageKey,
-				@JsonProperty("branchPath") final String branchPath, @JsonProperty("commitTimestamp") final long commitTimestamp,
-				@JsonProperty("created") final RevisionBranchPoint created, @JsonProperty("revised") final List<RevisionBranchPoint> revised) {
+		public Data(
+				@JsonProperty("id") final String id,
+				@JsonProperty("field") final String field, 
+				@JsonProperty("branchPath") final String branchPath, 
+				@JsonProperty("commitTimestamp") final long commitTimestamp,
+				@JsonProperty("created") final RevisionBranchPoint created, 
+				@JsonProperty("revised") final List<RevisionBranchPoint> revised) {
+			super(id);
 			this.field = field;
-			setStorageKey(storageKey);
 			setCreated(created);
 			setRevised(revised);
 		}

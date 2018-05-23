@@ -60,10 +60,11 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 	
 	@Test
 	public void indexDescriptionConstraint() throws Exception {
+		final String id = randomUUID();
 		final SnomedConstraintDocument constraint = SnomedConstraintDocument.descriptionBuilder()
 				.active(DEFAULT_STATUS)
 				.author(DEFAULT_AUTHOR)
-				.domain(new HierarchyDefinitionFragment(randomUUID(),
+				.domain(new HierarchyDefinitionFragment(id,
 						DEFAULT_STATUS,
 						DEFAULT_EFFECTIVE_TIME,
 						DEFAULT_AUTHOR,
@@ -71,32 +72,33 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 						HierarchyInclusionType.SELF_OR_DESCENDANT))
 				.effectiveTime(DEFAULT_EFFECTIVE_TIME)
 				.form(ConstraintForm.ALL_FORMS)
-				.id(randomUUID())
-				.predicate(new CardinalityPredicateFragment(randomUUID(),
+				.id(id)
+				.predicate(new CardinalityPredicateFragment(id,
 						DEFAULT_STATUS,
 						DEFAULT_EFFECTIVE_TIME,
 						DEFAULT_AUTHOR,
 						1,
 						1,
 						GroupRule.ALL_GROUPS,
-						new DescriptionPredicateFragment(randomUUID(),
+						new DescriptionPredicateFragment(id,
 								DEFAULT_STATUS,
 								DEFAULT_EFFECTIVE_TIME,
 								DEFAULT_AUTHOR,
 								Concepts.FULLY_SPECIFIED_NAME)))
-				.storageKey(STORAGE_KEY1)
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of SNOMED CT Root, including the concept itself, must have exactly one FSN.")
+				.storageKey(1L)
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, constraint);
-		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, constraint);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
+		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 
 	@Test
 	public void indexRelationshipConstraint() throws Exception {
+		final String id = randomUUID();
 		final SnomedConstraintDocument constraint = SnomedConstraintDocument.relationshipBuilder()
 				.active(DEFAULT_STATUS)
 				.author(DEFAULT_AUTHOR)
@@ -108,7 +110,7 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 						HierarchyInclusionType.DESCENDANT))
 				.effectiveTime(DEFAULT_EFFECTIVE_TIME)
 				.form(ConstraintForm.ALL_FORMS)
-				.id(randomUUID())
+				.id(id)
 				.predicate(new CardinalityPredicateFragment(randomUUID(),
 						DEFAULT_STATUS,
 						DEFAULT_EFFECTIVE_TIME,
@@ -132,19 +134,20 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 										Concepts.ROOT_CONCEPT, 
 										HierarchyInclusionType.SELF_OR_DESCENDANT),
 								Concepts.STATED_RELATIONSHIP)))
-				.storageKey(STORAGE_KEY1)
+				.storageKey(1L)
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of SNOMED CT Root must have exactly one stated IS_A relationship.")
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, constraint);
-		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, constraint);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
+		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 
 	@Test
 	public void indexConcreteDomainConstraint() throws Exception {
+		final String id = randomUUID();
 		final SnomedConstraintDocument constraint = SnomedConstraintDocument.relationshipBuilder()
 				.active(DEFAULT_STATUS)
 				.author(DEFAULT_AUTHOR)
@@ -156,7 +159,7 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 						HierarchyInclusionType.DESCENDANT))
 				.effectiveTime(DEFAULT_EFFECTIVE_TIME)
 				.form(ConstraintForm.ALL_FORMS)
-				.id(randomUUID())
+				.id(id)
 				.predicate(new CardinalityPredicateFragment(randomUUID(),
 						DEFAULT_STATUS,
 						DEFAULT_EFFECTIVE_TIME,
@@ -172,14 +175,14 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 								"canBeTaggedWithVaccine",
 								DataType.BOOLEAN,
 								Concepts.STATED_RELATIONSHIP)))
-				.storageKey(STORAGE_KEY1)
+				.storageKey(1L)
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of Substance must have exactly one boolean concrete domain member called 'Vaccine'.")
 				.build();
 		
-		indexRevision(RevisionBranch.MAIN_PATH, STORAGE_KEY1, constraint);
-		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, STORAGE_KEY1);
-		assertEquals(STORAGE_KEY1, actual.getStorageKey());
+		indexRevision(RevisionBranch.MAIN_PATH, constraint);
+		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
+		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 }

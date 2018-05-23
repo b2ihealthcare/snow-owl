@@ -57,8 +57,8 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	/**
 	 * @since 4.7
 	 */
-	public static class Fields {
-		public static final String ID = "id";
+	public static class Fields extends Revision.Fields {
+		public static final String STORAGE_KEY = "storageKey";
 		public static final String ICON_ID = "iconId";
 	}
 	
@@ -78,9 +78,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		protected RevisionBranchPoint created;
 		protected List<RevisionBranchPoint> revised = Collections.emptyList();
 
-		/**
-		 * @deprecated - see reason at {@link com.b2international.snowowl.core.domain.IComponent#getStorageKey()} why this should be removed
-		 */
 		public final B storageKey(long storageKey) {
 			this.storageKey = storageKey;
 			return getSelf();
@@ -123,26 +120,26 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		
 	}
 	
-	private final String id;
 	private final String label;
 	private final String iconId;
 	private float score = 0.0f;
+	private final long storageKey;
 	
-	protected RevisionDocument(final String id, final String label, String iconId) {
-		this.id = id;
+	protected RevisionDocument(final String id, final String label, String iconId, final long storageKey) {
+		super(id);
 		this.label = label;
 		this.iconId = iconId;
+		this.storageKey = storageKey;
+	}
+	
+	public final long getStorageKey() {
+		return storageKey;
 	}
 	
 	@JsonIgnore
 	@Override
 	public String getLabel() {
 		return label;
-	}
-
-	@Override
-	public String getId() {
-		return id;
 	}
 
 	public String getIconId() {
@@ -169,7 +166,7 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("id", id)
+				.add(Fields.STORAGE_KEY, storageKey)
 				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);
