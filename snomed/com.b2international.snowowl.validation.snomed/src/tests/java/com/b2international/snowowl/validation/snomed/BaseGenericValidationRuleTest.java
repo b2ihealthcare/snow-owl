@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
@@ -90,39 +91,36 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1)).build();
 		// index common required SNOMED CT Concepts
 
-		index().write(MAIN, 1L, writer -> {
-			writer.put(nextStorageKey(), concept(Concepts.ROOT_CONCEPT).build());
+		index()
+			.prepareCommit()
+			.stageNew(nextStorageKey(), concept(Concepts.ROOT_CONCEPT).build())
 			// Attributes
-			writer.put(nextStorageKey(), concept(ATTRIBUTE).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.IS_A).parents(ATTRIBUTEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.CONCEPT_MODEL_ATTRIBUTE).parents(ATTRIBUTEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.HAS_ACTIVE_INGREDIENT).parents(CONCEPT_MODEL_ATTRIBUTEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.FINDING_SITE).parents(CONCEPT_MODEL_ATTRIBUTEL).build());
+			.stageNew(nextStorageKey(), concept(ATTRIBUTE).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.IS_A).parents(ATTRIBUTEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.CONCEPT_MODEL_ATTRIBUTE).parents(ATTRIBUTEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.HAS_ACTIVE_INGREDIENT).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.FINDING_SITE).parents(CONCEPT_MODEL_ATTRIBUTEL).build())
 			// Char Types
-			writer.put(nextStorageKey(), concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build());
+			.stageNew(nextStorageKey(), concept(Concepts.CHARACTERISTIC_TYPE).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.ADDITIONAL_RELATIONSHIP).parents(Long.parseLong(Concepts.CHARACTERISTIC_TYPE)).build())
 			// Description types
-			writer.put(nextStorageKey(), concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.TEXT_DEFINITION).parents(DESCRIPTION_TYPEL).build());
+			.stageNew(nextStorageKey(), concept(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.SYNONYM).parents(DESCRIPTION_TYPEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.TEXT_DEFINITION).parents(DESCRIPTION_TYPEL).build())
 			// Case significance
-			writer.put(nextStorageKey(), concept(Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build());
-			writer.put(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build());
+			.stageNew(nextStorageKey(), concept(Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			// Modules
-			writer.put(nextStorageKey(), concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()); // Historical association
+			.stageNew(nextStorageKey(), concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
 			// Refsets
-			writer.put(nextStorageKey(), concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build());
-			writer.put(nextStorageKey(), concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build());
-
-			writer.commit();
-			return null;
-		});
-
+			.stageNew(nextStorageKey(), concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
+			.stageNew(nextStorageKey(), concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
+			.commit(UUID.randomUUID().toString(), MAIN, 1L, UUID.randomUUID().toString(), "Initialize test data");
 	}
 
 	@Override
