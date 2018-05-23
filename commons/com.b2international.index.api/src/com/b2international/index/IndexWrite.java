@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,6 @@ public interface IndexWrite<T> {
 	 * @return
 	 * @throws IOException
 	 */
-	T execute(Writer index) throws IOException;
+	T execute(DocWriter index) throws IOException;
 
 }

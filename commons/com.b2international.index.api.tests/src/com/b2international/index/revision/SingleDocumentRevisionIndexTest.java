@@ -42,16 +42,16 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void indexRevision() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		assertEquals(data, getRevision(MAIN, Data.class, STORAGE_KEY1));
 	}
 
 	@Test
 	public void updateRevision() throws Exception {
 		indexRevision();
-		final Data data = new Data("field1Changed", "field2Changed");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1Changed", "field2Changed");
+		indexRevision(MAIN, data);
 		assertEquals(data, getRevision(MAIN, Data.class, STORAGE_KEY1));
 	}
 
@@ -83,12 +83,12 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final String childBranch = createBranch(MAIN, "a");
 		
 		// put updated revision to child branch
-		final Data data = new Data("field1Changed", "field2Changed");
-		indexRevision(childBranch, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1Changed", "field2Changed");
+		indexRevision(childBranch, data);
 		// lookup by storageKey on child should return new revision
 		assertEquals(data, getRevision(childBranch, Data.class, STORAGE_KEY1));
 
-		final Data expectedRevisionOnMain = new Data("field1", "field2");
+		final Data expectedRevisionOnMain = new Data(STORAGE_KEY1, "field1", "field2");
 		final Data actualRevisionOnMain = getRevision(MAIN, Data.class, STORAGE_KEY1);
 		assertEquals(expectedRevisionOnMain, actualRevisionOnMain);
 	}
@@ -98,13 +98,13 @@ public class SingleDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		updateRevisionShadowsRevisionOnParent();
 		
 		// put new revision to MAIN
-		final Data data = new Data("field1ChangedOnMain", "field2ChangedOnMain");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1ChangedOnMain", "field2ChangedOnMain");
+		indexRevision(MAIN, data);
 		// lookup by storageKey on child should return new revision
 		assertEquals(data, getRevision(MAIN, Data.class, STORAGE_KEY1));
 		
 		// child branch still has his own updated revision
-		final Data expectedRevisionOnChild = new Data("field1Changed", "field2Changed");
+		final Data expectedRevisionOnChild = new Data(STORAGE_KEY1, "field1Changed", "field2Changed");
 		final Data actualRevisionOnChild = getRevision("MAIN/a", Data.class, STORAGE_KEY1);
 		assertEquals(expectedRevisionOnChild, actualRevisionOnChild);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void searchDeeplyNestedDocument() throws Exception {
-		final DeeplyNestedData data = new DeeplyNestedData(new ParentData("field1", new NestedData("field2")));
-		final DeeplyNestedData data2 = new DeeplyNestedData(new ParentData("field12", new NestedData("field22")));
+		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", new NestedData("field2")));
+		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(MAIN, STORAGE_KEY1, data);
-		indexRevision(MAIN, STORAGE_KEY2, data2);
+		indexRevision(MAIN, data);
+		indexRevision(MAIN, data2);
 		
 		final Query<DeeplyNestedData> deeplyNestedQuery = Query.select(DeeplyNestedData.class).where(Expressions.nestedMatch("parentData.nestedData", Expressions.exactMatch("field2", "field2"))).build();
 		final Iterable<DeeplyNestedData> matches = search(MAIN, deeplyNestedQuery);
@@ -57,11 +57,11 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	@Test
 	public void searchAndReturnDeeplyNestedDocument() throws Exception {
 		final NestedData nestedData = new NestedData("field2");
-		final DeeplyNestedData data = new DeeplyNestedData(new ParentData("field1", nestedData));
-		final DeeplyNestedData data2 = new DeeplyNestedData(new ParentData("field12", new NestedData("field22")));
+		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", nestedData));
+		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(MAIN, STORAGE_KEY1, data);
-		indexRevision(MAIN, STORAGE_KEY2, data2);
+		indexRevision(MAIN, data);
+		indexRevision(MAIN, data2);
 		
 		final Query<NestedData> query = Query.select(NestedData.class).from(DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
 		final Iterable<NestedData> matches = search(MAIN, query);

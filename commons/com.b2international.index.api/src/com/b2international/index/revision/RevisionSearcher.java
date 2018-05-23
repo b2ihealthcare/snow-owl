@@ -39,24 +39,24 @@ public interface RevisionSearcher extends Searcher {
 	 * 
 	 * @param type
 	 *            - the type of the object
-	 * @param storageKey
-	 *            - the storage identifier of the revision
-	 * @return the loaded revision object
+	 * @param key
+	 *            - the logical, unique identifier of the object to load
+	 * @return the latest revision of the object
 	 * @throws IOException
 	 */
-	<T extends Revision> T get(Class<T> type, long storageKey) throws IOException;
+	<T extends Revision> T get(Class<T> type, String key) throws IOException;
 
 	/**
 	 * Gets a bunch of revision for the given type and storage key collection.
 	 * 
 	 * @param type
 	 *            - the type of the object
-	 * @param storageKeys
-	 *            - the storage identifiers of the revisions
-	 * @return the loaded revision objects
+	 * @param keys
+	 *            - the logical, unique identifiers of the objects to load
+	 * @return the latest revisions of the objects
 	 * @throws IOException
 	 */
-	<T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException;
+	<T extends Revision> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException;
 
 	/**
 	 * Execute the given query among all stored items.

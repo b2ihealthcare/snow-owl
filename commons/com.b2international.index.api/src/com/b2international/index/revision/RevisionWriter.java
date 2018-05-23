@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 package com.b2international.index.revision;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-
 import com.b2international.index.Writer;
 
 /**
@@ -26,29 +22,11 @@ import com.b2international.index.Writer;
  * 
  * @since 4.7
  */
-public interface RevisionWriter {
-
-	void put(long storageKey, Revision object);
-
-	void putAll(Map<Long, Revision> revisionsByStorageKey);
-
-	void remove(Class<? extends Revision> type, long storageKey);
-
-	void remove(Class<? extends Revision> type, Collection<Long> storageKeys);
-
-	void removeAll(Map<Class<? extends Revision>, Collection<Long>> storageKeysByType);
-
-	void commit() throws IOException;
+public interface RevisionWriter extends Writer {
 
 	String branch();
 
+	@Override
 	RevisionSearcher searcher();
-
-	/**
-	 * Returns the underlying raw writer.
-	 * 
-	 * @return
-	 */
-	Writer writer();
 
 }

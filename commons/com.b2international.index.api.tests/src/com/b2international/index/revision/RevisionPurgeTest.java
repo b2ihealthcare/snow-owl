@@ -15,7 +15,8 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collection;
 
@@ -26,8 +27,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * @since 5.0
@@ -46,7 +45,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void purgeBranchWithSingleRevision() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
 		index().purge(MAIN, Purge.ALL);
 		// the revision should be still there
 		assertNotNull(getRevision(MAIN, Data.class, STORAGE_KEY1));
@@ -54,49 +53,49 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void purgeBranchWithTwoRevisionsOfDocument() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1,"field1Changed", "field2"));
 		index().purge(MAIN, Purge.ALL);
 		// only the most recent revision should be available
 		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
-				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
 		assertEquals(1, Iterables.size(revisions));
 		final Data actual = Iterables.getOnlyElement(revisions);
-		assertDocEquals(new Data("field1Changed", "field2"), actual);
+		assertDocEquals(new Data(STORAGE_KEY1, "field1Changed", "field2"), actual);
 	}
 	
 	@Test
 	public void purgeMainWithTwoRevisionsAndABranch() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
 		createBranch(MAIN, "a");
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2"));
 		index().purge(MAIN, Purge.ALL);
 		
 		// both revisions should still remain, because the "MAIN/a" requires the first one
 		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
-				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
 		assertEquals(2, Iterables.size(revisions));
 		final Data actualOnMAIN = getRevision(MAIN, Data.class, STORAGE_KEY1);
-		assertDocEquals(new Data("field1Changed", "field2"), actualOnMAIN);
+		assertDocEquals(new Data(STORAGE_KEY1, "field1Changed", "field2"), actualOnMAIN);
 		
 		final Data actualOnChild = getRevision("MAIN/a", Data.class, STORAGE_KEY1);
-		assertDocEquals(new Data("field1", "field2"), actualOnChild);
+		assertDocEquals(new Data(STORAGE_KEY1, "field1", "field2"), actualOnChild);
 	}
 	
 	@Test
 	public void purgeChildBranchDoesNotPurgeParentRevisions() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2"));
 		createBranch(MAIN, "a");
 		
 		index().purge("MAIN/a", Purge.ALL);
 		
 		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
-				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
 		assertEquals(2, Iterables.size(revisions));
@@ -104,15 +103,15 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void purgeLatestPurgesOnlyMostRecentSegment() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2"));
 		createBranch(MAIN, "a");
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2Changed"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2Changed"));
 		
 		index().purge(MAIN, Purge.LATEST);
 		
 		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
-				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
 		assertEquals(3, Iterables.size(revisions));
@@ -120,16 +119,16 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void purgeHistoryPurgesHistoricalSegments() throws Exception {
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2"));
 		createBranch(MAIN, "a");
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Changed", "field2Changed"));
-		indexRevision(MAIN, STORAGE_KEY1, new Data("field1Latest", "field2Latest"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Changed", "field2Changed"));
+		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1Latest", "field2Latest"));
 		
 		index().purge(MAIN, Purge.HISTORY);
 		
 		final Iterable<Data> revisions = searchRaw(Query.select(Data.class)
-				.where(Expressions.exactMatch(Revision.STORAGE_KEY, STORAGE_KEY1))
+				.where(Expressions.exactMatch(Revision.Fields.ID, STORAGE_KEY1))
 				.limit(Integer.MAX_VALUE)
 				.build());
 		assertEquals(3, Iterables.size(revisions));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,8 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		child.setField1("field1");
 		child.setField2("field2");
 		
-		final NestedData parent = new NestedData("parent1", child);
-		indexRevision(MAIN, STORAGE_KEY1, parent);
+		final NestedData parent = new NestedData(STORAGE_KEY1, "parent1", child);
+		indexRevision(MAIN, parent);
 		assertEquals(parent, getRevision(MAIN, NestedData.class, STORAGE_KEY1));
 	}
 
@@ -54,15 +54,15 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final Data child1 = new Data();
 		child1.setField1("field1_1");
 		child1.setField2("field2_1");
-		final NestedData parent1 = new NestedData("parent1", child1);
+		final NestedData parent1 = new NestedData(STORAGE_KEY1, "parent1", child1);
 		
 		final Data child2 = new Data();
 		child2.setField1("field1_2");
 		child2.setField2("field2_2");
-		final NestedData parent2 = new NestedData("parent2", child2);
+		final NestedData parent2 = new NestedData(STORAGE_KEY2, "parent2", child2);
 		
-		indexRevision(MAIN, STORAGE_KEY1, parent1);
-		indexRevision(MAIN, STORAGE_KEY2, parent2);
+		indexRevision(MAIN, parent1);
+		indexRevision(MAIN, parent2);
 		
 		final Query<NestedData> query = Query.select(NestedData.class)
 				.where(Expressions.nestedMatch("data", Expressions.exactMatch("field1", "field1_1")))

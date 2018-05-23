@@ -66,7 +66,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 /**
  * @since 5.10 
  */
-public class EsDocumentWriter implements Writer {
+public class EsDocumentWriter implements DocWriter {
 
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 
@@ -104,7 +104,12 @@ public class EsDocumentWriter implements Writer {
 
 	@Override
 	public void remove(Class<?> type, String key) {
-		removeAll(Collections.singletonMap(type, ImmutableSet.of(key)));
+		remove(type, ImmutableSet.of(key));
+	}
+	
+	@Override
+	public void remove(Class<?> type, Set<String> keysToRemove) {
+		removeAll(Collections.singletonMap(type, keysToRemove));
 	}
 
 	@Override
@@ -337,10 +342,6 @@ public class EsDocumentWriter implements Writer {
 	@Override
 	public DocSearcher searcher() {
 		return searcher;
-	}
-
-	@Override
-	public void close() throws Exception {
 	}
 	
 }

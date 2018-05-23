@@ -65,7 +65,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 
 	@Test
 	public void commitUpdatesHeadTimestamp() throws Exception {
-		long timestamp = commit(MAIN, Collections.emptyMap());
+		long timestamp = commit(MAIN, Collections.emptySet());
 		assertThat(getMainBranch().getHeadTimestamp()).isEqualTo(timestamp);
 		assertThat(branching().getBranchState(MAIN)).isEqualTo(BranchState.UP_TO_DATE);
 	}
@@ -106,22 +106,22 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	@Test
 	public void forwardStateAfterCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
-		commit(path, Collections.emptyMap());
+		commit(path, Collections.emptySet());
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.FORWARD);
 	}
 	
 	@Test
 	public void behindStateAfterParentCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
-		commit(MAIN, Collections.emptyMap());
+		commit(MAIN, Collections.emptySet());
 		assertState(path, BranchState.BEHIND);
 	}
 	
 	@Test
 	public void divergedStateAfterParentAndBranchCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
-		commit(MAIN, Collections.emptyMap());
-		commit(path, Collections.emptyMap());
+		commit(MAIN, Collections.emptySet());
+		commit(path, Collections.emptySet());
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.DIVERGED);
 	}
 	

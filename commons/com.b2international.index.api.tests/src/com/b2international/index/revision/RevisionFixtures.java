@@ -44,7 +44,11 @@ public class RevisionFixtures {
 		private String field2;
 
 		@JsonCreator
-		public Data(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2) {
+		public Data(
+				@JsonProperty(Revision.Fields.ID) final String id, 
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2) {
+			super(id);
 			this.field1 = field1;
 			this.field2 = field2;
 		}
@@ -72,7 +76,10 @@ public class RevisionFixtures {
 		private final String field;
 		
 		@JsonCreator
-		public AnalyzedData(@JsonProperty("field") final String field) {
+		public AnalyzedData(
+				@JsonProperty(Revision.Fields.ID) final String id, 
+				@JsonProperty("field") final String field) {
+			super(id);
 			this.field = field;
 		}
 		
@@ -105,9 +112,12 @@ public class RevisionFixtures {
 		private final float doi;
 
 		@JsonCreator
-		public ScoredData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+		public ScoredData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2,
 				@JsonProperty("doi") final float doi) {
-			super(field1, field2);
+			super(id, field1, field2);
 			this.doi = doi;
 		}
 		
@@ -140,9 +150,12 @@ public class RevisionFixtures {
 		private final boolean active;
 
 		@JsonCreator
-		public BooleanData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2,
+		public BooleanData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2,
 				@JsonProperty("value") final boolean active) {
-			super(field1, field2);
+			super(id, field1, field2);
 			this.active = active;
 		}
 		
@@ -159,8 +172,13 @@ public class RevisionFixtures {
 		private final int to;
 
 		@JsonCreator
-		public RangeData(@JsonProperty("field1") final String field1, @JsonProperty("field2") final String field2, @JsonProperty("from") final int from, @JsonProperty("to") final int to) {
-			super(field1, field2);
+		public RangeData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") final String field1, 
+				@JsonProperty("field2") final String field2, 
+				@JsonProperty("from") final int from,
+				@JsonProperty("to") final int to) {
+			super(id, field1, field2);
 			this.from = from;
 			this.to = to;
 		}
@@ -183,7 +201,11 @@ public class RevisionFixtures {
 		private com.b2international.index.Fixtures.Data data;
 		
 		@JsonCreator
-		public NestedData(@JsonProperty("field1") String field1, @JsonProperty("data") com.b2international.index.Fixtures.Data data) {
+		public NestedData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("field1") String field1, 
+				@JsonProperty("data") com.b2international.index.Fixtures.Data data) {
+			super(id);
 			this.field1 = field1;
 			this.data = data;
 		}
@@ -210,7 +232,10 @@ public class RevisionFixtures {
 		private com.b2international.index.Fixtures.ParentData parentData;
 		
 		@JsonCreator
-		public DeeplyNestedData(@JsonProperty("parentData") com.b2international.index.Fixtures.ParentData parentData) {
+		public DeeplyNestedData(
+				@JsonProperty(Revision.Fields.ID) final String id,
+				@JsonProperty("parentData") com.b2international.index.Fixtures.ParentData parentData) {
+			super(id);
 			this.parentData = parentData;
 		}
 		

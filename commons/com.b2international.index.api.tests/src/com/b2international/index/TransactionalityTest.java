@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.index;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -39,12 +38,9 @@ public class TransactionalityTest extends BaseIndexTest {
 	@Test
 	public void uncommittedTransactionShouldNotChangeTheIndex() throws Exception {
 		final Data data = new Data();
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.put(KEY1, data);
-				return null;
-			}
+		index().write(index -> {
+			index.put(KEY1, data);
+			return null;
 		});
 		// after the failed transaction data should not be in the index
 		assertNull(getDocument(Data.class, KEY1));
@@ -53,25 +49,21 @@ public class TransactionalityTest extends BaseIndexTest {
 	@Test
 	public void tx1CommitShouldNotCommitTx2Changes() throws Exception {
 		final Data data = new Data();
-		try (Writer tx1 = client().writer(); 
-				Writer tx2 = client().writer()) {
-			tx1.put(KEY1, data);
-			tx2.put(KEY2, data);
-			tx1.commit();
-			
-			// at this point tx2 content should not be visible
-			try (DocSearcher searcher = client().searcher()) {
-				assertEquals(data, searcher.get(Data.class, KEY1));
-				assertNull(searcher.get(Data.class, KEY2));
-			}
-			
-			tx2.commit();
-			
-			try (DocSearcher searcher = client().searcher()) {
-				assertEquals(data, searcher.get(Data.class, KEY1));
-				assertEquals(data, searcher.get(Data.class, KEY2));
-			}
-		}
+		Writer tx1 = client().writer(); 
+		Writer tx2 = client().writer();
+		tx1.put(KEY1, data);
+		tx2.put(KEY2, data);
+		tx1.commit();
+		
+		// at this point tx2 content should not be visible
+		DocSearcher searcher = client().searcher();
+		assertEquals(data, searcher.get(Data.class, KEY1));
+		assertNull(searcher.get(Data.class, KEY2));
+		
+		tx2.commit();
+		
+		assertEquals(data, searcher.get(Data.class, KEY1));
+		assertEquals(data, searcher.get(Data.class, KEY2));
 	}
 	
 }

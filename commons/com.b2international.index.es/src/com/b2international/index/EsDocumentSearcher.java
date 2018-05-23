@@ -83,11 +83,6 @@ public class EsDocumentSearcher implements DocSearcher {
 	}
 
 	@Override
-	public void close() throws Exception {
-		// nothing to do
-	}
-
-	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		checkArgument(!Strings.isNullOrEmpty(key), "Key cannot be empty");
 		final DocumentMapping mapping = admin.mappings().getMapping(type);

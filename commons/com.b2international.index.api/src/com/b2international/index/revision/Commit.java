@@ -15,13 +15,16 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 
 import java.util.Collection;
+import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Text;
@@ -51,6 +54,9 @@ public final class Commit implements WithScore {
 		private String userId;
 		private String comment;
 		private long timestamp;
+		private Set<String> newComponents;
+		private Set<String> changedComponents;
+		private Set<String> deletedComponents;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -76,9 +82,24 @@ public final class Commit implements WithScore {
 			this.timestamp = timestamp;
 			return this;
 		}
+		
+		public Builder newComponents(Set<String> newComponents) {
+			this.newComponents = newComponents;
+			return this;
+		}
+		
+		public Builder changedComponents(Set<String> changedComponents) {
+			this.changedComponents = changedComponents;
+			return this;
+		}
+		
+		public Builder deletedComponents(Set<String> deletedComponents) {
+			this.deletedComponents = deletedComponents;
+			return this;
+		}
 
 		public Commit build() {
-			return new Commit(id, branch, userId, comment, timestamp);
+			return new Commit(id, branch, userId, comment, timestamp, newComponents, changedComponents, deletedComponents);
 		}
 
 	}
@@ -135,6 +156,10 @@ public final class Commit implements WithScore {
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timestamp;
+	private final Set<String> newComponents;
+	private final Set<String> changedComponents;
+	private final Set<String> deletedComponents;	
+	
 	
 	private float score = 0.0f;
 	
@@ -143,12 +168,18 @@ public final class Commit implements WithScore {
 			final String branch,
 			final String userId,
 			final String comment,
-			final long timestamp) {
+			final long timestamp,
+			Set<String> newComponents,
+			Set<String> changedComponents,
+			Set<String> deletedComponents) {
 		this.id = id;
 		this.branch = branch;
 		this.userId = userId;
 		this.comment = comment;
 		this.timestamp = timestamp;
+		this.newComponents = Collections3.toImmutableSet(newComponents);
+		this.changedComponents = Collections3.toImmutableSet(changedComponents);
+		this.deletedComponents = Collections3.toImmutableSet(deletedComponents);
 	}
 
 	public String getId() {
@@ -180,6 +211,18 @@ public final class Commit implements WithScore {
 
 	public long getTimestamp() {
 		return timestamp;
+	}
+	
+	public Set<String> getNewComponents() {
+		return newComponents;
+	}
+	
+	public Set<String> getChangedComponents() {
+		return changedComponents;
+	}
+	
+	public Set<String> getDeletedComponents() {
+		return deletedComponents;
 	}
 
 }

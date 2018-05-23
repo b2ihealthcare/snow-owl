@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
@@ -43,18 +44,24 @@ import com.google.common.base.Objects.ToStringHelper;
 		+ "}")
 public abstract class Revision implements WithId {
 	
-	public static final String STORAGE_KEY = "storageKey";
-	public static final String CREATED = "created";
-	public static final String REVISED = "revised";
-	
+	public static class Fields {
+		public static final String ID = "id";
+		public static final String CREATED = "created";
+		public static final String REVISED = "revised";
+	}
+
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
 
 	private String _id;
 	
-	private long storageKey;
+	private String id;
 	private RevisionBranchPoint created;
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
+	
+	public Revision(String id) {
+		this.id = checkNotNull(id, "Logical identifier cannot be null");
+	}
 	
 	@Override
 	public final void set_id(String _id) {
@@ -68,10 +75,6 @@ public abstract class Revision implements WithId {
 		return _id;
 	}
 	
-	protected final void setStorageKey(long storageKey) {
-		this.storageKey = storageKey;
-	}
-	
 	protected final void setCreated(RevisionBranchPoint created) {
 		this.created = created;
 	}
@@ -80,18 +83,18 @@ public abstract class Revision implements WithId {
 		this.revised = revised;
 	}
 	
-	public RevisionBranchPoint getCreated() {
+	public final String getId() {
+		return id;
+	}
+	
+	public final RevisionBranchPoint getCreated() {
 		return created;
 	}
 	
-	public List<RevisionBranchPoint> getRevised() {
+	public final List<RevisionBranchPoint> getRevised() {
 		return revised;
 	}
 	
-	public final long getStorageKey() {
-		return storageKey;
-	}
-
 	@Override
 	public final String toString() {
 		return doToString().toString();
@@ -100,9 +103,9 @@ public abstract class Revision implements WithId {
 	protected ToStringHelper doToString() {
 		return Objects.toStringHelper(this)
 				.add(DocumentMapping._ID, _id)
-				.add(STORAGE_KEY, storageKey)
-				.add(Revision.CREATED, created)
-				.add(Revision.REVISED, revised);
+				.add(Revision.Fields.ID, id)
+				.add(Revision.Fields.CREATED, created)
+				.add(Revision.Fields.REVISED, revised);
 	}
 	
 	public static Expression toRevisionFilter(SortedSet<RevisionSegment> segments) {
@@ -112,8 +115,8 @@ public abstract class Revision implements WithId {
 		for (RevisionSegment segment : segments) {
 			final String start = segment.getStartAddress();
 			final String end = segment.getEndAddress();
-			created.should(Expressions.matchRange(Revision.CREATED, start, end));
-			query.mustNot(Expressions.matchRange(Revision.REVISED, start, end));
+			created.should(Expressions.matchRange(Revision.Fields.CREATED, start, end));
+			query.mustNot(Expressions.matchRange(Revision.Fields.REVISED, start, end));
 		}
 		
 		return query
@@ -124,7 +127,7 @@ public abstract class Revision implements WithId {
 	public static Expression toCreatedInFilter(SortedSet<RevisionSegment> segments) {
 		final ExpressionBuilder createdIn = Expressions.builder();
 		for (RevisionSegment segment : segments) {
-			createdIn.should(segment.toRangeExpression(Revision.CREATED));
+			createdIn.should(segment.toRangeExpression(Revision.Fields.CREATED));
 		}
 		return createdIn.build(); 
 	}
@@ -132,7 +135,7 @@ public abstract class Revision implements WithId {
 	public static Expression toRevisedInFilter(SortedSet<RevisionSegment> segments) {
 		final ExpressionBuilder revisedIn = Expressions.builder();
 		for (RevisionSegment segment : segments) {
-			revisedIn.should(segment.toRangeExpression(Revision.REVISED));
+			revisedIn.should(segment.toRangeExpression(Revision.Fields.REVISED));
 		}
 		return revisedIn.build();
 	}

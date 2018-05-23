@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,12 @@
  */
 package com.b2international.index;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * @since 4.7
+ * @since 6.5
  */
-public interface Writer {
+public interface DocWriter extends Writer {
 
-	void put(String key, Object object);
-	
-	<T> void putAll(Map<String, T> objectsByKey);
-
-	<T> void bulkUpdate(BulkUpdate<T> update);
-	
-	void remove(Class<?> type, String keyToRemove);
-	
-	void remove(Class<?> type, Set<String> keysToRemove);
-	
-	void removeAll(Map<Class<?>, Set<String>> keysToRemoveByType);
-
-	void commit() throws IOException;
-
-	Searcher searcher();
-
+	@Override
+	DocSearcher searcher();
 	
 }

@@ -45,25 +45,25 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 	public void indexDeeplyNestedDocument() throws Exception {
 		final DeepData data = new DeepData(new ParentData("field1", new NestedData("field2")));
 		final DeepData data2 = new DeepData(new ParentData("field1", new NestedData("field2Changed")));
-		try (Writer writer = client().writer()) {
-			writer.put(KEY1, data);
-			writer.put(KEY2, data2);
-			writer.commit();
-		}
+		
+		Writer writer = client().writer();
+		writer.put(KEY1, data);
+		writer.put(KEY2, data2);
+		writer.commit();
+		
 		// try to get nested document as is first
-		try (DocSearcher searcher = client().searcher()) {
-			// get single data
-			final DeepData actual = searcher.get(DeepData.class, KEY1);
-			assertEquals(data, actual);
-			// try nested query
-			final Query<DeepData> query = Query.select(DeepData.class)
-					.where(Expressions.nestedMatch("parentData.nestedData", 
-							Expressions.exactMatch("field2", "field2"))
-							).build();
-			final Iterable<DeepData> matches = searcher.search(query);
-			assertThat(matches).hasSize(1);
-			assertThat(matches).containsOnly(data);
-		}
+		DocSearcher searcher = client().searcher();
+		// get single data
+		final DeepData actual = searcher.get(DeepData.class, KEY1);
+		assertEquals(data, actual);
+		// try nested query
+		final Query<DeepData> query = Query.select(DeepData.class)
+				.where(Expressions.nestedMatch("parentData.nestedData", 
+						Expressions.exactMatch("field2", "field2"))
+						).build();
+		final Iterable<DeepData> matches = searcher.search(query);
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(data);
 	}
 	
 	@Test
@@ -71,25 +71,23 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 		final MultipleNestedData data = new MultipleNestedData(Arrays.asList(new NestedData("field2"), new NestedData("field2Another")));
 		final MultipleNestedData data2 = new MultipleNestedData(Arrays.asList(new NestedData("field2Changed"), new NestedData("field2AnotherChanged")));
 		// index multi nested data
-		try (Writer writer = client().writer()) {
-			writer.put(KEY1, data);
-			writer.put(KEY2, data2);
-			writer.commit();
-		}
+		Writer writer = client().writer();
+		writer.put(KEY1, data);
+		writer.put(KEY2, data2);
+		writer.commit();
 		
-		try (DocSearcher searcher = client().searcher()) {
-			// get data by key
-			final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY1);
-			assertEquals(data, actual);
-			// try nested query on collections
-			final Query<MultipleNestedData> query = Query.select(MultipleNestedData.class)
-					.where(Expressions.nestedMatch("nestedDatas", 
-							Expressions.exactMatch("field2", "field2"))
-							).build();
-			final Iterable<MultipleNestedData> matches = searcher.search(query);
-			assertThat(matches).hasSize(1);
-			assertThat(matches).containsOnly(data);
-		}
+		DocSearcher searcher = client().searcher();
+		// get data by key
+		final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY1);
+		assertEquals(data, actual);
+		// try nested query on collections
+		final Query<MultipleNestedData> query = Query.select(MultipleNestedData.class)
+				.where(Expressions.nestedMatch("nestedDatas", 
+						Expressions.exactMatch("field2", "field2"))
+						).build();
+		final Iterable<MultipleNestedData> matches = searcher.search(query);
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(data);
 	}
 	
 }

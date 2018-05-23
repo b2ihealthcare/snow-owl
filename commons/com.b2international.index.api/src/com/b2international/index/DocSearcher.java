@@ -20,7 +20,7 @@ import java.io.IOException;
 /**
  * @since 6.0
  */
-public interface DocSearcher extends Searcher, AutoCloseable {
+public interface DocSearcher extends Searcher {
 
 	/**
 	 * Fetch an object by type and key from the index.

@@ -48,17 +48,17 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 	}
 	
 	@Override
-	public <T extends Revision> T get(Class<T> type, long storageKey) throws IOException {
-		final Query<T> query = Query.select(type).where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey)).limit(2).build();
+	public <T extends Revision> T get(Class<T> type, String key) throws IOException {
+		final Query<T> query = Query.select(type).where(Expressions.exactMatch(Revision.Fields.ID, key)).limit(2).build();
 		return Iterables.getOnlyElement(search(query), null);
 	}
 	
 	@Override
-	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<Long> storageKeys) throws IOException {
-		if (Iterables.isEmpty(storageKeys)) {
+	public <T extends Revision> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
+		if (Iterables.isEmpty(keys)) {
 			return Collections.emptySet();
 		} else {
-			final Query<T> query = Query.select(type).where(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys)).limit(Iterables.size(storageKeys)).build();
+			final Query<T> query = Query.select(type).where(Expressions.matchAny(Revision.Fields.ID, keys)).limit(Iterables.size(keys)).build();
 			return search(query);
 		}
 	}

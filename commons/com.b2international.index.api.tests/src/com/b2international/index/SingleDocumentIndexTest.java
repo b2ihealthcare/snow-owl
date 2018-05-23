@@ -18,9 +18,9 @@ package com.b2international.index;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -117,14 +117,11 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	@Test
 	public void indexDocumentWithSearchDuringTransaction() throws Exception {
 		final Data data = new Data();
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.put(KEY1, data);
-				assertNull(index.searcher().get(Data.class, KEY1));
-				index.commit();
-				return null;
-			}
+		index().write(index -> {
+			index.put(KEY1, data);
+			assertNull(index.searcher().get(Data.class, KEY1));
+			index.commit();
+			return null;
 		});
 	}
 	

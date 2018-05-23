@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNotNull;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,8 +48,8 @@ import com.google.inject.util.Providers;
 public abstract class BaseRevisionIndexTest {
 	
 	protected static final String MAIN = RevisionBranch.MAIN_PATH;
-	protected static final long STORAGE_KEY1 = 1L;
-	protected static final long STORAGE_KEY2 = 2L;
+	protected static final String STORAGE_KEY1 = "1";
+	protected static final String STORAGE_KEY2 = "2";
 	
 	// XXX start from 3 to take the two constant values above into account
 	private AtomicLong storageKeys = new AtomicLong(3);
@@ -59,8 +58,8 @@ public abstract class BaseRevisionIndexTest {
 	private Index rawIndex;
 	private RevisionIndex index;
 	
-	protected final long nextStorageKey() {
-		return storageKeys.getAndIncrement();
+	protected final String nextId() {
+		return Long.toString(storageKeys.getAndIncrement());
 	}
 	
 	@Before
@@ -140,27 +139,27 @@ public abstract class BaseRevisionIndexTest {
 		});
 	}
 	
-	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final long storageKey) {
-		return index().read(branch, index -> index.get(type, storageKey));
+	protected final <T extends Revision> T getRevision(final String branch, final Class<T> type, final String key) {
+		return index().read(branch, index -> index.get(type, key));
 	}
 	
-	protected final void indexRevision(final String branchPath, final long storageKey, final Revision data) {
-		commit(branchPath, Collections.singletonMap(storageKey, data));
+	protected final void indexRevision(final String branchPath, final Revision data) {
+		commit(branchPath, Collections.singleton(data));
 	}
 
-	protected final long commit(final String branchPath, final Map<Long, Revision> newRevisions) {
+	protected final long commit(final String branchPath, final Collection<Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit();
-		newRevisions.forEach(staging::stageNew);
+		newRevisions.forEach(rev -> staging.stageNew(rev.getId(), rev));
 		return staging
 				.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
 				.getTimestamp();
 	}
 	
-	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final long storageKey) {
+	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit();
-		staging.stageRemove(type, storageKey);	
+		staging.stageRemove(type, key);	
 		staging.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
@@ -175,9 +174,8 @@ public abstract class BaseRevisionIndexTest {
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
 		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
-			if (Revision.CREATED.equals(f.getName()) 
-					|| Revision.REVISED.equals(f.getName())
-					|| Revision.STORAGE_KEY.equals(f.getName()) 
+			if (Revision.Fields.CREATED.equals(f.getName()) 
+					|| Revision.Fields.REVISED.equals(f.getName())
 					|| DocumentMapping._ID.equals(f.getName())) {
 				// skip revision fields from equality check
 				continue;

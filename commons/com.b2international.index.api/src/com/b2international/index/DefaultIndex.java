@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ public final class DefaultIndex implements Index {
 	
 	@Override
 	public <T> T read(IndexRead<T> read) {
-		try (DocSearcher searcher = client.searcher()) {
-			return read.execute(searcher);
+		try {
+			return read.execute(client.searcher());
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
@@ -43,8 +43,8 @@ public final class DefaultIndex implements Index {
 	
 	@Override
 	public <T> T write(IndexWrite<T> write) {
-		try (Writer writer = client.writer()) {
-			return write.execute(writer);
+		try {
+			return write.execute(client.writer());
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {

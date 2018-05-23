@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,16 +38,16 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void readBaseOfMainBranch() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		final Iterable<Data> hits = search(MAIN + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
 		assertThat(hits).isEmpty();
 	}
 	
 	@Test
 	public void readBaseOfBranch() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
@@ -55,11 +55,11 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 
 	@Test
 	public void readBaseOfBranchWithNewComponents() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
-		indexRevision(branch, STORAGE_KEY2, new Data("field1Other", "field2Other"));
+		indexRevision(branch, new Data(STORAGE_KEY2, "field1Other", "field2Other"));
 		
 		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
@@ -67,11 +67,11 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void readBaseOfBranchWithChangedComponents() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
-		indexRevision(branch, STORAGE_KEY1, new Data("field1Changed", "field2Changed"));
+		indexRevision(branch, new Data(STORAGE_KEY1, "field1Changed", "field2Changed"));
 		
 		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
@@ -79,8 +79,8 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void readBaseOfBranchWithDeletedComponents() throws Exception {
-		final Data data = new Data("field1", "field2");
-		indexRevision(MAIN, STORAGE_KEY1, data);
+		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
 		deleteRevision(MAIN, Data.class, STORAGE_KEY1);
@@ -91,7 +91,7 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void writeBaseOfBranch() throws Exception {
-		indexRevision(createBranch(MAIN, "a") + RevisionIndex.BASE_REF_CHAR, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(createBranch(MAIN, "a") + RevisionIndex.BASE_REF_CHAR, new Data(STORAGE_KEY1, "field1", "field2"));
 	}
 
 }

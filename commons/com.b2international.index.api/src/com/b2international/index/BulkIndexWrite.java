@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public final class BulkIndexWrite<T> implements IndexWrite<List<T>> {
 	}
 	
 	@Override
-	public List<T> execute(final Writer index) throws IOException {
+	public List<T> execute(final DocWriter index) throws IOException {
 		final List<T> results = Lists.newArrayList();
 		
 		for (final IndexWrite<T> write : indexWrites) {

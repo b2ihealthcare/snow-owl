@@ -17,8 +17,6 @@ package com.b2international.index.revision;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -37,9 +35,7 @@ public final class StagingArea {
 	private final DefaultRevisionIndex index;
 
 	private final Map<String, Object> newDocuments = newHashMap();
-	private final Map<Long, Revision> newRevisions = newHashMap();
 	private final Multimap<Class<?>, String> removedDocuments = HashMultimap.create();
-	private final Multimap<Class<? extends Revision>, Long> removedRevisions = HashMultimap.create();
 	
 	StagingArea(DefaultRevisionIndex index) {
 		this.index = index;
@@ -56,39 +52,32 @@ public final class StagingArea {
 	 */
 	public Commit commit(String commitId, String branchPath, long timestamp, String userId, String commitComment) {
 		return index.write(branchPath, timestamp, writer -> {
-			Commit commit = Commit.builder()
+			Commit.Builder commit = Commit.builder()
 				.id(commitId)
 				.userId(userId)
 				.branch(branchPath)
 				.comment(commitComment)
-				.timestamp(timestamp)
-				.build();
+				.timestamp(timestamp);
 			
 			// apply removals first
 			for (Class<?> type : removedDocuments.keySet()) {
-				writer.writer().removeAll(Collections.singletonMap(type, ImmutableSet.copyOf(removedDocuments.get(type))));
-			}
-			
-			for (Class<? extends Revision> type : removedRevisions.keySet()) {
-				writer.remove(type, removedRevisions.get(type));
+				final ImmutableSet<String> deletedDocIds = ImmutableSet.copyOf(removedDocuments.get(type));
+				writer.remove(type, deletedDocIds);
+				commit.deletedComponents(deletedDocIds);
 			}
 			
 			// then new documents and revisions
 			for (Entry<String, Object> doc : newDocuments.entrySet()) {
 				if (!removedDocuments.containsValue(doc.getKey())) {
-					writer.writer().put(doc.getKey(), doc.getValue());
-				}
-			}
-			
-			for (Entry<Long, Revision> doc : newRevisions.entrySet()) {
-				if (!removedRevisions.containsValue(doc.getKey())) {
 					writer.put(doc.getKey(), doc.getValue());
 				}
 			}
+			commit.newComponents(newDocuments.keySet());
 			
-			writer.writer().put(commit.getId(), commit);
+			Commit commitDoc = commit.build();
+			writer.put(commitDoc.getId(), commitDoc);
 			writer.commit();
-			return commit;
+			return commitDoc;
 		});
 	}
 	
@@ -96,24 +85,13 @@ public final class StagingArea {
 		newDocuments.put(key, newDocument);
 		return this;
 	}
-
-	public StagingArea stageNew(long storageKey, Revision newRevision) {
-		newRevisions.put(storageKey, newRevision);
-		return this;
-	}
-
-	public StagingArea stageRemove(Class<? extends Revision> type, long storageKey) {
-		removedRevisions.put(type, storageKey);
-		return this;
-	}
 	
+	public StagingArea stageNew(Revision newRevision) {
+		return stageNew(newRevision.getId(), newRevision);
+	}
+
 	public StagingArea stageRemove(Class<?> type, String key) {
 		removedDocuments.put(type, key);
-		return this;
-	}
-
-	public StagingArea stageRemoveAll(Class<? extends Revision> type, Collection<Long> storageKeys) {
-		removedRevisions.putAll(type, storageKeys);
 		return this;
 	}
 

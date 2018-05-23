@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.index;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.Ignore;
@@ -45,32 +44,24 @@ public class DocLoadPerformanceTest extends BaseIndexTest {
 	@Test
 	public void docLoadTest() throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
-		index().write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				for (int i = 0; i < NUM_INDEXED_DOCUMENTS; i++) {
-					final Data data = new Data();
-					data.setField1("field1_" + i);
-					data.setField2("field2_" + i);
-					index.put(String.valueOf(i), data);
-				}
-				index.commit();
-				return null;
+		index().write(index -> {
+			for (int i = 0; i < NUM_INDEXED_DOCUMENTS; i++) {
+				final Data data = new Data();
+				data.setField1("field1_" + i);
+				data.setField2("field2_" + i);
+				index.put(String.valueOf(i), data);
 			}
+			index.commit();
+			return null;
 		});
 		System.err.println("Index took: " + w);
 		
 		for (int i = 0; i < 10; i++) {
 			w.reset().start();
-			final Hits<Data> hits = index().read(new IndexRead<Hits<Data>>() {
-				@Override
-				public Hits<Data> execute(DocSearcher index) throws IOException {
-					return index.search(Query.select(Data.class)
-							.where(Expressions.matchAll())
-							.limit(Integer.MAX_VALUE)
-							.build());
-				}
-			});
+			final Hits<Data> hits = search(Query.select(Data.class)
+					.where(Expressions.matchAll())
+					.limit(Integer.MAX_VALUE)
+					.build());
 			System.err.println("Docload took: " + w);
 			System.err.println("---------------");
 			assertEquals(NUM_INDEXED_DOCUMENTS, hits.getHits().size());

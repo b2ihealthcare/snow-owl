@@ -25,14 +25,12 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntValueMap;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.0
@@ -50,9 +48,9 @@ public final class RevisionCompare {
 		private final RevisionBranchRef compare;
 		private final int limit;
 	
-		private final Map<Class<? extends Revision>, LongSet> newComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> changedComponents = newHashMap();
-		private final Map<Class<? extends Revision>, LongSet> deletedComponents = newHashMap();
+		private final Map<Class<? extends Revision>, Set<String>> newComponents = newHashMap();
+		private final Map<Class<? extends Revision>, Set<String>> changedComponents = newHashMap();
+		private final Map<Class<? extends Revision>, Set<String>> deletedComponents = newHashMap();
 		
 		private final IntValueMap<Class<? extends Revision>> newTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
@@ -65,39 +63,39 @@ public final class RevisionCompare {
 			this.limit = limit;
 		}
 		
-		public Builder newRevision(Class<? extends Revision> type, long storageKey) {
+		public Builder newRevision(Class<? extends Revision> type, String id) {
 			if (!newComponents.containsKey(type)) {
-				newComponents.put(type, PrimitiveSets.newLongOpenHashSet());
+				newComponents.put(type, Sets.newHashSet());
 			}
 			
 			if (newComponents.get(type).size() < limit) {
-				newComponents.get(type).add(storageKey);
+				newComponents.get(type).add(id);
 			}
 			
 			newTotals.put(type, newTotals.get(type) + 1);
 			return this;
 		}
 		
-		public Builder changedRevision(Class<? extends Revision> type, long storageKey) {
+		public Builder changedRevision(Class<? extends Revision> type, String id) {
 			if (!changedComponents.containsKey(type)) {
-				changedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
+				changedComponents.put(type, Sets.newHashSet());
 			}
 			
 			if (changedComponents.get(type).size() < limit) {
-				changedComponents.get(type).add(storageKey);
+				changedComponents.get(type).add(id);
 			}
 			
 			changedTotals.put(type, changedTotals.get(type) + 1);
 			return this;
 		}
 		
-		public Builder deletedRevision(Class<? extends Revision> type, long storageKey) {
+		public Builder deletedRevision(Class<? extends Revision> type, String id) {
 			if (!deletedComponents.containsKey(type)) {
-				deletedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
+				deletedComponents.put(type, newHashSet());
 			}
 			
 			if (deletedComponents.get(type).size() < limit) {
-				deletedComponents.get(type).add(storageKey);
+				deletedComponents.get(type).add(id);
 			}
 			
 			deletedTotals.put(type, deletedTotals.get(type) + 1);
@@ -122,9 +120,9 @@ public final class RevisionCompare {
 	private final RevisionBranchRef base;
 	private final RevisionBranchRef compare;
 
-	private final Map<Class<? extends Revision>, LongSet> newComponents;
-	private final Map<Class<? extends Revision>, LongSet> changedComponents;
-	private final Map<Class<? extends Revision>, LongSet> deletedComponents;
+	private final Map<Class<? extends Revision>, Set<String>> newComponents;
+	private final Map<Class<? extends Revision>, Set<String>> changedComponents;
+	private final Map<Class<? extends Revision>, Set<String>> deletedComponents;
 
 	private final IntValueMap<Class<? extends Revision>> newTotals;
 	private final IntValueMap<Class<? extends Revision>> changedTotals;
@@ -133,9 +131,9 @@ public final class RevisionCompare {
 	private RevisionCompare(InternalRevisionIndex index, 
 			RevisionBranchRef base, 
 			RevisionBranchRef compare,
-			Map<Class<? extends Revision>, LongSet> newComponents,
-			Map<Class<? extends Revision>, LongSet> changedComponents,
-			Map<Class<? extends Revision>, LongSet> deletedComponents,
+			Map<Class<? extends Revision>, Set<String>> newComponents,
+			Map<Class<? extends Revision>, Set<String>> changedComponents,
+			Map<Class<? extends Revision>, Set<String>> deletedComponents,
 			IntValueMap<Class<? extends Revision>> newTotals,
 			IntValueMap<Class<? extends Revision>> changedTotals,
 			IntValueMap<Class<? extends Revision>> deletedTotals) {
@@ -175,27 +173,27 @@ public final class RevisionCompare {
 		return deletedTotals.get(type);
 	}
 	
-	LongSet getNewComponents(Class<? extends Revision> type) {
+	Set<String> getNewComponents(Class<? extends Revision> type) {
 		return newComponents.get(type);
 	}
 	
-	Map<Class<? extends Revision>, LongSet> getNewComponents() {
+	Map<Class<? extends Revision>, Set<String>> getNewComponents() {
 		return newComponents;
 	}
 	
-	LongSet getChangedComponents(Class<? extends Revision> type) {
+	Set<String> getChangedComponents(Class<? extends Revision> type) {
 		return changedComponents.get(type);
 	}
 	
-	Map<Class<? extends Revision>, LongSet> getChangedComponents() {
+	Map<Class<? extends Revision>, Set<String>> getChangedComponents() {
 		return changedComponents;
 	}
 	
-	LongSet getDeletedComponents(Class<? extends Revision> type) {
+	Set<String> getDeletedComponents(Class<? extends Revision> type) {
 		return deletedComponents.get(type);
 	}
 	
-	Map<Class<? extends Revision>, LongSet> getDeletedComponents() {
+	Map<Class<? extends Revision>, Set<String>> getDeletedComponents() {
 		return deletedComponents;
 	}
 	
@@ -226,24 +224,20 @@ public final class RevisionCompare {
 		});
 	}
 	
-	private <T> Query<T> rewrite(Query<T> query, Map<Class<? extends Revision>, LongSet> storageKeysByType) {
+	private <T> Query<T> rewrite(Query<T> query, Map<Class<? extends Revision>, Set<String>> keysByType) {
 		if (query.getParentType() != null) {
 			throw new UnsupportedOperationException("Nested query are not supported");
 		}
 		final Class<?> revisionType = query.getFrom();
-		final LongIterator queryStorageKeys = storageKeysByType.get(revisionType).iterator();
-		final Set<Long> storageKeys = newHashSet();
-		while (queryStorageKeys.hasNext()) {
-			storageKeys.add(queryStorageKeys.next());
-		}
+		final Set<String> ids = keysByType.get(revisionType);
 		return Query.select(query.getSelect())
 				.from(query.getFrom())
 				.fields(query.getFields())
 				.where(Expressions.builder()
 						.must(query.getWhere())
-						.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, storageKeys))
+						.filter(Expressions.matchAny(Revision.Fields.ID, ids))
 						.build())
-				.limit(Math.min(query.getLimit(), storageKeys.size())) // Allow retrieving a subset of these keys, using the query limit
+				.limit(Math.min(query.getLimit(), ids.size())) // Allow retrieving a subset of these keys, using the query limit
 				.build();
 	}
 	

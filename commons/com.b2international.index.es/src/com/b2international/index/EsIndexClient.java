@@ -43,7 +43,7 @@ public final class EsIndexClient implements IndexClient {
 	}
 
 	@Override
-	public Writer writer() {
+	public DocWriter writer() {
 		return new EsDocumentWriter(admin, searcher(), mapper);
 	}
 

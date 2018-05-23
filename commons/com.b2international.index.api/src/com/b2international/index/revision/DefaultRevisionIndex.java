@@ -15,18 +15,15 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongKeyMap;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.collect.LongSets;
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -164,9 +161,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			int changed = 0;
 			int deleted = 0;
 
-			LongSet newOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
-			LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
-			LongSet deletedOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
+			Set<String> newOrChangedKeys = newHashSet();
+			Map<String, String> newOrChangedHashes = newHashMap();
+			Set<String> deletedOrChangedKeys = newHashSet();
 			// Don't need to keep track of deleted-or-changed hashes
 			
 			// query all registered revision types for new, changed and deleted components
@@ -176,7 +173,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				final Query<String[]> newOrChangedQuery = Query
 						.select(String[].class)
 						.from(type)
-						.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
+						.fields(Revision.Fields.ID, DocumentMapping._HASH)
 						.where(compareRef.toRevisionFilter())
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(SCROLL_LIMIT)
@@ -188,11 +185,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					newOrChangedHashes.clear();
 
 					for (final String[] newOrChangedHit : newOrChangedHits) {
-						final long storageKey = Long.parseLong(newOrChangedHit[0]);
+						final String id = newOrChangedHit[0];
 						final String hash = newOrChangedHit[1];
-						newOrChangedKeys.add(storageKey);
+						newOrChangedKeys.add(id);
 						if (hash != null) {
-							newOrChangedHashes.put(storageKey, hash);
+							newOrChangedHashes.put(id, hash);
 						}
 					}
 					
@@ -204,9 +201,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					final Query<String[]> changedOrSameQuery = Query
 							.select(String[].class)
 							.from(type)
-							.fields(Revision.STORAGE_KEY, DocumentMapping._HASH)
+							.fields(Revision.Fields.ID, DocumentMapping._HASH)
 							.where(Expressions.builder()
-									.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(newOrChangedKeys)))
+									.filter(Expressions.matchAny(Revision.Fields.ID, newOrChangedKeys))
 									.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
 									.filter(Revision.toRevisedInFilter(compareRef.segments()))
 									.build())
@@ -216,28 +213,28 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					
 					for (Hits<String[]> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
 						for (final String[] changedOrSameHit : changedOrSameHits) {
-							final long storageKey = Long.parseLong(changedOrSameHit[0]);
+							final String id = changedOrSameHit[0];
 							final String hash = changedOrSameHit[1];
 
 							// CHANGED, unless the hashes tell us otherwise
 							if (hash == null 
-									|| !newOrChangedHashes.containsKey(storageKey)
-									|| !Objects.equals(newOrChangedHashes.get(storageKey), hash)) {
+									|| !newOrChangedHashes.containsKey(id)
+									|| !Objects.equals(newOrChangedHashes.get(id), hash)) {
 								
-								result.changedRevision(type, storageKey);
+								result.changedRevision(type, id);
 								changed++;
 							}
 							
 							// Remove this storage key from newOrChanged, it is decidedly changed-or-same
-							newOrChangedKeys.remove(storageKey);
-							newOrChangedHashes.remove(storageKey);
+							newOrChangedKeys.remove(id);
+							newOrChangedHashes.remove(id);
 						}
 						
 					} // changedOrSameHits
 					
 					// Everything remaining in newOrChanged is NEW, as it had no previous revision in the common segments
-					for (LongIterator itr = newOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
-						result.newRevision(type, itr.next());
+					for (String newOrChangedKey : newOrChangedKeys) {
+						result.newRevision(type, newOrChangedKey);
 						added++;
 					}
 					
@@ -248,10 +245,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				} // newOrChangedHits
 
 				// Revisions which existed on "base", but were replaced by another revision on "compare" segments
-				final Query<String[]> deletedOrChangedQuery = Query
-						.select(String[].class)
+				final Query<String> deletedOrChangedQuery = Query
+						.select(String.class)
 						.from(type)
-						.fields(Revision.STORAGE_KEY)
+						.fields(Revision.Fields.ID)
 						.where(Expressions.builder()
 								.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
 								.filter(Revision.toRevisedInFilter(compareRef.segments()))
@@ -260,43 +257,40 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.limit(SCROLL_LIMIT)
 						.build();
 				
-				for (Hits<String[]> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
+				for (Hits<String> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
 					
 					deletedOrChangedKeys.clear();
 
-					for (String[] deletedOrChanged : deletedOrChangedHits) {
-						final long storageKey = Long.parseLong(deletedOrChanged[0]);
-						deletedOrChangedKeys.add(storageKey);
+					for (String deletedOrChanged : deletedOrChangedHits) {
+						deletedOrChangedKeys.add(deletedOrChanged);
 					}
 					
 					/* 
 					 * Create "dependent sub-query": try to find the same IDs in the "compare" segments,
 					 * if they are present, the revision is definitely not deleted
 					 */
-					final Query<String[]> changedOrSameQuery = Query
-							.select(String[].class)
+					final Query<String> changedOrSameQuery = Query
+							.select(String.class)
 							.from(type)
-							.fields(Revision.STORAGE_KEY)
+							.fields(Revision.Fields.ID)
 							.where(Expressions.builder()
-									.filter(Expressions.matchAnyLong(Revision.STORAGE_KEY, LongSets.toList(deletedOrChangedKeys)))
+									.filter(Expressions.matchAny(Revision.Fields.ID, deletedOrChangedKeys))
 									.filter(compareRef.toRevisionFilter())
 									.build())
 							.scroll(SCROLL_KEEP_ALIVE)
 							.limit(SCROLL_LIMIT)
 							.build();
 					
-					for (Hits<String[]> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
-						for (final String[] changedOrSameHit : changedOrSameHits) {
-							final long storageKey = Long.parseLong(changedOrSameHit[0]);
-							
+					for (Hits<String> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
+						for (final String changedOrSameHit : changedOrSameHits) {
 							// Remove this storage key from deletedOrChanged, it is decidedly still existing
-							deletedOrChangedKeys.remove(storageKey);
+							deletedOrChangedKeys.remove(changedOrSameHit);
 						}
 					}
 					
 					// Everything remaining in deletedOrChanged is DELETED, as it had successor in the "compare" segments
-					for (LongIterator itr = deletedOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
-						result.deletedRevision(type, itr.next());
+					for (String deletedOrChangedKey : deletedOrChangedKeys) {
+						result.deletedRevision(type, deletedOrChangedKey);
 						deleted++;
 					}
 					
@@ -351,8 +345,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		// purge only documents added to the selected branch
 		for (RevisionSegment segmentToPurge : refToPurge.segments()) {
 			purgeQuery.should(Expressions.builder()
-				.filter(segmentToPurge.toRangeExpression(Revision.CREATED))
-				.filter(segmentToPurge.toRangeExpression(Revision.REVISED))
+				.filter(segmentToPurge.toRangeExpression(Revision.Fields.CREATED))
+				.filter(segmentToPurge.toRangeExpression(Revision.Fields.REVISED))
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
