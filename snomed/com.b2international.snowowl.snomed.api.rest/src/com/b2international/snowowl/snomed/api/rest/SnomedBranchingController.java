@@ -126,11 +126,11 @@ public class SnomedBranchingController extends AbstractRestService {
 		return DeferredResults.wrap(
 				RepositoryRequests
 					.branching()
-					.prepareSearch()
-					.all()
-					.filterByParent(branchPath)
+					.prepareGet(branchPath)
+					.setExpand(Branch.Expand.CHILDREN + "()")
 					.build(repositoryId)
-					.execute(bus));
+					.execute(bus)
+					.then(Branch::getChildren));
 	}
 	
 	@ApiOperation(

@@ -92,8 +92,8 @@ public class SnomedBranchRequestTest {
 			.then(new Function<List<Object>, String>() {
 				@Override
 				public String apply(List<Object> input) {
-					final Branch first = (Branch) input.get(0);
-					final Branch second = (Branch) input.get(1);
+					final Branch first = branches.prepareGet((String) input.get(0)).build(REPOSITORY_ID).execute(bus).getSync();
+					final Branch second = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
 					return first.baseTimestamp() == second.baseTimestamp() ? null : "Two branches created with the same name but different baseTimestamp";
 				}
 			})

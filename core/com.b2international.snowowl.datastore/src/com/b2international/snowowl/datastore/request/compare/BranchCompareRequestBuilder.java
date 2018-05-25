@@ -18,13 +18,13 @@ package com.b2international.snowowl.datastore.request.compare;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
 
 /**
  * @since 5.9
  */
 public final class BranchCompareRequestBuilder extends BaseRequestBuilder<BranchCompareRequestBuilder, RepositoryContext, CompareResult>
-		implements RepositoryRequestBuilder<CompareResult> {
+		implements RepositoryIndexRequestBuilder<CompareResult> {
 
 	private String base;
 	private String compare;

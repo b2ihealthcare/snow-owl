@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.request.AbstractBranchChangeRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.google.common.base.Strings;
@@ -81,8 +82,12 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 
 	@Override
 	protected void applyChanges() {
-		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncRebaseRequest(getMerge(), commitComment, reviewId)))
-			.execute(repository.events())
-			.getSync();
+		new AsyncRequest<>(
+			new RepositoryRequest<>(repository.id(),
+				new IndexReadRequest<>(
+					new SyncRebaseRequest(getMerge(), commitComment, reviewId)
+				)
+			)
+		).execute(repository.events()).getSync();
 	}
 }

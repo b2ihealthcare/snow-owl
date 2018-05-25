@@ -41,8 +41,9 @@ public final class BranchUpdateRequest extends BranchRequest<Boolean> {
 	public Boolean execute(RepositoryContext context) {
 		if (metadata != null) {
 			context.service(BaseRevisionBranching.class).updateMetadata(getBranchPath(), metadata);
+			return Boolean.TRUE;
 		}
-		return Boolean.TRUE;
+		return Boolean.FALSE;
 	}
 
 }

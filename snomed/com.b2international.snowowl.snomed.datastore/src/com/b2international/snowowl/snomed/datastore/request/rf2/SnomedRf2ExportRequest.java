@@ -63,6 +63,7 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -598,7 +599,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	private <R> R execute(RepositoryContext context, String branch, Request<BranchContext, R> next) {
-		return new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next)).execute(context);
+		return new IndexReadRequest<>(new BranchRequest<>(branch, new RevisionIndexReadRequest<>(next))).execute(context);
 	}
 
 	private void exportRelationships(final Path releaseDirectory, 

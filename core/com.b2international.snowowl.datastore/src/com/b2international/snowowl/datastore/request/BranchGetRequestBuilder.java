@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,17 @@ package com.b2international.snowowl.datastore.request;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.events.ReadBranchRequest;
+import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 
 /**
  * @since 5.0
  */
-public final class BranchGetRequestBuilder extends BaseRequestBuilder<BranchGetRequestBuilder, RepositoryContext, Branch> implements RepositoryRequestBuilder<Branch> {
-
-	private final String path;
+public final class BranchGetRequestBuilder 
+		extends GetResourceRequestBuilder<BranchGetRequestBuilder, BranchSearchRequestBuilder, RepositoryContext, Branch> 
+		implements RepositoryIndexRequestBuilder<Branch> {
 
 	BranchGetRequestBuilder(String path) {
-		this.path = path;
+		super(new BranchGetRequest(path));
 	}
 	
-	@Override
-	protected Request<RepositoryContext, Branch> doBuild() {
-		return new ReadBranchRequest(path);
-	}
-
 }

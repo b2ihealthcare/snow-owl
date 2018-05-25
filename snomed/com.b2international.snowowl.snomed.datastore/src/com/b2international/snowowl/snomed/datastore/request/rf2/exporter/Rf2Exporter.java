@@ -33,12 +33,11 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -150,10 +149,12 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 						.setScroll("15m");
 				
 				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
-					final Request<BranchContext, R> scrolledRequest = scrolledBuilder.build();
-					final RevisionIndexReadRequest<R> indexReadRequest = new RevisionIndexReadRequest<>(scrolledRequest);
-					final BranchRequest<R> branchRequest = new BranchRequest<R>(branch, indexReadRequest);
-					return branchRequest.execute(context);
+					return new IndexReadRequest<>(
+						new BranchRequest<R>(
+							branch, 
+							new RevisionIndexReadRequest<>(scrolledBuilder.build())
+						)
+					).execute(context);
 				});
 				
 				while (iterator.hasNext()) {

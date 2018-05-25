@@ -90,9 +90,9 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<CommitResult>(
-							build()
+					new IndexReadRequest<>(
+						new BranchRequest<>(branch,
+							new RevisionIndexReadRequest<CommitResult>(build())
 						)
 					),
 					allowedHealthstates()

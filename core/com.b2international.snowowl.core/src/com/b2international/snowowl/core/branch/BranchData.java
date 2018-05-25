@@ -37,6 +37,8 @@ public final class BranchData implements Branch {
 	private final BranchState state;
 	private final IBranchPath branchPath;
 	
+	private Branches children;
+	
 	public BranchData(RevisionBranch branch, BranchState state, IBranchPath branchPath) {
 		this(branch.getId(), branch.getName(), branch.getParentPath(), branch.getBaseTimestamp(), branch.getHeadTimestamp(), branch.isDeleted(), branch.metadata(), state, branchPath);
 	}
@@ -101,6 +103,15 @@ public final class BranchData implements Branch {
 	@Override
 	public IBranchPath branchPath() {
 		return branchPath;
+	}
+
+	@Override
+	public Branches getChildren() {
+		return children;
+	}
+	
+	public void setChildren(Branches children) {
+		this.children = children;
 	}
 
 }

@@ -28,8 +28,11 @@ public interface RevisionIndexRequestBuilder<R> extends RequestBuilder<BranchCon
 	default AsyncRequest<R> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new BranchRequest<>(branch, 
-					new RevisionIndexReadRequest<>(build()))
+				new IndexReadRequest<>(
+					new BranchRequest<>(branch, 
+						new RevisionIndexReadRequest<>(build())
+					)
+				)
 			)
 		);
 	}

@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
@@ -44,10 +45,10 @@ public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommit
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch,
-						new RevisionIndexReadRequest<>(
-							new IdRequest<>(
-								build()
+					new IndexReadRequest<>(
+						new BranchRequest<>(branch,
+							new RevisionIndexReadRequest<>(
+								new IdRequest<>(build())
 							)
 						)
 					),

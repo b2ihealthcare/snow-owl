@@ -34,6 +34,10 @@ public interface Branch extends MetadataHolder, Serializable {
 	 * The path of the main branch.
 	 */
 	static final String MAIN_PATH = RevisionBranch.MAIN_PATH;
+
+	interface Expand {
+		static final String CHILDREN = "children";
+	}
 	
 	/**
 	 * Segment separator in {@link Branch#path()} values.
@@ -101,5 +105,11 @@ public interface Branch extends MetadataHolder, Serializable {
 	 * @deprecated - use the new {@link Branch} interface instead
 	 */
 	IBranchPath branchPath();
+	
+	/**
+	 * Returns all child branches of this branch (direct and indirect children both). If not expanded this method returns a <code>null</code> object.
+	 * @return
+	 */
+	Branches getChildren();
 
 }

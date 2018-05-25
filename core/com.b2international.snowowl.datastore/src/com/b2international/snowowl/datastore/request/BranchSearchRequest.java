@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.b2international.index.Hits;
@@ -84,9 +85,17 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 
 	@Override
 	protected Branches toCollectionResource(RepositoryContext context, Hits<RevisionBranch> hits) {
-		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
-		final Map<String, RevisionBranch> branchesById = newHashMap();
 		final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+		final List<Branch> branchHits = toBranchData(branching, hits);
+		
+		expand(context, branchHits);
+		
+		return new Branches(branchHits, hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+	}
+
+	private List<Branch> toBranchData(final BaseRevisionBranching branching, final Iterable<RevisionBranch> hits) {
+		final Map<String, RevisionBranch> branchesById = newHashMap();
+		final ImmutableList.Builder<Branch> branches = ImmutableList.builder();
 		for (RevisionBranch doc : hits) {
 			final BranchState state; 
 			if (doc.isMain()) {
@@ -101,7 +110,19 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 			}
 			branches.add(new BranchData(doc, state, BranchPathUtils.createPath(doc.getPath())));
 		}
-		return new Branches(branches.build(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return branches.build();
+	}
+
+	private void expand(RepositoryContext context, List<Branch> branchHits) {
+		if (branchHits.isEmpty()) return;
+		
+		if (expand().containsKey(Branch.Expand.CHILDREN)) {
+			final BaseRevisionBranching branching = context.service(BaseRevisionBranching.class);
+			for (Branch branchHit : branchHits) {
+				final List<Branch> children = toBranchData(branching, branching.getChildren(branchHit.path()));
+				((BranchData) branchHit).setChildren(new Branches(children, null, null, children.size(), children.size()));
+			}
+		}
 	}
 
 }
