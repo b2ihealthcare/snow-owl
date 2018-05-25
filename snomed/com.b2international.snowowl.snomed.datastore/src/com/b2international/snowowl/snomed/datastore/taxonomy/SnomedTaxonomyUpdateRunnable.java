@@ -83,10 +83,10 @@ public class SnomedTaxonomyUpdateRunnable implements Runnable {
 		
 		final Iterable<Concept> newConcepts = commitChangeSet.getNewComponents(Concept.class);
 		final Iterable<Concept> dirtyConcepts = commitChangeSet.getDirtyComponents(Concept.class);
-		final Set<String> deletedConceptIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
+		final Set<String> deletedConceptIds = commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.CONCEPT, SnomedConceptDocument.class);
 		final Iterable<Relationship> newRelationships = commitChangeSet.getNewComponents(Relationship.class);
 		final Iterable<Relationship> dirtyRelationships = commitChangeSet.getDirtyComponents(Relationship.class);
-		final Set<String> deletedRelationshipIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
+		final Set<String> deletedRelationshipIds = commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class);
 		
 		//SCT ID - relationships
 		final Map<String, Relationship> _newRelationships = Maps.newHashMap(Maps.uniqueIndex(newRelationships, Component::getId));

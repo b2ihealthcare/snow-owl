@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -46,6 +47,10 @@ public final class CodeSystemEntry implements Serializable {
 	
 	public static class Expressions {
 
+		public static Expression storageKeys(Iterable<Long> storageKeys) {
+			return matchAnyLong(Fields.STORAGE_KEY, storageKeys);
+		}
+		
 		public static Expression shortName(String shortName) {
 			return exactMatch(Fields.SHORT_NAME, shortName);
 		}

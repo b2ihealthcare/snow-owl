@@ -103,6 +103,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
@@ -171,6 +172,11 @@ public class CDOServerCommitBuilder {
 
 		public final boolean isCommitNotificationEnabled() {
 			return sendCommitNotification;
+		}
+
+		public void setDetachedObjects(Map<CDOID, CDOObject> detachedObjects) {
+			setDetachedObjects(detachedObjects.keySet().stream().toArray(length -> new CDOID[length]));
+			setDetachedObjectTypes(Maps.transformValues(detachedObjects, CDOObject::eClass));
 		}
 	}
 
@@ -442,7 +448,6 @@ public class CDOServerCommitBuilder {
 
 			final InternalCDORevision[] newRevisions = new InternalCDORevision[transaction.getNewObjects().size()];
 			final InternalCDORevisionDelta[] dirtyRevisionDeltas = new InternalCDORevisionDelta[transaction.getLastSavepoint().getRevisionDeltas().size()];
-			final CDOID[] detachedObjects = new CDOID[transaction.getDetachedObjects().size()];
 
 			// Populate new revisions (copy all revisions so that the version is not adjusted twice)
 			int i = 0;
@@ -456,15 +461,9 @@ public class CDOServerCommitBuilder {
 				dirtyRevisionDeltas[i++] = (InternalCDORevisionDelta) revisionDelta;
 			}
 
-			// Populate detached object IDs
-			i = 0;
-			for (final Entry<CDOID, CDOObject> detachedEntry : transaction.getDetachedObjects().entrySet()) {
-				detachedObjects[i++] = detachedEntry.getKey();
-			}
-
 			serverContext.setNewObjects(newRevisions);
 			serverContext.setDirtyObjectDeltas(dirtyRevisionDeltas);
-			serverContext.setDetachedObjects(detachedObjects);
+			serverContext.setDetachedObjects(transaction.getDetachedObjects());
 			serverContext.setCommitComment(Strings.nullToEmpty(transaction.getCommitComment()));
 		}
 

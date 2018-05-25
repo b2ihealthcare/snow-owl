@@ -80,7 +80,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 					.build());
 		}
 
-		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponents(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT));
+		deleteRevisions(SnomedConstraintDocument.class, commitChangeSet.getDetachedComponentIds(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT, SnomedConstraintDocument.class));
 	}
 	
 }

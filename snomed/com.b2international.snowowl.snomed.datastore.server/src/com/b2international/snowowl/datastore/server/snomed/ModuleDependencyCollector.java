@@ -20,8 +20,10 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
@@ -90,13 +92,17 @@ public final class ModuleDependencyCollector {
 	}
 
 	private void collectConceptModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
-		for (SnomedConceptDocument doc : searcher.get(SnomedConceptDocument.class, storageKeys)) {
+		for (SnomedConceptDocument doc : searcher.search(queryByStorageKey(SnomedConceptDocument.class, storageKeys))) {
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
 		}
 	}
 	
+	private <T extends RevisionDocument> Query<T> queryByStorageKey(Class<T> type, Iterable<Long> storageKeys) {
+		return Query.select(type).where(Expressions.matchAnyLong(RevisionDocument.Fields.STORAGE_KEY, storageKeys)).limit(Integer.MAX_VALUE).build();
+	}
+
 	private void collectDescriptionModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
-		for (SnomedDescriptionIndexEntry doc : searcher.get(SnomedDescriptionIndexEntry.class, storageKeys)) {
+		for (SnomedDescriptionIndexEntry doc : searcher.search(queryByStorageKey(SnomedDescriptionIndexEntry.class, storageKeys))) {
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getConceptId());
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getCaseSignificanceId());
@@ -104,7 +110,7 @@ public final class ModuleDependencyCollector {
 	}
 	
 	private void collectRelationshipModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
-		for (SnomedRelationshipIndexEntry doc : searcher.get(SnomedRelationshipIndexEntry.class, storageKeys)) {
+		for (SnomedRelationshipIndexEntry doc : searcher.search(queryByStorageKey(SnomedRelationshipIndexEntry.class, storageKeys))) {
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getSourceId());
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getTypeId());
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getDestinationId());
@@ -114,7 +120,7 @@ public final class ModuleDependencyCollector {
 	}
 	
 	private void collectMemberModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
-		for (SnomedRefSetMemberIndexEntry doc : searcher.get(SnomedRefSetMemberIndexEntry.class, storageKeys)) {
+		for (SnomedRefSetMemberIndexEntry doc : searcher.search(queryByStorageKey(SnomedRefSetMemberIndexEntry.class, storageKeys))) {
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getReferenceSetId());
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getReferencedComponentId());
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getAcceptabilityId());

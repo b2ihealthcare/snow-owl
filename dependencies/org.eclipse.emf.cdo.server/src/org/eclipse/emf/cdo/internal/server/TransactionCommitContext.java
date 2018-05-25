@@ -487,7 +487,7 @@ public class TransactionCommitContext implements InternalCommitContext
 
       computeDirtyObjects(monitor.fork());
 
-      checkXRefs();
+//      checkXRefs();
       monitor.worked();
 
       if (rollbackMessage == null)

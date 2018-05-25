@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,8 @@ import org.eclipse.emf.ecore.EStructuralFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -49,7 +45,6 @@ import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.DelegatingIndexCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ImmutableIndexCommitChangeSet;
 import com.b2international.snowowl.datastore.index.IndexCommitChangeSet;
@@ -133,14 +128,10 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 	private TraceabilityEntry entry;
 
 	private final boolean collectSystemChanges;
-	private final RevisionIndex index;
-	private final IBranchPath branchPath;
 
 	private ICDOCommitChangeSet commitChangeSet;
 
-	public SnomedTraceabilityChangeProcessor(final RevisionIndex index, final IBranchPath branchPath, final boolean collectSystemChanges) {
-		this.branchPath = branchPath;
-		this.index = index;
+	public SnomedTraceabilityChangeProcessor(final boolean collectSystemChanges) {
 		this.collectSystemChanges = collectSystemChanges;
 	}
 
@@ -165,29 +156,17 @@ public class SnomedTraceabilityChangeProcessor implements ICDOChangeProcessor {
 				processUpdate(dirtyComponent);
 			}
 			
-			final Set<Long> detachedConceptStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT)));
-			final Set<Long> detachedDescriptionStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION)));
-			final Set<Long> detachedRelationshipStorageKeys = newHashSet(CDOIDUtils.createCdoIdToLong(commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP)));
+			for (SnomedConceptDocument detachedConcept : commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT, SnomedConceptDocument.class)) {
+				entry.registerChange(detachedConcept.getId(), new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedConcept.getId(), ChangeType.DELETE));
+			}
 			
-			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
-				@Override
-				public Void execute(RevisionSearcher searcher) throws IOException {
-					
-					for (SnomedConceptDocument detachedConcept : searcher.get(SnomedConceptDocument.class, detachedConceptStorageKeys)) {
-						entry.registerChange(detachedConcept.getId(), new TraceabilityChange(SnomedPackage.Literals.CONCEPT, detachedConcept.getId(), ChangeType.DELETE));
-					}
-					
-					for (SnomedDescriptionIndexEntry detachedDescription : searcher.get(SnomedDescriptionIndexEntry.class, detachedDescriptionStorageKeys)) {
-						entry.registerChange(detachedDescription.getConceptId(), new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedDescription.getId(), ChangeType.DELETE));
-					}
-					
-					for (SnomedRelationshipIndexEntry detachedRelationship : searcher.get(SnomedRelationshipIndexEntry.class, detachedRelationshipStorageKeys)) {
-						entry.registerChange(detachedRelationship.getSourceId(), new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedRelationship.getId(), ChangeType.DELETE));
-					}
-					
-					return null;
-				}
-			});
+			for (SnomedDescriptionIndexEntry detachedDescription : commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION, SnomedDescriptionIndexEntry.class)) {
+				entry.registerChange(detachedDescription.getConceptId(), new TraceabilityChange(SnomedPackage.Literals.DESCRIPTION, detachedDescription.getId(), ChangeType.DELETE));
+			}
+			
+			for (SnomedRelationshipIndexEntry detachedRelationship : commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class)) {
+				entry.registerChange(detachedRelationship.getSourceId(), new TraceabilityChange(SnomedPackage.Literals.RELATIONSHIP, detachedRelationship.getId(), ChangeType.DELETE));
+			}
 		} finally {
 			traceabilityTimer.stop();
 		}

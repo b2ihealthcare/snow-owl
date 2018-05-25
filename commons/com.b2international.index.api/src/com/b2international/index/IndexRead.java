@@ -25,6 +25,7 @@ import java.io.IOException;
  *            - the return type of the read op
  * @see Index#read(IndexRead)
  */
+@FunctionalInterface
 public interface IndexRead<T> {
 
 	/**

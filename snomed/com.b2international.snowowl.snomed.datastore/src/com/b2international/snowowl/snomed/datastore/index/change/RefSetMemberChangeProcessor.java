@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
@@ -37,14 +35,14 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
-		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER));
+		deleteRevisions(SnomedRefSetMemberIndexEntry.class, commitChangeSet.getDetachedComponentIds(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, SnomedRefSetMemberIndexEntry.class));
 		
 		for (SnomedRefSetMember member : commitChangeSet.getNewComponents(SnomedRefSetMember.class)) {
-			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
+			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).build());
 		}
 		
 		for (SnomedRefSetMember member : commitChangeSet.getDirtyComponents(SnomedRefSetMember.class)) {
-			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).storageKey(CDOIDUtil.getLong(member.cdoID())).build());
+			indexChangedRevision(SnomedRefSetMemberIndexEntry.builder(member).build());
 		}
 	}
 	

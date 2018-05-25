@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -99,8 +100,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 
 			processNewCodeSystemsAndVersions(commitChangeSet);
 			processDirtyCodeSystemsAndVersions(commitChangeSet);
-			detachedCodeSystemIds.addAll(commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM));
-			detachedCodeSystemVersionIds.addAll(commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION));
+			detachedCodeSystemIds.addAll(commitChangeSet.getDetachedComponentStorageKeys(TerminologymetadataPackage.Literals.CODE_SYSTEM).stream().map(id -> Long.toString(id)).collect(Collectors.toSet()));
+			detachedCodeSystemVersionIds.addAll(commitChangeSet.getDetachedComponentStorageKeys(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION).stream().map(id -> Long.toString(id)).collect(Collectors.toSet()));
 
 			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
 				@Override
@@ -179,13 +180,13 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			log.trace("Collecting {}...", processor.description());
 			processor.process(commitChangeSet, index);
 			// register additions, deletions from the sub processor
-			processor.getNewMappings().forEach(rev -> indexCommitChangeSet.putRawMappings(rev.getId(), rev));
-			for (RevisionDocument revision : Iterables.filter(processor.getNewMappings(), RevisionDocument.class)) {
+			processor.getNewMappings().forEach(indexCommitChangeSet::putRawMappings);
+			for (RevisionDocument revision : Iterables.filter(processor.getNewMappings().values(), RevisionDocument.class)) {
 				indexCommitChangeSet.putNewComponents(getComponentIdentifier(revision));
 			}
 			
-			processor.getChangedMappings().forEach(rev -> indexCommitChangeSet.putRawMappings(rev.getId(), rev));
-			for (RevisionDocument revision : Iterables.filter(processor.getChangedMappings(), RevisionDocument.class)) {
+			processor.getChangedMappings().forEach(indexCommitChangeSet::putRawMappings);
+			for (RevisionDocument revision : Iterables.filter(processor.getChangedMappings().values(), RevisionDocument.class)) {
 				indexCommitChangeSet.putChangedComponents(getComponentIdentifier(revision));
 			}
 			

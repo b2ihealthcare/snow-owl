@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -99,7 +101,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 		
 		for (Entry<String, Object> doc : mappings.entrySet()) {
-			staging.stageNew(doc.getKey(), doc);
+			staging.stageNew(doc.getKey(), doc.getValue());
 		}
 	}
 	
@@ -128,7 +130,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	 */
 	public static class Builder {
 
-		private final ImmutableMap.Builder<String, Object> rawMappings = ImmutableMap.builder();
+		private final Map<String, Object> rawMappings = newHashMap();
 		private final ImmutableMultimap.Builder<Class<?>, String> rawDeletions = ImmutableMultimap.builder();
 		private final ImmutableSet.Builder<ComponentIdentifier> newComponents = ImmutableSet.builder();
 		private final ImmutableSet.Builder<ComponentIdentifier> changedComponents = ImmutableSet.builder();
@@ -162,7 +164,10 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 		
 		public Builder putRawMappings(String key, Object value) {
-			this.rawMappings.put(key, value);
+			Object prev = this.rawMappings.put(key, value);
+			if (prev != null) {
+				throw new IllegalArgumentException("Multiple entries with same key: " + key + "=" + value);
+			}
 			return this;
 		}
 		
@@ -177,7 +182,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 		
 		public IndexCommitChangeSet build() {
-			return new ImmutableIndexCommitChangeSet(rawMappings.build(), 
+			return new ImmutableIndexCommitChangeSet(rawMappings, 
 					rawDeletions.build(), 
 					newComponents.build(),
 					changedComponents.build(),

@@ -120,7 +120,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	@Override
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		// process concept deletions first
-		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT));
+		deleteRevisions(SnomedConceptDocument.class, commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.CONCEPT, SnomedConceptDocument.class));
 		// collect member changes
 		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(commitChangeSet, searcher));
 
@@ -134,7 +134,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					}
 				}));
 		// collect deleted reference sets
-		final Collection<String> deletedRefSetIds = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
+		final Collection<Long> deletedRefSetStorageKeys = commitChangeSet.getDetachedComponentStorageKeys(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
 		
 		// index new concepts
 		for (final Concept concept : commitChangeSet.getNewComponents(Concept.class)) {
@@ -154,7 +154,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// collect dirty concepts for reindex
 		final Map<String, Concept> dirtyConceptsById = Maps.uniqueIndex(commitChangeSet.getDirtyComponents(Concept.class), Concept::getId);
 		
-		final Set<String> dirtyConceptIds = collectDirtyConceptIds(searcher, commitChangeSet);
+		final Set<String> dirtyConceptIds = collectDirtyConceptIds(commitChangeSet);
 		
 		final Multimap<String, Description> dirtyDescriptionsByConcept = Multimaps.index(getDirtyDescriptions(commitChangeSet), d -> d.getConcept().getId());
 		
@@ -184,7 +184,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					doc.refSet(refSet);
 				}
 				// clear refset props when deleting refset
-				if (deletedRefSetIds.contains(id)) {
+				if (deletedRefSetStorageKeys.contains(currentDoc.getRefSetStorageKey())) {
 					doc.clearRefSet();
 				}
 				
@@ -312,7 +312,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		return concept.isSetEffectiveTime() ? concept.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME;
 	}
 
-	private Set<String> collectDirtyConceptIds(final RevisionSearcher searcher, final ICDOCommitChangeSet commitChangeSet) throws IOException {
+	private Set<String> collectDirtyConceptIds(final ICDOCommitChangeSet commitChangeSet) throws IOException {
 		final Set<String> dirtyConceptIds = newHashSet();
 		
 		// collect relevant concept changes
@@ -323,8 +323,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
 		// collect dirty concepts due to change in hierarchy
 		dirtyConceptIds.addAll(referringRefSets.keySet());
-//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, inferredTaxonomy));
-//		dirtyConceptIds.addAll(getAffectedConcepts(searcher, commitChangeSet, statedTaxonomy));
 		
 		// collect inferred taxonomy changes
 		dirtyConceptIds.addAll(registerConceptAndDescendants(inferredTaxonomy.getNewEdges(), inferredTaxonomy.getNewTaxonomy()));
@@ -336,8 +334,11 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(registerConceptAndDescendants(statedTaxonomy.getDetachedEdges(), statedTaxonomy.getOldTaxonomy()));
 
 		// collect detached reference sets where the concept itself hasn't been detached
-		Set<String> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET);
-		Set<String> detachedConcepts = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.CONCEPT);
+		Set<String> detachedRefSets = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET, SnomedConceptDocument.class, SnomedConceptDocument.Expressions::refSetStorageKeys)
+				.stream()
+				.map(SnomedConceptDocument::getId)
+				.collect(Collectors.toSet());
+		Set<String> detachedConcepts = commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.CONCEPT, SnomedConceptDocument.class);
 		
 		dirtyConceptIds.addAll(Sets.difference(detachedRefSets, detachedConcepts));
 		

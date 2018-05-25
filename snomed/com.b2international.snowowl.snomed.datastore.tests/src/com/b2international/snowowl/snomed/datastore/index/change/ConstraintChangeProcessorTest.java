@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,14 +53,16 @@ public class ConstraintChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedConstraintDocument expected = SnomedConstraintDocument.builder(constraint).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getDeletions().size());
 	}
 	
 	@Test
 	public void detachedDescriptionConstraint() throws Exception {
-		registerDetached(MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT, nextId());
+		final AttributeConstraint constraint = createDescriptionConstraint();
+		indexRevision(MAIN, SnomedConstraintDocument.builder(constraint).build());
+		registerDetached(constraint.cdoID(), MrcmPackage.Literals.ATTRIBUTE_CONSTRAINT);
 		process(processor);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getChangedMappings().size());

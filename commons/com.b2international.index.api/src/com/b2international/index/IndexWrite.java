@@ -25,6 +25,7 @@ import java.io.IOException;
  *            - the type of object to return from this operation
  * @see Index#write(IndexWrite)
  */
+@FunctionalInterface
 public interface IndexWrite<T> {
 
 	/**

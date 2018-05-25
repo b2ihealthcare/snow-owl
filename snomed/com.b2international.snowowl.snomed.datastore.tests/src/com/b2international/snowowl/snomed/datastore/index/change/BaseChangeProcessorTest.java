@@ -75,9 +75,7 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.7
@@ -93,7 +91,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	private CDOView view = mock(CDOView.class);
 	private Collection<CDOObject> newComponents = newHashSet();
 	private Collection<CDOObject> dirtyComponents = newHashSet();
-	private Multimap<EClass, String> detachedComponents = HashMultimap.create();
+	private Map<CDOID, EClass> detachedComponents = newHashMap();
 	private Map<CDOID, CDORevisionDelta> revisionDeltas = newHashMap();
 	
 	@Override
@@ -130,8 +128,8 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		dirtyComponents.add(object);
 	}
 	
-	protected final void registerDetached(EClass type, String componentId) {
-		detachedComponents.put(type, componentId);
+	protected final void registerDetached(CDOID id, EClass type) {
+		detachedComponents.put(id, type);
 	}
 	
 	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
@@ -170,7 +168,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 
 	protected final CDOCommitChangeSet createChangeSet() {
-		return new CDOCommitChangeSet(view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
+		return new CDOCommitChangeSet(index(), RevisionBranch.MAIN_PATH, view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
 	}
 
 	protected final CDOID nextStorageKeyAsCDOID() {

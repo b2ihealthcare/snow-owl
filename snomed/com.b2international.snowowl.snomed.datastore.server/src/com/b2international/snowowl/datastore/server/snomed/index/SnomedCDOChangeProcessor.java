@@ -17,6 +17,7 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.server.IStoreAccessor;
@@ -90,8 +91,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getNewComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getDirtyComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
 		
-		final Set<String> detachedRelationshipIds = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP);
-		final Iterable<SnomedRelationshipIndexEntry> detachedRelationships = index.get(SnomedRelationshipIndexEntry.class, detachedRelationshipIds);
+		final List<SnomedRelationshipIndexEntry> detachedRelationships = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class);
 		
 		for (SnomedRelationshipIndexEntry detachedRelationship : detachedRelationships) {
 			if (detachedRelationship.getCharacteristicType().equals(CharacteristicType.STATED_RELATIONSHIP)) {

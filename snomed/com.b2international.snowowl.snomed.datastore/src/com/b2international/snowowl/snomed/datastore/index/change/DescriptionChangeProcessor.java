@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				.create(memberChangeProcessor.process(commitChangeSet, searcher));
 		
 		// delete detached descriptions
-		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.DESCRIPTION));
+		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.DESCRIPTION, SnomedDescriptionIndexEntry.class));
 		
 		// (re)index new and dirty descriptions
 		final Map<String, Description> newDescriptionsById = StreamSupport
@@ -100,7 +100,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		final Set<String> descriptionsToBeLoaded = newHashSet();
 		for (String descriptionWithAccepatibilityChange : acceptabilityChangesByDescription.keySet()) {
 			if (!newDescriptionsById.containsKey(descriptionWithAccepatibilityChange)
-					&& !changedDescriptionsById.containsKey(descriptionWithAccepatibilityChange)) {
+					&& !changedDescriptionIds.contains(descriptionWithAccepatibilityChange)) {
 				descriptionsToBeLoaded.add(descriptionWithAccepatibilityChange);
 			}
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.impl.traceability;
 
-import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -41,9 +39,8 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 		if (isImportInProgress(branchPath) || isReindexInProgress() || isClassifyInProgress()) {
 			return ICDOChangeProcessor.NULL_IMPL;
 		} else {
-			final RevisionIndex index = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 			final boolean collectSystemChanges = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).isCollectSystemChanges();
-			return new SnomedTraceabilityChangeProcessor(index, branchPath, collectSystemChanges);
+			return new SnomedTraceabilityChangeProcessor(collectSystemChanges);
 		}
 	}
 

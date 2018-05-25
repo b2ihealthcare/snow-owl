@@ -217,6 +217,7 @@ public class CDORepository extends CDOManagedItem<ICDORepository> implements ICD
 		properties.put(IRepository.Props.OVERRIDE_UUID, getUuid());
 		properties.put(IRepository.Props.SUPPORTING_AUDITS, "true");
 		properties.put(IRepository.Props.SUPPORTING_BRANCHES, "true");
+		properties.put(IRepository.Props.ENSURE_REFERENTIAL_INTEGRITY, "true");
 
 		final InternalRepository repository = (InternalRepository) CDOServerUtils.createRepository(
 				getUuid(),

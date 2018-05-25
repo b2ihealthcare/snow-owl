@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 package com.b2international.snowowl.datastore;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -25,6 +27,9 @@ import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
+
+import com.b2international.index.query.Expression;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
  * Representation of a set of new, dirty and detached components as an outcome of a successful commit into the persistence layer. 
@@ -79,6 +84,13 @@ public interface ICDOCommitChangeSet {
 
 	<T extends CDOObject> Set<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures);
 	
-	Set<String> getDetachedComponents(EClass eClass);
+	<T extends RevisionDocument> List<T> getDetachedComponents(EClass eClass, Class<T> type);
+	
+	<T> List<T> getDetachedComponents(EClass eClass, Class<T> type, Function<Iterable<Long>, Expression> matchStorageKeyExpression);
+
+	Set<Long> getDetachedComponentStorageKeys(EClass eClass);
+
+	<T extends RevisionDocument> Set<String> getDetachedComponentIds(EClass eClass, Class<T> type);
+
 	
 }

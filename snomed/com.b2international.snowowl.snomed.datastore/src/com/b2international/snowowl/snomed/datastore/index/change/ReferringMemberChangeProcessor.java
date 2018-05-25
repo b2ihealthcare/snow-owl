@@ -17,9 +17,8 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -81,10 +80,9 @@ final class ReferringMemberChangeProcessor {
 			});
 		
 		// process detached members
-		final Set<String> detachedMemberIds = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
-		final Iterable<SnomedRefSetMemberIndexEntry> detachedMembers = searcher.get(SnomedRefSetMemberIndexEntry.class, detachedMemberIds);
+		final List<SnomedRefSetMemberIndexEntry> detachedMembers = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, SnomedRefSetMemberIndexEntry.class);
 		
-		StreamSupport.stream(detachedMembers.spliterator(), false)
+		detachedMembers.stream()
 			.filter(doc -> referencedComponentType == doc.getReferencedComponentType())
 			.forEach(doc -> {
 				final String uuid = doc.getId();

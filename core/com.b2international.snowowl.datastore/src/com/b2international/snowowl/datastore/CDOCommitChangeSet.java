@@ -18,11 +18,16 @@ package com.b2international.snowowl.datastore;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDOAddFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOClearFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDOContainerFeatureDelta;
@@ -39,9 +44,13 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
 
 /**
  * An implementation of the {@link ICDOCommitChangeSet} interface.
@@ -53,39 +62,38 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	private final String commitComment;
 	private final Collection<CDOObject> newComponents;
 	private final Collection<CDOObject> dirtyComponents;
-	private final Multimap<EClass, String> detachedComponents;
+	private final Map<CDOID, EClass> detachedObjects;
 	private final Map<CDOID, CDORevisionDelta> revisionDeltas;
 	private final long timestamp;
+	private final RevisionIndex index;
+	private final String branchPath;
 	
-	public CDOCommitChangeSet(final CDOView view, 
+	public CDOCommitChangeSet(
+			final RevisionIndex index,
+			final String branchPath,
+			final CDOView view, 
 			final String userId, 
 			final String commitComment,
 			final Collection<CDOObject> newComponents, 
 			final Collection<CDOObject> dirtyComponents, 
-			final Multimap<EClass, String> detachedComponents, 
+			final Map<CDOID, EClass> detachedObjects, 
 			final Map<CDOID, CDORevisionDelta> revisionDeltas, 
 			final long timestamp) {
-		
-		checkNotNull(view, "CDO view argument cannot be null.");
-		checkNotNull(userId, "User ID argument cannot be null.");
-		checkNotNull(newComponents, "New components argument cannot be null.");
-		checkNotNull(dirtyComponents, "Dirty components argument cannot be null.");
-		checkNotNull(detachedComponents, "Detached components argument cannot be null.");
-		checkNotNull(revisionDeltas, "Revision deltas map cannot be null.");
-
-		this.view = view;
-		this.userId = userId;
+		this.branchPath = branchPath;
+		this.index = checkNotNull(index, "Index argument cannot be null");
+		this.view = checkNotNull(view, "CDO view argument cannot be null.");
+		this.userId = checkNotNull(userId, "User ID argument cannot be null.");
 		this.commitComment = commitComment;
 		this.newComponents = Collections3.toImmutableList(newComponents);
 		this.dirtyComponents = Collections3.toImmutableList(dirtyComponents);
-		this.detachedComponents = detachedComponents;
+		this.detachedObjects = detachedObjects == null ? Collections.emptyMap() : detachedObjects;
 		this.revisionDeltas = ImmutableMap.copyOf(revisionDeltas);
 		this.timestamp = timestamp;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return dirtyComponents.isEmpty() && newComponents.isEmpty() && detachedComponents.isEmpty() && revisionDeltas.isEmpty();
+		return dirtyComponents.isEmpty() && newComponents.isEmpty() && detachedObjects.isEmpty() && revisionDeltas.isEmpty();
 	}
 	
 	@Override
@@ -132,15 +140,36 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	public <T extends CDOObject> Set<T> getDirtyComponents(final Class<T> type) {
 		return FluentIterable.from(getDirtyComponents()).filter(type).toSet();
 	}
-	
+
 	@Override
-	public Set<String> getDetachedComponents(final EClass eClass) {
-		return FluentIterable.from(detachedComponents.keySet())
-				.filter(eClass::isSuperTypeOf)
-				.transformAndConcat(detachedComponents::get)
-				.toSet();
+	public <T extends RevisionDocument> List<T> getDetachedComponents(final EClass eClass, final Class<T> type) {
+		return getDetachedComponents(eClass, type, storageKeys -> Expressions.matchAnyLong(RevisionDocument.Fields.STORAGE_KEY, storageKeys));
 	}
 	
+	@Override
+	public <T> List<T> getDetachedComponents(final EClass eClass, final Class<T> type, final Function<Iterable<Long>, Expression> matchStorageKeyExpression) {
+		final Set<Long> detachedComponentStorageKeys = getDetachedComponentStorageKeys(eClass);
+		if (detachedComponentStorageKeys.isEmpty()) return Collections.emptyList();
+		return index.read(branchPath, searcher -> {
+			return searcher.search(Query.select(type)
+					.from(type)
+					.where(matchStorageKeyExpression.apply(detachedComponentStorageKeys))
+					.limit(Integer.MAX_VALUE)
+					.build())
+					.getHits();
+		});
+	}
+	
+	@Override
+	public Set<Long> getDetachedComponentStorageKeys(EClass eClass) {
+		return detachedObjects.entrySet()
+				.stream()
+				.filter(entry -> eClass.isSuperTypeOf(entry.getValue()))
+				.map(entry -> entry.getKey())
+				.map(CDOIDUtil::getLong)
+				.collect(Collectors.toSet());
+	}
+
 	@Override
 	public <T extends CDOObject> Set<T> getDirtyComponents(Class<T> type, Set<EStructuralFeature> allowedFeatures) {
 		return FluentIterable.from(getDirtyComponents(type))
@@ -155,6 +184,11 @@ public final class CDOCommitChangeSet implements ICDOCommitChangeSet {
 				}
 			})
 			.toSet();
+	}
+	
+	@Override
+	public <T extends RevisionDocument> Set<String> getDetachedComponentIds(EClass eClass, Class<T> type) {
+		return getDetachedComponents(eClass, type).stream().map(RevisionDocument::getId).collect(Collectors.toSet());
 	}
 	
 	/**

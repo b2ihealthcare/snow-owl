@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.*;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
@@ -41,7 +42,7 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings());
+		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -55,7 +56,8 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings());
+		assertEquals(1, processor.getChangedMappings().size());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());
@@ -63,7 +65,10 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedMember() throws Exception {
-		registerDetached(SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER, nextId());
+		final SnomedRefSetMember member = createSimpleMember(generateConceptId(), generateConceptId());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).build());
+		
+		registerDetached(member.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
 		
 		process(processor);
 		
@@ -74,8 +79,14 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	
 	@Test
 	public void detachedMultipleMembersWithDifferentType() throws Exception {
-		registerDetached(SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER, nextId());
-		registerDetached(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER, nextId());
+		final SnomedRefSetMember simpleMember = createSimpleMember(generateConceptId(), generateConceptId());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(simpleMember).build());
+		
+		final SnomedRefSetMember langMember = createLangMember(generateDescriptionId(), Acceptability.PREFERRED, generateConceptId());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(langMember).build());
+		
+		registerDetached(simpleMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER);
+		registerDetached(langMember.cdoID(), SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER);
 		
 		process(processor);
 		

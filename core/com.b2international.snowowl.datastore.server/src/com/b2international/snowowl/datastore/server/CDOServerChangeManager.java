@@ -39,24 +39,25 @@ import org.eclipse.emf.cdo.spi.server.InternalTransaction;
 import org.eclipse.emf.cdo.spi.server.InternalView;
 import org.eclipse.emf.cdo.spi.server.ObjectWriteAccessHandler;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -75,10 +76,11 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	private final ConcurrentMap<TransactionCommitContext, DelegateCDOServerChangeManager> activeChangeManagers;
 	private final Collection<CDOChangeProcessorFactory> factories;
 	private final String repositoryName;
-
+	private final String repositoryId;
 	
 	public CDOServerChangeManager(final String repositoryUuid, final String repositoryName) {
 		super(false);
+		this.repositoryId = repositoryUuid;
 		this.repositoryName = repositoryName;
 		this.factories = CDOChangeProcessorFactoryManager.INSTANCE.getFactories(checkNotNull(repositoryUuid, "Repository UUID argument cannot be null."));
 		this.activeChangeManagers = new MapMaker().makeMap();
@@ -118,7 +120,6 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	@Override
 	public void handleTransactionAfterCommitted(final OMMonitor monitor, final TransactionCommitContext commitContext) {
 		try {
-			final String commitContextInfo = getCommitContextInfo(commitContext);
 			final DelegateCDOServerChangeManager delegate = activeChangeManagers.remove(commitContext);
 //			LOGGER.info("Changes have been successfully persisted into repository. {}", commitContextInfo);
 //			LOGGER.info("Flushing changes into semantic indexes... {}", commitContextInfo);
@@ -178,7 +179,7 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("Change processor factories", Arrays.toString(getFactoryNames().toArray()))
 				.toString();
 	}
@@ -235,12 +236,14 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 		
 		final CDOView view = getView(commitContext);
 		return new CDOCommitChangeSet(
+				ApplicationContext.getServiceForClass(RepositoryManager.class).get(repositoryId).service(RevisionIndex.class),
+				getBranchPath(commitContext).getPath(),
 				view,
 				commitContext.getUserID(),
 				commitContext.getCommitComment(),
 				getCdoObjects(commitContext.getNewObjects(), view), 
 				getCdoObjects(commitContext.getDirtyObjects(), view), 
-				getDetachedObjectTypes(commitContext),
+				commitContext.getDetachedObjectTypes(),
 				getRevisionDeltas(commitContext.getDirtyObjectDeltas()),
 				commitContext.getTimeStamp());
 	}
@@ -282,28 +285,6 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 		return createPath(checkNotNull(checkNotNull(checkNotNull(commitContext, "commitContext").getTransaction(), "transaction").getBranch()));
 	}
 
-	/*returns with a map of CDO IDs and class identifying the detached objects*/
-	private Map<CDOID, EClass> getDetachedObjectTypes(final TransactionCommitContext commitContext) {
-		final IBranchPath branchPath = getBranchPath(commitContext);
-		final CDOID[] detachedObjects = commitContext.getDetachedObjects();
-		final ImmutableMap.Builder<CDOID, EClass> builder = ImmutableMap.builder();
-		
-		for (final CDOID detachedObject : detachedObjects) {
-			final EClass eClass = EClassProviderBroker.INSTANCE.getEClass(branchPath, detachedObject);
-			
-			if (eClass != null) {
-				builder.put(detachedObject, eClass);
-			} else {
-				// Not all EClasses can be retrieved via a detached object EClass provider, but log it regardless
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("EClass cannot be found for CDO ID " + detachedObject);
-				}
-			}
-		}			
-		
-		return builder.build();
-	}
-	
 	/**
 	 * CDO revision provider working from the specified repository.
 	 */

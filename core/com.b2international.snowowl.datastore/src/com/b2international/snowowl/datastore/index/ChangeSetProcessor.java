@@ -16,7 +16,7 @@
 package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
@@ -51,14 +51,14 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Collection<Revision> getNewMappings();
+	Map<String, Revision> getNewMappings();
 	
 	/**
 	 * Returns the new mappings made by this {@link ChangeSetProcessor} on existing documents.
 	 * 
 	 * @return
 	 */
-	Collection<Revision> getChangedMappings();
+	Map<String, Revision> getChangedMappings();
 
 	/**
 	 * Returns the deletions made by this {@link ChangeSetProcessor}

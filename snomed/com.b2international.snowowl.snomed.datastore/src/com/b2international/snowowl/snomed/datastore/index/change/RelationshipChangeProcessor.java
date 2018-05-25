@@ -59,7 +59,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 		final Multimap<String, RefSetMemberChange> referringRefSets = memberChangeProcessor.process(commitChangeSet, searcher);
 		
-		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP));
+		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class));
 		
 		final Map<String, Relationship> newRelationshipsById = StreamSupport
 				.stream(commitChangeSet.getNewComponents(Relationship.class).spliterator(), false)
