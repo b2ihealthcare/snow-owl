@@ -284,6 +284,7 @@ public abstract class SnomedConstants {
 		public static final String CONCEPT_NON_CURRENT = "900000000000495008";
 		
 		// Historical reference sets
+		public static final String REFSET_HISTORICAL_ASSOCIATION = "900000000000522004";
 		public static final String REFSET_ALTERNATIVE_ASSOCIATION = "900000000000530003";
 		public static final String REFSET_MOVED_FROM_ASSOCIATION = "900000000000525002";
 		public static final String REFSET_MOVED_TO_ASSOCIATION = "900000000000524003";
