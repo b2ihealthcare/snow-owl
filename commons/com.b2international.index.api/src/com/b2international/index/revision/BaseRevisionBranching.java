@@ -362,7 +362,7 @@ public abstract class BaseRevisionBranching {
 	 * @param metadata - the metadata instance to set on the branch
 	 */
 	public final void updateMetadata(String branchPath, Metadata metadata) {
-		update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata));
+		commit(update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
 	}
 	
 	public final void handleCommit(final String branchPath, final long timestamp) {
