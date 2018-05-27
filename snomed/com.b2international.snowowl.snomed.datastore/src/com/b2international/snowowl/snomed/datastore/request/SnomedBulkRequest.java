@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -56,17 +57,18 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		final Set<String> requiredComponentIds = requests.build()
 			.stream()
 			.flatMap(request -> request.getRequiredComponentIds(context).stream())
+			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
 		final Multimap<Class<? extends CDOObject>, String> componentIdsByType = FluentIterable.from(requiredComponentIds)
-			.index(componentId -> {
-				switch (SnomedIdentifiers.getComponentCategory(componentId)) {
+				.index(componentId -> {
+					switch (SnomedIdentifiers.getComponentCategory(componentId)) {
 					case CONCEPT: return Concept.class;
 					case DESCRIPTION: return Description.class;
 					case RELATIONSHIP: return Relationship.class;
 					default: throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
-				}
-			});
+					}
+				});
 		
 		try {
 			for (final Entry<Class<? extends CDOObject>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
