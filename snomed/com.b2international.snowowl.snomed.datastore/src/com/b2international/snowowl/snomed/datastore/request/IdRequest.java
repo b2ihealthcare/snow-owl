@@ -156,14 +156,13 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		}
 	}
 
-	static Multimap<ComponentCategory, SnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
+	private static Multimap<ComponentCategory, SnomedComponentCreateRequest> getComponentCreateRequests(final Request<?, ?> request) {
 		final ImmutableMultimap.Builder<ComponentCategory, SnomedComponentCreateRequest> resultBuilder = ImmutableMultimap.builder();
 		collectComponentCreateRequests(request, resultBuilder);
 		return resultBuilder.build();
 	}
 	
 	private static void collectComponentCreateRequests(Request<?, ?> request, ImmutableMultimap.Builder<ComponentCategory, SnomedComponentCreateRequest> resultBuilder) {
-		
 		if (request instanceof DelegatingRequest) {
 			collectComponentCreateRequests(((DelegatingRequest<?, ?, ?>) request).next(), resultBuilder);
 		} else if (request instanceof TransactionalRequest) {
@@ -183,7 +182,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		}
 	}
 
-	private static ComponentCategory getComponentCategory(SnomedCoreComponentCreateRequest request) {
+	private static ComponentCategory getComponentCategory(SnomedComponentRequest<?> request) {
 		if (request instanceof SnomedConceptCreateRequest) {
 			return ComponentCategory.CONCEPT;
 		} else if (request instanceof SnomedDescriptionCreateRequest) {

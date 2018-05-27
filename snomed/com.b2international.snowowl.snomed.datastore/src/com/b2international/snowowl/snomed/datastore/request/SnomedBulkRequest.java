@@ -18,19 +18,21 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.CDOObject;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 /**
@@ -47,12 +49,14 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 
 	@Override
 	public R execute(TransactionContext context) {
-		Multimap<ComponentCategory, SnomedComponentCreateRequest> createRequests = IdRequest.getComponentCreateRequests(next());
+		ImmutableList.Builder<SnomedComponentRequest<?>> requests = ImmutableList.builder();
+		collectNestedRequests(next(), requests);
 		
 		// Prefetch all component IDs mentioned in reference set member creation requests, abort if any of them can not be found
-		final Set<String> requiredComponentIds = FluentIterable.from(createRequests.values())
-			.transformAndConcat(createRequest -> createRequest.getRequiredComponentIds(context))
-			.toSet();
+		final Set<String> requiredComponentIds = requests.build()
+			.stream()
+			.flatMap(request -> request.getRequiredComponentIds(context).stream())
+			.collect(Collectors.toSet());
 		
 		final Multimap<Class<? extends CDOObject>, String> componentIdsByType = FluentIterable.from(requiredComponentIds)
 			.index(componentId -> {
@@ -78,6 +82,18 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			.build();
 		
 		return next(newContext);
+	}
+
+	private static void collectNestedRequests(Request<?, ?> root, ImmutableList.Builder<SnomedComponentRequest<?>> requests) {
+		if (root instanceof SnomedComponentRequest<?>) {
+			requests.add((SnomedComponentRequest<?>) root);
+		} else if (root instanceof DelegatingRequest<?, ?, ?>) {
+			collectNestedRequests(((DelegatingRequest<?, ?, ?>) root).next(), requests);
+		} else if (root instanceof BulkRequest<?>) {
+			((BulkRequest<?>) root).getRequests().forEach(req -> {
+				collectNestedRequests(req, requests);
+			});
+		}
 	}
 	
 }
