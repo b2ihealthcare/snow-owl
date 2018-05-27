@@ -23,6 +23,7 @@ import java.util.List;
 import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.5
@@ -59,6 +60,7 @@ public final class BulkRequest<C extends ServiceProvider> implements Request<C, 
 	/**
 	 * @return the requests
 	 */
+	@JsonIgnore
 	public List<Request<C, ?>> getRequests() {
 		return requests;
 	}
