@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
@@ -50,6 +51,7 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOObjectHandler;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
@@ -77,6 +79,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -115,6 +118,20 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	protected CDOEditingContext(final CDOTransaction cdoTransaction) {
 		this.transaction = CDOUtils.check(cdoTransaction);
+		this.transaction.addObjectHandler(new CDOObjectHandler() {
+			@Override
+			public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
+				if (newState == CDOState.NEW) {
+					String id = getObjectId(object);
+					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+					resolvedObjectsById.put(createComponentKey(id, type), object);
+				} else if (oldState == CDOState.NEW && newState == CDOState.TRANSIENT) {
+					String id = getObjectId(object);
+					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+					resolvedObjectsById.remove(createComponentKey(id, type), object);
+				}
+			}
+		});
 	}
 	
 	public final String getBranch() {
@@ -235,14 +252,14 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			String componentId = it.next();
 			// lookup the unresolved ID in new and dirty components
 			for (CDOObject newComponent : ComponentUtils2.getNewObjects(getTransaction(), type)) {
-				if (componentId.equals(getId(newComponent))) {
+				if (componentId.equals(getObjectId(newComponent))) {
 					resolvedComponentsById.put(componentId, type.cast(newComponent));
 					it.remove();
 				}
 			}
 			
 			for (CDOObject dirtyComponent : ComponentUtils2.getDirtyObjects(getTransaction(), type)) {
-				if (componentId.equals(getId(dirtyComponent))) {
+				if (componentId.equals(getObjectId(dirtyComponent))) {
 					resolvedComponentsById.put(componentId, type.cast(dirtyComponent));
 					it.remove();
 				}
@@ -263,6 +280,16 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		// TODO remove detached components???
 		
 		return resolvedComponentsById;
+	}
+	
+	protected final String getObjectId(CDOObject object) {
+		if (object instanceof CodeSystemVersion) {
+			return ((CodeSystemVersion) object).getVersionId();
+		} else if (object instanceof CodeSystem) {
+			return ((CodeSystem) object).getShortName();
+		} else {
+			return getId(object);
+		}
 	}
 	
 	protected abstract String getId(CDOObject component);
