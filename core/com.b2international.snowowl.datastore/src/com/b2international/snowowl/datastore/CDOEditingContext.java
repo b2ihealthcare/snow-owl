@@ -125,7 +125,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 					String id = getObjectId(object);
 					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
 					resolvedObjectsById.put(createComponentKey(id, type), object);
-				} else if (oldState == CDOState.NEW && newState == CDOState.TRANSIENT) {
+				} else if (newState == CDOState.TRANSIENT) {
 					String id = getObjectId(object);
 					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
 					resolvedObjectsById.remove(createComponentKey(id, type), object);
