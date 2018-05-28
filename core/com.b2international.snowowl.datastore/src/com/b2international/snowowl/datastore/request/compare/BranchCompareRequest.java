@@ -19,9 +19,6 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionIndex;
@@ -87,9 +84,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		for (Class<? extends Revision> revisionType : compareResult.getNewRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchNew(createMatchAllReturnIdsQuery(revisionType));
 				result.addTotalNew(compareResult.getNewTotals(revisionType));
-				hits.getHits()
+				compareResult.getNewComponents(revisionType)
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
 					.forEach(result::putNewComponent);
@@ -99,9 +95,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		for (Class<? extends Revision> revisionType : compareResult.getChangedRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchChanged(createMatchAllReturnIdsQuery(revisionType));
 				result.addTotalChanged(compareResult.getChangedTotals(revisionType));
-				hits.getHits()
+				compareResult.getChangedComponents(revisionType)
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
 					.forEach(result::putChangedComponent);
@@ -111,9 +106,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		for (Class<? extends Revision> revisionType : compareResult.getDeletedRevisionTypes()) {
 			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
 			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				final Hits<String> hits = compareResult.searchDeleted(createMatchAllReturnIdsQuery(revisionType));
 				result.addTotalDeleted(compareResult.getDeletedTotals(revisionType));
-				hits.getHits()
+				compareResult.getDeletedComponents(revisionType)
 					.stream()
 					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
 					.forEach(result::putDeletedComponent);
@@ -123,12 +117,4 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 		return result.build();
 	}
 
-	private Query<String> createMatchAllReturnIdsQuery(Class<? extends Revision> revisionType) {
-		return Query.select(String.class)
-			.from(revisionType)
-			.fields(RevisionDocument.Fields.ID)
-			.where(Expressions.matchAll())
-			.limit(limit)
-			.build();
-	}
 }

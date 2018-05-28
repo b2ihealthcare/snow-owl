@@ -173,7 +173,7 @@ public final class RevisionCompare {
 		return deletedTotals.get(type);
 	}
 	
-	Set<String> getNewComponents(Class<? extends Revision> type) {
+	public Set<String> getNewComponents(Class<? extends Revision> type) {
 		return newComponents.get(type);
 	}
 	
@@ -181,7 +181,7 @@ public final class RevisionCompare {
 		return newComponents;
 	}
 	
-	Set<String> getChangedComponents(Class<? extends Revision> type) {
+	public Set<String> getChangedComponents(Class<? extends Revision> type) {
 		return changedComponents.get(type);
 	}
 	
@@ -189,7 +189,7 @@ public final class RevisionCompare {
 		return changedComponents;
 	}
 	
-	Set<String> getDeletedComponents(Class<? extends Revision> type) {
+	public Set<String> getDeletedComponents(Class<? extends Revision> type) {
 		return deletedComponents.get(type);
 	}
 	
