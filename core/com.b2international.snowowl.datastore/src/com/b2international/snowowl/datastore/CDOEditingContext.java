@@ -111,6 +111,22 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	protected final CDOTransaction transaction;
 	
 	private final Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
+	
+	/*Handler to register/unregister objects to/from the cache on their state changes*/
+	private final CDOObjectHandler objectStateListener = new CDOObjectHandler() {
+		@Override
+		public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
+			if (newState == CDOState.NEW) {
+				String id = getObjectId(object);
+				Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+				resolvedObjectsById.put(createComponentKey(id, type), object);
+			} else if (newState == CDOState.TRANSIENT) {
+				String id = getObjectId(object);
+				Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+				resolvedObjectsById.remove(createComponentKey(id, type), object);
+			}
+		}
+	};
 
 	protected CDOEditingContext(final EPackage ePackage, final IBranchPath branchPath) {
 		this(createTransaction(checkNotNull(ePackage, "ePackage"), checkNotNull(branchPath, "Branch path argument cannot be null.")));
@@ -118,20 +134,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	protected CDOEditingContext(final CDOTransaction cdoTransaction) {
 		this.transaction = CDOUtils.check(cdoTransaction);
-		this.transaction.addObjectHandler(new CDOObjectHandler() {
-			@Override
-			public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
-				if (newState == CDOState.NEW) {
-					String id = getObjectId(object);
-					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
-					resolvedObjectsById.put(createComponentKey(id, type), object);
-				} else if (newState == CDOState.TRANSIENT) {
-					String id = getObjectId(object);
-					Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
-					resolvedObjectsById.remove(createComponentKey(id, type), object);
-				}
-			}
-		});
+		this.transaction.addObjectHandler(objectStateListener);
 	}
 	
 	public final String getBranch() {
@@ -401,6 +404,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
+		transaction.removeObjectHandler(objectStateListener);
 		clearCache();
 		transaction.close();
 	}
