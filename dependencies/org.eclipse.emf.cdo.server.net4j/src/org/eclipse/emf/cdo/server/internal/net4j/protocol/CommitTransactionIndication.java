@@ -191,27 +191,20 @@ public class CommitTransactionIndication extends CDOServerIndicationWithMonitori
         monitor.worked();
       }
 
-      Map<CDOID, EClass> detachedObjectTypes = null;
-      if (getRepository().isEnsuringReferentialIntegrity())
-      {
-        detachedObjectTypes = new HashMap<CDOID, EClass>();
-      }
+      Map<CDOID, EClass> detachedObjectTypes = new HashMap<CDOID, EClass>();
 
       for (int i = 0; i < detachedObjects.length; i++)
       {
         CDOID id = in.readCDOID();
         detachedObjects[i] = id;
 
-        if (detachedObjectTypes != null)
-        {
-          EClass eClass = (EClass)in.readCDOClassifierRefAndResolve();
-          detachedObjectTypes.put(id, eClass);
-        }
+        EClass eClass = (EClass)in.readCDOClassifierRefAndResolve();
+        detachedObjectTypes.put(id, eClass);
 
         monitor.worked();
       }
 
-      if (detachedObjectTypes != null && detachedObjectTypes.isEmpty())
+      if (detachedObjectTypes.isEmpty())
       {
         detachedObjectTypes = null;
       }

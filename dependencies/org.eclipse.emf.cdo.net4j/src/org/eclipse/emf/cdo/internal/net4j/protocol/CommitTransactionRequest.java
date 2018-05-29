@@ -14,6 +14,12 @@
  */
 package org.eclipse.emf.cdo.internal.net4j.protocol;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.CDOObjectReference;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
@@ -37,24 +43,15 @@ import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.net4j.bundle.OM;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.internal.cdo.object.CDOObjectReferenceImpl;
-
+import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
+import org.eclipse.emf.spi.cdo.InternalCDOTransaction.InternalCDOCommitContext;
 import org.eclipse.net4j.util.concurrent.ConcurrencyUtil;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.io.IOUtil;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.trace.ContextTracer;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.spi.cdo.CDOSessionProtocol.CommitTransactionResult;
-import org.eclipse.emf.spi.cdo.InternalCDOTransaction.InternalCDOCommitContext;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author Eike Stepper
@@ -190,16 +187,12 @@ public class CommitTransactionRequest extends CDOClientRequestWithMonitoring<Com
       TRACER.format("Writing {0} detached objects", detachedObjects.size()); //$NON-NLS-1$
     }
 
-    boolean ensuringReferentialIntegrity = getSession().getRepositoryInfo().isEnsuringReferentialIntegrity();
     for (CDOIDAndVersion detachedObject : detachedObjects)
     {
       CDOID id = detachedObject.getID();
       out.writeCDOID(id);
-      if (ensuringReferentialIntegrity)
-      {
-        EClass eClass = getObjectType(id);
-        out.writeCDOClassifierRef(eClass);
-      }
+      EClass eClass = getObjectType(id);
+      out.writeCDOClassifierRef(eClass);
     }
 
     requestingLobs();
