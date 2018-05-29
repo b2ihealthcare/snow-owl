@@ -24,7 +24,9 @@ import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Range;
 
 /**
  * @since 6.5
@@ -44,6 +46,32 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 		checkArgument(start <= end, "Start and end values should represent a proper interval in time. Got: [%s, %s]", start, end);
 		this.start = start;
 		this.end = end;
+	}
+	
+	@JsonIgnore
+	public boolean isEmpty() {
+		return start == end;
+	}
+	
+	public RevisionSegment difference(RevisionSegment other) {
+		if (branchId != other.branchId) {
+			System.err.println();
+		}
+		checkArgument(branchId == other.branchId, "Cannot compute difference for a segment from another branch");
+		RevisionSegment intersection = intersection(other);
+		if (end > intersection.end) {
+			return new RevisionSegment(branchId, intersection.end + 1L, end);
+		} else {
+			return new RevisionSegment(branchId, end, end);
+		}
+	} 
+	
+	public RevisionSegment intersection(RevisionSegment other) {
+		checkArgument(branchId == other.branchId, "Cannot compute intersection for a segment from another branch");
+		Range<Long> thisRange = Range.closed(start, end);
+		Range<Long> otherRange = Range.closed(other.start, other.end);
+		Range<Long> intersection = thisRange.intersection(otherRange);
+		return new RevisionSegment(branchId, intersection.lowerEndpoint(), intersection.upperEndpoint());
 	}
 	
 	@Override
@@ -100,7 +128,20 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 	}
 	
 	public Expression toRangeExpression(String field) {
-		return Expressions.matchRange(field, getStartAddress(), getEndAddress());
+		return toRangeExpression(field, true);
 	}
 	
+	public Expression toRangeExpression(String field, boolean includeEnd) {
+		return Expressions.matchRange(field, getStartAddress(), getEndAddress(), true, includeEnd);
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("branchId", branchId)
+				.add("start", start)
+				.add("end", end)
+				.toString();
+	}
+
 }

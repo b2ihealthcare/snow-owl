@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -34,7 +33,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 4.7
@@ -50,12 +48,12 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
 	
 	private final Index index;
-	private final BaseRevisionBranching branches;
+	private final BaseRevisionBranching branching;
 	private final RevisionIndexAdmin admin;
 
 	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching) {
 		this.index = index;
-		this.branches = branching;
+		this.branching = branching;
 		this.admin = new RevisionIndexAdmin(this, index.admin());
 	}
 	
@@ -111,7 +109,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		}
 		return index.write(index -> {
 			final RevisionBranchRef branch = getBranchRef(branchPath);
-			final RevisionWriter writer = new DefaultRevisionWriter(branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
+			final RevisionWriter writer = new DefaultRevisionWriter(branching, branch, commitTimestamp, index, new DefaultRevisionSearcher(branch, index.searcher()));
 			return write.execute(writer);
 		});
 	}
@@ -140,12 +138,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		return index.read(searcher -> {
 			
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
-			final RevisionSegment lastSegment = baseOfCompareRef.segments().last();
-			final RevisionBranchRef compareRef = new RevisionBranchRef(compare.branchId(), compare.path(), ImmutableSortedSet.<RevisionSegment>naturalOrder()
-					.addAll(compare.difference(base).segments())
-					.add(new RevisionSegment(lastSegment.branchId(), lastSegment.end(), Long.MAX_VALUE))
-					.build());
-			
+			final RevisionBranchRef compareRef = compare.difference(base);
 
 			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, 
 					baseOfCompareRef, 
@@ -204,8 +197,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 							.fields(Revision.Fields.ID, DocumentMapping._HASH)
 							.where(Expressions.builder()
 									.filter(Expressions.matchAny(Revision.Fields.ID, newOrChangedKeys))
-									.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
-									.filter(Revision.toRevisedInFilter(compareRef.segments()))
+									.filter(baseOfCompareRef.toCreatedInFilter())
+									.filter(compareRef.toRevisedInFilter())
 									.build())
 							.scroll(SCROLL_KEEP_ALIVE)
 							.limit(SCROLL_LIMIT)
@@ -250,8 +243,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 						.from(type)
 						.fields(Revision.Fields.ID)
 						.where(Expressions.builder()
-								.filter(Revision.toCreatedInFilter(baseOfCompareRef.segments()))
-								.filter(Revision.toRevisedInFilter(compareRef.segments()))
+								.filter(baseOfCompareRef.toCreatedInFilter())
+								.filter(compareRef.toRevisedInFilter())
 								.build())
 						.scroll(SCROLL_KEEP_ALIVE)
 						.limit(SCROLL_LIMIT)
@@ -335,7 +328,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	private void purge(Writer writer, final RevisionBranchRef refToPurge, Set<Class<? extends Revision>> typesToPurge) throws IOException {
 		// if nothing to purge return
-		if (typesToPurge.isEmpty() || refToPurge.segments().isEmpty()) {
+		if (typesToPurge.isEmpty() || refToPurge.isEmpty()) {
 			return;
 		}
 		
@@ -373,7 +366,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public BaseRevisionBranching branching() {
-		return branches;
+		return branching;
 	}
 	
 	@Override
@@ -390,7 +383,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	private RevisionBranch getBranch(final String branchPath) {
-		return branches.getBranch(branchPath);
+		return branching.getBranch(branchPath);
 	}
 	
 	private Set<Class<? extends Revision>> getRevisionTypes() {

@@ -20,14 +20,10 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
 
 import com.b2international.index.Script;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -108,36 +104,4 @@ public abstract class Revision implements WithId {
 				.add(Revision.Fields.REVISED, revised);
 	}
 	
-	public static Expression toRevisionFilter(SortedSet<RevisionSegment> segments) {
-		final ExpressionBuilder query = Expressions.builder();
-		final ExpressionBuilder created = Expressions.builder();
-		
-		for (RevisionSegment segment : segments) {
-			final String start = segment.getStartAddress();
-			final String end = segment.getEndAddress();
-			created.should(Expressions.matchRange(Revision.Fields.CREATED, start, end));
-			query.mustNot(Expressions.matchRange(Revision.Fields.REVISED, start, end));
-		}
-		
-		return query
-				.filter(created.build())
-				.build();
-	}
-
-	public static Expression toCreatedInFilter(SortedSet<RevisionSegment> segments) {
-		final ExpressionBuilder createdIn = Expressions.builder();
-		for (RevisionSegment segment : segments) {
-			createdIn.should(segment.toRangeExpression(Revision.Fields.CREATED));
-		}
-		return createdIn.build(); 
-	}
-
-	public static Expression toRevisedInFilter(SortedSet<RevisionSegment> segments) {
-		final ExpressionBuilder revisedIn = Expressions.builder();
-		for (RevisionSegment segment : segments) {
-			revisedIn.should(segment.toRangeExpression(Revision.Fields.REVISED));
-		}
-		return revisedIn.build();
-	}
-
 }

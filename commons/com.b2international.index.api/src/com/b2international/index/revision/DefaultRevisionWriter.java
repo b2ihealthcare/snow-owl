@@ -43,16 +43,19 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	private final Writer index;
 	private final RevisionSearcher searcher;
 	
+	private final BaseRevisionBranching branching;
 	private final RevisionBranchPoint created;
 	private final RevisionBranchPoint revised;
 	
 	private final Map<Class<?>, Set<String>> revisionUpdates = newHashMap();
 
 	public DefaultRevisionWriter(
+			final BaseRevisionBranching branching,
 			final RevisionBranchRef branch,
 			long commitTimestamp,
 			Writer index, 
 			RevisionSearcher searcher) {
+		this.branching = branching;
 		this.branch = branch;
 		this.index = index;
 		this.searcher = searcher;
@@ -110,7 +113,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 				if (!keysToUpdate.isEmpty()) {
 					final Expression filter = Expressions.builder()
 							.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
-							.filter(Revision.toRevisionFilter(branch.segments()))
+							.filter(branch.toRevisionFilter())
 							.build();
 					final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
 					index.bulkUpdate(update);
@@ -135,6 +138,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			)
 		);
 		index.commit();
+		branching.sendChangeEvent(branch());
 	}
 
 	@Override

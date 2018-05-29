@@ -318,8 +318,12 @@ public final class RevisionBranch extends MetadataHolderImpl {
      */
     @JsonIgnore
     public SortedSet<RevisionSegment> getParentSegments() {
-    	return getSegments().headSet(getSegments().last());
+    	return getSegments().headSet(getHead());
     }
+
+	private RevisionSegment getHead() {
+		return getSegments().last();
+	}
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
@@ -328,7 +332,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef baseRef() {
-		return new RevisionBranchRef(getId(), getParentPath(), getParentSegments());
+		return new RevisionBranchRef(getParentSegments().last().branchId(), getParentPath(), getParentSegments());
 	}
     
     /**

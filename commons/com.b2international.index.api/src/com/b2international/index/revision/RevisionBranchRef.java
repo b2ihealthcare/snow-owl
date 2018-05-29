@@ -15,12 +15,17 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newTreeSet;
+
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -76,21 +81,91 @@ final class RevisionBranchRef {
 	}
 
 	public Expression toRevisionFilter() {
-		return Revision.toRevisionFilter(segments);
+		if (isEmpty()) {
+			return Expressions.matchNone();
+		}
+		
+		final ExpressionBuilder query = Expressions.builder();
+		final ExpressionBuilder created = Expressions.builder();
+		
+		for (RevisionSegment segment : segments) {
+			created.should(segment.toRangeExpression(Revision.Fields.CREATED));
+			query.mustNot(segment.toRangeExpression(Revision.Fields.REVISED));
+		}
+		
+		return query
+				.filter(created.build())
+				.build();
+	}
+	
+	public Expression toCreatedInFilter() {
+		if (isEmpty()) {
+			return Expressions.matchNone();
+		}
+		
+		final ExpressionBuilder createdIn = Expressions.builder();
+		for (RevisionSegment segment : segments) {
+			createdIn.should(segment.toRangeExpression(Revision.Fields.CREATED));
+		}
+		
+		return createdIn.build(); 
+	}
+
+	public Expression toRevisedInFilter() {
+		if (isEmpty()) {
+			return Expressions.matchNone();
+		}
+		
+		final ExpressionBuilder revisedIn = Expressions.builder();
+		for (RevisionSegment segment : segments) {
+			revisedIn.should(segment.toRangeExpression(Revision.Fields.REVISED));
+		}
+		
+		return revisedIn.build();
 	}
 
 	public RevisionBranchRef difference(RevisionBranchRef other) {
-		final TreeSet<RevisionSegment> difference = segments.stream()
-			.filter(segment -> !other.segments().stream().filter(ex -> ex.branchId() == segment.branchId()).findFirst().isPresent())
-			.collect(Collectors.toCollection(TreeSet::new));
-		return new RevisionBranchRef(branchId, branchPath, difference);
+		final TreeSet<RevisionSegment> differenceSegments = newTreeSet();
+		
+		Iterator<RevisionSegment> segmentsIterator = segments.iterator();
+		Iterator<RevisionSegment> otherSegmentsIterator = other.segments.iterator();
+		
+		while (segmentsIterator.hasNext() && otherSegmentsIterator.hasNext()) {
+			RevisionSegment nextSegment = segmentsIterator.next();
+			RevisionSegment otherSegment = otherSegmentsIterator.next();
+			if (nextSegment.branchId() != otherSegment.branchId()) {
+				differenceSegments.add(nextSegment);
+				break;
+			}
+			RevisionSegment difference = nextSegment.difference(otherSegment);
+			if (!difference.isEmpty()) {
+				differenceSegments.add(difference);
+			}
+		}
+		
+		while (segmentsIterator.hasNext()) {
+			differenceSegments.add(segmentsIterator.next());
+		}
+		
+		return new RevisionBranchRef(branchId, branchPath, differenceSegments);
 	}
 
 	public RevisionBranchRef intersection(RevisionBranchRef other) {
-		final TreeSet<RevisionSegment> intersection = segments.stream()
-			.filter(segment -> other.segments().stream().filter(ex -> ex.branchId() == segment.branchId()).findFirst().isPresent())
-			.collect(Collectors.toCollection(TreeSet::new));
-		return new RevisionBranchRef(branchId, branchPath, intersection);
+		final TreeSet<RevisionSegment> intersectionSegments = newTreeSet();
+		
+		Iterator<RevisionSegment> segmentsIterator = segments.iterator();
+		Iterator<RevisionSegment> otherSegmentsIterator = other.segments.iterator();
+		
+		while (segmentsIterator.hasNext() && otherSegmentsIterator.hasNext()) {
+			RevisionSegment nextSegment = segmentsIterator.next();
+			RevisionSegment otherSegment = otherSegmentsIterator.next();
+			if (nextSegment.branchId() != otherSegment.branchId()) {
+				break;
+			}
+			intersectionSegments.add(nextSegment.intersection(otherSegment));
+		}
+		
+		return new RevisionBranchRef(branchId, branchPath, intersectionSegments);
 	}
 
 	/**
@@ -100,6 +175,7 @@ final class RevisionBranchRef {
 	 * @see Purge#LATEST
 	 */
 	public RevisionBranchRef lastRef() {
+		checkArgument(!isEmpty(), "TODO");
 		return new RevisionBranchRef(branchId, branchPath, ImmutableSortedSet.of(segments.last()));
 	}
 	
@@ -109,7 +185,12 @@ final class RevisionBranchRef {
 	 * @see Purge#HISTORY
 	 */
 	public RevisionBranchRef historyRef() {
+		checkArgument(!isEmpty(), "TODO");
 		return new RevisionBranchRef(branchId, branchPath, ImmutableSortedSet.copyOf(segments.headSet(segments.last())));
+	}
+
+	public boolean isEmpty() {
+		return segments.isEmpty();
 	}
 	
 }
