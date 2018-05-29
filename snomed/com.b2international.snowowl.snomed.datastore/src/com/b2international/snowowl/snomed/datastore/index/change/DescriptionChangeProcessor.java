@@ -100,7 +100,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		final Set<String> descriptionsToBeLoaded = newHashSet();
 		for (String descriptionWithAccepatibilityChange : acceptabilityChangesByDescription.keySet()) {
 			if (!newDescriptionsById.containsKey(descriptionWithAccepatibilityChange)
-					&& !changedDescriptionsById.containsKey(descriptionWithAccepatibilityChange)) {
+					&& !changedDescriptionIds.contains(descriptionWithAccepatibilityChange)) {
 				descriptionsToBeLoaded.add(descriptionWithAccepatibilityChange);
 			}
 		}
