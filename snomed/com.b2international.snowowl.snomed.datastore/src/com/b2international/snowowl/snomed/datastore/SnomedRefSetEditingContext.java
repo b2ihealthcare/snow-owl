@@ -153,11 +153,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	protected String getId(CDOObject component) {
-		return getSnomedEditingContext().getId(component);
-	}
-	
-	@Override
 	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		return getSnomedEditingContext().fetchComponents(componentIds, type);
 	}

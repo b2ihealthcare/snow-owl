@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.api;
 
+import org.eclipse.emf.cdo.CDOObject;
+
 /**
  * Represents the common service interface for all component lookup services.
  */
@@ -63,4 +65,14 @@ public interface ILookupService<T, V> {
 	 * @return the unique storage key of the component.
 	 */
 	long getStorageKey(final IBranchPath branchPath, final String id);
+	
+	/**
+	 * Extracts the unique business identifier from the specified component.
+	 * 
+	 * @param component
+	 *            the component to inspect
+	 *            
+	 * @return the business key of the component
+	 */
+	String getId(final CDOObject component);
 }

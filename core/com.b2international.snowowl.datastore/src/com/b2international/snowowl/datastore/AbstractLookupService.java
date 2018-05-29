@@ -59,8 +59,5 @@ public abstract class AbstractLookupService<T extends CDOObject, V extends CDOVi
 		return -1 < getStorageKey(branchPath, id);
 	}
 	
-	protected abstract String getId(T component);
-	
 	protected abstract Class<T> getType();
-	
 }

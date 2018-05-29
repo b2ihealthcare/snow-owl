@@ -285,18 +285,18 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return resolvedComponentsById;
 	}
 	
-	protected final String getObjectId(CDOObject object) {
-		if (object instanceof CodeSystemVersion) {
-			return ((CodeSystemVersion) object).getVersionId();
-		} else if (object instanceof CodeSystem) {
-			return ((CodeSystem) object).getShortName();
-		} else {
-			return getId(object);
+	protected final String getObjectId(final CDOObject component) {
+		if (component instanceof CodeSystemVersion) {
+			return ((CodeSystemVersion) component).getVersionId();
+		} else if (component instanceof CodeSystem) {
+			return ((CodeSystem) component).getShortName();
 		}
+		
+		final Class<?> instanceClass = component.eClass().getInstanceClass();
+		final ILookupService<?, CDOView> lookupService = getComponentLookupService(instanceClass);
+		return lookupService.getId(component);
 	}
 	
-	protected abstract String getId(CDOObject component);
-
 	protected abstract <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type);
 
 	public final <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
