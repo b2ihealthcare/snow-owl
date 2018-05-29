@@ -252,7 +252,7 @@ public abstract class BaseRevisionBranching {
 		}
 		RevisionBranch to = getBranch(toPath);
 		RevisionBranch from = getBranch(fromPath);
-		BranchState changesFromState = from.state(to);
+		BranchState changesFromState = from.state(getBranch(from.getParentPath()));
 		
 		if (changesFromState == BranchState.FORWARD) {
 			final String mergedToPath = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
