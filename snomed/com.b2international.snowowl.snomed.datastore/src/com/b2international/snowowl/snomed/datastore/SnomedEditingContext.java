@@ -88,6 +88,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModel;
+import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -167,6 +168,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 			return ((SnomedRefSetMember) component).getUuid();
 		} else if (component instanceof SnomedRefSet) {
 			return ((SnomedRefSet) component).getIdentifierId();
+		} else if (component instanceof ConceptModelComponent) {
+			return ((ConceptModelComponent) component).getUuid();
 		}
 		throw new UnsupportedOperationException("Cannot get ID for " + component);
 	}
