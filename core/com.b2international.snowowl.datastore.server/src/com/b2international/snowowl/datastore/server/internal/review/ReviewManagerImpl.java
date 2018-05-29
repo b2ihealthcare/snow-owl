@@ -219,15 +219,13 @@ public class ReviewManagerImpl implements ReviewManager {
 					.limit(Integer.MAX_VALUE)
 					.build());
 			
-			if (affectedReviews.getTotal() > 0) {
-				for (final Review affectedReview : affectedReviews) {
-					Review newReview = updateStatus(affectedReview, ReviewStatus.STALE);
-					if (newReview != null) {
-						index.put(newReview.id(), newReview);
-					}
+			for (final Review affectedReview : affectedReviews) {
+				Review newReview = updateStatus(affectedReview, ReviewStatus.STALE);
+				if (newReview != null) {
+					index.put(newReview.id(), newReview);
 				}
-				index.commit();
 			}
+			index.commit();
 			return null;
 		});
 	}

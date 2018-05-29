@@ -24,7 +24,7 @@ import com.b2international.snowowl.datastore.review.Review;
 /**
  * @since 4.5
  */
-public final class ReviewCreateRequestBuilder extends BaseRequestBuilder<ReviewCreateRequestBuilder, RepositoryContext, Review> implements RepositoryRequestBuilder<Review> {
+public final class ReviewCreateRequestBuilder extends BaseRequestBuilder<ReviewCreateRequestBuilder, RepositoryContext, Review> implements RepositoryIndexRequestBuilder<Review> {
 	
 	private String sourceBranch;
 	private String targetBranch;

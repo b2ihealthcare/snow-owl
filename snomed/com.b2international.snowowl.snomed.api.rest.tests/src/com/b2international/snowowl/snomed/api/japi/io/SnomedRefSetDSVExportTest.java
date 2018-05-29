@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.b2international.commons.FileUtils;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -66,6 +68,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCr
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
@@ -77,21 +80,25 @@ public class SnomedRefSetDSVExportTest {
 
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
-	private static final String MAIN_BRANCH = Branch.MAIN_PATH;
-
 	private static final String DELIMITER = "|";
+	
+	@Rule
+	public final TestMethodNameRule methodName = new TestMethodNameRule();
 	
 	private IEventBus bus;
 	
 	private FileRegistry fileRegistry;
 
 	private File tempDir;
+
+	private String branchPath;
 	
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		fileRegistry = ApplicationContext.getInstance().getService(FileRegistry.class);
 		tempDir = Files.createTempDir();
+		branchPath = createBranch(methodName.get());
 	}
 	
 	@After
@@ -101,10 +108,9 @@ public class SnomedRefSetDSVExportTest {
 	
 	@Test
 	public void simpleTypeDSVExport() throws Exception {
-
-		String refsetId = createRefset(SnomedRefSetType.SIMPLE);
-		addMember(refsetId, Concepts.SUBSTANCE);
-		addMember(refsetId, Concepts.FINDING_SITE);
+		String refsetId = createRefset(branchPath, SnomedRefSetType.SIMPLE);
+		addMember(branchPath, refsetId, Concepts.SUBSTANCE);
+		addMember(branchPath, refsetId, Concepts.FINDING_SITE);
 		
 		UUID fileId = 
 			SnomedRequests.dsv()
@@ -114,8 +120,8 @@ public class SnomedRefSetDSVExportTest {
 				.setDescriptionIdExpected(true)
 				.setRelationshipTargetExpected(true)
 				.setRefSetId(refsetId)
-				.setExportItems(createExportItems(refsetId))
-				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.setExportItems(createExportItems(branchPath, refsetId))
+				.build(REPOSITORY_ID, branchPath)
 				.execute(bus)
 				.getSync();
 
@@ -131,13 +137,12 @@ public class SnomedRefSetDSVExportTest {
 		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 4 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 4);
 	}
-	
+
 	@Test
 	public void mapTypeDSVExport() throws Exception {
-
-		String refsetId = createRefset(SnomedRefSetType.SIMPLE_MAP);
-		addMember(refsetId, Concepts.SUBSTANCE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
-		addMember(refsetId, Concepts.FINDING_SITE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
+		String refsetId = createRefset(branchPath, SnomedRefSetType.SIMPLE_MAP);
+		addMember(branchPath, refsetId, Concepts.SUBSTANCE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
+		addMember(branchPath, refsetId, Concepts.FINDING_SITE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
 		
 		UUID fileId = 
 			SnomedRequests.dsv()
@@ -147,8 +152,8 @@ public class SnomedRefSetDSVExportTest {
 				.setDescriptionIdExpected(true)
 				.setRelationshipTargetExpected(true)
 				.setRefSetId(refsetId)
-				.setExportItems(createExportItems(refsetId))
-				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.setExportItems(createExportItems(branchPath, refsetId))
+				.build(REPOSITORY_ID, branchPath)
 				.execute(bus)
 				.getSync();
 
@@ -164,26 +169,30 @@ public class SnomedRefSetDSVExportTest {
 		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 3 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 3);
 	}
+	
+	private String createBranch(String branchName) {
+		return RepositoryRequests.branching().prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus).getSync();
+	}
 
 	private List<ExtendedLocale> locales() {
 		return ApplicationContext.getInstance().getService(LanguageSetting.class).getLanguagePreference();
 	}
 
-	private List<AbstractSnomedDsvExportItem> createExportItems(String refsetId) {
+	private List<AbstractSnomedDsvExportItem> createExportItems(String branchPath, String refsetId) {
 			SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEcl(String.format("^%s", refsetId))
 				.setExpand("relationships()")
-				.build(REPOSITORY_ID, MAIN_BRANCH)
+				.build(REPOSITORY_ID, branchPath)
 				.execute(bus)
 				.getSync();
 		
-		return transformToExportItems(getConstraints(concepts));
+		return transformToExportItems(getConstraints(branchPath, concepts));
 	}
 
-	private Iterable<SnomedConstraint> getConstraints(SnomedConcepts concepts) {
+	private Iterable<SnomedConstraint> getConstraints(String branchPath, SnomedConcepts concepts) {
 		return SnomedRequests
-				.prepareGetApplicablePredicates(MAIN_BRANCH, 
+				.prepareGetApplicablePredicates(branchPath, 
 						idsOf(concepts), 
 						ancestorsOf(concepts), 
 						Collections.emptySet(), 
@@ -213,11 +222,11 @@ public class SnomedRefSetDSVExportTest {
 				.collect(Collectors.toSet());
 	}
 
-	private void addMember(String refsetId, String referencedComponentId) {
-		addMember(refsetId, referencedComponentId, Collections.emptyMap());
+	private void addMember(String branchPath, String refsetId, String referencedComponentId) {
+		addMember(branchPath, refsetId, referencedComponentId, Collections.emptyMap());
 	}
 	
-	private void addMember(String refsetId, String referencedComponentId, Map<String, Object> properties) {
+	private void addMember(String branchPath, String refsetId, String referencedComponentId, Map<String, Object> properties) {
 		SnomedRequests.prepareNewMember()
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setActive(true)
@@ -225,12 +234,12 @@ public class SnomedRefSetDSVExportTest {
 				.setReferencedComponentId(referencedComponentId)
 				.setProperties(properties)
 				.setId(UUID.randomUUID().toString())
-				.build(REPOSITORY_ID, MAIN_BRANCH, "test", "test")
+				.build(REPOSITORY_ID, branchPath, "test", "test")
 				.execute(bus)
 				.getSync();
 	}
 
-	private String createRefset(SnomedRefSetType type) {
+	private String createRefset(String branchPath, SnomedRefSetType type) {
 		SnomedDescriptionCreateRequestBuilder fsn = toDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "term-test");
 		SnomedDescriptionCreateRequestBuilder pt = toDescriptionRequest(Concepts.SYNONYM, "test");
 
@@ -240,7 +249,7 @@ public class SnomedRefSetDSVExportTest {
 		SnomedRefSetCreateRequestBuilder refSet = toRefSetRequest(type);
 		
 		String conceptId = generateId();
-		createConcept(fsn, pt, statedIsA, inferredIsA, refSet, conceptId);
+		createConcept(branchPath, fsn, pt, statedIsA, inferredIsA, refSet, conceptId);
 		
 		return conceptId;
 	}
@@ -252,6 +261,7 @@ public class SnomedRefSetDSVExportTest {
 	}
 
 	private CommitResult createConcept(
+			final String branchPath,
 			SnomedDescriptionCreateRequestBuilder fsn,
 			SnomedDescriptionCreateRequestBuilder pt, 
 			SnomedRelationshipCreateRequestBuilder statedIsA,
@@ -271,7 +281,7 @@ public class SnomedRefSetDSVExportTest {
 			builder.setRefSet(refSet);
 		
 		return builder
-					.build(REPOSITORY_ID, MAIN_BRANCH, "test", "test")
+					.build(REPOSITORY_ID, branchPath, "test", "test")
 					.execute(bus)
 					.getSync();
 	}

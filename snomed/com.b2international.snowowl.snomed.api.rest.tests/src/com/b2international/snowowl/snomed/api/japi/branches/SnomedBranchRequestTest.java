@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -55,8 +56,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -71,23 +72,33 @@ public class SnomedBranchRequestTest {
 	private static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
 	private static final long POLL_INTERVAL = TimeUnit.SECONDS.toMillis(1L);
 	
+	@Rule
+	public TestMethodNameRule methodName = new TestMethodNameRule(); 
+	
 	private IEventBus bus;
 	private CDOBranchManager cdoBranchManager;
+	private String branchPath;
 	
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		cdoBranchManager = getSnomedCdoBranchManager();
+		branchPath = RepositoryRequests.branching().prepareCreate()
+				.setParent(Branch.MAIN_PATH)
+				.setName(methodName.get())
+				.build(REPOSITORY_ID)
+				.execute(bus)
+				.getSync();
 	}
-
+	
 	@Test
 	public void createTwoBranchesSameTimeWithSameName() throws Exception {
 		final Branching branches = RepositoryRequests.branching();
 		
 		// try to create two branches at the same time
 		final String branchName = UUID.randomUUID().toString();
-		final Promise<String> first = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
-		final Promise<String> second = branches.prepareCreate().setParent(Branch.MAIN_PATH).setName(branchName).build(REPOSITORY_ID).execute(bus);
+		final Promise<String> first = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
+		final Promise<String> second = branches.prepareCreate().setParent(branchPath).setName(branchName).build(REPOSITORY_ID).execute(bus);
 		final String error = Promise.all(first, second)
 			.then(new Function<List<Object>, String>() {
 				@Override
@@ -116,13 +127,13 @@ public class SnomedBranchRequestTest {
 		final String branchA = UUID.randomUUID().toString();
 		final String branchB = UUID.randomUUID().toString();
 		final Promise<String> first = branches.prepareCreate()
-				.setParent(Branch.MAIN_PATH)
+				.setParent(branchPath)
 				.setName(branchA)
 				.build(REPOSITORY_ID)
 				.execute(bus);
 		
 		final Promise<String> second = branches.prepareCreate()
-				.setParent(Branch.MAIN_PATH)
+				.setParent(branchPath)
 				.setName(branchB)
 				.build(REPOSITORY_ID)
 				.execute(bus);
@@ -135,7 +146,7 @@ public class SnomedBranchRequestTest {
 				final Branch secondBranch = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
 				
 				assertBranchesCreated(branchA, branchB, firstBranch, secondBranch);
-				assertBranchSegmentsValid(Branch.MAIN_PATH, firstBranch.path(), secondBranch.path());
+				assertBranchSegmentsValid(branchPath, firstBranch.path(), secondBranch.path());
 				return null;
 			}
 		})
@@ -151,7 +162,7 @@ public class SnomedBranchRequestTest {
 		final String branchB = UUID.randomUUID().toString();
 
 		final String first = branches.prepareCreate()
-				.setParent(Branch.MAIN_PATH)
+				.setParent(branchPath)
 				.setName(branchA)
 				.build(REPOSITORY_ID)
 				.execute(bus)
@@ -265,13 +276,8 @@ public class SnomedBranchRequestTest {
 	}
 
 	private Set<CDOBranch> getCdoBranches(final String branchName) {
-		return FluentIterable.from(newArrayList(cdoBranchManager.getMainBranch().getBranches()))
-			.filter(new Predicate<CDOBranch>() {
-				@Override
-				public boolean apply(CDOBranch input) {
-					return input.getName().equals(branchName);
-				}
-			})
+		return FluentIterable.from(newArrayList(cdoBranchManager.getBranch(branchPath).getBranches()))
+			.filter(input -> input.getName().equals(branchName))
 			.toSet();
 	}
 	

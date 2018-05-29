@@ -203,7 +203,6 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		ConceptChanges changes = getConceptChanges(reviewId).statusCode(200).extract().as(ConceptChanges.class);
 		
 		assertThat(changes.id()).isEqualTo(reviewId);
-		// newConcept2Id has been added after the merge, it should not be visible here
 		assertThat(changes.newConcepts())
 			.containsOnly(newConcept1Id, newConcept2Id);
 		assertThat(changes.changedConcepts())
