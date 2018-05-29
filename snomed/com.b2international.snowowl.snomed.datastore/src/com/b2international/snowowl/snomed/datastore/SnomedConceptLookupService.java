@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -58,8 +59,8 @@ public final class SnomedConceptLookupService extends AbstractLookupService<Conc
 	}
 
 	@Override
-	protected String getId(Concept component) {
-		return component.getId();
+	public String getId(CDOObject component) {
+		return ((Concept) component).getId();
 	}
 
 	@Override
