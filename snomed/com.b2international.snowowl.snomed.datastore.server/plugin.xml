@@ -28,13 +28,6 @@
       </changeProcessorFactory>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.eclassProvider">
-      <provider
-            class="com.b2international.snowowl.datastore.server.snomed.SnomedEClassProvider"
-            id="com.b2international.snowowl.datastore.server.snomed.SnomedEClassProvider">
-      </provider>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.conflictProcessor">
       <processor
             class="com.b2international.snowowl.datastore.server.snomed.SnomedCDOConflictProcessor">
