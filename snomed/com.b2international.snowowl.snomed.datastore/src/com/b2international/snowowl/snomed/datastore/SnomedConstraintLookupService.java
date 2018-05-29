@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -58,7 +59,7 @@ public final class SnomedConstraintLookupService extends AbstractLookupService<A
 	}
 
 	@Override
-	protected String getId(AttributeConstraint component) {
-		return component.getUuid();
+	public String getId(CDOObject component) {
+		return ((AttributeConstraint) component).getUuid();
 	}
 }

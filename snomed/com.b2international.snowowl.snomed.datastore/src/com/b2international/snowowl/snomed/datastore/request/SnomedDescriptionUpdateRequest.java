@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationInd
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Multimap;
 
 /**
@@ -272,6 +275,28 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		final Builder<String> ids = ImmutableSet.<String>builder();
+		ids.add(getComponentId());
+		if (inactivationIndicator != null) {
+			ids.add(inactivationIndicator.getConceptId());
+		}
+		if (caseSignificance != null) {
+			ids.add(caseSignificance.getConceptId());
+		}
+		if (associationTargets != null && !associationTargets.isEmpty()) {
+			associationTargets.entries().forEach(entry -> {
+				ids.add(entry.getKey().getConceptId());
+				ids.add(entry.getValue());
+			});
+		}
+		if (typeId != null) {
+			ids.add(typeId);
+		}
+		return ids.build();
 	}
 	
 }

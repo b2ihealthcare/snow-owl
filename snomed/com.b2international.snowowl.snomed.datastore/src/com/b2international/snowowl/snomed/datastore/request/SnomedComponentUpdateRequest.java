@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Map;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -36,7 +35,7 @@ import com.google.common.collect.Maps;
  * @since 4.5
  * @param <B>
  */
-public abstract class SnomedComponentUpdateRequest implements Request<TransactionContext, Boolean> {
+public abstract class SnomedComponentUpdateRequest implements SnomedComponentRequest<Boolean> {
 
 	private final String componentId;
 	

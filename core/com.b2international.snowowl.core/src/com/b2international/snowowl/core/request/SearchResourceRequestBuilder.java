@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,11 +64,17 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
 	 * @param scrollKeepAlive
 	 * @return this builder instance
-	 * @see PageableCollectionResource#getScrollId()
 	 */
 	public final B setScroll(String scrollKeepAlive) {
 		this.scrollKeepAlive = scrollKeepAlive;
 		return getSelf();
+	}
+
+	/*
+	 * Used by SearchResourceRequestIterator
+	 */
+	final String getScrollKeepAlive() {
+		return scrollKeepAlive;
 	}
 	
 	/**

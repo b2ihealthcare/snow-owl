@@ -95,7 +95,7 @@ public final class SequentialItemIdGenerationStrategy implements ItemIdGeneratio
 	        	} else {
 	        		generatedItemIds.add(Long.toString(current));
 	        		quantity--;
-	        		current = snapToLowerBound(current + 1L);
+	        		current = snapToLowerBound(current + stepSize + 1L);
 	        	}
 	        	if (oldCurrent == current) {
 	        		throw new IllegalArgumentException("No more itemIds are available in this counter");

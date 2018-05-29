@@ -16,7 +16,10 @@
 package com.b2international.snowowl.snomed.api.rest.perf;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -27,16 +30,22 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.AllSnomedApiTests;
+import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Stopwatch;
 
@@ -73,7 +82,8 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		IBranchPath branch = BranchPathUtils.createPath(branchPath, "merge-test");
 		createBranch(branch).statusCode(201);
 		BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
-		for (int i = 0; i < 1000; i++) {
+		final int numberOfConceptsToWorkWith = 10_000;
+		for (int i = 0; i < numberOfConceptsToWorkWith; i++) {
 			bulk.add(SnomedRequests.prepareNewConcept()
 						.setIdFromNamespace(null /*INT*/)
 						.setActive(true)
@@ -99,17 +109,113 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		
 		Stopwatch w = Stopwatch.createStarted();
 		// commit large changeset
-		SnomedRequests.prepareCommit()
+		CommitResult createCommitResult = SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit large bulk request")
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
 			.execute(getBus())
 			.getSync();
-		System.err.println("Bulk commit took: " + w);
+		System.err.println("Bulk create 10_000 concepts commit took: " + w);
+		w.reset().start();
+
+		// extract the new IDs assigned to the concepts
+		Set<String> idsOfCreatedConcepts = createCommitResult.getResultAs(BulkResponse.class)
+			.stream()
+			.filter(String.class::isInstance)
+			.map(String.class::cast)
+			.collect(Collectors.toSet());
+		// retrieve the first 100 created concepts back, check the module
+		
+		SnomedConcepts first100 = SnomedRequests.prepareSearchConcept()
+			.setLimit(100)
+			.filterByIds(idsOfCreatedConcepts)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		assertThat(first100.getTotal()).isEqualTo(numberOfConceptsToWorkWith);
+		first100.forEach(concept -> {
+			assertThat(concept.getModuleId()).isEqualTo(Concepts.MODULE_SCT_CORE);
+		});
+		
+		// check that SNOMED CT ROOT has 10_000
+		int totalDescendants = SnomedRequests.prepareSearchConcept()
+			.setLimit(0)
+			.filterByStatedParent(Concepts.ROOT_CONCEPT)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.execute(getBus())
+			.getSync()
+			.getTotal();
+		assertThat(totalDescendants).isGreaterThanOrEqualTo(numberOfConceptsToWorkWith);
+		
+		// find the relationship IDs of the concepts
+		final Set<String> conceptRelationshipIds = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterBySource(idsOfCreatedConcepts)
+				.filterByDestination(Concepts.ROOT_CONCEPT)
+				.setFields(SnomedRelationshipIndexEntry.Fields.ID)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+				.execute(getBus())
+				.getSync()
+				.stream()
+				.map(SnomedRelationship::getId)
+				.collect(Collectors.toSet());
+		
+		System.err.println("Verify creation of 10_000 concepts took: " + w);
 		w.reset().start();
 		
-		merge(branch, branchPath, "Promote changes from task...")
+		// prepare module bulk update
+		
+		bulk = BulkRequest.create();
+		
+		for (String conceptIdToUpdate : idsOfCreatedConcepts) {
+			bulk.add(SnomedRequests.prepareUpdateConcept(conceptIdToUpdate)
+					.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT));
+		}
+		
+		// commit module bulk update
+		SnomedRequests.prepareCommit()
+			.setBody(bulk)
+			.setCommitComment("Commit update bulk request")
+			.setUserId(User.SYSTEM.getUsername())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.execute(getBus())
+			.getSync();
+		System.err.println("Bulk update 10_000 concepts commit took: " + w);
+		w.reset().start();
+		
+		// prepare move concepts in hierarchy to clinical finding update
+		bulk = BulkRequest.create();
+
+		// inactivate all current relationships
+		for (String relationshipIdToInactive : conceptRelationshipIds) {
+			bulk.add(SnomedRequests.prepareUpdateRelationship(relationshipIdToInactive).setActive(false));
+		}
+		
+		// add new relationships to concepts
+		for (String conceptIdToUpdate : idsOfCreatedConcepts) {
+			bulk.add(SnomedRequests.prepareNewRelationship()
+					.setIdFromNamespace(null /*INT*/)
+					.setSourceId(conceptIdToUpdate)
+					.setTypeId(Concepts.IS_A)
+					.setDestinationId("404684003" /*CLINICAL FINDING*/)
+					.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT));
+		}
+		
+		// commit move concepts in hierarchy to clinical finding update
+		SnomedRequests.prepareCommit()
+			.setBody(bulk)
+			.setCommitComment("Commit update bulk request")
+			.setUserId(User.SYSTEM.getUsername())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.execute(getBus())
+			.getSync();
+		System.err.println("Bulk move 10_000 concepts to Clinical Finding took: " + w);
+		w.reset().start();
+		
+		SnomedRestFixtures.merge(branch, branchPath, "Promote changes from task...")
 			.body("status", CoreMatchers.equalTo(Merge.Status.COMPLETED.name()));
 		System.err.println("Merge took: " + w);
 	}

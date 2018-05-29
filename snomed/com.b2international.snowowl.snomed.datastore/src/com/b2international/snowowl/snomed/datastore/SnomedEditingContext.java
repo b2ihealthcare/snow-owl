@@ -161,18 +161,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
-	protected String getId(CDOObject component) {
-		if (component instanceof Component) {
-			return ((Component) component).getId();
-		} else if (component instanceof SnomedRefSetMember) {
-			return ((SnomedRefSetMember) component).getUuid();
-		} else if (component instanceof SnomedRefSet) {
-			return ((SnomedRefSet) component).getIdentifierId();
-		}
-		throw new UnsupportedOperationException("Cannot get ID for " + component);
-	}
-	
-	@Override
 	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		if (type.isAssignableFrom(Concept.class)) {
 			return SnomedRequests.prepareSearchConcept()

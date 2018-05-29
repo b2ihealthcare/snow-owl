@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.google.common.base.Strings;
 import com.google.common.collect.AbstractIterator;
 
 /**
@@ -30,6 +31,13 @@ public final class SearchResourceRequestIterator<
 		B extends SearchResourceRequestBuilder<B, ?, R>, 
 		R extends PageableCollectionResource<?>> extends AbstractIterator<R> {
 	
+	/**
+	 * The default scroll timeout value if none given on the initial search request builder.
+	 * 
+	 * @see com.b2international.index.query.Query.DEFAULT_SCROLL_KEEP_ALIVE
+	 */
+	private static final String DEFAULT_SCROLL_KEEP_ALIVE = "60s";
+	
 	private final B searchRequestBuilder;
 	private final Function<B, R> executeHandler;
 
@@ -40,7 +48,7 @@ public final class SearchResourceRequestIterator<
 	
 	/**
 	 * @param searchRequestBuilder
-	 *            the pre-configured request builder (should have a chunk limit and a scroll keepalive time set)
+	 *            the pre-configured request builder (should have a batch limit set)
 	 * @param executeHandler
 	 *            a function that builds an appropriate request, executes it either
 	 *            through a request context or an event bus, and returns the results
@@ -48,6 +56,10 @@ public final class SearchResourceRequestIterator<
 	public SearchResourceRequestIterator(B searchRequestBuilder, Function<B, R> executeHandler) {
 		this.searchRequestBuilder = searchRequestBuilder;
 		this.executeHandler = executeHandler;
+		
+		if (Strings.isNullOrEmpty(this.searchRequestBuilder.getScrollKeepAlive())) {
+			this.searchRequestBuilder.setScroll(DEFAULT_SCROLL_KEEP_ALIVE);
+		}
 	}
 	
 	@Override

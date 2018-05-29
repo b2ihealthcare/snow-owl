@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -53,13 +54,12 @@ public final class SnomedRelationshipLookupService extends AbstractLookupService
 	}
 
 	@Override
-	protected String getId(Relationship component) {
-		return component.getId();
+	public String getId(CDOObject component) {
+		return ((Relationship) component).getId();
 	}
 	
 	@Override
 	protected Class<Relationship> getType() {
 		return Relationship.class;
 	}
-	
 }

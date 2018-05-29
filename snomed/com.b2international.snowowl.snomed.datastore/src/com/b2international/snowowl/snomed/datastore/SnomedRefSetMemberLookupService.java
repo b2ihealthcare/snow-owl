@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -60,13 +61,12 @@ public final class SnomedRefSetMemberLookupService extends AbstractLookupService
 	}
 
 	@Override
-	protected String getId(SnomedRefSetMember component) {
-		return component.getUuid();
+	public String getId(CDOObject component) {
+		return ((SnomedRefSetMember) component).getUuid();
 	}
 	
 	@Override
 	protected Class<SnomedRefSetMember> getType() {
 		return SnomedRefSetMember.class;
 	}
-	
 }

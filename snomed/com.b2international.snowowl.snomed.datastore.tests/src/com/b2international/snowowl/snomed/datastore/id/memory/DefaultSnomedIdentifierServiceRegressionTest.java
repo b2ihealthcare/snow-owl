@@ -206,7 +206,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 			) 
 		);
 		
-		assertEquals("103007", Iterables.getOnlyElement(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1)));
+		assertEquals("104001", Iterables.getOnlyElement(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1)));
 	}
 	
 	@Test
