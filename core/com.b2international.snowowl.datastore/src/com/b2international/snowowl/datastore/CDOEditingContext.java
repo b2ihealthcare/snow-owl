@@ -308,7 +308,36 @@ public abstract class CDOEditingContext implements AutoCloseable {
  	}
 	
 	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
-		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+		/* 
+		 * XXX: Use an anonymous class that returns the EClass-CDOID pair as the fallback component identifier,
+		 * but throws an exception for all other method invocations.
+		 */
+		return new ILookupService<T, CDOView>() {
+			@Override
+			public T getComponent(String id, CDOView view) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public boolean exists(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public com.b2international.snowowl.core.api.IComponent<String> getComponent(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public long getStorageKey(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public String getId(CDOObject component) {
+				return component.eClass().getName() + "@oid" + component.cdoID().toURIFragment();
+			}
+		};
 	}
 
 	/**
