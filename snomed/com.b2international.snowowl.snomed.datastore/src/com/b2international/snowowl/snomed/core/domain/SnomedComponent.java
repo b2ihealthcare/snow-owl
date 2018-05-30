@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.api.component.IconIdProvider;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -27,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * Holds common properties of SNOMED CT components.
  * @since 4.0
  */
-public abstract class SnomedComponent extends BaseComponent implements IconIdProvider {
+public abstract class SnomedComponent extends BaseComponent {
 
 	private Boolean active;
 	private Date effectiveTime;
@@ -66,7 +65,6 @@ public abstract class SnomedComponent extends BaseComponent implements IconIdPro
 	 * @beta - this method is subject to changes or even removal in future releases.  
 	 * @return - the icon ID associated with this component
 	 */
-	@Override
 	public String getIconId() {
 		return iconId;
 	}
