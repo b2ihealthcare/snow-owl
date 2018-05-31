@@ -96,10 +96,11 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 							LOG.info("Executing rule '{}'...", rule.getId());
 							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
 							newIssuesByRule.putAll(rule.getId(), issueDetails);
+							LOG.info("Execution of rule '{}' successfully completed", rule.getId());
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
-							e.printStackTrace();
+							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
 						}
 						return Boolean.TRUE;
 					})
