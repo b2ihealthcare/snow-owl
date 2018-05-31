@@ -100,18 +100,14 @@ public class TerminologyImportExcelParser {
 	}
 
 	private LinkedList<String> processProperties(final Sheet sheet, final int propertyIndex) {
-
 		final LinkedList<String> componentProperties = Lists.newLinkedList();
-
 		for (int i = 0; i < propertyIndex; i++) {
-			
 			final Row row = sheet.getRow(i);
-			componentProperties.add(ExcelUtilities.extractContentAsString(row.getCell(1, Row.CREATE_NULL_AS_BLANK)));
-			
+			if (row != null) {
+				componentProperties.add(ExcelUtilities.extractContentAsString(row.getCell(1, Row.CREATE_NULL_AS_BLANK)));
+			}
 		}
-
 		return componentProperties;
-
 	}
 
 	private Multimap<String, String> processKeywords(Sheet sheet, int propertyIndex, int memberStartIndex) {
