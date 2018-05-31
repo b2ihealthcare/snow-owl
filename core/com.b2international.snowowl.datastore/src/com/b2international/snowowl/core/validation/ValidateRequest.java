@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -41,6 +44,8 @@ import com.google.common.collect.Multimap;
  * @since 6.0
  */
 final class ValidateRequest implements Request<BranchContext, ValidationResult> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	Collection<String> ruleIds;
 	
@@ -88,12 +93,14 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				if (evaluator != null) {
 					pool.submit(() -> {
 						try {
+							LOG.info("Executing rule '{}'...", rule.getId());
 							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
 							newIssuesByRule.putAll(rule.getId(), issueDetails);
+							LOG.info("Execution of rule '{}' successfully completed", rule.getId());
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
-							e.printStackTrace();
+							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
 						}
 						return Boolean.TRUE;
 					})

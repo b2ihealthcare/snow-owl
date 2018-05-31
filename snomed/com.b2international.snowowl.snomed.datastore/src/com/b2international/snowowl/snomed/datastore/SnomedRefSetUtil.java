@@ -325,6 +325,8 @@ public abstract class SnomedRefSetUtil {
 		switch (type) {
 			case ATTRIBUTE_VALUE:
 				return Concepts.REFSET_ATTRIBUTE_VALUE_TYPE;
+			case ANNOTATION:
+				return Concepts.REFSET_ANNOTATION_TYPE;
 			case LANGUAGE:
 				return Concepts.REFSET_LANGUAGE_TYPE;
 			case QUERY:

@@ -16,19 +16,20 @@
 package com.b2international.snowowl.snomed.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -64,18 +65,23 @@ import com.google.common.base.Strings;
  */
 public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleEvaluator {
 
+	private static final int RULE_LIMIT = 10_000;
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
 	public List<IssueDetail> eval(BranchContext context, ValidationRule rule) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
-		return context.service(ObjectMapper.class)
+		
+		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = context.service(ObjectMapper.class)
 				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF)
 				.prepareSearch()
-				.all() // always return all hits
-				.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.ACTIVE)
-				.build()
-				.execute(context)
+				.setLimit(RULE_LIMIT)
+				.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.ACTIVE);
+		
+		SearchResourceRequestIterator it = new SearchResourceRequestIterator(req, searchRequest -> ((SnomedSearchRequestBuilder) searchRequest).build().execute(context));
+		final List<IssueDetail> issues = newArrayList();
+		while (it.hasNext()) {
+			((PageableCollectionResource<SnomedComponent>) it.next())
 				.stream()
 				.map(component -> {
 					final ComponentIdentifier affectedComponent = component.getComponentIdentifier();
@@ -85,7 +91,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 					details.put(SnomedRf2Headers.FIELD_ACTIVE, component.isActive());
 					return new IssueDetail(affectedComponent, details);
 				})
-				.collect(Collectors.toList());
+				.forEach(issues::add);
+		}
+		return issues;
 	}
 
 	@Override
