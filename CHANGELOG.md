@@ -41,7 +41,7 @@ All datasets created before 6.5.0 require a full `reindex` due to changes in the
 
 ### Performance
 - Over 80% reduction in time for large scale changes (e.g. for updating batches of content using templates). (https://github.com/b2ihealthcare/snow-owl/pull/230, f958f53, 6b58d0a, e0d041a)
-- It now takes under 30 seconds to 1) create and save 10,000 new concepts with descriptions and an IS A relationship to SNOMED CT 2) Update all 10,000 concepts, changing their module and 3) Update all 10,000 concepts again, inactivating the relationship to SNOMED CT and adding a new one to Clinical finding. (see test case: TODO)
+- It now takes under 30 seconds to 1) create and save 10,000 new concepts with descriptions and an IS A relationship to SNOMED CT 2) Update all 10,000 concepts, changing their module and 3) Update all 10,000 concepts again, inactivating the relationship to SNOMED CT and adding a new one to Clinical finding. (see [test case](snomed/com.b2international.snowowl.snomed.api.rest.tests/src/com/b2international/snowowl/snomed/api/rest/perf/SnomedMergePerformanceTest.java) )
 - Decrease execution time of scroll requests, especially when ECL evaluation is involved (39e78a5)
 - Decrease execution time of branch merge operations (243509d)
 - Reduce memory requirement of large scale validation requests ()
