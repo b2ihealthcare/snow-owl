@@ -56,7 +56,9 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
 		addActiveClause(queryBuilder);
+		addReleasedClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addNamespaceFilter(queryBuilder);

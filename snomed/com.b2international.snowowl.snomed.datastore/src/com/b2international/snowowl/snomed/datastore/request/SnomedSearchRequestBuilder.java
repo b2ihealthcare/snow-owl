@@ -16,10 +16,8 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
-import java.util.List;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -64,6 +62,15 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	 */
 	public final B filterByActive(Boolean active) {
 		return addOption(OptionKey.ACTIVE, active);
+	}
+	
+	/**
+	 * Filter to return components with the specified released flag value (released|unreleased)
+	 * @param released
+	 * @return this builder
+	 */
+	public final B filterByReleased(Boolean released) {
+		return addOption(OptionKey.RELEASED, released);
 	}
 
 	/**
