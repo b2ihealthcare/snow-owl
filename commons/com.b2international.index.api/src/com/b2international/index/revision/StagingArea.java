@@ -63,7 +63,7 @@ public final class StagingArea {
 			for (Class<?> type : removedDocuments.keySet()) {
 				final ImmutableSet<String> deletedDocIds = ImmutableSet.copyOf(removedDocuments.get(type));
 				writer.remove(type, deletedDocIds);
-				commit.deletedComponents(deletedDocIds);
+//				commit.deletedComponents(deletedDocIds);
 			}
 			
 			// then new documents and revisions
@@ -72,7 +72,7 @@ public final class StagingArea {
 					writer.put(doc.getKey(), doc.getValue());
 				}
 			}
-			commit.newComponents(newDocuments.keySet());
+//			commit.newComponents(newDocuments.keySet());
 			
 			Commit commitDoc = commit.build();
 			writer.put(commitDoc.getId(), commitDoc);

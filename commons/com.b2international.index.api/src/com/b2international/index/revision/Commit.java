@@ -22,9 +22,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 
 import java.util.Collection;
-import java.util.Set;
 
-import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Text;
@@ -54,9 +52,6 @@ public final class Commit implements WithScore {
 		private String userId;
 		private String comment;
 		private long timestamp;
-		private Set<String> newComponents;
-		private Set<String> changedComponents;
-		private Set<String> deletedComponents;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -83,23 +78,8 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
-		public Builder newComponents(Set<String> newComponents) {
-			this.newComponents = newComponents;
-			return this;
-		}
-		
-		public Builder changedComponents(Set<String> changedComponents) {
-			this.changedComponents = changedComponents;
-			return this;
-		}
-		
-		public Builder deletedComponents(Set<String> deletedComponents) {
-			this.deletedComponents = deletedComponents;
-			return this;
-		}
-
 		public Commit build() {
-			return new Commit(id, branch, userId, comment, timestamp, newComponents, changedComponents, deletedComponents);
+			return new Commit(id, branch, userId, comment, timestamp);
 		}
 
 	}
@@ -120,8 +100,8 @@ public final class Commit implements WithScore {
 			return exactMatch(Fields.BRANCH, branch);
 		}
 		
-		public static Expression userId(final String userId) {
-			return exactMatch(Fields.USER_ID, userId);
+		public static Expression author(final String author) {
+			return exactMatch(Fields.AUTHOR, author);
 		}
 		
 		public static Expression exactComment(final String comment) {
@@ -144,42 +124,32 @@ public final class Commit implements WithScore {
 	
 	public static final class Fields {
 		public static final String BRANCH = "branch";
-		public static final String USER_ID = "userId";
+		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
 		public static final String TIME_STAMP = "timestamp";
 	}
 
 	private final String id;
 	private final String branch;
-	private final String userId;
+	private final String author;
 	@Text(analyzer=Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timestamp;
-	private final Set<String> newComponents;
-	private final Set<String> changedComponents;
-	private final Set<String> deletedComponents;	
-	
 	
 	private float score = 0.0f;
 	
 	private Commit(
 			final String id,
 			final String branch,
-			final String userId,
+			final String author,
 			final String comment,
-			final long timestamp,
-			Set<String> newComponents,
-			Set<String> changedComponents,
-			Set<String> deletedComponents) {
+			final long timestamp) {
 		this.id = id;
 		this.branch = branch;
-		this.userId = userId;
+		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
-		this.newComponents = Collections3.toImmutableSet(newComponents);
-		this.changedComponents = Collections3.toImmutableSet(changedComponents);
-		this.deletedComponents = Collections3.toImmutableSet(deletedComponents);
 	}
 
 	public String getId() {
@@ -201,8 +171,8 @@ public final class Commit implements WithScore {
 		return branch;
 	}
 
-	public String getUserId() {
-		return userId;
+	public String getAuthor() {
+		return author;
 	}
 
 	public String getComment() {
@@ -213,16 +183,4 @@ public final class Commit implements WithScore {
 		return timestamp;
 	}
 	
-	public Set<String> getNewComponents() {
-		return newComponents;
-	}
-	
-	public Set<String> getChangedComponents() {
-		return changedComponents;
-	}
-	
-	public Set<String> getDeletedComponents() {
-		return deletedComponents;
-	}
-
 }

@@ -19,7 +19,7 @@ import static com.b2international.index.revision.Commit.Expressions.allCommentPr
 import static com.b2international.index.revision.Commit.Expressions.branch;
 import static com.b2international.index.revision.Commit.Expressions.exactComment;
 import static com.b2international.index.revision.Commit.Expressions.timestampRange;
-import static com.b2international.index.revision.Commit.Expressions.userId;
+import static com.b2international.index.revision.Commit.Expressions.author;
 
 import java.util.List;
 
@@ -97,7 +97,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	private void addUserIdClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.USER_ID)) {
 			final String userId = getString(OptionKey.USER_ID);
-			builder.filter(userId(userId));
+			builder.filter(author(userId));
 		}
 	}
 

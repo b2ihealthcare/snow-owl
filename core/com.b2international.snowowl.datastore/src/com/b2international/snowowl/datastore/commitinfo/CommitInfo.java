@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public final class CommitInfo implements Serializable {
 		return builder()
 			.id(doc.getId())
 			.branch(doc.getBranch())
-			.userId(doc.getUserId())
+			.userId(doc.getAuthor())
 			.comment(doc.getComment())
 			.timeStamp(doc.getTimestamp());
 	}
