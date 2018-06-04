@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -54,6 +53,7 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
+import com.b2international.snowowl.datastore.cdo.StorageKeyAuthority;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
@@ -83,7 +83,6 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
-	private final AtomicLong storageKeys = new AtomicLong();
 	// fixtures
 	private final Map<String, Concept> conceptsById = newHashMap();
 	private final Map<String, SnomedRefSet> refSetsById = newHashMap();
@@ -112,7 +111,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	}
 	
 	protected final long nextStorageKey() {
-		return storageKeys.getAndIncrement();
+		return StorageKeyAuthority.nextStorageKey();
 	}
 	
 	protected final void registerExistingObject(CDOObject object) {
