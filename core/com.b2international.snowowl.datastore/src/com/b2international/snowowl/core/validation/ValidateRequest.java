@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -111,16 +114,23 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			// fetch all white list entries to determine whether an issue is whitelisted already or not
 			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
-			ValidationRequests.whiteList().prepareSearch()
+			ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList().prepareSearch();
+			
+			// fetch whitelist entries associated with the defined rules
+			if (!CompareUtils.isEmpty(ruleIds)) {
+				whiteListReq.filterByRuleIds(ruleIds);
+			}
+			
+			whiteListReq
 				.all()
 				.build()
 				.execute(context)
 				.stream()
 				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 			
-			// persist new issues
-			for (String ruleId : newIssuesByRule.keySet()) {
-				for (IssueDetail issueDetail : newIssuesByRule.get(ruleId)) {
+			// persist new issues by removing them from the newIssues Multimap to save up memory
+			for (String ruleId : newHashSet(newIssuesByRule.keySet())) {
+				for (IssueDetail issueDetail : newIssuesByRule.removeAll(ruleId)) {
 					String issueId = UUID.randomUUID().toString();
 					
 					ValidationIssue validationIssue = new ValidationIssue(
@@ -134,6 +144,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					index.put(issueId, validationIssue);
 				}
+				// remove all processed whitelist entries 
+				whiteListedEntries.removeAll(ruleId);
 			}
 			
 			index.commit();

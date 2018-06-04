@@ -39,6 +39,11 @@ import com.google.common.collect.Iterables;
 public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends SearchIndexResourceRequest<BranchContext, R, D> {
 
 	enum OptionKey {
+		
+		/**
+		 * Component's released flag to match
+		 */
+		RELEASED,
 		/**
 		 * Component status to match
 		 */
@@ -58,9 +63,16 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument> extends S
 		 * Filter components by effective time ending with this value, inclusive.
 		 */
 		EFFECTIVE_TIME_END
+		
 	}
 	
 	protected SnomedSearchRequest() {}
+	
+	protected final void addReleasedClause(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.RELEASED)) {
+			queryBuilder.filter(SnomedDocument.Expressions.released(getBoolean(OptionKey.RELEASED)));
+		}
+	}
 	
 	protected final void addActiveClause(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.ACTIVE)) {

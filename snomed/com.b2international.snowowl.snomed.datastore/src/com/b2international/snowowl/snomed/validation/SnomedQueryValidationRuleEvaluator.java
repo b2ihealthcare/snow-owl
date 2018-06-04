@@ -113,6 +113,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
+		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
 			return prepareSearch(createSearch());
@@ -123,6 +124,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@OverridingMethodsMustInvokeSuper
 		protected SB prepareSearch(SB req) {
 			return req.filterByActive(active)
+					.filterByReleased(released)
 					.filterByModule(module)
 					.filterByEffectiveTime(effectiveTime);
 			

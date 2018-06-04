@@ -1,6 +1,52 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.5.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.5.0.
+
+#### Datasets created before 6.5.0   
+All datasets created before 6.5.0 require a full `reindex` due to changes in the MRCM document schema.
+
+### Added
+- API:
+  * Add `iconId` property to SNOMED CT component representations on all endpoints (90ccb2e)
+  * Add `limit` query parameter to `GET /branches` endpoint (e7fcaf7)
+  * Support released flag filter in SNOMED CT component search API (091b8ea)
+  * Support `typeId` filter in `descriptions()` expand parameter (https://github.com/b2ihealthcare/snow-owl/pull/235) 
+  * Support support filtering members by set of referenced component IDs via `GET /:path/members`  (710c894)
+- SNOMED CT:
+  * Support new MRCM reference set types (https://github.com/b2ihealthcare/snow-owl/pull/187, https://github.com/b2ihealthcare/snow-owl/pull/231)
+  * Support new OWL reference set types (https://github.com/b2ihealthcare/snow-owl/pull/187, https://github.com/b2ihealthcare/snow-owl/pull/231)
+  * Support a dedicated Simple map with mapTargetDescription reference set type instead of reusing Simple map type (https://github.com/b2ihealthcare/snow-owl/pull/222)
+  * Support bulk itemId generation (7279d1f)
+- Validation:
+  * Add `resourceDir` script argument to Groovy-based validation scripts (da44b75)
+
+### Changed
+- Improved donated content detection and resolution during SNOMED CT Extension upgrade (and merge) (https://github.com/b2ihealthcare/snow-owl/pull/185)
+- Redesigned MRCM constraint document schema (https://github.com/b2ihealthcare/snow-owl/pull/236)
+  * Add support for source-only object mappings
+  * Add concept set definitions, predicates and attribute constraints from the MRCM Ecore model as document snippets
+  * Add domain-level representation for all parts as well
+  * Support the interpretation of the extended domain models in clients
+
+### Bugs
+- Fix missing argument when checking cluster health status (abf0dca)
+- Fix deletion of SNOMED CT Reference Set Members referring to other components (https://github.com/b2ihealthcare/snow-owl/pull/227)
+- Fix deletion of unreleased but inactive reference set members (https://github.com/b2ihealthcare/snow-owl/pull/232)
+- Don't update certain descriptions twice in a change set (1de6633)
+
+### Performance
+- Over 80% reduction in time for large scale changes (e.g. for updating batches of content using templates). (https://github.com/b2ihealthcare/snow-owl/pull/230, f958f53, 6b58d0a, e0d041a)
+- It now takes under 30 seconds to 1) create and save 10,000 new concepts with descriptions and an IS A relationship to SNOMED CT 2) Update all 10,000 concepts, changing their module and 3) Update all 10,000 concepts again, inactivating the relationship to SNOMED CT and adding a new one to Clinical finding. (see [test case](snomed/com.b2international.snowowl.snomed.api.rest.tests/src/com/b2international/snowowl/snomed/api/rest/perf/SnomedMergePerformanceTest.java))
+- Decrease execution time of scroll requests, especially when ECL evaluation is involved (39e78a5)
+- Decrease execution time of branch merge operations (243509d)
+- Reduce memory requirement of large scale validation requests (2abae78)
+- Reduce execution time of e2e tests (b3c824c)
+
 ## 6.4.0
 
 ### Breaking changes
@@ -32,7 +78,6 @@ All datasets created before 6.4.0 require a full `reindex` due to changes in all
 - Improve index search request execution significantly (5f6d4fe)
 - Improve performance of bulk member create requests (#216)
 - Remove classification results from memory when saving changes (8d2456f)
-
 
 ## 6.3.0
 
