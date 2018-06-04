@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 5.2
  */
-@Doc(type="commitinfodocument")
+@Doc
 @JsonDeserialize(builder = Commit.Builder.class)
 public final class Commit implements WithScore {
 
