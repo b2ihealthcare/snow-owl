@@ -91,6 +91,25 @@ public abstract class Revision implements WithId {
 		return revised;
 	}
 	
+	/**
+	 * Providers high-level component identifier if this component is a subcomponent of the high-level component identifier. This method by default
+	 * returns the component's own identifier and should return that ID if this component is root of a component hierarchy.
+	 * 
+	 * @return the container identifier
+	 */
+	@JsonIgnore
+	public String getContainerId() {
+		return getId();
+	}
+	
+	/**
+	 * @return whether this component is a root component in a hierarchy or a subcomponent of another component. By default returns <code>true</code>.
+	 */
+	@JsonIgnore
+	public final boolean isRoot() {
+		return getId().equals(getContainerId());
+	}
+	
 	@Override
 	public final String toString() {
 		return doToString().toString();

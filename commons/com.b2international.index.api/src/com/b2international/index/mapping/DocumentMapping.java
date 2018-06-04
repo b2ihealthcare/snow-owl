@@ -77,11 +77,11 @@ public final class DocumentMapping {
 	private final Map<String, Script> scripts;
 	private final Set<String> hashedFields;
 
-	DocumentMapping(Class<?> type) {
+	public DocumentMapping(Class<?> type) {
 		this(null, type);
 	}
 		
-	DocumentMapping(DocumentMapping parent, Class<?> type) {
+	public DocumentMapping(DocumentMapping parent, Class<?> type) {
 		this.parent = parent;
 		this.type = type;
 		final String typeAsString = getType(type);

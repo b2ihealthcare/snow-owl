@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -146,6 +147,24 @@ public abstract class BaseRevisionIndexTest {
 	protected final void indexRevision(final String branchPath, final Revision data) {
 		commit(branchPath, Collections.singleton(data));
 	}
+	
+	protected final void indexChange(final String branchPath, final Revision...changes) {
+		final long commitTimestamp = currentTime();
+		StagingArea staging = index().prepareCommit();
+		Arrays.asList(changes).forEach(staging::stageChange);
+		staging
+			.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.getTimestamp();
+	}
+	
+	protected final void indexRemove(final String branchPath, final Revision...removedRevisions) {
+		final long commitTimestamp = currentTime();
+		StagingArea staging = index().prepareCommit();
+		Arrays.asList(removedRevisions).forEach(staging::stageRemove);
+		staging
+			.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.getTimestamp();
+	}
 
 	protected final long commit(final String branchPath, final Collection<Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
@@ -159,7 +178,7 @@ public abstract class BaseRevisionIndexTest {
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit();
-		staging.stageRemove(type, key);	
+		staging.stageRemove(key, getRevision(branchPath, type, key));
 		staging.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	

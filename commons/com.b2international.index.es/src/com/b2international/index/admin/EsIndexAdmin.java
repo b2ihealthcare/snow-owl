@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
+import com.b2international.index.Doc;
 import com.b2international.index.IP;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
@@ -170,11 +171,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 				prop.put("dynamic", "true");
 				properties.put(property, prop);
 				continue;
-			} else if (mapping.isNestedMapping(fieldType)) {
+			} else if (fieldType.isAnnotationPresent(Doc.class)) {
+				Doc annotation = fieldType.getAnnotation(Doc.class);
 				// this is a nested document type create a nested mapping
 				final Map<String, Object> prop = newHashMap();
-				prop.put("type", "nested");
-				prop.putAll(toProperties(mapping.getNestedMapping(fieldType)));
+				prop.put("type", annotation.nested() ? "nested" : "object");
+				prop.put("enabled", annotation.index() ? true : false);
+				prop.putAll(toProperties(new DocumentMapping(fieldType)));
 				properties.put(property, prop);
 			} else {
 				final Map<String, Object> prop = newHashMap();

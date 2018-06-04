@@ -24,7 +24,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
@@ -34,7 +33,7 @@ import com.google.common.base.Predicate;
 /**
  * Common superclass for SNOMED CT transfer objects.
  */
-public abstract class SnomedDocument extends RevisionDocument implements ContainerIdProvider {
+public abstract class SnomedDocument extends RevisionDocument {
 
 	public static abstract class Expressions extends RevisionDocument.Expressions {
 		
@@ -158,11 +157,6 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		this.effectiveTime = effectiveTime;
 	}
 	
-	@Override
-	public boolean isRoot() {
-		return false;
-	}
-
 	/**
 	 * @return {@code true} if the component has already appeared in an RF2 release, {@code false} otherwise
 	 */

@@ -19,6 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,7 +31,9 @@ import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ImmutableMap;
 
@@ -372,6 +375,18 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	@Override
 	public StagingArea prepareCommit() {
 		return new StagingArea(this);
+	}
+	
+	@Override
+	public List<Commit> history(String id) {
+		return index.read(searcher -> {
+			return searcher.search(Query.select(Commit.class)
+					.where(Commit.Expressions.containerId(id))
+					.sortBy(SortBy.field(Commit.Fields.TIME_STAMP, Order.DESC))
+					.limit(Integer.MAX_VALUE)
+					.build())
+					.getHits();
+		});
 	}
 
 	private RevisionBranchRef getBranchRef(final String branchPath) {

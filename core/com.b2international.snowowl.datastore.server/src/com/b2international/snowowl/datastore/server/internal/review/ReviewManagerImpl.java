@@ -49,7 +49,6 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
-import com.b2international.snowowl.datastore.index.ContainerIdProvider;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
@@ -296,12 +295,9 @@ public class ReviewManagerImpl implements ReviewManager {
 		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				if (hit instanceof ContainerIdProvider) {
-					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-					final String containerId = idProvider.getContainerId();
-					if (idProvider.isRoot() && containerId != null) {
-						newConcepts.add(containerId);
-					}
+				final String containerId = hit.getContainerId();
+				if (hit.isRoot() && containerId != null) {
+					newConcepts.add(containerId);
 				}
 			}
 		}
@@ -310,13 +306,10 @@ public class ReviewManagerImpl implements ReviewManager {
 			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
 			// iterate over again and add non root ids
 			for (Revision hit : hits) {
-				if (hit instanceof ContainerIdProvider) {
-					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-					final String containerId = idProvider.getContainerId();
-					// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
-					if (containerId != null && !idProvider.isRoot() && !newConcepts.contains(containerId)) {
-						changedConcepts.add(containerId);
-					}
+				final String containerId = hit.getContainerId();
+				// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
+				if (containerId != null && !hit.isRoot() && !newConcepts.contains(containerId)) {
+					changedConcepts.add(containerId);
 				}
 			}
 		}
@@ -324,11 +317,9 @@ public class ReviewManagerImpl implements ReviewManager {
 		for (final Class<? extends Revision> revisionType : compare.getChangedRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchChanged(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				if (hit instanceof ContainerIdProvider) {
-					final String containerId = ((ContainerIdProvider) hit).getContainerId();
-					if (containerId != null) {
-						changedConcepts.add(containerId);
-					}
+				final String containerId = hit.getContainerId();
+				if (containerId != null) {
+					changedConcepts.add(containerId);
 				}
 			}
 		}
@@ -336,12 +327,9 @@ public class ReviewManagerImpl implements ReviewManager {
 		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				if (hit instanceof ContainerIdProvider) {
-					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-					final String containerId = idProvider.getContainerId();
-					if (idProvider.isRoot() && containerId != null) {
-						deletedConcepts.add(containerId);
-					}
+				final String containerId = hit.getContainerId();
+				if (hit.isRoot() && containerId != null) {
+					deletedConcepts.add(containerId);
 				}
 			}
 		}
@@ -350,13 +338,10 @@ public class ReviewManagerImpl implements ReviewManager {
 			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
 			// iterate over again and add non root ids
 			for (Revision hit : hits) {
-				if (hit instanceof ContainerIdProvider) {
-					final ContainerIdProvider idProvider = (ContainerIdProvider) hit;
-					final String containerId = idProvider.getContainerId();
-					// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
-					if (containerId != null && !idProvider.isRoot() && !deletedConcepts.contains(containerId)) {
-						changedConcepts.add(containerId);
-					}
+				final String containerId = hit.getContainerId();
+				// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
+				if (containerId != null && !hit.isRoot() && !deletedConcepts.contains(containerId)) {
+					changedConcepts.add(containerId);
 				}
 			}
 		}

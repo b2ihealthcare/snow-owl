@@ -15,14 +15,17 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Text;
@@ -30,8 +33,10 @@ import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Maps;
 
 /**
  * @since 5.2
@@ -49,9 +54,10 @@ public final class Commit implements WithScore {
 
 		private String id;
 		private String branch;
-		private String userId;
+		private String author;
 		private String comment;
 		private long timestamp;
+		private List<CommitChange> changes;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -63,8 +69,8 @@ public final class Commit implements WithScore {
 			return this;
 		}
 
-		public Builder userId(final String userId) {
-			this.userId = userId;
+		public Builder author(final String author) {
+			this.author = author;
 			return this;
 		}
 
@@ -78,8 +84,13 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
+		public Builder changes(final List<CommitChange> changes) {
+			this.changes = changes;
+			return this;
+		}
+		
 		public Commit build() {
-			return new Commit(id, branch, userId, comment, timestamp);
+			return new Commit(id, branch, author, comment, timestamp, changes);
 		}
 
 	}
@@ -119,6 +130,10 @@ public final class Commit implements WithScore {
 		public static Expression timestampRange(final long from, final long to) {
 			return matchRange(Fields.TIME_STAMP, from, to);
 		}
+
+		public static Expression containerId(String containerId) {
+			return exactMatch("changes.containerId", containerId);
+		}
 		
 	}
 	
@@ -136,20 +151,24 @@ public final class Commit implements WithScore {
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timestamp;
+	private final List<CommitChange> changes;
 	
 	private float score = 0.0f;
+	private transient Map<String, CommitChange> changesByContainer;
 	
 	private Commit(
 			final String id,
 			final String branch,
 			final String author,
 			final String comment,
-			final long timestamp) {
+			final long timestamp,
+			final List<CommitChange> changes) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
+		this.changes = Collections3.toImmutableList(changes);
 	}
 
 	public String getId() {
@@ -181,6 +200,18 @@ public final class Commit implements WithScore {
 
 	public long getTimestamp() {
 		return timestamp;
+	}
+	
+	@JsonProperty
+	List<CommitChange> getChanges() {
+		return changes;
+	}
+	
+	public CommitChange getChangesByContainer(String container) {
+		if (changesByContainer == null) {
+			changesByContainer = Maps.uniqueIndex(changes, CommitChange::getContainerId);
+		}
+		return changesByContainer.get(container);
 	}
 	
 }
