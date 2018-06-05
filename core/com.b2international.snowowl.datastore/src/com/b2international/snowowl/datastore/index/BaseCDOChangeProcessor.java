@@ -213,8 +213,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			final String commitComment = commitChangeSet.getCommitComment();
 			final String commitGroupId = CDOCommitInfoUtils.getUuid(commitComment);
 			final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
-			stagingArea.commit(commitGroupId, commitChangeSet.getTimestamp(), commitChangeSet.getUserId(), comment);
-			return indexChangeSet;
+			final String commitId = stagingArea.commit(commitGroupId, commitChangeSet.getTimestamp(), commitChangeSet.getUserId(), comment).getId();
+			return ImmutableIndexCommitChangeSet.builder().from(indexChangeSet).commitId(commitId).build();
 		} finally {
 			log.info("Changes have been successfully persisted.");
 			indexTimer.stop();

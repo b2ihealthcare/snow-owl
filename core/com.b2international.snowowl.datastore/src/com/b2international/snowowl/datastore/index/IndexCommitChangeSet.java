@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
  */
 public interface IndexCommitChangeSet {
 
+	String getCommitId();
 	Map<ComponentIdentifier, Object> getNewObjects();
 	Map<ComponentIdentifier, Object> getChangedObjects();
 	Map<ComponentIdentifier, Object> getRemovedObjects();

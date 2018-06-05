@@ -35,27 +35,30 @@ public final class CommitInfo implements Serializable {
 		return builder()
 			.id(doc.getId())
 			.branch(doc.getBranch())
-			.userId(doc.getAuthor())
+			.author(doc.getAuthor())
 			.comment(doc.getComment())
-			.timeStamp(doc.getTimestamp());
+			.timestamp(doc.getTimestamp())
+			.groupId(doc.getGroupId());
 	}
 	
 	public static Builder builder(final RepositoryCommitNotification notification) {
 		return builder()
 				.id(notification.getCommitId())
 				.branch(notification.getBranchPath())
-				.userId(notification.getUserId())
+				.author(notification.getUserId())
 				.comment(notification.getComment())
-				.timeStamp(notification.getCommitTimestamp());
+				.timestamp(notification.getCommitTimestamp())
+				.groupId(notification.getGroupId());
 	}
 	
 	public static class Builder {
 		
 		private String id;
 		private String branch;
-		private String userId;
+		private String author;
 		private String comment;
-		private long timeStamp;
+		private long timestamp;
+		private String groupId;
 		
 		public Builder id(final String id) {
 			this.id = id;
@@ -67,8 +70,8 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public Builder userId(final String userId) {
-			this.userId = userId;
+		public Builder author(final String author) {
+			this.author = author;
 			return this;
 		}
 		
@@ -77,34 +80,42 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public Builder timeStamp(final long timeStamp) {
-			this.timeStamp = timeStamp;
+		public Builder timestamp(final long timestamp) {
+			this.timestamp = timestamp;
+			return this;
+		}
+		
+		public Builder groupId(final String groupId) {
+			this.groupId = groupId;
 			return this;
 		}
 		
 		public CommitInfo build() {
-			return new CommitInfo(id, branch, userId, comment, timeStamp);
+			return new CommitInfo(id, branch, author, comment, timestamp, groupId);
 		}
 		
 	}
 	
 	private final String id;
 	private final String branch;
-	private final String userId;
+	private final String author;
 	private final String comment;
-	private final long timeStamp;
+	private final long timestamp;
+	private final String groupId;
 	
 	CommitInfo(
 			final String id,
 			final String branch,
-			final String userId,
+			final String author,
 			final String comment,
-			final long timeStamp) {
+			final long timestamp, 
+			final String groupId) {
 		this.id = id;
 		this.branch = branch;
-		this.userId = userId;
+		this.author = author;
 		this.comment = comment;
-		this.timeStamp = timeStamp;
+		this.timestamp = timestamp;
+		this.groupId = groupId;
 	}
 
 	public String getId() {
@@ -115,16 +126,20 @@ public final class CommitInfo implements Serializable {
 		return branch;
 	}
 	
-	public String getUserId() {
-		return userId;
+	public String getAuthor() {
+		return author;
 	}
 	
 	public String getComment() {
 		return comment;
 	}
 	
-	public long getTimeStamp() {
-		return timeStamp;
+	public long getTimestamp() {
+		return timestamp;
+	}
+	
+	public String getGroupId() {
+		return groupId;
 	}
 
 }

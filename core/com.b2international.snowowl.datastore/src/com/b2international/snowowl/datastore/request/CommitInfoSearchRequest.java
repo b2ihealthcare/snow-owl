@@ -16,11 +16,13 @@
 package com.b2international.snowowl.datastore.request;
 
 import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
-import static com.b2international.index.revision.Commit.Expressions.branch;
+import static com.b2international.index.revision.Commit.Expressions.author;
+import static com.b2international.index.revision.Commit.Expressions.branches;
+import static com.b2international.index.revision.Commit.Expressions.containerId;
 import static com.b2international.index.revision.Commit.Expressions.exactComment;
 import static com.b2international.index.revision.Commit.Expressions.timestampRange;
-import static com.b2international.index.revision.Commit.Expressions.author;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -43,10 +45,11 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	enum OptionKey {
 		
 		BRANCH,
-		USER_ID,
+		AUTHOR,
 		COMMENT,
 		TIME_STAMP_FROM,
-		TIME_STAMP_TO
+		TIME_STAMP_TO,
+		AFFECTED_COMPONENT
 		
 	}
 	
@@ -65,6 +68,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
 		addTimeStampClause(queryBuilder);
+		addAffectedComponentClause(queryBuilder);
 		return queryBuilder.build();
 	}
 	
@@ -89,14 +93,14 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	
 	private void addBranchClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.BRANCH)) {
-			final String branch = getString(OptionKey.BRANCH);
-			builder.filter(branch(branch));
+			final Collection<String> branchPaths = getCollection(OptionKey.BRANCH, String.class);
+			builder.filter(branches(branchPaths));
 		}
 	}
 
 	private void addUserIdClause(final ExpressionBuilder builder) {
-		if (containsKey(OptionKey.USER_ID)) {
-			final String userId = getString(OptionKey.USER_ID);
+		if (containsKey(OptionKey.AUTHOR)) {
+			final String userId = getString(OptionKey.AUTHOR);
 			builder.filter(author(userId));
 		}
 	}
@@ -118,6 +122,13 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 			final Long timestampFrom = containsKey(OptionKey.TIME_STAMP_FROM) ? get(OptionKey.TIME_STAMP_FROM, Long.class) : 0L;
 			final Long timestampTo = containsKey(OptionKey.TIME_STAMP_TO) ? get(OptionKey.TIME_STAMP_TO, Long.class) : Long.MAX_VALUE;
 			builder.filter(timestampRange(timestampFrom, timestampTo));
+		}
+	}
+	
+	private void addAffectedComponentClause(final ExpressionBuilder builder) {
+		if (containsKey(OptionKey.AFFECTED_COMPONENT)) {
+			final String affectedComponentId = getString(OptionKey.AFFECTED_COMPONENT);
+			builder.filter(containerId(affectedComponentId));
 		}
 	}
 

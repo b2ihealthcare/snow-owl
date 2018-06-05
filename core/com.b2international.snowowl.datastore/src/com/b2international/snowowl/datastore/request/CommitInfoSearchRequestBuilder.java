@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT;
+import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.AUTHOR;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.BRANCH;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.COMMENT;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.USER_ID;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -38,9 +39,13 @@ public final class CommitInfoSearchRequestBuilder
 	public CommitInfoSearchRequestBuilder filterByBranch(final String branch) {
 		return addOption(BRANCH, branch);
 	}
+	
+	public CommitInfoSearchRequestBuilder filterByBranches(final Iterable<String> branchPaths) {
+		return addOption(BRANCH, branchPaths);
+	}
 
-	public CommitInfoSearchRequestBuilder filterByUserId(final String userId) {
-		return addOption(USER_ID, userId);
+	public CommitInfoSearchRequestBuilder filterByAuthor(final String author) {
+		return addOption(AUTHOR, author);
 	}
 
 	public CommitInfoSearchRequestBuilder filterByComment(final String comment) {
@@ -54,6 +59,10 @@ public final class CommitInfoSearchRequestBuilder
 	public CommitInfoSearchRequestBuilder filterByTimestamp(final long timestampFrom, final long timestampTo) {
 		return addOption(TIME_STAMP_FROM, timestampFrom)
 				.addOption(TIME_STAMP_TO, timestampTo);
+	}
+	
+	public CommitInfoSearchRequestBuilder filterByAffectedComponent(final String affectedComponentId) {
+		return addOption(AFFECTED_COMPONENT, affectedComponentId);
 	}
 
 	@Override

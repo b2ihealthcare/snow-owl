@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.events;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
@@ -29,6 +31,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private static final long serialVersionUID = 1L;
 	
 	private final String commitId;
+	private final String groupId;
 	private final String branchPath;
 	private final long commitTimestamp;
 	private final String userId;
@@ -37,9 +40,9 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final Collection<ComponentIdentifier> changedComponents;
 	private final Collection<ComponentIdentifier> deletedComponents;
 
-
 	public RepositoryCommitNotification(final String repositoryId,
 			final String commitId,
+			final String groupId,
 			final String branchPath,
 			final long commitTimestamp,
 			final String userId,
@@ -48,7 +51,8 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 			final Collection<ComponentIdentifier> changedComponents, 
 			final Collection<ComponentIdentifier> deletedComponents) {
 		super(repositoryId);
-		this.commitId = commitId;
+		this.commitId = checkNotNull(commitId, "Commit ID argument cannot be null");
+		this.groupId = groupId;
 		this.branchPath = branchPath;
 		this.commitTimestamp = commitTimestamp;
 		this.userId = userId;
@@ -60,6 +64,10 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	
 	public String getCommitId() {
 		return commitId;
+	}
+	
+	public String getGroupId() {
+		return groupId;
 	}
 
 	public String getBranchPath() {

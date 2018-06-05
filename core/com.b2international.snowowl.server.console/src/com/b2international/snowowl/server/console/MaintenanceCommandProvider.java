@@ -330,7 +330,7 @@ public class MaintenanceCommandProvider implements CommandProvider {
 				.execute(getBus())
 				.getSync()
 				.first()
-				.map(CommitInfo::getTimeStamp)
+				.map(CommitInfo::getTimestamp)
 				.map(value -> value + 1)
 				.ifPresent(req::setCommitTimestamp);
 			

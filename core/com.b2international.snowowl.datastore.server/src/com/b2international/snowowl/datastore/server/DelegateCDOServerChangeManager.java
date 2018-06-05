@@ -242,6 +242,7 @@ public class DelegateCDOServerChangeManager {
 
 	private RepositoryCommitNotification toCommitNotification(IndexCommitChangeSet mergedChangeSet) {
 		return new RepositoryCommitNotification(repositoryUuid,
+				mergedChangeSet.getCommitId(),
 				CDOCommitInfoUtils.getUuid(commitChangeSet.getCommitComment()),
 				branchPath.getPath(),
 				commitChangeSet.getTimestamp(),

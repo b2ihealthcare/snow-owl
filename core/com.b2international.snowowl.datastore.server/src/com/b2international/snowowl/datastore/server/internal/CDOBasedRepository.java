@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -39,11 +38,9 @@ import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexRead;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -55,6 +52,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.RepositoryEvent;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -277,10 +275,21 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 			if (notification == null) {
 				// make sure we always send out commit notification
 				// required in case of manual commit notifications via CDO API
+				CommitInfo indexCommit = executeLocalSearch(RepositoryRequests.commitInfos()
+					.prepareSearchCommitInfo()
+					.one()
+					.filterByTimestamp(commitTimestamp)
+					.filterByAuthor(commitInfo.getUserID())
+					.filterByBranch(branch.getPathName())
+					.build())
+					.first()
+					.get();
+				
 				notification = new RepositoryCommitNotification(id(),
+					indexCommit.getId(),						
 					CDOCommitInfoUtils.getUuid(commitInfo),
 					branch.getPathName(),
-					commitInfo.getTimeStamp(),
+					commitTimestamp,
 					commitInfo.getUserID(),
 					commitInfo.getComment(),
 					Collections.emptyList(),
@@ -316,7 +325,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		final TreeMap<Long, CommitInfo> indexCommitsByTimestamp = new TreeMap<>();
 		
 		cdoCommits.forEach(c -> cdoCommitsByTimestamp.put(c.getTimeStamp(), c));
-		indexCommits.forEach(c -> indexCommitsByTimestamp.put(c.getTimeStamp(), c));
+		indexCommits.forEach(c -> indexCommitsByTimestamp.put(c.getTimestamp(), c));
 
 		long firstMissingCdoCommitTimestamp = -1;
 		
@@ -340,7 +349,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 					
 					for (Long followingIndexCommitTimestamp : indexCommitsByTimestamp.navigableKeySet().tailSet(nextIndexCommitTimestamp)) {
 						CommitInfo followingCommit = indexCommitsByTimestamp.get(followingIndexCommitTimestamp);
-						if (Objects.equals(commitId, followingCommit.getId())) {
+						if (Objects.equals(commitId, followingCommit.getGroupId())) {
 							foundImporterIndexCommit = true;
 							break;
 						}
@@ -390,14 +399,13 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 	}
 
 	private CommitInfos getAllIndexCommits() {
-		final RepositoryContext repositoryContext = new DefaultRepositoryContext(this, this);
-		return service(Index.class).read(new IndexRead<CommitInfos>() {
-			@Override
-			public CommitInfos execute(DocSearcher index) throws IOException {
-				return new IndexReadRequest<>(RepositoryRequests.commitInfos().prepareSearchCommitInfo()
-						.all()
-						.build()).execute(repositoryContext);
-			}
-		});
+		return executeLocalSearch(RepositoryRequests.commitInfos()
+				.prepareSearchCommitInfo()
+				.all()
+				.build());
+	}
+
+	private <T> T executeLocalSearch(final Request<RepositoryContext, T> req) {
+		return new IndexReadRequest<>(req).execute(new DefaultRepositoryContext(this, this));
 	}
 }

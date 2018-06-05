@@ -89,7 +89,7 @@ public class CommitInfoRequestTest {
 		assertEquals(id, commitInfo.getId());
 		assertEquals(comment, commitInfo.getComment());
 		assertEquals(BRANCH, commitInfo.getBranch());
-		assertEquals(USER_ID, commitInfo.getUserId());
+		assertEquals(USER_ID, commitInfo.getAuthor());
 	}
 	
 	@Test
@@ -116,7 +116,7 @@ public class CommitInfoRequestTest {
 		final CommitInfos commitInfos = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByUserId(userId)
+				.filterByAuthor(userId)
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();
@@ -124,7 +124,7 @@ public class CommitInfoRequestTest {
 		assertEquals(commitInfos.getTotal(), 1);
 		
 		final CommitInfo commitInfo = Iterables.getOnlyElement(commitInfos);
-		assertEquals(userId, commitInfo.getUserId());
+		assertEquals(userId, commitInfo.getAuthor());
 	}
 	
 	@Test
@@ -158,13 +158,13 @@ public class CommitInfoRequestTest {
 		final CommitInfos commitInfos = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByTimestamp(commitInfo.getTimeStamp())
+				.filterByTimestamp(commitInfo.getTimestamp())
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();
 		
 		assertTrue(commitInfos.getTotal() == 1);
-		assertEquals(commitInfo.getTimeStamp(), Iterables.getOnlyElement(commitInfos.getItems()).getTimeStamp());
+		assertEquals(commitInfo.getTimestamp(), Iterables.getOnlyElement(commitInfos.getItems()).getTimestamp());
 	}
 	
 	private void createCodeSystem(final String shortName, final String oid, final String comment) {

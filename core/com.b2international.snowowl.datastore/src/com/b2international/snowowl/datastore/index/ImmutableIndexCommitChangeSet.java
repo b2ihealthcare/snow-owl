@@ -27,14 +27,17 @@ import com.b2international.snowowl.core.ComponentIdentifier;
  */
 public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet {
 
+	private final String commitId;
 	private final Map<ComponentIdentifier, Object> newObjects;
 	private final Map<ComponentIdentifier, Object> changedObjects;
 	private final Map<ComponentIdentifier, Object> removedObjects;
 
 	private ImmutableIndexCommitChangeSet(
+			final String commitId,
 			final Map<ComponentIdentifier, Object> newObjects,
 			final Map<ComponentIdentifier, Object> changedObjects,
 			final Map<ComponentIdentifier, Object> removedObjects) {
+		this.commitId = commitId;
 		this.newObjects = newObjects;
 		this.changedObjects = changedObjects;
 		this.removedObjects = removedObjects;
@@ -43,6 +46,11 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	@Override
 	public boolean isEmpty() {
 		return newObjects.isEmpty() && changedObjects.isEmpty() && removedObjects.isEmpty();
+	}
+	
+	@Override
+	public String getCommitId() {
+		return commitId;
 	}
 
 	@Override
@@ -111,11 +119,15 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		private final Map<ComponentIdentifier, Object> newObjects = newHashMap();
 		private final Map<ComponentIdentifier, Object> changedObjects = newHashMap();
 		private final Map<ComponentIdentifier, Object> removedObjects = newHashMap();
+		private String commitId;
 
 		private Builder() {
 		}
 		
 		public Builder from(IndexCommitChangeSet from) {
+			if (commitId == null) {
+				commitId = from.getCommitId();
+			}
 			this.newObjects.putAll(from.getNewObjects());
 			this.changedObjects.putAll(from.getChangedObjects());
 			this.removedObjects.putAll(from.getRemovedObjects());
@@ -146,8 +158,13 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 			return this;
 		}
 		
+		public Builder commitId(String commitId) {
+			this.commitId = commitId;
+			return this;
+		}
+		
 		public IndexCommitChangeSet build() {
-			return new ImmutableIndexCommitChangeSet(newObjects, changedObjects, removedObjects);
+			return new ImmutableIndexCommitChangeSet(commitId, newObjects, changedObjects, removedObjects);
 		}
 
 	}

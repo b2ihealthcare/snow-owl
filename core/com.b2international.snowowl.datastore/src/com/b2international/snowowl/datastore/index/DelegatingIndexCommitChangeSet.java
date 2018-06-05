@@ -30,6 +30,11 @@ public class DelegatingIndexCommitChangeSet implements IndexCommitChangeSet {
 	public DelegatingIndexCommitChangeSet(IndexCommitChangeSet delegate) {
 		this.delegate = delegate;
 	}
+	
+	@Override
+	public String getCommitId() {
+		return delegate.getCommitId();
+	}
 
 	@Override
 	public Map<ComponentIdentifier, Object> getNewObjects() {
