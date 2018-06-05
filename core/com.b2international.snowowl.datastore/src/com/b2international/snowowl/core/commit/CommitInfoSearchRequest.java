@@ -81,7 +81,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new CommitInfos(context.id(), limit(), hits.getTotal());
 		} else {
-			return new CommitInfoConverter(context, expand(), locales()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return new CommitInfoConverter(context, expand(), locales(), options()).convert(hits.getHits(), hits.getScrollId(), hits.getSearchAfter(), limit(), hits.getTotal());
 		}
 	}
 	

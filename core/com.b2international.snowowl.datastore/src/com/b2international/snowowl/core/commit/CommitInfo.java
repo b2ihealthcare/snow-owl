@@ -27,6 +27,10 @@ public final class CommitInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	public static final class Expand {
+		public static final String DETAILS = "details";
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -59,6 +63,7 @@ public final class CommitInfo implements Serializable {
 		private String comment;
 		private long timestamp;
 		private String groupId;
+		private CommitInfoDetails details;
 		
 		public Builder id(final String id) {
 			this.id = id;
@@ -90,10 +95,15 @@ public final class CommitInfo implements Serializable {
 			return this;
 		}
 		
-		public CommitInfo build() {
-			return new CommitInfo(id, branch, author, comment, timestamp, groupId);
+		public Builder details(CommitInfoDetails details) {
+			this.details = details;
+			return this;
 		}
 		
+		public CommitInfo build() {
+			return new CommitInfo(id, branch, author, comment, timestamp, groupId, details);
+		}
+
 	}
 	
 	private final String id;
@@ -102,6 +112,7 @@ public final class CommitInfo implements Serializable {
 	private final String comment;
 	private final long timestamp;
 	private final String groupId;
+	private final CommitInfoDetails details;
 	
 	CommitInfo(
 			final String id,
@@ -109,13 +120,15 @@ public final class CommitInfo implements Serializable {
 			final String author,
 			final String comment,
 			final long timestamp, 
-			final String groupId) {
+			final String groupId,
+			final CommitInfoDetails details) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
 		this.groupId = groupId;
+		this.details = details;
 	}
 
 	public String getId() {
@@ -140,6 +153,10 @@ public final class CommitInfo implements Serializable {
 	
 	public String getGroupId() {
 		return groupId;
+	}
+	
+	public CommitInfoDetails getDetails() {
+		return details;
 	}
 
 }

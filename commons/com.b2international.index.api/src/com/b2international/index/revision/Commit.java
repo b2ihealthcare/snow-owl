@@ -223,11 +223,16 @@ public final class Commit implements WithScore {
 		return changes;
 	}
 	
-	public CommitChange getChangesByContainer(String container) {
+	@JsonIgnore
+	public Map<String, CommitChange> getChangesByContainer() {
 		if (changesByContainer == null) {
 			changesByContainer = Maps.uniqueIndex(changes, CommitChange::getContainerId);
 		}
-		return changesByContainer.get(container);
+		return changesByContainer;
+	}
+	
+	public CommitChange getChangesByContainer(String container) {
+		return getChangesByContainer().get(container);
 	}
 	
 }
