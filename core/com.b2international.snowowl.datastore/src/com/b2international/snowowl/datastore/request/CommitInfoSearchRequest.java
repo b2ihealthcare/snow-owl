@@ -30,9 +30,9 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
+import com.b2international.snowowl.core.commit.CommitInfoConverter;
+import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfoConverter;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 import com.google.common.collect.Lists;
 
 /**

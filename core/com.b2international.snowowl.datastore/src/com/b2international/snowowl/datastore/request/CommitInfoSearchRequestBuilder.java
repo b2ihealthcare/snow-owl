@@ -22,10 +22,10 @@ import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequ
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
 import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
 
+import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfos;
 
 /**
  * @since 5.2

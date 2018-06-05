@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
-import com.b2international.snowowl.datastore.commitinfo.CommitInfo;
 
 /**
  * @since 5.7
