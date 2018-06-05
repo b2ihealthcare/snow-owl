@@ -18,7 +18,6 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
-import java.util.List;
 
 import com.b2international.index.admin.Administrable;
 import com.google.common.base.Strings;
@@ -119,13 +118,6 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 */
 	StagingArea prepareCommit(String branchPath);
-	
-	/**
-	 * TODO document me
-	 * @param id
-	 * @return
-	 */
-	List<Commit> history(String id);
 	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.

@@ -50,7 +50,7 @@ public final class Commit implements WithScore {
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")
-	public static final class Builder {
+	static final class Builder {
 
 		private String id;
 		private String branch;
@@ -113,8 +113,8 @@ public final class Commit implements WithScore {
 			return matchAny(DocumentMapping._ID, ids);
 		}
 		
-		public static Expression branch(final String branch) {
-			return exactMatch(Fields.BRANCH, branch);
+		public static Expression branches(final Iterable<String> branchPaths) {
+			return matchAny(Fields.BRANCH, branchPaths);
 		}
 		
 		public static Expression author(final String author) {

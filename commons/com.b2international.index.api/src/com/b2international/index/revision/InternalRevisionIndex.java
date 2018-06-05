@@ -15,11 +15,20 @@
  */
 package com.b2international.index.revision;
 
+import java.util.List;
+
 /**
  * @since 5.0
  */
 interface InternalRevisionIndex extends RevisionIndex {
 
 	<T> T read(RevisionBranchRef branch, RevisionIndexRead<T> read);
+	
+	/**
+	 * Returns all commits that changed the given identifier or any of its related components.
+	 * @param id
+	 * @return
+	 */
+	List<Commit> history(String id);
 	
 }

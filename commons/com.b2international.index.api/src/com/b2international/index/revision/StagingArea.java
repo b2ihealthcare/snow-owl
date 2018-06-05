@@ -72,13 +72,7 @@ public final class StagingArea {
 	 */
 	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
 		return index.write(branchPath, timestamp, writer -> {
-			Commit.Builder commit = Commit.builder()
-					.id(UUID.randomUUID().toString())
-					.groupId(commitGroupId)
-					.author(author)
-					.branch(branchPath)
-					.comment(commitComment)
-					.timestamp(timestamp);
+			Commit.Builder commit = Commit.builder();
 
 			final Multimap<String, String> newComponents = HashMultimap.create();
 			final Multimap<String, String> changedComponents = HashMultimap.create();
@@ -139,7 +133,16 @@ public final class StagingArea {
 				})
 				.collect(Collectors.toList());
 			
-			Commit commitDoc = commit.changes(changes).build();
+			// generate commit doc that marks the end of the commit and contains
+			Commit commitDoc = commit
+					.id(UUID.randomUUID().toString())
+					.groupId(commitGroupId)
+					.author(author)
+					.branch(branchPath)
+					.comment(commitComment)
+					.timestamp(timestamp)
+					.changes(changes)
+					.build();
 			writer.put(commitDoc.getId(), commitDoc);
 			writer.commit();
 			reset();

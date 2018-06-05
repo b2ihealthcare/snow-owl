@@ -43,7 +43,7 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 	@Test
 	public void historyOfNewComponent() throws Exception {
 		indexRevision(MAIN, newData);
-		List<Commit> commits = index().history(STORAGE_KEY1);
+		List<Commit> commits = history(STORAGE_KEY1);
 		assertThat(commits).hasSize(1);
 		final Commit commit = Iterables.getOnlyElement(commits);
 		assertThat(commit.getChanges()).hasSize(1);
@@ -58,7 +58,7 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// index a change
 		indexChange(MAIN, changedData);
 		// history should contain two commits now
-		List<Commit> commits = index().history(STORAGE_KEY1);
+		List<Commit> commits = history(STORAGE_KEY1);
 		assertThat(commits).hasSize(2);
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
@@ -73,13 +73,17 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// index deletion
 		indexRemove(MAIN, newData);
 		// history should contain two commits now
-		List<Commit> commits = index().history(STORAGE_KEY1);
+		List<Commit> commits = history(STORAGE_KEY1);
 		assertThat(commits).hasSize(2);
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
 		assertThat(commit.getChanges()).hasSize(1);
 		final CommitChange expectedChange = CommitChange.builder(STORAGE_KEY1).removedComponents(ImmutableSet.of(STORAGE_KEY1)).build();
 		assertThat(commit.getChangesByContainer(STORAGE_KEY1)).isEqualTo(expectedChange);
+	}
+	
+	private List<Commit> history(String containerId) {
+		return ((InternalRevisionIndex) index()).history(containerId);
 	}
 	
 }
