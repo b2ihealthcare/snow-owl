@@ -51,14 +51,14 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Map<String, Revision> getNewMappings();
+	Map<String, RevisionDocument> getNewMappings();
 	
 	/**
 	 * Returns the new mappings made by this {@link ChangeSetProcessor} on existing documents.
 	 * 
 	 * @return
 	 */
-	Map<String, Revision> getChangedMappings();
+	Map<String, RevisionDocument> getChangedMappings();
 
 	/**
 	 * Returns the deletions made by this {@link ChangeSetProcessor}

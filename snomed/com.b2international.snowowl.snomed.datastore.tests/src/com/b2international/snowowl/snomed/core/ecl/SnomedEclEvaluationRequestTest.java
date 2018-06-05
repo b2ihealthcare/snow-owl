@@ -1100,7 +1100,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 */
 	private void generateDrugHierarchy() {
 		index()
-			.prepareCommit()
+			.prepareCommit(MAIN)
 			.stageNew(concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			.stageNew(concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			.stageNew(concept(INGREDIENT3).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
@@ -1124,7 +1124,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			.stageNew(integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build())
 			.stageNew(decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build())
 			.stageNew(decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build())
-			.commit(UUID.randomUUID().toString(), MAIN, currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
+			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
 	}
 
 	/**
@@ -1169,7 +1169,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 */
 	private void generateDrugsWithGroups() {
 		index()
-			.prepareCommit()
+			.prepareCommit(MAIN)
 			.stageNew(concept(INGREDIENT5).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			.stageNew(concept(INGREDIENT6).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build())
 			
@@ -1190,7 +1190,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			
 			.stageNew(relationship(TRIPLEX_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT5).group(1).build())
 			.stageNew(relationship(TRIPLEX_TABLET, HAS_BOSS, INGREDIENT6).group(2).build())
-			.commit(UUID.randomUUID().toString(), MAIN, currentTime(), UUID.randomUUID().toString(), "Initialize Drugs with groups");
+			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize Drugs with groups");
 	}
 	
 	private void generateDrugWithIntegerStrengthOfValueOne() {

@@ -247,9 +247,9 @@ public class DelegateCDOServerChangeManager {
 				commitChangeSet.getTimestamp(),
 				commitChangeSet.getUserId(),
 				CDOCommitInfoUtils.removeUuidPrefix(commitChangeSet.getCommitComment()),
-				mergedChangeSet.getNewComponents(),
-				mergedChangeSet.getChangedComponents(),
-				mergedChangeSet.getDeletedComponents()
+				mergedChangeSet.getNewObjects().keySet(),
+				mergedChangeSet.getChangedObjects().keySet(),
+				mergedChangeSet.getRemovedObjects().keySet()
 				);
 	}
 

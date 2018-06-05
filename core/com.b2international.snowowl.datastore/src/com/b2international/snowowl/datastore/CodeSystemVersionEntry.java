@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
 import java.io.Serializable;
@@ -108,6 +109,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 		public static Expression shortName(String shortName) {
 			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
+		}
+		
+		public static Expression storageKeys(Iterable<Long> storageKeys) {
+			return matchAnyLong(Fields.STORAGE_KEY, storageKeys);
 		}
 		
 	}

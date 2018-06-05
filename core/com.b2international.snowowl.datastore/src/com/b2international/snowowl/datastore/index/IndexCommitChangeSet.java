@@ -15,27 +15,19 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 5.0
  */
 public interface IndexCommitChangeSet {
 
-	Collection<ComponentIdentifier> getNewComponents();
-
-	Collection<ComponentIdentifier> getChangedComponents();
-
-	Collection<ComponentIdentifier> getDeletedComponents();
-
-	Map<String, Object> getMappings();
-
-	Multimap<Class<?>, String> getDeletions();
+	Map<ComponentIdentifier, Object> getNewObjects();
+	Map<ComponentIdentifier, Object> getChangedObjects();
+	Map<ComponentIdentifier, Object> getRemovedObjects();
 
 	String getDescription();
 	

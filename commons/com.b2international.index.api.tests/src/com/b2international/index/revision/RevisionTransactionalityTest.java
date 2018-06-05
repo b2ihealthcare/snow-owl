@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,14 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 		
 		final RevisionIndex index = index();
 		
-		StagingArea mainCommit = index.prepareCommit();
-		StagingArea childCommit = index.prepareCommit();
+		StagingArea mainCommit = index.prepareCommit(MAIN);
+		StagingArea childCommit = index.prepareCommit("MAIN/a");
 		
 		mainCommit.stageNew(new Data(STORAGE_KEY1, "field1ChangedOnMAIN", "field2"));
 		childCommit.stageNew(new Data(STORAGE_KEY1, "field1", "field2ChangedOnChild"));
 		
-		mainCommit.commit(UUID.randomUUID().toString(), MAIN, mainCommitTime, UUID.randomUUID().toString(), "Commit on MAIN");
-		childCommit.commit(UUID.randomUUID().toString(), "MAIN/a", childCommitTime, UUID.randomUUID().toString(), "Commit on MAIN/a");
+		mainCommit.commit(mainCommitTime, UUID.randomUUID().toString(), "Commit on MAIN");
+		childCommit.commit(childCommitTime, UUID.randomUUID().toString(), "Commit on MAIN/a");
 		
 		// after both tx commit query the branches for the latest revision
 		final Data childRevision = getRevision("MAIN/a", Data.class, STORAGE_KEY1);

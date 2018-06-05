@@ -108,9 +108,9 @@ public class IssueSO2109Test {
 
 		final long timestamp = clock.getTimeStamp();
 
-		store.prepareCommit()
+		store.prepareCommit(childBranch)
 			.stageNew(new Data(STORAGE_KEY, DATA_VALUE))
-			.commit(UUID.randomUUID().toString(), childBranch, timestamp, UUID.randomUUID().toString(), "Commit");
+			.commit(timestamp, UUID.randomUUID().toString(), "Commit");
 
 		manager.handleCommit(childBranch, timestamp);
 

@@ -15,10 +15,13 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.HashMultimap;
@@ -28,38 +31,54 @@ import com.google.common.collect.Multimap;
 /**
  * A place that stores information about what will go into your next commit.
  * 
- * @since 6.5
+ * @since 6.6
  * @see RevisionIndex#prepareCommit()
  */
 public final class StagingArea {
 
 	private final DefaultRevisionIndex index;
+	private final String branchPath;
 
-	private final Map<String, Object> newDocuments = newHashMap();
-	private final Map<String, Object> changedDocuments = newHashMap();
-	private final Map<String, Object> removedDocuments = newHashMap();
+	private Map<String, Object> newDocuments;
+	private Map<String, Object> changedDocuments;
+	private Map<String, Object> removedDocuments;
 	
-	StagingArea(DefaultRevisionIndex index) {
+	StagingArea(DefaultRevisionIndex index, String branchPath) {
 		this.index = index;
+		this.branchPath = branchPath;
+		reset();
 	}
 	
 	/**
-	 * Commits the changes so far staged to the staging area. 
-	 * @param commitId
-	 * @param branchPath
+	 * Commits the changes so far staged to the staging area.
+	 *  
 	 * @param timestamp
 	 * @param author
 	 * @param commitComment
 	 * @return
 	 */
-	public Commit commit(String commitId, String branchPath, long timestamp, String author, String commitComment) {
+	public Commit commit(long timestamp, String author, String commitComment) {
+		return commit(null, timestamp, author, commitComment);
+	}
+	
+	/**
+	 * Commits the changes so far staged to the staging area.
+	 *  
+	 * @param commitGroupId - can be used to connect multiple commits and consider them as a single commit
+	 * @param timestamp - long timestamp when the commit happened
+	 * @param author - the author of the changes
+	 * @param commitComment - short text about the changes
+	 * @return
+	 */
+	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
 		return index.write(branchPath, timestamp, writer -> {
 			Commit.Builder commit = Commit.builder()
-				.id(commitId)
-				.author(author)
-				.branch(branchPath)
-				.comment(commitComment)
-				.timestamp(timestamp);
+					.id(UUID.randomUUID().toString())
+					.groupId(commitGroupId)
+					.author(author)
+					.branch(branchPath)
+					.comment(commitComment)
+					.timestamp(timestamp);
 
 			final Multimap<String, String> newComponents = HashMultimap.create();
 			final Multimap<String, String> changedComponents = HashMultimap.create();
@@ -87,7 +106,7 @@ public final class StagingArea {
 					writer.put(doc.getKey(), document);
 					if (document instanceof Revision) {
 						Revision rev = (Revision) document;
-						newComponents.put(rev.getContainerId(), rev.getId());
+						newComponents.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: " + rev), rev.getId());
 					}
 				}
 			}
@@ -99,36 +118,46 @@ public final class StagingArea {
 					writer.put(doc.getKey(), document);
 					if (document instanceof Revision) {
 						Revision rev = (Revision) document;
-						changedComponents.put(rev.getContainerId(), rev.getId());
+						changedComponents.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: " + rev), rev.getId());
 					}
 				}
 			}
 			
 			// collect changes and register them by container ID
-			final Map<String, CommitChange.Builder> changesByContainer = newHashMap();
-			ImmutableSet.<String>builder()
+			final List<CommitChange> changes = ImmutableSet.<String>builder()
 				.addAll(newComponents.keySet())
 				.addAll(changedComponents.keySet())
 				.addAll(removedComponents.keySet())
 				.build()
-				.forEach(containerId -> {
-					if (!changesByContainer.containsKey(containerId)) {
-						changesByContainer.put(containerId, CommitChange.builder(containerId));
-					}
-					changesByContainer
-						.get(containerId)
+				.stream()
+				.map(containerId -> {
+					return CommitChange.builder(containerId)
 						.newComponents(newComponents.get(containerId))
 						.changedComponents(changedComponents.get(containerId))
-						.removedComponents(removedComponents.get(containerId));
-				});
+						.removedComponents(removedComponents.get(containerId))
+						.build();
+				})
+				.collect(Collectors.toList());
 			
-			Commit commitDoc = commit
-					.changes(changesByContainer.values().stream().map(CommitChange.Builder::build).collect(Collectors.toList()))
-					.build();
+			Commit commitDoc = commit.changes(changes).build();
 			writer.put(commitDoc.getId(), commitDoc);
 			writer.commit();
+			reset();
 			return commitDoc;
 		});
+	}
+
+	/**
+	 * Reset staging area to empty.
+	 */
+	private void reset() {
+		newDocuments = newHashMap();
+		changedDocuments = newHashMap();
+		removedDocuments = newHashMap();
+	}
+
+	public StagingArea stageNew(Revision newRevision) {
+		return stageNew(newRevision.getId(), newRevision);
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument) {
@@ -136,12 +165,12 @@ public final class StagingArea {
 		return this;
 	}
 	
-	public StagingArea stageNew(Revision newRevision) {
-		return stageNew(newRevision.getId(), newRevision);
+	public StagingArea stageChange(Revision changedRevision) {
+		return stageChange(changedRevision.getId(), changedRevision);
 	}
 	
-	public StagingArea stageChange(Revision changedRevision) {
-		changedDocuments.put(changedRevision.getId(), changedRevision);
+	public StagingArea stageChange(String key, Object changed) {
+		changedDocuments.put(key, changed);
 		return this;
 	}
 	

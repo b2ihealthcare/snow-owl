@@ -150,36 +150,36 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected final void indexChange(final String branchPath, final Revision...changes) {
 		final long commitTimestamp = currentTime();
-		StagingArea staging = index().prepareCommit();
+		StagingArea staging = index().prepareCommit(branchPath);
 		Arrays.asList(changes).forEach(staging::stageChange);
 		staging
-			.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
 			.getTimestamp();
 	}
 	
 	protected final void indexRemove(final String branchPath, final Revision...removedRevisions) {
 		final long commitTimestamp = currentTime();
-		StagingArea staging = index().prepareCommit();
+		StagingArea staging = index().prepareCommit(branchPath);
 		Arrays.asList(removedRevisions).forEach(staging::stageRemove);
 		staging
-			.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
 			.getTimestamp();
 	}
 
 	protected final long commit(final String branchPath, final Collection<Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
-		StagingArea staging = index().prepareCommit();
+		StagingArea staging = index().prepareCommit(branchPath);
 		newRevisions.forEach(rev -> staging.stageNew(rev.getId(), rev));
 		return staging
-				.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit")
+				.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
 				.getTimestamp();
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
 		final long commitTimestamp = currentTime();
-		StagingArea staging = index().prepareCommit();
+		StagingArea staging = index().prepareCommit(branchPath);
 		staging.stageRemove(key, getRevision(branchPath, type, key));
-		staging.commit(UUID.randomUUID().toString(), branchPath, commitTimestamp, UUID.randomUUID().toString(), "Commit");
+		staging.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
 	protected final <T> Hits<T> search(final String branchPath, final Query<T> query) {

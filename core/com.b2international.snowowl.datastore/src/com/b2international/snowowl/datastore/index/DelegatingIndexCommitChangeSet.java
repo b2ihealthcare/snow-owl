@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.datastore.index;
 
-import java.util.Collection;
 import java.util.Map;
 
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 5.0
@@ -34,30 +32,20 @@ public class DelegatingIndexCommitChangeSet implements IndexCommitChangeSet {
 	}
 
 	@Override
-	public Collection<ComponentIdentifier> getNewComponents() {
-		return delegate.getNewComponents();
+	public Map<ComponentIdentifier, Object> getNewObjects() {
+		return delegate.getNewObjects();
 	}
-
+	
 	@Override
-	public Collection<ComponentIdentifier> getChangedComponents() {
-		return delegate.getChangedComponents();
+	public Map<ComponentIdentifier, Object> getChangedObjects() {
+		return delegate.getChangedObjects();
 	}
-
+	
 	@Override
-	public Collection<ComponentIdentifier> getDeletedComponents() {
-		return delegate.getDeletedComponents();
+	public Map<ComponentIdentifier, Object> getRemovedObjects() {
+		return delegate.getRemovedObjects();
 	}
-
-	@Override
-	public Map<String, Object> getMappings() {
-		return delegate.getMappings();
-	}
-
-	@Override
-	public Multimap<Class<?>, String> getDeletions() {
-		return delegate.getDeletions();
-	}
-
+	
 	@Override
 	public String getDescription() {
 		return delegate.getDescription();

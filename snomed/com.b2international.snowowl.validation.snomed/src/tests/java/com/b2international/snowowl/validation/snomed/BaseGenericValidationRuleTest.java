@@ -92,7 +92,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		// index common required SNOMED CT Concepts
 
 		index()
-			.prepareCommit()
+			.prepareCommit(MAIN)
 			.stageNew(concept(Concepts.ROOT_CONCEPT).build())
 			// Attributes
 			.stageNew(concept(ATTRIBUTE).parents(ROOT_CONCEPTL).build())
@@ -120,7 +120,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 			.stageNew(concept(EPRESCRIBING_ROUTE_SIMPLE_REFSET).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_ROOT_CONCEPT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.REFSET_LANGUAGE_TYPE).parents(REFSET_ROOTL).build())
-			.commit(UUID.randomUUID().toString(), MAIN, 1L, UUID.randomUUID().toString(), "Initialize test data");
+			.commit(1L, UUID.randomUUID().toString(), "Initialize test data");
 	}
 
 	@Override

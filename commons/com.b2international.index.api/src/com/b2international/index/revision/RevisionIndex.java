@@ -115,9 +115,10 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * {@link StagingArea#commit(String, String, long, String, String) commit} to
 	 * push that changes into the underlying repository.
 	 * 
+	 * @param branchPath - prepares a commit on the specified branch
 	 * @return
 	 */
-	StagingArea prepareCommit();
+	StagingArea prepareCommit(String branchPath);
 	
 	/**
 	 * TODO document me

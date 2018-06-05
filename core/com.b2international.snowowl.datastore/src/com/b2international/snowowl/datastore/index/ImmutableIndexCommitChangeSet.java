@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,70 +17,47 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import com.b2international.index.revision.RevisionWriter;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 5.0
  */
 public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet {
 
-	private final Map<String, Object> mappings;
-	private final Multimap<Class<?>, String> deletions;
-	private final Collection<ComponentIdentifier> newComponents;
-	private final Collection<ComponentIdentifier> changedComponents;
-	private final Collection<ComponentIdentifier> deletedComponents;
+	private final Map<ComponentIdentifier, Object> newObjects;
+	private final Map<ComponentIdentifier, Object> changedObjects;
+	private final Map<ComponentIdentifier, Object> removedObjects;
 
-	private ImmutableIndexCommitChangeSet(final Map<String, Object> mappings, 
-			final Multimap<Class<?>, String> deletions, 
-			final Collection<ComponentIdentifier> newComponents,
-			final Collection<ComponentIdentifier> changedComponents,
-			final Collection<ComponentIdentifier> deletedComponents) {
-		this.mappings = mappings;
-		this.deletions = deletions;
-		this.newComponents = newComponents;
-		this.changedComponents = changedComponents;
-		this.deletedComponents = deletedComponents;
+	private ImmutableIndexCommitChangeSet(
+			final Map<ComponentIdentifier, Object> newObjects,
+			final Map<ComponentIdentifier, Object> changedObjects,
+			final Map<ComponentIdentifier, Object> removedObjects) {
+		this.newObjects = newObjects;
+		this.changedObjects = changedObjects;
+		this.removedObjects = removedObjects;
 	}
 	
 	@Override
 	public boolean isEmpty() {
-		return mappings.isEmpty() && deletions.isEmpty();
+		return newObjects.isEmpty() && changedObjects.isEmpty() && removedObjects.isEmpty();
+	}
+
+	@Override
+	public Map<ComponentIdentifier, Object> getNewObjects() {
+		return newObjects;
 	}
 	
 	@Override
-	public Collection<ComponentIdentifier> getNewComponents() {
-		return newComponents;
+	public Map<ComponentIdentifier, Object> getChangedObjects() {
+		return changedObjects;
 	}
 	
 	@Override
-	public Collection<ComponentIdentifier> getChangedComponents() {
-		return changedComponents;
-	}
-	
-	@Override
-	public Collection<ComponentIdentifier> getDeletedComponents() {
-		return deletedComponents;
-	}
-	
-	@Override
-	public Map<String, Object> getMappings() {
-		return mappings;
-	}
-	
-	@Override
-	public Multimap<Class<?>, String> getDeletions() {
-		return deletions;
+	public Map<ComponentIdentifier, Object> getRemovedObjects() {
+		return removedObjects;
 	}
 	
 	@Override
@@ -89,20 +66,21 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	}
 	
 	/**
-	 * Apply this {@link ImmutableIndexCommitChangeSet} on the given {@link RevisionWriter index transaction}.
+	 * Apply this {@link ImmutableIndexCommitChangeSet} on the given {@link StagingArea staging area}.
 	 * 
 	 * @param staging
-	 * @throws IOException
 	 */
 	@Override
 	public void apply(StagingArea staging) {
-		for (final Class<?> type : deletions.keySet()) {
-			deletions.get(type).forEach(key -> staging.stageRemove(type, key));
-		}
-		
-		for (Entry<String, Object> doc : mappings.entrySet()) {
-			staging.stageNew(doc.getKey(), doc.getValue());
-		}
+		newObjects.forEach((id, object) -> {
+			staging.stageNew(id.getComponentId(), object);
+		});
+		changedObjects.forEach((id, object) -> {
+			staging.stageChange(id.getComponentId(), object);
+		});
+		removedObjects.forEach((id, object) -> {
+			staging.stageRemove(id.getComponentId(), object);
+		});
 	}
 	
 	/**
@@ -111,7 +89,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	 */
 	@Override
 	public String getDescription() {
-		return String.format("Indexed %d documents, deleted %d documents.", mappings.size(), deletions.values().size());
+		return String.format("Index Changes[+%d, ~%d, -%d]", newObjects.size(), changedObjects.size(), removedObjects.size());
 	}
 	
 	/**
@@ -130,63 +108,46 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 	 */
 	public static class Builder {
 
-		private final Map<String, Object> rawMappings = newHashMap();
-		private final ImmutableMultimap.Builder<Class<?>, String> rawDeletions = ImmutableMultimap.builder();
-		private final ImmutableSet.Builder<ComponentIdentifier> newComponents = ImmutableSet.builder();
-		private final ImmutableSet.Builder<ComponentIdentifier> changedComponents = ImmutableSet.builder();
-		private final ImmutableSet.Builder<ComponentIdentifier> deletedComponents = ImmutableSet.builder();
+		private final Map<ComponentIdentifier, Object> newObjects = newHashMap();
+		private final Map<ComponentIdentifier, Object> changedObjects = newHashMap();
+		private final Map<ComponentIdentifier, Object> removedObjects = newHashMap();
 
 		private Builder() {
 		}
 		
-		public Builder from(IndexCommitChangeSet indexCommitChangeSet) {
-			this.rawMappings.putAll(indexCommitChangeSet.getMappings());
-			this.rawDeletions.putAll(indexCommitChangeSet.getDeletions());
-			this.newComponents.addAll(indexCommitChangeSet.getNewComponents());
-			this.changedComponents.addAll(indexCommitChangeSet.getChangedComponents());
-			this.deletedComponents.addAll(indexCommitChangeSet.getDeletedComponents());
+		public Builder from(IndexCommitChangeSet from) {
+			this.newObjects.putAll(from.getNewObjects());
+			this.changedObjects.putAll(from.getChangedObjects());
+			this.removedObjects.putAll(from.getRemovedObjects());
 			return this;
 		}
 		
-		public Builder putNewComponents(ComponentIdentifier newComponent) {
-			this.newComponents.add(newComponent);
-			return this;
-		}
-		
-		public Builder putChangedComponents(ComponentIdentifier changedComponent) {
-			this.changedComponents.add(changedComponent);
-			return this;
-		}
-		
-		public Builder putDeletedComponents(ComponentIdentifier deletedComponent) {
-			this.deletedComponents.add(deletedComponent);
-			return this;
-		}
-		
-		public Builder putRawMappings(String key, Object value) {
-			Object prev = this.rawMappings.put(key, value);
+		public Builder putNewObject(ComponentIdentifier newComponentId, Object newComponent) {
+			Object prev = this.newObjects.put(newComponentId, newComponent);
 			if (prev != null) {
-				throw new IllegalArgumentException("Multiple entries with same key: " + key + "=" + value);
+				throw new IllegalArgumentException("Multiple entries with same key: " + newComponentId + "=" + newComponent);
 			}
 			return this;
 		}
 		
-		public Builder putRawDeletions(Class<?> type, String key) {
-			this.rawDeletions.put(type, key);
+		public Builder putChangedObject(ComponentIdentifier changedComponentId, Object changedComponent) {
+			Object prev = this.changedObjects.put(changedComponentId, changedComponent);
+			if (prev != null) {
+				throw new IllegalArgumentException("Multiple entries with same key: " + changedComponentId + "=" + changedComponent);
+			}
 			return this;
 		}
 		
-		public Builder putRawDeletions(Class<?> type, Iterable<? extends String> keys) {
-			this.rawDeletions.putAll(type, keys);
+		public Builder putRemovedComponent(ComponentIdentifier removedComponentId, Object removedComponent) {
+			Object prev = this.removedObjects.put(removedComponentId, removedComponent);
+			if (prev != null) {
+				throw new IllegalArgumentException("Multiple entries with same key: " + removedComponentId + "=" + removedComponent);
+			}
 			return this;
 		}
 		
 		public IndexCommitChangeSet build() {
-			return new ImmutableIndexCommitChangeSet(rawMappings, 
-					rawDeletions.build(), 
-					newComponents.build(),
-					changedComponents.build(),
-					deletedComponents.build());
+			return new ImmutableIndexCommitChangeSet(newObjects, changedObjects, removedObjects);
 		}
 
 	}

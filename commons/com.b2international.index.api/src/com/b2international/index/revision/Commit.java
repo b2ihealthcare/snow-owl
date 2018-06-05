@@ -15,7 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
@@ -58,6 +58,7 @@ public final class Commit implements WithScore {
 		private String comment;
 		private long timestamp;
 		private List<CommitChange> changes;
+		private String groupId;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -84,13 +85,18 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
+		public Builder groupId(String groupId) {
+			this.groupId = groupId;
+			return this;
+		}
+		
 		public Builder changes(final List<CommitChange> changes) {
 			this.changes = changes;
 			return this;
 		}
 		
 		public Commit build() {
-			return new Commit(id, branch, author, comment, timestamp, changes);
+			return new Commit(id, branch, author, comment, timestamp, groupId, changes);
 		}
 
 	}
@@ -120,7 +126,7 @@ public final class Commit implements WithScore {
 		}
 		
 		public static Expression allCommentPrefixesPresent(final String comment) {
-			return matchTextAll(Fields.COMMENT+".prefix", comment);
+			return matchTextAll(Fields.COMMENT_PREFIX, comment);
 		}
 		
 		public static Expression timestamp(final long timeStamp) {
@@ -132,7 +138,7 @@ public final class Commit implements WithScore {
 		}
 
 		public static Expression containerId(String containerId) {
-			return exactMatch("changes.containerId", containerId);
+			return exactMatch(Fields.CHANGES_CONTAINER_ID, containerId);
 		}
 		
 	}
@@ -141,7 +147,10 @@ public final class Commit implements WithScore {
 		public static final String BRANCH = "branch";
 		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
+		public static final String COMMENT_PREFIX = "comment.prefix";
 		public static final String TIME_STAMP = "timestamp";
+		public static final String GROUP_ID = "groupId";
+		public static final String CHANGES_CONTAINER_ID = "changes.containerId";
 	}
 
 	private final String id;
@@ -152,6 +161,7 @@ public final class Commit implements WithScore {
 	private final String comment;
 	private final long timestamp;
 	private final List<CommitChange> changes;
+	private final String groupId;
 	
 	private float score = 0.0f;
 	private transient Map<String, CommitChange> changesByContainer;
@@ -162,12 +172,14 @@ public final class Commit implements WithScore {
 			final String author,
 			final String comment,
 			final long timestamp,
+			final String groupId,
 			final List<CommitChange> changes) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
+		this.groupId = groupId;
 		this.changes = Collections3.toImmutableList(changes);
 	}
 
@@ -200,6 +212,10 @@ public final class Commit implements WithScore {
 
 	public long getTimestamp() {
 		return timestamp;
+	}
+	
+	public String getGroupId() {
+		return groupId;
 	}
 	
 	@JsonProperty

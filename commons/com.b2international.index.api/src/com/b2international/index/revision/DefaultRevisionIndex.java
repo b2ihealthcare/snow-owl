@@ -31,9 +31,9 @@ import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.google.common.collect.ImmutableMap;
 
@@ -373,8 +373,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	}
 	
 	@Override
-	public StagingArea prepareCommit() {
-		return new StagingArea(this);
+	public StagingArea prepareCommit(String branchPath) {
+		return new StagingArea(this, branchPath);
 	}
 	
 	@Override

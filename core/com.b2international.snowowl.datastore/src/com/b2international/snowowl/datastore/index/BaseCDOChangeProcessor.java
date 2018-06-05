@@ -17,13 +17,10 @@ package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -34,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -63,12 +59,6 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	private final IBranchPath branchPath;
 	private final RevisionIndex index;
 	private final Logger log;
-	private final Set<CodeSystem> newCodeSystems = newHashSet();
-	private final Set<CodeSystem> dirtyCodeSystems = newHashSet();
-	private final Set<CodeSystemVersion> newCodeSystemVersions = newHashSet();
-	private final Set<CodeSystemVersion> dirtyCodeSystemVersions = newHashSet();
-	private final Set<String> detachedCodeSystemIds = newHashSet();
-	private final Set<String> detachedCodeSystemVersionIds = newHashSet();
 
 	private ICDOCommitChangeSet commitChangeSet;
 	private IndexCommitChangeSet indexChangeSet;
@@ -98,39 +88,36 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			indexTimer.start();
 			this.commitChangeSet = checkNotNull(commitChangeSet, "CDO commit change set argument cannot be null.");
 
-			processNewCodeSystemsAndVersions(commitChangeSet);
-			processDirtyCodeSystemsAndVersions(commitChangeSet);
-			detachedCodeSystemIds.addAll(commitChangeSet.getDetachedComponentStorageKeys(TerminologymetadataPackage.Literals.CODE_SYSTEM).stream().map(id -> Long.toString(id)).collect(Collectors.toSet()));
-			detachedCodeSystemVersionIds.addAll(commitChangeSet.getDetachedComponentStorageKeys(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION).stream().map(id -> Long.toString(id)).collect(Collectors.toSet()));
-
-			index.read(branchPath.getPath(), new RevisionIndexRead<Void>() {
-				@Override
-				public Void execute(RevisionSearcher index) throws IOException {
-					updateDocuments(commitChangeSet, index);
-					return null;
-				}
+			index.read(branchPath.getPath(), index -> {
+				updateDocuments(commitChangeSet, index);
+				return null;
 			});
 		} finally {
 			indexTimer.stop();
 		}
 	}
 
-	private void processNewCodeSystemsAndVersions(final ICDOCommitChangeSet commitChangeSet) {
+	private void processNewCodeSystemsAndVersions(final ICDOCommitChangeSet commitChangeSet, final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
 		for (CDOObject object : commitChangeSet.getNewComponents()) {
 			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(object.eClass())) {
-				newCodeSystems.add((CodeSystem) object);
+				CodeSystem newCodeSystem  = (CodeSystem) object;
+				final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
+				indexCommitChangeSet.putNewObject(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()), entry);
 			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(object.eClass())) {
-				newCodeSystemVersions.add((CodeSystemVersion) object);
+				CodeSystemVersion newCodeSystemVersion = (CodeSystemVersion) object;
+				final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
+				indexCommitChangeSet.putNewObject(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()), entry);
 			}
 		}
 	}
 
-	private void processDirtyCodeSystemsAndVersions(ICDOCommitChangeSet commitChangeSet) {
+	private void processDirtyCodeSystemsAndVersions(ICDOCommitChangeSet commitChangeSet, final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
 		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
 			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
-				dirtyCodeSystems.add((CodeSystem) dirtyObject);
+				final CodeSystemEntry entry = CodeSystemEntry.builder((CodeSystem) dirtyObject).build();
+				indexCommitChangeSet.putChangedObject(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()), entry);
 			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
-				checkAndSetCodeSystemLastUpdateTime(dirtyObject);
+				checkAndSetCodeSystemLastUpdateTime(dirtyObject, indexCommitChangeSet);
 			}
 		}
 	}
@@ -139,62 +126,38 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		log.info("Processing changes...");
 		final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet = ImmutableIndexCommitChangeSet.builder();
 		
-		for (final CodeSystem newCodeSystem : newCodeSystems) {
-			final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
-			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
-		}
+		processNewCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
+		processDirtyCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
 
-		for (final CodeSystemVersion newCodeSystemVersion : newCodeSystemVersions) {
-			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
-			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putNewComponents(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
-		}
-
-		for (final CodeSystem dirtyCodeSystem : dirtyCodeSystems) {
-			final CodeSystemEntry entry = CodeSystemEntry.builder(dirtyCodeSystem).build();
-			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()));
-		}
-
-		for (final CodeSystemVersion dirtyCodeSystemVersion : dirtyCodeSystemVersions) {
-			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(dirtyCodeSystemVersion).build();
-			indexCommitChangeSet.putRawMappings(Long.toString(entry.getStorageKey()), entry);
-			indexCommitChangeSet.putChangedComponents(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()));
-		}
-		
 		// apply code system and version deletions
-		indexCommitChangeSet.putRawDeletions(CodeSystemEntry.class, detachedCodeSystemIds);
-		detachedCodeSystemIds.stream()
-			.map(componentId -> ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, componentId))
-			.forEach(indexCommitChangeSet::putDeletedComponents);
+		commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM, CodeSystemEntry.class, CodeSystemEntry.Expressions::storageKeys)
+			.forEach(removed -> {
+				indexCommitChangeSet.putRemovedComponent(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, removed.getShortName()), removed);
+			});
+		commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION, CodeSystemVersionEntry.class, CodeSystemVersionEntry.Expressions::storageKeys)
+			.forEach(removed -> {
+				indexCommitChangeSet.putRemovedComponent(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, removed.getVersionId()), removed);
+			});
 		
-		indexCommitChangeSet.putRawDeletions(CodeSystemVersionEntry.class, detachedCodeSystemVersionIds);
-		detachedCodeSystemIds.stream()
-			.map(componentId -> ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, componentId))
-			.forEach(indexCommitChangeSet::putDeletedComponents);
-
 		preUpdateDocuments(commitChangeSet, index);
 
 		for (ChangeSetProcessor processor : getChangeSetProcessors()) {
 			log.trace("Collecting {}...", processor.description());
 			processor.process(commitChangeSet, index);
 			// register additions, deletions from the sub processor
-			processor.getNewMappings().forEach(indexCommitChangeSet::putRawMappings);
-			for (RevisionDocument revision : Iterables.filter(processor.getNewMappings().values(), RevisionDocument.class)) {
-				indexCommitChangeSet.putNewComponents(getComponentIdentifier(revision));
+			for (RevisionDocument revision : processor.getNewMappings().values()) {
+				indexCommitChangeSet.putNewObject(getComponentIdentifier(revision), revision);
 			}
 			
-			processor.getChangedMappings().forEach(indexCommitChangeSet::putRawMappings);
-			for (RevisionDocument revision : Iterables.filter(processor.getChangedMappings().values(), RevisionDocument.class)) {
-				indexCommitChangeSet.putChangedComponents(getComponentIdentifier(revision));
+			for (RevisionDocument revision : processor.getChangedMappings().values()) {
+				indexCommitChangeSet.putChangedObject(getComponentIdentifier(revision), revision);
 			}
 			
 			final Multimap<Class<? extends Revision>, String> deletions = processor.getDeletions();
 			for (Class<? extends Revision> type : deletions.keySet()) {
-				indexCommitChangeSet.putRawDeletions(type, deletions.get(type));
+				// TODO remove index.get call here, we already fetched the doc, now we do it again do delete it, see CDOCommitChangeSet
 				for (RevisionDocument revision : Iterables.filter(index.get(type, deletions.get(type)), RevisionDocument.class)) {
-					indexCommitChangeSet.putDeletedComponents(getComponentIdentifier(revision));
+					indexCommitChangeSet.putRemovedComponent(getComponentIdentifier(revision), revision);
 				}
 			}
 		}
@@ -243,14 +206,14 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 			indexTimer.start();
 			log.info("Persisting changes to revision index...");
 			
-			StagingArea stagingArea = index.prepareCommit();
+			StagingArea stagingArea = index.prepareCommit(branchPath.getPath());
 
 			indexChangeSet.apply(stagingArea);
 			
 			final String commitComment = commitChangeSet.getCommitComment();
-			final String commitId = CDOCommitInfoUtils.getUuid(commitComment);
+			final String commitGroupId = CDOCommitInfoUtils.getUuid(commitComment);
 			final String comment = CDOCommitInfoUtils.removeUuidPrefix(commitComment);
-			stagingArea.commit(commitId, branchPath.getPath(), commitChangeSet.getTimestamp(), commitChangeSet.getUserId(), comment);
+			stagingArea.commit(commitGroupId, commitChangeSet.getTimestamp(), commitChangeSet.getUserId(), comment);
 			return indexChangeSet;
 		} finally {
 			log.info("Changes have been successfully persisted.");
@@ -258,13 +221,6 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 		}
 	}
 	
-	/**
-	 * @deprecated - would be great to use a single revision searcher
-	 */
-	protected final <T extends RevisionDocument> Iterable<T> getRevisions(final Class<T> type, final Iterable<String> releasableStorageKeys) {
-		return index.read(branchPath.getPath(), index -> index.get(type, releasableStorageKeys));
-	}
-
 	@Override
 	public final void afterCommit() {
 	}
@@ -280,7 +236,7 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 	}
 
 	@SuppressWarnings("restriction")
-	private void checkAndSetCodeSystemLastUpdateTime(final CDOObject component) {
+	private void checkAndSetCodeSystemLastUpdateTime(final CDOObject component, ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
 		final CodeSystemVersion version = (CodeSystemVersion) component;
 		final CDOFeatureDelta lastUpdateFeatureDelta = commitChangeSet.getRevisionDeltas().get(component.cdoID())
 				.getFeatureDelta(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate());
@@ -289,7 +245,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 					.setValue(new Date(commitChangeSet.getTimestamp()));
 			((InternalCDORevision) component.cdoRevision()).set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate(),
 					CDOStore.NO_INDEX, new Date(commitChangeSet.getTimestamp()));
-			dirtyCodeSystemVersions.add(version);
+			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(version).build();
+			indexCommitChangeSet.putChangedObject(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()), entry);
 		}
 	}
 
