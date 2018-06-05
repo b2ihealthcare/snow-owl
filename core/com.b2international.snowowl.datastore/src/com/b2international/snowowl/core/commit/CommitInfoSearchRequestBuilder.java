@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.commit;
 
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.AUTHOR;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.BRANCH;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.COMMENT;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
-import static com.b2international.snowowl.datastore.request.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AUTHOR;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.COMMENT;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
 
-import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.datastore.request.RepositoryIndexRequestBuilder;
 
 /**
  * @since 5.2

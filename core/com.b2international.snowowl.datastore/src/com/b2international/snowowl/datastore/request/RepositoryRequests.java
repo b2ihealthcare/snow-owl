@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.snowowl.core.commit.CommitInfoRequests;
 import com.b2international.snowowl.datastore.request.repository.RepositoryGetRequestBuilder;
 import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
 import com.b2international.snowowl.datastore.request.system.ServerInfoGetRequestBuilder;

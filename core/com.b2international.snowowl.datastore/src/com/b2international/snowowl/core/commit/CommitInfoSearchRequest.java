@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.request;
+package com.b2international.snowowl.core.commit;
 
 import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
 import static com.b2international.index.revision.Commit.Expressions.author;
@@ -30,9 +30,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.Commit;
-import com.b2international.snowowl.core.commit.CommitInfoConverter;
-import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.google.common.collect.Lists;
 
 /**
