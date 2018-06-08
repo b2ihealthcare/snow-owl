@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/zjsonpatch-0.4.4.jar" sourcepath="C:/Users/mczotter/.m2/repository/com/flipkart/zjsonpatch/zjsonpatch/0.4.4/zjsonpatch-0.4.4-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/typetools-0.4.8.jar" sourcepath="lib/typetools-0.4.8-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jsr305-1.3.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/flexigraph.jar"/>
