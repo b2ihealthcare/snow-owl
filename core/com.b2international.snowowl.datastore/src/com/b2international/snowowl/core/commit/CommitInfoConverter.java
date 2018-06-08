@@ -22,12 +22,11 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.CommitChange;
+import com.b2international.index.revision.CommitDetail;
 import com.b2international.snowowl.core.commit.CommitInfo.Builder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.2
@@ -53,7 +52,7 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		// expand details if requested
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
 			final String affectedComponentId = filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT) ? filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) : ""; 
-			final Collection<CommitChange> changes = Strings.isNullOrEmpty(affectedComponentId) ? doc.getChangesByContainer().values() : ImmutableList.of(doc.getChangesByContainer(affectedComponentId));
+			final Collection<CommitDetail> changes = Strings.isNullOrEmpty(affectedComponentId) ? doc.getDetails() : doc.getDetailsByObject(affectedComponentId);
 			// TODO traverse change tree and add all related CommitChanges
 			final List<CommitInfoDetail> details = changes.stream()
 					.map(change -> new CommitInfoDetail()) // TODO fill out detail with actual changes

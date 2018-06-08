@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import static com.b2international.index.revision.Commit.Expressions.affectedObject;
 import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
 import static com.b2international.index.revision.Commit.Expressions.author;
 import static com.b2international.index.revision.Commit.Expressions.branches;
-import static com.b2international.index.revision.Commit.Expressions.containerId;
 import static com.b2international.index.revision.Commit.Expressions.exactComment;
 import static com.b2international.index.revision.Commit.Expressions.timestampRange;
 
@@ -127,7 +127,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	private void addAffectedComponentClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.AFFECTED_COMPONENT)) {
 			final String affectedComponentId = getString(OptionKey.AFFECTED_COMPONENT);
-			builder.filter(containerId(affectedComponentId));
+			builder.filter(affectedObject(affectedComponentId));
 		}
 	}
 
