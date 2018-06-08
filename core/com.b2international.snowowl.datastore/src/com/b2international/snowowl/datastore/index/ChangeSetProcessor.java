@@ -58,7 +58,7 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Map<String, RevisionDocument> getChangedMappings();
+	Map<String, RevisionDocumentChange> getChangedMappings();
 
 	/**
 	 * Returns the deletions made by this {@link ChangeSetProcessor}

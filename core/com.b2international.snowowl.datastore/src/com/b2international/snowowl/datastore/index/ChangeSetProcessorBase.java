@@ -31,7 +31,7 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 
 	private final String description;
 	private final Map<String, RevisionDocument> newMappings = newHashMap();
-	private final Map<String, RevisionDocument> changedMappings = newHashMap();
+	private final Map<String, RevisionDocumentChange> changedMappings = newHashMap();
 	private final Multimap<Class<? extends Revision>, String> deletions = HashMultimap.create();
 
 	protected ChangeSetProcessorBase(String description) {
@@ -50,10 +50,10 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 		}
 	}
 	
-	protected final void indexChangedRevision(RevisionDocument revision) {
-		Revision prev = changedMappings.put(revision.getId(), revision);
+	protected final void indexChangedRevision(RevisionDocument oldRevision, RevisionDocument newRevision) {
+		RevisionDocumentChange prev = changedMappings.put(newRevision.getId(), new RevisionDocumentChange(oldRevision, newRevision));
 		if (prev != null) {
-			throw new IllegalArgumentException("Multiple entries with same key: " + revision.getId() + "=" + revision);
+			throw new IllegalArgumentException("Multiple entries with same key: " + newRevision.getId() + "=" + prev);
 		}
 	}
 	
@@ -67,7 +67,7 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 	}
 	
 	@Override
-	public final Map<String, RevisionDocument> getChangedMappings() {
+	public final Map<String, RevisionDocumentChange> getChangedMappings() {
 		return changedMappings;
 	}
 	

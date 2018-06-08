@@ -149,8 +149,8 @@ public abstract class BaseCDOChangeProcessor implements ICDOChangeProcessor {
 				indexCommitChangeSet.putNewObject(getComponentIdentifier(revision), revision);
 			}
 			
-			for (RevisionDocument revision : processor.getChangedMappings().values()) {
-				indexCommitChangeSet.putChangedObject(getComponentIdentifier(revision), revision);
+			for (RevisionDocumentChange revisionChange : processor.getChangedMappings().values()) {
+				indexCommitChangeSet.putChangedObject(getComponentIdentifier(revisionChange.getNewRevision()), revisionChange);
 			}
 			
 			final Multimap<Class<? extends Revision>, String> deletions = processor.getDeletions();

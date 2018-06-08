@@ -128,7 +128,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				processChanges(id, doc, currentDoc, acceptabilityChangesByDescription.get(id), referringRefSets);
-				indexChangedRevision(doc.storageKey(currentDoc.getStorageKey()).build());
+				indexChangedRevision(currentDoc, doc.storageKey(currentDoc.getStorageKey()).build());
 			} else {
 				throw new IllegalStateException(String.format("Description %s is missing from new and dirty maps", id));
 			}
@@ -146,7 +146,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				processChanges(unchangedDescription.getId(), doc, unchangedDescription,
 						acceptabilityChangesByDescription.get(unchangedDescription.getId()),
 						HashMultimap.<String, RefSetMemberChange> create());
-				indexChangedRevision(doc.storageKey(unchangedDescription.getStorageKey()).build());
+				indexChangedRevision(unchangedDescription, doc.storageKey(unchangedDescription.getStorageKey()).build());
 			}
 		}
 	}

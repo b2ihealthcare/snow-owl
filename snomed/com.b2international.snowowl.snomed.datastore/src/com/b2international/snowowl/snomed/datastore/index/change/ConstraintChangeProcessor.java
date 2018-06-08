@@ -17,7 +17,10 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
@@ -32,6 +35,7 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.3
@@ -43,7 +47,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) {
+	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
 
 		Set<AttributeConstraint> newConstraints = newHashSet();
 		Set<AttributeConstraint> changedConstraints = newHashSet();
@@ -74,8 +78,14 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 					.build());
 		}
 		
+		Map<String, SnomedConstraintDocument> currentRevisionsById = Maps.uniqueIndex(searcher.get(SnomedConstraintDocument.class, changedConstraints.stream().map(AttributeConstraint::getUuid).collect(Collectors.toSet())), SnomedConstraintDocument::getId);
+		
 		for (AttributeConstraint changedConstraint : changedConstraints) {
-			indexChangedRevision(SnomedConstraintDocument.builder(changedConstraint)
+			SnomedConstraintDocument currentRev = currentRevisionsById.get(changedConstraint.getUuid());
+			if (currentRev == null) {
+				throw new IllegalStateException("Current revision cannot be null for constraint: " + changedConstraint.getUuid());
+			}
+			indexChangedRevision(currentRev, SnomedConstraintDocument.builder(changedConstraint)
 					.storageKey(CDOIDUtil.getLong(changedConstraint.cdoID()))
 					.build());
 		}

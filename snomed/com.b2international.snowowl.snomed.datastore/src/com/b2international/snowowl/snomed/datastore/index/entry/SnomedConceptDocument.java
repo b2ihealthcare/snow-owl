@@ -519,11 +519,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		this.preferredDescriptions = preferredDescriptions;
 	}
 	
-	@Override
-	public String getContainerId() {
-		return getId();
-	}
-	
 	public long getRefSetStorageKey() {
 		return refSetStorageKey;
 	}

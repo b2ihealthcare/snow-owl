@@ -212,7 +212,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					doc.storageKey(currentDoc.getStorageKey());
 				}
 				
-				indexChangedRevision(doc.build());
+				indexChangedRevision(currentDoc, doc.build());
 			}
 		}
 	}

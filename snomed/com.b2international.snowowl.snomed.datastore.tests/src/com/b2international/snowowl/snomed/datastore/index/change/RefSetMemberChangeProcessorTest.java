@@ -51,13 +51,16 @@ public class RefSetMemberChangeProcessorTest extends BaseChangeProcessorTest {
 	@Test
 	public void changedMember() throws Exception {
 		final SnomedRefSetMember member = createSimpleMember(generateConceptId(), generateConceptId());
+		indexRevision(MAIN, SnomedRefSetMemberIndexEntry.builder(member).build());
+		
+		member.setActive(false);
 		registerDirty(member);
 		
 		process(processor);
 		
 		final SnomedRefSetMemberIndexEntry expected = SnomedRefSetMemberIndexEntry.builder(member).build();
 		assertEquals(1, processor.getChangedMappings().size());
-		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values());
+		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
 		assertEquals(0, processor.getDeletions().size());

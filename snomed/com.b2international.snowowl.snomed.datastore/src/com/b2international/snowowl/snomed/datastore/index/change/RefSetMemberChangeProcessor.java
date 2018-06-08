@@ -16,6 +16,9 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
@@ -23,6 +26,7 @@ import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
+import com.google.common.collect.Maps;
 
 /**
  * @since 4.3
@@ -41,8 +45,16 @@ public class RefSetMemberChangeProcessor extends ChangeSetProcessorBase {
 			indexNewRevision(SnomedRefSetMemberIndexEntry.builder(member).build());
 		}
 		
-		for (SnomedRefSetMember member : commitChangeSet.getDirtyComponents(SnomedRefSetMember.class)) {
-			indexChangedRevision(SnomedRefSetMemberIndexEntry.builder(member).build());
+		final Set<SnomedRefSetMember> dirtyMembers = commitChangeSet.getDirtyComponents(SnomedRefSetMember.class);
+		final Map<String, SnomedRefSetMemberIndexEntry> currentRevisionsById = Maps.uniqueIndex(
+				searcher.get(SnomedRefSetMemberIndexEntry.class, dirtyMembers.stream().map(SnomedRefSetMember::getUuid).collect(Collectors.toSet())), SnomedRefSetMemberIndexEntry::getId);
+		
+		for (SnomedRefSetMember member : dirtyMembers) {
+			SnomedRefSetMemberIndexEntry currentRev = currentRevisionsById.get(member.getUuid());
+			if (currentRev == null) {
+				throw new IllegalStateException("Current revision cannot be null for member " + member.getUuid());
+			}
+			indexChangedRevision(currentRev, SnomedRefSetMemberIndexEntry.builder(member).build());
 		}
 	}
 	

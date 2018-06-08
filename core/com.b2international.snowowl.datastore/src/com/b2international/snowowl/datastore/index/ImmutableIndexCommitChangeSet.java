@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.datastore.index;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
@@ -84,7 +85,11 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 			staging.stageNew(id.getComponentId(), object);
 		});
 		changedObjects.forEach((id, object) -> {
-			staging.stageChange(id.getComponentId(), object);
+			if (object instanceof RevisionDocumentChange) {
+				staging.stageChange(((RevisionDocumentChange) object).getOldRevision(), ((RevisionDocumentChange) object).getNewRevision());
+			} else {
+				staging.stageChange(id.getComponentId(), object);				
+			}
 		});
 		removedObjects.forEach((id, object) -> {
 			staging.stageRemove(id.getComponentId(), object);
@@ -143,6 +148,7 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 		
 		public Builder putChangedObject(ComponentIdentifier changedComponentId, Object changedComponent) {
+			checkArgument(!(changedComponent instanceof RevisionDocument), "Use the other putChangedObject method to register changed revisions");
 			Object prev = this.changedObjects.put(changedComponentId, changedComponent);
 			if (prev != null) {
 				throw new IllegalArgumentException("Multiple entries with same key: " + changedComponentId + "=" + changedComponent);
@@ -168,5 +174,5 @@ public final class ImmutableIndexCommitChangeSet implements IndexCommitChangeSet
 		}
 
 	}
-
+	
 }
