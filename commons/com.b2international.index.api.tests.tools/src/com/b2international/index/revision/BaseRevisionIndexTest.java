@@ -70,7 +70,7 @@ public abstract class BaseRevisionIndexTest {
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, mapper));
+		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, mapper), mapper);
 		index.admin().create();
 	}
 
@@ -148,11 +148,10 @@ public abstract class BaseRevisionIndexTest {
 		commit(branchPath, Collections.singleton(data));
 	}
 	
-	protected final void indexChange(final String branchPath, final Revision...changes) {
+	protected final void indexChange(final String branchPath, final Revision oldRevision, final Revision newRevision) {
 		final long commitTimestamp = currentTime();
-		StagingArea staging = index().prepareCommit(branchPath);
-		Arrays.asList(changes).forEach(staging::stageChange);
-		staging
+		index().prepareCommit(branchPath)
+			.stageChange(oldRevision, newRevision)
 			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
 			.getTimestamp();
 	}

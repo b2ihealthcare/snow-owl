@@ -25,6 +25,7 @@ import com.b2international.index.Script;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
@@ -40,6 +41,8 @@ import com.google.common.base.Objects.ToStringHelper;
 		+ "}")
 public abstract class Revision implements WithId {
 	
+	static final String ROOT = "-1";
+
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String CREATED = "created";
@@ -54,6 +57,9 @@ public abstract class Revision implements WithId {
 	private String id;
 	private RevisionBranchPoint created;
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
+
+	@JsonIgnore
+	public ObjectNode _source;
 	
 	public Revision(String id) {
 		this.id = checkNotNull(id, "Logical identifier cannot be null");
@@ -99,7 +105,7 @@ public abstract class Revision implements WithId {
 	 */
 	@JsonIgnore
 	public String getContainerId() {
-		return getId();
+		return ROOT; // TODO move root container ID to a constant
 	}
 	
 	/**
@@ -107,7 +113,7 @@ public abstract class Revision implements WithId {
 	 */
 	@JsonIgnore
 	public final boolean isRoot() {
-		return getId().equals(getContainerId());
+		return ROOT.equals(getContainerId());
 	}
 	
 	@Override

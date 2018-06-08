@@ -35,6 +35,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -53,10 +54,12 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private final Index index;
 	private final BaseRevisionBranching branching;
 	private final RevisionIndexAdmin admin;
+	private final ObjectMapper mapper;
 
-	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching) {
+	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching, ObjectMapper mapper) {
 		this.index = index;
 		this.branching = branching;
+		this.mapper = mapper;
 		this.admin = new RevisionIndexAdmin(this, index.admin());
 	}
 	
@@ -374,14 +377,14 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public StagingArea prepareCommit(String branchPath) {
-		return new StagingArea(this, branchPath);
+		return new StagingArea(this, branchPath, mapper);
 	}
 	
 	@Override
 	public List<Commit> history(String id) {
 		return index.read(searcher -> {
 			return searcher.search(Query.select(Commit.class)
-					.where(Commit.Expressions.containerId(id))
+					.where(Commit.Expressions.affectedObject(id))
 					.sortBy(SortBy.field(Commit.Fields.TIME_STAMP, Order.DESC))
 					.limit(Integer.MAX_VALUE)
 					.build())

@@ -23,7 +23,7 @@ import static com.b2international.index.query.Expressions.matchTextPhrase;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
@@ -33,10 +33,10 @@ import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 5.2
@@ -57,7 +57,7 @@ public final class Commit implements WithScore {
 		private String author;
 		private String comment;
 		private long timestamp;
-		private List<CommitChange> changes;
+		private List<CommitDetail> details;
 		private String groupId;
 
 		public Builder id(final String id) {
@@ -90,13 +90,13 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
-		public Builder changes(final List<CommitChange> changes) {
-			this.changes = changes;
+		public Builder details(final List<CommitDetail> details) {
+			this.details = details;
 			return this;
 		}
 		
 		public Commit build() {
-			return new Commit(id, branch, author, comment, timestamp, groupId, changes);
+			return new Commit(id, branch, author, comment, timestamp, groupId, details);
 		}
 
 	}
@@ -137,8 +137,11 @@ public final class Commit implements WithScore {
 			return matchRange(Fields.TIME_STAMP, from, to);
 		}
 
-		public static Expression containerId(String containerId) {
-			return exactMatch(Fields.CHANGES_CONTAINER_ID, containerId);
+		public static Expression affectedObject(String objectId) {
+			return com.b2international.index.query.Expressions.builder()
+					.should(exactMatch(Fields.DETAILS_OBJECT, objectId))
+					.should(exactMatch(Fields.DETAILS_CHILD, objectId))
+					.build();
 		}
 		
 	}
@@ -150,7 +153,8 @@ public final class Commit implements WithScore {
 		public static final String COMMENT_PREFIX = "comment.prefix";
 		public static final String TIME_STAMP = "timestamp";
 		public static final String GROUP_ID = "groupId";
-		public static final String CHANGES_CONTAINER_ID = "changes.containerId";
+		public static final String DETAILS_OBJECT = "details.objects";
+		public static final String DETAILS_CHILD = "details.children";
 	}
 
 	private final String id;
@@ -160,11 +164,13 @@ public final class Commit implements WithScore {
 	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
 	private final String comment;
 	private final long timestamp;
-	private final List<CommitChange> changes;
 	private final String groupId;
+	private final List<CommitDetail> details;
 	
 	private float score = 0.0f;
-	private transient Map<String, CommitChange> changesByContainer;
+	
+	@JsonIgnore
+	private transient Multimap<String, CommitDetail> detailsByObject;
 	
 	private Commit(
 			final String id,
@@ -173,14 +179,14 @@ public final class Commit implements WithScore {
 			final String comment,
 			final long timestamp,
 			final String groupId,
-			final List<CommitChange> changes) {
+			final List<CommitDetail> details) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
 		this.groupId = groupId;
-		this.changes = Collections3.toImmutableList(changes);
+		this.details = Collections3.toImmutableList(details);
 	}
 
 	public String getId() {
@@ -218,21 +224,22 @@ public final class Commit implements WithScore {
 		return groupId;
 	}
 	
-	@JsonProperty
-	List<CommitChange> getChanges() {
-		return changes;
+	public List<CommitDetail> getDetails() {
+		return details;
 	}
-	
-	@JsonIgnore
-	public Map<String, CommitChange> getChangesByContainer() {
-		if (changesByContainer == null) {
-			changesByContainer = Maps.uniqueIndex(changes, CommitChange::getContainerId);
+
+	public Collection<CommitDetail> getDetailsByObject(String objectId) {
+		if (detailsByObject == null) {
+			detailsByObject = ArrayListMultimap.create();
 		}
-		return changesByContainer;
-	}
-	
-	public CommitChange getChangesByContainer(String container) {
-		return getChangesByContainer().get(container);
+		if (!detailsByObject.containsKey(objectId)) {
+			final List<CommitDetail> objectDetails = details.stream()
+				.map(detail -> detail.extract(objectId))
+				.filter(detail -> !detail.isEmpty())
+				.collect(Collectors.toList());
+			detailsByObject.putAll(objectId, objectDetails);
+		}
+		return detailsByObject.get(objectId);
 	}
 	
 }

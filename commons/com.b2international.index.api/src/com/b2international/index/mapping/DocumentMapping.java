@@ -28,13 +28,14 @@ import java.util.TreeMap;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Keyword;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -86,13 +87,7 @@ public final class DocumentMapping {
 		this.type = type;
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
-		this.fieldMap = FluentIterable.from(Reflections.getFields(type))
-			.filter(new Predicate<Field>() {
-				@Override
-				public boolean apply(Field field) {
-					return !Modifier.isStatic(field.getModifiers());
-				}
-			}).uniqueIndex(GET_NAME);
+		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -151,7 +146,7 @@ public final class DocumentMapping {
 		
 		this.scripts = Maps.uniqueIndex(getScripts(type), Script::name);
 	}
-	
+
 	private Collection<Script> getScripts(Class<?> type) {
 		final Set<Script> scripts = newHashSet();
 		for (Script script : type.getAnnotationsByType(Script.class)) {
@@ -326,6 +321,10 @@ public final class DocumentMapping {
 	public Analyzers getSearchAnalyzer(String fieldName) {
 		final Text analyzed = getTextFields().get(fieldName);
 		return analyzed.searchAnalyzer() == Analyzers.INDEX ? analyzed.analyzer() : analyzed.searchAnalyzer();
+	}
+	
+	public static boolean isValidField(Field field) {
+		return !Modifier.isStatic(field.getModifiers()) && !field.isAnnotationPresent(JsonIgnore.class);
 	}
 
 }

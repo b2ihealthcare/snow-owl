@@ -18,13 +18,13 @@ package com.b2international.index.revision;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -46,9 +46,9 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		List<Commit> commits = history(STORAGE_KEY1);
 		assertThat(commits).hasSize(1);
 		final Commit commit = Iterables.getOnlyElement(commits);
-		assertThat(commit.getChanges()).hasSize(1);
-		final CommitChange expectedChange = CommitChange.builder(STORAGE_KEY1).newComponents(ImmutableSet.of(STORAGE_KEY1)).build();
-		assertThat(commit.getChangesByContainer(STORAGE_KEY1)).isEqualTo(expectedChange);
+		assertThat(commit.getDetails()).hasSize(1);
+		final CommitDetail expectedChange = CommitDetail.added().putObjects(Revision.ROOT, Collections.singleton(STORAGE_KEY1)).build();
+		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(expectedChange);
 	}
 	
 	@Test
@@ -56,15 +56,17 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// create a new component
 		historyOfNewComponent();
 		// index a change
-		indexChange(MAIN, changedData);
+		indexChange(MAIN, newData, changedData);
 		// history should contain two commits now
 		List<Commit> commits = history(STORAGE_KEY1);
 		assertThat(commits).hasSize(2);
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
-		assertThat(commit.getChanges()).hasSize(1);
-		final CommitChange expectedChange = CommitChange.builder(STORAGE_KEY1).changedComponents(ImmutableSet.of(STORAGE_KEY1)).build();
-		assertThat(commit.getChangesByContainer(STORAGE_KEY1)).isEqualTo(expectedChange);
+		assertThat(commit.getDetails()).hasSize(1);
+		final CommitDetail objectChange = CommitDetail.changed()
+				.propertyChange("field1", "field1", "field1Changed", Collections.singleton(STORAGE_KEY1))
+				.build();
+		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(objectChange);
 	}
 	
 	@Test
@@ -77,9 +79,11 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		assertThat(commits).hasSize(2);
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
-		assertThat(commit.getChanges()).hasSize(1);
-		final CommitChange expectedChange = CommitChange.builder(STORAGE_KEY1).removedComponents(ImmutableSet.of(STORAGE_KEY1)).build();
-		assertThat(commit.getChangesByContainer(STORAGE_KEY1)).isEqualTo(expectedChange);
+		assertThat(commit.getDetails()).hasSize(1);
+		final CommitDetail expectedChange = CommitDetail.removed()
+				.putObjects(Revision.ROOT, Collections.singleton(STORAGE_KEY1))
+				.build();
+		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(expectedChange);
 	}
 	
 	private List<Commit> history(String containerId) {

@@ -59,19 +59,22 @@ public class Reflections {
 	}
 	
 	public static Class<?> getType(Field field) {
-		final Type fieldType = field.getGenericType();
-		if (fieldType instanceof ParameterizedType) {
-			final ParameterizedType pType = (ParameterizedType) fieldType;
+		return getType(field.getGenericType());
+	}
+
+	private static Class<?> getType(Type type) {
+		if (type instanceof ParameterizedType) {
+			final ParameterizedType pType = (ParameterizedType) type;
 			if (pType.getRawType() instanceof Class<?>) {
 				final Class<?> rawType = (Class<?>) pType.getRawType();
 				if (Iterable.class.isAssignableFrom(rawType)) {
-					return (Class<?>) pType.getActualTypeArguments()[0];
+					return getType(pType.getActualTypeArguments()[0]);
 				}
 			}
-		} else if (fieldType instanceof Class) {
-			return (Class<?>) fieldType;
+		} else if (type instanceof Class) {
+			return (Class<?>) type;
 		}
-		throw new UnsupportedOperationException("Unsupported field type: " + fieldType.getClass());
+		throw new UnsupportedOperationException("Unsupported field type: " + type.getClass());
 	}
 
 	public static Field getField(Class<?> type, String field) {
