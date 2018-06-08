@@ -233,7 +233,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
 		final Index index = new DefaultIndex(indexClient);
-		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, branching);
+		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, branching, mapper);
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);

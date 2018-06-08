@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.validation;
 
+import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
 import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.description;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -163,8 +164,12 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		
-		indexRevision(MAIN, description(description1, Concepts.SYNONYM, "Minor heart attack").build());
-		indexRevision(MAIN, description(description2, Concepts.SYNONYM, "Clinical finding").build());
+		indexRevision(MAIN, description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
+				.build());
+		indexRevision(MAIN, description(description2, Concepts.SYNONYM, "Clinical finding")
+				.conceptId(generateConceptId())
+				.build());
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
@@ -183,8 +188,12 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		
-		indexRevision(MAIN, description(description1, Concepts.SYNONYM, "Minor heart attack").build());
-		indexRevision(MAIN, description(description2, Concepts.SYNONYM, "Clinical finding (finding)").build());
+		indexRevision(MAIN, description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
+				.build());
+		indexRevision(MAIN, description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.conceptId(generateConceptId())
+				.build());
 		
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
@@ -202,14 +211,16 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	public void descriptionAcceptableInAndPreferredIn() throws Exception {
 		final String description1 = RandomSnomedIdentiferGenerator.generateDescriptionId();
 		final String description2 = RandomSnomedIdentiferGenerator.generateDescriptionId();
-		final String langRefSet1 = RandomSnomedIdentiferGenerator.generateConceptId();
+		final String langRefSet1 = generateConceptId();
 		final String langRefSet2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		
 		indexRevision(MAIN, description(description1, Concepts.SYNONYM, "Minor heart attack")
+				.conceptId(generateConceptId())
 				.acceptableIn(ImmutableSet.of(langRefSet1))
 				.preferredIn(ImmutableSet.of(langRefSet2))
 				.build());
 		indexRevision(MAIN, description(description2, Concepts.SYNONYM, "Clinical finding (finding)")
+				.conceptId(generateConceptId())
 				.acceptableIn(ImmutableSet.of(langRefSet1))
 				.build());
 		

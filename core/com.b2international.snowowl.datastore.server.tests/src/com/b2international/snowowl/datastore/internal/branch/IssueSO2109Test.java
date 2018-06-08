@@ -92,7 +92,7 @@ public class IssueSO2109Test {
 
 		manager = new CDOBranchManagerImpl(repository, mapper);
 		
-		store = new DefaultRevisionIndex(rawIndex, manager);
+		store = new DefaultRevisionIndex(rawIndex, manager, mapper);
 		store.admin().create();
 	}
 
