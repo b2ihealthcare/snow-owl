@@ -263,9 +263,9 @@ public final class StagingArea {
 			if (diffFields.isEmpty()) {
 				return null; // in case of no hash fields, do NOT try to compute the diff
 			}
-			oldRevision._source = mapper.valueToTree(oldRevision);
-			newRevision._source = mapper.valueToTree(newRevision);
-			final JsonNode diff = JsonDiff.asJson(oldRevision._source, newRevision._source, DIFF_FLAGS);
+			ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
+			ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
+			final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
 			// remove revision specific fields from diff
 			final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
 			final ArrayNode changes = mapper.createArrayNode();

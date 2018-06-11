@@ -25,7 +25,6 @@ import com.b2international.index.Script;
 import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
@@ -58,9 +57,6 @@ public abstract class Revision implements WithId {
 	private RevisionBranchPoint created;
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
 
-	@JsonIgnore
-	public ObjectNode _source;
-	
 	public Revision(String id) {
 		this.id = checkNotNull(id, "Logical identifier cannot be null");
 	}

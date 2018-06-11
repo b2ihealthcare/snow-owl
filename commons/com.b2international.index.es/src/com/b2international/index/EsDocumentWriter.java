@@ -49,7 +49,6 @@ import org.elasticsearch.script.ScriptType;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
-import com.b2international.index.revision.Revision;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -185,12 +184,7 @@ public class EsDocumentWriter implements DocWriter {
 					final byte[] _source;
 					
 					if (!hashedFields.isEmpty()) {
-						final ObjectNode objNode;
-						if (obj instanceof Revision && ((Revision) obj)._source != null) {
-							objNode = (ObjectNode) ((Revision) obj)._source;
-						} else {
-							objNode = mapper.valueToTree(obj);
-						}
+						final ObjectNode objNode = mapper.valueToTree(obj);
 						final ObjectNode hashedNode = mapper.createObjectNode();
 					
 						// Preserve property order, share references with objNode
@@ -209,11 +203,7 @@ public class EsDocumentWriter implements DocWriter {
 						_source = mapper.writeValueAsBytes(objNode);
 						
 					} else {
-						if (obj instanceof Revision && ((Revision) obj)._source != null) {
-							_source = mapper.writeValueAsBytes(((Revision) obj)._source);
-						} else {
-							_source = mapper.writeValueAsBytes(obj);
-						}
+						_source = mapper.writeValueAsBytes(obj);
 					}
 					
 					processor.add(client
