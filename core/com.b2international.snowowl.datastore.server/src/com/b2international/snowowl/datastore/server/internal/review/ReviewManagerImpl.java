@@ -295,9 +295,8 @@ public class ReviewManagerImpl implements ReviewManager {
 		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				final String containerId = hit.getContainerId();
-				if (hit.isRoot() && containerId != null) {
-					newConcepts.add(containerId);
+				if (hit.isRoot()) {
+					newConcepts.add(hit.getId());
 				}
 			}
 		}
@@ -317,19 +316,15 @@ public class ReviewManagerImpl implements ReviewManager {
 		for (final Class<? extends Revision> revisionType : compare.getChangedRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchChanged(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				final String containerId = hit.getContainerId();
-				if (containerId != null) {
-					changedConcepts.add(containerId);
-				}
+				changedConcepts.add(hit.isRoot() ? hit.getId() : hit.getContainerId());
 			}
 		}
 		
 		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
 			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
 			for (Revision hit : hits) {
-				final String containerId = hit.getContainerId();
-				if (hit.isRoot() && containerId != null) {
-					deletedConcepts.add(containerId);
+				if (hit.isRoot()) {
+					deletedConcepts.add(hit.getId());
 				}
 			}
 		}
