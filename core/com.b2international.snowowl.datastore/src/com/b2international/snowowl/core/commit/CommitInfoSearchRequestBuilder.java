@@ -52,11 +52,11 @@ public final class CommitInfoSearchRequestBuilder
 		return addOption(COMMENT, comment);
 	}
 
-	public CommitInfoSearchRequestBuilder filterByTimestamp(final long timestamp) {
+	public CommitInfoSearchRequestBuilder filterByTimestamp(final Long timestamp) {
 		return filterByTimestamp(timestamp, timestamp);
 	}
 	
-	public CommitInfoSearchRequestBuilder filterByTimestamp(final long timestampFrom, final long timestampTo) {
+	public CommitInfoSearchRequestBuilder filterByTimestamp(final Long timestampFrom, final Long timestampTo) {
 		return addOption(TIME_STAMP_FROM, timestampFrom)
 				.addOption(TIME_STAMP_TO, timestampTo);
 	}
