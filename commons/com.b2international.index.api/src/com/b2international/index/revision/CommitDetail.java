@@ -266,7 +266,7 @@ public final class CommitDetail {
 		// if prop is not present then this represents a hierarchical change
 		final int affectedObjectIdx = objects.indexOf(objectId);
 		final Builder result = new Builder().op(op);
-		if (Strings.isNullOrEmpty(prop)) {
+		if (isPropertyChange()) {
 			// if the object is not present in the objects list, then it might be added/removed from a container, check the index in the children list
 			if (affectedObjectIdx == -1) {
 				for (int i = 0; i < this.children.size(); i++) {
@@ -287,7 +287,7 @@ public final class CommitDetail {
 	
 	@JsonIgnore
 	public boolean isEmpty() {
-		return Strings.isNullOrEmpty(prop) && objects.isEmpty();
+		return !isPropertyChange() && objects.isEmpty();
 	}
 	
 	@Override
@@ -295,7 +295,7 @@ public final class CommitDetail {
 		final ToStringHelper toString = MoreObjects.toStringHelper(getClass())
 				.add("op", op)
 				.add("objects", objects);
-		if (Strings.isNullOrEmpty(prop)) {
+		if (!isPropertyChange()) {
 			return toString
 					.add("children", children)
 					.toString();
@@ -306,6 +306,11 @@ public final class CommitDetail {
 					.add("to", to)
 					.toString();
 		}
+	}
+
+	@JsonIgnore
+	public boolean isPropertyChange() {
+		return !Strings.isNullOrEmpty(prop);
 	}
 	
 //	/**
