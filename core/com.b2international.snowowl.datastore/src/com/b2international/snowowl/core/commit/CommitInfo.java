@@ -19,10 +19,13 @@ import java.io.Serializable;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * @since 5.2
  */
+@JsonDeserialize(builder=CommitInfo.Builder.class)
 public final class CommitInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -55,7 +58,8 @@ public final class CommitInfo implements Serializable {
 				.groupId(notification.getGroupId());
 	}
 	
-	public static class Builder {
+	@JsonPOJOBuilder(withPrefix="")
+	public static final class Builder {
 		
 		private String id;
 		private String branch;

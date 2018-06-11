@@ -18,13 +18,21 @@ package com.b2international.snowowl.core.commit;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.6
  */
 public final class CommitInfoDetails extends PageableCollectionResource<CommitInfoDetail> {
 
-	public CommitInfoDetails(List<CommitInfoDetail> items, String scrollId, Object[] searchAfter, int limit, int total) {
+	@JsonCreator
+	public CommitInfoDetails(
+			@JsonProperty("items") final List<CommitInfoDetail> items, 
+			@JsonProperty("scrollId") final String scrollId, 
+			@JsonProperty("searchAfter") final Object[] searchAfter, 
+			@JsonProperty("limit") final int limit, 
+			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 5.2
@@ -27,19 +29,18 @@ public final class CommitInfos extends PageableCollectionResource<CommitInfo> {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final String repositoryId;
-
-	public CommitInfos(String repositoryId, int limit, int total) {
-		this(Collections.emptyList(), repositoryId, null, null, limit, total);
+	public CommitInfos(int limit, int total) {
+		this(Collections.emptyList(), null, null, limit, total);
 	}
 
-	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, Object[] searchAfter, int limit, int total) {
+	@JsonCreator
+	public CommitInfos(
+			@JsonProperty("items") final List<CommitInfo> items, 
+			@JsonProperty("scrollId") final String scrollId, 
+			@JsonProperty("searchAfter") final Object[] searchAfter, 
+			@JsonProperty("limit") final int limit, 
+			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);
-		this.repositoryId = repositoryId;
 	}
 	
-	public String getRepositoryId() {
-		return repositoryId;
-	}
-
 }
