@@ -449,8 +449,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			
 			entry.doi = doi;
 			entry.setScore(score);
-			entry.setCreated(created);
-			entry.setRevised(revised);
 			
 			if (parents != null) {
 				entry.parents = parents;

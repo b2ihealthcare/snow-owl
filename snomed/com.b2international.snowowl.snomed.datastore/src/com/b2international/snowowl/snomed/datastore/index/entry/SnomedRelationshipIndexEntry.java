@@ -298,8 +298,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setCreated(created);
-			doc.setRevised(revised);
 			return doc;
 		}
 	}

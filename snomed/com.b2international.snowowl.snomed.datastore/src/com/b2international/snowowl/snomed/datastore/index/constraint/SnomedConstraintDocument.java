@@ -299,7 +299,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		}
 
 		public SnomedConstraintDocument build() {
-			final SnomedConstraintDocument doc = new SnomedConstraintDocument(id,
+			return new SnomedConstraintDocument(id,
 					storageKey,
 					active, 
 					effectiveTime, 
@@ -315,11 +315,6 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 					descendantIds, 
 					refSetIds,
 					relationshipKeys);
-
-			doc.setCreated(created);
-			doc.setRevised(revised);
-
-			return doc;
 		}
 
 		@Override

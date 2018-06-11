@@ -77,11 +77,11 @@ public abstract class Revision implements WithId {
 		return _id;
 	}
 	
-	protected final void setCreated(RevisionBranchPoint created) {
+	final void setCreated(RevisionBranchPoint created) {
 		this.created = created;
 	}
 	
-	protected final void setRevised(List<RevisionBranchPoint> revised) {
+	final void setRevised(List<RevisionBranchPoint> revised) {
 		this.revised = revised;
 	}
 	

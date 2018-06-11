@@ -413,8 +413,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					memberOf,
 					activeMemberOf);
 			doc.setScore(score);
-			doc.setCreated(created);
-			doc.setRevised(revised);
 			return doc;
 		}
 	}

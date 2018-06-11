@@ -174,8 +174,6 @@ public class IssueSO2109Test {
 				@JsonProperty("revised") final List<RevisionBranchPoint> revised) {
 			super(id);
 			this.field = field;
-			setCreated(created);
-			setRevised(revised);
 		}
 
 		@Override

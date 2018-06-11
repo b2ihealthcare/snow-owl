@@ -967,11 +967,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			
 			// MRCM Module Scope
 			doc.mrcmRuleRefsetId = mrcmRuleRefsetId;
-			
 			doc.setScore(score);
-			// metadata
-			doc.setCreated(created);
-			doc.setRevised(revised);
 			return doc;
 		}
 	}
