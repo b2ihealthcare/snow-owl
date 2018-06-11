@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -75,7 +76,16 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	
 	@Override
 	public <T> T read(final String branchPath, final RevisionIndexRead<T> read) {
-		if (RevisionIndex.isBaseRefPath(branchPath)) {
+		if (RevisionIndex.isBranchAtPath(branchPath)) {
+			String[] branchAndTimestamp = branchPath.split(RevisionIndex.AT_CHAR);
+			checkArgument(branchAndTimestamp.length == 2, "Invalid <branch>@<timestamp> expression. Got: %s.", branchPath);
+			String branch = branchAndTimestamp[0];
+			long timestamp = Long.parseLong(branchAndTimestamp[1]);
+			checkArgument(timestamp >= 0, "Timestamp argument of <branch>@<timestamp> expression must be greater than or equal to zero.");
+			// create an alternative ref that only contains segments up until the specified timestamp
+			final RevisionBranchRef ref = getBranchRef(branch).restrictTo(timestamp);
+			return read(ref, read);
+		} else if (RevisionIndex.isBaseRefPath(branchPath)) {
 			final String branchPathWithoutBaseRef = branchPath.substring(0, branchPath.length() - 1);
 			if (RevisionBranch.MAIN_PATH.equals(branchPathWithoutBaseRef)) {
 				throw new IllegalArgumentException("Cannot query base of MAIN branch");

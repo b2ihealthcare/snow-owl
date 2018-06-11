@@ -81,6 +81,10 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 				.compare(start, other.start)
 				.result();
 	}
+	
+	public boolean isBefore(long timestamp) {
+		return start <= timestamp;
+	}
 
 	@JsonProperty
 	public long branchId() {

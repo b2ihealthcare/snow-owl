@@ -28,16 +28,29 @@ import com.google.common.base.Strings;
 public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 
 	/**
-	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch). 
+	 * A single character that when put at the end of a branchPath argument indicates that the search should execute the query from the perspective of the branch's base point (like ignoring all changes on the branch).
+	 * <p>
+	 * Expected branch path expression format: <i>{branchPath}^</i>
 	 */
 	String BASE_REF_CHAR = "^";
 	
 	/**
 	 * Three dot characters that represent git diff notation between two branch paths. This kind of path expression will evaluate to the latest version of a given document available in the segments selected by the range described in the expression
 	 * (eg. MAIN...MAIN/A would consider revisions available on all segments of MAIN/A since it diverged from MAIN)
-	 * https://git-scm.com/docs/git-diff 
+	 * https://git-scm.com/docs/git-diff
+	 * <p>
+	 * Expected branch path expression format: <i>{fromBranchPath}...{toBranchPath}</i>
 	 */
 	String REV_RANGE = "...";
+
+	/**
+	 * Single character that when put at the end of the branchPath along with a full timestamp modified the scope of the search operation to search at
+	 * the specified timestamp from the branch's perspective than search from the current HEAD. Negative timestamps throw
+	 * {@link IllegalArgumentException}.
+	 * <p>
+	 * Expected branch path expression format: <i>{branchPath}@{timestamp}</i>
+	 */
+	String AT_CHAR = "@";
 	
 	/**
 	 * Returns the name of the index.
@@ -153,11 +166,21 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	
 	/**
 	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range rather than select a single branch and its branch points.
-	 * @param revisionRangePath
+	 * @param branchPath
 	 * @return
 	 */
-	static boolean isRevRangePath(String revisionRangePath) {
-		return revisionRangePath.contains(REV_RANGE);
+	static boolean isRevRangePath(String branchPath) {
+		return branchPath.contains(REV_RANGE);
+	}
+
+	/**
+	 * Returns <code>true</code> if the given path is an expression that can evaluate to a revision range up that will evaluate the segments up until the specified at timestamp argument.
+	 * @param branchPath
+	 * @return
+	 * @see RevisionIndex#AT_CHAR
+	 */
+	static boolean isBranchAtPath(String branchPath) {
+		return branchPath.contains(AT_CHAR);
 	}
 
 }

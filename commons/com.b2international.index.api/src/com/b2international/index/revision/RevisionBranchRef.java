@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -191,6 +192,14 @@ final class RevisionBranchRef {
 
 	public boolean isEmpty() {
 		return segments.isEmpty();
+	}
+
+	public RevisionBranchRef restrictTo(long timestamp) {
+		return new RevisionBranchRef(branchId(), path(), segments()
+				.stream()
+				.filter(segment -> segment.isBefore(timestamp)) // consider segments that are before the currently desired timestamp
+				.map(segment -> segment.withEnd(timestamp))
+				.collect(Collectors.toCollection(TreeSet::new)));
 	}
 	
 }
