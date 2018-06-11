@@ -15,10 +15,15 @@
  */
 package com.b2international.snowowl.core.commit;
 
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
+
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.b2international.commons.ChangeKind;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.revision.Commit;
@@ -53,14 +58,48 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
 			final String affectedComponentId = filters.containsKey(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT) ? filters.getString(CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT.name()) : ""; 
 			final Collection<CommitDetail> changes = Strings.isNullOrEmpty(affectedComponentId) ? doc.getDetails() : doc.getDetailsByObject(affectedComponentId);
-			// TODO traverse change tree and add all related CommitChanges
 			final List<CommitInfoDetail> details = changes.stream()
-					.map(change -> new CommitInfoDetail()) // TODO fill out detail with actual changes
+					.flatMap(info -> toCommitInfoDetail(info))
 					.collect(Collectors.toList());
 			builder.details(new CommitInfoDetails(details, null, null, details.size(), details.size()));
 		}
 		
 		return builder.build();
+	}
+
+	private Stream<CommitInfoDetail> toCommitInfoDetail(CommitDetail detail) {
+		// for each object report a different change detail object
+		final CommitInfoDetail.Builder info = CommitInfoDetail.builder()
+				.changeKind(getChangeKind(detail));
+		if (detail.isPropertyChange()) {
+			info
+				.property(detail.getProp())
+				.fromValue(detail.getFrom())
+				.value(detail.getTo());
+			// for each changed object for this prop report a separate object
+			return detail.getObjects()
+					.stream()
+					.map(object -> info.object(object).build());
+		} else {
+			info.property(CommitInfoDetail.COMPONENT);
+			final List<CommitInfoDetail> details = newArrayListWithExpectedSize(detail.getObjects().size());
+			for (int i = 0; i < detail.getObjects().size(); i++) {
+				final String object = detail.getObjects().get(i);
+				final Set<String> children = detail.getChildren().get(i);
+				info.object(object); // set the object
+				children.forEach(child -> details.add(info.value(child).build())); // create change detail for each child ID
+			}
+			return details.stream();
+		}
+	}
+
+	private ChangeKind getChangeKind(CommitDetail indexDetail) {
+		switch (indexDetail.getOp()) {
+		case ADD: return ChangeKind.ADDED;
+		case REMOVE: return ChangeKind.DELETED;
+		case CHANGE: return ChangeKind.UPDATED;
+		default: return ChangeKind.UNCHANGED;
+		}
 	}
 	
 }
