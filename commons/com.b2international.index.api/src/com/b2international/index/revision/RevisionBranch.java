@@ -86,6 +86,14 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * Segment separator in {@link RevisionBranch#getPath()} values.
 	 */
 	public static final String SEPARATOR = "/";
+
+	/**
+	 * @since 7.0
+	 */
+	public static final class Fields {
+		public static final String ID = "id";
+		public static final String PATH = "path";
+	}
 	
 	/**
 	 * @since 6.5

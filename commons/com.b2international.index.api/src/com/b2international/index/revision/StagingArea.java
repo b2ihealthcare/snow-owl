@@ -28,8 +28,11 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.Pair;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +41,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -92,15 +96,16 @@ public final class StagingArea {
 		return index.write(branchPath, timestamp, writer -> {
 			Commit.Builder commit = Commit.builder();
 
-			final Multimap<String, String> newComponentsByContainer = HashMultimap.create();
-			final Multimap<String, String> changedComponentsByContainer = HashMultimap.create();
-			final Multimap<String, String> removedComponentsByContainer = HashMultimap.create();
+			final Multimap<ObjectId, ObjectId> newComponentsByContainer = HashMultimap.create();
+			final Multimap<ObjectId, ObjectId> changedComponentsByContainer = HashMultimap.create();
+			final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
 			final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
 			
 			removedDocuments.forEach((key, value) -> {
 				deletedIdsByType.put(value.getClass(), key);
 				if (value instanceof Revision) {
-					removedComponentsByContainer.put(((Revision) value).getContainerId(), key);
+					Revision rev = (Revision) value;
+					removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
 				}
 			});
 			
@@ -117,7 +122,7 @@ public final class StagingArea {
 					writer.put(doc.getKey(), document);
 					if (document instanceof Revision) {
 						Revision rev = (Revision) document;
-						newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: " + rev), rev.getId());
+						newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
 					}
 				}
 			}
@@ -130,7 +135,7 @@ public final class StagingArea {
 				}
 			}
 			
-			final Multimap<ObjectNode, String> revisionsByChange = HashMultimap.create();
+			final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
 			
 			// and changed revisions
 			for (Entry<String, RevisionDiff> changedRevision : changedRevisions.entrySet()) {
@@ -141,13 +146,14 @@ public final class StagingArea {
 					// first put the new revision into the writer so that created and revised fields will get their values properly
 					// then call the diff method to calculate the diff and serialize the new node into a JsonNode with _changes and created, revised fields
 					writer.put(changedRevision.getKey(), rev);
-					String containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: " + rev);
-					if (!Revision.ROOT.equals(containerId)) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, rev.getId());
+					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
+					ObjectId objectId = rev.getObjectId();
+					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
+						changedComponentsByContainer.put(containerId, objectId);
 					}
 					revisionDiff.diff(mapper).forEach(node -> {
 						if (node instanceof ObjectNode) {
-							revisionsByChange.put((ObjectNode) node, rev.getId());
+							revisionsByChange.put((ObjectNode) node, objectId);
 						}
 					});
 				}
@@ -160,28 +166,36 @@ public final class StagingArea {
 				final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 				final String from = change.get("fromValue").asText(); 
 				final String to = change.get("value").asText();
-				details.add(CommitDetail.changed()
-						.propertyChange(prop, from, to, objects)
-						.build());
+				details.add(CommitDetail.changedProperty(prop, from, to, objects.iterator().next().type(), objects.stream().map(ObjectId::id).collect(Collectors.toSet())));
 			});
-			
-			if (!newComponentsByContainer.isEmpty()) {
-				CommitDetail.Builder addedObjects = CommitDetail.added();
-				// collect hierarchical changes and register them by container ID
-				newComponentsByContainer.asMap().forEach((container, components) -> addedObjects.putObjects(container, components));
-				details.add(addedObjects.build());
-			}
 
-			if (!changedComponentsByContainer.isEmpty()) {
-				CommitDetail.Builder changedObjects = CommitDetail.changed();
-				changedComponentsByContainer.asMap().forEach((container, components) -> changedObjects.putObjects(container, components));
-				details.add(changedObjects.build());
-			}
-
-			if (!removedComponentsByContainer.isEmpty()) {
-				CommitDetail.Builder removedObjects = CommitDetail.removed();
-				removedComponentsByContainer.asMap().forEach((container, components) -> removedObjects.putObjects(container, components));
-				details.add(removedObjects.build());
+			final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
+				Pair.of(newComponentsByContainer, CommitDetail::added),
+				Pair.of(changedComponentsByContainer, CommitDetail::changed),
+				Pair.of(removedComponentsByContainer, CommitDetail::removed)
+			);
+			for (Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>> entry : maps) {
+				final Multimap<ObjectId, ObjectId> multimap = entry.getA();
+				if (!multimap.isEmpty()) {
+					BiFunction<String, String, CommitDetail.Builder> builderFactory = entry.getB();
+					Map<Pair<String, String>, CommitDetail.Builder> buildersByRelationship = newHashMap();
+					// collect hierarchical changes and register them by container ID
+					multimap.asMap().forEach((container, components) -> {
+						Multimap<String, String> componentsByType = HashMultimap.create();
+						components.forEach(c -> componentsByType.put(c.type(), c.id()));
+						componentsByType.asMap().forEach((componentType, componentIds) -> {
+							final Pair<String, String> typeKey = Pair.identicalPairOf(container.type(), componentType);
+							if (!buildersByRelationship.containsKey(typeKey)) {
+								buildersByRelationship.put(typeKey, builderFactory.apply(typeKey.getA(), typeKey.getB()));
+							}
+							buildersByRelationship.get(typeKey).putObjects(container.id(), componentIds);
+						});
+					});
+					buildersByRelationship.values()
+						.stream()
+						.map(CommitDetail.Builder::build)
+						.forEach(details::add);
+				}
 			}
 			
 			// free up memory before committing 

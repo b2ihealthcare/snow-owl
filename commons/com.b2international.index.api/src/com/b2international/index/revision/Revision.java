@@ -16,15 +16,14 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Script;
-import com.b2international.index.WithId;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
@@ -38,10 +37,8 @@ import com.google.common.base.Objects.ToStringHelper;
 		+ "} else {"
 		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}")
-public abstract class Revision implements WithId {
+public abstract class Revision {
 	
-	static final String ROOT = "-1";
-
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String CREATED = "created";
@@ -51,8 +48,6 @@ public abstract class Revision implements WithId {
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
 
-	private String _id;
-	
 	private String id;
 	private RevisionBranchPoint created;
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
@@ -61,16 +56,8 @@ public abstract class Revision implements WithId {
 		this.id = checkNotNull(id, "Logical identifier cannot be null");
 	}
 	
-	@Override
-	public final void set_id(String _id) {
-		this._id = _id;
-	}
-	
-	@Override
-	@JsonIgnore
-	public final String _id() {
-		checkState(_id != null, "Partial documents do not have document IDs. Load the entire document or extract the required data from this object.");
-		return _id;
+	public final String getId() {
+		return id;
 	}
 	
 	final void setCreated(RevisionBranchPoint created) {
@@ -81,35 +68,39 @@ public abstract class Revision implements WithId {
 		this.revised = revised;
 	}
 	
-	public final String getId() {
-		return id;
-	}
-	
-	public final RevisionBranchPoint getCreated() {
+	@JsonProperty
+	final RevisionBranchPoint getCreated() {
 		return created;
 	}
 	
-	public final List<RevisionBranchPoint> getRevised() {
+	@JsonProperty
+	final List<RevisionBranchPoint> getRevised() {
 		return revised;
 	}
 	
+	@JsonIgnore
+	final ObjectId getObjectId() {
+		return ObjectId.of(DocumentMapping.getType(getClass()), getId());
+	}
+	
 	/**
-	 * Providers high-level component identifier if this component is a subcomponent of the high-level component identifier. This method by default
-	 * returns the component's own identifier and should return that ID if this component is root of a component hierarchy.
+	 * Provides high-level component identifier if this component is a subcomponent of the high-level component identifier. This method by default
+	 * returns a {@link #ROOT} object ID therefore this object is a ROOT component in a given hierarchy.
 	 * 
 	 * @return the container identifier
+	 * @see #isRoot()
 	 */
 	@JsonIgnore
-	public String getContainerId() {
-		return ROOT; // TODO move root container ID to a constant
+	protected ObjectId getContainerId() {
+		return ObjectId.rootOf(DocumentMapping.getType(getClass()));
 	}
 	
 	/**
 	 * @return whether this component is a root component in a hierarchy or a subcomponent of another component. By default returns <code>true</code>.
 	 */
 	@JsonIgnore
-	public final boolean isRoot() {
-		return ROOT.equals(getContainerId());
+	final boolean isRoot() {
+		return ObjectId.rootOf(DocumentMapping.getType(getClass())).equals(getContainerId());
 	}
 	
 	@Override
@@ -119,10 +110,9 @@ public abstract class Revision implements WithId {
 	
 	protected ToStringHelper doToString() {
 		return Objects.toStringHelper(this)
-				.add(DocumentMapping._ID, _id)
 				.add(Revision.Fields.ID, id)
 				.add(Revision.Fields.CREATED, created)
 				.add(Revision.Fields.REVISED, revised);
 	}
-	
+
 }

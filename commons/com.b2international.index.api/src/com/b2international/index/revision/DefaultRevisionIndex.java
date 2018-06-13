@@ -16,15 +16,14 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
+import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -45,8 +44,6 @@ import com.google.common.collect.ImmutableMap;
 public final class DefaultRevisionIndex implements InternalRevisionIndex {
 
 	private static final String SCROLL_KEEP_ALIVE = "2m";
-	
-	private static final int SCROLL_LIMIT = 10_000;
 	
 	private static final int PURGE_LIMIT = 100_000;
 	
@@ -156,169 +153,51 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
 			final RevisionBranchRef compareRef = compare.difference(base);
 
-			final Builder result = RevisionCompare.builder(DefaultRevisionIndex.this, 
-					baseOfCompareRef, 
-					compareRef,
-					limit);
+			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef);
 			
-			if (base.branchId() == compare.branchId()) {
-				return result.build();
+			if (base.branchId() != compare.branchId()) {
+				doRevisionCompare(searcher, compareRef, result, limit);
 			}
-			
-			final Set<Class<? extends Revision>> typesToCompare = getRevisionTypes();
-			int added = 0;
-			int changed = 0;
-			int deleted = 0;
 
-			Set<String> newOrChangedKeys = newHashSet();
-			Map<String, String> newOrChangedHashes = newHashMap();
-			Set<String> deletedOrChangedKeys = newHashSet();
-			// Don't need to keep track of deleted-or-changed hashes
-			
-			// query all registered revision types for new, changed and deleted components
-			for (Class<? extends Revision> type : typesToCompare) {
-
-				// The current storage key-hash pairs from the "compare" segments
-				final Query<String[]> newOrChangedQuery = Query
-						.select(String[].class)
-						.from(type)
-						.fields(Revision.Fields.ID, DocumentMapping._HASH)
-						.where(compareRef.toRevisionFilter())
-						.scroll(SCROLL_KEEP_ALIVE)
-						.limit(SCROLL_LIMIT)
-						.build();
-				
-				for (final Hits<String[]> newOrChangedHits : searcher.scroll(newOrChangedQuery)) {
-					
-					newOrChangedKeys.clear();
-					newOrChangedHashes.clear();
-
-					for (final String[] newOrChangedHit : newOrChangedHits) {
-						final String id = newOrChangedHit[0];
-						final String hash = newOrChangedHit[1];
-						newOrChangedKeys.add(id);
-						if (hash != null) {
-							newOrChangedHashes.put(id, hash);
-						}
-					}
-					
-					/* 
-					 * Create "dependent sub-query": try to find the same IDs in the "base" segments, which 
-					 * will be either changed or "same" revisions from a compare point of view 
-					 * (in case of a matching content hash value)
-					 */
-					final Query<String[]> changedOrSameQuery = Query
-							.select(String[].class)
-							.from(type)
-							.fields(Revision.Fields.ID, DocumentMapping._HASH)
-							.where(Expressions.builder()
-									.filter(Expressions.matchAny(Revision.Fields.ID, newOrChangedKeys))
-									.filter(baseOfCompareRef.toCreatedInFilter())
-									.filter(compareRef.toRevisedInFilter())
-									.build())
-							.scroll(SCROLL_KEEP_ALIVE)
-							.limit(SCROLL_LIMIT)
-							.build();
-					
-					for (Hits<String[]> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
-						for (final String[] changedOrSameHit : changedOrSameHits) {
-							final String id = changedOrSameHit[0];
-							final String hash = changedOrSameHit[1];
-
-							// CHANGED, unless the hashes tell us otherwise
-							if (hash == null 
-									|| !newOrChangedHashes.containsKey(id)
-									|| !Objects.equals(newOrChangedHashes.get(id), hash)) {
-								
-								result.changedRevision(type, id);
-								changed++;
-							}
-							
-							// Remove this storage key from newOrChanged, it is decidedly changed-or-same
-							newOrChangedKeys.remove(id);
-							newOrChangedHashes.remove(id);
-						}
-						
-					} // changedOrSameHits
-					
-					// Everything remaining in newOrChanged is NEW, as it had no previous revision in the common segments
-					for (String newOrChangedKey : newOrChangedKeys) {
-						result.newRevision(type, newOrChangedKey);
-						added++;
-					}
-					
-					if (added > limit && changed > limit) {
-						break;
-					}
-				
-				} // newOrChangedHits
-
-				// Revisions which existed on "base", but were replaced by another revision on "compare" segments
-				final Query<String> deletedOrChangedQuery = Query
-						.select(String.class)
-						.from(type)
-						.fields(Revision.Fields.ID)
-						.where(Expressions.builder()
-								.filter(baseOfCompareRef.toCreatedInFilter())
-								.filter(compareRef.toRevisedInFilter())
-								.build())
-						.scroll(SCROLL_KEEP_ALIVE)
-						.limit(SCROLL_LIMIT)
-						.build();
-				
-				for (Hits<String> deletedOrChangedHits : searcher.scroll(deletedOrChangedQuery)) {
-					
-					deletedOrChangedKeys.clear();
-
-					for (String deletedOrChanged : deletedOrChangedHits) {
-						deletedOrChangedKeys.add(deletedOrChanged);
-					}
-					
-					/* 
-					 * Create "dependent sub-query": try to find the same IDs in the "compare" segments,
-					 * if they are present, the revision is definitely not deleted
-					 */
-					final Query<String> changedOrSameQuery = Query
-							.select(String.class)
-							.from(type)
-							.fields(Revision.Fields.ID)
-							.where(Expressions.builder()
-									.filter(Expressions.matchAny(Revision.Fields.ID, deletedOrChangedKeys))
-									.filter(compareRef.toRevisionFilter())
-									.build())
-							.scroll(SCROLL_KEEP_ALIVE)
-							.limit(SCROLL_LIMIT)
-							.build();
-					
-					for (Hits<String> changedOrSameHits : searcher.scroll(changedOrSameQuery)) {
-						for (final String changedOrSameHit : changedOrSameHits) {
-							// Remove this storage key from deletedOrChanged, it is decidedly still existing
-							deletedOrChangedKeys.remove(changedOrSameHit);
-						}
-					}
-					
-					// Everything remaining in deletedOrChanged is DELETED, as it had successor in the "compare" segments
-					for (String deletedOrChangedKey : deletedOrChangedKeys) {
-						result.deletedRevision(type, deletedOrChangedKey);
-						deleted++;
-					}
-					
-					if (deleted > limit) {
-						break;
-					}
-					
-				} // deletedOrChangedHits
-				
-				if (added > limit && changed > limit && deleted > limit) {
-					break;
-				}
-				
-			} // type
-			
 			return result.build();
 		});
 	}
 	
+	private void doRevisionCompare(DocSearcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
+		if (compareRef.segments().isEmpty()) {
+			return;
+		}
+		ExpressionBuilder compareCommitsQuery = Expressions.builder();
+		
+		for (RevisionSegment segment : compareRef.segments()) {
+			String segmentBranch = getBranchPath(searcher, segment.branchId());
+			compareCommitsQuery.should(Expressions.builder()
+					.filter(Commit.Expressions.timestampRange(segment.start(), segment.end()))
+					.filter(Commit.Expressions.branches(Collections.singleton(segmentBranch)))
+					.build());
+		}
+		
+		// apply commits happened on the compareRef segments in chronological order 
+		searcher.search(Query.select(Commit.class)
+				.where(compareCommitsQuery.build())
+				.limit(Integer.MAX_VALUE)
+				.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC))
+				.build())
+				.forEach(result::apply);
+	}
+
+	private String getBranchPath(DocSearcher searcher, long branchId) throws IOException {
+		return searcher.search(Query.select(String.class)
+				.from(RevisionBranch.class)
+				.fields(RevisionBranch.Fields.PATH)
+				.where(Expressions.exactMatch(RevisionBranch.Fields.ID, branchId))
+				.limit(1)
+				.build())
+				.stream()
+				.findFirst()
+				.get();
+	}
+
 	@Override
 	public void purge(final String branchPath, final Purge purge) {
 		final RevisionBranchRef branch = getBranchRef(branchPath);
@@ -395,7 +274,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		return index.read(searcher -> {
 			return searcher.search(Query.select(Commit.class)
 					.where(Commit.Expressions.affectedObject(id))
-					.sortBy(SortBy.field(Commit.Fields.TIME_STAMP, Order.DESC))
+					.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.DESC))
 					.limit(Integer.MAX_VALUE)
 					.build())
 					.getHits();

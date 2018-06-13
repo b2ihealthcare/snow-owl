@@ -16,6 +16,7 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.lang.reflect.Field;
@@ -40,7 +41,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSortedMap;
@@ -52,6 +55,8 @@ import com.google.common.collect.Maps;
  */
 public final class DocumentMapping {
 
+	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
+	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
@@ -209,8 +214,8 @@ public final class DocumentMapping {
 	}
 	
 	public Class<?> getFieldType(String key) {
-		// XXX: _hash can be retrieved via field selection, but has not corresponding entry in the mapping
-		if (DocumentMapping._HASH.equals(key)) {
+		// XXX: _hash and _id can be retrieved via field selection, but has not corresponding entry in the mapping
+		if (DocumentMapping._HASH.equals(key) || DocumentMapping._ID.equals(key)) {
 			return String.class;
 		}
 		return getField(key).getType();
@@ -277,11 +282,18 @@ public final class DocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
-		final Doc annotation = getDocAnnotation(type);
-		checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
-		final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
-		checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
-		return docType;
+		if (!DOC_TYPE_CACHE.containsKey(type)) {
+			final Doc annotation = getDocAnnotation(type);
+			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
+			final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
+			checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
+			DOC_TYPE_CACHE.put(type, docType);
+		}
+		return DOC_TYPE_CACHE.get(type);
+	}
+	
+	public static Class<?> getClass(String type) {
+		return checkNotNull(DOC_TYPE_CACHE.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
 	}
 	
 	private static Doc getDocAnnotation(Class<?> type) {

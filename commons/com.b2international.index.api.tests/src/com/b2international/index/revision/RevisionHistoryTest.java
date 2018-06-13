@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.RevisionFixtures.Data;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -32,6 +33,7 @@ import com.google.common.collect.Iterables;
  */
 public class RevisionHistoryTest extends BaseRevisionIndexTest {
 
+	private static final String DOC_TYPE = DocumentMapping.getType(Data.class);
 	private final Data newData = new Data(STORAGE_KEY1, "field1", "field2");
 	private final Data changedData = new Data(STORAGE_KEY1, "field1Changed", "field2");
 	
@@ -47,7 +49,7 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		assertThat(commits).hasSize(1);
 		final Commit commit = Iterables.getOnlyElement(commits);
 		assertThat(commit.getDetails()).hasSize(1);
-		final CommitDetail expectedChange = CommitDetail.added().putObjects(Revision.ROOT, Collections.singleton(STORAGE_KEY1)).build();
+		final CommitDetail expectedChange = CommitDetail.added(DOC_TYPE, DOC_TYPE).putObjects(ObjectId.ROOT, Collections.singleton(STORAGE_KEY1)).build();
 		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(expectedChange);
 	}
 	
@@ -63,9 +65,7 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
 		assertThat(commit.getDetails()).hasSize(1);
-		final CommitDetail objectChange = CommitDetail.changed()
-				.propertyChange("field1", "field1", "field1Changed", Collections.singleton(STORAGE_KEY1))
-				.build();
+		final CommitDetail objectChange = CommitDetail.changedProperty("field1", "field1", "field1Changed", DOC_TYPE, Collections.singleton(STORAGE_KEY1));
 		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(objectChange);
 	}
 	
@@ -80,8 +80,8 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
 		assertThat(commit.getDetails()).hasSize(1);
-		final CommitDetail expectedChange = CommitDetail.removed()
-				.putObjects(Revision.ROOT, Collections.singleton(STORAGE_KEY1))
+		final CommitDetail expectedChange = CommitDetail.removed(DOC_TYPE, DOC_TYPE)
+				.putObjects(ObjectId.ROOT, Collections.singleton(STORAGE_KEY1))
 				.build();
 		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(expectedChange);
 	}

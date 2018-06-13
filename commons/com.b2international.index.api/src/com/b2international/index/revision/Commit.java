@@ -130,17 +130,17 @@ public final class Commit implements WithScore {
 		}
 		
 		public static Expression timestamp(final long timeStamp) {
-			return exactMatch(Fields.TIME_STAMP, timeStamp);
+			return exactMatch(Fields.TIMESTAMP, timeStamp);
 		}
 		
 		public static Expression timestampRange(final long from, final long to) {
-			return matchRange(Fields.TIME_STAMP, from, to);
+			return matchRange(Fields.TIMESTAMP, from, to);
 		}
 
 		public static Expression affectedObject(String objectId) {
 			return com.b2international.index.query.Expressions.builder()
 					.should(exactMatch(Fields.DETAILS_OBJECT, objectId))
-					.should(exactMatch(Fields.DETAILS_CHILD, objectId))
+					.should(exactMatch(Fields.DETAILS_COMPONENT, objectId))
 					.build();
 		}
 		
@@ -151,10 +151,10 @@ public final class Commit implements WithScore {
 		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
 		public static final String COMMENT_PREFIX = "comment.prefix";
-		public static final String TIME_STAMP = "timestamp";
+		public static final String TIMESTAMP = "timestamp";
 		public static final String GROUP_ID = "groupId";
-		public static final String DETAILS_OBJECT = "details.objects";
-		public static final String DETAILS_CHILD = "details.children";
+		private static final String DETAILS_OBJECT = "details.objects";
+		private static final String DETAILS_COMPONENT = "details.components";
 	}
 
 	private final String id;
@@ -240,6 +240,10 @@ public final class Commit implements WithScore {
 			detailsByObject.putAll(objectId, objectDetails);
 		}
 		return detailsByObject.get(objectId);
+	}
+
+	public Commit apply(Commit commit) {
+		throw new UnsupportedOperationException("TODO implement me");
 	}
 	
 }
