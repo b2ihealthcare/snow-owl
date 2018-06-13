@@ -31,7 +31,6 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
 /**
@@ -159,26 +158,12 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	}
 	
 	@Override
-	public final int hashCode() {
-		return Objects.hashCode(_id());
-	}
-
-	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
 				.add(Fields.STORAGE_KEY, storageKey)
 				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);
-	}
-
-	@Override
-	public final boolean equals(final Object obj) {
-		if (this == obj) { return true; }
-		if (obj == null) { return false; }
-		if (getClass() != obj.getClass()) { return false; }
-		final RevisionDocument other = (RevisionDocument) obj;
-		return Objects.equal(_id(), other._id());
 	}
 
 	/**

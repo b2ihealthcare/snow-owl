@@ -19,15 +19,16 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.revision.Revision;
+import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionCompare;
+import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -79,38 +80,31 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
+		final CompareResult.Builder result = CompareResult.builder(baseBranchPath, compare, compareHeadTimestamp)
+				.addTotalNew(compareResult.getTotalAdded())
+				.addTotalChanged(compareResult.getTotalChanged())
+				.addTotalDeleted(compareResult.getTotalRemoved());
 		
-		for (Class<? extends Revision> revisionType : compareResult.getNewRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				result.addTotalNew(compareResult.getNewTotals(revisionType));
-				compareResult.getNewComponents(revisionType)
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putNewComponent);
+		for (RevisionCompareDetail detail : compareResult.getDetails()) {
+			final ObjectId affectedId;
+			if (detail.isComponentChange()) {
+				affectedId = detail.getComponent();
+			} else {
+				affectedId = detail.getObject();
 			}
-		}
-
-		for (Class<? extends Revision> revisionType : compareResult.getChangedRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				result.addTotalChanged(compareResult.getChangedTotals(revisionType));
-				compareResult.getChangedComponents(revisionType)
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putChangedComponent);
-			}
-		}
-
-		for (Class<? extends Revision> revisionType : compareResult.getDeletedRevisionTypes()) {
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(revisionType);
-			if (RevisionDocument.class.isAssignableFrom(revisionType)) {
-				result.addTotalDeleted(compareResult.getDeletedTotals(revisionType));
-				compareResult.getDeletedComponents(revisionType)
-					.stream()
-					.map(id -> ComponentIdentifier.of(terminologyComponentId, id))
-					.forEach(result::putDeletedComponent);
+			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(DocumentMapping.getClass(affectedId.type()));
+			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
+			
+			switch (detail.getOp()) {
+			case ADD:
+				result.putNewComponent(identifier);
+				break;
+			case CHANGE:
+				result.putChangedComponent(identifier);
+				break;
+			case REMOVE:
+				result.putDeletedComponent(identifier);
+				break;
 			}
 		}
 		

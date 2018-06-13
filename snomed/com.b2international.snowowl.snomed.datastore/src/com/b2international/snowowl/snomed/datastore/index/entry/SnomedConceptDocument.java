@@ -64,7 +64,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * A transfer object representing a SNOMED CT concept.
  */
-@Doc
+@Doc(type="concept")
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)
 @Script(
 	name="doiFactor", 

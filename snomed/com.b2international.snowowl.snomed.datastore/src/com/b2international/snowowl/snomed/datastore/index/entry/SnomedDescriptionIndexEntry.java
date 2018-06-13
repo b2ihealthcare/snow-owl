@@ -40,8 +40,10 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.compat.TextConstants;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Description;
@@ -64,7 +66,7 @@ import com.google.common.collect.Maps;
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc
+@Doc(type="description")
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 @RevisionHash({ 
@@ -474,8 +476,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	@Override
-	public String getContainerId() {
-		return getConceptId();
+	protected ObjectId getContainerId() {
+		return ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), getConceptId());
 	}
 	
 	@Override

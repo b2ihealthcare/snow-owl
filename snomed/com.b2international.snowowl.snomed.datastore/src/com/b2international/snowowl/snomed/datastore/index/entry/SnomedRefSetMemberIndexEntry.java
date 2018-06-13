@@ -35,12 +35,15 @@ import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.RelationshipRefinability;
@@ -82,7 +85,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * Lightweight representation of a SNOMED CT reference set member.
  */
-@Doc
+@Doc(type="member")
 @JsonDeserialize(builder = SnomedRefSetMemberIndexEntry.Builder.class)
 @RevisionHash({ 
 	SnomedDocument.Fields.ACTIVE, 
@@ -1069,8 +1072,19 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	@Override
-	public String getContainerId() {
-		return getReferencedComponentId();
+	public ObjectId getContainerId() {
+		return ObjectId.of(DocumentMapping.getType(getReferencedComponentDocClass()), getReferencedComponentId());
+	}
+
+	@JsonIgnore
+	Class<?> getReferencedComponentDocClass() {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.REFSET_NUMBER:
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
+		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
+		default: throw new UnsupportedOperationException("Cannot get doc class for referenced component type: " + referencedComponentType);
+		}
 	}
 
 	/**

@@ -70,10 +70,10 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 	private Stream<CommitInfoDetail> toCommitInfoDetail(CommitDetail detail) {
 		// for each object report a different change detail object
 		final CommitInfoDetail.Builder info = CommitInfoDetail.builder()
-				.changeKind(getChangeKind(detail));
+				.changeKind(getChangeKind(detail))
+				.property(detail.getProp());
 		if (detail.isPropertyChange()) {
 			info
-				.property(detail.getProp())
 				.fromValue(detail.getFrom())
 				.value(detail.getTo());
 			// for each changed object for this prop report a separate object
@@ -81,13 +81,12 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 					.stream()
 					.map(object -> info.object(object).build());
 		} else {
-			info.property(CommitInfoDetail.COMPONENT);
 			final List<CommitInfoDetail> details = newArrayListWithExpectedSize(detail.getObjects().size());
 			for (int i = 0; i < detail.getObjects().size(); i++) {
 				final String object = detail.getObjects().get(i);
-				final Set<String> children = detail.getChildren().get(i);
+				final Set<String> components = detail.getComponents().get(i);
 				info.object(object); // set the object
-				children.forEach(child -> details.add(info.value(child).build())); // create change detail for each child ID
+				components.forEach(component -> details.add(info.value(component).build())); // create change detail for each child ID
 			}
 			return details.stream();
 		}

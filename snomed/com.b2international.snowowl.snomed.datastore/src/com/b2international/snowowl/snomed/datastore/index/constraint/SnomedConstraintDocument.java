@@ -57,7 +57,7 @@ import com.google.common.base.Strings;
  * 
  * @since 2.0
  */
-@Doc
+@Doc(type = "constraint")
 @JsonDeserialize(builder = SnomedConstraintDocument.Builder.class)
 public final class SnomedConstraintDocument extends RevisionDocument implements ITerminologyComponentIdProvider {
 	private static final long serialVersionUID = -3084452506109842527L;

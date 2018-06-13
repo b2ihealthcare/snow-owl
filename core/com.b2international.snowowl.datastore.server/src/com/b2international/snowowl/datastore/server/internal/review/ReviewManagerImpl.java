@@ -44,8 +44,8 @@ import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionCompare;
+import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
@@ -291,53 +291,38 @@ public class ReviewManagerImpl implements ReviewManager {
 		final Set<String> changedConcepts = newHashSet();
 		final Set<String> deletedConcepts = newHashSet();
 		
-		// collect new container IDs
-		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
-			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
-			for (Revision hit : hits) {
-				if (hit.isRoot()) {
-					newConcepts.add(hit.getId());
-				}
+		// register new ROOT objects first as new
+		for (RevisionCompareDetail detail : compare.getDetails()) {
+			if (detail.isAdd() && detail.isComponentChange() && detail.getObject().isRoot()) {
+				newConcepts.add(detail.getComponent().id());
 			}
 		}
 		
-		for (final Class<? extends Revision> revisionType : compare.getNewRevisionTypes()) {
-			final Hits<? extends Revision> hits = compare.searchNew(Query.select(revisionType).where(Expressions.matchAll()).build());
-			// iterate over again and add non root ids
-			for (Revision hit : hits) {
-				final String containerId = hit.getContainerId();
-				// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
-				if (containerId != null && !hit.isRoot() && !newConcepts.contains(containerId)) {
-					changedConcepts.add(containerId);
-				}
+		// register new sub components as ROOT changes if the ROOT is not new
+		for (RevisionCompareDetail detail : compare.getDetails()) {
+			if (detail.isAdd() && detail.isComponentChange() && !detail.getObject().isRoot() && !newConcepts.contains(detail.getObject().id())) {
+				changedConcepts.add(detail.getObject().id());
 			}
 		}
 		
-		for (final Class<? extends Revision> revisionType : compare.getChangedRevisionTypes()) {
-			final Hits<? extends Revision> hits = compare.searchChanged(Query.select(revisionType).where(Expressions.matchAll()).build());
-			for (Revision hit : hits) {
-				changedConcepts.add(hit.isRoot() ? hit.getId() : hit.getContainerId());
+		// register all changes
+		for (RevisionCompareDetail detail : compare.getDetails()) {
+			if (detail.isChange()) {
+				changedConcepts.add(detail.getObject().isRoot() ? detail.getComponent().id() : detail.getObject().id());
+			}
+		}
+
+		// register removed ROOT objects first as deleted
+		for (RevisionCompareDetail detail : compare.getDetails()) {
+			if (detail.isRemove() && detail.isComponentChange() && detail.getObject().isRoot()) {
+				deletedConcepts.add(detail.getComponent().id());
 			}
 		}
 		
-		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
-			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
-			for (Revision hit : hits) {
-				if (hit.isRoot()) {
-					deletedConcepts.add(hit.getId());
-				}
-			}
-		}
-		
-		for (final Class<? extends Revision> revisionType : compare.getDeletedRevisionTypes()) {
-			final Hits<? extends Revision> hits = compare.searchDeleted(Query.select(revisionType).where(Expressions.matchAll()).build());
-			// iterate over again and add non root ids
-			for (Revision hit : hits) {
-				final String containerId = hit.getContainerId();
-				// if the container ID is registered as new, then skip adding it to the changed set, otherwise add it
-				if (containerId != null && !hit.isRoot() && !deletedConcepts.contains(containerId)) {
-					changedConcepts.add(containerId);
-				}
+		// register deleted sub components as ROOT changes if the ROOT is not deleted
+		for (RevisionCompareDetail detail : compare.getDetails()) {
+			if (detail.isRemove() && detail.isComponentChange() && !detail.getObject().isRoot() && !deletedConcepts.contains(detail.getObject().id())) {
+				changedConcepts.add(detail.getObject().id());
 			}
 		}
 		

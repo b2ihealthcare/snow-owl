@@ -26,7 +26,9 @@ import java.util.List;
 
 import com.b2international.index.Doc;
 import com.b2international.index.RevisionHash;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Relationship;
@@ -45,7 +47,7 @@ import com.google.common.base.Strings;
 /**
  * A transfer object representing a SNOMED CT description.
  */
-@Doc
+@Doc(type="relationship")
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
 @RevisionHash({ 
 	SnomedDocument.Fields.ACTIVE, 
@@ -357,8 +359,8 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	@Override
-	public String getContainerId() {
-		return getSourceId();
+	public ObjectId getContainerId() {
+		return ObjectId.of(DocumentMapping.getType(SnomedConceptDocument.class), getSourceId());
 	}
 	
 	@Override

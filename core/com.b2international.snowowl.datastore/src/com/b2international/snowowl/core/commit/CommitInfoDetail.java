@@ -27,8 +27,6 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder=CommitInfoDetail.Builder.class)
 public final class CommitInfoDetail implements Serializable {
 	
-	public static final String COMPONENT = "component";
-
 	public static Builder builder() {
 		return new Builder();
 	}
