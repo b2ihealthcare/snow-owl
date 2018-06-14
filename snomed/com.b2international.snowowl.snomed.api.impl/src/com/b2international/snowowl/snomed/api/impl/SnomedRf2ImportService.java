@@ -15,18 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.impl;
 
-import static com.b2international.commons.FileUtils.copyContentToTempFile;
-import static com.b2international.snowowl.snomed.common.ContentSubType.getByNameIgnoreCase;
 import static com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator.REPOSITORY_UUID;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.valueOf;
 import static java.util.Collections.synchronizedMap;
 import static java.util.UUID.randomUUID;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -37,13 +33,14 @@ import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
+import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.domain.exception.SnomedImportConfigurationNotFoundException;
 import com.b2international.snowowl.snomed.api.impl.domain.SnomedImportConfiguration;
@@ -51,11 +48,9 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedImportResult;
-import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
-import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
@@ -153,51 +148,42 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					+ "International Release; in this case the corresponding code system will be created automatically.", 
 					codeSystemShortName);
 		}
+
+		ApplicationContext.getServiceForClass(FileRegistry.class).upload(importId, inputStream);
 		
-		final File archiveFile = copyContentToTempFile(inputStream, valueOf(randomUUID()));
+		SnomedRequests.rf2().prepareImport()
+			.setRf2ArchiveId(importId)
+			.setCreateVersions(configuration.shouldCreateVersion())
+			.setReleaseType(releaseType)
+			.setUserId(User.SYSTEM.getUsername())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
+			.execute(getEventBus())
+			.then(result -> {
+				// TODO set validation errors
+				((SnomedImportConfiguration) configuration).setStatus(convertStatus(result));
+				return null;
+			})
+			.fail(e -> {
+				LOG.error("Error during the import of: {}", importId, e);
+				((SnomedImportConfiguration) configuration).setStatus(ImportStatus.FAILED);
+				return null;
+			});
 		
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
-					final SnomedImportResult result = doImport(configuration, archiveFile);
-					((SnomedImportConfiguration) configuration).setStatus(convertStatus(result.getValidationDefects())); 
-				} catch (final Exception e) {
-					LOG.error("Error during the import of " + archiveFile, e);
-					((SnomedImportConfiguration) configuration).setStatus(ImportStatus.FAILED);
-				}
-			}
-		}).start();
+		((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
 	}
 	
-	private ImportStatus convertStatus(Set<SnomedValidationDefect> validationDefects) {
-		for (SnomedValidationDefect validationDefect : validationDefects) {
-			if (validationDefect.getDefectType().isCritical()) {
-				return ImportStatus.FAILED;
-			}
-		}
+	private ImportStatus convertStatus(Boolean result) {
+//		for (SnomedValidationDefect validationDefect : validationDefects) {
+//			if (validationDefect.getDefectType().isCritical()) {
+//				return ImportStatus.FAILED;
+//			}
+//		}
 		
 		return ImportStatus.COMPLETED;
 	}
 
-	private SnomedImportResult doImport(final ISnomedImportConfiguration configuration, final File archiveFile) throws Exception {
-		final IBranchPath branch = BranchPathUtils.createPath(configuration.getBranchPath());
-		return new ImportUtil().doImport(
-				configuration.getCodeSystemShortName(),
-				getByNameIgnoreCase(valueOf(configuration.getRf2ReleaseType())), 
-				branch,
-				archiveFile,
-				configuration.shouldCreateVersion());
-	}
-
 	private boolean isImportAlreadyRunning() {
-		return Iterables.any(configurationMapping.values(), new Predicate<ISnomedImportConfiguration>() {
-			@Override
-			public boolean apply(final ISnomedImportConfiguration configuration) {
-				return ImportStatus.RUNNING.equals(configuration.getStatus());
-			}
-		});
+		return Iterables.any(configurationMapping.values(), configuration -> ImportStatus.RUNNING.equals(configuration.getStatus()));
 	}
 	
 	private CodeSystemEntry getCodeSystem(final String shortName) {
