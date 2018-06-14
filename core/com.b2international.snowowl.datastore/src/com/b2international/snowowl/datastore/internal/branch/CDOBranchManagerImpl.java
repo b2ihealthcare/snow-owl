@@ -38,6 +38,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSegment;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
@@ -141,13 +142,14 @@ public final class CDOBranchManagerImpl extends BaseRevisionBranching implements
 				final RevisionBranch tmpBranch = reopen(onTopOf,
 						String.format(RevisionBranch.TEMP_BRANCH_NAME_FORMAT, RevisionBranch.TEMP_PREFIX, branchName, System.currentTimeMillis()), branch.metadata());
 				
-				delete = prepareDelete(tmpBranch.getPath());
+				final String tmpBranchPath = tmpBranch.getPath();
+				delete = prepareDelete(tmpBranchPath);
 				
 				postReopen.run();
 				
 				newTransaction = transferChangeSet(testTransaction, tmpBranch);
 				commitChanges(branch, tmpBranch, commitMessage, newTransaction);
-				RevisionBranch tmpBranchWithChanges = getBranch(tmpBranch.getPath());
+				RevisionBranch tmpBranchWithChanges = getBranch(tmpBranchPath);
 				
 				final RevisionBranch rebasedBranch = RevisionBranch.builder()
 					.name(branchName)
@@ -162,7 +164,12 @@ public final class CDOBranchManagerImpl extends BaseRevisionBranching implements
 				final CDOBranch rebasedCDOBranch = getCDOBranch(rebasedBranch);
 				rebasedCDOBranch.rename(branchName);
 				
-				BulkIndexWrite<Void> bulkWrite = new BulkIndexWrite<>(replace, delete);
+				final IndexWrite<Void> updateCommits = writer -> {
+					writer.bulkUpdate(Commit.Update.branch(tmpBranchPath, branch.getPath()));
+					return null;
+				};
+				
+				BulkIndexWrite<Void> bulkWrite = new BulkIndexWrite<>(replace, delete, updateCommits);
 				
 				commit(bulkWrite);
 				

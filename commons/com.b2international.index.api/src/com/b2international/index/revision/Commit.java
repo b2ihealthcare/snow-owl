@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,16 @@ import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
+import com.b2international.index.BulkUpdate;
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
@@ -36,19 +39,40 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 
 /**
- * @since 5.2
+ * @since 7.0
  */
 @Doc
 @JsonDeserialize(builder = Commit.Builder.class)
+@Script(name=Commit.Scripts.UPDATE_BRANCH, script="ctx._source.branch = params.branch")
 public final class Commit implements WithScore {
+
+	/**
+	 * @since 7.0
+	 */
+	public static final class Scripts {
+		public static final String UPDATE_BRANCH = "updateBranch";
+	}
+
+	/**
+	 * @since 7.0
+	 */
+	public static final class Update {
+		public static BulkUpdate<Commit> branch(final String currentBranch, final String newBranch) {
+			return new BulkUpdate<>(Commit.class, Commit.Expressions.branches(currentBranch), DocumentMapping._ID, Commit.Scripts.UPDATE_BRANCH, ImmutableMap.of("branch", newBranch));
+		}
+	}
 
 	static Builder builder() {
 		return new Builder();
 	}
 
+	/**
+	 * @since 7.0
+	 */
 	@JsonPOJOBuilder(withPrefix = "")
 	static final class Builder {
 
@@ -101,6 +125,9 @@ public final class Commit implements WithScore {
 
 	}
 	
+	/**
+	 * @since 7.0
+	 */
 	public static final class Expressions {
 		
 		private Expressions() {}
@@ -111,6 +138,10 @@ public final class Commit implements WithScore {
 		
 		public static final Expression ids(Collection<String> ids) {
 			return matchAny(DocumentMapping._ID, ids);
+		}
+		
+		public static Expression branches(final String...branchPaths) {
+			return branches(Arrays.asList(branchPaths));
 		}
 		
 		public static Expression branches(final Iterable<String> branchPaths) {
@@ -146,6 +177,9 @@ public final class Commit implements WithScore {
 		
 	}
 	
+	/**
+	 * @since 7.0
+	 */
 	public static final class Fields {
 		public static final String BRANCH = "branch";
 		public static final String AUTHOR = "author";
