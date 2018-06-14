@@ -31,7 +31,6 @@
         <artifact type="bundle" name="org.semanticweb.elk" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.snomed.reasoner.server" version="0.0.0"/>
 
-        <artifact type="bundle" name="com.b2international.snowowl.snomed.exporter.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.datastore.server" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.server.console" version="0.0.0"/>
 
