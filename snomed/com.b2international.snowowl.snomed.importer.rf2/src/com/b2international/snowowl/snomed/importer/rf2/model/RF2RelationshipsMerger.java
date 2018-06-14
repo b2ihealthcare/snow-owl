@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 

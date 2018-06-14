@@ -28,8 +28,8 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Inactivatable;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AssociatingRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.server.normalform;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Predicate;
 

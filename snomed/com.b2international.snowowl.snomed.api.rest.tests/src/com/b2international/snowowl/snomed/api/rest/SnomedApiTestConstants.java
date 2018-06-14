@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;

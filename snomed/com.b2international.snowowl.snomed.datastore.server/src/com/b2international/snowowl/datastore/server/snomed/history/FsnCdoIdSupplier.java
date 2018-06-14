@@ -16,10 +16,10 @@
 package com.b2international.snowowl.datastore.server.snomed.history;
 
 import static com.b2international.snowowl.datastore.cdo.CDOUtils.NO_STORAGE_KEY;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.google.common.base.Supplier;
 

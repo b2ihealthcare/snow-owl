@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.strength
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil

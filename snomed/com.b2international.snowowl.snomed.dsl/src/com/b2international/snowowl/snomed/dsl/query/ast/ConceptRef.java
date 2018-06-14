@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.dsl.query.ast;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 
 public class ConceptRef extends RValue {

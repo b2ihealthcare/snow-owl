@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.interest;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 

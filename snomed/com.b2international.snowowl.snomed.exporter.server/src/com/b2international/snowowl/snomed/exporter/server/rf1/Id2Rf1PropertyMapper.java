@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.collect.Maps;
 
 /**

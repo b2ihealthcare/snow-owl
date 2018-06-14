@@ -16,15 +16,15 @@
 package com.b2international.snowowl.datastore.server.snomed;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_ROOT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.MODULE_SCT_CORE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DEFINING_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MEASUREMENT_TYPE;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_B2I_EXTENSION;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_ROOT;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_SCT_CORE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DEFINING_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MEASUREMENT_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_ROOT_CONCEPT;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedConstants;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;

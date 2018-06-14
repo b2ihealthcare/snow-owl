@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.rf2;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_DEFINED;
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_DEFINED;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.PRIMITIVE;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;

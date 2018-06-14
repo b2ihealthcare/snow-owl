@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.google.common.collect.Sets;

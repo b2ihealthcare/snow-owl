@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
 import com.google.common.base.Strings;

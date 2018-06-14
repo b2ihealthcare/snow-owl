@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
 import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;

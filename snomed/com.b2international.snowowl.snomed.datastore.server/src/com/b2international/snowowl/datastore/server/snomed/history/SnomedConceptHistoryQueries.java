@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * Contains SQL queries used for populating the history page of SNOMED CT concepts. 

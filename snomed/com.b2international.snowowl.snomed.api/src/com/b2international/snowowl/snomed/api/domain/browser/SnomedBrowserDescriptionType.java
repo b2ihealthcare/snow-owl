@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.domain.browser;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.ConceptEnum;
 
 /**

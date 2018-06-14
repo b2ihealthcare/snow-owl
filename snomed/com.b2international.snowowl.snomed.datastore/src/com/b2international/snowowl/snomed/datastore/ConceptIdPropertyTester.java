@@ -23,7 +23,7 @@ import java.util.Collection;
 import org.eclipse.core.expressions.PropertyTester;
 
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * Property tester that checks the ID of a particular concept.

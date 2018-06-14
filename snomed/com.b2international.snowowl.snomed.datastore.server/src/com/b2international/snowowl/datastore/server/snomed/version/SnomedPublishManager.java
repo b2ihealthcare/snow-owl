@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.version;
 
-import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Date;

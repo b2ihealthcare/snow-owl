@@ -24,8 +24,8 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.importer.rf2.csv.MRCMModuleScopeRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;

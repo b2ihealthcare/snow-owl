@@ -22,7 +22,7 @@ import org.osgi.service.prefs.PreferencesService;
 import com.b2international.snowowl.core.api.preferences.ConfigNode;
 import com.b2international.snowowl.core.api.preferences.PreferenceBase;
 import com.b2international.snowowl.core.api.preferences.io.ConfigurationEntrySerializer;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * Configuration for SNOMED CT editing.

@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.exporter.server;
 import static java.util.Collections.emptySet;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.rf1.SnomedCrossMapExporter;

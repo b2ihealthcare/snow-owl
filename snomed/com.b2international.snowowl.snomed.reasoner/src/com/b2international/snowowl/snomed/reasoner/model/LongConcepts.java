@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.model;
 
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * A SNOMED&nbsp;CT concept ID collection which holds constants in primitive long form.

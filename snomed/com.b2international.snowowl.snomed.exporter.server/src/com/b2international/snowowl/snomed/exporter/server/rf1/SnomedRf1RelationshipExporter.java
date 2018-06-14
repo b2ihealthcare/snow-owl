@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.exporter.server.rf1;
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
