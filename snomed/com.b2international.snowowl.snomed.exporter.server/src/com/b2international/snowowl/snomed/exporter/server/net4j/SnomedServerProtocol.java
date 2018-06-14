@@ -33,8 +33,6 @@ public class SnomedServerProtocol extends SignalProtocol<Object> {
 	@Override
 	protected SignalReactor createSignalReactor(final short signalID) {
 		switch (signalID) {
-			case Net4jProtocolConstants.SNOMED_EXPORT_SIGNAL:
-				return new SnomedExportServerIndication(this);
 			case Net4jProtocolConstants.REFSET_TO_DSV_SIGNAL:
 				return new SnomedRefSetDSVExportServerIndication(this);
 			case Net4jProtocolConstants.SNOMED_EXPORT_REFSET_TO_EXCEL_SIGNAL:
