@@ -511,6 +511,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						.withDomainTemplateForPrecoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION))
 						.withDomainTemplateForPostcoordination((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION))
 						.withEditorialGuideReference((String) properties.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
+				break;
 			case MRCM_ATTRIBUTE_DOMAIN:
 				builder = SnomedComponents.newMRCMAttributeDomainReferenceSetMember()
 						.withDomainId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID))
@@ -519,15 +520,18 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						.withAttributeInGroupCardinality((String) properties.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY))
 						.withRuleStrengthId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID))
 						.withContentTypeId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+				break;
 			case MRCM_ATTRIBUTE_RANGE:
 				builder = SnomedComponents.newMRCMAttributeRangeReferenceSetMember()
 						.withRangeConstraint((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT))
 						.withAttributeRule((String) properties.get(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE))
 						.withRuleStrengthId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID))
 						.withContentTypeId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
+				break;
 			case MRCM_MODULE_SCOPE:
 				builder = SnomedComponents.newMRCMModuleScopeReferenceSetMember()
 						.withMRCMRuleRefsetId((String) properties.get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
+				break;
 			default: 
 				throw new UnsupportedOperationException("Unknown refset member type: " + rf2Component.type());
 		}

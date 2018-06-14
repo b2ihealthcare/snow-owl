@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
@@ -124,11 +125,18 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			// TODO in case of FULL or SNAPSHOT import load all component storage key pairs into the above Maps, so we can avoid loading them during tx commit
 			if (!isLoadOnDemandEnabled()) {
 				Stopwatch w = Stopwatch.createStarted();
-				System.err.println("Loading available components IDs and StorageKeys took...");
 				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
+					System.err.println(String.format("Loading available '%s' IDs and StorageKeys...", type.getName()));
+					final List<String> fieldsToLoad;
+					if (SnomedConceptDocument.class == type) {
+						fieldsToLoad = ImmutableList.of(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
+					} else {
+						fieldsToLoad = ImmutableList.of(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY);
+					}
+					
 					for (Hits<Map> hits : context.service(RevisionSearcher.class).scroll(Query.select(Map.class)
 							.from(type)
-							.fields(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY)
+							.fields(fieldsToLoad)
 							.where(Expressions.matchAll())
 							.limit(10_000)
 							.build())) {

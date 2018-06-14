@@ -113,15 +113,15 @@ public final class Rf2EffectiveTimeSlice {
 		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + valuesWithType);
 	}
 
-	public void register(String containerId, String type, String[] values) {
+	public void register(String containerId, Rf2ContentType<?> type, String[] values) {
 		String[] valuesWithType = new String[values.length + 1];
-		valuesWithType[0] = type;
+		valuesWithType[0] = type.getType();
 		System.arraycopy(values, 0, valuesWithType, 1, values.length);
 
 		final String componentId = values[0];
 		final long containerIdL = Long.parseLong(containerId);
 		// track refset members via membersByContainer map
-		if (type.endsWith("member")) {
+		if (Rf2RefSetContentType.class.isAssignableFrom(type.getClass())) {
 			if (!membersByContainer.containsKey(containerIdL)) {
 				membersByContainer.put(containerIdL, newHashSet());
 			}

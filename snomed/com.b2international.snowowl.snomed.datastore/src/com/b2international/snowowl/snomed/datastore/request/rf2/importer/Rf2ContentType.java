@@ -30,7 +30,7 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 
 	default void register(String[] values, Rf2EffectiveTimeSlice slice) {
 		final String containerId = getContainerId(values);
-		slice.register(containerId, getType(), values);
+		slice.register(containerId, this, values);
 		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
 	}
 
