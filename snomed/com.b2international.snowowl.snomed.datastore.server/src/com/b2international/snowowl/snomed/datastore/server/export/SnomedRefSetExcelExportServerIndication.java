@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.net4j;
+package com.b2international.snowowl.snomed.datastore.server.export;
 
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -21,7 +21,6 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.datastore.server.importer.ITerminologyExporter;
 import com.b2international.snowowl.datastore.server.net4j.AbstractExportIndication;
-import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetExcelExporter;
 
 /**
  * The server-side signal handler when exporting simple type reference set to Excel format.

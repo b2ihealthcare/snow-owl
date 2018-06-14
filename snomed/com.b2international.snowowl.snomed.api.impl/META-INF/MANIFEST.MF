@@ -18,7 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  com.b2international.snowowl.api.impl,
  com.b2international.snowowl.snomed.api,
  com.b2international.snowowl.snomed.common,
- com.b2international.snowowl.snomed.exporter.server,
  com.b2international.org.apache.lucene;bundle-version="5.5.0",
  com.b2international.snowowl.snomed.reasoner.server
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

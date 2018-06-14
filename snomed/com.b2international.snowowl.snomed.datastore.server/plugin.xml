@@ -87,4 +87,11 @@
             class="com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictRuleProvider">
       </ruleprovider>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.protocolFactory">
+      <protocolFactory
+            class="com.b2international.snowowl.snomed.datastore.server.export.SnomedServerProtocol$Factory"
+            id="com.b2international.snowowl.snomed.datastore.server.export.SnomedServerProtocol$Factory">
+      </protocolFactory>
+   </extension>
 </plugin>

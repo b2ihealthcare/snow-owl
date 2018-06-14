@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.net4j;
+package com.b2international.snowowl.snomed.datastore.server.export;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -50,9 +50,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult.Result;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
-import com.b2international.snowowl.snomed.exporter.server.dsv.IRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.dsv.MapTypeRefSetDSVExporter;
-import com.b2international.snowowl.snomed.exporter.server.dsv.SnomedSimpleTypeRefSetDSVExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
