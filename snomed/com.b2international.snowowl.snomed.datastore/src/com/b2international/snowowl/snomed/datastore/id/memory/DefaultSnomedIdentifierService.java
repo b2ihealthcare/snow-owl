@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Provider;
 
 /**
- * {@link Store} based implementation of the identifier service.
+ * {@link Index} based implementation of the identifier service.
  * 
  * @since 4.5
  */
