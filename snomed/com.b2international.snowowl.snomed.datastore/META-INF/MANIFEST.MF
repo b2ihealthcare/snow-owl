@@ -10,8 +10,7 @@ Import-Package: com.b2international.index.compat,
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.eclipse.core.commands;bundle-version="3.6.0",
- org.eclipse.core.databinding;bundle-version="1.4.0",
+ org.eclipse.core.resources,
  org.eclipse.core.expressions;bundle-version="3.4.400",
  org.eclipse.xtend.lib;bundle-version="[2.11.0,2.13.0)",
  com.b2international.snowowl.rpc,
@@ -26,8 +25,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.apache.httpcomponents.httpcore;bundle-version="4.2.5",
  com.b2international.mapdb;bundle-version="[3.0.5,3.0.6)",
  com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="2.8.6",
- com.b2international.snowowl.core,
- org.eclipse.core.resources
+ com.b2international.snowowl.core
 Export-Package: com.b2international.snowowl.snomed.core.domain,
  com.b2international.snowowl.snomed.core.domain.constraint,
  com.b2international.snowowl.snomed.core.domain.refset,

@@ -7,16 +7,10 @@ Bundle-Activator: com.b2international.snowowl.snomed.reasoner.server.SnomedReaso
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.semanticweb.owl.owlapi;bundle-version="[3.4.4,4.0.0)",
- org.eclipse.emf.ecore;bundle-version="[2.10.0,3.0.0)",
- org.eclipse.emf.cdo.net4j;bundle-version="[4.1.1,5.0.0)",
  org.protege.editor.owl;bundle-version="[4.1.0,5.0.0)",
  org.protege.editor.core.application;bundle-version="[4.1.0,5.0.0)",
- org.eclipse.emf.cdo.server;bundle-version="[4.1.1,5.0.0)",
  com.b2international.snowowl.snomed.reasoner;visibility:=reexport,
- com.b2international.snowowl.rpc,
- com.b2international.snowowl.snomed.datastore.server,
- com.b2international.snowowl.snomed.mrcm.model,
- com.b2international.snowowl.eventbus
+ com.b2international.snowowl.snomed.datastore.server
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.snomed.reasoner.server,
