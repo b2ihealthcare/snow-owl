@@ -47,6 +47,7 @@
          <!-- Referenced components -->
          <supportedRefSetType type="SIMPLE" />
          <supportedRefSetType type="ATTRIBUTE_VALUE" />
+         <supportedRefSetType type="LANGUAGE" />
          <supportedRefSetType type="SIMPLE_MAP" />
          <supportedRefSetType type="SIMPLE_MAP_WITH_DESCRIPTION" />
       </terminologyComponent>
