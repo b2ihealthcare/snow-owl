@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.text.MessageFormat;
@@ -26,7 +25,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +44,7 @@ import com.b2international.commons.collect.BitSetIntIterator;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
@@ -54,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -75,341 +75,6 @@ public final class ReasonerTaxonomyBuilder {
 	private static final Set<String> CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP);
 	
 	private static final int SCROLL_LIMIT = 50_000;
-
-	private static final class GetConceptIdsRunnable implements Runnable {
-
-		private final RevisionSearcher searcher;
-		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final AtomicReference<LongSet> conceptIdsReference;
-		private final AtomicReference<LongSet> exhaustiveConceptIdsReference;
-		private final AtomicReference<LongSet> fullyDefinedConceptIdsReference;
-
-		private GetConceptIdsRunnable(final RevisionSearcher searcher, 
-				final String taskName,
-				final Stopwatch stopwatch,
-				final AtomicReference<LongSet> conceptIdsReference, 
-				final AtomicReference<LongSet> exhaustiveConceptIdsReference, 
-				final AtomicReference<LongSet> fullyDefinedConceptIdsReference) {
-
-			this.searcher = searcher;
-			this.taskName = taskName;
-			this.stopwatch = stopwatch;
-			this.conceptIdsReference = conceptIdsReference;
-			this.exhaustiveConceptIdsReference = exhaustiveConceptIdsReference;
-			this.fullyDefinedConceptIdsReference = fullyDefinedConceptIdsReference;
-		}
-
-		@Override
-		public void run() {
-			final Query<String[]> query = Query.select(String[].class)
-					.from(SnomedConceptDocument.class)
-					.fields(SnomedConceptDocument.Fields.ID, 
-							SnomedConceptDocument.Fields.PRIMITIVE, 
-							SnomedConceptDocument.Fields.EXHAUSTIVE)
-					.where(Expressions.builder()
-							.filter(active())
-							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
-							.build())
-					.limit(SCROLL_LIMIT)
-					.build();
-			
-			final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
-			LongSet conceptIds = null;
-			LongSet exhaustiveIds = null;
-			LongSet fullyDefinedConceptIds = null;
-			
-			for (Hits<String[]> page : scrolledHits) {
-				if (conceptIds == null) {
-					conceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
-					exhaustiveIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
-					fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
-				}
-				
-				for (String[] conceptFields : page) {
-					long conceptId = Long.parseLong(conceptFields[0]);
-					conceptIds.add(conceptId);
-					
-					if (!Boolean.parseBoolean(conceptFields[1])) {
-						fullyDefinedConceptIds.add(conceptId);
-					}
-					
-					if (Boolean.parseBoolean(conceptFields[2])) {
-						exhaustiveIds.add(conceptId);
-					}
-				}
-			}
-			
-			conceptIdsReference.set(conceptIds);
-			exhaustiveConceptIdsReference.set(exhaustiveIds);
-			fullyDefinedConceptIdsReference.set(fullyDefinedConceptIds);
-			
-			checkpoint(taskName, "active concept IDs collection", stopwatch);
-		}
-	}
-
-	private static final class GetStatementsRunnable implements Runnable {
-	
-		private final RevisionSearcher searcher;
-		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final int conceptCount;
-		private final AtomicReference<LongKeyMap<Collection<StatementFragment>>> statedFragmentsReference;
-		private final AtomicReference<LongKeyMap<Collection<StatementFragment>>> inferredFragmentsReference;
-	
-		private GetStatementsRunnable(final RevisionSearcher searcher, 
-				final String taskName, 
-				final Stopwatch stopwatch,
-				final int conceptCount,
-				final AtomicReference<LongKeyMap<Collection<StatementFragment>>> statedFragmentsReference,
-				final AtomicReference<LongKeyMap<Collection<StatementFragment>>> inferredFragmentsReference) {
-	
-			this.searcher = searcher;
-			this.taskName = taskName;
-			this.stopwatch = stopwatch;
-			this.conceptCount = conceptCount;
-			this.statedFragmentsReference = statedFragmentsReference;
-			this.inferredFragmentsReference = inferredFragmentsReference;
-		}
-	
-		@Override
-		public void run() {
-			final Query<String[]> query = Query.select(String[].class)
-					.from(SnomedRelationshipIndexEntry.class)
-					.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0
-							Revision.STORAGE_KEY, // 1
-							SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 2
-							SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
-							SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4 
-							SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 5
-							SnomedRelationshipIndexEntry.Fields.GROUP, // 6
-							SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 7
-							SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 8
-							SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 9
-					.where(Expressions.builder()
-							.filter(active())
-							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CHARACTERISTIC_TYPE_IDS))
-							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
-							.build())
-					.limit(SCROLL_LIMIT)
-					.build();
-			
-			final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
-			LongKeyMap<Collection<StatementFragment>> statedFragments = null;
-			LongKeyMap<Collection<StatementFragment>> inferredFragments = null;
-			
-			for (Hits<String[]> page : scrolledHits) {
-				if (statedFragments == null) {
-					statedFragments = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
-				}
-				
-				if (inferredFragments == null) {
-					inferredFragments = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
-				}
-				
-				for (String[] statementFields : page) {
-					final StatementFragment statement = new StatementFragment(
-							Long.parseLong(statementFields[3]),
-							Long.parseLong(statementFields[4]),
-							Boolean.parseBoolean(statementFields[5]),
-							Integer.parseInt(statementFields[6]),
-							Integer.parseInt(statementFields[7]),
-							Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(statementFields[8]),
-							Long.parseLong(statementFields[0]),
-							Long.parseLong(statementFields[1]));
-					
-					long sourceId = Long.parseLong(statementFields[2]);
-					
-					if (Concepts.STATED_RELATIONSHIP.equals(statementFields[9])) {
-						addToLongMultimap(statedFragments, sourceId, statement);
-					} else {
-						addToLongMultimap(inferredFragments, sourceId, statement);
-					}
-
-				}
-			}
-			
-			statedFragmentsReference.set(statedFragments);
-			inferredFragmentsReference.set(inferredFragments);
-			
-			checkpoint(taskName, "collecting statements", stopwatch);
-		}
-	}
-
-	private static final class GetConcreteDomainRunnable implements Runnable {
-	
-		private final RevisionSearcher searcher;
-		private final String taskName;
-		private final Stopwatch stopwatch;
-		private final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> statedConcreteDomainsReference;
-		private final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConcreteDomainsReference;
-	
-		private GetConcreteDomainRunnable(final RevisionSearcher searcher, 
-				final String taskName,
-				final Stopwatch stopwatch,
-				final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> statedConcreteDomainsReference,
-				final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConcreteDomainsReference) {
-	
-			this.searcher = searcher;
-			this.taskName = taskName;
-			this.stopwatch = stopwatch;
-			this.statedConcreteDomainsReference = statedConcreteDomainsReference;
-			this.inferredConcreteDomainsReference = inferredConcreteDomainsReference;
-		}
-	
-		@Override
-		public void run() {
-			final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
-					.where(Expressions.builder()
-							.filter(active())
-							.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
-							.filter(characteristicTypeIds(CHARACTERISTIC_TYPE_IDS))
-							.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
-							.build())
-					.limit(SCROLL_LIMIT)
-					.build();
-					
-			final Iterable<Hits<SnomedRefSetMemberIndexEntry>> scrolledHits = searcher.scroll(query);
-			LongKeyMap<Collection<ConcreteDomainFragment>> statedFragments = null;
-			LongKeyMap<Collection<ConcreteDomainFragment>> inferredFragments = null;
-			
-			for (Hits<SnomedRefSetMemberIndexEntry> page : scrolledHits) {
-				if (statedFragments == null) {
-					statedFragments = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
-				}
-				
-				if (inferredFragments == null) {
-					inferredFragments = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
-				}
-				
-				for (SnomedRefSetMemberIndexEntry entry : page) {
-					final long referencedComponentId = Long.parseLong(entry.getReferencedComponentId());
-					final long refsetId = Long.parseLong(entry.getReferenceSetId());
-					final byte dataType = (byte) entry.getDataType().ordinal();
-					final long unitId = Strings.isNullOrEmpty(entry.getUnitId()) ? -1L : Long.parseLong(entry.getUnitId());
-					final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
-					
-					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, 
-							entry.getAttributeName(), 
-							dataType,
-							unitId, 
-							entry.getStorageKey(), 
-							refsetId);
-					
-					if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
-						addToLongMultimap(statedFragments, referencedComponentId, fragment);
-					} else {
-						addToLongMultimap(inferredFragments, referencedComponentId, fragment);
-					}
-				}
-			}
-	
-			statedConcreteDomainsReference.set(statedFragments);
-			inferredConcreteDomainsReference.set(inferredFragments);
-
-			checkpoint(taskName, "collecting concrete domain reference set members...", stopwatch);
-		}
-	}
-
-	private final class TaxonomyBuilderRunnable implements Runnable {
-
-		private final String taskName;
-		private final AtomicReference<LongSet> conceptIdsReference;
-		private final AtomicReference<LongKeyMap<Collection<StatementFragment>>> statedFragmentsReference;
-
-		private TaxonomyBuilderRunnable(final String taskName, 
-				final AtomicReference<LongSet> conceptIdsReference,
-				final AtomicReference<LongKeyMap<Collection<StatementFragment>>> statedFragmentsReference) {
-
-			this.taskName = taskName;
-			this.conceptIdsReference = conceptIdsReference;
-			this.statedFragmentsReference = statedFragmentsReference;
-		}
-
-		@Override
-		public void run() {
-
-			final LongSet conceptIds = conceptIdsReference.get();
-			final int conceptCount = conceptIds.size();
-
-			internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
-			conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptCount);
-
-			LongIterator iterator = conceptIds.iterator();
-			while (iterator.hasNext()) {
-				final long conceptId = iterator.next();
-				internalIdToconceptId.add(conceptId);
-				conceptIdToInternalId.put(conceptId, internalIdToconceptId.size() - 1);
-			}
-
-			final int[] outboundIsACount = new int[conceptCount];
-			final int[] inboundIsACount = new int[conceptCount];
-
-			superTypes = new int[conceptCount][];
-			subTypes = new int[conceptCount][];
-
-			LongKeyMap<Collection<StatementFragment>> statedFragments = statedFragmentsReference.get();
-			
-			// Count how many elements in the arrays we need for subtypes and supertypes
-			iterator = conceptIds.iterator();
-			while (iterator.hasNext()) {
-				final long sourceId = iterator.next();
-				final int sourceInternalId = getInternalId(sourceId);
-				
-				final Collection<StatementFragment> relationships = statedFragments.get(sourceId);
-				if (relationships == null) {
-					continue;
-				}
-				
-				relationships.stream()
-					.filter(s -> s.getTypeId() == IS_A_ID)
-					.forEach(isAStatement -> {
-						final long destinationId = isAStatement.getDestinationId();
-						final int destinationInternalId = getInternalId(destinationId);
-
-						outboundIsACount[sourceInternalId]++;
-						inboundIsACount[destinationInternalId]++;
-					});
-			}
-
-			for (int i = 0; i < conceptCount; i++) {
-				superTypes[i] = new int[outboundIsACount[i]];
-				subTypes[i] = new int[inboundIsACount[i]];
-			}
-
-			// Create last used index matrices for IS A relationships (initialized to 0 for all concepts)
-			final int[] lastSuperTypeIdx = new int[conceptCount];
-			final int[] lastSubTypeIdx = new int[conceptCount];
-
-			// Register IS A relationships as subtype and supertype internal IDs
-			iterator = conceptIds.iterator();
-			while (iterator.hasNext()) {
-				final long sourceId = iterator.next();
-				final int sourceInternalId = getInternalId(sourceId);
-				
-				final Collection<StatementFragment> relationships = statedFragments.get(sourceId);
-				if (relationships == null) {
-					continue;
-				}
-				
-				relationships.stream()
-					.filter(s -> s.getTypeId() == IS_A_ID)
-					.forEach(isAStatement -> {
-						final long destinationId = isAStatement.getDestinationId();
-						final int destinationInternalId = getInternalId(destinationId);
-						
-						superTypes[sourceInternalId][lastSuperTypeIdx[sourceInternalId]++] = destinationInternalId;
-						subTypes[destinationInternalId][lastSubTypeIdx[destinationInternalId]++] = sourceInternalId;
-					});
-			}
-
-			checkpoint(taskName, "building taxonomy", stopwatch);
-		}
-	}
-
-	private static <T> AtomicReference<T> createAtomicReference() {
-		return new AtomicReference<T>();
-	}
 
 	private static void entering(final String taskName) {
 		LOGGER.info(MessageFormat.format(">>> {0}", taskName));
@@ -434,7 +99,19 @@ public final class ReasonerTaxonomyBuilder {
 	}
 
 	private final Stopwatch stopwatch;
-	
+
+	/** A set containing all fully defined concept IDs. */
+	private LongSet fullyDefinedConceptIds;
+
+	/** A set containing all exhaustive concept IDs. */
+	private LongSet exhaustiveConceptIds;
+
+	/** Maps concept IDs to the associated stated active outbound relationships. */
+	private LongKeyMap<Collection<StatementFragment>> statedStatementMap;
+
+	/** Maps concept IDs to the associated inferred active outbound relationships. */
+	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
+
 	/** Matrix for storing concept ancestors by internal IDs. */
 	private int[][] superTypes;
 
@@ -447,78 +124,342 @@ public final class ReasonerTaxonomyBuilder {
 	/** Maps SCTIDs to internal IDs. */
 	private LongKeyIntMap conceptIdToInternalId;
 
-	/** A set containing all exhaustive concept IDs. */
-	private LongSet exhaustiveConceptIds;
-
-	/** A set containing all fully defined concept IDs. */
-	private LongSet fullyDefinedConceptIds;
-
-	/** Maps concept IDs to the associated stated active outbound relationships. */
-	private LongKeyMap<Collection<StatementFragment>> statedStatementMap;
-
-	/** Maps concept IDs to the associated inferred active outbound relationships. */
-	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
-	
 	/** Maps component IDs to the associated stated concrete domain members. */
 	private LongKeyMap<Collection<ConcreteDomainFragment>> statedConcreteDomainMap;
 
 	/** Maps component IDs to the associated inferred concrete domain members. */
 	private LongKeyMap<Collection<ConcreteDomainFragment>> inferredConcreteDomainMap;
 
+	/** Maps concept IDs to the term used in one of the concept's active fully specified names. */
+	private LongKeyMap<String> fullySpecifiedNameMap;
+
+	public ReasonerTaxonomyBuilder(final RevisionSearcher searcher, final boolean collectConcreteDomains) {
+		this(searcher, collectConcreteDomains, true, false, Concepts.UK_MODULES_NOCLASSIFY);
+	}
+
 	/**
 	 * Creates a taxonomy builder instance.
 	 *
 	 * @param searcher - an active revision searcher on a branch where this reasoner taxonomy builder should collect data from
-	 * @param concreteDomainSupportEnabled - if concrete domain reference set members should be populated
+	 * @param collectConcreteDomains - if concrete domain reference set members should be populated
+	 * @param collectInferredComponents - if the inferred counterparts of collected components should also be collected
+	 * @param excludedModules - the set of modules to exclude from classification
+	 * @param locales - if null or empty, skip collecting preferred terms for each concept; the order of preference for PTs otherwise 
 	 */
-	public ReasonerTaxonomyBuilder(final RevisionSearcher searcher, final boolean concreteDomainSupportEnabled) {
+	public ReasonerTaxonomyBuilder(final RevisionSearcher searcher,
+			final boolean collectConcreteDomains,
+			final boolean collectInferredComponents,
+			final boolean collectFullySpecifiedNames,
+			final Set<String> excludedModules) {
 		
 		this.stopwatch = Stopwatch.createStarted();
 		
 		final String taskName = MessageFormat.format("Building reasoner taxonomy for branch path ''{0}''", searcher.branch());
 		entering(taskName);
 
-		final AtomicReference<LongSet> conceptIdsReference = createAtomicReference();
-		final AtomicReference<LongSet> exhaustiveConceptIdsReference = createAtomicReference();
-		final AtomicReference<LongSet> fullyDefinedConceptIdsReference = createAtomicReference();
-
-		new GetConceptIdsRunnable(searcher, taskName, stopwatch,
-				conceptIdsReference, 
-				exhaustiveConceptIdsReference, 
-				fullyDefinedConceptIdsReference).run();
+		final LongSet activeConceptIds = initConceptIdSets(taskName, searcher, excludedModules);
+		initStatements(taskName, searcher, excludedModules, collectInferredComponents, activeConceptIds.size());
+		initTaxonomy(taskName, activeConceptIds);
 		
-		final AtomicReference<LongKeyMap<Collection<StatementFragment>>> statedStatementsReference = createAtomicReference();
-		final AtomicReference<LongKeyMap<Collection<StatementFragment>>> inferredStatementsReference = createAtomicReference();
-		
-		new GetStatementsRunnable(searcher, taskName, stopwatch,
-				conceptIdsReference.get().size(),
-				statedStatementsReference, 
-				inferredStatementsReference).run();
-		
-		new TaxonomyBuilderRunnable(taskName, 
-				conceptIdsReference, 
-				statedStatementsReference).run();
-		
-		if (concreteDomainSupportEnabled) {
-			final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> statedConcreteDomainsReference = createAtomicReference();
-			final AtomicReference<LongKeyMap<Collection<ConcreteDomainFragment>>> inferredConcreteDomainsReference = createAtomicReference();
-			
-			new GetConcreteDomainRunnable(searcher, taskName, stopwatch, 
-					statedConcreteDomainsReference, 
-					inferredConcreteDomainsReference).run();
-			
-			statedConcreteDomainMap = statedConcreteDomainsReference.get();
-			inferredConcreteDomainMap = inferredConcreteDomainsReference.get();
+		if (collectConcreteDomains) {
+			initConcreteDomains(taskName, searcher, excludedModules, collectInferredComponents);
 		}
 		
-		exhaustiveConceptIds = exhaustiveConceptIdsReference.get();
-		fullyDefinedConceptIds = fullyDefinedConceptIdsReference.get();
-		statedStatementMap = statedStatementsReference.get();
-		inferredStatementMap = inferredStatementsReference.get();
+		if (collectFullySpecifiedNames) {
+			initActiveFsns(taskName, searcher, excludedModules);
+		}
 		
 		leaving(taskName, stopwatch);
 	}
 	
+	private LongSet initConceptIdSets(String taskName, final RevisionSearcher searcher, Set<String> excludedModules) {
+		
+		final ExpressionBuilder builder = Expressions.builder()
+				.filter(active());
+		
+		if (!CompareUtils.isEmpty(excludedModules)) {
+			builder.mustNot(modules(excludedModules));
+		}
+				
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedConceptDocument.class)
+				.fields(SnomedConceptDocument.Fields.ID, 
+						SnomedConceptDocument.Fields.PRIMITIVE, 
+						SnomedConceptDocument.Fields.EXHAUSTIVE)
+				.where(builder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		LongSet activeConceptIds = null;
+		
+		for (Hits<String[]> page : scrolledHits) {
+			if (activeConceptIds == null) {
+				activeConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
+				fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
+				exhaustiveConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
+			}
+			
+			for (String[] conceptFields : page) {
+				long conceptId = Long.parseLong(conceptFields[0]);
+				activeConceptIds.add(conceptId);
+				
+				if (!Boolean.parseBoolean(conceptFields[1])) {
+					fullyDefinedConceptIds.add(conceptId);
+				}
+				
+				if (Boolean.parseBoolean(conceptFields[2])) {
+					exhaustiveConceptIds.add(conceptId);
+				}
+			}
+		}
+		
+		if (activeConceptIds == null) {
+			fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
+			exhaustiveConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
+		}
+		
+		checkpoint(taskName, "active concept IDs collection", stopwatch);
+		return activeConceptIds;
+	}
+
+	private void initStatements(String taskName, 
+			RevisionSearcher searcher, 
+			Set<String> excludedModules,
+			boolean collectInferredComponents, 
+			int conceptCount) {
+		
+		final ExpressionBuilder builder = Expressions.builder()
+				.filter(active());
+
+		if (!CompareUtils.isEmpty(excludedModules)) {
+			builder.mustNot(modules(excludedModules));
+		}
+
+		if (collectInferredComponents) {
+			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CHARACTERISTIC_TYPE_IDS));
+		} else {
+			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0
+						Revision.STORAGE_KEY, // 1
+						SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 2
+						SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 3
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 4 
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 5
+						SnomedRelationshipIndexEntry.Fields.GROUP, // 6
+						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 7
+						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 8
+						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 9
+				.where(builder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		
+		for (Hits<String[]> page : scrolledHits) {
+			if (statedStatementMap == null) {
+				statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
+				inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
+			}
+			
+			for (String[] statementFields : page) {
+				final StatementFragment statement = new StatementFragment(
+						Long.parseLong(statementFields[3]),
+						Long.parseLong(statementFields[4]),
+						Boolean.parseBoolean(statementFields[5]),
+						Integer.parseInt(statementFields[6]),
+						Integer.parseInt(statementFields[7]),
+						Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(statementFields[8]),
+						Long.parseLong(statementFields[0]),
+						Long.parseLong(statementFields[1]));
+				
+				long sourceId = Long.parseLong(statementFields[2]);
+				
+				if (Concepts.STATED_RELATIONSHIP.equals(statementFields[9])) {
+					addToLongMultimap(statedStatementMap, sourceId, statement);
+				} else {
+					addToLongMultimap(inferredStatementMap, sourceId, statement);
+				}
+			}
+		}
+		
+		if (statedStatementMap == null) {
+			statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+			inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+		}
+		
+		checkpoint(taskName, "collecting statements", stopwatch);
+	}
+
+	private void initConcreteDomains(String taskName, 
+			RevisionSearcher searcher, 
+			Set<String> excludedModules,
+			boolean collectInferredComponents) {
+	
+		final ExpressionBuilder builder = Expressions.builder()
+				.filter(active())
+				.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)));
+
+		if (!CompareUtils.isEmpty(excludedModules)) {
+			builder.mustNot(modules(excludedModules));
+		}
+
+		if (collectInferredComponents) {
+			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CHARACTERISTIC_TYPE_IDS));
+		} else {
+			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+		}
+		
+		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(builder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+				
+		final Iterable<Hits<SnomedRefSetMemberIndexEntry>> scrolledHits = searcher.scroll(query);
+		statedConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+		inferredConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+		
+		for (Hits<SnomedRefSetMemberIndexEntry> page : scrolledHits) {
+			for (SnomedRefSetMemberIndexEntry entry : page) {
+				final long referencedComponentId = Long.parseLong(entry.getReferencedComponentId());
+				final long refsetId = Long.parseLong(entry.getReferenceSetId());
+				final byte dataType = (byte) entry.getDataType().ordinal();
+				final long unitId = Strings.isNullOrEmpty(entry.getUnitId()) ? -1L : Long.parseLong(entry.getUnitId());
+				final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
+				
+				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, 
+						entry.getAttributeName(), 
+						dataType,
+						unitId, 
+						entry.getStorageKey(), 
+						refsetId);
+				
+				if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
+					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
+				} else {
+					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
+				}
+			}
+		}
+
+		checkpoint(taskName, "collecting concrete domain reference set members...", stopwatch);
+	}
+
+	private void initTaxonomy(String taskName, LongSet activeConceptIds) {
+		final int conceptCount = activeConceptIds.size();
+
+		internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
+		conceptIdToInternalId = PrimitiveMaps.newLongKeyIntOpenHashMapWithExpectedSize(conceptCount);
+
+		LongIterator iterator = activeConceptIds.iterator();
+		while (iterator.hasNext()) {
+			final long conceptId = iterator.next();
+			internalIdToconceptId.add(conceptId);
+			conceptIdToInternalId.put(conceptId, internalIdToconceptId.size() - 1);
+		}
+
+		final int[] outboundIsACount = new int[conceptCount];
+		final int[] inboundIsACount = new int[conceptCount];
+
+		superTypes = new int[conceptCount][];
+		subTypes = new int[conceptCount][];
+
+		// Count how many elements in the arrays we need for subtypes and supertypes
+		iterator = activeConceptIds.iterator();
+		while (iterator.hasNext()) {
+			final long sourceId = iterator.next();
+			final int sourceInternalId = getInternalId(sourceId);
+			
+			final Collection<StatementFragment> relationships = statedStatementMap.get(sourceId);
+			if (relationships == null) {
+				continue;
+			}
+			
+			relationships.stream()
+				.filter(s -> s.getTypeId() == IS_A_ID)
+				.forEach(isAStatement -> {
+					final long destinationId = isAStatement.getDestinationId();
+					final int destinationInternalId = getInternalId(destinationId);
+
+					outboundIsACount[sourceInternalId]++;
+					inboundIsACount[destinationInternalId]++;
+				});
+		}
+
+		for (int i = 0; i < conceptCount; i++) {
+			superTypes[i] = new int[outboundIsACount[i]];
+			subTypes[i] = new int[inboundIsACount[i]];
+		}
+
+		// Create last used index matrices for IS A relationships (initialized to 0 for all concepts)
+		final int[] lastSuperTypeIdx = new int[conceptCount];
+		final int[] lastSubTypeIdx = new int[conceptCount];
+
+		// Register IS A relationships as subtype and supertype internal IDs
+		iterator = activeConceptIds.iterator();
+		while (iterator.hasNext()) {
+			final long sourceId = iterator.next();
+			final int sourceInternalId = getInternalId(sourceId);
+			
+			final Collection<StatementFragment> relationships = statedStatementMap.get(sourceId);
+			if (relationships == null) {
+				continue;
+			}
+			
+			relationships.stream()
+				.filter(s -> s.getTypeId() == IS_A_ID)
+				.forEach(isAStatement -> {
+					final long destinationId = isAStatement.getDestinationId();
+					final int destinationInternalId = getInternalId(destinationId);
+					
+					superTypes[sourceInternalId][lastSuperTypeIdx[sourceInternalId]++] = destinationInternalId;
+					subTypes[destinationInternalId][lastSubTypeIdx[destinationInternalId]++] = sourceInternalId;
+				});
+		}
+
+		checkpoint(taskName, "building taxonomy", stopwatch);
+	}
+
+	private void initActiveFsns(String taskName, RevisionSearcher searcher, Set<String> excludedModules) {
+		final ExpressionBuilder builder = Expressions.builder()
+				.filter(active())
+				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME));
+
+		if (!CompareUtils.isEmpty(excludedModules)) {
+			builder.mustNot(modules(excludedModules));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.ID, 
+						SnomedDescriptionIndexEntry.Fields.CONCEPT_ID,
+						SnomedDescriptionIndexEntry.Fields.TERM)
+				.where(builder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		
+		for (Hits<String[]> page : scrolledHits) {
+			if (fullySpecifiedNameMap == null) {
+				fullySpecifiedNameMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(page.getTotal());
+			}
+			
+			for (String[] conceptFields : page) {
+				long conceptId = Long.parseLong(conceptFields[1]);
+				fullySpecifiedNameMap.put(conceptId, conceptFields[2]);
+			}
+		}
+		
+		if (fullySpecifiedNameMap == null) {
+			fullySpecifiedNameMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+		}
+	}
+
 	/**
 	 * Returns with all the active source relationships of a concept given by its unique ID.
 	 * @param conceptId the ID of the SNOMED&nbsp;CT concept.
@@ -745,5 +686,13 @@ public final class ReasonerTaxonomyBuilder {
 		}
 
 		return result;
+	}
+
+	public String getFullySpecifiedName(long conceptId) {
+		if (fullySpecifiedNameMap.containsKey(conceptId)) {
+			return fullySpecifiedNameMap.get(conceptId);
+		} else {
+			return Long.toString(conceptId);
+		}
 	}
 }
