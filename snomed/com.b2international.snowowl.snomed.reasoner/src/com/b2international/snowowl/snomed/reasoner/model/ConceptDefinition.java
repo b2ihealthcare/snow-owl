@@ -24,6 +24,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -275,5 +276,25 @@ public final class ConceptDefinition extends AnnotatedDefinition implements Seri
 		builder.append(getConcreteDomainDefinitions());
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public DefinitionNode getNeverGroupedNodes() {
+		return rootNode.getSubNode(NeverGroupedKey.INSTANCE);
+	}
+	
+	public DefinitionNode getZeroGroupNodes() {
+		return rootNode.getSubNode(ZeroGroupKey.INSTANCE);
+	}
+
+	public Set<NonZeroGroupKey> getGroupedNodes() {
+		return rootNode.getSubNodeKeys()
+				.stream()
+				.filter(NonZeroGroupKey.class::isInstance)
+				.map(NonZeroGroupKey.class::cast)
+				.collect(Collectors.toSet());
+	}
+	
+	public DefinitionNode getSubNode(DefinitionNodeKey key) {
+		return rootNode.getSubNode(key);
 	}
 }
