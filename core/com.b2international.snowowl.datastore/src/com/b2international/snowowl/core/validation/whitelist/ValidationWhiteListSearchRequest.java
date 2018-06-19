@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
@@ -47,7 +48,10 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		/**
 		 * Filter matches by component type. 
 		 */
-		COMPONENT_TYPE
+		COMPONENT_TYPE,
+		
+		
+		TERM, REPORTER
 		
 	}
 	
@@ -61,6 +65,13 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationWhiteList.Fields.ID, ids));
+		
+		if (containsKey(OptionKey.TERM)) {
+			String searchTerm = getString(OptionKey.TERM);
+
+			queryBuilder.should(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)));
+			queryBuilder.should(Expressions.prefixMatch(ValidationWhiteList.Fields.REPORTER, searchTerm));
+		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
 			Collection<String> ruleIds = getCollection(OptionKey.RULE_ID, String.class);
@@ -78,6 +89,12 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		}
 		
 		return queryBuilder.build();
+	}
+	
+	private Expression toComponentIdQuery(final Collection<String> componentIds) {
+		final ExpressionBuilder qb = Expressions.builder();
+		qb.should(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, componentIds));
+		return qb.build();
 	}
 
 	@Override

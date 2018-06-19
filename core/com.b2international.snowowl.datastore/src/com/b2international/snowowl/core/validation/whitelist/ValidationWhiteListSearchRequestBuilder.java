@@ -30,6 +30,10 @@ public final class ValidationWhiteListSearchRequestBuilder
 
 	ValidationWhiteListSearchRequestBuilder() {}
 	
+	public ValidationWhiteListSearchRequestBuilder filterByTerm(String term) {
+		return addOption(OptionKey.TERM, term);
+	}
+
 	public ValidationWhiteListSearchRequestBuilder filterByRuleId(String ruleId) {
 		return addOption(OptionKey.RULE_ID, ruleId);
 	}
