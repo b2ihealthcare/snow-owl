@@ -1,0 +1,12 @@
+# Ignore everything in this directory except .gitignore and relevant target platform files;
+
+*
+
+!.gitignore
+!.project
+!pom.xml
+!target-platform.target
+!snowowl_config.yml
+!.launch
+!configuration
+!.classpath

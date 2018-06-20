@@ -1,0 +1,30 @@
+gzip: false
+
+identity:
+  providers:
+    - file:
+        name: users
+
+snomed:
+  readerPoolCapacity: 35
+  writerPoolCapacity: 15
+  language: en-gb
+  concreteDomainSupport: false
+  ids:
+    maxIdGenerationAttempts: 100000
+
+repository:
+  port: 2036
+#  revisionCache: false
+#  database:
+#    type: b2i_mysql
+#    datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
+#    driver: com.mysql.jdbc.Driver
+#    scheme: jdbc:mysql://
+#    location: pilsner:3306/
+#    settings: ?useServerPrepStmts=true&useCursorFetch=true
+#    username: snowowl
+#    password: snowowl
+
+metrics:
+  enabled: true
