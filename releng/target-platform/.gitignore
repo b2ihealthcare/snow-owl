@@ -6,7 +6,5 @@
 !.project
 !pom.xml
 !target-platform.target
-!snowowl_config.yml
 !.launch
-!configuration
 !.classpath
