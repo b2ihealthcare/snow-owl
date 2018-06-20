@@ -17,8 +17,8 @@
 		<slf4j.version>[1.7.2,1.7.3)</slf4j.version>
 		<logback.version>[1.0.7,1.0.8)</logback.version>
 		<guava.version>[18.0.0,19.0.0)</guava.version>
-		<groovy.version>[2.4.0,2.5.0)</groovy.version>
 		<commons.collections.version>[3.2.2,3.3.0)</commons.collections.version>
+		<groovy.version>2.4.13</groovy.version>
 		<guava.version>18.0</guava.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<kotlin.version>1.1.51</kotlin.version>
@@ -43,6 +43,12 @@
 	</modules>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>${groovy.version}</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
