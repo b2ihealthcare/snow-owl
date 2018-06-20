@@ -37,7 +37,6 @@
 	<modules>
 		<module>target-platform</module>
 		<module>com.b2international.snowowl.server.update</module>
-		<module>system.bundle.package.exporter</module>
 		<module>distribution</module>
 	</modules>
 	
