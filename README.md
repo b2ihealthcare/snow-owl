@@ -72,7 +72,7 @@ Make sure you have the following preferences enabled/disabled.
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
 2. Open the `target-platform/target-platform-local.target` file
-3. Wait until Eclipse Resolves the target platform and then click on `Set as Target platform`
+3. Wait until Eclipse resolves the target platform and then click on `Set as Target platform`
 4. Wait until the build is complete and you have no compile errors
 5. Launch `snow-owl-community` launch configuration in the Run Configurations menu
 6. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
