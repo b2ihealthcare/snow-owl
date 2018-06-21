@@ -13,7 +13,6 @@ Export-Package: com.b2international.snowowl.snomed,
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.google.guava;bundle-version="[18.0.0,19.0.0)",
  org.eclipse.emf.ecore;bundle-version="2.10.0";visibility:=reexport,
- org.eclipse.emf.cdo;bundle-version="[4.1.2,4.2.0)";visibility:=reexport,
  com.b2international.snowowl.snomed.refset.model;visibility:=reexport,
  com.b2international.snowowl.snomed.common;bundle-version="6.6.0"
 Bundle-ActivationPolicy: lazy

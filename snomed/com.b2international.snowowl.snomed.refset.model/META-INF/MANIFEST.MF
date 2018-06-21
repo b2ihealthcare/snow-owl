@@ -12,6 +12,5 @@ Export-Package: com.b2international.snowowl.snomed.snomedrefset,
  com.b2international.snowowl.snomed.snomedrefset.util
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.emf.ecore;bundle-version="2.10.0";visibility:=reexport,
- org.eclipse.emf.cdo;bundle-version="[4.1.2,4.2.0)";visibility:=reexport,
  com.b2international.snowowl.snomed.common
 Bundle-ActivationPolicy: lazy
