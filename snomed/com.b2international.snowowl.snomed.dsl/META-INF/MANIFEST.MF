@@ -10,7 +10,6 @@ Require-Bundle: org.eclipse.emf.ecore;bundle-version="2.10.0",
  com.b2international.commons,
  com.b2international.snowowl.core,
  com.b2international.snowowl.datastore,
- com.b2international.snowowl.snomed.model,
  com.b2international.snowowl.snomed.common
 Export-Package: com.b2international.snowowl.snomed.dsl.query,com.b2int
  ernational.snowowl.snomed.dsl.query.ast,com.b2international.snowowl.s
