@@ -14,10 +14,6 @@ Visit us at http://b2i.sg
       Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
    </copyright>
 
-   <includes
-         id="org.codehaus.groovy24.feature"
-         version="0.0.0"/>
-
    <plugin
          id="com.google.guava"
          download-size="0"
@@ -840,14 +836,6 @@ Visit us at http://b2i.sg
          version="0.0.0"/>
 
    <plugin
-         id="system.bundle.package.exporter"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
          id="org.apache.el"
          download-size="0"
          install-size="0"
@@ -1209,6 +1197,13 @@ Visit us at http://b2i.sg
          install-size="0"
          version="0.0.0"
          fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="groovy-all"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
          unpack="false"/>
 
 </feature>
