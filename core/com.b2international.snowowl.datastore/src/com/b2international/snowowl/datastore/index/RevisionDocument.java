@@ -22,9 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
@@ -166,13 +163,4 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 				.add("score", score);
 	}
 
-	/**
-	 * (non-API)
-	 * 
-	 * @return returns with the storage key of the current component as a CDO ID.
-	 */
-	public CDOID cdoID() {
-		return CDOIDUtil.createLong(getStorageKey());
-	}
-	
 }
