@@ -20,10 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -31,8 +28,6 @@ import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
@@ -56,8 +51,6 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 	}
 	
 	private Branch ensureAvailability(RepositoryContext context) {
-		final ICDOConnectionManager connectionManager = context.service(ICDOConnectionManager.class);
-		
 		final List<String> branchesToCheck = newArrayList();
 		if (RevisionIndex.isBaseRefPath(branchPath)) {
 			branchesToCheck.add(branchPath.substring(0, branchPath.length() - 1));
@@ -73,12 +66,6 @@ public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext,
 			
 			if (branch.isDeleted()) {
 				throw new BadRequestException("Branch '%s' has been deleted and cannot accept further modifications.", branchToCheck);
-			}
-			
-			final ICDOConnection connection = connectionManager.getByUuid(context.id());
-			final CDOBranch cdoBranch = connection.getBranch(branch.branchPath());
-			if (cdoBranch == null) {
-				throw new NotFoundException("Branch", branchToCheck);
 			}
 		}
 		
