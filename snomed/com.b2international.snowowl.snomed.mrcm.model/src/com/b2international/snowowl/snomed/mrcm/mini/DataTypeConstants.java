@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.mrcm.mini;
 
-import static com.b2international.snowowl.snomed.snomedrefset.DataType.BOOLEAN;
-import static com.b2international.snowowl.snomed.snomedrefset.DataType.DECIMAL;
-import static com.b2international.snowowl.snomed.snomedrefset.DataType.STRING;
+import static com.b2international.snowowl.snomed.core.domain.refset.DataType.BOOLEAN;
+import static com.b2international.snowowl.snomed.core.domain.refset.DataType.DECIMAL;
+import static com.b2international.snowowl.snomed.core.domain.refset.DataType.STRING;
 import static com.b2international.snowowl.snomed.mrcm.mini.SectionType.PROPERTY_SECTION;
 
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 
 /**
  * Collects known data type labels associated with SNOMED CT concepts in the

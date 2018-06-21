@@ -14,9 +14,8 @@
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.mrcm.*;
-
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 

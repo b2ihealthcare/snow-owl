@@ -39,8 +39,8 @@ import com.b2international.snowowl.datastore.server.history.HistoryInfoQueryExec
 import com.b2international.snowowl.datastore.server.history.InternalHistoryInfoConfiguration;
 import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableSet;
 
 /**

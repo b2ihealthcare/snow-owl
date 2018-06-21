@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.snomedrefset;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,16 +22,12 @@ import java.util.List;
 import org.eclipse.emf.common.util.Enumerator;
 
 /**
- * Enumeration of a data type.
- * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getDataType()
- * @model
- * @generated
+ * Enumeration of a concrete domain data type.
  */
 public enum DataType implements Enumerator {
 	/**
 	 * Integer.
 	 * @see #INTEGER_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	INTEGER(0, "INTEGER", "Integer"),
@@ -39,7 +35,6 @@ public enum DataType implements Enumerator {
 	/**
 	 * Decimal.
 	 * @see #DECIMAL_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	DECIMAL(1, "DECIMAL", "Decimal"),
@@ -47,7 +42,6 @@ public enum DataType implements Enumerator {
 	/**
 	 * Boolean.
 	 * @see #BOOLEAN_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	BOOLEAN(2, "BOOLEAN", "Boolean"),
@@ -55,7 +49,6 @@ public enum DataType implements Enumerator {
 	/**
 	 * Date.
 	 * @see #DATE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	DATE(3, "DATE", "Datetime"),
@@ -63,7 +56,6 @@ public enum DataType implements Enumerator {
 	/**
 	 * String.
 	 * @see #STRING_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	STRING(4, "STRING", "String");
@@ -72,7 +64,6 @@ public enum DataType implements Enumerator {
 	 * The '<em><b>INTEGER</b></em>' literal value.
 	 * @see #INTEGER
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int INTEGER_VALUE = 0;
@@ -81,7 +72,6 @@ public enum DataType implements Enumerator {
 	 * The '<em><b>DECIMAL</b></em>' literal value.
 	 * @see #DECIMAL
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int DECIMAL_VALUE = 1;
@@ -90,7 +80,6 @@ public enum DataType implements Enumerator {
 	 * The '<em><b>BOOLEAN</b></em>' literal value.
 	 * @see #BOOLEAN
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int BOOLEAN_VALUE = 2;
@@ -99,7 +88,6 @@ public enum DataType implements Enumerator {
 	 * The '<em><b>DATE</b></em>' literal value.
 	 * @see #DATE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int DATE_VALUE = 3;
@@ -108,7 +96,6 @@ public enum DataType implements Enumerator {
 	 * The '<em><b>STRING</b></em>' literal value.
 	 * @see #STRING
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int STRING_VALUE = 4;
@@ -117,7 +104,6 @@ public enum DataType implements Enumerator {
 	 * An array of all the '<em><b>Data Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private static final DataType[] VALUES_ARRAY =
 		new DataType[] {
@@ -132,7 +118,6 @@ public enum DataType implements Enumerator {
 	 * A public read-only list of all the '<em><b>Data Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	public static final List<DataType> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
@@ -140,7 +125,6 @@ public enum DataType implements Enumerator {
 	 * Returns the '<em><b>Data Type</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	public static DataType get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -156,7 +140,6 @@ public enum DataType implements Enumerator {
 	 * Returns the '<em><b>Data Type</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	public static DataType getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -172,7 +155,6 @@ public enum DataType implements Enumerator {
 	 * Returns the '<em><b>Data Type</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	public static DataType get(int value) {
 		switch (value) {
@@ -188,21 +170,18 @@ public enum DataType implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final String literal;
 
@@ -210,7 +189,6 @@ public enum DataType implements Enumerator {
 	 * Only this class can construct instances.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private DataType(int value, String name, String literal) {
 		this.value = value;
@@ -220,7 +198,6 @@ public enum DataType implements Enumerator {
 
 	/**
 	 * Returns with the value of the data type.
-	 * @generated
 	 */
 	public int getValue() {
 	  return value;
@@ -228,7 +205,6 @@ public enum DataType implements Enumerator {
 
 	/**
 	 * Returns with the name of the data type.
-	 * @generated
 	 */
 	public String getName() {
 	  return name;
@@ -236,7 +212,6 @@ public enum DataType implements Enumerator {
 
 	/**
 	 * Returns with the human readable name of the data type.
-	 * @generated
 	 */
 	public String getLiteral() {
 	  return literal;
@@ -244,7 +219,6 @@ public enum DataType implements Enumerator {
 
 	/**
 	 * See {@link #getLiteral()}.
-	 * @generated
 	 */
 	@Override
 	public String toString() {

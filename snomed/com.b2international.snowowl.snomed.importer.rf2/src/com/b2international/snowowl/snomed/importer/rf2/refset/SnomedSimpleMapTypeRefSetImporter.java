@@ -26,6 +26,7 @@ import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.importer.rf2.csv.AssociatingRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.SimpleMapRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
@@ -34,7 +35,6 @@ import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

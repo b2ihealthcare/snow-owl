@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.DescriptionPredicateFragment;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
 import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
 import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.ImmutableSet;
 
 /**

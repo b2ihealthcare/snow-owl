@@ -1255,7 +1255,7 @@ public interface MrcmPackage extends EPackage {
 	 * The meta object id for the '<em>Data Type</em>' data type.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+	 * @see com.b2international.snowowl.snomed.core.domain.refset.DataType
 	 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
 	 * @generated
 	 */
@@ -1836,11 +1836,11 @@ public interface MrcmPackage extends EPackage {
 	EEnum getConstraintForm();
 
 	/**
-	 * Returns the meta object for data type '{@link com.b2international.snowowl.snomed.snomedrefset.DataType <em>Data Type</em>}'.
+	 * Returns the meta object for data type '{@link com.b2international.snowowl.snomed.core.domain.refset.DataType <em>Data Type</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for data type '<em>Data Type</em>'.
-	 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+	 * @see com.b2international.snowowl.snomed.core.domain.refset.DataType
 	 * @model instanceClass="com.b2international.snowowl.snomed.snomedrefset.DataType"
 	 * @generated
 	 */
@@ -2346,7 +2346,7 @@ public interface MrcmPackage extends EPackage {
 		 * The meta object literal for the '<em>Data Type</em>' data type.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
-		 * @see com.b2international.snowowl.snomed.snomedrefset.DataType
+		 * @see com.b2international.snowowl.snomed.core.domain.refset.DataType
 		 * @see com.b2international.snowowl.snomed.mrcm.impl.MrcmPackageImpl#getDataType()
 		 * @generated
 		 */

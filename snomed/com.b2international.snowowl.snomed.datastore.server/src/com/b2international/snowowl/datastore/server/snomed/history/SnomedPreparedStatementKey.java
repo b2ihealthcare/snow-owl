@@ -15,20 +15,20 @@
  */
 package com.b2international.snowowl.datastore.server.snomed.history;
 
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.ASSOCIATION;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.ATTRIBUTE_VALUE;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.CONCRETE_DATA_TYPE;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.DESCRIPTION_TYPE;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.LANGUAGE;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.MODULE_DEPENDENCY;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.QUERY;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE;
+import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.SIMPLE_MAP;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage.Literals.SNOMED_MAPPING_REF_SET;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage.Literals.SNOMED_REGULAR_REF_SET;
 import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage.Literals.SNOMED_STRUCTURAL_REF_SET;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.ASSOCIATION;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.ATTRIBUTE_VALUE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.COMPLEX_MAP;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.CONCRETE_DATA_TYPE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.DESCRIPTION_TYPE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.EXTENDED_MAP;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.LANGUAGE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.MODULE_DEPENDENCY;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.QUERY;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE;
-import static com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType.SIMPLE_MAP;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Collections.unmodifiableMap;
@@ -39,7 +39,7 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.snowowl.datastore.server.history.PreparedStatementKey;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 
 /**
  * Enumeration of SNOMED&nbsp;CT history query prepared statement keys.

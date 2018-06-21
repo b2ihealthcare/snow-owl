@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.refset.automap.CsvVariableFieldCountParser;
 import com.b2international.snowowl.snomed.core.refset.automap.XlsParser;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
@@ -60,7 +61,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.importer.net4j.SnomedUnimportedRefSets;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Sets;
 
 /**

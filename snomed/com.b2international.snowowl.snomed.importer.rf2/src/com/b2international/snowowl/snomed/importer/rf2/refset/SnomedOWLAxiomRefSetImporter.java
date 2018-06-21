@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.importer.rf2.refset;
 
 import java.io.InputStream;
 
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
  * @since 6.5

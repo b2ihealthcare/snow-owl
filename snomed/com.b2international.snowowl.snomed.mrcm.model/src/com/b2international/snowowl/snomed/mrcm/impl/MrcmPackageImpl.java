@@ -14,6 +14,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
@@ -37,8 +38,6 @@ import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
-
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;

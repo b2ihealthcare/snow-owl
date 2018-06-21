@@ -1,37 +1,31 @@
-/**
+/*
  * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.snomedrefset;
+package com.b2international.snowowl.snomed.core.domain.refset;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.emf.common.util.Enumerator;
-
 /**
  * Enumeration for SNOMED&nbsp;CT reference set types. 
- * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedRefSetType()
- * @model
- * @generated
  */
-public enum SnomedRefSetType implements Enumerator {
+public enum SnomedRefSetType {
 	/**
 	 * Simple type.
 	 * @see #SIMPLE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	SIMPLE(0, "SIMPLE", "SIMPLE"),
@@ -39,7 +33,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Simple map type.
 	 * @see #SIMPLE_MAP_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	SIMPLE_MAP(1, "SIMPLE_MAP", "SIMPLE_MAP"),
@@ -47,7 +40,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Language type.
 	 * @see #LANGUAGE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	LANGUAGE(2, "LANGUAGE", "LANGUAGE"),
@@ -55,7 +47,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Attribute value type.
 	 * @see #ATTRIBUTE_VALUE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	ATTRIBUTE_VALUE(3, "ATTRIBUTE_VALUE", "ATTRIBUTE_VALUE"),
@@ -63,7 +54,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Query specification type.
 	 * @see #QUERY_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	QUERY(4, "QUERY", "QUERY"),
@@ -71,7 +61,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Complex map type.
 	 * @see #COMPLEX_MAP_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	COMPLEX_MAP(5, "COMPLEX_MAP", "COMPLEX_MAP"),
@@ -79,7 +68,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Description type.
 	 * @see #DESCRIPTION_TYPE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	DESCRIPTION_TYPE(6, "DESCRIPTION_TYPE", "DESCRIPTION_TYPE"),
@@ -87,7 +75,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Concrete data type.
 	 * @see #CONCRETE_DATA_TYPE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	CONCRETE_DATA_TYPE(7, "CONCRETE_DATA_TYPE", "CONCRETE_DATA_TYPE"),
@@ -95,7 +82,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Association value type.
 	 * @see #ASSOCIATION_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	ASSOCIATION(8, "ASSOCIATION", "ASSOCIATION"), 
@@ -103,7 +89,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Module dependency value type.
 	 * @see #MODULE_DEPENDENCY_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	MODULE_DEPENDENCY(9, "MODULE_DEPENDENCY", "MODULE_DEPENDENCY"),
@@ -111,7 +96,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Extended map type.
 	 * @see #EXTENDED_MAP_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	EXTENDED_MAP(10, "EXTENDED_MAP", "EXTENDED_MAP"), 
@@ -119,7 +103,6 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * Simple map type with map target description included.
 	 * @see #SIMPLE_MAP_WITH_DESCRIPTION_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	SIMPLE_MAP_WITH_DESCRIPTION(11, "SIMPLE_MAP_WITH_DESCRIPTION", "SIMPLE_MAP_WITH_DESCRIPTION"),
@@ -129,7 +112,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #OWL_AXIOM_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	OWL_AXIOM(12, "OWL_AXIOM", "OWL_AXIOM"), /**
@@ -137,7 +119,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #OWL_ONTOLOGY_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	OWL_ONTOLOGY(13, "OWL_ONTOLOGY", "OWL_ONTOLOGY"), /**
@@ -145,7 +126,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_DOMAIN_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	MRCM_DOMAIN(14, "MRCM_DOMAIN", "MRCM_DOMAIN"),
@@ -155,7 +135,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_ATTRIBUTE_DOMAIN_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	MRCM_ATTRIBUTE_DOMAIN(15, "MRCM_ATTRIBUTE_DOMAIN", "MRCM_ATTRIBUTE_DOMAIN"),
@@ -165,7 +144,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_ATTRIBUTE_RANGE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	MRCM_ATTRIBUTE_RANGE(16, "MRCM_ATTRIBUTE_RANGE", "MRCM_ATTRIBUTE_RANGE"),
@@ -175,7 +153,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_MODULE_SCOPE_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	MRCM_MODULE_SCOPE(17, "MRCM_MODULE_SCOPE", "MRCM_MODULE_SCOPE"),
@@ -185,7 +162,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #ANNOTATION_VALUE
-	 * @generated
 	 * @ordered
 	 */
 	ANNOTATION(18, "ANNOTATION", "ANNOTATION");
@@ -194,7 +170,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>SIMPLE</b></em>' literal value.
 	 * @see #SIMPLE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int SIMPLE_VALUE = 0;
@@ -203,7 +178,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>SIMPLE MAP</b></em>' literal value.
 	 * @see #SIMPLE_MAP
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int SIMPLE_MAP_VALUE = 1;
@@ -212,7 +186,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>LANGUAGE</b></em>' literal value.
 	 * @see #LANGUAGE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int LANGUAGE_VALUE = 2;
@@ -221,7 +194,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>ATTRIBUTE VALUE</b></em>' literal value.
 	 * @see #ATTRIBUTE_VALUE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int ATTRIBUTE_VALUE_VALUE = 3;
@@ -230,7 +202,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>QUERY</b></em>' literal value.
 	 * @see #QUERY
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int QUERY_VALUE = 4;
@@ -239,7 +210,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>COMPLEX MAP</b></em>' literal value.
 	 * @see #COMPLEX_MAP
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int COMPLEX_MAP_VALUE = 5;
@@ -248,7 +218,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>DESCRIPTION TYPE</b></em>' literal value.
 	 * @see #DESCRIPTION_TYPE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int DESCRIPTION_TYPE_VALUE = 6;
@@ -257,7 +226,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>CONCRETE DATA TYPE</b></em>' literal value.
 	 * @see #CONCRETE_DATA_TYPE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int CONCRETE_DATA_TYPE_VALUE = 7;
@@ -266,7 +234,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>ASSOCIATION</b></em>' literal value.
 	 * @see #ASSOCIATION
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int ASSOCIATION_VALUE = 8;
@@ -275,7 +242,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * The '<em><b>MODULE DEPENDENCY</b></em>' literal value.
 	 * @see #MODULE_DEPENDENCY
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int MODULE_DEPENDENCY_VALUE = 9;
@@ -290,7 +256,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #EXTENDED_MAP
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int EXTENDED_MAP_VALUE = 10;
@@ -305,7 +270,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #SIMPLE_MAP_WITH_DESCRIPTION
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int SIMPLE_MAP_WITH_DESCRIPTION_VALUE = 11;
@@ -320,7 +284,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #OWL_AXIOM
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int OWL_AXIOM_VALUE = 12;
@@ -335,7 +298,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #OWL_ONTOLOGY
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int OWL_ONTOLOGY_VALUE = 13;
@@ -350,7 +312,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_DOMAIN
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int MRCM_DOMAIN_VALUE = 14;
@@ -365,7 +326,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_ATTRIBUTE_DOMAIN
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int MRCM_ATTRIBUTE_DOMAIN_VALUE = 15;
@@ -380,7 +340,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_ATTRIBUTE_RANGE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int MRCM_ATTRIBUTE_RANGE_VALUE = 16;
@@ -395,7 +354,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #MRCM_MODULE_SCOPE
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int MRCM_MODULE_SCOPE_VALUE = 17;
@@ -410,7 +368,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * <!-- end-user-doc -->
 	 * @see #ANNOTATION
 	 * @model
-	 * @generated
 	 * @ordered
 	 */
 	public static final int ANNOTATION_VALUE = 18;
@@ -419,7 +376,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * An array of all the '<em><b>Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private static final SnomedRefSetType[] VALUES_ARRAY =
 		new SnomedRefSetType[] {
@@ -448,13 +404,11 @@ public enum SnomedRefSetType implements Enumerator {
 	 * A public read-only list of all the '<em><b>Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	public static final List<SnomedRefSetType> VALUES = Collections.unmodifiableList(Arrays.asList(VALUES_ARRAY));
 
 	/**
 	 * Returns the '<em><b>Type</b></em>' literal with the specified literal value.
-	 * @generated
 	 */
 	public static SnomedRefSetType get(String literal) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -468,7 +422,6 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * Returns the '<em><b>Type</b></em>' literal with the specified name.
-	 * @generated
 	 */
 	public static SnomedRefSetType getByName(String name) {
 		for (int i = 0; i < VALUES_ARRAY.length; ++i) {
@@ -482,7 +435,6 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * Returns the '<em><b>Type</b></em>' literal with the specified integer value.
-	 * @generated
 	 */
 	public static SnomedRefSetType get(int value) {
 		switch (value) {
@@ -512,21 +464,18 @@ public enum SnomedRefSetType implements Enumerator {
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final int value;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final String name;
 
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private final String literal;
 
@@ -534,7 +483,6 @@ public enum SnomedRefSetType implements Enumerator {
 	 * Only this class can construct instances.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @generated
 	 */
 	private SnomedRefSetType(int value, String name, String literal) {
 		this.value = value;
@@ -544,7 +492,6 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * Returns with the value of the type.
-	 * @generated
 	 */
 	public int getValue() {
 	  return value;
@@ -552,7 +499,6 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * Returns with the human readable name of the type.
-	 * @generated
 	 */
 	public String getName() {
 	  return name;
@@ -560,7 +506,6 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * Returns with the literal of the type.
-	 * @generated
 	 */
 	public String getLiteral() {
 	  return literal;
@@ -568,11 +513,10 @@ public enum SnomedRefSetType implements Enumerator {
 
 	/**
 	 * See: {@link #getLiteral()}.
-	 * @generated
 	 */
 	@Override
 	public String toString() {
 		return literal;
 	}
 	
-} //SnomedRefSetType
+}

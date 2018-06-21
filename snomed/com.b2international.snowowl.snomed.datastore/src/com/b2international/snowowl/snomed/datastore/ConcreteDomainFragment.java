@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.google.common.base.Preconditions;
 
 /**
