@@ -19,9 +19,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,7 +34,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
@@ -134,26 +131,33 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 			
 			
+			final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
+			
 			// persist new issues by removing them from the newIssues Multimap to save up memory
 			for (String ruleId : newHashSet(newIssuesByRule.keySet())) {
 				final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
-				final ValidationIssueDetailExtension issueDetailExtension = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
 				for (ComponentIdentifier componentIdentifier : newIssuesByRule.removeAll(ruleId)) {
-					String issueId = UUID.randomUUID().toString();
-					
 					ValidationIssue validationIssue = new ValidationIssue(
-						issueId,
+						UUID.randomUUID().toString(),
 						ruleId,
 						branchPath,
 						componentIdentifier,
 						whiteListedEntries.get(ruleId).contains(componentIdentifier));
 				
-					issueDetailExtension.expandIssueWithDetails(context, validationIssue);
-					index.put(issueId, validationIssue);
+					issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 				}
 				
 				// remove all processed whitelist entries 
 				whiteListedEntries.removeAll(ruleId);
+			}
+			
+			for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
+				final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
+				final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.get(toolingId);
+				extensions.extendIssuesWithDetails(context, issues);
+				for (ValidationIssue issue : issues) {
+					index.put(issue.getId(), issue);
+				}
 			}
 			
 			index.commit();

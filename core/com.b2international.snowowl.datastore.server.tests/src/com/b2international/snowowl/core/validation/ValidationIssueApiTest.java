@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -65,6 +67,12 @@ public class ValidationIssueApiTest {
 				}
 			}
 		}
+
+		@Override
+		public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issue) {}
+
+		@Override
+		public String getToolingId() { return null; }
 		
 	}
 	

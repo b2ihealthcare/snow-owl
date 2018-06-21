@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Collection;
+
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -26,7 +28,7 @@ public interface ValidationIssueDetailExtension {
 
 	void prepareQuery(ExpressionBuilder queryBuilder, Options options);
 
-	void expandIssueWithDetails(BranchContext context, ValidationIssue issue);
+	void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issues);
 	
 	String getToolingId();
 	
