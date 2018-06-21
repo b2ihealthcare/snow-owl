@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.domain;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
@@ -131,7 +130,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param type
 	 * @return
 	 */
-	<T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
+	<T extends EObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type);
 
 	/**
 	 * Clears the entire content of the repository this context belongs to.
