@@ -33,7 +33,6 @@
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
-		<module>com.b2international.snowowl.snomed.reasoner.server</module>
 		
 		<!-- SNOMED CT SemanticEngine -->
 		<module>com.b2international.snowowl.snomed.semanticengine</module>
