@@ -74,7 +74,7 @@ import com.google.common.collect.Maps;
  * Abstract implementation of the {@link ICDOConnectionManager}.
  * 
  */
-/*default*/ class CDOConnectionManager extends CDOContainer<ICDOConnection> implements ICDOConnectionManager {
+/*default*/ class CDOConnectionManager {
 
 	private final String username;
 	private final transient String password;

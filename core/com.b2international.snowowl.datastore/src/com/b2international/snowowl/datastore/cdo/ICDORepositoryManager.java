@@ -15,16 +15,11 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import org.eclipse.emf.cdo.server.IRepository.Handler;
-import org.eclipse.emf.cdo.session.remote.CDORemoteSession;
-
-import com.b2international.commons.emf.NsUriProvider;
-
 /**
  * Service interface for managing {@link ICDORepository CDO repositories} and their lifecycle.
  *
  */
-public interface ICDORepositoryManager extends ICDOContainer<ICDORepository> {
+public interface ICDORepositoryManager {
 
 	/**Disconnects all users from the all managed repositories.*/
 	void disconnectAll(final ISessionOperationCallback... callbacks);
@@ -37,15 +32,6 @@ public interface ICDORepositoryManager extends ICDOContainer<ICDORepository> {
 	
 	/**Sends a message to all users based on the subset of user IDs from all managed repositories.*/
 	void sendMessageTo(final String message, final Iterable<String> userId, final ISessionOperationCallback... callbacks);
-	
-	/**Clears the server side revision cache by clearing all soft reference caches in all managed repositories.*/
-	void clearRevisionCache();
-	
-	/**Adds the the given handler to all managed repositories.*/
-	void addRepositoryHandler(final Handler handler);
-	
-	/**Returns with the namespace URI provider for the repository.*/
-	NsUriProvider getNsUriProvider(final String uuid);
 	
 	/**Represents a {@link CDORemoteSession remote session} operation callback.*/
 	public static interface ISessionOperationCallback {
