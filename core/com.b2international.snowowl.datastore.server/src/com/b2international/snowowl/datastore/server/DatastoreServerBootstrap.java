@@ -15,12 +15,19 @@
  */
 package com.b2international.snowowl.datastore.server;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
+import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.eclipse.spi.net4j.ServerProtocolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +49,8 @@ import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
-import com.b2international.snowowl.datastore.cdo.CDOConnectionFactoryProvider;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
@@ -65,12 +68,12 @@ import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
 import com.b2international.snowowl.identity.IdentityProvider;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.google.common.net.HostAndPort;
 
 /**
  * @since 3.3
@@ -78,6 +81,10 @@ import com.google.common.base.Stopwatch;
 @ModuleConfig(fieldName = "reviewManager", type = ReviewConfiguration.class)
 public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment {
 
+	private static final String REPOSITORY_EXT_ID = "com.b2international.snowowl.datastore.repository";
+	private static final String UUID_ATTRIBUTE = "uuid";
+	private static final String TOOLING_ID_ATTRIBUTE = "toolingId";
+	
 	private static final Logger LOG = LoggerFactory.getLogger("core");
 	
 	@Override
@@ -120,6 +127,20 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			RpcUtil.getInitialServerSession(container).registerClassLoader(IApplicationSessionManager.class, managerClassLoader);
 			RpcUtil.getInitialServerSession(container).registerClassLoader(InternalApplicationSessionManager.class, managerClassLoader);
 			
+			Net4jUtil.prepareContainer(container);
+			JVMUtil.prepareContainer(container);
+			TCPUtil.prepareContainer(container);
+			
+			registerCustomProtocols(container);
+			
+			LifecycleUtil.activate(container);
+			
+			final HostAndPort hostAndPort = configuration.getModuleConfig(RepositoryConfiguration.class).getHostAndPort();
+			// open port in server environments
+			TCPUtil.getAcceptor(container, hostAndPort.toString()); // Starts the TCP transport
+			LOG.info("Listening on {} for connections", hostAndPort);
+			JVMUtil.getAcceptor(container,	Net4jUtils.NET_4_J_CONNECTOR_NAME); // Starts the JVM transport
+			
 			// TODO remove single directory manager
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 
@@ -145,6 +166,13 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		
 	}
 	
+	private void registerCustomProtocols(IManagedContainer container) {
+		final List<ServerProtocolFactory> serverProtocolFactories = ServerProtocolFactoryRegistry.getInstance().getRegisteredServerProtocolFactories();
+		for (final ServerProtocolFactory serverProtocolFactory : serverProtocolFactories) {
+			container.registerFactory(serverProtocolFactory);
+		}
+	}
+	
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
@@ -152,7 +180,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
 			initializeRepositories(configuration, env);
-			initializeContent(env);
 		}
 	}
 	
@@ -188,12 +215,17 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 		
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
-		final ICDORepositoryManager cdoRepositoryManager = env.service(ICDORepositoryManager.class);
-		for (String repositoryId : cdoRepositoryManager.uuidKeySet()) {
+		
+		//load all CDO repository extensions, instantiate repositories and apply inverse mapping to the namespace URI
+		for (final IConfigurationElement repositoryElement : Platform.getExtensionRegistry().getConfigurationElementsFor(REPOSITORY_EXT_ID)) {
+			
+			final String repositoryId = repositoryElement.getAttribute(UUID_ATTRIBUTE);
+			final String toolingId = repositoryElement.getAttribute(TOOLING_ID_ATTRIBUTE);
+			
 			Repository repo = repositories
-				.prepareCreate(repositoryId, cdoRepositoryManager.getByUuid(repositoryId).getSnowOwlTerminologyComponentId())
-				.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
-				.build(env);
+					.prepareCreate(repositoryId, toolingId)
+					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
+					.build(env);
 			if (repo.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
 			} else {
@@ -204,17 +236,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
 	}
 	
-	private void initializeContent(Environment env) {
-		final RepositoryManager repositories = env.service(RepositoryManager.class);
-		for (Repository	repository : repositories.repositories()) {
-			final String repositoryId = repository.id();
-			if (repository.health() == Health.GREEN) {
-				final ICDORepository cdoRepository = ((InternalRepository) repository).getCdoRepository(); 
-				RepositoryInitializerRegistry.INSTANCE.getInitializer(repositoryId).initialize(cdoRepository);
-			}
-		}
-	}
-
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
 		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);
@@ -222,6 +243,5 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		clientProtocol.open(connector);
 
 		RpcUtil.getRpcClientProxy(InternalApplicationSessionManager.class).connectSystemUser();
-		CDOConnectionFactoryProvider.INSTANCE.getConnectionFactory().connect(User.SYSTEM.getUsername(), "" /*fake password*/);
 	}
 }
