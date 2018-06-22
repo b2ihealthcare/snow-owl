@@ -18,11 +18,6 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
-            class="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
-            id="com.b2international.snowowl.datastore.serviceconfig.HistoryServiceClientConfigJob"
-            terminologyId="UNSPECIFIED">
-      </serviceConfigJob>
-      <serviceConfigJob
             class="com.b2international.snowowl.datastore.internal.file.FileRegistryServerServiceConfigJob"
             id="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
             terminologyId="UNSPECIFIED">
@@ -62,11 +57,4 @@
                class="com.b2international.snowowl.core.internal.validation.ValidationBootstrap">
          </bootstrapFragment>
       </extension>
-
-	<extension point="org.eclipse.emf.ecore.generated_package">
-      <package
-            uri="urn:com:b2international:snowowl:terminologymetadata:model"
-            class="com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage"
-            genModel="model/terminologymetadata.genmodel"/>
-	</extension>
 </plugin>
