@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 
 /**
@@ -33,10 +31,12 @@ import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 public abstract class AbstractUserAndBranchAwareImportRequest extends ImportRequest {
 
 	private final IBranchPath branchPath;
+	private final String userId;
 
-	protected AbstractUserAndBranchAwareImportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final File sourceDir, final TerminologyImportType importType) {
+	protected AbstractUserAndBranchAwareImportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final File sourceDir, final TerminologyImportType importType, final String userId) {
 		super(protocol, importSignal, sourceDir, importType);
 		this.branchPath = branchPath;
+		this.userId = userId;
 		
 	}
 	
@@ -47,18 +47,8 @@ public abstract class AbstractUserAndBranchAwareImportRequest extends ImportRequ
 	 */
 	@Override
 	protected void postFileRequesting(final ExtendedDataOutputStream out) throws Exception {
-		out.writeUTF(getUserId()); //user ID
+		out.writeUTF(userId); //user ID
 		out.writeUTF(branchPath.getPath()); //branch path as string
-	}
-
-	/*returns with the user ID from the underlying session*/
-	private String getUserId() {
-		return getConnection().getUserId();
-	}
-	
-	/*returns with the connection manager*/
-	private ICDOConnectionManager getConnection() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
 	}
 
 }

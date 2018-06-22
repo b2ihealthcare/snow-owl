@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,8 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
  * Abstract export request class for retrieving single files over the net4j protocol.
@@ -39,7 +37,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
  */
 public abstract class AbstractExportRequest extends RequestWithMonitoring<File> {
 
-	private String exportPath;
+	private final String userId;
+	private final String exportPath;
 	private final IBranchPath branchPath;
 	
 	/**
@@ -48,10 +47,11 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 	 * @param importSignal
 	 * @param targetEffectiveTime 
 	 */
-	public AbstractExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath) {
+	public AbstractExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath, final String userId) {
 		super(protocol, importSignal);
 		this.exportPath = exportPath;
 		this.branchPath = branchPath;
+		this.userId = userId;
 	}
 	
 	protected abstract EPackage getEPackage();
@@ -63,7 +63,7 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 	@Override
 	protected void requesting(ExtendedDataOutputStream out, OMMonitor monitor) throws Exception {
 		
-		out.writeUTF(getUserId()); //user ID
+		out.writeUTF(userId); //user ID
 		out.writeUTF(branchPath.getPath()); //branch path as string
 		
 		postRequesting(out);
@@ -139,14 +139,4 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 		return 0;
 	}
 	
-	/*returns with the user ID from the underlying session*/
-	private String getUserId() {
-		return getConnectionManager().getUserId();
-	}
-	
-	/*returns with the connection manager*/
-	private ICDOConnectionManager getConnectionManager() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-	}
-
 }
