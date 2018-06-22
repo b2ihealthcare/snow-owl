@@ -76,8 +76,6 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		MetricsThreadLocal.set(metrics);
 		try {
 			commitTimer.start();
-			// TODO consider moving preCommit into commit(userId, commitComment)
-			context.preCommit();
 			
 			/*
 			 * FIXME: at this point, the component identifier might have changed even though the input 

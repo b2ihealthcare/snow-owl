@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import com.b2international.snowowl.core.domain.DefaultBranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
-import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.server.EditingContextFactory;
 
 /**
  * @since 4.5
@@ -43,8 +41,7 @@ public class CDOBranchContext extends DefaultBranchContext implements Transactio
 	
 	@Override
 	public TransactionContext get(BranchContext context, String userId, String commitComment, String parentContextDescription) {
-		final CDOEditingContext ec = service(EditingContextFactory.class).createEditingContext(branch().branchPath());
-		return new CDOTransactionContext(context, ec, userId, commitComment, parentContextDescription);
+		return new CDOTransactionContext(context, userId, commitComment, parentContextDescription);
 	}
 	
 }

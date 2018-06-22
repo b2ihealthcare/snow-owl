@@ -15,26 +15,32 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Map;
-
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
-import org.eclipse.emf.cdo.util.CommitException;
-import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
+import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 4.5
@@ -44,13 +50,14 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	private final String userId;
 	private final String commitComment;
 	private final String parentContextDescription;
-	private final CDOEditingContext editingContext;
 	
 	private boolean isNotificationEnabled = true;
+	
+	@JsonIgnore
+	private transient IOperationLockTarget operationLockTarget;
 
-	CDOTransactionContext(BranchContext context, CDOEditingContext editingContext, String userId, String commitComment, String parentContextDescription) {
+	CDOTransactionContext(BranchContext context, String userId, String commitComment, String parentContextDescription) {
 		super(context);
-		this.editingContext = editingContext;
 		this.userId = userId;
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
@@ -75,32 +82,37 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public <T extends EObject> T lookup(String componentId, Class<T> type) {
+	public <T> T lookup(String componentId, Class<T> type) {
 		return editingContext.lookup(componentId, type);
 	}
 	
 	@Override
-	public <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
+	public <T> T lookupIfExists(String componentId, Class<T> type) {
 		return editingContext.lookupIfExists(componentId, type);
 	}
 	
 	@Override
-	public <T extends CDOObject> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
+	public <T> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
 		return editingContext.lookup(componentIds, type);
 	}
 	
 	@Override
-	public void add(EObject o) {
+	public void add(Object o) {
 		editingContext.add(o);
 	}
 	
 	@Override
-	public void delete(EObject o) {
+	public void update(Revision oldVersion, Revision newVersion) {
+		
+	}
+	
+	@Override
+	public void delete(Object o) {
 		editingContext.delete(o);
 	}
 	
 	@Override
-	public void delete(EObject o, boolean force) {
+	public void delete(Object o, boolean force) {
 		editingContext.delete(o, force);
 	}
 	
@@ -110,18 +122,15 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 
 	@Override
-	public void preCommit() {
-		editingContext.preCommit();
-	}
-	
-	@Override
 	public void rollback() {
 		editingContext.rollback();
 	}
 
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
+		IOperationLockManager<DatastoreLockContext> locks = service(IOperationLockManager.class);
 		try {
+			acquireLock(locks);
 			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
 					.notifyWriteAccessHandlers(isNotificationEnabled())
 					.sendCommitNotification(isNotificationEnabled())
@@ -144,6 +153,29 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 				throw cause3;
 			}
 			throw new SnowowlRuntimeException(e.getMessage(), e);
+		} finally {
+			if (null != operationLockTarget) {
+				locks.unlock(createLockContext(), operationLockTarget);
+				operationLockTarget = null;
+			}
+		}
+	}
+
+	private void acquireLock(IOperationLockManager<DatastoreLockContext> locks) {
+		operationLockTarget = null;
+		final IOperationLockTarget repositoryAndBranchTarget = createLockTarget();
+		
+		try {
+			locks.lock(createLockContext(), 1000L, repositoryAndBranchTarget);
+		} catch (final DatastoreOperationLockException e) {
+			final DatastoreLockContext lockOwnerContext = e.getContext(repositoryAndBranchTarget);
+			
+			throw new RepositoryLockException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
+					repositoryAndBranchTarget,
+					lockOwnerContext.getUserId(), 
+					lockOwnerContext.getDescription()));
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 
@@ -160,6 +192,15 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	@Override
 	public void clearContents() {
 		editingContext.clearContents();
+	}
+	
+	private DatastoreLockContext createLockContext() {
+		return new DatastoreLockContext(userId(), DatastoreLockContextDescriptions.COMMIT, parentContextDescription);
+	}
+	
+	private SingleRepositoryAndBranchLockTarget createLockTarget() {
+		final IBranchPath branchPath = BranchPathUtils.createPath(branchPath());
+		return new SingleRepositoryAndBranchLockTarget(id(), branchPath);
 	}
 
 }

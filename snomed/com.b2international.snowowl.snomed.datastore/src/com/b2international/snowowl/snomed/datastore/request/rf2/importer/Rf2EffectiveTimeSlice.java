@@ -198,8 +198,6 @@ public final class Rf2EffectiveTimeSlice {
 					tx.lookup(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, CodeSystem.class).getCodeSystemVersions().add(version);
 				}
 				
-				// TODO consider moving preCommit into commit method
-				tx.preCommit();
 				tx.commit(userId, "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
 			}
 			
