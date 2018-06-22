@@ -2,10 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner">
-      <assigner
-            class="com.b2international.snowowl.snomed.reasoner.diff.DefaultNamespaceAndModuleAssigner"
-            priority="10">
-      </assigner>
+         point="com.b2international.snowowl.core.bootstrapFragments">
+      <bootstrapFragment
+            class="com.b2international.snowowl.snomed.reasoner.SnomedReasonerBootstrap">
+      </bootstrapFragment>
    </extension>
 </plugin>
