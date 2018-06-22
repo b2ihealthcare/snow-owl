@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.ontology;
+package com.b2international.snowowl.snomed.reasoner.ontology;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -24,7 +24,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.protege.owlapi.concurrent.SynchronizedOWLDataFactoryImpl;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
-import com.b2international.snowowl.snomed.reasoner.net4j.SnomedOntologyExportType;
+import com.b2international.snowowl.snomed.reasoner.request.SnomedOntologyExportType;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.Closeables;
 
@@ -57,7 +56,7 @@ public class SnomedOntologyService {
 	private final OWLOntologyManager manager;
 	
 	public SnomedOntologyService() {
-		manager = OWLManager.createOWLOntologyManager(SynchronizedOWLDataFactoryImpl.getInstance());
+		manager = OWLManager.createOWLOntologyManager();
 		manager.addOntologyFactory(new DelegateOntologyFactory());
 	}
 	

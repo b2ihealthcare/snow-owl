@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.request;
+package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
@@ -57,16 +57,16 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
-import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
+import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.server.classification.EquivalentConceptMerger;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeRecorder;
-import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
-import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.b2international.snowowl.snomed.reasoner.classification.EquivalentConceptMerger;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeRecorder;
+import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainPersister;
+import com.b2international.snowowl.snomed.reasoner.diff.relationship.RelationshipPersister;
+import com.b2international.snowowl.snomed.reasoner.normalform.ConceptConcreteDomainNormalFormGenerator;
+import com.b2international.snowowl.snomed.reasoner.normalform.RelationshipNormalFormGenerator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.snomed.reasoner.classification;
 
-import static com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator.CONSTRAINED_HEAP;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,10 +51,9 @@ import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonom
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
+import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
+import com.b2international.snowowl.snomed.reasoner.ontology.SnomedOntologyService;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
-import com.b2international.snowowl.snomed.reasoner.server.ontology.DelegateOntology;
-import com.b2international.snowowl.snomed.reasoner.server.ontology.SnomedOntologyService;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -126,10 +124,8 @@ public class Reasoner extends AbstractDisposableService {
 		
 		try {
 			
-			if (CONSTRAINED_HEAP) {
-				getApplicationContext().getService(ICDORepositoryManager.class).clearRevisionCache();
-				System.gc();
-			}
+			getApplicationContext().getService(ICDORepositoryManager.class).clearRevisionCache();
+			System.gc();
 
 			final Stopwatch stopwatch = Stopwatch.createStarted();
 			
@@ -139,12 +135,10 @@ public class Reasoner extends AbstractDisposableService {
 					
 			final ReasonerTaxonomy taxonomy = computeTaxonomy(stopwatch);
 			stopwatch.stop();
-			SnomedReasonerServerActivator.logInfo(MessageFormat.format("Classified ontology in {0}.", TimeUtil.toString(stopwatch)));
+			LOGGER.info("Classified ontology in {}.", TimeUtil.toString(stopwatch));
 		
-			if (CONSTRAINED_HEAP) {
-				unload();
-				stateMachine.unload();
-			}
+			unload();
+			stateMachine.unload();
 			
 			return taxonomy;
 			

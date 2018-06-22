@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.text.MessageFormat;
 import java.util.Deque;

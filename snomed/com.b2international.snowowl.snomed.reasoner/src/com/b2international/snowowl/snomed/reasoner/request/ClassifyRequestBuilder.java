@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.request;
+package com.b2international.snowowl.snomed.reasoner.request;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.core.ServiceProvider;

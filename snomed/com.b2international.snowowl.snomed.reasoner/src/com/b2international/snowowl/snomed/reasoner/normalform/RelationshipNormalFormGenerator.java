@@ -17,7 +17,7 @@
  * Copyright CSIRO Australian e-Health Research Centre (http://aehrc.com).
  * All rights reserved. Use is subject to license terms and conditions.
  */
-package com.b2international.snowowl.snomed.reasoner.server.normalform;
+package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -46,9 +46,9 @@ import com.b2international.commons.collect.LongSets.InverseLongFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
-import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.StatementFragmentOrdering;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;

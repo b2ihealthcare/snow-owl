@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.request;
+package com.b2international.snowowl.snomed.reasoner.request;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
 
 /**
  * @since 5.7

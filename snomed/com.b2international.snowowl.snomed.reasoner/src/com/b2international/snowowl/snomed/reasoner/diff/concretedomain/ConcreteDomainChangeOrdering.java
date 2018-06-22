@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
+package com.b2international.snowowl.snomed.reasoner.diff.concretedomain;
 
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.google.common.collect.Ordering;

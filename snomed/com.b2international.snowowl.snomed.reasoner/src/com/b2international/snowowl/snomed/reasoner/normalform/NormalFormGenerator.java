@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.normalform;
+package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -24,8 +24,8 @@ import org.eclipse.core.runtime.SubMonitor;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.google.common.collect.Ordering;
 
 /**

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.request;
+package com.b2international.snowowl.snomed.reasoner.request;
 
 import java.util.List;
 
@@ -29,12 +29,12 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
+import com.b2international.snowowl.snomed.reasoner.classification.CollectingServiceReference;
+import com.b2international.snowowl.snomed.reasoner.classification.Reasoner;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServerService;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
-import com.b2international.snowowl.snomed.reasoner.server.classification.CollectingServiceReference;
-import com.b2international.snowowl.snomed.reasoner.server.classification.Reasoner;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.classification.SnomedReasonerServerService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

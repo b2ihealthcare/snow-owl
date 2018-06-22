@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.normalform;
+package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -31,9 +31,9 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
-import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainChangeOrdering;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.classification;
+package com.b2international.snowowl.snomed.reasoner.classification;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -57,17 +57,9 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
-import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
-import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
-import com.b2international.snowowl.snomed.reasoner.classification.GetEquivalentConceptsResponse;
-import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponse;
-import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
-import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
-import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
-import com.b2international.snowowl.snomed.reasoner.classification.UnsatisfiableSet;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
@@ -75,11 +67,10 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcret
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
+import com.b2international.snowowl.snomed.reasoner.normalform.ConceptConcreteDomainNormalFormGenerator;
+import com.b2international.snowowl.snomed.reasoner.normalform.RelationshipNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
-import com.b2international.snowowl.snomed.reasoner.server.request.SnomedReasonerRequests;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -255,7 +246,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 			settings.withReasonerId(ApplicationContext.getServiceForClass(IReasonerPreferencesService.class).getSelectedReasonerId());
 		}
 
-		SnomedReasonerRequests.prepareClassify()
+		ClassificationRequests.prepareClassify()
 				.setSettings(settings)
 				.buildAsync()
 				.execute(getEventBus())
@@ -479,7 +470,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, ReasonerTaxonomyBuilder taxonomyBuilder, String userId) 
 			throws OperationLockException, InterruptedException {
 		
-		String persistJobId = SnomedReasonerRequests.preparePersistChanges()
+		String persistJobId = ClassificationRequests.preparePersistChanges()
 				.setClassificationId(classificationId)
 				.setTaxonomy(taxonomy)
 				.setTaxonomyBuilder(taxonomyBuilder)

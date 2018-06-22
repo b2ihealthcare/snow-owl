@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.preferences;
+package com.b2international.snowowl.snomed.reasoner.preferences;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -53,9 +53,7 @@ import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
-import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.preferences.ReasonerMetadata;
-import com.b2international.snowowl.snomed.reasoner.server.SnomedReasonerServerActivator;
+import com.b2international.snowowl.snomed.reasoner.SnomedReasonerActivator;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -83,7 +81,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 
 	public ReasonerPreferencesService() {
 
-		final SnomedReasonerServerActivator serverActivator = SnomedReasonerServerActivator.getInstance();
+		final SnomedReasonerActivator serverActivator = SnomedReasonerActivator.getInstance();
 		final Bundle bundle = serverActivator.getBundle();
 		final BundleContext context = bundle.getBundleContext();
 		final ServiceReference<?> serviceReference = context.getServiceReference(PreferencesService.class.getName());
@@ -209,7 +207,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 
 		final String message = "Invalid reasoner ID: " + id;
 		LOGGER.warn(message);
-		return new SerializableStatus(IStatus.WARNING, SnomedReasonerServerActivator.PLUGIN_ID, message);
+		return new SerializableStatus(IStatus.WARNING, SnomedReasonerActivator.PLUGIN_ID, message);
 	}
 
 	/* 
@@ -221,7 +219,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 
 		//nothing to set
 		if (StringUtils.isEmpty(extensionId)) {
-			return new SerializableStatus(IStatus.WARNING, SnomedReasonerServerActivator.PLUGIN_ID, "Unique ID cannot be processed.");
+			return new SerializableStatus(IStatus.WARNING, SnomedReasonerActivator.PLUGIN_ID, "Unique ID cannot be processed.");
 		}
 
 		if (extensionId.equals(getSelectedReasonerId())) {
@@ -232,7 +230,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 		if (null == metadata) {
 			final String message = "There is no reasoner registered by this ID: " + extensionId;
 			LOGGER.warn(message);
-			return new SerializableStatus(IStatus.WARNING, SnomedReasonerServerActivator.PLUGIN_ID, message);
+			return new SerializableStatus(IStatus.WARNING, SnomedReasonerActivator.PLUGIN_ID, message);
 		} else {
 			//mark other as NOT default.
 			for (final ReasonerMetadata other : cache.values()) {
@@ -251,7 +249,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 		} catch (final BackingStoreException e) {
 			final String message = "Error while setting " + metadata.getExtensionId() + " as default reasoner. Preferences are not updated.";
 			LOGGER.warn(message, e);
-			return new SerializableStatus(IStatus.ERROR, SnomedReasonerServerActivator.PLUGIN_ID, message);
+			return new SerializableStatus(IStatus.ERROR, SnomedReasonerActivator.PLUGIN_ID, message);
 		}
 
 		final RpcSession session = RpcThreadLocal.getSessionUnchecked();
@@ -336,7 +334,7 @@ public class ReasonerPreferencesService extends Notifier implements IReasonerPre
 	}
 
 	private static final Iterable<IStatus> OK_STATUS = Collections.<IStatus>singleton(
-			new SerializableStatus(IStatus.OK, SnomedReasonerServerActivator.PLUGIN_ID, "All reasoner instances are available and ready for use."));
+			new SerializableStatus(IStatus.OK, SnomedReasonerActivator.PLUGIN_ID, "All reasoner instances are available and ready for use."));
 	
 	private IStatus createErrorStatus(final String reasonerId, final Throwable t) {
 		return new SerializableStatus(IStatus.ERROR, reasonerId, MessageFormat.format("Couldn''t initialize reasoner factory for ID ''{0}''.", reasonerId), t);
