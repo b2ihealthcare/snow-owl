@@ -224,33 +224,6 @@ public abstract class CDOCommitInfoUtils {
 	}
 
 	/**
-	 * Creates an {@link EmptyCDOCommitInfo empty commit info}.
-	 * @param repositoryUuid the repository UUID.
-	 * @param branchPath the branch path.
-	 * @param userId the unique user ID.
-	 * @param comment the commit comment.
-	 * @param timestamp the commit timestamp.
-	 * @param previousTimestamp the commit previous timestamp.
-	 * @return with an empty commit info.
-	 */
-	public static CDOCommitInfo createEmptyCommitInfo(final String repositoryUuid, final IBranchPath branchPath, final String userId, 
-			final String comment, final long timestamp, final long previousTimestamp) {
-		
-		Preconditions.checkNotNull(repositoryUuid, "Repository UUID argument cannot be null.");
-		Preconditions.checkNotNull(branchPath, "Branch path argument cannot be null.");
-		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
-		Preconditions.checkNotNull(comment, "Commit comment argument cannot be null.");
-		
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection connection = connectionManager.getByUuid(repositoryUuid);
-		final CDOBranch branch = connection.getBranch(branchPath);
-		
-		Preconditions.checkNotNull(branch, "Branch [" + branchPath + "] does not exist in " + connection.getRepositoryName() + " repository.");
-		
-		return new EmptyCDOCommitInfo(branch, userId, comment, timestamp, previousTimestamp);
-	}
-	
-	/**
 	 * Query for getting and processing {@link CDOCommitInfo commit info}.
 	 */
 	public static final class CDOCommitInfoQuery {

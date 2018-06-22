@@ -120,10 +120,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			RpcUtil.getInitialServerSession(container).registerClassLoader(IApplicationSessionManager.class, managerClassLoader);
 			RpcUtil.getInitialServerSession(container).registerClassLoader(InternalApplicationSessionManager.class, managerClassLoader);
 			
-			final ICDORepositoryManager cdoRepositoryManager = CDORepositoryManager.getInstance();
-			cdoRepositoryManager.activate();
-			env.services().registerService(ICDORepositoryManager.class, cdoRepositoryManager);
-			
 			// TODO remove single directory manager
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 

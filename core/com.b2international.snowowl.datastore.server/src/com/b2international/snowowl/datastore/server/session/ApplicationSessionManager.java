@@ -291,17 +291,6 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 	}
 
 	/**
-	 * (non-API)
-	 *
-	 * @param session
-	 * @return
-	 */
-	public List<Role> getRoles(final ISession session) {
-		final RpcSession rpcSession = getSession(Preconditions.checkNotNull(session, "Server-side session argument cannot be null."));
-		return getRoles(rpcSession);
-	}
-
-	/**
 	 * (non-API, for server-side use only)
 	 *
 	 * @param multiplexer

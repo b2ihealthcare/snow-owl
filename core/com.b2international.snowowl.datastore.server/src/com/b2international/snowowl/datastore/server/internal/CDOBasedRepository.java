@@ -94,7 +94,7 @@ import com.google.common.collect.MapMaker;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingContext implements InternalRepository, CDOCommitInfoHandler {
+public final class CDOBasedRepository extends DelegatingContext implements InternalRepository {
 
 	private static final String REINDEX_DIAGNOSIS_TEMPLATE = "Run reindex to synchronize index with the database. Command: 'snowowl reindex %s%s'.";
 	private static final String RESTORE_DIAGNOSIS = "Inconsistent database and index. Shutdown and restore database and indexes from a backup.";
@@ -109,7 +109,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		super(env);
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
-		getCdoRepository().getRepository().addCommitInfoHandler(this);
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
 		RevisionIndex index = initIndex(mapper, branching);
@@ -169,41 +168,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		}
 	}
 	
-	@Override
-	public ICDOConnection getConnection() {
-		return getDelegate().service(ICDOConnectionManager.class).getByUuid(repositoryId);
-	}
-	
-	@Override
-	public CDOBranch getCdoMainBranch() {
-		return getConnection().getMainBranch();
-	}
-	
-	@Override
-	public CDOBranchManager getCdoBranchManager() {
-		return getCdoMainBranch().getBranchManager();
-	}
-	
-	@Override
-	public ICDORepository getCdoRepository() {
-		return getDelegate().service(ICDORepositoryManager.class).getByUuid(repositoryId);
-	}
-	
-	@Override
-	public ICDOConflictProcessor getConflictProcessor() {
-		return CDOConflictProcessorBroker.INSTANCE.getProcessor(repositoryId);
-	}
-	
-	@Override
-    public long getBaseTimestamp(CDOBranch branch) {
-        return branch.getBase().getTimeStamp();
-    }
-	
-	@Override
-	public long getHeadTimestamp(CDOBranch branch) {
-		return Math.max(getBaseTimestamp(branch), CDOServerUtils.getLastCommitTime(branch));
-	}
-	
 	private BaseRevisionBranching initializeBranchingSupport(int mergeMaxResults) {
 		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this, service(ObjectMapper.class));
 		bind(BaseRevisionBranching.class, branchManager);
@@ -253,7 +217,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 	@Override
 	public void doDispose() {
-		getCdoRepository().getRepository().removeCommitInfoHandler(this);
 		service(RevisionIndex.class).admin().close();
 	}
 	
