@@ -29,7 +29,6 @@ import com.google.common.collect.Iterables;
 /**
  * A {@link CommandProvider} implementation for the administration of the OWL ontology and reasoner services on the OSGi
  * console.
- * 
  */
 public class SnomedOntologyCommandProvider implements CommandProvider {
 
@@ -42,33 +41,6 @@ public class SnomedOntologyCommandProvider implements CommandProvider {
 				System.out.println(ApplicationContext.getInstance().getService(IReasonerPreferencesService.class));
 			}
 			
-		},
-		
-		SELECT("[id] - Selects the reasoner with the specified ID as the default.") {
-			@Override public void execute(final SnomedOntologyCommandProvider provider, final CommandInterpreter interpreter) throws Exception {
-				
-				try {
-					
-					final IReasonerPreferencesService service = ApplicationContext.getInstance().getService(IReasonerPreferencesService.class);
-					final IStatus status = service.setSelectedReasoner(Integer.parseInt(interpreter.nextArgument()));
-					
-					if (!status.isOK()) {
-						
-						interpreter.println(status.getMessage());
-						interpreter.println(provider.getHelp());
-						
-					} else {
-						
-						LIST.execute(provider, interpreter);
-						
-					}
-					
-					
-				} catch (final NumberFormatException e) {
-					interpreter.println(provider.getHelp());
-				}
-				
-			}
 		},
 		
 		CHECK("[-d] - Checks all registered reasoners presence.\n\t\t-d\t: dump the exception in case of failed initialization. Optional.") {

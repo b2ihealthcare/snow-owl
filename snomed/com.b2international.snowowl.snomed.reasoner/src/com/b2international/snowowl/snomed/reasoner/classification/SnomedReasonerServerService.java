@@ -242,10 +242,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	public void beginClassification(ClassificationSettings settings) {
 		checkNotNull(settings, "Classification settings may not be null.");
 
-		if (null == settings.getReasonerId()) {
-			settings.withReasonerId(ApplicationContext.getServiceForClass(IReasonerPreferencesService.class).getSelectedReasonerId());
-		}
-
 		ClassificationRequests.prepareClassify()
 				.setSettings(settings)
 				.buildAsync()

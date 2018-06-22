@@ -30,33 +30,7 @@ public interface IReasonerPreferencesService extends INotifier {
 	 * 
 	 * @return
 	 */
-	public String getSelectedReasonerId();
-
-	/**
-	 * 
-	 * @param internalId
-	 * @return
-	 */
-	public IStatus setSelectedReasoner(int internalId);
-
-	/**
-	 * 
-	 * @param extensionId
-	 * @return
-	 */
-	public IStatus setSelectedReasoner(String reasonerId);
-
-	/**
-	 * 
-	 * @return
-	 */
 	public Map<String, ReasonerMetadata> getMetadata();
-
-	/**
-	 * 
-	 * @return
-	 */
-	public ProtegeOWLReasonerInfo createReasonerInfo();
 
 	/**
 	 * 
