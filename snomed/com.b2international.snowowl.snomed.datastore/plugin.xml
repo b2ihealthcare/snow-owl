@@ -235,4 +235,11 @@
             class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension">
       </validationIssueDetailExtension>
    </extension>
+   <extension
+         point="com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner">
+      <assigner
+            class="com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner"
+            priority="10">
+      </assigner>
+   </extension>
 </plugin>

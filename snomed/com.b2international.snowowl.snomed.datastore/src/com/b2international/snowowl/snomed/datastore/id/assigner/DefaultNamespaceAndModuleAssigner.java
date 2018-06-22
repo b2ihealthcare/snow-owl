@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.diff;
+package com.b2international.snowowl.snomed.datastore.id.assigner;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 
@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.google.common.collect.Multiset;
 
 /**
