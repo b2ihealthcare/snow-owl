@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
@@ -33,13 +32,14 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Purge;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
 import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
@@ -446,18 +446,21 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return Iterables.size(Splitter.on(Branch.SEPARATOR).split(currentBranch.path()));
 	}
 	
-	private boolean isValidRepositoryName(String repositoryName, CommandInterpreter interpreter) {
-		Set<String> uuidKeySet = getRepositoryManager().uuidKeySet();
-		if (!uuidKeySet.contains(repositoryName)) {
-			interpreter.println("Could not find repository called: " + repositoryName);
-			interpreter.println("Available repository names are: " + uuidKeySet);
+	private boolean isValidRepositoryName(String repositoryId, CommandInterpreter interpreter) {
+		RepositoryManager repositoryManager = getRepositoryManager();
+		Repository repository = repositoryManager.get(repositoryId);
+		if (repository == null) {
+			interpreter.println("Could not find repository called: " + repositoryId);
+			repositoryManager.repositories().forEach(r -> {
+				interpreter.println("Available repository names are: " + r.id());
+			});
 			return false;
 		}
 		return true;
 	}
 
-	private ICDORepositoryManager getRepositoryManager() {
-		return ApplicationContext.getServiceForClass(ICDORepositoryManager.class);
+	private RepositoryManager getRepositoryManager() {
+		return ApplicationContext.getServiceForClass(RepositoryManager.class);
 	}
 
 }

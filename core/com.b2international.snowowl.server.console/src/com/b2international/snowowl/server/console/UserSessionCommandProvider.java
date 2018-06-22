@@ -35,17 +35,16 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.collections.Procedure;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager.ISessionOperationCallback;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -123,9 +122,6 @@ public class UserSessionCommandProvider implements CommandProvider {
 					break;
 				case "forceunlock":
 					forceUnlock(interpreter);
-					break;
-				case "repositories":
-					repositories(interpreter);
 					break;
 				default:
 					interpreter.println(getHelp());
@@ -307,18 +303,9 @@ public class UserSessionCommandProvider implements CommandProvider {
 		return userList;
 	}
 
-	public synchronized void repositories(final CommandInterpreter interpreter) {
-		
-		Collections3.forEach(ApplicationContext.getInstance().getService(ICDORepositoryManager.class), new Procedure<ICDORepository>() {
-			@Override protected void doApply(final ICDORepository repository) {
-				interpreter.println("\t" + repository.getRepositoryName() + " [ID: " + repository.getUuid() + "]");
-			}
-		});
-	}
-
 	private static final String COLUMN_FORMAT = "%4s | %3s | %-16s | %-50s | %-50s";
 
-	public synchronized void showLocks(final CommandInterpreter interpreter) {
+	private synchronized void showLocks(final CommandInterpreter interpreter) {
 	
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
 		final List<OperationLockInfo<DatastoreLockContext>> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
@@ -348,7 +335,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		
 	}
 	
-	public synchronized void forceUnlock(final CommandInterpreter interpreter) {
+	private synchronized void forceUnlock(final CommandInterpreter interpreter) {
 		
 		final DatastoreOperationLockManager lockManager = (DatastoreOperationLockManager) ApplicationContext.getInstance().getService(IDatastoreOperationLockManager.class);
 		final String argument = interpreter.nextArgument();
@@ -379,7 +366,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		}
 	}
 	
-	public synchronized void lock(final CommandInterpreter interpreter) {
+	private synchronized void lock(final CommandInterpreter interpreter) {
 		
 		final IOperationLockTarget target = parseLockTarget(interpreter); 
 		
@@ -400,7 +387,7 @@ public class UserSessionCommandProvider implements CommandProvider {
 		interpreter.println("Acquired lock for " + target + ".");
 	}
 	
-	public synchronized void unlock(final CommandInterpreter interpreter) {
+	private synchronized void unlock(final CommandInterpreter interpreter) {
 		
 		final IOperationLockTarget target = parseLockTarget(interpreter);
 		
@@ -435,15 +422,15 @@ public class UserSessionCommandProvider implements CommandProvider {
 			return AllRepositoriesLockTarget.INSTANCE;
 		}
 		
-		final ICDORepositoryManager repositoryManager = ApplicationContext.getInstance().getService(ICDORepositoryManager.class);
-		final ICDORepository repository = repositoryManager.getByUuid(uuidOrAll);
+		final RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
+		final Repository repository = repositoryManager.get(uuidOrAll);
 		if (null == repository) {
 			
 			interpreter.println("Repository does not exist with UUID: '" + uuidOrAll + "'.");
 			interpreter.println("Available stores are the followings:");
 			interpreter.println("------------------------------------");
-			for (final ICDORepository cdoRepository : repositoryManager) {
-				interpreter.println("\t" + cdoRepository.getUuid());
+			for (final Repository r : repositoryManager.repositories()) {
+				interpreter.println("\t" + r.id());
 			}
 			interpreter.println("------------------------------------");
 			
@@ -457,8 +444,6 @@ public class UserSessionCommandProvider implements CommandProvider {
 			return new SingleRepositoryLockTarget(uuidOrAll);
 		}
 		
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection connection = connectionManager.getByUuid(uuidOrAll);
 		IBranchPath branchPath = null;
 		
 		try {
@@ -466,7 +451,8 @@ public class UserSessionCommandProvider implements CommandProvider {
 			branchPath = BranchPathUtils.createPath(path);
 			//assuming active connection manager service here
 			
-			if (null == connection.getBranch(branchPath)) {
+			RevisionBranch branch = repository.service(BaseRevisionBranching.class).getBranch(path);
+			if (null == branch) {
 				interpreter.println("Branch does not exist. Branch path: '" + branchPath + "'. Repository UUID: '" + uuidOrAll + "'.");
 				interpreter.println(getHelp());
 				return null;
