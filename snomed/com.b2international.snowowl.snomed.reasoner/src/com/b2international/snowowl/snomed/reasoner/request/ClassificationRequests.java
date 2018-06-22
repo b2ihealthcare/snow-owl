@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.server.request;
+package com.b2international.snowowl.snomed.reasoner.request;
 
 /**
+ * The main entry point of the classification API; contains factory methods for
+ * request builders related to classification and OWL ontology export.
+ * 
  * @since 5.7
  */
-public abstract class SnomedReasonerRequests {
+public abstract class ClassificationRequests {
 
 	public static ClassifyRequestBuilder prepareClassify() {
 		return new ClassifyRequestBuilder();
-	}	
-
-	public static PersistChangesRequestBuilder preparePersistChanges() { return new PersistChangesRequestBuilder();
 	}
 
-	private SnomedReasonerRequests() {
+	public static PersistChangesRequestBuilder preparePersistChanges() {
+		return new PersistChangesRequestBuilder();
+	}
+	
+	public static CreateOntologyRequestBuilder prepareCreateOntology() {
+		return new CreateOntologyRequestBuilder();
+	}
+
+	private ClassificationRequests() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
-
 }
