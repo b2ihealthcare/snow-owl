@@ -2,34 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedPreferencesClientServiceConfigJob"
-            id="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedPreferencesClientServiceConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerServerConfigJob"
-            id="com.b2international.snowowl.snomed.reasoner.serviceconfig.SnomedReasonerServerConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.protocolFactory">
-      <protocolFactory
-		        class="com.b2international.snowowl.snomed.reasoner.net4j.SnomedOntologyServerProtocol$Factory"
-		        id="com.b2international.snowowl.snomed.reasoner.net4j.SnomedReasonerServerProtocol$Factory">
-      </protocolFactory>
-   </extension>
-   <extension
          point="com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner">
       <assigner
             class="com.b2international.snowowl.snomed.reasoner.diff.DefaultNamespaceAndModuleAssigner"
