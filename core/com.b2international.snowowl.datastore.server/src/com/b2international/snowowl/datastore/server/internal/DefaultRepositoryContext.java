@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,6 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.BranchContextProvider;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.server.EditingContextFactory;
-import com.b2international.snowowl.datastore.server.EditingContextFactoryProvider;
 import com.google.inject.Provider;
 
 /**
@@ -45,12 +41,6 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 
 	@Override
 	public <T> T service(Class<T> type) {
-		if (EditingContextFactory.class.isAssignableFrom(type)) {
-			return type.cast(service(EditingContextFactoryProvider.class).get(id()));
-		}
-		if (ICDOConnection.class.isAssignableFrom(type)) {
-			return type.cast(service(ICDOConnectionManager.class).getByUuid(id()));
-		}
 		if (BranchContextProvider.class.isAssignableFrom(type)) {
 			return type.cast(this);
 		}
