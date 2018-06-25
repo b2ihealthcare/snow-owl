@@ -58,7 +58,6 @@ import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexMa
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryContextProvider;
 import com.b2international.snowowl.datastore.server.internal.DefaultRepositoryManager;
-import com.b2international.snowowl.datastore.server.internal.ExtensionBasedEditingContextFactoryProvider;
 import com.b2international.snowowl.datastore.server.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
@@ -145,7 +144,6 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 
 			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
-			env.services().registerService(EditingContextFactoryProvider.class, new ExtensionBasedEditingContextFactoryProvider());
 			
 			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
 			initializeRequestSupport(env, numberOfWorkers);

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="changeProcessorFactory" name="changeProcessorFactory" schema="schema/changeProcessorFactory.exsd"/>
    <extension-point id="serviceConfigJob" name="serviceConfigJob" schema="schema/serviceConfigJob.exsd"/>
    <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
    <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
