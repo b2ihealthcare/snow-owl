@@ -15,24 +15,43 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import com.b2international.snowowl.core.exceptions.ApiValidation;
+import java.util.Set;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 
 /**
  * Annotation based builder superclass for FHIR model classes and data types.
- *  
+ * 
  * @since 6.4
  */
 public abstract class ValidatingBuilder<T> {
-	
-	public final T build() {
-		return ApiValidation.checkInput(doBuild());
+
+	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+
+	public void validateModel(T model) {
+		Validator validator = factory.getValidator();
+		Set<ConstraintViolation<T>> violations = validator.validate(model);
+
+		if (!violations.isEmpty()) {
+			throw new ValidationException(violations);
+		}
 	}
 
+	public T build() {
+		T model = doBuild();
+		validateModel(model);
+		return model;
+	}
+	
 	/**
-	 * Performs the actual building of the model instance.
-	 * @return T model instance built
-	 */
-	protected abstract T doBuild();
+ 	 * Performs the actual building of the model instance.
+ 	 * @return T model instance built
+ 	 */
+ 	protected abstract T doBuild();
 
 }

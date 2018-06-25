@@ -19,7 +19,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Property;
+import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * @since 6.4
@@ -27,50 +31,69 @@ import com.b2international.snowowl.fhir.core.model.serialization.SerializablePar
 public class ParameterSerializationTest extends FhirTest {
 	
 	@Test
-	public void parameterTest() throws Exception {
-		SerializableParameter parameter = new SerializableParameter("parameterName", "valueString", "test");
+	public void stringParameterTest() throws Exception {
 		
-		printPrettyJson(parameter);
+		@SuppressWarnings("unused")
+		@JsonPropertyOrder({"parameterName"})
+		class StringTestParameterObject {
+			
+			private String parameterName = "test";
+
+			public String getParameterName() {
+				return parameterName;
+			}
+
+			public void setParameterName(String parameterName) {
+				this.parameterName = parameterName;
+			}
+		}
 		
-		String expected = "{\"name\":\"parameterName\",\"valueString\":\"test\"}";
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(parameter));
+		String expected = 
+				"{\"resourceType\":\"Parameters\","
+					+ "\"parameter\":["
+					+ "{\"name\":\"parameterName\",\"valueString\":\"test\"}"
+					+ "]"
+				+ "}";
+		
+		Fhir fhirParameters = new Parameters.Fhir(new StringTestParameterObject());
+		String serializedParameters = objectMapper.writeValueAsString(fhirParameters);
+		printPrettyJson(serializedParameters);
+		
+		Assert.assertEquals(expected, serializedParameters);
 	}
 	
-//	@Test
-//	public void propertyDecimalValueTest() throws Exception {
-//
-//		Property property = Property.builder()
-//			.code("123")
-//			.value(2.1)
-//			.description("propertyDescription")
-//			.addSubProperty(SubProperty.builder()
-//				.code("subCode")
-//				.description("subDescription")
-//				.value(1)
-//				.build())
-//			.build();
-//		 
-//		PropertyConverter converter = new PropertyConverter();
-//		ParametersModel parametersModel = converter.convert(property);
-//			
-//		Collection<SerializableParameter> serializableParameters = parametersModel.getParameters();
-//		
-//		printPrettyJson(serializableParameters);
-//		
-//		String jsonString = objectMapper.writeValueAsString(serializableParameters);
-//		System.out.println(jsonString);
-//		
-//		String expected = "[{\"name\":\"code\",\"valueCode\":\"123\"},"
-//				+ "{\"name\":\"value\",\"valueDecimal\":2.1},"
-//				+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"},"
-//				+ "{\"name\":\"subproperty\","
-//				+ "\"part\":[{\"name\":\"code\",\"valueCode\":\"subCode\"},"
-//					+ "{\"name\":\"value\",\"valueInteger\":1},"
-//					+ "{\"name\":\"description\",\"valueString\":\"subDescription\"}]"
-//				+ "}]";
-//		
-//		Assert.assertEquals(expected, jsonString);
-//	}
+	@Test
+	public void integerParameterTest() throws Exception {
+		
+		@SuppressWarnings("unused")
+		@JsonPropertyOrder({"parameterName"})
+		class Test {
+			
+			private Integer parameterName = 1;
+
+			public Integer getParameterName() {
+				return parameterName;
+			}
+
+			public void setParameterName(Integer parameterName) {
+				this.parameterName = parameterName;
+			}
+			
+		}
+		
+		String expected = 
+				"{\"resourceType\":\"Parameters\","
+					+ "\"parameter\":["
+					+ "{\"name\":\"parameterName\",\"valueInteger\":1}"
+					+ "]"
+				+ "}";
+		
+		Fhir fhirParameters = new Parameters.Fhir(new Test());
+		String serializedParameters = objectMapper.writeValueAsString(fhirParameters);
+		printPrettyJson(serializedParameters);
+		
+		Assert.assertEquals(expected, serializedParameters);
+	}
 	
 	/**
 	 * The value of the property can be code | Coding | string | integer | boolean | dateTime

@@ -19,19 +19,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.api.tests.filter.FilterTest;
-import com.b2international.snowowl.fhir.api.tests.filter.ParameterParsingTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.ParameterDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.ParameterSerializationTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
-import com.b2international.snowowl.fhir.api.tests.serialization.domain.ValueSetSerializationTest;
-import com.b2international.snowowl.fhir.api.tests.validation.CodingValidationTest;
-import com.b2international.snowowl.fhir.api.tests.validation.DesignationValidationTest;
-import com.b2international.snowowl.fhir.api.tests.validation.ExceptionTest;
-import com.b2international.snowowl.fhir.api.tests.validation.PropertyValidationTest;
-import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.PropertySerializationTest;
 
 /**
  * FHIR test suite.
@@ -40,6 +29,9 @@ import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidati
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	ParameterSerializationTest.class,
+	PropertySerializationTest.class
+	
+	/*
 	ParameterDeserializationTest.class,
 	ModelSerializationTest.class,
 	CodeSystemSerializationTest.class,
@@ -52,6 +44,7 @@ import com.b2international.snowowl.fhir.api.tests.validation.SubPropertyValidati
 	ExceptionTest.class,
 	ParameterParsingTest.class,
 	FilterTest.class
+	*/
 })
 public class AllFhirTests {
 }

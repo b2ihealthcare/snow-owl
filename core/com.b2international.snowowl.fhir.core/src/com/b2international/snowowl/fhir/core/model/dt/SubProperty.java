@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -26,20 +27,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public final class SubProperty extends FhirProperty {
 	
 	//Identifies the property returned (1..1)
+	@Valid
 	@NotNull
-	private String code;
+	private Code code;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	private String description;
 	
-	SubProperty(FhirDataType type, Object value, final String code, final String description) {
+	SubProperty(FhirDataType type, Object value, final Code code, final String description) {
 		super(type, value);
 		this.code = code;
 		this.description = description;
 	}
 	
 	public String getCode() {
-		return code;
+		return code.getCodeValue();
 	}
 	
 	public String getDescription() {
@@ -52,10 +54,15 @@ public final class SubProperty extends FhirProperty {
 	
 	public static final class Builder extends FhirProperty.Builder<SubProperty, Builder> {
 		
-		private String code;
+		private Code code;
 		private String description;
 
 		public Builder code(final String code) {
+			this.code = new Code(code);
+			return this;
+		}
+		
+		public Builder code(final Code code) {
 			this.code = code;
 			return this;
 		}

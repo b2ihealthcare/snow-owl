@@ -17,8 +17,10 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.Collection;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
@@ -31,16 +33,18 @@ import com.google.common.collect.ImmutableList;
 public final class Property extends FhirProperty {
 	
 	//Identifies the property returned (1..1)
-	@NotEmpty
-	private final String code;
+	@Valid
+	@NotNull
+	private final Code code;
 	
 	//Human Readable representation of the property value (e.g. display for a code) 0..1
 	private final String description;
 	
+	@FhirSerializedName("subproperty")
 	@FhirType(FhirDataType.PART)
 	private final Collection<SubProperty> subProperty;
 	
-	Property(final FhirDataType type, final Object value, final String code, final String description, final Collection<SubProperty> subproperty) {
+	Property(final FhirDataType type, final Object value, final Code code, final String description, final Collection<SubProperty> subproperty) {
 		super(type, value);
 		this.code = code;
 		this.description = description;
@@ -48,7 +52,7 @@ public final class Property extends FhirProperty {
 	}
 	
 	public String getCode() {
-		return code;
+		return code.getCodeValue();
 	}
 	
 	public String getDescription() {
@@ -68,13 +72,18 @@ public final class Property extends FhirProperty {
 	 */
 	public static final class Builder extends FhirProperty.Builder<Property, Builder> {
 		
-		private String code;
+		private Code code;
 		private String description;
 		private ImmutableList.Builder<SubProperty> subProperty = ImmutableList.builder();
 
 		Builder() {}
 		
 		public Builder code(final String code) {
+			this.code = new Code(code);
+			return this;
+		}
+		
+		public Builder code(final Code code) {
 			this.code = code;
 			return this;
 		}

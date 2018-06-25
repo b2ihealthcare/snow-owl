@@ -71,6 +71,10 @@ public abstract class FhirProperty {
 			return setValue(FhirDataType.CODING, value);
 		}
 		
+		public final B valueInteger(Integer value) {
+			return setValue(FhirDataType.INTEGER, value);
+		}
+		
 		protected final B setValue(FhirDataType type, Object value) {
 			this.type = type;
 			this.value = value;

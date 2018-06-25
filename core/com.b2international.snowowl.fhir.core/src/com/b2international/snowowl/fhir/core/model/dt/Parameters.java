@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.b2international.commons.reflect.Reflections;
+import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -46,6 +47,42 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
+ * Class to represent a list of FHIR parameters.
+ * This class can be constructed from any object with fields and serialized into 
+ * standard JSON or FHIR Json representation such as:
+ * 
+  "resourceType" : "Parameters",
+  // from Resource: id, meta, implicitRules, and language
+  "parameter" : [{ // Operation Parameter
+    "name" : "<string>", // R!  Name from the definition
+    // value[x]: If parameter is a data type. One of these 23:
+    "valueInteger" : <integer>,
+    "valueDecimal" : <decimal>,
+    "valueDateTime" : "<dateTime>",
+    "valueDate" : "<date>",
+    "valueInstant" : "<instant>",
+    "valueString" : "<string>",
+    "valueUri" : "<uri>",
+    "valueBoolean" : <boolean>,
+    "valueCode" : "<code>",
+    "valueBase64Binary" : "<base64Binary>",
+    "valueCoding" : { Coding },
+    "valueCodeableConcept" : { CodeableConcept },
+    "valueAttachment" : { Attachment },
+    "valueIdentifier" : { Identifier },
+    "valueQuantity" : { Quantity },
+    "valueRange" : { Range },
+    "valuePeriod" : { Period },
+    "valueRatio" : { Ratio },
+    "valueHumanName" : { HumanName },
+    "valueAddress" : { Address },
+    "valueContactPoint" : { ContactPoint },
+    "valueSchedule" : { Schedule },
+    "valueReference" : { Reference },
+    "resource" : { Resource }, // C? If parameter is a whole resource
+    "part" : [{ Content as for Parameters.parameter }] // Named part of a multi-part parameter
+  }]
+}
  * @since 6.4
  */
 @ApiModel("Parameters")
@@ -70,11 +107,17 @@ public final class Parameters {
 			this.parameters = parameters;
 		}
 		
+		public Json(Object object) {
+			this.parameters = Parameters.from(object);
+		}
+		
 		public Parameters parameters() {
 			return parameters;
 		}
 		
 		static final class Ser extends StdSerializer<Parameters.Json> {
+
+			private static final long serialVersionUID = 1L;
 
 			private Ser() {
 				super(Parameters.Json.class);
@@ -128,6 +171,10 @@ public final class Parameters {
 
 		private final Parameters parameters;
 
+		public Fhir(Object object) {
+			this.parameters = Parameters.from(object);
+		}
+		
 		public Fhir(Parameters parameters) {
 			this.parameters = parameters;
 		}
@@ -138,6 +185,8 @@ public final class Parameters {
 		} 
 
 		static final class Ser extends StdSerializer<Parameters.Fhir> {
+
+			private static final long serialVersionUID = 1L;
 
 			private Ser() {
 				super(Parameters.Fhir.class);
@@ -172,6 +221,8 @@ public final class Parameters {
 		
 		static final class Deser extends StdDeserializer<Parameters.Fhir> {
 			
+			private static final long serialVersionUID = 1L;
+
 			private Deser() {
 				super(Parameters.Fhir.class);
 			}
@@ -213,16 +264,18 @@ public final class Parameters {
 		for (String field : fhirFields) {
 			try {
 				Field javaField = Reflections.getField(type, field);
+				
+				String fieldName = getFieldName(javaField);
 				Object val = javaField.get(object);
 				if (val != null) {
 					FhirDataType fhirType = getFhirType(object, javaField);
 					if (fhirType != null) {
 						if (val instanceof Iterable) {
 							for (Object valItem : (Iterable<?>) val) {
-								parameters.add(new Parameter(field, fhirType, FhirDataType.PART == fhirType ? from(valItem) : valItem));
+								parameters.add(new Parameter(fieldName, fhirType, FhirDataType.PART == fhirType ? from(valItem) : valItem));
 							}
 						} else {
-							parameters.add(new Parameter(field, fhirType, FhirDataType.PART == fhirType ? from(val) : val));
+							parameters.add(new Parameter(fieldName, fhirType, FhirDataType.PART == fhirType ? from(val) : val));
 						}
 					}
 				}
@@ -232,6 +285,18 @@ public final class Parameters {
 		}
 		
 		return new Parameters(parameters);
+	}
+
+	/**
+	 * @param javaField
+	 * @return
+	 */
+	private static String getFieldName(Field javaField) {
+		if (javaField.isAnnotationPresent(FhirSerializedName.class)) {
+			return javaField.getAnnotation(FhirSerializedName.class).value();
+		} else {
+			return javaField.getName();
+		}
 	}
 
 	private static FhirDataType getFhirType(Object object, Field javaField) {

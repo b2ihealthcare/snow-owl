@@ -23,8 +23,6 @@ import org.junit.rules.TestName;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.fhir.api.FhirApiConfig;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
