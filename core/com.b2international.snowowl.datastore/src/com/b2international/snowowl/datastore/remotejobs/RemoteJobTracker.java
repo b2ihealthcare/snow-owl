@@ -340,6 +340,16 @@ public final class RemoteJobTracker implements IDisposableService {
 			public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 				throw new UnsupportedOperationException();
 			}
+
+			@Override
+			public <T> T get(Class<T> type, String key) throws IOException {
+				return index.read(searcher -> searcher.get(type, key));
+			}
+
+			@Override
+			public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
+				return index.read(searcher -> searcher.get(type, keys));
+			}
 		};
 	}
 
