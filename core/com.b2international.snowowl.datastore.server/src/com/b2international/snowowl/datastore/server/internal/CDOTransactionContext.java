@@ -15,24 +15,36 @@
  */
 package com.b2international.snowowl.datastore.server.internal;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.ConcurrentModificationException;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-import com.b2international.commons.exceptions.ConflictException;
+import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.Tuples;
+
 import com.b2international.commons.exceptions.CycleDetectedException;
-import com.b2international.commons.exceptions.Exceptions;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.index.IndexException;
+import com.b2international.index.Searcher;
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.branch.TimestampProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -41,6 +53,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDes
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Throwables;
 
 /**
  * @since 4.5
@@ -54,13 +67,17 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	private boolean isNotificationEnabled = true;
 	
 	@JsonIgnore
-	private transient IOperationLockTarget operationLockTarget;
+	private transient final Map<Pair<String, Class<?>>, Object> resolvedObjectsById = newHashMap();
+	
+	@JsonIgnore
+	private transient final StagingArea staging;
 
 	CDOTransactionContext(BranchContext context, String userId, String commitComment, String parentContextDescription) {
 		super(context);
 		this.userId = userId;
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
+		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath());
 	}
 	
 	@Override
@@ -74,104 +91,141 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public <T> T service(Class<T> type) {
-		if (CDOEditingContext.class.isAssignableFrom(type)) {
-			return type.cast(editingContext);
-		}
-		return super.service(type);
-	}
-	
-	@Override
 	public <T> T lookup(String componentId, Class<T> type) {
-		return editingContext.lookup(componentId, type);
+		final T component = lookupIfExists(componentId, type);
+		if (null == component) {
+			throw new ComponentNotFoundException(type.getSimpleName(), componentId);
+		}
+		return component;
 	}
 	
 	@Override
 	public <T> T lookupIfExists(String componentId, Class<T> type) {
-		return editingContext.lookupIfExists(componentId, type);
+		return lookup(Collections.singleton(componentId), type).get(componentId);
 	}
 	
 	@Override
 	public <T> Map<String, T> lookup(Collection<String> componentIds, Class<T> type) {
-		return editingContext.lookup(componentIds, type);
+		final Map<String, T> resolvedComponentsById = newHashMap();
+		final Set<String> unresolvedComponentIds = newHashSet(componentIds);
+		
+		// check already resolved components first
+		for (Iterator<String> it = unresolvedComponentIds.iterator(); it.hasNext();) {
+			String componentId = it.next();
+			Pair<String, Class<?>> key = createComponentKey(componentId, type);
+			if (resolvedObjectsById.containsKey(key)) {
+				resolvedComponentsById.put(componentId, type.cast(resolvedObjectsById.get(key)));
+				it.remove();
+			}
+		}
+		
+		// as last resort, query the index for the storageKey to be able to resolve the class
+		if (!unresolvedComponentIds.isEmpty()) {
+			for (T object : fetchComponents(unresolvedComponentIds, type)) {
+				final String componentId = getObjectId(object);
+				resolvedComponentsById.put(componentId, object);
+				resolvedObjectsById.put(createComponentKey(componentId, type), object);
+			}
+		}
+		
+		// TODO remove detached components???
+		
+		return resolvedComponentsById;
 	}
 	
+	private String getObjectId(Object component) {
+		if (component instanceof CodeSystemEntry) {
+			return ((CodeSystemEntry) component).getShortName();
+		} else if (component instanceof Revision) {
+			return ((Revision) component).getId();
+		}
+		throw new UnsupportedOperationException("Cannot get objectId for " + component);
+	}
+
+	private <T> Pair<String, Class<?>> createComponentKey(final String componentId, Class<T> type) {
+		return Tuples.<String, Class<?>>pair(componentId, type);
+	}
+	
+	private <T> Iterable<T> fetchComponents(Set<String> componentIds, Class<T> type) {
+		try {
+			if (Revision.class.isAssignableFrom(type)) {
+				return service(RevisionSearcher.class).get(type, componentIds);
+			} else {
+				return service(Searcher.class).get(type, componentIds);
+			}
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+
 	@Override
 	public void add(Object o) {
-		editingContext.add(o);
+		if (o instanceof CodeSystemEntry) {
+			final CodeSystemEntry cs = (CodeSystemEntry) o;
+			staging.stageNew(cs.getShortName(), cs);
+			resolvedObjectsById.put(createComponentKey(cs.getShortName(), cs.getClass()), cs);
+		} else if (o instanceof Revision) {
+			Revision rev = (Revision) o;
+			staging.stageNew(rev);
+			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
+		} else {
+			throw new UnsupportedOperationException("Cannot add object to this repository: " + o);
+		}
 	}
 	
 	@Override
-	public void update(Revision oldVersion, Revision newVersion) {
-		
+	public void update(Revision oldRevision, Revision changedRevision) {
+		staging.stageChange(oldRevision, changedRevision);
+		resolvedObjectsById.put(createComponentKey(changedRevision.getId(), changedRevision.getClass()), changedRevision);
 	}
 	
 	@Override
 	public void delete(Object o) {
-		editingContext.delete(o);
+		delete(o, false);
 	}
 	
 	@Override
 	public void delete(Object o, boolean force) {
-		editingContext.delete(o, force);
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	
 	@Override
 	public void close() throws Exception {
-		editingContext.close();
-	}
-
-	@Override
-	public void rollback() {
-		editingContext.rollback();
+		// TODO is it always okay to clear when closing tx???
+		resolvedObjectsById.clear();
 	}
 
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
+		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
+		final SingleRepositoryAndBranchLockTarget lockTarget = createLockTarget(id(), branchPath());
 		IOperationLockManager<DatastoreLockContext> locks = service(IOperationLockManager.class);
 		try {
-			acquireLock(locks);
-			final CDOCommitInfo info = new CDOServerCommitBuilder(userId, commitComment, editingContext.getTransaction())
-					.notifyWriteAccessHandlers(isNotificationEnabled())
-					.sendCommitNotification(isNotificationEnabled())
-					.parentContextDescription(parentContextDescription)
-					.commitOne();
-			return info.getTimeStamp();
-		} catch (final CommitException e) {
-			final RepositoryLockException cause = Exceptions.extractCause(e, getClass().getClassLoader(), RepositoryLockException.class);
-			if (cause != null) {
-				throw new LockedException(cause.getMessage());
-			}
-			
-			final ConcurrentModificationException cause2 = Exceptions.extractCause(e, getClass().getClassLoader(), ConcurrentModificationException.class);
-			if (cause2 != null) {
-				throw new ConflictException("Concurrent modifications prevented the commit from being processed. Please try again.");
-			}
-			
-			final CycleDetectedException cause3 = Exceptions.extractCause(e.getCause(), getClass().getClassLoader(), CycleDetectedException.class);
-			if (cause3 != null) {
-				throw cause3;
+			acquireLock(locks, lockContext, lockTarget);
+			final long timestamp = service(TimestampProvider.class).getTimestamp();
+			staging
+				.commit(null, timestamp, userId, commitComment);
+			return timestamp;
+		} catch (RepositoryLockException e) {
+			throw new LockedException(e.getMessage());
+		} catch (final IndexException e) {
+			Throwable rootCause = Throwables.getRootCause(e);
+			if (rootCause instanceof CycleDetectedException) {
+				throw (CycleDetectedException) rootCause;
 			}
 			throw new SnowowlRuntimeException(e.getMessage(), e);
 		} finally {
-			if (null != operationLockTarget) {
-				locks.unlock(createLockContext(), operationLockTarget);
-				operationLockTarget = null;
-			}
+			locks.unlock(lockContext, lockTarget);
 		}
 	}
 
-	private void acquireLock(IOperationLockManager<DatastoreLockContext> locks) {
-		operationLockTarget = null;
-		final IOperationLockTarget repositoryAndBranchTarget = createLockTarget();
-		
+	private void acquireLock(IOperationLockManager<DatastoreLockContext> locks, DatastoreLockContext lockContext, IOperationLockTarget lockTarget) {
 		try {
-			locks.lock(createLockContext(), 1000L, repositoryAndBranchTarget);
+			locks.lock(lockContext, 1000L, lockTarget);
 		} catch (final DatastoreOperationLockException e) {
-			final DatastoreLockContext lockOwnerContext = e.getContext(repositoryAndBranchTarget);
-			
+			final DatastoreLockContext lockOwnerContext = e.getContext(lockTarget);
 			throw new RepositoryLockException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
-					repositoryAndBranchTarget,
+					lockTarget,
 					lockOwnerContext.getUserId(), 
 					lockOwnerContext.getDescription()));
 		} catch (InterruptedException e) {
@@ -191,16 +245,15 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 
 	@Override
 	public void clearContents() {
-		editingContext.clearContents();
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	
-	private DatastoreLockContext createLockContext() {
-		return new DatastoreLockContext(userId(), DatastoreLockContextDescriptions.COMMIT, parentContextDescription);
+	private static DatastoreLockContext createLockContext(String userId, String parentContextDescription) {
+		return new DatastoreLockContext(userId, DatastoreLockContextDescriptions.COMMIT, parentContextDescription);
 	}
 	
-	private SingleRepositoryAndBranchLockTarget createLockTarget() {
-		final IBranchPath branchPath = BranchPathUtils.createPath(branchPath());
-		return new SingleRepositoryAndBranchLockTarget(id(), branchPath);
+	private static SingleRepositoryAndBranchLockTarget createLockTarget(String repositoryId, String branch) {
+		return new SingleRepositoryAndBranchLockTarget(repositoryId, BranchPathUtils.createPath(branch));
 	}
 
 }

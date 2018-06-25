@@ -27,20 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.ecore.EObject;
-
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -56,10 +47,6 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.core.store.SnomedMemberBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -96,7 +83,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public void add(EObject o) {
+	public void add(Object o) {
 		getDelegate().add(o);
 	}
 	
@@ -143,18 +130,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 	
 	@Override
-	public void delete(EObject o) {
+	public void delete(Object o) {
 		getDelegate().delete(o);
 	}
 	
 	@Override
-	public void delete(EObject o, boolean force) {
+	public void delete(Object o, boolean force) {
 		getDelegate().delete(o, force);
-	}
-	
-	@Override
-	public void rollback() {
-		getDelegate().rollback();
 	}
 	
 	@Override
@@ -163,7 +145,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	}
 
 	@Override
-	public <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
+	public <T> T lookupIfExists(String componentId, Class<T> type) {
 		return getDelegate().lookupIfExists(componentId, type);
 	}
 	
