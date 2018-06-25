@@ -17,8 +17,6 @@ package com.b2international.snowowl.datastore.cdo;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.eclipse.emf.cdo.CDOObject;
-
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**

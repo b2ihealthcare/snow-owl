@@ -27,33 +27,31 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.ICDOConnectionFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
- * {@link ICDOConnectionFactory} implementation for activating a {@link ICDOConnectionManager}
+ * {@link CDOConnectionFactory} implementation for activating a {@link CDOConnectionManager}
  * instance and registering it to the {@link ApplicationContext application context} under the hood
  * to establish a connection between a CDO server and client.
  *
  */
-public class CDOConnectionFactory implements ICDOConnectionFactory {
+public class CDOConnectionFactory {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(CDOConnectionFactory.class);
 	
-	@Override
 	public void connect(final String username, final String password) throws SnowowlServiceException {
 		connect(new CDOConnectionManager(username, password));
 	}
 
 	/*tries to activate the connection manager argument. in case of successful activation argument will be registered to the application context.*/
-	private void connect(final ICDOConnectionManager manager) throws SnowowlServiceException {
+	private void connect(final CDOConnectionManager manager) throws SnowowlServiceException {
 		
 		try {
 			
 			Preconditions.checkNotNull(manager, "Connection manager argument cannot be null.");
 			manager.activate();
-			ApplicationContext.getInstance().registerService(ICDOConnectionManager.class, manager);
+			ApplicationContext.getInstance().registerService(CDOConnectionManager.class, manager);
 			
 		} catch (final Throwable t) {
 			
