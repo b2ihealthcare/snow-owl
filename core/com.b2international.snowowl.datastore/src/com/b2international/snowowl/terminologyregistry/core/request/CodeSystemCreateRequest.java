@@ -21,8 +21,6 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemBuilder;
 import com.google.common.base.Strings;
 
 /**
@@ -95,7 +93,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
 		
-		final CodeSystem codeSystem = createCodeSystem(context);
+		final CodeSystemEntry codeSystem = createCodeSystem(context);
 		context.add(codeSystem);
 
 		return codeSystem.getShortName();
@@ -123,19 +121,19 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private CodeSystem createCodeSystem(final TransactionContext context) {
-		return new CodeSystemBuilder()
-				.withBranchPath(branchPath)
-				.withCitation(citation)
-				.withCodeSystemOid(oid)
-				.withIconPath(iconPath)
-				.withLanguage(language)
-				.withMaintainingOrganizationLink(link)
-				.withName(name)
-				.withRepositoryUuid(repositoryUuid)
-				.withShortName(shortName)
-				.withTerminologyComponentId(terminologyId)
-				.withExtensionOf(Strings.isNullOrEmpty(extensionOf) ? null : context.lookup(extensionOf, CodeSystem.class))
+	private CodeSystemEntry createCodeSystem(final TransactionContext context) {
+		return CodeSystemEntry.builder()
+				.oid(oid)
+				.branchPath(branchPath)
+				.name(name)
+				.shortName(shortName)
+				.orgLink(link)
+				.language(language)
+				.citation(citation)
+				.iconPath(iconPath)
+				.terminologyComponentId(terminologyId)
+				.repositoryUuid(repositoryUuid)
+				.extensionOf(extensionOf)
 				.build();
 	}
 
