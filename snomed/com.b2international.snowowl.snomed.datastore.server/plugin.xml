@@ -64,12 +64,6 @@
       </executor>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.editingContextFactory">
-      <factory
-            class="com.b2international.snowowl.datastore.server.snomed.SnomedEditingContextFactory">
-      </factory>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.classLoaderProvider">
       <classLoaderProvider
             class="com.b2international.snowowl.datastore.server.snomed.SnomedClassLoaderProvider">
