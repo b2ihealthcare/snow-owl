@@ -38,7 +38,7 @@ public final class BulkIndexWrite<T> implements IndexWrite<List<T>> {
 	}
 	
 	@Override
-	public List<T> execute(final DocWriter index) throws IOException {
+	public List<T> execute(final Writer index) throws IOException {
 		final List<T> results = Lists.newArrayList();
 		
 		for (final IndexWrite<T> write : indexWrites) {

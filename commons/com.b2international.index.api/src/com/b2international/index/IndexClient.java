@@ -24,9 +24,9 @@ public interface IndexClient {
 
 	IndexAdmin admin();
 
-	DocSearcher searcher();
+	Searcher searcher();
 	
-	DocWriter writer();
+	Writer writer();
 
 	void close();
 	

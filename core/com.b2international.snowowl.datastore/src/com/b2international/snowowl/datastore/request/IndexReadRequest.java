@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 package com.b2international.snowowl.datastore.request;
 
 import com.b2international.commons.exceptions.IllegalQueryParameterException;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Index;
+import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.events.Request;
  * A subclass of {@link DelegatingRequest} that:
  * <ul>
  * <li>opens an index read transaction using {@link Index};
- * <li>executes the delegate with a {@link RepositoryContext} that allows access to {@link DocSearcher} from the read transaction.
+ * <li>executes the delegate with a {@link RepositoryContext} that allows access to {@link Searcher} from the read transaction.
  * </ul>
  * 
  * @since 5.2
@@ -43,7 +43,7 @@ public final class IndexReadRequest<R> extends DelegatingRequest<RepositoryConte
 		return context.service(Index.class).read(index -> {
 			try {
 				return next(context.inject()
-						.bind(DocSearcher.class, index)
+						.bind(Searcher.class, index)
 						.build());
 			} catch (QueryParseException e) {
 				throw new IllegalQueryParameterException(e.getMessage());

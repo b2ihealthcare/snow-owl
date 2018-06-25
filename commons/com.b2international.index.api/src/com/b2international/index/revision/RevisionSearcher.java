@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.index.revision;
 import java.io.IOException;
 
 import com.b2international.index.Hits;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Query;
 
@@ -32,7 +31,7 @@ public interface RevisionSearcher extends Searcher {
 	 * 
 	 * @return
 	 */
-	DocSearcher searcher();
+	Searcher searcher();
 
 	/**
 	 * Get the latest revision of an object from the index with the given type and storageKey as identifier.
@@ -44,7 +43,7 @@ public interface RevisionSearcher extends Searcher {
 	 * @return the latest revision of the object
 	 * @throws IOException
 	 */
-	<T extends Revision> T get(Class<T> type, String key) throws IOException;
+	<T> T get(Class<T> type, String key) throws IOException;
 
 	/**
 	 * Gets a bunch of revision for the given type and storage key collection.
@@ -56,7 +55,7 @@ public interface RevisionSearcher extends Searcher {
 	 * @return the latest revisions of the objects
 	 * @throws IOException
 	 */
-	<T extends Revision> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException;
+	<T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException;
 
 	/**
 	 * Execute the given query among all stored items.

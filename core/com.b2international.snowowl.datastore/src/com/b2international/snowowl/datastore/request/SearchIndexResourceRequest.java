@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
@@ -88,7 +87,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		if (Revision.class.isAssignableFrom(getDocumentType())) {
 			return context.service(RevisionSearcher.class);
 		} else {
-			return context.service(DocSearcher.class);
+			return context.service(Searcher.class);
 		}
 	}
 

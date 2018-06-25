@@ -110,7 +110,7 @@ public abstract class BaseIndexTest {
 	protected final <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) {
 		return index().read(new IndexRead<Aggregation<T>>() {
 			@Override
-			public Aggregation<T> execute(DocSearcher index) throws IOException {
+			public Aggregation<T> execute(Searcher index) throws IOException {
 				return index.aggregate(aggregation);
 			}
 		});

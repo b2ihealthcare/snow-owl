@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -163,7 +162,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		});
 	}
 	
-	private void doRevisionCompare(DocSearcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
+	private void doRevisionCompare(Searcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
 		if (compareRef.segments().isEmpty()) {
 			return;
 		}
@@ -186,7 +185,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				.forEach(result::apply);
 	}
 
-	private String getBranchPath(DocSearcher searcher, long branchId) throws IOException {
+	private String getBranchPath(Searcher searcher, long branchId) throws IOException {
 		return searcher.search(Query.select(String.class)
 				.from(RevisionBranch.class)
 				.fields(RevisionBranch.Fields.PATH)

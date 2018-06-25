@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,30 @@ public interface Searcher {
 	 * @throws IOException
 	 */
 	<T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException;
+	
+	/**
+	 * Fetch an object by type and key from the index.
+	 * 
+	 * @param type
+	 *            - the object's type to retrieve
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @return the object
+	 * @throws IOException
+	 */
+	<T> T get(Class<T> type, String key) throws IOException;
+	
+	/**
+	 * Fetch multiple objects by type and keys from the index.
+	 * 
+	 * @param type
+	 *            - the type of the object
+	 * @param keys
+	 *            - the logical, unique identifiers of the objects to load
+	 * @return an {@link Iterable} of {@link Object}s, never <code>null</code>.
+	 * @throws IOException
+	 */
+	<T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException;
 	
 	/**
 	 * Returns an {@link Iterable} to scroll through all matches of the given query. If the query does not specify scroll keep alive, then the
