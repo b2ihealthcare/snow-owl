@@ -32,12 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.security.auth.login.LoginException;
 
-import org.eclipse.emf.cdo.server.ISession;
-import org.eclipse.emf.cdo.server.IView;
-import org.eclipse.emf.cdo.session.CDOSession;
-import org.eclipse.emf.cdo.spi.server.ISessionProtocol;
-import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.net4j.channel.IChannel;
 import org.eclipse.net4j.channel.IChannelMultiplexer;
 import org.eclipse.net4j.connector.IConnector;
 import org.eclipse.net4j.jvm.IJVMAcceptor;
@@ -300,43 +294,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		return knownSessions.get(multiplexer);
 	}
 
-	/**
-	 * (non-API)
-	 *
-	 * Returns with the {@link RpcSession RPC session} for the given server-side view.
-	 *
-	 * @param view the server-side representation of a client-side's {@link CDOView CDO view}.
-	 * @return the RPC session for the server-side view, or {@code null} if the RPC session cannot be resolved for the give view.
-	 */
-	public RpcSession getSession(final IView view) {
-		return getSession(view.getSession());
-	}
-
-	/**
-	 * (non-API)
-	 *
-	 * Returns with the {@link RpcSession RPC session} for the given server-side session.
-	 *
-	 * @param session the server-side representation of a client-side's {@link CDOSession CDO session}.
-	 * @return the RPC session for the server-side session, or {@code null} if the RPC session cannot be resolved for the give session.
-	 */
-	@SuppressWarnings("restriction")
-	public RpcSession getSession(final ISession session) {
-		if (session != null) {
-			final ISessionProtocol protocol = session.getProtocol();
-			
-			if (protocol instanceof org.eclipse.emf.cdo.server.internal.net4j.protocol.CDOServerProtocol) {
-				
-				final IChannel channel = ((org.eclipse.emf.cdo.server.internal.net4j.protocol.CDOServerProtocol) protocol).getChannel();
-				final IChannelMultiplexer multiplexer = channel.getMultiplexer();
-				return getSession(multiplexer);
-				
-			}
-		}
-		return null;
-	}
-
-	/*returns with the RPC session which user ID key equals with the argument. may return with null if the session cannot be found.*/
+		/*returns with the RPC session which user ID key equals with the argument. may return with null if the session cannot be found.*/
 	private RpcSession getByUserId(final String userId) {
 		Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
 

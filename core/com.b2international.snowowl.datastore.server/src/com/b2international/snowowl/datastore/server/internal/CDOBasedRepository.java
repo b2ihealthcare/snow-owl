@@ -21,13 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.index.DefaultIndex;
@@ -41,20 +35,13 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.commit.CommitInfo;
-import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
-import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils.ConsumeAllCDOBranchesHandler;
-import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils.ConsumeAllCommitInfoHandler;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
@@ -63,8 +50,6 @@ import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.replicate.BranchReplicator;
-import com.b2international.snowowl.datastore.request.IndexReadRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewManager;
@@ -83,13 +68,10 @@ import com.google.common.collect.MapMaker;
  */
 public final class CDOBasedRepository extends DelegatingContext implements InternalRepository {
 
-	private static final String REINDEX_DIAGNOSIS_TEMPLATE = "Run reindex to synchronize index with the database. Command: 'snowowl reindex %s%s'.";
-	private static final String RESTORE_DIAGNOSIS = "Inconsistent database and index. Shutdown and restore database and indexes from a backup.";
-
 	private final String toolingId;
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
-	private Health health = Health.RED;
+	private Health health = Health.GREEN;
 	private String diagnosis;
 	
 	CDOBasedRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
@@ -111,30 +93,7 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 
 	@Override
 	public void checkHealth() {
-		
-		final List<CDOCommitInfo> cdoCommits = getAllCDOCommitInfos();
-		final CommitInfos indexCommits = getAllIndexCommits();
-		
-		boolean emptyDatabase = cdoCommits.isEmpty();
-		boolean emptyIndex = indexCommits.isEmpty();
-
-		if (emptyDatabase && emptyIndex) {
-			// empty dataset, OK
-			setHealth(Health.GREEN, null); 
-		} else if (emptyDatabase && !emptyIndex) {
-			setHealth(Health.RED, RESTORE_DIAGNOSIS);
-		} else if (!emptyDatabase && emptyIndex) {
-			setHealth(Health.RED, String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), ""));
-		} else if (!emptyDatabase && !emptyIndex) {
-			final String diagnosis = validateCommitConsistency(cdoCommits, indexCommits);
-			if (Strings.isNullOrEmpty(diagnosis)) {
-				setHealth(Health.GREEN, null);	
-			} else {
-				setHealth(Health.RED, diagnosis);
-			}
-		} else {
-			throw new IllegalStateException("Should not happen");
-		}
+		// TODO support health services
 	}
 
 	@Override
@@ -216,43 +175,6 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		return (Environment) super.getDelegate();
 	}
 	
-	
-	@Override
-	@SuppressWarnings("restriction")
-	public void handleCommitInfo(CDOCommitInfo commitInfo) {
-		if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
-			final CDOBranch branch = commitInfo.getBranch();
-			final long commitTimestamp = commitInfo.getTimeStamp();
-			// send out the currently enqueued commit notification, if there is any (import might skip sending commit notifications until a certain point)
-			RepositoryCommitNotification notification = commitNotifications.remove(commitTimestamp);
-			if (notification == null) {
-				// make sure we always send out commit notification
-				// required in case of manual commit notifications via CDO API
-				CommitInfo indexCommit = executeLocalSearch(RepositoryRequests.commitInfos()
-					.prepareSearchCommitInfo()
-					.one()
-					.filterByTimestamp(commitTimestamp)
-					.filterByAuthor(commitInfo.getUserID())
-					.filterByBranch(branch.getPathName())
-					.build())
-					.first()
-					.get();
-				
-				notification = new RepositoryCommitNotification(id(),
-					indexCommit.getId(),						
-					CDOCommitInfoUtils.getUuid(commitInfo),
-					branch.getPathName(),
-					commitTimestamp,
-					commitInfo.getUserID(),
-					commitInfo.getComment(),
-					Collections.emptyList(),
-					Collections.emptyList(),
-					Collections.emptyList());
-			}
-			notification.publish(events());
-        }
-	}
-
 	@Override
 	public void setHealth(Health health, String diagnosis) {
 		this.health = health;
@@ -272,93 +194,4 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		return diagnosis;
 	}
 	
-	private String validateCommitConsistency(List<CDOCommitInfo> cdoCommits, CommitInfos indexCommits) {
-		
-		final TreeMap<Long, CDOCommitInfo> cdoCommitsByTimestamp = new TreeMap<>();
-		final TreeMap<Long, CommitInfo> indexCommitsByTimestamp = new TreeMap<>();
-		
-		cdoCommits.forEach(c -> cdoCommitsByTimestamp.put(c.getTimeStamp(), c));
-		indexCommits.forEach(c -> indexCommitsByTimestamp.put(c.getTimestamp(), c));
-
-		long firstMissingCdoCommitTimestamp = -1;
-		
-		for (Long nextCdoCommitTimestamp : cdoCommitsByTimestamp.navigableKeySet()) {
-			
-			final CDOCommitInfo nextCdoCommit = cdoCommitsByTimestamp.get(nextCdoCommitTimestamp);
-			final Entry<Long, CommitInfo> firstIndexCommit = indexCommitsByTimestamp.firstEntry();
-			
-			if (firstIndexCommit != null) {
-				
-				final Long nextIndexCommitTimestamp = firstIndexCommit.getKey();
-				if (nextIndexCommitTimestamp.equals(nextCdoCommitTimestamp)) {
-					// cdo commit is present in the index remove index commit from the treemap
-					indexCommitsByTimestamp.remove(nextIndexCommitTimestamp);
-				} else if (nextIndexCommitTimestamp > nextCdoCommitTimestamp) {
-					// importers can create batch commits using the same UUID in cdo which overrides subsequent index commits and results in a single
-					// index commit at the end
-					final String commitId = CDOCommitInfoUtils.getUuid(nextCdoCommit.getComment());
-
-					boolean foundImporterIndexCommit = false;
-					
-					for (Long followingIndexCommitTimestamp : indexCommitsByTimestamp.navigableKeySet().tailSet(nextIndexCommitTimestamp)) {
-						CommitInfo followingCommit = indexCommitsByTimestamp.get(followingIndexCommitTimestamp);
-						if (Objects.equals(commitId, followingCommit.getGroupId())) {
-							foundImporterIndexCommit = true;
-							break;
-						}
-					}
-					
-					if (!foundImporterIndexCommit) {
-						return RESTORE_DIAGNOSIS;
-					}
-					
-				} else if (nextIndexCommitTimestamp < nextCdoCommitTimestamp) {
-					return RESTORE_DIAGNOSIS;
-				}
-				
-			} else {
-				// first cdo commit from where reindex should be invoked  
-				if (firstMissingCdoCommitTimestamp == -1) {
-					firstMissingCdoCommitTimestamp = nextCdoCommitTimestamp;
-				}
-			}
-		}
-		
-		if (firstMissingCdoCommitTimestamp != -1) {
-			return String.format(REINDEX_DIAGNOSIS_TEMPLATE, id(), String.format(" %s", firstMissingCdoCommitTimestamp));
-		}
-		
-		return null;
-	}
-
-	private List<CDOCommitInfo> getAllCDOCommitInfos() {
-		final CDONet4jSession session = getConnection().getSession();
-		
-		Map<Integer, CDOBranch> existingCDOBranches = newHashMap();
-		CDOBranch mainBranch = session.getBranchManager().getMainBranch();
-		existingCDOBranches.put(mainBranch.getID(), mainBranch);
-		
-		ConsumeAllCDOBranchesHandler branchHandler = new ConsumeAllCDOBranchesHandler();
-		session.getBranchManager().getBranches(0, Integer.MAX_VALUE, branchHandler);
-		branchHandler.getBranches().forEach( b -> existingCDOBranches.put(b.getID(), b));
-		
-		final CDOCommitInfoManager commitInfoManager = session.getCommitInfoManager();
-		final ConsumeAllCommitInfoHandler handler = new ConsumeAllCommitInfoHandler();
-		commitInfoManager.getCommitInfos(null, CDOCommitInfo.UNSPECIFIED_DATE, CDOCommitInfo.UNSPECIFIED_DATE, handler);
-		return handler.getInfos().stream()
-				.filter(commitInfo -> !CDOCommitInfoUtils.CDOCommitInfoQuery.EXCLUDED_USERS.contains(commitInfo.getUserID())
-						&& existingCDOBranches.containsKey(commitInfo.getBranch().getID()))
-				.collect(Collectors.toList());
-	}
-
-	private CommitInfos getAllIndexCommits() {
-		return executeLocalSearch(RepositoryRequests.commitInfos()
-				.prepareSearchCommitInfo()
-				.all()
-				.build());
-	}
-
-	private <T> T executeLocalSearch(final Request<RepositoryContext, T> req) {
-		return new IndexReadRequest<>(req).execute(new DefaultRepositoryContext(this, this));
-	}
 }

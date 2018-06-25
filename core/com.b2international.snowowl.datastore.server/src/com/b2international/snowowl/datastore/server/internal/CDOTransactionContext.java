@@ -33,6 +33,7 @@ import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -52,6 +54,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Throwables;
 
@@ -200,12 +203,12 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
 		final SingleRepositoryAndBranchLockTarget lockTarget = createLockTarget(id(), branchPath());
 		IOperationLockManager<DatastoreLockContext> locks = service(IOperationLockManager.class);
+		Commit commit = null;
 		try {
 			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
-			staging
-				.commit(null, timestamp, userId, commitComment);
-			return timestamp;
+			commit = staging.commit(null, timestamp, userId, commitComment);
+			return commit.getTimestamp();
 		} catch (RepositoryLockException e) {
 			throw new LockedException(e.getMessage());
 		} catch (final IndexException e) {
@@ -216,6 +219,19 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 			throw new SnowowlRuntimeException(e.getMessage(), e);
 		} finally {
 			locks.unlock(lockContext, lockTarget);
+			// send a commit notification
+			if (commit != null) {
+				new RepositoryCommitNotification(id(),
+						commit.getId(),						
+						commit.getGroupId(),
+						commit.getBranch(),
+						commit.getTimestamp(),
+						commit.getAuthor(),
+						commit.getComment(),
+						Collections.emptyList(),
+						Collections.emptyList(),
+						Collections.emptyList()).publish(service(IEventBus.class));
+			}
 		}
 	}
 
