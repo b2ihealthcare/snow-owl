@@ -159,7 +159,7 @@ public class SnomedListFeaturesTests extends AbstractSnomedApiTest {
 		
 		String containerId = createNewDescription(branchPath);
 		
-		String parentConceptId = SnomedRefSetUtil.getConceptId(SnomedRefSetType.LANGUAGE);
+		String parentConceptId = SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.LANGUAGE);
 		Map<?, ?> refSetRequestBody = createConceptRequestBody(parentConceptId)
 				.put("type", SnomedRefSetType.LANGUAGE.name())
 				.put("referencedComponentType", SnomedTerminologyComponentConstants.DESCRIPTION)

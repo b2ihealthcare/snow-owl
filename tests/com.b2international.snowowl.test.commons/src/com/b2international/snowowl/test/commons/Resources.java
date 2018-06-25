@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class Resources {
 	public static class Snomed {
 
 		public static final String SNOMED_RESOURCES = createResourcePath(RESOURCES, "snomed");
-		public static final String MINI_RF2_INT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_RF2Release_INT_20160731_minified.zip");
+		public static final String MINI_RF2_INT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_InternationalRF2_PRODUCTION_20180131T120000Z-minified.zip");
 		public static final String MINI_RF2_EXT = createResourcePath(SNOMED_RESOURCES, "SnomedCT_RF2Release_INT_20160501_B2i_cd_refsets.zip");
 		
 		private Snomed() {

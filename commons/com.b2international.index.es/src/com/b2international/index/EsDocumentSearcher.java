@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,8 @@ import com.google.common.primitives.Ints;
  */
 public class EsDocumentSearcher implements DocSearcher {
 
+	private static final String[] EXCLUDED_SOURCE_FIELDS = { DocumentMapping._HASH };
+	
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
 	private final int resultWindow;
@@ -119,27 +121,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			.setTrackScores(esQueryBuilder.needsScoring());
 		
 		// field selection
-		final boolean fetchSource; 
-		if (query.getFields().isEmpty()) {
-			req.setFetchSource(true);
-			fetchSource = true;
-		} else {
-			if (query.isDocIdOnly()) {
-				req.setFetchSource(false);
-				fetchSource = false;
-			} else {
-				
-				if (requiresDocumentSourceField(mapping, query.getFields())) {
-					req.setFetchSource(query.getFields().toArray(new String[]{}), null);
-					fetchSource = true;
-				} else {
-					query.getFields().stream().forEach(req::addDocValueField);
-					req.setFetchSource(false);
-					fetchSource = false;
-				}
-				
-			}
-		}
+		final boolean fetchSource = applySourceFiltering(query, mapping, req);
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source
@@ -209,6 +191,31 @@ public class EsDocumentSearcher implements DocSearcher {
 		final Class<?> from = query.getFrom();
 		
 		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
+	}
+
+	private <T> boolean applySourceFiltering(Query<T> query, final DocumentMapping mapping, final SearchRequestBuilder req) {
+		// No specific fields requested? Use _source to retrieve all of them
+		if (query.getFields().isEmpty()) {
+			req.setFetchSource(null, EXCLUDED_SOURCE_FIELDS);
+			return true;
+		}
+		
+		// Only IDs required? _source is not needed at all
+		if (query.isDocIdOnly()) {
+			req.setFetchSource(false);
+			return false;
+		}
+		
+		// Any field requested that can only retrieved from _source? Use source filtering
+		if (requiresDocumentSourceField(mapping, query.getFields())) {
+			req.setFetchSource(Iterables.toArray(query.getFields(), String.class), EXCLUDED_SOURCE_FIELDS);
+			return true;
+		}
+		
+		// Use docValues otherwise for field retrieval
+		query.getFields().stream().forEach(req::addDocValueField);
+		req.setFetchSource(false);
+		return false;
 	}
 
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
@@ -404,7 +411,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		// add top hits agg to get the top N items for each bucket
 		if (aggregation.getBucketHitsLimit() > 0) {
 			termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
-					.fetchSource(true)
+					.fetchSource(null, EXCLUDED_SOURCE_FIELDS)
 					.size(aggregation.getBucketHitsLimit()));
 		}
 		

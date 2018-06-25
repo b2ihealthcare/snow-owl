@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -62,6 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
@@ -236,6 +238,8 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final SnomedExportRestRun export = getExport(exportId);
 		final boolean includeUnpublished = export.isIncludeUnpublished() || isDeltaWithoutRange(export);
 		
+		Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
+		
 		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
@@ -248,7 +252,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.setTransientEffectiveTime(export.getTransientEffectiveTime())
 			.setStartEffectiveTime(export.getStartEffectiveTime())
 			.setEndEffectiveTime(export.getEndEffectiveTime())
-			.setRefSetExportLayout(Rf2RefSetExportLayout.INDIVIDUAL)
+			.setRefSetExportLayout(refSetExportLayout)
 			.setReferenceBranch(export.getBranchPath())
 			.build(this.repositoryId)
 			.execute(bus)

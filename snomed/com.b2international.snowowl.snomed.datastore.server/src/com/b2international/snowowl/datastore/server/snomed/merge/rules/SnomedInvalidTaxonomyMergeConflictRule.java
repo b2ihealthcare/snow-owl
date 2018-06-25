@@ -52,6 +52,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
+@Deprecated
 public class SnomedInvalidTaxonomyMergeConflictRule extends AbstractSnomedMergeConflictRule {
 
 	private final RevisionIndex index;

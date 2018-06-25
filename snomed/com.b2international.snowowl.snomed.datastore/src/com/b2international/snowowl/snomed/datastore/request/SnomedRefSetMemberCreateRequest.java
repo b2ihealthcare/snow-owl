@@ -26,16 +26,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberCreateRequest implements Request<TransactionContext, String> {
+final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequest {
 
 	@Nonnull
 	private String id;
@@ -60,11 +62,13 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 		return id;
 	}
 
-	Boolean isActive() {
+	@Override
+	public Boolean isActive() {
 		return active;
 	}
 	
-	String getModuleId() {
+	@Override
+	public String getModuleId() {
 		return moduleId;
 	}
 	
@@ -131,11 +135,20 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 	/**
 	 * @return the set of core component SCTIDs mentioned in any reference set member property
 	 */
+	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		try {
 			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
-			return delegate.getRequiredComponentIds();
+			Builder<String> requiredComponentIds = ImmutableSet.<String>builder().addAll(delegate.getRequiredComponentIds());
+			requiredComponentIds.add(referenceSetId);
+			if (!Strings.isNullOrEmpty(referencedComponentId)) {
+				requiredComponentIds.add(referencedComponentId);
+			}
+			if (!Strings.isNullOrEmpty(moduleId)) {
+				requiredComponentIds.add(moduleId);
+			}
+			return requiredComponentIds.build();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
@@ -180,6 +193,20 @@ final class SnomedRefSetMemberCreateRequest implements Request<TransactionContex
 				return new SnomedSimpleMemberCreateDelegate(this);
 			case SIMPLE_MAP:
 				return new SnomedSimpleMapMemberCreateDelegate(this);
+			case SIMPLE_MAP_WITH_DESCRIPTION:
+				return new SnomedSimpleMapMemberWithDescriptionCreateDelegate(this);
+			case OWL_AXIOM:
+				return new SnomedOWLAxiomMemberCreateDelegate(this);
+			case OWL_ONTOLOGY:
+				return new SnomedOWLOntologyMemberCreateDelegate(this);
+			case MRCM_DOMAIN:
+				return new SnomedMRCMDomainMemberCreateDelegate(this);
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return new SnomedMRCMAttributeDomainMemberCreateDelegate(this);
+			case MRCM_ATTRIBUTE_RANGE:
+				return new SnomedMRCMAttributeRangeMemberCreateDelegate(this);
+			case MRCM_MODULE_SCOPE:
+				return new SnomedMRCMModuleScopeMemberCreateDelegate(this);
 			default: 
 				throw new IllegalStateException("Unexpected reference set type '" + referenceSetType + "'.");
 		}

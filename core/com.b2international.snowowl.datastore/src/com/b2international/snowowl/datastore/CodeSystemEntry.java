@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.index.Doc;
@@ -35,8 +37,13 @@ import com.google.common.base.Strings;
  */
 @Doc
 @JsonDeserialize(builder = CodeSystemEntry.Builder.class)
-public class CodeSystemEntry implements ICodeSystem {
+public final class CodeSystemEntry implements Serializable {
 
+	/**
+	 * Unique terminology component identifier for code systems.
+	 */
+	public static final short TERMINOLOGY_COMPONENT_ID = 1;
+	
 	public static class Expressions {
 
 		public static Expression shortName(String shortName) {
@@ -206,61 +213,99 @@ public class CodeSystemEntry implements ICodeSystem {
 		this.extensionOf = extensionOf;
 	}
 
-	@Override
+	/**
+	 * Returns the code system OID. Can be {@code null}.
+	 * @return the OID.
+	 */
 	public String getOid() {
 		return oid;
 	}
 
-	@Override
+	/**
+	 * Returns with the name of the code system.
+	 * @return the name of the code system.
+	 */
 	public String getName() {
 		return name;
 	}
 
-	@Override
+	/**
+	 * Returns with the code system short name.
+	 * @return the code system short name.
+	 */
 	public String getShortName() {
 		return shortName;
 	}
 
-	@Override
+	/**
+	 * Returns with the maintaining organization link. Can be {@code null}.
+	 * @return the link for the maintaining organization. 
+	 */
 	public String getOrgLink() {
 		return orgLink;
 	}
 
-	@Override
+	/**
+	 * Returns with the language of the code system.
+	 * @return the language.
+	 */
 	public String getLanguage() {
 		return language;
 	}
 
-	@Override
+	/**
+	 * Returns with the citation of the code system.
+	 * @return the citation of the code system.
+	 */
 	public String getCitation() {
 		return citation;
 	}
 
-	@Override
+	/**
+	 * Returns with the application specific icon path of the code system. 
+	 * @return the application specific icon path.
+	 */
 	public String getIconPath() {
 		return iconPath;
 	}
 
-	@Override
+	/**
+	 * Returns with the application specific ID to associate the code 
+	 * system with any application specific
+	 *  feature or container repository.
+	 * @return the application specific ID.
+	 */
 	public String getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
-	
-	@Override
+
+	/**
+	 * Returns with the unique ID of the repository where the current code system belongs to. 
+	 * @return the repository UUID for the code system.
+	 */
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
 	
+	/**
+	 * Returns with the storage key of the code system.
+	 * @return
+	 */
 	public long getStorageKey() {
 		return  storageKey;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the branch path of the code system.
+	 * @return the path for the code system.
+	 */
 	public String getBranchPath() {
 		return branchPath;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the unique ID of the base Code System.
+	 */
 	public String getExtensionOf() {
 		return extensionOf;
 	}

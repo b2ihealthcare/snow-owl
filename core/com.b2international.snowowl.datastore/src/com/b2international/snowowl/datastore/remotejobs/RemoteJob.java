@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.remotejobs;
 
-import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,7 +26,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ApiException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
@@ -74,9 +75,9 @@ public final class RemoteJob extends Job {
 			if (response != null) {
 				final Class<? extends Object> responseType = response.getClass();
 				if (Primitives.isWrapperType(responseType) || String.class.isAssignableFrom(responseType) || UUID.class.isAssignableFrom(responseType)) {
-					this.response = mapper.writeValueAsString(ImmutableMap.of("value", response));
+					this.response = toJson(mapper, ImmutableMap.of("value", response));
 				} else {
-					this.response = mapper.writeValueAsString(response);
+					this.response = toJson(mapper, response);
 				}
 			}
 			
@@ -85,7 +86,18 @@ public final class RemoteJob extends Job {
 		} catch (OperationCanceledException e) {
 			return Statuses.cancel();
 		} catch (Throwable e) {
+			if (e instanceof ApiException) {
+				this.response = toJson(mapper, ((ApiException) e).toApiError());
+			}
 			return Statuses.error(CoreActivator.PLUGIN_ID, "Failed to execute long running request", e);
+		}
+	}
+
+	private String toJson(ObjectMapper mapper, Object object) {
+		try {
+			return mapper.writeValueAsString(object);
+		} catch (Exception e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 

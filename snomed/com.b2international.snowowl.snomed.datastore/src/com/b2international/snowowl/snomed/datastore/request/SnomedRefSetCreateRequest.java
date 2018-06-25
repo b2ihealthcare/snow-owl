@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
@@ -81,6 +83,12 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		
 		if (Strings.isNullOrEmpty(identifierId)) {
 			throw new BadRequestException("Reference set identifier ID may not be null or empty.");
+		} else {
+			try {
+				context.lookup(identifierId, Concept.class);
+			} catch (ComponentNotFoundException e) {
+				throw e.toBadRequestException();
+			}
 		}
 		
 		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
@@ -88,21 +96,28 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		final SnomedRefSet refSet;
 		
 		switch (type) {
-			case SIMPLE:
-			case QUERY:
-			case DESCRIPTION_TYPE:
-			case MODULE_DEPENDENCY:
+			case SIMPLE: //$FALL-THROUGH$
+			case QUERY: //$FALL-THROUGH$
+			case DESCRIPTION_TYPE: //$FALL-THROUGH$
+			case MODULE_DEPENDENCY: //$FALL-THROUGH$
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY: //$FALL-THROUGH$
+			case MRCM_DOMAIN: //$FALL-THROUGH$
+			case MRCM_ATTRIBUTE_DOMAIN: //$FALL-THROUGH$
+			case MRCM_ATTRIBUTE_RANGE: //$FALL-THROUGH$
+			case MRCM_MODULE_SCOPE: //$FALL-THROUGH$
 				refSet = createRegularRefSet(context);
 				break;
 			case CONCRETE_DATA_TYPE:
 				refSet = createConcreteDomainRefSet(context);
 				break;
-			case COMPLEX_MAP:
-			case EXTENDED_MAP:
-			case SIMPLE_MAP:
+			case COMPLEX_MAP: //$FALL-THROUGH$
+			case EXTENDED_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION:
 				refSet = createMappingRefSet(context);
 				break;
-			case ASSOCIATION:
+			case ASSOCIATION: //$FALL-THROUGH$
 			case LANGUAGE:
 				refSet = createStructuralRefSet(context);
 				break;
@@ -152,5 +167,4 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 				.withIdentifierConceptId(identifierId)
 				.build(context);
 	}
-
 }

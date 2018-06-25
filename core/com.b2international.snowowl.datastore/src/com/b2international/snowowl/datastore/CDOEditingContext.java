@@ -40,6 +40,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.CDOState;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
@@ -50,6 +51,7 @@ import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.transaction.CDOPushTransaction;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
+import org.eclipse.emf.cdo.view.CDOObjectHandler;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
@@ -77,6 +79,7 @@ import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.utils.ComponentUtils2;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -108,6 +111,22 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	protected final CDOTransaction transaction;
 	
 	private final Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
+	
+	/*Handler to register/unregister objects to/from the cache on their state changes*/
+	private final CDOObjectHandler objectStateListener = new CDOObjectHandler() {
+		@Override
+		public void objectStateChanged(CDOView view, CDOObject object, CDOState oldState, CDOState newState) {
+			if (newState == CDOState.NEW) {
+				String id = getObjectId(object);
+				Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+				resolvedObjectsById.put(createComponentKey(id, type), object);
+			} else if (newState == CDOState.TRANSIENT) {
+				String id = getObjectId(object);
+				Class<? extends EObject> type = (Class<? extends EObject>) object.eClass().getInstanceClass();
+				resolvedObjectsById.remove(createComponentKey(id, type), object);
+			}
+		}
+	};
 
 	protected CDOEditingContext(final EPackage ePackage, final IBranchPath branchPath) {
 		this(createTransaction(checkNotNull(ePackage, "ePackage"), checkNotNull(branchPath, "Branch path argument cannot be null.")));
@@ -115,6 +134,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	
 	protected CDOEditingContext(final CDOTransaction cdoTransaction) {
 		this.transaction = CDOUtils.check(cdoTransaction);
+		this.transaction.addObjectHandler(objectStateListener);
 	}
 	
 	public final String getBranch() {
@@ -235,14 +255,14 @@ public abstract class CDOEditingContext implements AutoCloseable {
 			String componentId = it.next();
 			// lookup the unresolved ID in new and dirty components
 			for (CDOObject newComponent : ComponentUtils2.getNewObjects(getTransaction(), type)) {
-				if (componentId.equals(getId(newComponent))) {
+				if (componentId.equals(getObjectId(newComponent))) {
 					resolvedComponentsById.put(componentId, type.cast(newComponent));
 					it.remove();
 				}
 			}
 			
 			for (CDOObject dirtyComponent : ComponentUtils2.getDirtyObjects(getTransaction(), type)) {
-				if (componentId.equals(getId(dirtyComponent))) {
+				if (componentId.equals(getObjectId(dirtyComponent))) {
 					resolvedComponentsById.put(componentId, type.cast(dirtyComponent));
 					it.remove();
 				}
@@ -265,8 +285,18 @@ public abstract class CDOEditingContext implements AutoCloseable {
 		return resolvedComponentsById;
 	}
 	
-	protected abstract String getId(CDOObject component);
-
+	protected final String getObjectId(final CDOObject component) {
+		if (component instanceof CodeSystemVersion) {
+			return ((CodeSystemVersion) component).getVersionId();
+		} else if (component instanceof CodeSystem) {
+			return ((CodeSystem) component).getShortName();
+		}
+		
+		final Class<?> instanceClass = component.eClass().getInstanceClass();
+		final ILookupService<?, CDOView> lookupService = getComponentLookupService(instanceClass);
+		return lookupService.getId(component);
+	}
+	
 	protected abstract <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type);
 
 	public final <T extends EObject> T lookupIfExists(String componentId, Class<T> type) {
@@ -278,7 +308,36 @@ public abstract class CDOEditingContext implements AutoCloseable {
  	}
 	
 	protected <T> ILookupService<T, CDOView> getComponentLookupService(Class<T> type) {
-		throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+		/* 
+		 * XXX: Use an anonymous class that returns the EClass-CDOID pair as the fallback component identifier,
+		 * but throws an exception for all other method invocations.
+		 */
+		return new ILookupService<T, CDOView>() {
+			@Override
+			public T getComponent(String id, CDOView view) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public boolean exists(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public com.b2international.snowowl.core.api.IComponent<String> getComponent(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public long getStorageKey(IBranchPath branchPath, String id) {
+				throw new UnsupportedOperationException("Lookup not supported for type: " + type.getName());
+			}
+
+			@Override
+			public String getId(CDOObject component) {
+				return component.eClass().getName() + "@oid" + component.cdoID().toURIFragment();
+			}
+		};
 	}
 
 	/**
@@ -374,6 +433,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	@Override
 	public void close() {
+		transaction.removeObjectHandler(objectStateListener);
 		clearCache();
 		transaction.close();
 	}

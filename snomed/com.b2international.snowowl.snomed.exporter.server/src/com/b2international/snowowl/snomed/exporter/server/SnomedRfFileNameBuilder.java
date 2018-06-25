@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@ package com.b2international.snowowl.snomed.exporter.server;
 import java.util.Date;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.ILanguageConfigurationProvider;
-import com.b2international.snowowl.snomed.datastore.LanguageConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 
 /**
@@ -38,7 +35,7 @@ public class SnomedRfFileNameBuilder {
 		return new StringBuilder("sct1_")
 				.append(String.valueOf(type))
 				.append("s_")
-				.append(ComponentExportType.DESCRIPTION.equals(type) ? getLanguageCode() : "Core")
+				.append(ComponentExportType.DESCRIPTION.equals(type) ? "en" : "Core")
 				.append('_')
 				.append(exportContext.getNamespaceId())
 				.append('_')
@@ -67,7 +64,7 @@ public class SnomedRfFileNameBuilder {
 	public static String buildRefSetFileName(final SnomedExportContext exportContext, final String refSetName, final SnomedReferenceSet refSet,
 			final boolean includeMapTargetDescription) {
 		return new StringBuilder("der2_")
-				.append(getPrefix(refSet.getType(), includeMapTargetDescription))
+				.append(getPrefix(refSet.getType()))
 				.append("Refset_")
 				.append(toCamelCase(refSetName))
 				.append(String.valueOf(exportContext.getContentSubType()))
@@ -123,7 +120,7 @@ public class SnomedRfFileNameBuilder {
 	/**
 	 * Returns the column prefix for reference sets
 	 */
-	public static String getPrefix(final SnomedRefSetType type, final boolean includeMapTargetDescription) {
+	public static String getPrefix(final SnomedRefSetType type) {
 		switch (type) {
 			case CONCRETE_DATA_TYPE: return "ccss";
 			case QUERY: return "s";
@@ -134,22 +131,13 @@ public class SnomedRfFileNameBuilder {
 			case DESCRIPTION_TYPE: return "ci";
 			case COMPLEX_MAP: return "iisssc";
 			case EXTENDED_MAP: return "iissscc";
-			case SIMPLE_MAP: return includeMapTargetDescription ? "ss" : "s";
+			case SIMPLE_MAP: return "s";
+			case SIMPLE_MAP_WITH_DESCRIPTION: return "ss";
 			case MODULE_DEPENDENCY: return "ss";
 		}
 		throw new IllegalArgumentException ("Unknown reference set type. Type: " + type);
 	}
 	
-	/*returns with the language code*/
-	private static String getLanguageCode() {
-		return getLanguageConfiguration().getLanguageCode();
-	}
-
-	/*returns with the current language configuration for the SNOMED CT terminology*/
-	private static LanguageConfiguration getLanguageConfiguration() {
-		return ApplicationContext.getInstance().getService(ILanguageConfigurationProvider.class).getLanguageConfiguration();
-	}
-
 	private SnomedRfFileNameBuilder() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}

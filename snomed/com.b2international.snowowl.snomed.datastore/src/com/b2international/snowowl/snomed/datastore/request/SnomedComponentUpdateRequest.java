@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.BranchPathUtils;
@@ -36,7 +35,7 @@ import com.google.common.collect.Maps;
  * @since 4.5
  * @param <B>
  */
-public abstract class SnomedComponentUpdateRequest implements Request<TransactionContext, Boolean> {
+public abstract class SnomedComponentUpdateRequest implements SnomedComponentRequest<Boolean> {
 
 	private final String componentId;
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,13 @@ import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -70,7 +72,9 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	private final Set<String> uuidInvalid = newHashSet();
 	private final Map<UUID, ReferencedComponentIdAndStatus> memberDataByUuid;
 	private final Set<String> referencedComponentNotExist = Sets.newHashSet();
-
+	
+	private static final String EMPTY_FIELD_VALIDATION_MESSAGE = "%s reference set member with uuid '%s' has an empty field '%s' in effective time '%s'";
+	
 	public SnomedRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final ComponentImportType importType, final SnomedValidationContext validationUtil, final String[] expectedHeader) {
 		super(configuration, releaseUrl, importType, validationUtil, expectedHeader);
 		memberDataByUuid = Maps.newHashMap();
@@ -132,14 +136,20 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 	 * @param lineNumber the current line number
 	 */
 	private void validateReferencedComponent(final List<String> row) {
-		final String uuid = row.get(0);
-		final String effectiveTime = row.get(1);
-		final String componentId = row.get(COLUMN_REFERENCED_COMPONENT_ID);
+		validateReferencedComponent(row, COLUMN_REFERENCED_COMPONENT_ID);
+	}
+
+	protected void validateReferencedComponent(final List<String> row, int indexInRow) {
+		final String componentId = row.get(indexInRow);
 		if (!isComponentExists(componentId, getComponentType(componentId))) {
 			// skip missing lang refset referenced components (FIXME support members with missing refcomps)
 			if (this instanceof SnomedLanguageRefSetValidator) {
 				return;
 			}
+			
+			final String uuid = row.get(0);
+			final String effectiveTime = getSafeEffectiveTime(row.get(1));
+			
 			referencedComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, componentId));
 		}
 	}
@@ -161,6 +171,18 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		uuidInvalid.clear();
 		referencedComponentNotExist.clear();
 		memberDataByUuid.clear();
+	}
+
+	protected String getSafeEffectiveTime(String effectiveTime) {
+		return Strings.isNullOrEmpty(effectiveTime) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : effectiveTime;
+	}
+	
+	protected void validateNotEmptyFieldValue(String fieldValue, String fieldName, List<String> row, List<String> results) {
+		if (Strings.isNullOrEmpty(fieldValue)) {
+			final String uuid = row.get(0);
+			final String safeEffectiveTime = getSafeEffectiveTime(row.get(1));
+			results.add(String.format(EMPTY_FIELD_VALIDATION_MESSAGE, getName(), uuid, fieldName, safeEffectiveTime));
+		}
 	}
 	
 	/**returns with the proper import component type based on the component ID argument.*/

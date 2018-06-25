@@ -46,18 +46,19 @@ import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.RefSetMemberChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessor;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.snor.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.ImmutableList;
@@ -190,7 +191,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		} else if (revision instanceof SnomedRelationshipIndexEntry) {
 			return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 		} else if (revision instanceof SnomedConstraintDocument) {
-			return SnomedTerminologyComponentConstants.PREDICATE_TYPE_ID;
+			return SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER;
 		} else if (revision instanceof SnomedRefSetMemberIndexEntry) {
 			return SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 		}
@@ -228,7 +229,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
 		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final String importFeature = SnomedDatastoreActivator.REPOSITORY_UUID + ".import";
+		final String importFeature = SnomedFeatures.getImportFeatureToggle(searcher.branch());
 		final boolean importRunning = features.exists(importFeature) ? features.check(importFeature) : false;
 		final boolean reindexRunning = features.exists(reindexFeature) ? features.check(reindexFeature) : false;
 		final boolean checkCycles = !importRunning && !reindexRunning;

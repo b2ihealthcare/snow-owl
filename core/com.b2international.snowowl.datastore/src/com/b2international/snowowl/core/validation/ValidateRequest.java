@@ -15,12 +15,17 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -29,10 +34,12 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -40,6 +47,8 @@ import com.google.common.collect.Multimap;
  * @since 6.0
  */
 final class ValidateRequest implements Request<BranchContext, ValidationResult> {
+	
+	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	Collection<String> ruleIds;
 	
@@ -79,7 +88,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
-			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
+			final Multimap<String, IssueDetail> newIssuesByRule = HashMultimap.create();
 			
 			// evaluate selected rules
 			for (ValidationRule rule : rules) {
@@ -87,12 +96,14 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				if (evaluator != null) {
 					pool.submit(() -> {
 						try {
-							List<ComponentIdentifier> affectedComponents = evaluator.eval(context, rule);
-							newIssuesByRule.putAll(rule.getId(), affectedComponents);
+							LOG.info("Executing rule '{}'...", rule.getId());
+							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
+							newIssuesByRule.putAll(rule.getId(), issueDetails);
+							LOG.info("Execution of rule '{}' successfully completed", rule.getId());
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
-							e.printStackTrace();
+							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
 						}
 						return Boolean.TRUE;
 					})
@@ -103,19 +114,38 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			// fetch all white list entries to determine whether an issue is whitelisted already or not
 			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
-			ValidationRequests.whiteList().prepareSearch()
+			ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList().prepareSearch();
+			
+			// fetch whitelist entries associated with the defined rules
+			if (!CompareUtils.isEmpty(ruleIds)) {
+				whiteListReq.filterByRuleIds(ruleIds);
+			}
+			
+			whiteListReq
 				.all()
 				.build()
 				.execute(context)
 				.stream()
 				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 			
-			// persist new issues
-			for (String ruleId : newIssuesByRule.keySet()) {
-				for (ComponentIdentifier affectedComponent : newIssuesByRule.get(ruleId)) {
+			// persist new issues by removing them from the newIssues Multimap to save up memory
+			for (String ruleId : newHashSet(newIssuesByRule.keySet())) {
+				for (IssueDetail issueDetail : newIssuesByRule.removeAll(ruleId)) {
 					String issueId = UUID.randomUUID().toString();
-					index.put(issueId, new ValidationIssue(issueId, ruleId, branchPath, affectedComponent, whiteListedEntries.get(ruleId).contains(affectedComponent)));
+					
+					ValidationIssue validationIssue = new ValidationIssue(
+						issueId,
+						ruleId,
+						branchPath,
+						issueDetail.getAffectedComponent(),
+						whiteListedEntries.get(ruleId).contains(issueDetail.getAffectedComponent()));
+				
+					validationIssue.setDetails(issueDetail.getDetails());
+					
+					index.put(issueId, validationIssue);
 				}
+				// remove all processed whitelist entries 
+				whiteListedEntries.removeAll(ruleId);
 			}
 			
 			index.commit();

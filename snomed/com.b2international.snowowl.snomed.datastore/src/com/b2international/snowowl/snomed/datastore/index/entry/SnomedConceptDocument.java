@@ -36,11 +36,11 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.api.ITreeComponent;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -56,7 +56,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -107,7 +106,14 @@ import com.google.common.collect.ImmutableMap;
 	+ "}"
 	// Otherwise select the ID for sorting
 	+ "return doc.id.value")
-public class SnomedConceptDocument extends SnomedComponentDocument implements ITreeComponent {
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedConceptDocument.Fields.PRIMITIVE,
+	SnomedConceptDocument.Fields.EXHAUSTIVE
+})
+public class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
 	private static final long serialVersionUID = -824286402410205210L;
@@ -166,12 +172,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		}
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> types) {
-			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(types).transform(new Function<SnomedRefSetType, String>() {
-				@Override
-				public String apply(SnomedRefSetType input) {
-					return input.name();
-				}
-			}).toSet());
+			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(types).transform(type -> type.name()).toSet());
 		}
 		
 		public static Expression referencedComponentType(int referencedComponentType) {
@@ -219,7 +220,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
-		public static final String DESCRIPTIONS = "descriptions";
+		public static final String DESCRIPTIONS = "preferredDescriptions";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -243,6 +244,7 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
+				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
 				.structural(input.isStructural())
 				.doi(input.getDoi());
@@ -265,6 +267,10 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
+		
+		if (input.getReferenceSet() != null) {
+			builder.refSet(input.getReferenceSet());
+		}
 		
 //		if (input.getScore() != null) {
 //			builder.score(input.getScore());
@@ -546,7 +552,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return exhaustive;
 	}
 	
-	@Override
 	public LongSet getParents() {
 		return parents;
 	}
@@ -555,7 +560,6 @@ public class SnomedConceptDocument extends SnomedComponentDocument implements IT
 		return statedParents;
 	}
 	
-	@Override
 	public LongSet getAncestors() {
 		return ancestors;
 	}

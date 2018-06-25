@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.datastore.version;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 
 /**
  * Abstract terminology independent component versioning manager implementation.
@@ -26,10 +25,8 @@ import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
 public abstract class VersioningManager implements IVersioningManager {
 
 	@Override
-	public void publish(final ICDOTransactionAggregator aggregator, final String toolingId, 
-			final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
-		
-		getPublishManager().publish(aggregator, toolingId, configuration, monitor);
+	public void publish(final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
+		getPublishManager().publish(configuration, monitor);
 	}
 	
 	/**Returns with the {@link IPublishManager component publish manager} for the versioning manager.*/

@@ -84,6 +84,7 @@ import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.datastore.ISnomedImportPostProcessor;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -423,7 +424,7 @@ public final class ImportUtil {
 		final IDatastoreOperationLockManager lockManager = ApplicationContext.getInstance().getServiceChecked(IDatastoreOperationLockManager.class);
 		
 		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String importFeatureToggle = ImportUtil.createFeatureToggleString(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
+		final String importFeatureToggle = SnomedFeatures.getImportFeatureToggle(branchPath.getPath());
 		try {
 			features.enable(importFeatureToggle);
 			OperationLockRunner.with(lockManager).run(new Runnable() { 
@@ -587,7 +588,4 @@ public final class ImportUtil {
 		return ImmutableList.copyOf(listOfFiles);
 	}
 	
-	public static String createFeatureToggleString(String repositoryUuId, IBranchPath branchPath) {
-		return String.format("%s-%s.import", repositoryUuId, branchPath.getPath());
-	}
 }

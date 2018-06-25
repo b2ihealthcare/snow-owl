@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
  */
 public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<SnomedRelationshipSearchRequestBuilder, SnomedRelationships, SnomedRelationship> {
 
-	private final String characteristicTypeExpression;
+	private final Collection<String> characteristicTypes;
 
 	public Rf2RelationshipExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
@@ -45,7 +45,7 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
-			final String characteristicTypeExpression) {
+			final Collection<String> characteristicTypes) {
 
 		super(releaseType, 
 				countryNamespaceElement, 
@@ -54,13 +54,12 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
-
-		this.characteristicTypeExpression = characteristicTypeExpression;
+		this.characteristicTypes = characteristicTypes;
 	}
 
 	@Override
 	protected String getCoreComponentType() {
-		return Concepts.STATED_RELATIONSHIP.equals(characteristicTypeExpression) 
+		return characteristicTypes.contains(Concepts.STATED_RELATIONSHIP)
 				? "StatedRelationship"
 				: "Relationship";
 	}
@@ -74,7 +73,7 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	protected SnomedRelationshipSearchRequestBuilder createComponentSearchRequestBuilder() {
 		return SnomedRequests
 				.prepareSearchRelationship()
-				.filterByCharacteristicType(characteristicTypeExpression)
+				.filterByCharacteristicTypes(characteristicTypes)
 				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID));
 	}
 

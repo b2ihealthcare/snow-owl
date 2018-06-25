@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,11 @@ final class SnomedSimpleMapMemberUpdateDelegate extends SnomedRefSetMemberUpdate
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedSimpleMapRefSetMember mapMember = (SnomedSimpleMapRefSetMember) member;
 		String newMapTargetId = getComponentId(SnomedRf2Headers.FIELD_MAP_TARGET);
-		String newMapTargetDescription = getProperty(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION);
 
 		boolean changed = false;
 
 		if (newMapTargetId != null && !newMapTargetId.equals(mapMember.getMapTargetComponentId())) {
 			mapMember.setMapTargetComponentId(newMapTargetId);
-			changed |= true;
-		}
-
-		if (newMapTargetDescription != null && !newMapTargetDescription.equals(mapMember.getMapTargetComponentDescription())) {
-			mapMember.setMapTargetComponentDescription(newMapTargetDescription);
 			changed |= true;
 		}
 

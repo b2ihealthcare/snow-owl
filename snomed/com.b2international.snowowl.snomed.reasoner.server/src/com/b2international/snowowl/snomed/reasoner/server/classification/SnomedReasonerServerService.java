@@ -23,6 +23,8 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
@@ -39,11 +41,13 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.IServiceChangeListener;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
@@ -80,6 +84,8 @@ import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
+
+import io.reactivex.disposables.Disposable;
 
 /**
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
@@ -148,8 +154,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	};
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
-	private final Cache<String, InitialReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
+	private final Cache<String, ReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
 	private final boolean concreteDomainSupportEnabled;
+	private final Disposable remoteJobSubscription;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
 		super(maximumReasonerCount);
@@ -159,6 +166,16 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		this.concreteDomainSupportEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isConcreteDomainSupported();
 		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
+		
+		remoteJobSubscription = ApplicationContext.getServiceForClass(Notifications.class)
+				.ofType(RemoteJobNotification.class)
+				.subscribe(this::onRemoteJobNotification);
+	}
+	
+	private void onRemoteJobNotification(RemoteJobNotification notification) {
+		if (RemoteJobNotification.isRemoved(notification)) {
+			notification.getJobIds().forEach(this::removeResult);
+		}
 	}
 
 	public void registerListeners() {
@@ -174,6 +191,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		taxonomyBuilderRegistry.cleanUp();
 		getApplicationContext().removeServiceListener(IReasonerPreferencesService.class, preferencesListenerRegistrator);
 		getApplicationContext().removeServiceListener(ICDOConnectionManager.class, invalidationListenerRegistrator);
+		remoteJobSubscription.dispose();
 		super.onDispose();
 	}
 
@@ -186,11 +204,12 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	private void setStale(IBranchPath branchPath) {
-		for (ReasonerTaxonomy taxonomy : taxonomyResultRegistry.asMap().values()) {
-			if (branchPath.equals(taxonomy.getBranchPath())) {
-				taxonomy.setStale();
-			}
-		}
+		Set<String> classificationToRemove = taxonomyResultRegistry.asMap().entrySet()
+			.stream()
+			.filter(entry -> branchPath.equals(entry.getValue().getBranchPath()))
+			.map(entry -> entry.getKey())
+			.collect(Collectors.toSet());
+		classificationToRemove.forEach(this::removeResult);
 		
 		CollectingServiceReference<Reasoner> sharedReference = getSharedServiceReferenceIfExists(branchPath);
 		if (null != sharedReference) {
@@ -210,7 +229,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	@Override
-	protected void retireService(Reasoner reasoner) throws InterruptedException {
+	protected void retireService(Reasoner reasoner) {
 		LOGGER.info(MessageFormat.format("Retiring reasoner for branch path ''{0}''.", reasoner.getBranchPath()));
 		reasoner.dispose();
 	}
@@ -224,7 +243,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		taxonomyResultRegistry.put(remoteJobId, reasonerTaxonomy);
 	}
 	
-	public void registerTaxonomyBuilder(String classificationId, InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public void registerTaxonomyBuilder(String classificationId, ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
 		taxonomyBuilderRegistry.put(classificationId, checkNotNull(reasonerTaxonomyBuilder));
 	}
 
@@ -245,21 +264,19 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 	@Override 
 	public GetResultResponse getResult(String classificationId) {
-		
 		ReasonerTaxonomy taxonomy = taxonomyResultRegistry.getIfPresent(classificationId);
 		
 		if (null == taxonomy) {
-			return new GetResultResponse(GetResultResponse.Type.NOT_AVAILABLE);
+			return new GetResultResponse(null);
+		} else {
+			return new GetResultResponse(doGetResult(classificationId, taxonomy));  
 		}
-		
-		Type responseType = taxonomy.isStale() ? Type.STALE : Type.SUCCESS;
-		return new GetResultResponse(responseType, doGetResult(classificationId, taxonomy));  
 	}
 
 	private GetResultResponseChanges doGetResult(String classificationId, ReasonerTaxonomy taxonomy) {
 		
 		IBranchPath branchPath = taxonomy.getBranchPath();
-		InitialReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
+		ReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
 		
 		ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
 		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
@@ -303,7 +320,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 				
 				// look up all CDEs from the original relationship and add them as inferred
 				if (concreteDomainSupportEnabled) {
-					Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatementConcreteDomainFragments(subject.getStatementId());
+					Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(subject.getStatementId());
 					
 					for (ConcreteDomainFragment concreteDomainElementIndexEntry : relationshipConcreteDomainElements) {
 						
@@ -411,11 +428,11 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		ReasonerTaxonomy taxonomy = taxonomyResultRegistry.getIfPresent(classificationId);
 		
 		if (null == taxonomy) {
-			return new GetEquivalentConceptsResponse(GetResultResponse.Type.NOT_AVAILABLE);
+			return new GetEquivalentConceptsResponse(null);
+		} else {
+			return new GetEquivalentConceptsResponse(doGetEquivalentConcepts(taxonomy));  
 		}
 		
-		Type responseType = taxonomy.isStale() ? Type.STALE : Type.SUCCESS;
-		return new GetEquivalentConceptsResponse(responseType, doGetEquivalentConcepts(taxonomy));  
 	}
 
 	private List<AbstractEquivalenceSet> doGetEquivalentConcepts(ReasonerTaxonomy taxonomy) {
@@ -439,25 +456,28 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	@Override 
 	public PersistChangesResponse persistChanges(String classificationId, String userId) {
 		ReasonerTaxonomy taxonomy = taxonomyResultRegistry.getIfPresent(classificationId);
-		InitialReasonerTaxonomyBuilder taxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
+		ReasonerTaxonomyBuilder taxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
 		
 		if (null == taxonomy) {
 			return new PersistChangesResponse(Type.NOT_AVAILABLE);
 		}
 		
-		if (taxonomy.isStale()) {
-			return new PersistChangesResponse(Type.STALE);
-		}
+		final PersistChangesResponse response;
 		
 		try {
-			return doPersistChanges(classificationId, taxonomy, taxonomyBuilder, userId);
+			response = doPersistChanges(classificationId, taxonomy, taxonomyBuilder, userId);
 		} catch (OperationLockException | InterruptedException e) {
 			LOGGER.error("Cannot persist classification changes.", e);
 			return new PersistChangesResponse(Type.NOT_AVAILABLE);
 		}
+		
+		// Remove results only if saving was successful
+		removeResult(classificationId);
+		return response;
 	}
 
-	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, InitialReasonerTaxonomyBuilder taxonomyBuilder, String userId) throws OperationLockException, InterruptedException {
+	private PersistChangesResponse doPersistChanges(String classificationId, ReasonerTaxonomy taxonomy, ReasonerTaxonomyBuilder taxonomyBuilder, String userId) 
+			throws OperationLockException, InterruptedException {
 		
 		String persistJobId = SnomedReasonerRequests.preparePersistChanges()
 				.setClassificationId(classificationId)

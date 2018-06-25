@@ -20,12 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
@@ -35,6 +37,7 @@ import com.b2international.snowowl.snomed.Component;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
@@ -54,6 +57,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -386,6 +390,53 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.filter(Boolean.class::isInstance)
 			.map(Boolean.class::cast)
 			.reduce(Boolean.FALSE, (r1, r2) -> r1 || r2);
+	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		final Builder<String> ids = ImmutableSet.<String>builder();
+		ids.add(getComponentId());
+		if (getModuleId() != null) {
+			ids.add(getModuleId());
+		}
+		if (definitionStatus != null) {
+			ids.add(definitionStatus.getConceptId());
+		}
+		if (inactivationIndicator != null) {
+			ids.add(inactivationIndicator.getConceptId());
+		}
+		if (associationTargets != null && !associationTargets.isEmpty()) {
+			associationTargets.entries().forEach(entry -> {
+				ids.add(entry.getKey().getConceptId());
+				ids.add(entry.getValue());
+			});
+		}
+		if (!CompareUtils.isEmpty(descriptions)) {
+			descriptions.forEach(description -> {
+				ids.add(description.getModuleId());
+				ids.add(description.getTypeId());
+				ids.addAll(description.getAcceptabilityMap().keySet());
+				ids.addAll(description.getAcceptabilityMap().values().stream().map(Acceptability::getConceptId).collect(Collectors.toSet()));
+				ids.add(description.getCaseSignificance().getConceptId());
+			});
+		}
+		if (!CompareUtils.isEmpty(relationships)) {
+			relationships.forEach(relationship -> {
+				ids.add(relationship.getModuleId());
+				ids.add(relationship.getTypeId());
+				ids.add(relationship.getDestinationId());
+				ids.add(relationship.getCharacteristicType().getConceptId());
+				ids.add(relationship.getModifier().getConceptId());
+			});
+		}
+		if (!CompareUtils.isEmpty(members)) {
+			members.forEach(member -> {
+				ids.add(member.getModuleId());
+				ids.add(member.getReferenceSetId());
+				// TODO add specific props?
+			});
+		}
+		return ids.build();
 	}
 	
 }

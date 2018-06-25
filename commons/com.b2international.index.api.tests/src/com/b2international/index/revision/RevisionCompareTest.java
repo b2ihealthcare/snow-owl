@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,18 +144,15 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithRevertedChanges() throws Exception {
-		if (index().admin().isHashSupported()) {
-			indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
-			final String branch = createBranch(MAIN, "a");
-			// change storageKey1 component then revert the change
-			indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
-			indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
+		indexRevision(MAIN, STORAGE_KEY1, new Data("field1", "field2"));
+		final String branch = createBranch(MAIN, "a");
+		// change storageKey1 component then revert the change
+		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2Changed"));
+		indexRevision(branch, STORAGE_KEY1, new Data("field1", "field2"));
 
-			final RevisionCompare compare = index().compare(MAIN, branch);
-			assertThat(compare.getNewComponents()).isEmpty();
-			assertThat(compare.getChangedComponents()).isEmpty();
-			assertThat(compare.getDeletedComponents()).isEmpty();
-		}
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getNewComponents()).isEmpty();
+		assertThat(compare.getChangedComponents()).isEmpty();
+		assertThat(compare.getDeletedComponents()).isEmpty();
 	}
-	
 }

@@ -354,7 +354,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 					.from(getType())
 					.fields(SnomedDocument.Fields.ID, SnomedDocument.Fields.EFFECTIVE_TIME)
 					.where(getAvailableComponentQuery())
-					.limit(10000)
+					.limit(50000)
 					.build();
 			final LongValueMap<String> result = PrimitiveMaps.newObjectKeyLongOpenHashMap();
 			for (Hits<String[]> hits : index.scroll(query)) {

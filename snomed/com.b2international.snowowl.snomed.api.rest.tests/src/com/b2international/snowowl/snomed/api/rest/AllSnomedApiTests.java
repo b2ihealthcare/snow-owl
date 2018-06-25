@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.japi.branches.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
+import com.b2international.snowowl.snomed.api.japi.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.api.japi.issue.IssueSO2503RemoteJobDynamicMappingFix;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedListFeaturesTests;
@@ -50,6 +51,7 @@ import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.api.rest.perf.SnomedConceptCreatePerformanceTest;
+import com.b2international.snowowl.snomed.api.rest.perf.SnomedMergePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -64,7 +66,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	// RESTful API test cases
+	SnomedMergePerformanceTest.class,
 	IssueSO2503RemoteJobDynamicMappingFix.class,
+	Issue3019FixDeletionOfReferringMembersTest.class,
 	SnomedBranchingApiTest.class,
 	SnomedMergeApiTest.class,
 	SnomedListFeaturesTests.class,
@@ -94,7 +98,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Java API test cases
 	SnomedBranchRequestTest.class,
 	BranchCompareRequestTest.class,
-	SnomedRefSetDSVExportTest.class
+	SnomedRefSetDSVExportTest.class,
+	EclSerializerTest.class
 })
 public class AllSnomedApiTests {
 

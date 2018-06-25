@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
+import com.b2international.commons.collections.Collections3;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -33,20 +34,18 @@ public class GetEquivalentConceptsResponse extends AbstractResponse implements S
 
 	/**
 	 * Creates a new response with the specified type and an empty list of equivalence sets.
-	 * @param type the response type (preferably {@link Type#NOT_AVAILABLE} or {@link Type#STALE})
 	 */
-	public GetEquivalentConceptsResponse(final Type type) {
-		this(type, ImmutableList.<AbstractEquivalenceSet>of());
+	public GetEquivalentConceptsResponse() {
+		this(ImmutableList.of());
 	}
 
 	/**
 	 * Creates a new response with the specified type and list of equivalence sets.
-	 * @param type the response type
 	 * @param equivalenceSets the list of equivalence sets found during classification
 	 */
-	public GetEquivalentConceptsResponse(final Type type, final List<? extends AbstractEquivalenceSet> equivalenceSets) {
-		super(type);
-		this.equivalenceSets = ImmutableList.copyOf(equivalenceSets);
+	public GetEquivalentConceptsResponse(final List<AbstractEquivalenceSet> equivalenceSets) {
+		super(equivalenceSets == null ? Type.NOT_AVAILABLE : Type.SUCCESS);
+		this.equivalenceSets = Collections3.toImmutableList(equivalenceSets);
 	}
 
 	/**

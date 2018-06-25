@@ -47,11 +47,9 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.index.init.Rf2BasedSnomedTaxonomyBuilder;
-import com.b2international.snowowl.datastore.version.ITagConfiguration;
-import com.b2international.snowowl.datastore.version.ITagService;
-import com.b2international.snowowl.datastore.version.TagConfigurationBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -410,13 +408,14 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 				final Date effectiveDate = EffectiveTimes.parse(lastUnitEffectiveTimeKey, DateFormats.SHORT);
 				final String formattedEffectiveDate = EffectiveTimes.format(effectiveDate);
 				
-				final ITagConfiguration configuration = TagConfigurationBuilder.createForRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID, formattedEffectiveDate)
-					.setBranchPath(snomedBranchPath)
-					.setUserId(importContext.getUserId())
-					.setParentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-					.build();
-				
-				ApplicationContext.getInstance().getService(ITagService.class).tag(configuration);
+				RepositoryRequests
+					.branching()
+					.prepareCreate()
+					.setParent(snomedBranchPath.getPath())
+					.setName(formattedEffectiveDate)
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync();
 			}
 			
 		} finally {

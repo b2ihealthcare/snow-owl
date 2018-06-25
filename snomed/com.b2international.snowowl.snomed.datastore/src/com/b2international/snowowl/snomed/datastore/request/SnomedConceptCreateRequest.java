@@ -31,7 +31,6 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -48,9 +47,9 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Joiner;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 
 /**
@@ -100,6 +99,17 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	void setRefSet(SnomedRefSetCreateRequest refSet) {
 		this.refSetRequest = refSet;
 	}
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		return ImmutableSet.<String>builder()
+				.add(getModuleId())
+				.add(definitionStatus.getConceptId())
+				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.build();
+	}
 
 	@Override
 	public String execute(TransactionContext context) {
@@ -132,7 +142,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
 		final Set<String> requiredDescriptionTypes = newHashSet(Concepts.FULLY_SPECIFIED_NAME, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
-		final Set<String> synonymAndDescendantIds = getSynonymAndDescendantIds(context);
+		final Set<String> synonymAndDescendantIds = context.service(Synonyms.class).get();
 
 		for (final SnomedDescriptionCreateRequest descriptionRequest : descriptions) {
 
@@ -169,11 +179,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 	
-	private Set<String> getSynonymAndDescendantIds(TransactionContext context) {
-		final SnomedConcepts concepts = SnomedRequests.prepareGetSynonyms().build().execute(context);
-		return FluentIterable.from(concepts).transform(IComponent.ID_FUNCTION).toSet();
-	}
-
 	private void convertRelationships(final TransactionContext context, String conceptId) {
 		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
 		
@@ -217,7 +222,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	
 	private void checkParent(TransactionContext context) {
 		final SnomedRefSetType refSetType = refSetRequest.getRefSetType();
-		final String refSetTypeRootParent = SnomedRefSetUtil.getConceptId(refSetType);
+		final String refSetTypeRootParent = SnomedRefSetUtil.getParentConceptId(refSetType);
 		final Set<String> parents = getParents();
 		if (!isValidParentage(context, refSetTypeRootParent, parents)) {
 			throw new BadRequestException("'%s' type reference sets should be subtype of '%s' concept.", refSetType, refSetTypeRootParent);
@@ -249,8 +254,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	@Override
-	public Collection<SnomedComponentCreateRequest> getNestedRequests() {
-		return ImmutableList.<SnomedComponentCreateRequest>builder()
+	public Collection<SnomedCoreComponentCreateRequest> getNestedRequests() {
+		return ImmutableList.<SnomedCoreComponentCreateRequest>builder()
 			.add(this)
 			.addAll(descriptions)
 			.addAll(relationships)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,12 +71,6 @@ public interface SnomedExportContext {
 	 * @return the effective time label for unpublished components
 	 */
 	String getUnsetEffectiveTimeLabel();
-	
-	/**
-	 * In case of SIMPLE MAP reference sets include or not the map target description column.
-	 * @return
-	 */
-	boolean includeMapTargetDescription();
 	
 	/**
 	 * Returns the set of module Ids to be exported.

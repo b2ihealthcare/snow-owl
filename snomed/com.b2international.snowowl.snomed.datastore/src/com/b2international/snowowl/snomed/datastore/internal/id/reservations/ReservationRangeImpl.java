@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.internal.id.reservations;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifier;
@@ -71,9 +72,11 @@ public class ReservationRangeImpl implements Reservation {
 	}
 
 	@Override
-	public boolean includes(SnomedIdentifier identifier) {
-		checkNotNull(identifier, "identifier");
-		return affects(identifier.getNamespace(), identifier.getComponentCategory()) && itemIdRange.contains(identifier.getItemId());
+	public Set<SnomedIdentifier> intersection(Set<SnomedIdentifier> identifiers) {
+		return identifiers.stream()
+				.filter(identifier -> affects(identifier.getNamespace(), identifier.getComponentCategory()))
+				.filter(identifier -> itemIdRange.contains(identifier.getItemId()))
+				.collect(Collectors.toSet());
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,18 +48,41 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 	
 	private static EClass getMemberClass(SnomedRefSet refSet) {
 		switch (refSet.getType()) {
-		case ASSOCIATION: return SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER;
-		case EXTENDED_MAP:
-		case COMPLEX_MAP: return SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER;
-		case ATTRIBUTE_VALUE: return SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER;
-		case CONCRETE_DATA_TYPE: return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
-		case DESCRIPTION_TYPE: return SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER;
-		case LANGUAGE: return SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER;
-		case MODULE_DEPENDENCY: return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
-		case QUERY: return SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER;
-		case SIMPLE: return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
-		case SIMPLE_MAP: return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
-		default: throw new UnsupportedOperationException("Unknown refset: " + refSet.getType());
+			case ASSOCIATION: 
+				return SnomedRefSetPackage.Literals.SNOMED_ASSOCIATION_REF_SET_MEMBER;
+			case EXTENDED_MAP: //$FALL-THROUGH$
+			case COMPLEX_MAP: 
+				return SnomedRefSetPackage.Literals.SNOMED_COMPLEX_MAP_REF_SET_MEMBER;
+			case ATTRIBUTE_VALUE: 
+				return SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER;
+			case CONCRETE_DATA_TYPE: 
+				return SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER;
+			case DESCRIPTION_TYPE: 
+				return SnomedRefSetPackage.Literals.SNOMED_DESCRIPTION_TYPE_REF_SET_MEMBER;
+			case LANGUAGE: 
+				return SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER;
+			case MODULE_DEPENDENCY: 
+				return SnomedRefSetPackage.Literals.SNOMED_MODULE_DEPENDENCY_REF_SET_MEMBER;
+			case QUERY: 
+				return SnomedRefSetPackage.Literals.SNOMED_QUERY_REF_SET_MEMBER;
+			case SIMPLE: 
+				return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
+			case SIMPLE_MAP: //$FALL-THROUGH$
+			case SIMPLE_MAP_WITH_DESCRIPTION:
+				return SnomedRefSetPackage.Literals.SNOMED_SIMPLE_MAP_REF_SET_MEMBER;
+			case OWL_AXIOM:  //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return SnomedRefSetPackage.Literals.SNOMED_OWL_EXPRESSION_REF_SET_MEMBER;
+			case MRCM_DOMAIN: 
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_DOMAIN_REF_SET_MEMBER;
+			case MRCM_ATTRIBUTE_DOMAIN: 
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_DOMAIN_REF_SET_MEMBER;
+			case MRCM_ATTRIBUTE_RANGE: 
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_ATTRIBUTE_RANGE_REF_SET_MEMBER;
+			case MRCM_MODULE_SCOPE: 
+				return SnomedRefSetPackage.Literals.SNOMED_MRCM_MODULE_SCOPE_REF_SET_MEMBER;
+			default: 
+				throw new UnsupportedOperationException("Unknown refset: " + refSet.getType());
 		}
 	}
 
@@ -131,9 +154,10 @@ public class Rf2RefSetMember extends UnsupportedRf2RefSetMember {
 	@Override
 	public String getMapTargetComponentId() {
 		switch (getRefSet().getType()) {
-		case SIMPLE_MAP:
+		case SIMPLE_MAP: //$FALL-THROUGH$
+		case SIMPLE_MAP_WITH_DESCRIPTION:
 			return record.get(6);
-		case EXTENDED_MAP:
+		case EXTENDED_MAP: //$FALL-THROUGH$
 		case COMPLEX_MAP:
 			return record.get(10);
 		default: throw new UnsupportedOperationException();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
-	}
-	
-	@Override
-	public boolean isHashSupported() {
-		return false;
 	}
 	
 	@Override
@@ -167,9 +162,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
-			checkState(fieldType != Object.class, "Dynamic mappings are not supported with Object type fields");
 			if (Map.class.isAssignableFrom(fieldType)) {
-				// allow dynamic mappings for dynamic objects like field using Map or Object
+				// allow dynamic mappings for dynamic objects like field using Map
 				final Map<String, Object> prop = newHashMap();
 				prop.put("type", "object");
 				prop.put("dynamic", "true");
@@ -188,11 +182,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
 				
 				if (textFields.isEmpty() && keywordFields.isEmpty()) {
-					final String esType = toEsType(fieldType);
-					if (!Strings.isNullOrEmpty(esType)) {
-						prop.put("type", esType);
-						properties.put(property, prop);
-					}
+					addFieldProperties(prop, fieldType);
+					properties.put(property, prop);
 				} else {
 					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
 					
@@ -260,24 +251,36 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 			}
 		}
+		
+		// Add system field "_hash", if there is at least a single field to hash
+		if (!mapping.getHashedFields().isEmpty()) {
+			final Map<String, Object> prop = newHashMap();
+			prop.put("type", "keyword");
+			prop.put("index", false);
+			properties.put(DocumentMapping._HASH, prop);
+		}
+		
 		return ImmutableMap.of("properties", properties);
 	}
 
-	private String toEsType(Class<?> fieldType) {
+	private void addFieldProperties(Map<String, Object> fieldProperties, Class<?> fieldType) {
 		if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
-			return "keyword";
+			fieldProperties.put("type", "keyword");
 		} else if (NumericClassUtils.isFloat(fieldType)) {
-			return "float";
+			fieldProperties.put("type", "float");
 		} else if (NumericClassUtils.isInt(fieldType)) {
-			return "integer";
+			fieldProperties.put("type", "integer");
 		} else if (NumericClassUtils.isShort(fieldType)) {
-			return "short";
+			fieldProperties.put("type", "short");
 		} else if (NumericClassUtils.isDate(fieldType) || NumericClassUtils.isLong(fieldType)) {
-			return "long";
+			fieldProperties.put("type", "long");
 		} else if (Boolean.class.isAssignableFrom(Primitives.wrap(fieldType))) {
-			return "boolean";
+			fieldProperties.put("type", "boolean");
+		} else {
+			// Any other type will result in a sub-object that only appears in _source
+			fieldProperties.put("type", "object");
+			fieldProperties.put("enabled", false);
 		}
-		return null;
 	}
 
 	@Override
@@ -339,8 +342,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			        .indices()
 			        .prepareRefresh(indicesToRefresh)
 			        .get();
-			waitForYellowHealth();
+			waitForYellowHealth(indicesToRefresh);
 		}
 	}
-	
 }

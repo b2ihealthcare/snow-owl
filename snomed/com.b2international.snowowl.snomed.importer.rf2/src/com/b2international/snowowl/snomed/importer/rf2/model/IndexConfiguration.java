@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,17 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.snomed.importer.rf2.refset.AbstractSnomedOWLExpressionRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAssociationRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedAttributeValueRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedComplexMapTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedConcreteDataTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedDescriptionTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedLanguageRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttributeDomainRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMAttributeRangeRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMDomainRefSetImporter;
+import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedMRCMModuleScopeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedQueryRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleMapTypeRefSetImporter;
 import com.b2international.snowowl.snomed.importer.rf2.refset.SnomedSimpleTypeRefSetImporter;
@@ -62,6 +67,11 @@ public class IndexConfiguration {
 			.put(ComponentImportType.RELATIONSHIP, SnomedRelationshipImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_MAP_TYPE_REFSET, SnomedSimpleMapTypeRefSetImporter.INDEXES)
 			.put(ComponentImportType.SIMPLE_TYPE_REFSET, SnomedSimpleTypeRefSetImporter.INDEXES)
+			.put(ComponentImportType.OWL_EXPRESSION_REFSET, AbstractSnomedOWLExpressionRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_DOMAIN_REFSET, SnomedMRCMDomainRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_ATTRIBUTE_DOMAIN_REFSET, SnomedMRCMAttributeDomainRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, SnomedMRCMAttributeRangeRefSetImporter.INDEXES)
+			.put(ComponentImportType.MRCM_MODULE_SCOPE_REFSET, SnomedMRCMModuleScopeRefSetImporter.INDEXES)
 			.build();
 	}
 	

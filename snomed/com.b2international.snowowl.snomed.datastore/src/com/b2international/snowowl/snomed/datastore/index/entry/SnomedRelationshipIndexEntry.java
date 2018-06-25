@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.index.Doc;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.api.IStatement;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.Relationship;
@@ -47,7 +47,19 @@ import com.google.common.base.Strings;
  */
 @Doc
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
-public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument implements IStatement<String> {
+@RevisionHash({ 
+	SnomedDocument.Fields.ACTIVE, 
+	SnomedDocument.Fields.EFFECTIVE_TIME, 
+	SnomedDocument.Fields.MODULE_ID, 
+	SnomedRelationshipIndexEntry.Fields.GROUP,
+	SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
+	SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
+	SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,
+	SnomedRelationshipIndexEntry.Fields.TYPE_ID,
+	SnomedRelationshipIndexEntry.Fields.DESTINATION_ID,
+	SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED
+})
+public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = -7873086925532169024L;
 	
@@ -357,17 +369,14 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		return super.getIconId();
 	}
 	
-	@Override
 	public String getSourceId() {
 		return sourceId;
 	}
 
-	@Override
 	public String getTypeId() {
 		return typeId;
 	}
 
-	@Override
 	public String getDestinationId() {
 		return destinationId;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,24 @@
 package com.b2international.snowowl.snomed.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -60,21 +65,35 @@ import com.google.common.base.Strings;
  */
 public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleEvaluator {
 
+	private static final int RULE_LIMIT = 10_000;
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
+	public List<IssueDetail> eval(BranchContext context, ValidationRule rule) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
-		return context.service(ObjectMapper.class)
+		
+		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = context.service(ObjectMapper.class)
 				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF)
 				.prepareSearch()
-				.all() // always return all hits
-				.setFields(SnomedComponentDocument.Fields.ID)
-				.build()
-				.execute(context)
+				.setLimit(RULE_LIMIT)
+				.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.ACTIVE);
+		
+		SearchResourceRequestIterator it = new SearchResourceRequestIterator(req, searchRequest -> ((SnomedSearchRequestBuilder) searchRequest).build().execute(context));
+		final List<IssueDetail> issues = newArrayList();
+		while (it.hasNext()) {
+			((PageableCollectionResource<SnomedComponent>) it.next())
 				.stream()
-				.map(SnomedComponent::getComponentIdentifier)
-				.collect(Collectors.toList());
+				.map(component -> {
+					final ComponentIdentifier affectedComponent = component.getComponentIdentifier();
+					final String moduleId = component.getModuleId();
+					final Map<String, Object> details = newHashMap();
+					details.put(SnomedRf2Headers.FIELD_MODULE_ID, moduleId);
+					details.put(SnomedRf2Headers.FIELD_ACTIVE, component.isActive());
+					return new IssueDetail(affectedComponent, details);
+				})
+				.forEach(issues::add);
+		}
+		return issues;
 	}
 
 	@Override
@@ -94,6 +113,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
+		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
 			return prepareSearch(createSearch());
@@ -104,8 +124,10 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@OverridingMethodsMustInvokeSuper
 		protected SB prepareSearch(SB req) {
 			return req.filterByActive(active)
+					.filterByReleased(released)
 					.filterByModule(module)
 					.filterByEffectiveTime(effectiveTime);
+			
 		}		
 	}
 	
@@ -126,6 +148,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final class SnomedConceptValidationRuleQuery extends SnomedCoreComponentValidationQuery<SnomedConceptSearchRequestBuilder, SnomedConcepts, SnomedConcept> {
 		
 		@JsonProperty private String ecl;
+		@JsonProperty private String parent;
+		@JsonProperty private String statedParent;
 		@JsonProperty private String definitionStatus;
 		
 		@Override
@@ -136,6 +160,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedConceptSearchRequestBuilder prepareSearch(SnomedConceptSearchRequestBuilder req) {
 			return super.prepareSearch(req)
+					.filterByParent(parent)
+					.filterByStatedParent(statedParent)
 					.filterByDefinitionStatus(definitionStatus)
 					.filterByEcl(ecl);
 		}

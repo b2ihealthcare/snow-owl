@@ -36,8 +36,8 @@ import com.google.common.collect.ImmutableList;
  */
 public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions, SnomedDescription> {
 
-	private final String typeExpression;
 	private final String languageCode;
+	private final Collection<String> descriptionTypes;
 
 	public Rf2DescriptionExporter(final Rf2ReleaseType releaseType, 
 			final String countryNamespaceElement,
@@ -46,7 +46,7 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 			final String archiveEffectiveTime, 
 			final boolean includePreReleaseContent, 
 			final Collection<String> modules,
-			final String typeExpression,
+			final Collection<String> descriptionTypes,
 			final String languageCode) {
 
 		super(releaseType, 
@@ -56,14 +56,13 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 				archiveEffectiveTime, 
 				includePreReleaseContent, 
 				modules);
-
-		this.typeExpression = typeExpression;
+		this.descriptionTypes = descriptionTypes;
 		this.languageCode = languageCode;
 	}
 
 	@Override
 	protected String getCoreComponentType() {
-		return Concepts.TEXT_DEFINITION.equals(typeExpression) 
+		return descriptionTypes.contains(Concepts.TEXT_DEFINITION) // FIXME ugly as fuck
 				? "TextDefinition"
 				: "Description";
 	}
@@ -83,7 +82,7 @@ public final class Rf2DescriptionExporter extends Rf2CoreComponentExporter<Snome
 		return SnomedRequests
 				.prepareSearchDescription()
 				.filterByLanguageCodes(ImmutableList.of(languageCode))
-				.filterByType(typeExpression)
+				.filterByType(descriptionTypes)
 				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID));
 	}
 

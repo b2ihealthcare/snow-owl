@@ -67,11 +67,15 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		}
 
 		public static final Expression released() {
-			return match(Fields.RELEASED, true);
+			return released(true);
 		}
 		
 		public static final Expression unreleased() {
-			return match(Fields.RELEASED, false);
+			return released(false);
+		}
+		
+		public static final Expression released(boolean released) {
+			return match(Fields.RELEASED, released);
 		}
 		
 		public static final Expression effectiveTime(long effectiveTime) {
@@ -133,8 +137,8 @@ public abstract class SnomedDocument extends RevisionDocument implements Contain
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 	}
 
-	private final String moduleId;
 	private final boolean released;
+	private final String moduleId;
 	private final boolean active;
 	private final long effectiveTime;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,25 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 public abstract class SnomedTerminologyComponentConstants {
 	
 	// suppress constructor
 	private SnomedTerminologyComponentConstants() {}
 
-	public static final Set<String> NS_URI_SET = Collections.unmodifiableSet(Sets.newHashSet(
+	public static final Set<String> NS_URI_SET = ImmutableSet.of(
 			"http://b2international.com/snowowl/sct/1.0", 
 			"http://b2international.com/snowowl/snomed/refset/1.0", 
-			"http://b2international.com/snowowl/snomed/mrcm"));
-	public static final String[] NS_URI = Arrays.copyOf(NS_URI_SET.toArray(), NS_URI_SET.size(), String[].class);
+			"http://b2international.com/snowowl/snomed/mrcm");
 	
+	public static final String[] NS_URI = Iterables.toArray(NS_URI_SET, String.class);
 	
 	public static final String TERMINOLOGY_ID = "com.b2international.snowowl.terminology.snomed";
 	
@@ -48,16 +47,8 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final short REFSET_NUMBER = 103;
 	public static final String REFSET_MEMBER = "com.b2international.snowowl.terminology.snomed.refsetmember";
 	public static final short REFSET_MEMBER_NUMBER = 104;
-	public static final String DATA_TYPE_STRING = "com.b2international.snowowl.terminology.snomed.datatype.string";
-	public static final short DATA_TYPE_STRING_NUMBER = 105;
-	public static final String DATA_TYPE_INTEGER = "com.b2international.snowowl.terminology.snomed.datatype.integer";
-	public static final short DATA_TYPE_INTEGER_NUMBER = 106;
-	public static final String DATA_TYPE_DECIMAL= "com.b2international.snowowl.terminology.snomed.datatype.decimal";
-	public static final short DATA_TYPE_DECIMAL_NUMBER = 107;
-	public static final String DATA_TYPE_BOOLEAN = "com.b2international.snowowl.terminology.snomed.datatype.boolean";
-	public static final short DATA_TYPE_BOOLEAN_NUMBER = 108;
-	public static final String DATA_TYPE_DATE = "com.b2international.snowowl.terminology.snomed.datatype.date";
-	public static final short DATA_TYPE_DATE_NUMBER = 109;
+	public static final String CONSTRAINT = "com.b2international.snowowl.terminology.snomed.constraint";
+	public static final short CONSTRAINT_NUMBER = 105;
 	
 	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
 	public static final String SNOMED_NAME = "SNOMED CT";
@@ -77,38 +68,7 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
 	public static final String SNOMED_B2I_LINK = "https://b2i.sg";
 
-	/**
-	 * Fake terminology component type ID for predicates.
-	 * <br>ID: {@value}. 
-	 */
-	public static final String PREDICATE_TYPE = "com.b2international.snowowl.terminology.snomed.predicate";
-	public static final int PREDICATE_TYPE_ID = 999;
-	
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
-
-	/**
-	 * Returns {@code true} if the given terminology component type is representing a SNOMED&nbsp;CT component.
-	 * @param referencedComponentType the terminology component type. 
-	 * @return {@code true} if SNOMED CT otherwise {@code false}.
-	 */
-	public static boolean isSnomed(final short terminologyComponentType) {
-		
-		switch (terminologyComponentType) {
-			
-			case CONCEPT_NUMBER: //$FALL-THROUGH$
-			case DESCRIPTION_NUMBER: //$FALL-THROUGH$
-			case RELATIONSHIP_NUMBER: //$FALL-THROUGH$
-			case REFSET_NUMBER: //$FALL-THROUGH$
-			case REFSET_MEMBER_NUMBER: //$FALL-THROUGH$
-				
-				return true;
-
-			default:
-				
-				return false;
-		}
-		
-	}
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
@@ -133,32 +93,19 @@ public abstract class SnomedTerminologyComponentConstants {
 		}
 
 		switch (referencedComponentId.charAt(referencedComponentId.length() - 2)) {
-
-			case '0':
-				return CONCEPT_NUMBER;
-
-			case '1':
-				return DESCRIPTION_NUMBER;
-
-			case '2':
-				return RELATIONSHIP_NUMBER;
-
-			default:
-				return -1;
+			case '0': return CONCEPT_NUMBER;
+			case '1': return DESCRIPTION_NUMBER;
+			case '2': return RELATIONSHIP_NUMBER;
+			default: return -1;
 		}
-
 	}
 
 	public static String getTerminologyComponentId(final String referencedComponentId) {
 		switch (getTerminologyComponentIdValue(referencedComponentId)) {
-			case CONCEPT_NUMBER:
-				return CONCEPT;
-			case DESCRIPTION_NUMBER:
-				return DESCRIPTION;
-			case RELATIONSHIP_NUMBER:
-				return RELATIONSHIP;
-			default:
-				throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown");
+			case CONCEPT_NUMBER: return CONCEPT;
+			case DESCRIPTION_NUMBER: return DESCRIPTION;
+			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
+			default: throw new IllegalArgumentException("'" + referencedComponentId + "' referenced component type is unknown");
 		}
 	}
 
@@ -174,11 +121,7 @@ public abstract class SnomedTerminologyComponentConstants {
 			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
 			case REFSET_NUMBER: return REFSET;
 			case REFSET_MEMBER_NUMBER: return REFSET_MEMBER;
-			case DATA_TYPE_BOOLEAN_NUMBER: return DATA_TYPE_BOOLEAN;
-			case DATA_TYPE_DATE_NUMBER: return DATA_TYPE_DATE;
-			case DATA_TYPE_DECIMAL_NUMBER: return DATA_TYPE_DECIMAL;
-			case DATA_TYPE_INTEGER_NUMBER: return DATA_TYPE_INTEGER;
-			case DATA_TYPE_STRING_NUMBER: return DATA_TYPE_STRING;
+			case CONSTRAINT_NUMBER: return CONSTRAINT;
 			default: throw new IllegalArgumentException("Unknown terminology component identifier value: " + value);
 		}
 	}
@@ -189,28 +132,14 @@ public abstract class SnomedTerminologyComponentConstants {
 	 * @return the unique value of the specified ID.
 	 */
 	public static short getValue(final String id) {
-		if (CONCEPT.equals(id)) {
-			return CONCEPT_NUMBER;
-		} else if (RELATIONSHIP.equals(id)) {
-			return RELATIONSHIP_NUMBER;
-		} else if (DESCRIPTION.equals(id)) {
-			return DESCRIPTION_NUMBER;
-		} else if (REFSET.equals(id)) {
-			return REFSET_NUMBER;
-		} else if (REFSET_MEMBER.equals(id)) {
-			return REFSET_MEMBER_NUMBER;
-		} else if (DATA_TYPE_BOOLEAN.equals(id)) {
-			return DATA_TYPE_BOOLEAN_NUMBER;
-		} else if (DATA_TYPE_DATE.equals(id)) {
-			return DATA_TYPE_DATE_NUMBER;
-		} else if (DATA_TYPE_DECIMAL.equals(id)) {
-			return DATA_TYPE_DECIMAL_NUMBER;
-		} else if (DATA_TYPE_INTEGER.equals(id)) {
-			return DATA_TYPE_INTEGER_NUMBER;
-		} else if (DATA_TYPE_STRING.equals(id)) {
-			return DATA_TYPE_STRING_NUMBER;
-		} else {
-			throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
+		switch (id) {
+			case CONCEPT: return CONCEPT_NUMBER;
+			case DESCRIPTION: return DESCRIPTION_NUMBER;
+			case RELATIONSHIP: return RELATIONSHIP_NUMBER;
+			case REFSET: return REFSET_NUMBER;
+			case REFSET_MEMBER: return REFSET_MEMBER_NUMBER;
+			case CONSTRAINT: return CONSTRAINT_NUMBER;
+			default: throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
 		}
 	}
 

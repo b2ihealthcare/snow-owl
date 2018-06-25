@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,16 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.Serializable;
+import java.util.Map;
 
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,6 +44,7 @@ public final class ValidationIssue implements Serializable {
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String WHITELISTED = "whitelisted";
+		public static final String DETAILS = "details";
 	}
 
 	public static class Scripts {
@@ -51,6 +57,8 @@ public final class ValidationIssue implements Serializable {
 	private final String affectedComponentId;
 	private final short affectedComponentType;
 	private final boolean whitelisted;
+	
+	private Map<String, Object> details = null;
 	
 	private transient ComponentIdentifier affectedComponent;
 
@@ -113,6 +121,23 @@ public final class ValidationIssue implements Serializable {
 		return whitelisted;
 	}
 	
+	@JsonAnyGetter
+	public Map<String, Object> getDetails() {
+		return details;
+	}
+	
+	@JsonAnySetter
+	public void setDetails(String key, Object value) {
+		if (details == null) {
+			this.details = newHashMap();
+		}
+		this.details.put(key, value);
+	}
+	
+	public void setDetails(Map<String, Object> details) {
+		this.details = details;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -120,6 +145,7 @@ public final class ValidationIssue implements Serializable {
 				.add("ruleId", ruleId)
 				.add("branchPath", branchPath)
 				.add("affectedComponent", getAffectedComponent())
+				.add("details", getDetails())
 				.toString();
 	}
 	

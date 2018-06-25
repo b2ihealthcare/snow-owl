@@ -18,6 +18,7 @@ package com.b2international.commons.options;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -159,6 +160,17 @@ public interface Options {
 	 * @return a set view of the keys contained in this map
 	 */
 	Set<String> keySet();
+	
+	/**
+	 * Creates a new {@link Options} instance using {@link OptionsBuilder}.
+	 * 
+	 * @param map
+	 * 			  - the map that the new {@link Options} instance should contain.
+	 * @return
+	 */
+	static Options from(Map<String, Object> map) {
+		return Options.builder().putAll(map).build();
+	}
 	
 	/**
 	 * Creates a new {@link OptionsBuilder} instance to build {@link Options}.

@@ -17,12 +17,13 @@ package com.b2international.snowowl.snomed.datastore.id.memory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.cdo.spi.server.Store;
 import org.slf4j.Logger;
@@ -30,12 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.VerhoeffCheck;
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
-import com.b2international.index.IndexRead;
-import com.b2international.index.IndexWrite;
-import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -48,7 +45,7 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.id.gen.ItemIdGenerationStrategy;
-import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentiferReservationService;
+import com.b2international.snowowl.snomed.datastore.id.reservations.ISnomedIdentifierReservationService;
 import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImpl;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
@@ -80,7 +77,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
-			final ISnomedIdentiferReservationService reservationService, final SnomedIdentifierConfiguration config) {
+			final ISnomedIdentifierReservationService reservationService, final SnomedIdentifierConfiguration config) {
 		super(reservationService, config);
 		this.store = store;
 		this.generationStrategy = generationStrategy;
@@ -244,68 +241,83 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 
 	private Set<String> generateIds(final String namespace, final ComponentCategory category, final int quantity) {
-		final Set<String> componentIds = newLinkedHashSet(); // important to keep order of generated ids
+		final Set<String> generatedComponentIds = newLinkedHashSet(); // important to keep order of generated ids
 		final int maxAttempts = getConfig().getMaxIdGenerationAttempts();
-
-		for (int i = 0; i < quantity; i++) {
-			final String componentId = generateId(namespace, category, maxAttempts, componentIds);
-			componentIds.add(componentId);
-		}
-
-		return ImmutableSet.<String>copyOf(componentIds);
-	}
-
-	private String generateId(final String namespace, final ComponentCategory category, final int maxAttempts, Set<String> componentIds) {
-		for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-			final String componentId = generateId(namespace, category, attempt);
-			if (!isGeneratedIdDisallowed(componentId, componentIds)) {
-				return componentId;
-			}
+		
+		for (int attempt = 1; attempt <= maxAttempts && generatedComponentIds.size() != quantity; attempt++) {
+			final int remainingQuantity = quantity - generatedComponentIds.size();
+			Set<String> newGeneratedComponentIds = doGenerateIds(namespace, category, remainingQuantity, attempt);
+			// check this newly generated set for reservation
+			Set<String> reservedIds = isReserved(newGeneratedComponentIds, generatedComponentIds);
+			// remove IDs that are reserved from the newly generated set
+			newGeneratedComponentIds.removeAll(reservedIds);
+			// add new generated IDs to the results
+			generatedComponentIds.addAll(newGeneratedComponentIds);
 		}
 		
-		throw new BadRequestException("Couldn't generate identifier in maximum (%s) number of attempts", maxAttempts);
+		if (generatedComponentIds.size() != quantity) {
+			final String namespaceValue = Strings.isNullOrEmpty(namespace) ? SnomedIdentifiers.INT_NAMESPACE : namespace;
+			throw new BadRequestException("Couldn't generate %s identifiers [%s, %s] in maximum (%s) number of attempts", quantity, category, namespaceValue, maxAttempts);
+		} else {
+			return ImmutableSet.<String>copyOf(generatedComponentIds);
+		}
 	}
-	
-	private String generateId(final String namespace, final ComponentCategory category, final int attempt) {
-		final StringBuilder builder = new StringBuilder();
-	
+
+	private Set<String> doGenerateIds(final String namespace, final ComponentCategory category, final int quantity, final int attempt) {
 		// generate the item identifier (value can be a function of component category and namespace)
-		builder.append(generationStrategy.generateItemId(namespace, category, attempt));
-	
-		// append namespace and the first digit of the partition-identifier
-		if (Strings.isNullOrEmpty(namespace)) {
-			builder.append('0');
-		} else {
-			builder.append(namespace);
-			builder.append('1');
-		}
-	
-		// append the second digit of the partition-identifier
-		builder.append(category.ordinal());
-	
-		// add Verhoeff check digit last
-		builder.append(VerhoeffCheck.calculateChecksum(builder, false));
-	
-		return builder.toString();
+		return generationStrategy.generateItemIds(namespace, category, quantity, attempt)
+			.stream()
+			.map(itemId -> {
+				final StringBuilder builder = new StringBuilder();
+				builder.append(itemId);
+				
+				// append namespace and the first digit of the partition-identifier
+				if (Strings.isNullOrEmpty(namespace)) {
+					builder.append('0');
+				} else {
+					builder.append(namespace);
+					builder.append('1');
+				}
+				
+				// append the second digit of the partition-identifier
+				builder.append(category.ordinal());
+				
+				// add Verhoeff check digit last
+				builder.append(VerhoeffCheck.calculateChecksum(builder, false));
+				
+				return builder.toString();
+			})
+			.collect(Collectors.toCollection(Sets::newLinkedHashSet));
 	}
 
-	private boolean isGeneratedIdDisallowed(String componentId, Set<String> componentIds) {
-		
-		if (componentIds.contains(componentId)) {
-			return true;
+	private Set<String> isReserved(Set<String> ids, Set<String> currentGeneratedIds) {
+		Set<String> remainingIdsToCheck = newHashSet(ids);
+		final ImmutableSet.Builder<String> reservedIds = ImmutableSet.builder();
+
+		// check already generated set of IDs first
+		Set<String> reservedByCurrentSet = Sets.intersection(remainingIdsToCheck, currentGeneratedIds);
+		if (!reservedByCurrentSet.isEmpty()) {
+			reservedIds.addAll(reservedByCurrentSet);
+			remainingIdsToCheck.removeAll(reservedByCurrentSet);
+		}
+
+		// check local reservation service
+		Set<String> reservedByService = getReservationService().isReserved(remainingIdsToCheck);
+		if (!reservedByService.isEmpty()) {
+			reservedIds.addAll(reservedByService);
+			remainingIdsToCheck.removeAll(reservedByService);
 		}
 		
-		if (getReservationService().isReserved(componentId)) {
-			return true;
+		// check the ID index to verify state of remaining IDs
+		if (!remainingIdsToCheck.isEmpty()) {
+			getSctIds(remainingIdsToCheck).forEach((id, sctId) -> {
+				if (!sctId.isAvailable()) {
+					reservedIds.add(id);
+				}
+			});
 		}
 		
-		final SctId sctId = readSctId(componentId);
-		
-		if (sctId == null) {
-			return false;
-		} else {
-			return !sctId.isAvailable();
-		}
+		return reservedIds.build();
 	}
 
 	private SctId buildSctId(final String componentId, final IdentifierStatus status) {
@@ -323,33 +335,18 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	}
 	
 	private void putSctIds(final Map<String, SctId> ids) {
-		store.write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.putAll(ids);
-				index.commit();
-				return null;
-			}
+		store.write(index -> {
+			index.putAll(ids);
+			index.commit();
+			return null;
 		});
 	}
 	
 	private void removeSctIds(final Set<String> ids) {
-		store.write(new IndexWrite<Void>() {
-			@Override
-			public Void execute(Writer index) throws IOException {
-				index.removeAll(ImmutableMap.<Class<?>, Set<String>>of(SctId.class, ids));
-				index.commit();
-				return null;
-			}
-		});
-	}
-	
-	private SctId readSctId(final String id) {
-		return store.read(new IndexRead<SctId>() {
-			@Override
-			public SctId execute(DocSearcher index) throws IOException {
-				return index.get(SctId.class, id);
-			}
+		store.write(index -> {
+			index.removeAll(ImmutableMap.<Class<?>, Set<String>>of(SctId.class, ids));
+			index.commit();
+			return null;
 		});
 	}
 	

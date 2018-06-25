@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -66,8 +67,16 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		/**
 		 * Filter matches by that are whitelisted or not. 
 		 */
-		WHITELISTED
+		WHITELISTED,
+		
+		/**
+		 * Filter matches by details
+		 */
+		DETAILS
 	}
+	
+	
+	ValidationIssueSearchRequest() {}
 	
 	@Override
 	protected Searcher searcher(ServiceProvider context) {
@@ -132,6 +141,14 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		if (containsKey(OptionKey.WHITELISTED)) {
 			boolean whitelisted = getBoolean(OptionKey.WHITELISTED);
 			queryBuilder.filter(Expressions.match(ValidationIssue.Fields.WHITELISTED, whitelisted));
+		}
+		
+		if (containsKey(OptionKey.DETAILS)) {
+			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
+			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
+				Options options = getOptions(OptionKey.DETAILS);
+				extension.prepareQuery(queryBuilder, options);
+			}
 		}
 		
 		return queryBuilder.build();

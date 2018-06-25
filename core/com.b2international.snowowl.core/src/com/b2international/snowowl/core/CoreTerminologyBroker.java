@@ -17,11 +17,11 @@ package com.b2international.snowowl.core;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -30,10 +30,7 @@ import org.eclipse.core.runtime.Platform;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.ILookupService;
-import com.b2international.snowowl.core.api.IMappingSetMembershipLookupService;
-import com.b2international.snowowl.core.api.INameProviderFactory;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
-import com.b2international.snowowl.core.api.IValueSetMembershipLookupService;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -43,7 +40,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 
 /**
  *
@@ -91,11 +87,7 @@ public class CoreTerminologyBroker {
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
 	public static final String TERMINOLOGY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminology";
 	public static final String REPRESENTATION_EXTENSION_POINT_ID = "com.b2international.snowowl.core.representation";
-	public static final String REFSET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.refSetMembershipLookupService";
-	public static final String VALUE_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.valueSetMembershipLookupService";
-	public static final String MAPPING_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.mappingSetMembershipLookupService";
 	public static final String LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.lookupService";
-	public static final String NAME_PROVIDER_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.nameProviderFactory";
 	public static final String TERMINOLOGY_ID_ATTRIBUTE = "terminologyId";
 	public static final String TERMINOLOGY_COMPONENT_ID_ATTRIBUTE = "terminologyComponentId";
 	public static final String PRIMARY_COMPONENT_ID_ATTRIBUTE = "primaryComponentId";
@@ -308,30 +300,6 @@ public class CoreTerminologyBroker {
 		throw new IllegalArgumentException("No terminology component extension has been registered with the passed in ID: " + terminologyComponentId);
 	}
 
-	public Collection<IValueSetMembershipLookupService> getValueSetMembershipLookupServices() {
-		final Set<IValueSetMembershipLookupService> searchers = Sets.newHashSet();
-		final IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(VALUE_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
-		for (final IConfigurationElement element : elements) {
-			searchers.add((IValueSetMembershipLookupService) createExecutableExtension(element));
-		}
-
-		return searchers;
-	}
-	
-	public Collection<IMappingSetMembershipLookupService> getMappingSetMembershipLookupServices() {
-		final Set<IMappingSetMembershipLookupService> searchers = Sets.newHashSet();
-		final IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(MAPPING_SET_MEMBERSHIP_LOOKUP_SERVICE_EXTENSION_POINT_ID);
-		for (final IConfigurationElement element : elements) {
-			searchers.add((IMappingSetMembershipLookupService) createExecutableExtension(element));
-		}
-
-		return searchers;
-	}
-
-	public INameProviderFactory getNameProviderFactory(final String terminologyComponentId) {
-		return (INameProviderFactory) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, NAME_PROVIDER_SERVICE_EXTENSION_POINT_ID));
-	}
-
 	public <T, V> ILookupService<T, V> getLookupService(final String terminologyComponentId) {
 		return (ILookupService<T, V>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, LOOKUP_SERVICE_EXTENSION_POINT_ID));
 	}
@@ -372,6 +340,15 @@ public class CoreTerminologyBroker {
 		}
 		throw new RuntimeException("No configuration element has been registered for '" + extensionPointId + "' extension with the '" + terminologyComponentId
 				+ "' terminology component identifier.");
+	}
+	
+	public String getRepositoryUuidForTooling (String toolingId) {
+		return Arrays.stream(Platform.getExtensionRegistry().getConfigurationElementsFor("com.b2international.snowowl.datastore.repository"))
+			.filter(element -> element.getAttribute("toolingId").equals(toolingId))
+			.findFirst()
+			.orElseThrow(RuntimeException::new)
+			.getAttribute("uuid");
+			
 	}
 	
 	/**Returns with the primary terminology component ID for the given terminology argument.*/

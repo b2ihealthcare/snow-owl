@@ -70,6 +70,16 @@ public abstract class DocumentBuilders {
 				.released(false);
 	}
 	
+	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
+		return SnomedRefSetMemberIndexEntry.builder()
+				.id(id)
+				.active(true)
+				.referencedComponentId(referencedComponentId)
+				.referencedComponentType(referencedComponentType)
+				.referenceSetId(referenceSetId)
+				.released(true);
+	}
+	
 	public static SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
 		return relationship(source, type, destination, Concepts.INFERRED_RELATIONSHIP);
 	}

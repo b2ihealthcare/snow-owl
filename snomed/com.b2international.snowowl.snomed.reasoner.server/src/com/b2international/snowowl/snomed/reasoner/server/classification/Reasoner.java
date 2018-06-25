@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.datastore.server.snomed.index.InitialReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
@@ -69,7 +69,7 @@ public class Reasoner extends AbstractDisposableService {
 	private final boolean shared;
 
 	private final ReasonerStateMachine stateMachine = new ReasonerStateMachine(ReasonerState.UNLOADED);
-	private final AtomicReference<InitialReasonerTaxonomyBuilder> taxonomyBuilder = new AtomicReference<>();
+	private final AtomicReference<ReasonerTaxonomyBuilder> taxonomyBuilder = new AtomicReference<>();
 	
 	private OWLOntology ontology;
 	private OWLReasoner reasoner;
@@ -205,7 +205,7 @@ public class Reasoner extends AbstractDisposableService {
 		return stateMachine.getState();
 	}
 	
-	public AtomicReference<InitialReasonerTaxonomyBuilder> getTaxonomyBuilder() {
+	public AtomicReference<ReasonerTaxonomyBuilder> getTaxonomyBuilder() {
 		return taxonomyBuilder;
 	}
 

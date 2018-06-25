@@ -58,6 +58,13 @@ public interface ApiError {
 	Integer getCode();
 	
 	/**
+	 * Returns an HTTP status code associated with this error.
+	 * 
+	 * @return
+	 */
+	Integer getStatus();
+	
+	/**
 	 * Additional information about the error.
 	 * @return
 	 */
@@ -74,6 +81,7 @@ public interface ApiError {
 		private String message;
 		private String developerMessage;
 		private int code;
+		private int status;
 		private Map<String, Object> additionalInfo = newHashMap();
 
 		@JsonCreator
@@ -83,6 +91,11 @@ public interface ApiError {
 		
 		public Builder code(int code) {
 			this.code = code;
+			return this;
+		}
+		
+		public Builder status(int status) {
+			this.status = status;
 			return this;
 		}
 		
@@ -104,7 +117,7 @@ public interface ApiError {
 		}
 		
 		public ApiError build() {
-			return new ApiErrorImpl(this.message, this.developerMessage, this.code, this.additionalInfo);
+			return new ApiErrorImpl(this.message, this.developerMessage, this.code, this.status, this.additionalInfo);
 		}
 		
 		public static Builder of(String message) {

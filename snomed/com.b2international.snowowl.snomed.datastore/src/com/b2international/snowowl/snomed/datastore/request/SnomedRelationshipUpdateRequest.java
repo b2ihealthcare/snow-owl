@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -32,6 +33,8 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.5
@@ -187,7 +190,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		}
 	}
 
-	protected boolean updateCharacteristicType(final CharacteristicType newCharacteristicType, final Relationship relationship, final TransactionContext context) {
+	private boolean updateCharacteristicType(final CharacteristicType newCharacteristicType, final Relationship relationship, final TransactionContext context) {
 		if (null == newCharacteristicType) {
 			return false;
 		}
@@ -201,7 +204,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		}
 	}
 
-	protected boolean updateModifier(final RelationshipModifier newModifier, final Relationship relationship, final TransactionContext context) {
+	private boolean updateModifier(final RelationshipModifier newModifier, final Relationship relationship, final TransactionContext context) {
 		if (null == newModifier) {
 			return false;
 		}
@@ -214,5 +217,24 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 			return false;
 		}
 	}
-
+	
+	@Override
+	public Set<String> getRequiredComponentIds(TransactionContext context) {
+		final Builder<String> ids = ImmutableSet.<String>builder();
+		ids.add(getComponentId());
+		if (characteristicType != null) {
+			ids.add(characteristicType.getConceptId());
+		}
+		if (destinationId != null) {
+			ids.add(destinationId);
+		}
+		if (typeId != null) {
+			ids.add(typeId);
+		}
+		if (modifier != null) {
+			ids.add(modifier.getConceptId());
+		}
+		return ids.build();
+	}
+	
 }

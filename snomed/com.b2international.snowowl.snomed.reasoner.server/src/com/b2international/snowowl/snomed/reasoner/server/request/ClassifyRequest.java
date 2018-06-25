@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,12 +111,4 @@ public class ClassifyRequest implements Request<ServiceProvider, ApiError> {
 		return new ApiError.Builder("Caught exception while running classification.").code(500).build();
 	}
 
-	/**
-	 * Feature toggle key to indicate whether classifying is in progress.
-	 * @param repositoryUuid
-	 * @return
-	 */
-	public static String featureFor(String repositoryUuid) {
-		return "classify." + repositoryUuid;
-	}
 }

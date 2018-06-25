@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,23 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
+import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
  */
-public class SnomedRefSetRestInput extends SnomedConceptRestInput {
+public class SnomedRefSetRestInput {
 
+	@JsonUnwrapped
+	private SnomedConceptRestInput conceptRestInput;
+	
 	private SnomedRefSetType type;
 	private String referencedComponentType;
 	
@@ -43,21 +50,34 @@ public class SnomedRefSetRestInput extends SnomedConceptRestInput {
 	public void setReferencedComponentType(String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 	}
+
+	public SnomedConceptRestInput getConceptRestInput() {
+		return conceptRestInput;
+	}
 	
-	@Override
-	public SnomedConceptCreateRequestBuilder toRequestBuilder() {
-		final SnomedConceptCreateRequestBuilder req = super.toRequestBuilder();
-		
-		if (getRelationships().isEmpty()) {
-			req.addParent(SnomedRefSetUtil.getConceptId(getType()));
-		}
+	public void setConceptRestInput(SnomedConceptRestInput conceptRestInput) {
+		this.conceptRestInput = conceptRestInput;
+	}
+	
+	public TransactionalRequestBuilder<String> toRequestBuilder() {
 
-		req.setRefSet(
-			SnomedRequests.prepareNewRefSet()
+		SnomedRefSetCreateRequestBuilder refsetCreateRequest = SnomedRequests.prepareNewRefSet()
 				.setType(type)
-				.setReferencedComponentType(referencedComponentType));
-
-		return req;
+				.setReferencedComponentType(referencedComponentType);
+		
+		if (!Strings.isNullOrEmpty(conceptRestInput.getId()) && conceptRestInput.getDescriptions().isEmpty()) {
+			refsetCreateRequest.setIdentifierId(conceptRestInput.getId());
+			return refsetCreateRequest;
+		}
+		
+		SnomedConceptCreateRequestBuilder conceptRequest = conceptRestInput.toRequestBuilder();
+		
+		if (conceptRestInput.getRelationships().isEmpty()) {
+			conceptRequest.addParent(SnomedRefSetUtil.getParentConceptId(getType()));
+		}
+		conceptRequest.setRefSet(refsetCreateRequest);
+		
+		return conceptRequest;
 	}
 	
 }

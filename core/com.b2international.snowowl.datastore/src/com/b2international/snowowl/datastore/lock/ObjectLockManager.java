@@ -37,13 +37,13 @@ import org.eclipse.emf.cdo.session.remote.CDORemoteSessionManager;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.util.event.IEvent;
 import org.eclipse.net4j.util.event.IListener;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.cdo.CDOViewFunction;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -84,14 +84,14 @@ public class ObjectLockManager implements IObjectLockManager, IListener {
 	@Override
 	public boolean isLockedForceUpdate(final long storageKey, final String branch) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(branch);
-		return CDOUtils.apply(new CDOViewFunction<Boolean, CDOView>(connection, branchPath) { @Override protected Boolean apply(final CDOView view) {
-			final boolean[] lockChanged = new boolean[1];
-			try {
-				return checkLockOwner(view, storageKey, branch, lockChanged) != null;
-			} finally {
-				if (lockChanged[0]) { notifyListeners(); }
-			}
-		}});
+		final CDOView view = connection.createView(connection.getBranch(branchPath));
+		final boolean[] lockChanged = new boolean[1];
+		try {
+			return checkLockOwner(view, storageKey, branch, lockChanged) != null;
+		} finally {
+			if (lockChanged[0]) { notifyListeners(); }
+			LifecycleUtil.deactivate(view);
+		}
 	}
 
 	private Integer checkLockOwner(final CDOView view, final long storageKey, final String branch, final boolean[] lockChanged) {
@@ -136,11 +136,11 @@ public class ObjectLockManager implements IObjectLockManager, IListener {
 	@Override
 	public Collection<Long> getStorageKeysLockedByOthers(final Collection<Long> storageKeys, final String branch) {
 		final IBranchPath branchPath = BranchPathUtils.createPath(branch);
-
-		return CDOUtils.apply(new CDOViewFunction<Collection<Long>, CDOView>(connection, branchPath) { @Override protected Collection<Long> apply(final CDOView view) {
+		final CDOView view = connection.createView(connection.getBranch(branchPath));
+		try {
 			final Set<Long> lockedStorageKeys = newHashSet();
 			final boolean[] lockChanged = new boolean[1];
-
+			
 			synchronized (lockOwners) {
 				for (final Long storageKey : storageKeys) {
 					final Integer owner = checkLockOwner(view, storageKey, branch, lockChanged);
@@ -149,13 +149,15 @@ public class ObjectLockManager implements IObjectLockManager, IListener {
 					}
 				}
 			}
-
+			
 			if (lockChanged[0]) {
 				notifyListeners();
 			}
-
+			
 			return lockedStorageKeys;
-		}});
+		} finally {
+			LifecycleUtil.deactivate(view);
+		}
 	}
 
 	@Override

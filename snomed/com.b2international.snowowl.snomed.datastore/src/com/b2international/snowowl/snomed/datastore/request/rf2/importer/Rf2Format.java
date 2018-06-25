@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,24 +25,29 @@ import com.google.common.collect.ImmutableList;
 public final class Rf2Format {
 	
 	private static final List<Rf2ContentType<?>> CONTENT_TYPES = ImmutableList.<Rf2ContentType<?>>builder()
-			// terminology
+			// Terminology
 			.add(new Rf2ConceptContentType())
 			.add(new Rf2DescriptionContentType())
 			.add(new Rf2RelationshipContentType())
-			// refset
-			// -simple
+			// Refset/Content
 			.add(new Rf2AssociationRefSetContentType())
 			.add(new Rf2AttributeValueRefSetContentType())
 			.add(new Rf2SimpleRefSetContentType())
-			// -language
+			.add(new Rf2OwlExpressionRefSetContentType())
+			// Refset/Language
 			.add(new Rf2LanguageRefSetContentType())
-			// -map
+			// Refset/Map
 			.add(new Rf2SimpleMapRefSetContentType())
+			.add(new Rf2SimpleMapWithDescriptionContentType())
 			.add(new Rf2ComplexMapRefSetContentType())
 			.add(new Rf2ExtendedMapRefSetContentType())
-			// -metadata
+			// Refset/Metadata
 			.add(new Rf2ModuleDependencyRefSetContentType())
-			.add(new Rf2DescriptionTypeRefSetContentType())			
+			.add(new Rf2DescriptionTypeRefSetContentType())
+			.add(new Rf2MRCMDomainRefSetContentType())
+			.add(new Rf2MRCMAttributeDomainRefSetContentType())
+			.add(new Rf2MRCMAttributeRangeRefSetContentType())
+			.add(new Rf2MRCMModuleScopeRefSetContentType())
 			.build();
 	
 	private Rf2Format() {}
@@ -50,7 +55,4 @@ public final class Rf2Format {
 	public static List<Rf2ContentType<?>> getContentTypes() {
 		return CONTENT_TYPES;
 	}
-
-	
-	
 }

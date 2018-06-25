@@ -45,10 +45,12 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionConstraint;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -171,6 +173,7 @@ public class SnomedRefSetDSVExportTest {
 			SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByEcl(String.format("^%s", refsetId))
+				.setExpand("relationships()")
 				.build(REPOSITORY_ID, MAIN_BRANCH)
 				.execute(bus)
 				.getSync();
@@ -180,7 +183,12 @@ public class SnomedRefSetDSVExportTest {
 
 	private Iterable<SnomedConstraint> getConstraints(SnomedConcepts concepts) {
 		return SnomedRequests
-				.prepareGetApplicablePredicates(MAIN_BRANCH, idsOf(concepts), ancestorsOf(concepts), Collections.emptySet()).getSync();
+				.prepareGetApplicablePredicates(MAIN_BRANCH, 
+						idsOf(concepts), 
+						ancestorsOf(concepts), 
+						Collections.emptySet(), 
+						relationshipKeysOf(concepts))
+				.getSync();
 	}
 
 	private Set<String> idsOf(SnomedConcepts concepts) {
@@ -194,6 +202,15 @@ public class SnomedRefSetDSVExportTest {
 					.stream()
 					.flatMap(item -> SnomedConcept.GET_ANCESTORS.apply(item).stream())
 					.collect(Collectors.toSet());
+	}
+
+	private Set<String> relationshipKeysOf(SnomedConcepts concepts) {
+		return concepts.getItems().stream()
+				.flatMap(concept -> concept.getRelationships().stream()
+						.map(relationship -> String.format("%s=%s", 
+								relationship.getTypeId(), 
+								relationship.getDestinationId())))
+				.collect(Collectors.toSet());
 	}
 
 	private void addMember(String refsetId, String referencedComponentId) {
@@ -217,8 +234,8 @@ public class SnomedRefSetDSVExportTest {
 		SnomedDescriptionCreateRequestBuilder fsn = toDescriptionRequest(Concepts.FULLY_SPECIFIED_NAME, "term-test");
 		SnomedDescriptionCreateRequestBuilder pt = toDescriptionRequest(Concepts.SYNONYM, "test");
 
-		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
-		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getConceptId(type));
+		SnomedRelationshipCreateRequestBuilder statedIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
+		SnomedRelationshipCreateRequestBuilder inferredIsA = toRelationshipRequest(Concepts.IS_A, CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(type));
 
 		SnomedRefSetCreateRequestBuilder refSet = toRefSetRequest(type);
 		
@@ -289,24 +306,28 @@ public class SnomedRefSetDSVExportTest {
 	}
 	
 	private List<AbstractSnomedDsvExportItem> transformToExportItems(final Iterable<SnomedConstraint> constraints) {
-
 		List<AbstractSnomedDsvExportItem> results = Lists.newArrayList();
-		
 
 		for (final SnomedConstraint constraint : constraints) {
-			if (constraint instanceof SnomedDescriptionConstraint) {
-				final String descriptionTypeId = ((SnomedDescriptionConstraint) constraint).getTypeId();
+			SnomedPredicate predicate = constraint.getPredicate();
+			
+			// Inspect the predicate within the cardinality predicate
+			if (predicate instanceof SnomedCardinalityPredicate) {
+				predicate = ((SnomedCardinalityPredicate) predicate).getPredicate();
+			}
+			
+			if (predicate instanceof SnomedDescriptionPredicate) {
+				final String descriptionTypeId = ((SnomedDescriptionPredicate) predicate).getTypeId();
 				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
 				results.add(descriptionExportItem);
-			} else if (constraint instanceof SnomedRelationshipConstraint) {
-				final SnomedRelationshipConstraint relationshipConstraint = (SnomedRelationshipConstraint) constraint;
-				final String matchingType = relationshipConstraint.getType();
-				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, matchingType, matchingType);
+			} else if (predicate instanceof SnomedRelationshipPredicate) {
+				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: expecting a single-SCTID expression here
+				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, typeId, typeId);
 				results.add(relationshipExportItem);
-			} else if (constraint instanceof SnomedConcreteDomainConstraint) {
-				final SnomedConcreteDomainConstraint concreteDomainConstraint = (SnomedConcreteDomainConstraint) constraint;
-				final String dataTypeName = concreteDomainConstraint.getValueType().getName();
-				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(concreteDomainConstraint.getValueType());
+			} else if (predicate instanceof SnomedConcreteDomainPredicate) {
+				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getDataType();
+				final String dataTypeName = dataType.getName();
+				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(dataType);
 				
 				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, dataTypeName, dataTypeBoolean);
 				results.add(datatypeExportItem);

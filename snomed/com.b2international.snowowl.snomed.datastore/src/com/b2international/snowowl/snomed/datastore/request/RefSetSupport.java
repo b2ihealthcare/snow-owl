@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,15 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.OWL_AXIOM, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.OWL_ONTOLOGY, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.MRCM_MODULE_SCOPE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.DESCRIPTION)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedTerminologyComponentConstants.CONCEPT)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {
@@ -97,5 +105,4 @@ public abstract class RefSetSupport {
 					referencedComponentType, supportedReferencedComponentTypes);
 		}
 	}
-
 }

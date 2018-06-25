@@ -58,11 +58,11 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	protected final B doExecute(C context) throws IOException {
 		final Class<D> docType = getDocumentType();
 		final Searcher searcher = searcher(context);
-		final Expression where = prepareQuery(context);
 		final Hits<D> hits;
 		if (isScrolled()) {
-			hits = searcher.scroll(new Scroll<>(docType, fields(), scrollId()));
+			hits = searcher.scroll(new Scroll<>(docType, docType, fields(), scrollId(), scrollKeepAlive()));
 		} else {
+			final Expression where = prepareQuery(context);
 			hits = searcher.search(Query.select(docType)
 					.fields(fields())
 					.where(where)
