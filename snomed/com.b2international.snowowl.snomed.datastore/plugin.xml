@@ -92,80 +92,25 @@
    <extension
          point="com.b2international.snowowl.core.representation">
       <representation
-            class="com.b2international.snowowl.snomed.Concept"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </representation>
-      <representation
             class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.Description"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
       </representation>
       <representation
             class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.Relationship"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </representation>
-      <representation
             class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
       <representation
             class="com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
       </representation>
       <representation
-            class="com.b2international.snowowl.snomed.snomedrefset.impl.SnomedMappingRefSetImpl"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </representation>
-      <representation
-            class="com.b2international.snowowl.snomed.mrcm.AttributeConstraint"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
-      </representation>
-      <representation
             class="com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument"
             terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
       </representation>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.lookupService">
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedConstraintLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.constraint">
-      </lookupService>
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-      </lookupService>
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.description">
-      </lookupService>
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedRefSetLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refset">
-      </lookupService>
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.relationship">
-      </lookupService>
-      <lookupService
-            class="com.b2international.snowowl.snomed.datastore.SnomedRefSetMemberLookupService"
-            terminologyComponentId="com.b2international.snowowl.terminology.snomed.refsetmember">
-      </lookupService>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.repository">

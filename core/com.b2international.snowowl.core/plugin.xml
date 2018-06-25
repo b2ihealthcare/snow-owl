@@ -4,7 +4,6 @@
    <extension-point id="terminology" name="terminology" schema="schema/terminology.exsd"/>
    <extension-point id="terminologyComponent" name="terminologyComponent" schema="schema/terminologyComponent.exsd"/>
    <extension-point id="representation" name="representation" schema="schema/representation.exsd"/>
-   <extension-point id="lookupService" name="lookupService" schema="schema/lookupService.exsd"/>
    <extension-point id="bootstrapFragments" name="bootstrapFragments" schema="schema/bootstrapFragments.exsd"/>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">

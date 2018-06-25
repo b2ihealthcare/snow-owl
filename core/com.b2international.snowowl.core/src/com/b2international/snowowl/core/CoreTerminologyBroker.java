@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.Platform;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -87,7 +86,6 @@ public class CoreTerminologyBroker {
 	public static final String TERMINOLOGY_COMPONENT_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminologyComponent";
 	public static final String TERMINOLOGY_EXTENSION_POINT_ID = "com.b2international.snowowl.core.terminology";
 	public static final String REPRESENTATION_EXTENSION_POINT_ID = "com.b2international.snowowl.core.representation";
-	public static final String LOOKUP_SERVICE_EXTENSION_POINT_ID = "com.b2international.snowowl.core.lookupService";
 	public static final String TERMINOLOGY_ID_ATTRIBUTE = "terminologyId";
 	public static final String TERMINOLOGY_COMPONENT_ID_ATTRIBUTE = "terminologyComponentId";
 	public static final String PRIMARY_COMPONENT_ID_ATTRIBUTE = "primaryComponentId";
@@ -298,10 +296,6 @@ public class CoreTerminologyBroker {
 			}
 		}
 		throw new IllegalArgumentException("No terminology component extension has been registered with the passed in ID: " + terminologyComponentId);
-	}
-
-	public <T, V> ILookupService<T, V> getLookupService(final String terminologyComponentId) {
-		return (ILookupService<T, V>) createExecutableExtension(getTerminologyComponentLevelConfigurationElement(terminologyComponentId, LOOKUP_SERVICE_EXTENSION_POINT_ID));
 	}
 
 	public Object createExecutableExtension(final IConfigurationElement configurationElement) {
