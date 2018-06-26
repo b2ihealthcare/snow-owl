@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import java.util.Date;
+
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -39,7 +41,7 @@ public abstract class FhirProperty {
 		return type;
 	}
 	
-	@ApiModelProperty(notes = "Code|String|Boolean|Coding|Integer|Date|Datetime")
+	@ApiModelProperty(notes = "Code|String|Boolean|Coding|Integer|Datetime")
 	public Object getValue() {
 		return value;
 	}
@@ -73,6 +75,14 @@ public abstract class FhirProperty {
 		
 		public final B valueInteger(Integer value) {
 			return setValue(FhirDataType.INTEGER, value);
+		}
+		
+		public final B valueDecimal(Double value) {
+			return setValue(FhirDataType.DECIMAL, value);
+		}
+		
+		public final B valueDateTime(Date value) {
+			return setValue(FhirDataType.DATETIME, value);
 		}
 		
 		protected final B setValue(FhirDataType type, Object value) {

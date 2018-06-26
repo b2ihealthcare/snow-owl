@@ -78,15 +78,18 @@ public class FhirExceptionIssueMatcher extends TypeSafeMatcher<FhirException> {
 		boolean collectionsMatch = HashMultiset.create(foundIssue.getLocations()).equals(HashMultiset.create(expectedIssue.getLocations())) &&
 				HashMultiset.create(foundIssue.getExpressions()).equals(HashMultiset.create(expectedIssue.getExpressions()));
 		
-		if (!collectionsMatch) { 
+		if (!collectionsMatch) {
+			System.out.println("Issue expression do not match, found: " + foundIssue.getExpressions());
 			return false;
 		}
 		
 		if (foundIssue.getCodeableConcept() == null && expectedIssue.getCodeableConcept()!=null) {
+			System.out.println("Codeable concept is null.");
 			return false;
 		}
 		
 		if (foundIssue.getCodeableConcept() != null && expectedIssue.getCodeableConcept()==null) {
+			System.out.println("Codeable concept is not null:: " + foundIssue.getCodeableConcept());
 			return false;
 		}
 		
@@ -99,6 +102,7 @@ public class FhirExceptionIssueMatcher extends TypeSafeMatcher<FhirException> {
 			boolean codingMatched = foundCodeableConcept.getText().equals(expectedCodeableConcept.getText()) &&
 					HashMultiset.create(foundCodings).equals(HashMultiset.create(expectedCodings));
 			if (!codingMatched) {
+				System.out.println("Codings do not match: " + foundCodeableConcept.getText());
 				return false;
 			}
 		}

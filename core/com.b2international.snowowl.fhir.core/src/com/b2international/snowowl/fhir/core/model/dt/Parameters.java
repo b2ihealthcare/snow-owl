@@ -222,6 +222,7 @@ public final class Parameters {
 		static final class Deser extends StdDeserializer<Parameters.Fhir> {
 			
 			private static final long serialVersionUID = 1L;
+			private static final String PARAMETER_NODE_NAME = "parameter"; //$NON-NLS-N$
 
 			private Deser() {
 				super(Parameters.Fhir.class);
@@ -232,7 +233,10 @@ public final class Parameters {
 				ObjectNode node = parser.getCodec().readTree(parser);
 				
 				List<Parameter> deserializedParameters = newArrayList();
-				Iterator<JsonNode> parameters = node.get("parameter").iterator();
+				if (!node.has(PARAMETER_NODE_NAME)) {
+					throw new IllegalArgumentException("Top-level node 'parameter' is missing from node: " + node);
+				}
+				Iterator<JsonNode> parameters = node.get(PARAMETER_NODE_NAME).iterator();
 				while (parameters.hasNext()) {
 					deserializedParameters.add(parser.getCodec().treeToValue(parameters.next(), Parameter.class));
 				}

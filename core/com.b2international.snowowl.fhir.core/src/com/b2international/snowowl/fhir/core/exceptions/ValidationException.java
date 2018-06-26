@@ -24,6 +24,7 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 
@@ -54,10 +55,10 @@ public final class ValidationException extends BadRequestException {
 	public OperationOutcome toOperationOutcome() {
 
 		if (violations.isEmpty()) {
-			throw new IllegalArgumentException("There are no violations to report");
+			throw new IllegalArgumentException("There are no violations to report.");
 		}
 		
-		OperationOutcome operationOutcome = new OperationOutcome();
+		Builder outcomeBuilder = OperationOutcome.builder();
 		
 		for (ConstraintViolation<?> violation : violations) {
 				
@@ -88,10 +89,10 @@ public final class ValidationException extends BadRequestException {
 					.addLocation(location)
 					.build();
 	
-				operationOutcome.addIssue(issue);
+				outcomeBuilder.addIssue(issue);
 			}
 		
-		return operationOutcome;
+		return outcomeBuilder.build();
 	}
 
 	@Override

@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -43,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public final class Designation {
 	
 	//The language code this designation is defined for (0..1)
-	private String language;
+	private Code language;
 	
 	//A code that details how this designation would be used (0..1)
 	private Coding use;
@@ -52,14 +53,18 @@ public final class Designation {
 	@NotEmpty
 	private String value;
 	
-	Designation(final String language, final Coding use, final String value) {
-		this.language = language;
+	Designation(final Code languageCode, final Coding use, final String value) {
+		this.language = languageCode;
 		this.use = use;
 		this.value = value;
 	}
 	
-	public String getLanguage() {
+	public Code getLanguageCode() {
 		return language;
+	}
+	
+	public String getLanguage() {
+		return language.getCodeValue();
 	}
 
 	public Coding getUse() {
@@ -76,12 +81,12 @@ public final class Designation {
 	
 	public static class Builder extends ValidatingBuilder<Designation>{
 		
-		private String languageCode;
+		private Code languageCode;
 		private Coding use;
 		private String value;
 
 		public Builder languageCode(final String languageCode) {
-			this.languageCode = languageCode;
+			this.languageCode = new Code(languageCode);
 			return this;
 		}
 		

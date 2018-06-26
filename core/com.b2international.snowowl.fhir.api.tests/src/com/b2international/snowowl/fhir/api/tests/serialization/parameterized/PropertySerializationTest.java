@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.serialization;
+package com.b2international.snowowl.fhir.api.tests.serialization.parameterized;
+
+import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -49,12 +54,9 @@ public class PropertySerializationTest extends FhirTest {
 			.code("123")
 			.build();
 		 
-		printPrettyJson(property);
 		Fhir fhirParameters = new Parameters.Fhir(property);
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
-		String jsonString = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(jsonString);
+		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -63,7 +65,7 @@ public class PropertySerializationTest extends FhirTest {
 					+ "]" 
 				+ "}";
 		
-		Assert.assertEquals(expected, jsonString);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
 	@Test
@@ -74,13 +76,13 @@ public class PropertySerializationTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error");
 		
-		Issue expectedIssue = builder.addLocation("Property.code.codeValue")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid []. Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
+		Issue expectedIssue = builder.addLocation("Property.code")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		//exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		Property.builder().build();
 	}
@@ -94,12 +96,9 @@ public class PropertySerializationTest extends FhirTest {
 			.description("propertyDescription")
 			.build();
 		 
-		printPrettyJson(property);
 		Fhir fhirParameters = new Parameters.Fhir(property);
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
-		String jsonString = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(jsonString);
+		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -110,7 +109,34 @@ public class PropertySerializationTest extends FhirTest {
 					+ "]" 
 				+ "}";
 		
-		Assert.assertEquals(expected, jsonString);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+	}
+	
+	@Test
+	public void dateTimePropertyTest() throws Exception {
+
+		Date date = 	Dates.parse("2018-03-09T20:50:21+0100", FhirConstants.DATE_TIME_FORMAT);
+		
+		Property property = Property.builder()
+			.code("123")
+			.valueDateTime(date)
+			.description("propertyDescription")
+			.build();
+		 
+		Fhir fhirParameters = new Parameters.Fhir(property);
+		
+		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		
+		String expected = 
+				"{\"resourceType\":\"Parameters\","
+				+ "\"parameter\":["
+						+ "{\"name\":\"code\",\"valueCode\":\"123\"},"
+						+ "{\"name\":\"value\",\"valueDateTime\":\"2018-03-09T19:50:21+0000\"},"
+						+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"}"
+					+ "]" 
+				+ "}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
 	@Test
@@ -127,12 +153,9 @@ public class PropertySerializationTest extends FhirTest {
 				.build())
 			.build();
 		 
-		printPrettyJson(property);
 		Fhir fhirParameters = new Parameters.Fhir(property);
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
-		String jsonString = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(jsonString);
+		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -147,7 +170,7 @@ public class PropertySerializationTest extends FhirTest {
 						+ "}]" 
 				+ "}";
 		
-		Assert.assertEquals(expected, jsonString);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
 }

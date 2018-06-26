@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
 import com.b2international.snowowl.fhir.core.model.dt.Property;
@@ -43,6 +44,7 @@ public final class LookupResult {
 	private final String version;
 	
 	//The preferred display for this concept (1..1)
+	@NotEmpty
 	private final String display;
 	
 	//Additional representations for this concept (0..*)
@@ -94,7 +96,7 @@ public final class LookupResult {
 		return new Builder();
 	}
 	
-	public static final class Builder {
+	public static final class Builder extends ValidatingBuilder<LookupResult> {
 		
 		private String name;
 		private String version;
@@ -132,7 +134,9 @@ public final class LookupResult {
 			properties.add(property);
 			return this;
 		}
-		public LookupResult build() {
+		
+		@Override
+		public LookupResult doBuild() {
 			return new LookupResult(name, version, display, designations.build(), properties.build());
 		}
 	}

@@ -20,8 +20,8 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 
 /**
  * @since 6.3
@@ -97,7 +97,6 @@ public class FhirException extends FormattedRuntimeException {
 	 */
 	public OperationOutcome toOperationOutcome() {
 		
-		OperationOutcome operationOutcome = new OperationOutcome();
 		Builder builder = Issue.builder()
 			.severity(IssueSeverity.ERROR)
 			.code(getIssueType())
@@ -108,8 +107,7 @@ public class FhirException extends FormattedRuntimeException {
 			builder.addLocation(location);
 		}
 		
-		operationOutcome.addIssue(builder.build());
-		return operationOutcome;
+		return OperationOutcome.builder().addIssue(builder.build()).build();
 	}
 
 
