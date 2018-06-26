@@ -79,12 +79,23 @@ public class Coding {
 	public Code getCode() {
 		return code;
 	}
+	
+	/**
+	 * @return the code value as a string
+	 */
+	public String getCodeValue() {
+		return code.getCodeValue();
+	}
 
 	/**
 	 * @return the system
 	 */
 	public Uri getSystem() {
 		return system;
+	}
+	
+	public String getSystemValue() {
+		return system.getUriValue();
 	}
 
 	/**

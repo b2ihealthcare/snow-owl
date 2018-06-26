@@ -18,23 +18,18 @@ package com.b2international.snowowl.fhir.api.tests.serialization.parameterized;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
-import com.b2international.snowowl.fhir.core.model.serialization.SerializableParameter;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * @since 6.6
@@ -87,83 +82,83 @@ public class ParameterDeserializationTest extends FhirTest {
 	}
 	
 	//@Test
-	public void codeParameterTest() throws Exception {
+	public void decimalParameterTest2() throws Exception {
 		
-		String jsonParam = "{\"name\":\"codeParameter\",\"valueCode\":\"abcd\"}";
+		String jsonParam = "{\"resourceType\":\"Parameters\"," + 
+				"\"parameter\":["
+					+ "{\"name\":\"paramName\",\"valueDecimal\":1.21}"
+				+ "]}";
 		
-		SerializableParameter param = objectMapper.readValue(jsonParam, SerializableParameter.class);
-		System.out.println(param);
-		assertEquals("valueCode", param.getType());
-		assertEquals(new Code("abcd"), param.getValue());
-		assertEquals(Code.class, param.getValueType());
+		assertParameter(jsonParam, "paramName", FhirDataType.DECIMAL, 1.21f);
 	}
 	
-	//@Test
+	@Test
+	public void codeParameterTest() throws Exception {
+		
+		String jsonParam = "{\"resourceType\":\"Parameters\"," + 
+				"\"parameter\":["
+					+ "{\"name\":\"paramName\",\"valueCode\":\"code\"}"
+				+ "]}";
+		
+		assertParameter(jsonParam, "paramName", FhirDataType.CODE, "code");
+	}
+	
+	@Test
+	public void codingParameterTest() throws Exception {
+		
+		String jsonParam = "{\"resourceType\":\"Parameters\","
+				+ "\"parameter\":["
+						+ "{\"name\":\"use\", \"valueCoding\":{\"code\":\"1234\","
+							+ "\"system\":\"http://snomed.info/sct\","
+							+ "\"version\":\"20180131\",\"userSelected\":false}"
+					+ "}]}";
+		
+		Fhir fhirParameters = objectMapper.readValue(jsonParam, Parameters.Fhir.class);
+		
+		Optional<Parameter> parameterOptional = fhirParameters.getParameters().stream().findFirst();
+		
+		assertTrue(parameterOptional.isPresent());
+		
+		Parameter parameter = parameterOptional.get();
+		
+		assertEquals("use", parameter.getName());
+		assertEquals(FhirDataType.CODING, parameter.getType());
+		Coding coding = (Coding) parameter.getValue();
+		
+		assertEquals("1234", coding.getCodeValue());
+		assertEquals("http://snomed.info/sct", coding.getSystemValue());
+		assertEquals("20180131", coding.getVersion());
+		assertEquals(false, coding.isUserSelected());
+	}
+	
+	
+	@Test
 	public void arrayParameterTest() throws Exception {
 		
-		String jsonParams = "[{\"name\":\"paramName\",\"valueString\":\"LOINC\"},"
+		String jsonParam = "{\"resourceType\":\"Parameters\","
+					+ "\"parameter\":["
 						 + "{\"name\":\"designation\",\"part\":["
 				   			+ "{\"name\":\"value\",\"valueString\":\"Bicarbonate [Moles/volume] in Serum\"}"
 				   			+ "]"
-						+ "}]";
+						+ "}]}";
 		
-		List<SerializableParameter> params = objectMapper.readValue(jsonParams, new TypeReference<Collection<SerializableParameter>>(){});
+		Fhir fhirParameters = objectMapper.readValue(jsonParam, Parameters.Fhir.class);
 		
-		Optional<SerializableParameter> optionalParameter = params.stream()
-				.filter(p -> p.getName().equals("paramName"))
-				.findFirst();
+		Optional<Parameter> parameterOptional = fhirParameters.getParameters().stream().findFirst();
 		
-		assertTrue(optionalParameter.isPresent());
+		assertTrue(parameterOptional.isPresent());
 		
-		SerializableParameter param = optionalParameter.get();
-
-		assertEquals("valueString", param.getType());
-		assertEquals("LOINC", param.getValue());
-		assertEquals(String.class, param.getValueType());
+		Parameter parameter = parameterOptional.get();
 		
-		optionalParameter = params.stream()
-				.filter(p -> p.getName().equals("designation"))
-				.findFirst();
+		assertEquals("designation", parameter.getName());
+		assertEquals(FhirDataType.PART, parameter.getType());
 		
-		assertTrue(optionalParameter.isPresent());
-		param = optionalParameter.get();
+		Parameters parameters = (Parameters) parameter.getValue();
+		Parameter designationParamater = parameters.getParameters().stream().findFirst().get();
 		
-		System.out.println(param);
-		assertEquals("part", param.getType());
-		
-		@SuppressWarnings("unchecked")
-		Collection<SerializableParameter> embeddedParams = (Collection<SerializableParameter>) param.getValue();
-		Optional<SerializableParameter> optionalEmbeddedParameter = embeddedParams.stream()
-				.filter(p -> p.getName().equals("value"))
-				.findFirst();
-		
-		assertTrue(optionalEmbeddedParameter.isPresent());
-		
-		SerializableParameter embeddedParam = optionalEmbeddedParameter.get();
-		
-		assertEquals("Bicarbonate [Moles/volume] in Serum", embeddedParam.getValue());
-		assertTrue(Collection.class.isAssignableFrom(param.getValueType()));
-		
-		System.out.println(params);
-	}
-	
-	//@Test
-	public void parameterWithCodingTest() throws Exception {
-		
-		String jsonParams = "[{\"name\":\"language\",\"valueCode\":\"en_uk\"},"
-							+ "{\"name\":\"use\", \"valueCoding\":{\"code\":\"1234\","
-								+ "\"system\":\"http://snomed.info/sct\","
-								+ "\"version\":\"20180131\",\"userSelected\":false}}]";
-		
-		List<SerializableParameter> params = objectMapper.readValue(jsonParams, new TypeReference<Collection<SerializableParameter>>(){});
-		
-		System.out.println(params);
-		
-		Optional<SerializableParameter> optionalParameter = params.stream()
-				.filter(p -> p.getName().equals("language"))
-				.findFirst();
-		
-		assertTrue(optionalParameter.isPresent());
+		assertEquals("value", designationParamater.getName());
+		assertEquals(FhirDataType.STRING, designationParamater.getType());
+		assertEquals("Bicarbonate [Moles/volume] in Serum", designationParamater.getValue());
 	}
 	
 //	@Test
