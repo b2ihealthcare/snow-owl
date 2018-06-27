@@ -55,7 +55,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	ValidateRequest() {}
 	
-	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public ValidationResult execute(BranchContext context) {
 		return context.service(ValidationRepository.class).write(index -> {
