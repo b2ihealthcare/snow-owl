@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="com.b2international.snowowl.datastore.server" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="com.b2international.snowowl.datastore" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.b2international.snowowl.datastore.server" id="net4jSignalReactor" name="Net4j Signal Reactor"/>
+         <meta.schema plugin="com.b2international.snowowl.datastore" id="net4jSignalReactor" name="Net4j Signal Reactor"/>
       </appinfo>
       <documentation>
          The Net4j Signal Reactor extension point allows developers to register Net4j protocol factory implementations, which are used by Snow Owl&apos;s Net4j based RPC mechanism.

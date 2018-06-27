@@ -50,6 +50,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.ServerProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.internal.DefaultRepositoryContextProvider;
