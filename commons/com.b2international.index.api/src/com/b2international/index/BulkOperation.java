@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,26 @@
  */
 package com.b2international.index;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
+import com.b2international.index.query.Expression;
 
 /**
- * @since 4.7
+ * @since 7.0
  */
-public interface Writer {
+public abstract class BulkOperation<T> {
 
-	void put(String key, Object object);
-	
-	<T> void putAll(Map<String, T> objectsByKey);
+	private final Class<? extends T> type;
+	private final Expression filter;
 
-	<T> void bulkUpdate(BulkUpdate<T> update);
-	
-	<T> void bulkDelete(BulkDelete<T> delete);
-	
-	void remove(Class<?> type, String keyToRemove);
-	
-	void remove(Class<?> type, Set<String> keysToRemove);
-	
-	void removeAll(Map<Class<?>, Set<String>> keysToRemoveByType);
+	protected BulkOperation(Class<? extends T> type, Expression filter) {
+		this.type = type;
+		this.filter = filter;
+	}
 
-	void commit() throws IOException;
+	public Class<? extends T> getType() {
+		return type;
+	}
 
-	Searcher searcher();
+	public Expression getFilter() {
+		return filter;
+	}
 }
