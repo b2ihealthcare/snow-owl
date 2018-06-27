@@ -50,8 +50,15 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 		 */
 		COMPONENT_TYPE,
 		
+		/**
+		 * Filter matches by reporter and component identifier
+		 */
+		TERM, 
 		
-		TERM, REPORTER
+		/**
+		 * Filter matches by reporter
+		 */
+		REPORTER
 		
 	}
 	
@@ -88,15 +95,14 @@ final class ValidationWhiteListSearchRequest extends SearchIndexResourceRequest<
 			queryBuilder.filter(Expressions.matchAnyInt(ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID, terminologyComponentIds));
 		}
 		
+		if (containsKey(OptionKey.REPORTER)) {
+			Collection<String> reporters = getCollection(OptionKey.REPORTER, String.class);
+			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.REPORTER, reporters));
+		}
+		
 		return queryBuilder.build();
 	}
 	
-	private Expression toComponentIdQuery(final Collection<String> componentIds) {
-		final ExpressionBuilder qb = Expressions.builder();
-		qb.should(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, componentIds));
-		return qb.build();
-	}
-
 	@Override
 	protected Class<ValidationWhiteList> getDocumentType() {
 		return ValidationWhiteList.class;
