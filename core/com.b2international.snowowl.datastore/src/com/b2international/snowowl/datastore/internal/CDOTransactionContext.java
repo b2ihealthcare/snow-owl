@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.LockedException;
@@ -200,6 +201,7 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 
 	@Override
 	public long commit(String userId, String commitComment, String parentContextDescription) {
+		final Logger log = service(Logger.class);
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
 		final SingleRepositoryAndBranchLockTarget lockTarget = createLockTarget(id(), branchPath());
 		IOperationLockManager<DatastoreLockContext> locks = service(IOperationLockManager.class);
@@ -207,7 +209,9 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 		try {
 			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
+			log.info("Persisting changes to revision index at ", timestamp);
 			commit = staging.commit(null, timestamp, userId, commitComment);
+			log.info("Changes have been successfully persisted.");
 			return commit.getTimestamp();
 		} catch (RepositoryLockException e) {
 			throw new LockedException(e.getMessage());

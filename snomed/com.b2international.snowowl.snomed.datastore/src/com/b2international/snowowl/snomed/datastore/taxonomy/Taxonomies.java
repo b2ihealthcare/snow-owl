@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -48,15 +48,15 @@ public final class Taxonomies {
 	private Taxonomies() {
 	}
 	
-	public static Taxonomy inferred(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
+	public static Taxonomy inferred(RevisionSearcher searcher, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
+		return buildTaxonomy(searcher, staging, conceptIds, CharacteristicType.INFERRED_RELATIONSHIP, checkCycles);
 	}
 	
-	public static Taxonomy stated(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, boolean checkCycles) {
-		return buildTaxonomy(searcher, commitChangeSet, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
+	public static Taxonomy stated(RevisionSearcher searcher, StagingArea staging, LongCollection conceptIds, boolean checkCycles) {
+		return buildTaxonomy(searcher, staging, conceptIds, CharacteristicType.STATED_RELATIONSHIP, checkCycles);
 	}
 
-	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, ICDOCommitChangeSet commitChangeSet, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
+	private static Taxonomy buildTaxonomy(RevisionSearcher searcher, StagingArea staging, LongCollection conceptIds, CharacteristicType characteristicType, boolean checkCycles) {
 		try {
 			final String characteristicTypeId = characteristicType.getConceptId();
 			final Query<String[]> query = Query.select(String[].class)
@@ -78,7 +78,7 @@ public final class Taxonomies {
 			final SnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			newTaxonomy.setCheckCycles(checkCycles);
 			oldTaxonomy.build();
-			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, commitChangeSet, newTaxonomy, characteristicTypeId);
+			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, staging, newTaxonomy, characteristicTypeId);
 			taxonomyUpdate.run();
 			final LongSet newKeys = newTaxonomy.getEdges().keySet();
 			final LongSet oldKeys = oldTaxonomy.getEdges().keySet();

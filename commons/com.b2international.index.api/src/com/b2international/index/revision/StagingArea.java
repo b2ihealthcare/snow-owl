@@ -53,7 +53,7 @@ import com.google.common.collect.Multimap;
 /**
  * A place that stores information about what will go into your next commit.
  * 
- * @since 6.6
+ * @since 7.0
  * @see RevisionIndex#prepareCommit()
  */
 public final class StagingArea {
@@ -74,6 +74,15 @@ public final class StagingArea {
 		this.branchPath = branchPath;
 		this.mapper = mapper;
 		reset();
+	}
+	
+	/**
+	 * Reads from the underlying index using the branch where this {@link StagingArea} has been opened.
+	 * @param read
+	 * @return
+	 */
+	public <T> T read(RevisionIndexRead<T> read) {
+		return index.read(branchPath, read);
 	}
 	
 	public Map<String, Object> getNewObjects() {

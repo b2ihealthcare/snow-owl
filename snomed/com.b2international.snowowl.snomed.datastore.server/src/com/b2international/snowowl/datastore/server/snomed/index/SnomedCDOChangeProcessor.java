@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,21 @@ package com.b2international.snowowl.datastore.server.snomed.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-
-import org.eclipse.emf.cdo.server.IStoreAccessor;
-import org.eclipse.emf.cdo.server.StoreThreadLocal;
+import java.util.stream.Stream;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.commons.concurrent.equinox.ForkJoinUtils;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.BaseCDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.reindex.ReindexRequest;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -70,30 +60,23 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
-	private Taxonomy inferredTaxonomy;
-	private Taxonomy statedTaxonomy;
-	
-	SnomedCDOChangeProcessor(final IBranchPath branchPath, final RevisionIndex index) {
-		super(branchPath, index);
-	}
+	SnomedCDOChangeProcessor() {}
 	
 	/*updates the documents in the indexes based on the dirty, detached and new components.*/
 	
 	@Override
-	protected void preUpdateDocuments(ICDOCommitChangeSet commitChangeSet, RevisionSearcher index) throws IOException {
+	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
 		final Set<String> statedSourceIds = Sets.newHashSet();
 		final Set<String> statedDestinationIds = Sets.newHashSet();
 		final Set<String> inferredSourceIds = Sets.newHashSet();
 		final Set<String> inferredDestinationIds = Sets.newHashSet();
 		
-		collectIds(statedSourceIds, statedDestinationIds, commitChangeSet.getNewComponents(Relationship.class), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(statedSourceIds, statedDestinationIds, commitChangeSet.getDirtyComponents(Relationship.class), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getNewComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, commitChangeSet.getDirtyComponents(Relationship.class), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
 		
-		final List<SnomedRelationshipIndexEntry> detachedRelationships = commitChangeSet.getDetachedComponents(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class);
-		
-		for (SnomedRelationshipIndexEntry detachedRelationship : detachedRelationships) {
+		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class).forEach(detachedRelationship -> {
 			if (detachedRelationship.getCharacteristicType().equals(CharacteristicType.STATED_RELATIONSHIP)) {
 				statedSourceIds.add(detachedRelationship.getSourceId());
 				statedDestinationIds.add(detachedRelationship.getDestinationId());
@@ -101,7 +84,7 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 				inferredSourceIds.add(detachedRelationship.getSourceId());
 				inferredDestinationIds.add(detachedRelationship.getDestinationId());
 			}
-		}
+		});
 		
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
@@ -171,13 +154,33 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 			}
 		}
 		
-		for (Concept newConcept : commitChangeSet.getNewComponents(Concept.class)) {
+		staging.getNewObjects(SnomedConceptDocument.class).forEach(newConcept -> {
 			long longId = Long.parseLong(newConcept.getId());
 			statedConceptIds.add(longId);
 			inferredConceptIds.add(longId);
-		}
+		});
+
+		LOG.trace("Retrieving taxonomic information from store...");
 		
-		prepareTaxonomyBuilders(commitChangeSet, index, statedConceptIds, inferredConceptIds);	
+		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
+		final String importFeature = SnomedFeatures.getImportFeatureToggle(index.branch());
+		final boolean importRunning = features.exists(importFeature) ? features.check(importFeature) : false;
+		final boolean reindexRunning = features.exists(reindexFeature) ? features.check(reindexFeature) : false;
+		final boolean checkCycles = !importRunning && !reindexRunning;
+		
+		
+		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, staging, inferredConceptIds, checkCycles);
+		final Taxonomy statedTaxonomy = Taxonomies.stated(index, staging, statedConceptIds, checkCycles);
+		
+		return ImmutableList.<ChangeSetProcessor>builder()
+				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
+				.add(new DescriptionChangeProcessor())
+				.add(new RelationshipChangeProcessor())
+				.add(new RefSetMemberChangeProcessor())
+				.add(new ConstraintChangeProcessor())
+				.build();
+		
 	}
 	
 	@Override
@@ -196,57 +199,13 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		throw new UnsupportedOperationException("Unsupported revision document: " + revision);
 	}
 	
-	@Override
-	protected Collection<ChangeSetProcessor> getChangeSetProcessors() {
-		return ImmutableList.<ChangeSetProcessor>builder()
-				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
-				.add(new DescriptionChangeProcessor())
-				.add(new RelationshipChangeProcessor())
-				.add(new RefSetMemberChangeProcessor())
-				.add(new ConstraintChangeProcessor())
-				.build();
-	}
-	
-	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Iterable<Relationship> newRelationships, CharacteristicType characteristicType) {
-		for (Relationship newRelationship : newRelationships) {
-			if (newRelationship.getCharacteristicType().getId().equals(characteristicType.getConceptId())) {
-				sourceIds.add(newRelationship.getSource().getId());
-				destinationIds.add(newRelationship.getDestination().getId());
-			}
-		}
+	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, CharacteristicType characteristicType) {
+		newRelationships
+			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicType.getConceptId()))
+			.forEach(newRelationship -> {
+				sourceIds.add(newRelationship.getSourceId());
+				destinationIds.add(newRelationship.getDestinationId());
+			});
 	}
 
-	/**
-	 * Prepares the taxonomy builder. One for representing the previous state of the ontology.
-	 * One for the new state.   
-	 * @param inferredConceptIds 
-	 */
-	private void prepareTaxonomyBuilders(final ICDOCommitChangeSet commitChangeSet, final RevisionSearcher searcher, final LongSet statedConceptIds, final LongSet inferredConceptIds) {
-		log().trace("Retrieving taxonomic information from store.");
-		final IStoreAccessor accessor = StoreThreadLocal.getAccessor();
-		
-		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final String importFeature = SnomedFeatures.getImportFeatureToggle(searcher.branch());
-		final boolean importRunning = features.exists(importFeature) ? features.check(importFeature) : false;
-		final boolean reindexRunning = features.exists(reindexFeature) ? features.check(reindexFeature) : false;
-		final boolean checkCycles = !importRunning && !reindexRunning;
-		
-		final Runnable inferredRunnable = CDOServerUtils.withAccessor(new Runnable() {
-			@Override
-			public void run() {
-				inferredTaxonomy = Taxonomies.inferred(searcher, commitChangeSet, inferredConceptIds, checkCycles);
-			}
-		}, accessor);
-		
-		final Runnable statedRunnable = CDOServerUtils.withAccessor(new Runnable() {
-			@Override
-			public void run() {
-				statedTaxonomy = Taxonomies.stated(searcher, commitChangeSet, statedConceptIds, checkCycles);
-			}
-		}, accessor);
-		
-		ForkJoinUtils.runInParallel(inferredRunnable, statedRunnable);
-	}
-	
 }
