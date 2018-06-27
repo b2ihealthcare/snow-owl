@@ -15,42 +15,29 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.eclipse.core.internal.jobs.JobManager;
+import org.eclipse.core.runtime.jobs.Job;
 
-import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 
 /**
  * @since 6.0
  */
-public final class ValidationThreadPool implements IDisposableService {
+public final class ValidationThreadPool {
 
-	private final AtomicBoolean disposed = new AtomicBoolean(false);
-	private final ListeningExecutorService executor;
-	
 	public ValidationThreadPool(int nThreads) {
-		this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(nThreads));
 	}
 	
-	@Override
-	public boolean isDisposed() {
-		return disposed.get();
-	}
-	
-	@Override
-	public void dispose() {
-		if (disposed.compareAndSet(false, true)) {
-			MoreExecutors.shutdownAndAwaitTermination(executor, 1, TimeUnit.MINUTES);
-		}
-	}
-	
-	public Promise<Boolean> submit(Callable<Boolean> callable) {
-		return Promise.wrap(executor.submit(callable));
+	public Promise<Boolean> submit(CheckType checkType, Runnable runnable) {
+		final ValidationJob job = new ValidationJob(checkType.getName(), runnable);
+		final ValidationRuleSchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType);
+		job.setSystem(true);
+		job.setRule(schedulingRule);
+		job.schedule();
+		final JobManager manager = (JobManager) Job.getJobManager();
+		Job[] find = manager.find(checkType.getName());
+		return Promise.immediate(Boolean.TRUE);
 	}
 	
 }
