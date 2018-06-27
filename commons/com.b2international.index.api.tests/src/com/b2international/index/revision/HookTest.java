@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,7 +35,7 @@ public class HookTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test
@@ -46,7 +46,7 @@ public class HookTest extends BaseRevisionIndexTest {
 			latch.countDown();
 		};
 		index().hooks().addHook(preCommit);
-		commit(MAIN, Collections.singleton(new Data(STORAGE_KEY1, "field1", "field2")));
+		commit(MAIN, Collections.singleton(new RevisionData(STORAGE_KEY1, "field1", "field2")));
 		assertTrue(latch.await(1, TimeUnit.SECONDS));
 	}
 	
@@ -58,7 +58,7 @@ public class HookTest extends BaseRevisionIndexTest {
 			latch.countDown();
 		};
 		index().hooks().addHook(postCommit);
-		commit(MAIN, Collections.singleton(new Data(STORAGE_KEY1, "field1", "field2")));
+		commit(MAIN, Collections.singleton(new RevisionData(STORAGE_KEY1, "field1", "field2")));
 		assertTrue(latch.await(1, TimeUnit.SECONDS));
 	}
 	

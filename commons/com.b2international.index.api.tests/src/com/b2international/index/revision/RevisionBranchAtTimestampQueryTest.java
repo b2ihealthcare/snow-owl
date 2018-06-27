@@ -23,7 +23,7 @@ import java.util.Collections;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -33,41 +33,41 @@ public class RevisionBranchAtTimestampQueryTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void branchAtExpressionNegativeTimestamp() throws Exception {
-		getRevision("MAIN@-1", Data.class, STORAGE_KEY1);
+		getRevision("MAIN@-1", RevisionData.class, STORAGE_KEY1);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void branchAtExpressionWithoutPath() throws Exception {
-		getRevision("@0", Data.class, STORAGE_KEY1);
+		getRevision("@0", RevisionData.class, STORAGE_KEY1);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void branchAtExpressionWithoutTimestamp() throws Exception {
-		getRevision("MAIN@", Data.class, STORAGE_KEY1);
+		getRevision("MAIN@", RevisionData.class, STORAGE_KEY1);
 	}
 	
 	@Test(expected = NotFoundException.class)
 	public void branchAtExpressionWithInvalidBranchPath() throws Exception {
-		getRevision("non-existent@0", Data.class, STORAGE_KEY1);
+		getRevision("non-existent@0", RevisionData.class, STORAGE_KEY1);
 	}
 	
 	@Test
 	public void branchAtExpression() throws Exception {
-		final Data rev1 = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data rev2 = new Data(STORAGE_KEY1, "field1Changed", "field2");
+		final RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		
 		long commit1 = commit(MAIN, Collections.singleton(rev1));
 		long commit2 = commit(MAIN, Collections.singleton(rev2));
 		
-		assertDocEquals(rev2, getRevision(MAIN, Data.class, STORAGE_KEY1));
-		assertDocEquals(rev1, getRevision("MAIN@"+commit1, Data.class, STORAGE_KEY1));
-		assertDocEquals(rev2, getRevision("MAIN@"+commit2, Data.class, STORAGE_KEY1));
-		assertNull(getRevision("MAIN@0", Data.class, STORAGE_KEY1));
+		assertDocEquals(rev2, getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+		assertDocEquals(rev1, getRevision("MAIN@"+commit1, RevisionData.class, STORAGE_KEY1));
+		assertDocEquals(rev2, getRevision("MAIN@"+commit2, RevisionData.class, STORAGE_KEY1));
+		assertNull(getRevision("MAIN@0", RevisionData.class, STORAGE_KEY1));
 	}
 	
 }

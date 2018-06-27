@@ -27,7 +27,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.AnalyzedData;
 import com.b2international.index.revision.RevisionFixtures.BooleanData;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.b2international.index.revision.RevisionFixtures.RangeData;
 import com.b2international.index.revision.RevisionFixtures.ScoredData;
 import com.google.common.collect.ImmutableList;
@@ -41,19 +41,19 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class, ScoredData.class, BooleanData.class, RangeData.class, AnalyzedData.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class, ScoredData.class, BooleanData.class, RangeData.class, AnalyzedData.class);
 	}
 	
 	@Test
 	public void searchMatchAll() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data second = new Data(STORAGE_KEY2, "field1", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "field1", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.builder().build()).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.builder().build()).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(2);
 		assertThat(matches).containsAll(Lists.newArrayList(first, second));
@@ -61,42 +61,42 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchMatchNone() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data second = new Data(STORAGE_KEY2, "field1", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "field1", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.matchNone()).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchNone()).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(0);
 	}
 	
 	@Test
 	public void searchDifferentRevisions() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data second = new Data(STORAGE_KEY2, "field1Changed", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "field1Changed", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.exactMatch("field1", "field1")).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(first);
 	}
 
 	@Test
 	public void searchMultipleRevisions() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data second = new Data(STORAGE_KEY1, "field1", "field2Changed");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.exactMatch("field1", "field1")).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.exactMatch("field1", "field1")).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		// only second version should match, the first revision should be unaccessible without timestamp
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(second);
@@ -156,8 +156,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMinimumShouldMatch() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "field1", "field1");
-		final Data second = new Data(STORAGE_KEY2, "field1", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field1");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "field1", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
@@ -169,8 +169,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 				.setMinimumNumberShouldMatch(2)
 				.build();
 		
-		final Query<Data> query = Query.select(Data.class).where(expression).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(expression).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(second);
@@ -178,16 +178,16 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithPrefix() throws Exception {
-		final Data first = new Data(STORAGE_KEY1, "pref1Field1", "field2");
-		final Data second = new Data(STORAGE_KEY2, "pref2Field1", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "pref1Field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "pref2Field1", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query= Query.select(Data.class)
+		final Query<RevisionData> query= Query.select(RevisionData.class)
 				.where(Expressions.prefixMatch("field1", "pref1"))
 				.build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(first);
@@ -195,15 +195,15 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithFilter() throws Exception{
-		final Data first = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data second = new Data(STORAGE_KEY2, "field1", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "field1", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
 		final Expression expression = Expressions.builder().filter(Expressions.exactMatch("field1", "field1")).build();
-		final Query<Data> query = Query.select(Data.class).where(expression).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(expression).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(2);
 		assertThat(matches).containsAll(Lists.newArrayList(first, second));
@@ -245,14 +245,14 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMatchTextAny() {
-		final Data first = new Data(STORAGE_KEY1, "a", "field2");
-		final Data second = new Data(STORAGE_KEY2, "b", "field2");
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "a", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "b", "field2");
 		
 		indexRevision(MAIN, first);
 		indexRevision(MAIN, second);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextAny("field1", "a b")).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextAny("field1", "a b")).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(2);
 		assertThat(matches).containsAll(Lists.newArrayList(first, second));
@@ -260,12 +260,12 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMatchTextFuzzy() {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		
 		indexRevision(MAIN, data);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextFuzzy("field1", "field2")).build();
-		final Iterable<Data> matches = search(MAIN, query);
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1", "field2")).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);

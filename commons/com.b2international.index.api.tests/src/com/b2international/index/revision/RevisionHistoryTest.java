@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
@@ -33,13 +33,13 @@ import com.google.common.collect.Iterables;
  */
 public class RevisionHistoryTest extends BaseRevisionIndexTest {
 
-	private static final String DOC_TYPE = DocumentMapping.getType(Data.class);
-	private final Data newData = new Data(STORAGE_KEY1, "field1", "field2");
-	private final Data changedData = new Data(STORAGE_KEY1, "field1Changed", "field2");
+	private static final String DOC_TYPE = DocumentMapping.getType(RevisionData.class);
+	private final RevisionData newData = new RevisionData(STORAGE_KEY1, "field1", "field2");
+	private final RevisionData changedData = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test

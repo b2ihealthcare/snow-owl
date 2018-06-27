@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -33,65 +33,65 @@ public class BranchBaseQueryTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void readBaseOfMainBranch() throws Exception {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
-		final Iterable<Data> hits = search(MAIN + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(MAIN + RevisionIndex.BASE_REF_CHAR, Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).isEmpty();
 	}
 	
 	@Test
 	public void readBaseOfBranch() throws Exception {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
-		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
 	}
 
 	@Test
 	public void readBaseOfBranchWithNewComponents() throws Exception {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
-		indexRevision(branch, new Data(STORAGE_KEY2, "field1Other", "field2Other"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1Other", "field2Other"));
 		
-		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
 	}
 	
 	@Test
 	public void readBaseOfBranchWithChangedComponents() throws Exception {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
-		indexRevision(branch, new Data(STORAGE_KEY1, "field1Changed", "field2Changed"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY1, "field1Changed", "field2Changed"));
 		
-		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
 	}
 	
 	@Test
 	public void readBaseOfBranchWithDeletedComponents() throws Exception {
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
 		final String branch = createBranch(MAIN, "a");
 		
-		deleteRevision(MAIN, Data.class, STORAGE_KEY1);
+		deleteRevision(MAIN, RevisionData.class, STORAGE_KEY1);
 		
-		final Iterable<Data> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(branch + RevisionIndex.BASE_REF_CHAR, Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data);
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void writeBaseOfBranch() throws Exception {
-		indexRevision(createBranch(MAIN, "a") + RevisionIndex.BASE_REF_CHAR, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(createBranch(MAIN, "a") + RevisionIndex.BASE_REF_CHAR, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 	}
 
 }
