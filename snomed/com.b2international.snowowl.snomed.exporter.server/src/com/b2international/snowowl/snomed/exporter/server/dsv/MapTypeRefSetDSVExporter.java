@@ -103,7 +103,6 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
 				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(preferredDescriptions()))))")
-				.setLocales(languageSetting.getLanguagePreference())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
