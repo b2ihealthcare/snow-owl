@@ -20,6 +20,11 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
       <serviceConfigJob
+            class="com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockManagerConfigJob"
+            id="com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockManagerConfigJob"
+            terminologyId="UNSPECIFIED">
+      </serviceConfigJob>
+      <serviceConfigJob
             class="com.b2international.snowowl.datastore.internal.file.FileRegistryServerServiceConfigJob"
             id="com.b2international.snowowl.datastore.file.FileRegistryServerServiceConfigJob"
             terminologyId="UNSPECIFIED">

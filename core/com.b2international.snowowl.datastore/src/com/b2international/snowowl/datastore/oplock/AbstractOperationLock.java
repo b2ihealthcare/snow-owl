@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock;
+package com.b2international.snowowl.datastore.oplock;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
 
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 

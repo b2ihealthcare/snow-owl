@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock;
+package com.b2international.snowowl.datastore.oplock;
 
 import java.io.Serializable;
-
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 
 /**
  * An {@link AbstractOperationLockManager} implementation that uses {@link ReentrantOperationLock}s.

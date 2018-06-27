@@ -17,8 +17,6 @@ Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.importer,
  com.b2international.snowowl.datastore.server.migrate,
  com.b2international.snowowl.datastore.server.net4j,
- com.b2international.snowowl.datastore.server.oplock,
- com.b2international.snowowl.datastore.server.oplock.impl,
  com.b2international.snowowl.datastore.server.reindex,
  com.b2international.snowowl.datastore.server.remotejobs,
  com.b2international.snowowl.datastore.server.version

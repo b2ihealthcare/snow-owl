@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock.impl;
+package com.b2international.snowowl.datastore.oplock.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.server.oplock.IOperationLockTargetListener;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTargetListener;
 
 /**
  * A lock target listener implementation that outputs log messages whenever a lock target is added or removed.

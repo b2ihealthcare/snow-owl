@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock.impl;
+package com.b2international.snowowl.datastore.oplock.impl;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.datastore.oplock.IOperationLock;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.server.oplock.IOperationLock;
-import com.b2international.snowowl.datastore.server.oplock.ReentrantOperationLockManager;
+import com.b2international.snowowl.datastore.oplock.ReentrantOperationLockManager;
 import com.b2international.snowowl.identity.domain.User;
 
 /**

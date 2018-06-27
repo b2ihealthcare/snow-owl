@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock;
+package com.b2international.snowowl.datastore.oplock;
 
 import java.io.Serializable;
 import java.util.Date;
-
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 
 /**
  * Contains all information about an operation lock which should be presented on an administrative interface. Sorts by date.

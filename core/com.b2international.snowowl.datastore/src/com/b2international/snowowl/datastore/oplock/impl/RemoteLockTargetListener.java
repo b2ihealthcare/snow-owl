@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock.impl;
+package com.b2international.snowowl.datastore.oplock.impl;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,10 +24,8 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.internal.session.SessionEventListener;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
+import com.b2international.snowowl.datastore.oplock.IOperationLockTargetListener;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.server.oplock.IOperationLockTargetListener;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.rpc.RpcSession;
 import com.b2international.snowowl.rpc.RpcThreadLocal;

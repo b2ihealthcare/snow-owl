@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.oplock;
+package com.b2international.snowowl.datastore.oplock;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -27,9 +27,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.eclipse.core.runtime.ListenerList;
 
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
