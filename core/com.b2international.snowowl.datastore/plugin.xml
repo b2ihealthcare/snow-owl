@@ -9,6 +9,9 @@
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
    <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>
    <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
+   <extension-point id="serverProtocolFactory" name="Net4j Protocol Factory" schema="schema/serverProtocolFactory.exsd"/>
+   <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
+   <extension-point id="mergeConflictRuleProvider" name="mergeConflictRuleProvider" schema="schema/mergeConflictRuleProvider.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
