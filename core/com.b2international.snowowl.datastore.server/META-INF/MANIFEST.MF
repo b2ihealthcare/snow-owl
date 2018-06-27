@@ -16,7 +16,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.datastore.server.migrate,
  com.b2international.snowowl.datastore.server.reindex,
- com.b2international.snowowl.datastore.server.remotejobs,
  com.b2international.snowowl.datastore.server.version
 Import-Package: com.b2international.index.compat,
  groovy.lang;version="[2.4.13,2.5.0)",
