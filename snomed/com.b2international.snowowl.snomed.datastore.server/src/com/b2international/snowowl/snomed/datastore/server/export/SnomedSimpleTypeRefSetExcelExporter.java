@@ -38,7 +38,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.CDOEditingContext;
-import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyExporter;
+import com.b2international.snowowl.datastore.importer.AbstractTerminologyExporter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.net4j;
+package com.b2international.snowowl.datastore.net4j;
 
 import static com.b2international.commons.StringUtils.isEmpty;
 
@@ -34,10 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
+import com.b2international.snowowl.datastore.importer.AbstractTerminologyImportJob;
 import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
 import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.Defect;
-import com.b2international.snowowl.datastore.server.importer.AbstractTerminologyImportJob;
 
 /**
  * Common superclass for single file based import indications required by the Net4j protocol.

@@ -19,8 +19,8 @@ import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.datastore.server.importer.ITerminologyExporter;
-import com.b2international.snowowl.datastore.server.net4j.AbstractExportIndication;
+import com.b2international.snowowl.datastore.importer.ITerminologyExporter;
+import com.b2international.snowowl.datastore.net4j.AbstractExportIndication;
 
 /**
  * The server-side signal handler when exporting simple type reference set to Excel format.

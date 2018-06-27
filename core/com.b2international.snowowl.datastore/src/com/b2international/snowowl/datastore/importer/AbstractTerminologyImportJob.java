@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.importer;
+package com.b2international.snowowl.datastore.importer;
 
 import org.eclipse.core.runtime.jobs.Job;
 import org.slf4j.Logger;
@@ -21,8 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.importer.TerminologyImportResult;
-import com.b2international.snowowl.datastore.importer.TerminologyImportType;
 
 /**
  * Abstract import job class for terminology import jobs.

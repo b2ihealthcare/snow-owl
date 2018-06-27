@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.net4j;
+package com.b2international.snowowl.datastore.net4j;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -35,7 +35,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.importer.ITerminologyExporter;
+import com.b2international.snowowl.datastore.importer.ITerminologyExporter;
 
 /**
  * Common superclass for single file based export indications required by the Net4j protocol.

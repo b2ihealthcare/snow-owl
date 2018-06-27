@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.importer;
+package com.b2international.snowowl.datastore.importer;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
 import static com.google.common.collect.Iterables.getFirst;
@@ -48,9 +48,6 @@ import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.CDOTransactionAggregator;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.cdo.ICDOTransactionAggregator;
-import com.b2international.snowowl.datastore.importer.TerminologyImportType;
-import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
-import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.Defect;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;

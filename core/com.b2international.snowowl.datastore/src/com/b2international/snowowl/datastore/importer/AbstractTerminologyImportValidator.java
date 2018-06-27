@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.importer;
+package com.b2international.snowowl.datastore.importer;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -26,9 +26,6 @@ import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Row;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.datastore.importer.TerminologyImportType;
-import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect;
-import com.b2international.snowowl.datastore.importer.TerminologyImportValidationDefect.DefectType;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
