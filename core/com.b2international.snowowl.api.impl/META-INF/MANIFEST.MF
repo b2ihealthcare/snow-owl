@@ -13,7 +13,6 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.jobs;bundle-version="3.5.0",
  com.b2international.snowowl.api,
  com.b2international.snowowl.datastore,
- com.b2international.snowowl.datastore.server,
  com.b2international.snowowl.eventbus
 Export-Package: com.b2international.snowowl.api.impl,
  com.b2international.snowowl.api.impl.admin,

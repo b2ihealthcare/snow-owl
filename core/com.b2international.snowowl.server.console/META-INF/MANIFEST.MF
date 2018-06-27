@@ -5,8 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.server.console
 Bundle-Version: 6.6.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- com.b2international.snowowl.datastore.server
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0"
 Service-Component: OSGI-INF/maintenanceCommandProvider.xml, 
  OSGI-INF/userSessionCommandProvider.xml,
  OSGI-INF/remoteJobsCommandProvider.xml,
