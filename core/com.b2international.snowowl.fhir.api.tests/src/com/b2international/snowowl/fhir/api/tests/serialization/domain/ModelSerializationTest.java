@@ -24,21 +24,62 @@ import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 
 /**
  * 
- * Test for OperationOutcome serialization.
+ * Test for domain model serialization.
  * @since 6.3
  */
-public class OperationOutcomeSerializationTest extends FhirTest {
+public class ModelSerializationTest extends FhirTest {
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
+	
+	@Test
+	public void narrativeTest() throws Exception {
+		
+		Narrative narrative = Narrative.builder()
+				.div("<div>This is text</div>")
+				.status(NarrativeStatus.GENERATED)
+				.build();
+		
+		printPrettyJson(narrative);
+		
+		
+		String expected = "{\"status\":\"generated\"," + 
+				"\"div\":\"<div>This is text</div>\"}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(narrative));
+	}
+	
+	@Test
+	public void incorrentNarrativeTest() throws Exception {
+		
+		Builder builder = Issue.builder()
+				.code(IssueType.INVALID)
+				.severity(IssueSeverity.ERROR)
+				.diagnostics("1 validation error");
+		
+		Issue expectedIssue = builder.addLocation("Narrative.div")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+
+		Narrative.builder()
+			.div("<div>")
+			.status(NarrativeStatus.GENERATED)
+			.build();
+	}
 	
 	@Test
 	public void operationOutcomeTest() throws Exception {

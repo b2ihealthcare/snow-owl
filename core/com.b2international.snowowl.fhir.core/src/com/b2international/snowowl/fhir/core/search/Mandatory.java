@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to mark properties as mandatory
+ * Annotation to mark properties as mandatory to be returned as a result of an operation.
  * @since 6.4
  */
 @Retention(RUNTIME)

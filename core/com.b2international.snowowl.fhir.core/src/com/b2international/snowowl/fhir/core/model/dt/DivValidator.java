@@ -48,7 +48,7 @@ public class DivValidator implements ConstraintValidator<ValidDiv, String> {
 			return false;
 		}
 
-		if (!divString.toLowerCase().endsWith("<div>")) {
+		if (!divString.toLowerCase().endsWith("</div>")) {
 			return false;
 		}
 		return true;

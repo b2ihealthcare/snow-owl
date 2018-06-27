@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -48,6 +49,7 @@ import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.CodingConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.IntegerConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.SummaryParameter;
@@ -65,6 +67,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 	//Supported property in the code system
 	@Test
 	public void supportedConceptPropertyTest() throws Exception {
+		
 		SupportedConceptProperty conceptProperty = SupportedConceptProperty.builder(CommonConceptProperties.INACTIVE).build();
 		printPrettyJson(conceptProperty);
 		
@@ -78,76 +81,65 @@ public class CodeSystemSerializationTest extends FhirTest {
 	
 	@Test
 	public void returnedBooleanConceptPropertyTest() throws Exception {
-		ConceptProperty<Boolean> conceptProperty = BooleanConceptProperty.builder()
-			.code(CommonConceptProperties.INACTIVE.getCode())
+		
+		BooleanConceptProperty conceptProperty = BooleanConceptProperty.builder()
+			.code("childConcept")
 			.value(true)
 			.build();
 		
 		printPrettyJson(conceptProperty);
 		
-		String expectedJson =  "[{\"name\":\"code\","
-					+ "\"valueCode\":\"inactive\"},"
-					+ "{\"name\":\"valueBoolean\","
-					+ "\"valueBoolean\":true}]";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		String expected = "{\"code\":\"childConcept\",\"valueBoolean\":true}";
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	
 	@Test
 	public void returnedStringConceptPropertyTest() throws Exception {
-		ConceptProperty<String> conceptProperty = StringConceptProperty.builder()
-			.code(new Code("String code"))
-			.value("text")
+		
+		StringConceptProperty conceptProperty = StringConceptProperty.builder()
+			.code("childConcept")
+			.value("string")
 			.build();
 		
 		printPrettyJson(conceptProperty);
 		
-		String expectedJson =  "[{\"name\":\"code\","
-					+ "\"valueCode\":\"String code\"},"
-					+ "{\"name\":\"valueString\","
-					+ "\"valueString\":\"text\"}]";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		String expected = "{\"code\":\"childConcept\",\"valueString\":\"string\"}";
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	
 	@Test
-	public void returnedDateConceptPropertyTest() throws Exception {
+	public void returnedIntegerConceptPropertyTest() throws Exception {
+		
+		IntegerConceptProperty conceptProperty = IntegerConceptProperty.builder()
+			.code("childConcept")
+			.value(1)
+			.build();
+		
+		printPrettyJson(conceptProperty);
+		
+		String expected = "{\"code\":\"childConcept\",\"valueInteger\":1}";
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
+	}
+	
+	@Test
+	public void returnedDateTimeConceptPropertyTest() throws Exception {
 		
 		Date date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse("2018-03-23T08:49:40+0100");
-		ConceptProperty<Date> conceptProperty = DateTimeConceptProperty.builder()
-			.code(new Code("String code"))
+		
+		DateTimeConceptProperty conceptProperty = DateTimeConceptProperty.builder()
+			.code("childConcept")
 			.value(date)
 			.build();
 		
 		printPrettyJson(conceptProperty);
 		
-		String expectedJson =  "[{\"name\":\"code\","
-					+ "\"valueCode\":\"String code\"},"
-					+ "{\"name\":\"valueDateTime\","
-					+ "\"valueDateTime\":\"2018-03-23T07:49:40+0000\"}]";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
-	}
-	
-	@Test
-	public void returnedCodeConceptPropertyTest() throws Exception {
-		CodeConceptProperty conceptProperty = CodeConceptProperty.builder()
-			.code(CommonConceptProperties.CHILD.getCode())
-			.value(new Code("codeCode"))
-			.build();
-		
-		printPrettyJson(conceptProperty);
-		
-		String expectedJson =  "[{\"name\":\"code\","
-				+ "\"valueCode\":\"child\"},"
-				+ "{\"name\":\"valueCode\","
-				+ "\"valueCode\":\"codeCode\"}]";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		String expected = "{\"code\":\"childConcept\",\"valueDateTime\":\"2018-03-23T07:49:40+0000\"}";
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(conceptProperty));
 	}
 	
 	@Test
 	public void returnedCodingConceptPropertyTest() throws Exception {
+		
 		CodingConceptProperty conceptProperty = CodingConceptProperty.builder()
 				.code(CommonConceptProperties.CHILD.getCode())
 				.value(new Coding.Builder()
@@ -158,10 +150,8 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		printPrettyJson(conceptProperty);
 		
-		String expectedJson = "[{\"name\":\"code\",\"valueCode\":\"child\"},"
-				+ "{\"name\":\"valueCoding\","
-				+ "\"valueCoding\":{\"code\":\"codingCode\","
-				+ "\"system\":\"uri\",\"userSelected\":false}}]";
+		String expectedJson = "{\"code\":\"child\","
+				+ "\"valueCoding\":{\"code\":\"codingCode\",\"system\":\"uri\",\"userSelected\":false}}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
 	}
@@ -213,22 +203,43 @@ public class CodeSystemSerializationTest extends FhirTest {
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 				+ "\"id\":\"repo/shortName\","
 				+ "\"language\":\"en\","
-				+ "\"text\":{\"status\":\"additional\","
-				+ "\"div\":\"<div>Some html text</div>\"},"
+				+ "\"text\":{\"status\":\"additional\",\"div\":\"<div>Some html text</div>\"},"
 				+ "\"url\":\"code system uri\","
 				+ "\"identifier\":{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
-				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
-				+ "\"title\":\"title\",\"status\":\"active\",\"description\":\"Code system description\","
-				+ "\"hierarchyMeaning\":\"is-a\",\"count\":0,\"property\":[{\"code\":\"child\",\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
-				+ "\"description\":\"Child\",\"type\":\"code\"}],"
-				+ "\"concept\":[{\"code\":\"conceptCode\",\"display\":\"Label\","
-				+ "\"definition\":\"This is a code definition\",\"designation\":[{\"language\":\"uk_en\",\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},\"value\":\"conceptLabel_uk\"}],\"properties\":[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]]}]}";
+				+ "\"version\":\"2018.01.01\","
+				+ "\"name\":\"Local code system\","
+				+ "\"title\":\"title\","
+				+ "\"status\":\"active\","
+				+ "\"description\":\"Code system description\","
+				+ "\"hierarchyMeaning\":\"is-a\","
+				+ "\"count\":0,"
+				+ "\"property\":"
+					+ "[{\"code\":\"child\","
+					+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
+					+ "\"description\":\"Child\","
+					+ "\"type\":\"code\"}],"
+				+ "\"concept\":"
+					+ "[{\"code\":\"conceptCode\","
+					+ "\"display\":\"Label\","
+					+ "\"definition\":\"This is a code definition\","
+					+ "\"designation\":[{\"language\":\"uk_en\",\"use\":"
+							+ "{\"code\":\"internal\",\"system\":"
+							+ "\"http://b2i.sg/test\","
+							+ "\"userSelected\":false},"
+						+ "\"value\":\"conceptLabel_uk\","
+						+ "\"languageCode\":\"uk_en\"}],"
+					+ "\"properties\":"
+						+ "[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},"
+						+ "{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]"
+						+ "]}"
+					+ "]"
+				+ "}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
 		
 	}
 	
-	@Test
+	//@Test
 	public void bundleTest() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")

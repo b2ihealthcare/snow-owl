@@ -19,6 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -83,6 +84,7 @@ public class Coding {
 	/**
 	 * @return the code value as a string
 	 */
+	@JsonIgnore
 	public String getCodeValue() {
 		return code.getCodeValue();
 	}
@@ -94,8 +96,13 @@ public class Coding {
 		return system;
 	}
 	
+	@JsonIgnore
 	public String getSystemValue() {
-		return system.getUriValue();
+		if (system == null) { 
+			return null;
+		} else {
+			return system.getUriValue();
+		}
 	}
 
 	/**

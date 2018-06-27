@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
@@ -31,7 +32,8 @@ public class Narrative {
 	
 	//"status" : "<cod >", // R!  generated | extensions | additional | empty
 	@Mandatory
-	@NotEmpty
+	@Valid
+	@NotNull
 	private final Code status;
 	
 	//"div" : "(Escaped XHTML)" // R!  Limited xhtml content, between <div></div> tags

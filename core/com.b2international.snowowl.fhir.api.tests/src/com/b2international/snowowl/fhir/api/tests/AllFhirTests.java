@@ -19,7 +19,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
 
 /**
  * FHIR test suite.
@@ -27,17 +28,16 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pa
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	/*
-	ParameterSerializationTest.class,
-	PropertySerializationTest.class,
-	DesignationSerializationTest.class,
+
+//	ParameterDeserializationTest.class,
+//	ParameterSerializationTest.class,
+//	PropertySerializationTest.class,
+//	DesignationSerializationTest.class,
+//	ModelSerializationTest.class,
 	
-	OperationOutcomeSerializationTest.class
-	LookupResultSerializationTest.class
-	*/
-	ParameterDeserializationTest.class,
-	/*
+//	LookupResultSerializationTest.class,
 	CodeSystemSerializationTest.class,
+	/*
 	ValueSetSerializationTest.class,
 	ModelDeserializationTest.class,
 	CodingValidationTest.class,

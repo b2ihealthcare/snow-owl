@@ -36,6 +36,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  *    "name": "valueBoolean",
  *    "valueBoolean": false
  *  }]
+ *  
+ *  "code": "child",
+ *  "valueCode": "ID123"
+ *  
  * </pre>
  *   
  *	@since 6.3
@@ -51,6 +55,12 @@ public class ConceptPropertySerializer extends JsonSerializer<ConceptProperty<?>
 	public void serialize(ConceptProperty<?> property, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
+		jGen.writeStartObject();
+		jGen.writeStringField("code",property.getCodeValue());
+		jGen.writeObjectField(typeName, property.getValue());
+		jGen.writeEndObject();
+		/*
+		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
 		jGen.writeStartArray();
 		jGen.writeStartObject();
 		jGen.writeStringField(NAME, CODE);
@@ -61,6 +71,7 @@ public class ConceptPropertySerializer extends JsonSerializer<ConceptProperty<?>
 		jGen.writeObjectField(typeName, property.getValue());
 		jGen.writeEndObject();
 		jGen.writeEndArray();
+		*/
 	}
 
 }
