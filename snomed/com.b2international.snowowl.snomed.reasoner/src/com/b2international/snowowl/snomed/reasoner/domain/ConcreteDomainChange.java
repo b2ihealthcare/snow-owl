@@ -25,6 +25,13 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 public final class ConcreteDomainChange implements Serializable {
 
 	private ChangeNature changeNature;
+
+	/*
+	 * Inferred change: UUID and moduleId are unset, referencedComponentId is set to
+	 * the inference target, other CD properties are not modified
+	 * 
+	 * Redundant change: reference set member is fully populated and unmodified
+	 */
 	private SnomedReferenceSetMember concreteDomainMember;
 
 	public ChangeNature getChangeNature() {

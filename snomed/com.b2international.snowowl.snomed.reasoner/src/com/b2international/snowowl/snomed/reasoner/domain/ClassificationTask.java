@@ -21,20 +21,22 @@ import java.util.Date;
 /**
  * @since 7.0
  */
-public final class ClassificationRun implements Serializable {
+public final class ClassificationTask implements Serializable {
 
 	private String id;
 	private String userId;
 	private String reasonerId;
 	private String branch;
+	private long timestamp;
 	private ClassificationStatus status;
 	private Date creationDate;
-	private Date completionDate;
-	private Date saveDate;
-	private Boolean inferredRelationshipChangesFound;
-	private Boolean redundantStatedRelationshipsFound;
-	private Boolean equivalentConceptsFound;
+	private Date completionDate; // populated on status changes to COMPLETED, CANCELED or FAILED
+	private Date saveDate; // populate on status change to SAVED
+	private Boolean inferredRelationshipChangesFound; // non-null in COMPLETED state only
+	private Boolean redundantStatedRelationshipsFound; // non-null in COMPLETED state only
+	private Boolean equivalentConceptsFound; // non-null in COMPLETED state only
 
+	// fields below are set only if an appropriate expand option is present
 	private EquivalentConceptSets equivalentConceptSets; 
 	private RelationshipChanges relationshipChanges;
 	private ConcreteDomainChanges concreteDomainChanges;
@@ -69,6 +71,14 @@ public final class ClassificationRun implements Serializable {
 
 	public void setBranch(final String branch) {
 		this.branch = branch;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(final long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	public ClassificationStatus getStatus() {
@@ -162,6 +172,8 @@ public final class ClassificationRun implements Serializable {
 		builder.append(reasonerId);
 		builder.append(", branch=");
 		builder.append(branch);
+		builder.append(", timestamp=");
+		builder.append(timestamp);
 		builder.append(", status=");
 		builder.append(status);
 		builder.append(", creationDate=");

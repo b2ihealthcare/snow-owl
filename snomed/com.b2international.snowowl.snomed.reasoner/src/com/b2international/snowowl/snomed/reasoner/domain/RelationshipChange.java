@@ -25,6 +25,13 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 public final class RelationshipChange implements Serializable {
 
 	private ChangeNature changeNature;
+
+	/*
+	 * Inferred change: id and moduleId are unset, sourceId is set to
+	 * the inference target, other relationship properties are not modified
+	 * 
+	 * Redundant change: relationship is fully populated and unmodified
+	 */
 	private SnomedRelationship relationship;
 
 	public ChangeNature getChangeNature() {
