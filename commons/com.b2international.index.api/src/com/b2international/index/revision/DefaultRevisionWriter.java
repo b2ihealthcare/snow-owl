@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Writer;
 import com.b2international.index.mapping.DocumentMapping;
@@ -91,6 +92,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	@Override
 	public <T> void bulkUpdate(BulkUpdate<T> update) {
 		index.bulkUpdate(update);
+	}
+	
+	@Override
+	public <T> void bulkDelete(BulkDelete<T> delete) {
+		index.bulkDelete(delete);
 	}
 
 	@Override
