@@ -45,7 +45,7 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.datastore.server.snomed.ModuleDependencyCollector;
-import com.b2international.snowowl.datastore.server.version.PublishManager;
+import com.b2international.snowowl.datastore.version.PublishManager;
 import com.b2international.snowowl.datastore.version.PublishOperationConfiguration;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedPackage;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.version;
+package com.b2international.snowowl.datastore.version;
 
 import static com.b2international.commons.collect.LongSets.transform;
 import static com.b2international.snowowl.datastore.cdo.CDOIDUtils.STORAGE_KEY_TO_CDO_ID_FUNCTION;
@@ -51,8 +51,6 @@ import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.version.IPublishManager;
-import com.b2international.snowowl.datastore.version.PublishOperationConfiguration;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
 import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;

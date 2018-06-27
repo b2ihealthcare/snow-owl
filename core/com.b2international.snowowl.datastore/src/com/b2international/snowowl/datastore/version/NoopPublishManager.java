@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.version;
+package com.b2international.snowowl.datastore.version;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
 import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.version.INoopPublishManager;
 
 /**
  * NOOP publish manager implementation. Does not modify any components but creates corresponding 
