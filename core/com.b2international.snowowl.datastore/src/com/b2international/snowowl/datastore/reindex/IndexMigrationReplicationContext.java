@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2016 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,39 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.migrate;
+package com.b2international.snowowl.datastore.reindex;
 
-import static com.google.common.collect.Maps.newHashMap;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
+import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.lock.IDurableLockingManager.LockArea;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.internal.server.DelegatingRepository;
+import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.common.CDOReplicationContext;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
+import org.eclipse.emf.cdo.spi.common.revision.DelegatingCDORevisionManager;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
+import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevisionManager;
 import org.eclipse.emf.cdo.spi.server.InternalRepository;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 import org.eclipse.emf.cdo.spi.server.InternalTransaction;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.net4j.db.DBException;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.cdo.CDOCommitInfoUtils;
 import com.b2international.snowowl.datastore.cdo.DelegatingTransaction;
@@ -54,61 +53,45 @@ import com.b2international.snowowl.datastore.replicate.BranchReplicator.SkipBran
 import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
 import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
-import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
-
 /**
- * @since 5.11
+ * Replication context the delegates the actual work to the same repository the replications is reading from. 
+ * During the replication, the change processors responsible for writing Lucene index documents 
+ * are triggered but no actual records are written into the repository via the replaced CommitContext
  */
 @SuppressWarnings("restriction")
-class MigrationReplicationContext implements CDOReplicationContext {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger("migrate");
+class IndexMigrationReplicationContext implements CDOReplicationContext {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(IndexMigrationReplicationContext.class);
 
 	private final RepositoryContext context;
 	private final long initialLastCommitTime;
+	private final int initialBranchId;
 	private final InternalSession replicatorSession;
-	private final Set<Integer> skippedBranches = Sets.newHashSet();
 	
 	private TreeMap<Long, CDOBranch> branchesByBasetimestamp = new TreeMap<>();
 	
-	private int lastReplicatedBranchId;
 	private int skippedCommits = 0;
 	private int processedCommits = 0;
 	private long failedCommitTimestamp = -1;
+	private final Set<Integer> skippedBranches = Sets.newHashSet();
 
 	private Exception exception;
 
 	private boolean optimize = false;
 
-	private final GroovyShell shell = new GroovyShell(MigrationReplicationContext.class.getClassLoader());
-	private Class<? extends Script> scriptClass;
-
-	MigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session, final String scriptLocation) {
+	IndexMigrationReplicationContext(final RepositoryContext context, final int initialBranchId, final long initialLastCommitTime, final InternalSession session) {
 		this.context = context;
-		this.lastReplicatedBranchId = initialBranchId;
+		this.initialBranchId = initialBranchId;
 		this.initialLastCommitTime = initialLastCommitTime;
 		this.replicatorSession = session;
-		if (!Strings.isNullOrEmpty(scriptLocation)) {
-			try {
-				this.scriptClass = shell.getClassLoader().parseClass(new File(scriptLocation));
-			} catch (CompilationFailedException | IOException e) {
-				throw new SnowowlRuntimeException("Couldn't compile script", e);
-			}
-		}
 	}
 
 	@Override
 	public void handleCommitInfo(final CDOCommitInfo commitInfo) {
 		// skip commits by CDO_SYSTEM user
-		if (CDOCommitInfoUtils.CDOCommitInfoQuery.EXCLUDED_USERS.contains(commitInfo.getUserID())
-				|| commitInfo.getComment().equals("Create terminology and metadata content storage for repository")
-				|| commitInfo.getComment().contains("Create primary code system for repository")
-				|| commitInfo.getComment().contains("Create terminology content wrapper for repository")) {
+		if (CDOCommitInfoUtils.CDOCommitInfoQuery.EXCLUDED_USERS.contains(commitInfo.getUserID())) {
 			return;
 		}
 		
@@ -134,24 +117,12 @@ class MigrationReplicationContext implements CDOReplicationContext {
 			do {
 				final CDOBranch branch = currentBranchToReplicate.getValue();
 				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
-
-				com.b2international.snowowl.datastore.internal.InternalRepository internalRepository = (com.b2international.snowowl.datastore.internal.InternalRepository) context
-						.service(Repository.class);
-				InternalCDOBranchManager cdoBranchManager = (InternalCDOBranchManager) internalRepository
-						.getCdoBranchManager();				
-				
-				InternalCDOBranch replicatedBranch = cdoBranchManager.createBranch(branch.getID(), branch.getName(),
-						(InternalCDOBranch) branch.getBase().getBranch(), branch.getBase().getTimeStamp());
-
 				try {
-					
-					context.service(BranchReplicator.class).replicateBranch(replicatedBranch);
-					
+					context.service(BranchReplicator.class).replicateBranch(branch);
 				} catch (SkipBranchException e) {
-					LOGGER.warn("Skipping branch with all of its commits: {}", replicatedBranch.getID());
-					skippedBranches.add(replicatedBranch.getID());
+					LOGGER.warn("Skipping branch with all of its commits: {}", branch.getID());
+					skippedBranches.add(branch.getID());
 				}
-				
 				branchesByBasetimestamp.remove(currentBranchToReplicate.getKey());
 				
 				// check if there are more branches to create until this point
@@ -189,16 +160,89 @@ class MigrationReplicationContext implements CDOReplicationContext {
 		}
 		
 		final InternalRepository repository = replicatorSession.getManager().getRepository();
+		final InternalCDORevisionManager revisionManager = repository.getRevisionManager();
+		
 		final InternalRepository delegateRepository = new DelegatingRepository() {
+			
+			@Override
+			public InternalCDORevisionManager getRevisionManager() {
+				
+				return new DelegatingCDORevisionManager() {
+				
+					@Override
+					protected InternalCDORevisionManager getDelegate() {
+						return revisionManager;
+					}
+
+					@Override
+					public EClass getObjectType(CDOID id, CDOBranchManager branchManagerForLoadOnDemand) {
+						return revisionManager.getObjectType(id, branchManagerForLoadOnDemand);
+					}
+					
+					/* (non-Javadoc)
+					 * @see org.eclipse.emf.cdo.spi.common.revision.DelegatingCDORevisionManager#getRevision(org.eclipse.emf.cdo.common.id.CDOID, org.eclipse.emf.cdo.common.branch.CDOBranchPoint, int, int, boolean)
+					 */
+					@Override
+					public InternalCDORevision getRevision(CDOID id, CDOBranchPoint branchPoint, int referenceChunk, int prefetchDepth, boolean loadOnDemand) {
+						
+						//future revisions are hidden (no -1)
+						if (branchPoint.getTimeStamp() >= commitInfo.getTimeStamp()) {
+							return null;
+						}
+						
+						InternalCDORevision revision = super.getRevision(id, branchPoint, referenceChunk, prefetchDepth, loadOnDemand);
+						InternalCDORevision copiedRevision = revision.copy();
+						
+						//we fake later revisions as brand new revision (revised=0)
+						if (revision.getRevised() >= commitInfo.getTimeStamp() -1) {
+							copiedRevision.setRevised(CDORevision.UNSPECIFIED_DATE);
+						}
+						return copiedRevision;
+					}
+					
+					/* (non-Javadoc)
+					 * @see org.eclipse.emf.cdo.spi.common.revision.DelegatingCDORevisionManager#getRevisionByVersion(org.eclipse.emf.cdo.common.id.CDOID, org.eclipse.emf.cdo.common.branch.CDOBranchVersion, int, boolean)
+					 */
+					@Override
+					public InternalCDORevision getRevisionByVersion(CDOID id, CDOBranchVersion branchVersion, int referenceChunk, boolean loadOnDemand) {
+						// first revisions are hidden
+						if (!(branchVersion instanceof CDORevisionDelta) && branchVersion.getBranch().getID() == commitInfo.getBranch().getID() && branchVersion.getVersion() == CDOBranchVersion.FIRST_VERSION) {
+							return null;
+						}
+						
+						InternalCDORevision revisionByVersion = super.getRevisionByVersion(id, branchVersion, referenceChunk, loadOnDemand);
+						
+						InternalCDORevision copiedRevision = revisionByVersion.copy();
+						
+						//we fake later revisions as brand new revision
+						if (revisionByVersion.getRevised() >= commitInfo.getTimeStamp()-1) {
+							copiedRevision.setRevised(CDORevision.UNSPECIFIED_DATE);
+						}
+						return copiedRevision;
+					}
+					
+				};
+			}
+			
 			@Override
 			protected InternalRepository getDelegate() {
 				return repository;
 			}
 			
 			@Override
+			public void endCommit(long timeStamp) {
+				//do nothing
+			}
+			
+			@Override
 			public void failCommit(long timestamp) {
 				failedCommitTimestamp = timestamp;
 				skippedCommits++;
+			}
+			
+			@Override 
+			public void sendCommitNotification(final InternalSession sender, final CDOCommitInfo commitInfo) {
+				//do nothing, no post commit notifications are expected
 			}
 		};
 		
@@ -208,6 +252,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 		InternalTransaction transaction = replicatorSession.openTransaction(InternalSession.TEMP_VIEW_ID, head);
 		DelegatingTransaction delegatingTransaction = new DelegatingTransaction(transaction) {
+
 			//Transaction needs to return the delegating repository as well
 			@Override
 			public InternalRepository getRepository() {
@@ -215,25 +260,11 @@ class MigrationReplicationContext implements CDOReplicationContext {
 			}
 		};
 
-		MigratingCommitContext commitContext = new MigratingCommitContext(delegatingTransaction, commitInfo);
+		NonWritingTransactionCommitContext commitContext = new NonWritingTransactionCommitContext(delegatingTransaction, commitInfo);
+
 		commitContext.preWrite();
-
-		if (scriptClass != null) {
-			// run a custom groovy script to manipulate each commit data before committing it
-			final Map<String, Object> ctx = newHashMap();
-			ctx.put("ctx", commitContext);
-			final Binding binding = new Binding(ctx);
-			try {
-				Script script = scriptClass.newInstance();
-				script.setBinding(binding);
-				script.run();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new SnowowlRuntimeException("Couldn't instantiate groovy script class", e);
-			}
-		}
-
 		boolean success = false;
-		
+
 		try {
 			commitContext.write(new Monitor());
 			commitContext.commit(new Monitor());
@@ -242,6 +273,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 		} finally {
 			commitContext.postCommit(success);
 			transaction.close();
+			StoreThreadLocal.setSession(replicatorSession);
 		}
 	}
 
@@ -269,7 +301,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 
 	@Override
 	public int getLastReplicatedBranchID() {
-		return lastReplicatedBranchId;
+		return initialBranchId;
 	}
 
 	@Override
@@ -285,9 +317,6 @@ class MigrationReplicationContext implements CDOReplicationContext {
 	@Override
 	public void handleBranch(CDOBranch branch) {
 		branchesByBasetimestamp.put(branch.getBase().getTimeStamp(), branch);
-		if (branch.getID() > getLastReplicatedBranchID()) {
-			lastReplicatedBranchId = branch.getID();
-		}
 	}
 
 	@Override
@@ -310,6 +339,5 @@ class MigrationReplicationContext implements CDOReplicationContext {
 	public Exception getException() {
 		return exception;
 	}
-
 
 }

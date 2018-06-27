@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.reindex;
+package com.b2international.snowowl.datastore.reindex;
 
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
