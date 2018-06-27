@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
@@ -39,50 +40,56 @@ import com.google.common.collect.Sets;
 import io.swagger.annotations.ApiModel;
 
 /**
- * This class represents a FHIR code system.
- * The CodeSystem resource is used to declare the existence of a code system, and its key properties:
-
+ * This class represents a FHIR code system. The CodeSystem resource is used to
+ * declare the existence of a code system, and its key properties:
+ * 
  * <ul>
  * <li>Identifying URL and version
  * <li>Description, Copyright, publication date, and other metadata
- * <li>Some key properties of the code system itself - whether it's case sensitive, version safe, and whether it defines a compositional grammar
- * <li>What filters can be used in value sets that use the code system in a ValueSet.compose element
+ * <li>Some key properties of the code system itself - whether it's case
+ * sensitive, version safe, and whether it defines a compositional grammar
+ * <li>What filters can be used in value sets that use the code system in a
+ * ValueSet.compose element
  * <li>What properties the concepts defined by the code system
  * </ul>
+ * 
  * @see <a href="https://www.hl7.org/fhir/codesystem.html">FHIR:CodeSystem</a>
  * @since 6.3
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class CodeSystem extends TerminologyResource {
-	
-	//FHIR header "resourceType" : "CodeSystem",
+
+	// FHIR header "resourceType" : "CodeSystem",
 	@Mandatory
 	@JsonProperty
 	private String resourceType = "CodeSystem";
-	
-	@Summary
-	@JsonProperty
-	private Code hierarchyMeaning;
-	
+
 	@Summary
 	@JsonProperty
 	private String publisher;
-	
-	@Mandatory
-	@JsonProperty
-	private String content;
-	
+
 	@Summary
-	@Min(value = 0, message = "Count must be equal to or larger than 0.")
 	@JsonProperty
-	private int count;
-	
+	private Code hierarchyMeaning;
+
+	@Mandatory
+	@Valid
+	@NotNull
+	@JsonProperty
+	private Code content;
+
+	//not primitive int to avoid serialization when the default value is 0
+	@Summary
+	@Min(value = 0, message = "Count must be equal to or larger than 0")
+	@JsonProperty
+	private Integer count;
+
 	@Summary
 	@Valid
 	@JsonProperty("filter")
 	private Collection<Filter> filters;
-	
+
 	/*
 	 * The properties supported by this code system
 	 */
@@ -90,19 +97,21 @@ public class CodeSystem extends TerminologyResource {
 	@Valid
 	@JsonProperty("property")
 	private Collection<SupportedConceptProperty> properties;
-	
+
 	/*
 	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
 	@JsonProperty("concept")
 	private Collection<Concept> concepts;
-	
-	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, String publisher, String description, Code hierarchyMeaning, final String content, final int count,
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
-		
+
+	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
+			String publisher, String description, 
+			Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
+			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+
 		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
+
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
 		this.count = count;
@@ -110,7 +119,11 @@ public class CodeSystem extends TerminologyResource {
 		this.properties = properties;
 		this.concepts = concepts;
 	}
-	
+
+	public static Builder builder() {
+		return new Builder();
+	}
+
 	public static Builder builder(String codeSystemId) {
 		return new Builder(codeSystemId);
 	}
@@ -118,21 +131,27 @@ public class CodeSystem extends TerminologyResource {
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
 		private Code hierarchyMeaning;
-		
-		private String content;
-		
-		private int count;
-		
+
+		private Code content;
+
+		private Integer count;
+
 		private Collection<Filter> filters = Sets.newHashSet();
-		
+
 		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
 
 		private Collection<Concept> concepts = Sets.newHashSet();
-		
+
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
+
 		public Builder(String codeSystemId) {
 			super(codeSystemId);
 		}
-		
+
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -142,12 +161,12 @@ public class CodeSystem extends TerminologyResource {
 			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
 			return getSelf();
 		}
-		
+
 		public Builder content(CodeSystemContentMode contentMode) {
-			this.content = contentMode.getCodeValue();
+			this.content = contentMode.getCode();
 			return getSelf();
 		}
-		
+
 		public Builder count(int count) {
 			this.count = count;
 			return getSelf();
@@ -157,22 +176,22 @@ public class CodeSystem extends TerminologyResource {
 			this.filters.add(filter);
 			return getSelf();
 		}
-		
+
 		public Builder addProperty(SupportedConceptProperty property) {
 			this.properties.add(property);
 			return getSelf();
 		}
-		
-		public Builder addConcept(Concept concept)  {
+
+		public Builder addConcept(Concept concept) {
 			this.concepts.add(concept);
 			return getSelf();
 		}
-		
+
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, 
-				hierarchyMeaning, content, count, filters, properties, concepts);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, hierarchyMeaning,
+					content, count, filters, properties, concepts);
 		}
 	}
-		
+
 }

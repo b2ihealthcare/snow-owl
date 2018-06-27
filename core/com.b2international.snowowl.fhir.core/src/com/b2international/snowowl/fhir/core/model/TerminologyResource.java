@@ -109,6 +109,12 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		protected String description;
 		
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
+		
 		public Builder(String resourceId) {
 			super(resourceId);
 		}

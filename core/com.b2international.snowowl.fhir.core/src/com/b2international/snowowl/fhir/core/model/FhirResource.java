@@ -59,17 +59,38 @@ public abstract class FhirResource {
 
 		protected Id id;
 
-		protected Code language = new Code("en");
+		protected Code language;
+		
+		/**
+		 * Use this constructor when a new resource is sent to the server to be created.
+		 */
+		public Builder() {
+		}
 		
 		/**
 		 * Encode our internal component Id to hide it from the outside world.
+		 * This can be null when a new resource is sent to the server to be saved
+		 * @see FhirResource.Builder:Builder()
 		 * @param cdoId
 		 */
 		public Builder(String resourceId) {
 			this.id = new Id(resourceId);
 		}
-
+		
 		protected abstract B getSelf();
+		
+		/**
+		 * Each resource has an "id" element which contains the logical identity of the resource assigned by the server responsible for storing it. 
+		 * Resources always have a known identity except for the special case when a new resource is being sent to a server to assign an identity (create interaction). 
+		 * The logical identity is unique within the space of all resources of the same type on the same server. Once assigned, the identity is never changed. 
+		 * Note that if the resource is copied to another server, the copy might not be able to retain the same logical identity.
+		 * @param resourceId
+		 * @return builder
+		 */
+		public B id(String resourceId) {
+			this.id = new Id(resourceId);
+			return getSelf();
+		}
 		
 		public B language(final Code language) {
 			this.language = language;

@@ -20,6 +20,8 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -80,7 +82,7 @@ public class Filter {
 	private final String description;
 	
 	@Valid
-	@NotNull
+	@NotEmpty
 	@JsonProperty("operator")
 	private final Collection<Code> operators;
 	
