@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 import com.b2international.snowowl.datastore.remotejobs.SingleRemoteJobFamily;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -52,11 +53,14 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 	@NotNull
 	private final Request<ServiceProvider, ?> request;
 
-	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, String description) {
+	private SerializableSchedulingRule schedulingRule;
+
+	ScheduleJobRequest(String id, String user, Request<ServiceProvider, ?> request, String description, SerializableSchedulingRule schedulingRule) {
 		this.id = id;
 		this.user = user;
 		this.request = request;
 		this.description = description;
+		this.schedulingRule = schedulingRule;
 	}
 	
 	@Override
@@ -72,6 +76,7 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 				RemoteJob job = new RemoteJob(id, description, user, context, request);
 				job.setSystem(true);
 				job.schedule();
+				job.setRule(schedulingRule);
 				return id;
 			}
 			
