@@ -6,6 +6,7 @@ Bundle-Version: 6.6.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit;bundle-version="4.11.0",
+ com.b2international.snowowl.datastore,
  com.b2international.snowowl.test.commons,
  com.b2international.snowowl.api.rest
 Import-Package: com.b2international.snowowl.api.impl.codesystem.domain,
