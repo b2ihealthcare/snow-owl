@@ -53,6 +53,8 @@ import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegist
 import com.b2international.snowowl.datastore.ServerProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
+import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.internal.DefaultRepositoryContextProvider;
 import com.b2international.snowowl.datastore.internal.DefaultRepositoryManager;
 import com.b2international.snowowl.datastore.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
@@ -64,8 +66,6 @@ import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
-import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
