@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,6 +31,21 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="concreteDomainChange")
 @JsonDeserialize(builder=ConcreteDomainChangeDocument.Builder.class)
 public final class ConcreteDomainChangeDocument {
+
+	public static class Fields {
+		public static final String CLASSIFICATION_ID = "classificationId";
+		public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
+	}
+
+	public static class Expressions {
+		public static Expression classificationId(final String classificationId) {
+			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
+		}
+
+		public static Expression referencedComponentId(final String referencedComponentId) {
+			return exactMatch(Fields.REFERENCED_COMPONENT_ID, referencedComponentId);
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();

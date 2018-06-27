@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -28,6 +31,16 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="equivalentConceptSet")
 @JsonDeserialize(builder=EquivalentConceptSetDocument.Builder.class)
 public final class EquivalentConceptSetDocument {
+
+	public static class Fields {
+		public static final String CLASSIFICATION_ID = "classificationId";
+	}
+
+	public static class Expressions {
+		public static Expression classificationId(final String classificationId) {
+			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();

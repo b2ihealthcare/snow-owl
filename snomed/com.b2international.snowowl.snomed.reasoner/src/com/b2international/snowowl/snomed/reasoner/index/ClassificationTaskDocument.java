@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchRange;
+
 import java.util.Date;
 
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -27,12 +30,58 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="classificationRun")
-@JsonDeserialize(builder=ClassificationRunDocument.Builder.class)
-public final class ClassificationRunDocument {
+@Doc(type="classificationTask")
+@JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
+public final class ClassificationTaskDocument {
+
+	public static class Fields {
+		public static final String ID = "id";
+		public static final String USER_ID = "userId";
+		public static final String BRANCH = "branch";
+		public static final String TIMESTAMP = "timestamp";
+		public static final String CREATION_DATE = "creationDate";
+	}
+
+	public static class Expressions {
+		public static Expression id(final String id) {
+			return exactMatch(Fields.ID, id);
+		}
+
+		public static Expression userId(final String userId) {
+			return exactMatch(Fields.USER_ID, userId);
+		}
+
+		public static Expression branch(final String branch) {
+			return exactMatch(Fields.BRANCH, branch);
+		}
+
+		public static Expression timestampBefore(final long endInclusive) {
+			return matchRange(Fields.TIMESTAMP, 0L, endInclusive);
+		}
+
+		public static Expression createdBefore(final Date endExclusive) {
+			return matchRange(Fields.CREATION_DATE, 0L, endExclusive.getTime(), true, false);
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();
+	}
+
+	public static Builder builder(final ClassificationTaskDocument source) {
+		return new Builder()
+				.id(source.id)
+				.userId(source.userId)
+				.reasonerId(source.reasonerId)
+				.branch(source.branch)
+				.timestamp(source.timestamp)
+				.status(source.status)
+				.creationDate(source.creationDate)
+				.completionDate(source.completionDate)
+				.saveDate(source.saveDate)
+				.hasInferredChanges(source.hasInferredChanges)
+				.hasRedundantStatedChanges(source.hasRedundantStatedChanges)
+				.hasEquivalentConcepts(source.hasEquivalentConcepts);
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
@@ -42,6 +91,7 @@ public final class ClassificationRunDocument {
 		private String userId;
 		private String reasonerId;
 		private String branch;
+		private long timestamp;
 		private ClassificationStatus status;
 		private Date creationDate;
 		private Date completionDate;
@@ -72,6 +122,11 @@ public final class ClassificationRunDocument {
 
 		public Builder branch(final String branch) {
 			this.branch = branch;
+			return this;
+		}
+
+		public Builder timestamp(final long timestamp) {
+			this.timestamp = timestamp;
 			return this;
 		}
 
@@ -110,11 +165,12 @@ public final class ClassificationRunDocument {
 			return this;
 		}
 
-		public ClassificationRunDocument build() {
-			return new ClassificationRunDocument(id, 
+		public ClassificationTaskDocument build() {
+			return new ClassificationTaskDocument(id, 
 					userId, 
 					reasonerId, 
 					branch, 
+					timestamp,
 					status, 
 					creationDate, 
 					completionDate, 
@@ -125,10 +181,11 @@ public final class ClassificationRunDocument {
 		}
 	}
 
-	@Keyword private final String id;
-	@Keyword private final String userId;
-	@Keyword private final String reasonerId;
-	@Keyword private final String branch;
+	private final String id;
+	private final String userId;
+	private final String reasonerId;
+	private final String branch;
+	private final long timestamp;
 	private final ClassificationStatus status;
 	private final Date creationDate;
 	private final Date completionDate;
@@ -137,10 +194,11 @@ public final class ClassificationRunDocument {
 	private final Boolean hasRedundantStatedChanges;
 	private final Boolean hasEquivalentConcepts;
 
-	private ClassificationRunDocument(final String id, 
+	private ClassificationTaskDocument(final String id, 
 			final String userId, 
 			final String reasonerId, 
 			final String branch,
+			final long timestamp,
 			final ClassificationStatus status, 
 			final Date creationDate, 
 			final Date completionDate, 
@@ -153,6 +211,7 @@ public final class ClassificationRunDocument {
 		this.userId = userId;
 		this.reasonerId = reasonerId;
 		this.branch = branch;
+		this.timestamp = timestamp;
 		this.status = status;
 		this.creationDate = creationDate;
 		this.completionDate = completionDate;
@@ -176,6 +235,10 @@ public final class ClassificationRunDocument {
 
 	public String getBranch() {
 		return branch;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
 	}
 
 	public ClassificationStatus getStatus() {
@@ -217,6 +280,8 @@ public final class ClassificationRunDocument {
 		builder.append(reasonerId);
 		builder.append(", branch=");
 		builder.append(branch);
+		builder.append(", timestamp=");
+		builder.append(timestamp);
 		builder.append(", status=");
 		builder.append(status);
 		builder.append(", creationDate=");
