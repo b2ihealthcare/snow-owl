@@ -30,6 +30,7 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 
 /**
@@ -41,6 +42,29 @@ public class ModelSerializationTest extends FhirTest {
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
+	
+	private Builder builder = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
+	
+	@Test
+	public void codingTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+			.code("1234")
+			.system("http://snomed.info/sct")
+			.version("20180131")
+			.build();
+		
+		String jsonString = objectMapper.writeValueAsString(coding);
+		
+		String expected = "{\"code\":\"1234\","
+				+ "\"system\":\"http://snomed.info/sct\","
+				+ "\"version\":\"20180131\",\"userSelected\":false}";
+		
+		Assert.assertEquals(expected, jsonString);
+	}
 	
 	@Test
 	public void narrativeTest() throws Exception {
@@ -61,11 +85,6 @@ public class ModelSerializationTest extends FhirTest {
 	
 	@Test
 	public void incorrentNarrativeTest() throws Exception {
-		
-		Builder builder = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Narrative.div")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")

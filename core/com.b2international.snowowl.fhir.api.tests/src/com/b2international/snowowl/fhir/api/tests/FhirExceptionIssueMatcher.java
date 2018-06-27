@@ -80,6 +80,7 @@ public class FhirExceptionIssueMatcher extends TypeSafeMatcher<FhirException> {
 		
 		if (!collectionsMatch) {
 			System.out.println("Issue expression do not match, found: " + foundIssue.getExpressions());
+			System.out.println("Issue locations do not match, found: " + foundIssue.getLocations());
 			return false;
 		}
 		

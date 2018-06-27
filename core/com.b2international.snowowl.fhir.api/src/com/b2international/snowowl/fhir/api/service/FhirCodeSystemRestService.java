@@ -213,6 +213,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody
 			Parameters.Fhir in) {
+		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 
 		//validate the code/system/version parameters BOTH in the request as well as possibly in the coding

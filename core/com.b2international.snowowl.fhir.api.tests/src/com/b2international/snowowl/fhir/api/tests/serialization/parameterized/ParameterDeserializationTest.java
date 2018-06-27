@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.fhir.api.tests.serialization.parameterized;
 
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.text.DateFormat;
@@ -224,7 +226,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		
 		assertFalse(lookupRequest.getProperties().isEmpty());
 		Collection<String> properties = lookupRequest.getProperties();
-		assertTrue(properties.stream().filter(p -> p.equals("prop1")).findFirst().isPresent());
+		assertThat(properties, contains("prop1", "prop2"));
 	}
 
 	private void assertParameter(String jsonParam, String paramName, FhirDataType fhirDataType, Object paramValue) throws Exception {
@@ -244,4 +246,3 @@ public class ParameterDeserializationTest extends FhirTest {
 	}
 	
 }
-

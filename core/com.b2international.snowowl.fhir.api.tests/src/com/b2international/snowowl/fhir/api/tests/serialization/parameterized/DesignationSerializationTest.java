@@ -45,24 +45,6 @@ public class DesignationSerializationTest extends FhirTest {
 	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
-	public void codingTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-			.code("1234")
-			.system("http://snomed.info/sct")
-			.version("20180131")
-			.build();
-		
-		String jsonString = objectMapper.writeValueAsString(coding);
-		
-		String expected = "{\"code\":\"1234\","
-				+ "\"system\":\"http://snomed.info/sct\","
-				+ "\"version\":\"20180131\",\"userSelected\":false}";
-		
-		Assert.assertEquals(expected, jsonString);
-	}
-	
-	@Test
 	public void designationTest() throws Exception {
 
 		Coding coding = Coding.builder()

@@ -44,7 +44,6 @@ import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
@@ -332,16 +331,16 @@ public class CodeSystemSerializationTest extends FhirTest {
 					+ "]"
 				+ "}";
 		
-		//assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
-		
+		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
 	}
 	
-	//@Test
+	@Test
 	public void bundleTest() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.status(PublicationStatus.ACTIVE)
 			.name("Local code system")
+			.content(CodeSystemContentMode.COMPLETE)
 			.url(new Uri("code system uri"))
 			.build();
 		
@@ -361,19 +360,21 @@ public class CodeSystemSerializationTest extends FhirTest {
 				+ "\"id\":\"bundle_Id?\","
 				+ "\"language\":\"en\","
 				+ "\"type\":\"searchset\","
-				+"\"total\":1,"
-				+ "\"link\":[{\"relation\":\"self\","
+				+ "\"total\":1,"
+				+ "\"link\":"
+					+ "[{\"relation\":\"self\","
 					+ "\"url\":\"http://localhost:8080/snowowl/CodeSystem\"}],"
-				+ "\"entry\":[{\"fullUrl\":\"full Url\","
-					+ "\"resource\":{\"resourceType\":\"CodeSystem\","
-					+ "\"id\":\"repo/shortName\","
-					+ "\"language\":\"en\","
-					+ "\"url\":\"code system uri\","
-					+ "\"name\":\"Local code system\","
-					+ "\"status\":\"active\",\"count\":0}}]}";
+					+ "\"entry\":[{\"fullUrl\":\"full Url\",\"resource\":"
+						+ "{\"resourceType\":\"CodeSystem\","
+						+ "\"id\":\"repo/shortName\","
+						+ "\"url\":\"code system uri\","
+						+ "\"name\":\"Local code system\","
+						+ "\"status\":\"active\","
+						+ "\"content\":\"complete\"}"
+					+ "}]"
+				+ "}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(bundle));
-		
 	}
 	
 

@@ -88,6 +88,25 @@ public class PropertySerializationTest extends FhirTest {
 	}
 	
 	@Test
+	public void emptyCodeTest() throws Exception {
+
+		Builder builder = Issue.builder()
+				.code(IssueType.INVALID)
+				.severity(IssueSeverity.ERROR)
+				.diagnostics("1 validation error");
+		
+		Issue expectedIssue = builder.addLocation("Property.code.codeValue")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
+			.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		Property.builder().code("").build();
+	}
+	
+	@Test
 	public void basicPropertyTest() throws Exception {
 
 		Property property = Property.builder()
@@ -171,6 +190,34 @@ public class PropertySerializationTest extends FhirTest {
 				+ "}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+	}
+	
+	@Test
+	public void incorrectSubPropertyTest() throws Exception {
+
+		Builder builder = Issue.builder()
+				.code(IssueType.INVALID)
+				.severity(IssueSeverity.ERROR)
+				.diagnostics("1 validation error");
+		
+		Issue expectedIssue = builder.addLocation("SubProperty.code")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		Property.builder()
+			.code("123")
+			.valueInteger(2)
+			.description("propertyDescription")
+			.subProperty(SubProperty.builder()
+				//.code("subCode")
+				.description("subDescription")
+				.valueInteger(1)
+				.build())
+			.build();
 	}
 	
 }

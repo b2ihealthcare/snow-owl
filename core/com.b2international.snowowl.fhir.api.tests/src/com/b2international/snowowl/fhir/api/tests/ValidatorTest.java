@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.validation;
+package com.b2international.snowowl.fhir.api.tests;
 
 import java.util.Set;
 
@@ -25,14 +25,13 @@ import javax.validation.ValidatorFactory;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 
 /**
  * @since 6.3
  *
  */
-public class ValidatorTest<T> extends FhirTest {
+public class ValidatorTest extends FhirTest {
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -41,14 +40,14 @@ public class ValidatorTest<T> extends FhirTest {
 	 * Validates this operation outcome.
 	 * @throws ValidationException
 	 */
-	public void validate(T object) {
+	public void validate(Object object) {
 		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 		Validator validator = factory.getValidator();
-		Set<ConstraintViolation<T>> violations = validator.validate(object);
+		Set<ConstraintViolation<Object>> violations = validator.validate(object);
 			if (!violations.isEmpty()) {
 				
 //				violations.forEach(cv -> {
-//					
+					
 //					System.out.println(cv.toString());
 //					System.out.println("Message: " + cv.getMessage());
 //					System.out.println(" xMessage template: " + cv.getMessageTemplate());

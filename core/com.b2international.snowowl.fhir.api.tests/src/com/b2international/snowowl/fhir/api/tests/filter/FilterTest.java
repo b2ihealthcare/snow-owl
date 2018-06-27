@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.api.tests.filter;
 
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Set;
@@ -27,6 +29,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -71,6 +74,7 @@ public class FilterTest extends FhirTest {
 				.title("title")
 				.publisher("B2i")
 				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
 				.url(new Uri("code system uri"))
 				.version("2018.01.01")
 				.addConcept(Concept.builder()
@@ -95,16 +99,22 @@ public class FilterTest extends FhirTest {
 		
 	}
 	
+	//basic MVM capture of query parameters
 	@Test
-	public void mvmTest() {
+	public void multiValueMapTest() {
 		UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl("http://localhost?a=1, 2");
 		MultiValueMap<String,String> queryParams = uriComponentsBuilder.build().getQueryParams();
 		Set<String> keySet = queryParams.keySet();
 		for (String key : keySet) {
 			System.out.println("Key: " + key + ": " + queryParams.get(key));
+			assertThat(queryParams.get(key), contains("1, 2"));
 		}
 	}
 	
+	/*
+	 * x, y are incorrect as fields on FilteredClass
+	 * only Mandatory fields (id) are returned
+	 */
 	@Test
 	public void filterIncorrectElementsTest() throws Exception {
 
@@ -119,6 +129,7 @@ public class FilterTest extends FhirTest {
 		String jsonString = objectMapper.writeValueAsString(filteredClass);
 		assertEquals("{\"id\":\"ID123\"}", jsonString);
 		
+		//questionable what to do if the requested fields are null or empty, for now we assume it to be a filter for mandatory only elements
 		setupElementsFilter(null);
 		printPrettyJson(filteredClass);
 		jsonString = objectMapper.writeValueAsString(filteredClass);
@@ -138,8 +149,13 @@ public class FilterTest extends FhirTest {
 
 		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
-		String expectedJson = "{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
-				+ "\"name\":\"Local code system\",\"status\":\"active\"}";
+		
+		String expectedJson = "{\"resourceType\":\"CodeSystem\","
+							+ "\"id\":\"repo/shortName\","
+							+ "\"name\":\"Local code system\","
+							+ "\"status\":\"active\","
+							+ "\"content\":\"complete\"}";
+		
 		assertEquals(expectedJson, jsonString);
 		
 		setupElementsFilter(null);
@@ -161,17 +177,39 @@ public class FilterTest extends FhirTest {
 		setupSummaryFilter(summaryParameter);
 
 		printPrettyJson(filteredClass);
+		
 		//This is stupid, we should assert parts or use JSONAssert
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 				+ "\"id\":\"repo/shortName\","
 				+ "\"language\":\"en\","
-				+ "\"text\":{\"status\":\"additional\","
-				+ "\"div\":\"<div>Some html text</div>\"},"
+				+ "\"text\":{\"status\":\"additional\",\"div\":\"<div>Some html text</div>\"},"
 				+ "\"url\":\"code system uri\","
-				+ "\"identifier\":{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
-				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
-				+ "\"title\":\"title\",\"status\":\"active\",\"description\":\"Code system description\","
-				+ "\"hierarchyMeaning\":\"is-a\",\"count\":0,\"property\":[{\"code\":\"child\",\"uri\":\"http://hl7.org/fhir/concept-properties/child\",\"description\":\"Child\",\"type\":\"code\"}],\"concept\":[{\"code\":\"conceptCode\",\"display\":\"Label\",\"definition\":\"This is a code definition\",\"designation\":[{\"language\":\"uk_en\",\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},\"value\":\"conceptLabel_uk\"}],\"properties\":[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]]}]}";
+				+ "\"identifier\":"
+					+ "{\"use\":\"official\",\"system\":\"www.hl7.org\","
+					+ "\"value\":\"OID:1234.1234\"},"
+				+ "\"version\":\"2018.01.01\","
+				+ "\"name\":\"Local code system\","
+				+ "\"title\":\"title\","
+				+ "\"status\":\"active\","
+				+ "\"description\":\"Code system description\","
+				+ "\"hierarchyMeaning\":\"is-a\","
+				+ "\"content\":\"complete\","
+				+ "\"property\":"
+					+ "[{\"code\":\"child\","
+					+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\""
+					+ ",\"description\":\"Child\",\"type\":\"code\"}],"
+				+ "\"concept\":"
+					+ "[{\"code\":\"conceptCode\","
+					+ "\"display\":\"Label\","
+					+ "\"definition\":\"This is a code definition\","
+					+ "\"designation\":"
+						+ "[{\"language\":\"uk_en\","
+						+ "\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},"
+					+ "\"value\":\"conceptLabel_uk\","
+					+ "\"languageCode\":\"uk_en\"}],"
+					+ "\"properties\":[{\"code\":\"childConcept\",\"valueCode\":\"childId\"}]"
+					+ "}"
+				+ "]}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
 	}
@@ -192,12 +230,14 @@ public class FilterTest extends FhirTest {
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals("{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
 				+ "\"url\":\"code system uri\","
-				+ "\"identifier\":{\"use\":\"official\","
-				+ "\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
+				+ "\"identifier\":"
+				+ "{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
 				+ "\"title\":\"title\",\"status\":\"active\","
-				+ "\"hierarchyMeaning\":\"is-a\",\"count\":0,\"property\":[{\"code\":\"child\","
-				+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
+				+ "\"hierarchyMeaning\":\"is-a\","
+				+ "\"content\":\"complete\","
+				+ "\"property\":[{\"code\":\"child\","
+					+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
 				+ "\"description\":\"Child\",\"type\":\"code\"}]}", jsonString);
 	}
 	
@@ -206,6 +246,7 @@ public class FilterTest extends FhirTest {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
 				.version("2018.01.01")
 				.count(12)
 				.build();
@@ -220,8 +261,11 @@ public class FilterTest extends FhirTest {
 
 		printJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
-		assertEquals("{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
-				+ "\"status\":\"active\",\"count\":12}", jsonString);
+		assertEquals("{\"resourceType\":\"CodeSystem\","
+						+ "\"id\":\"repo/shortName\","
+						+ "\"status\":\"active\","
+						+"\"content\":\"complete\","
+						+ "\"count\":12}", jsonString);
 	}
 
 	private void setupElementsFilter(List<String> requestedFields) {

@@ -19,8 +19,18 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.api.tests.filter.FilterTest;
+import com.b2international.snowowl.fhir.api.tests.filter.ParameterParsingTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.BundleSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ValueSetSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.DesignationSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.LookupResultSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.PropertySerializationTest;
 
 /**
  * FHIR test suite.
@@ -29,25 +39,26 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSeri
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
-//	ParameterDeserializationTest.class,
-//	ParameterSerializationTest.class,
-//	PropertySerializationTest.class,
-//	DesignationSerializationTest.class,
-//	ModelSerializationTest.class,
-	
-//	LookupResultSerializationTest.class,
-	CodeSystemSerializationTest.class,
 	/*
+	 */
+	ParameterDeserializationTest.class,
+	ParameterSerializationTest.class,
+	PropertySerializationTest.class,
+	DesignationSerializationTest.class,
+	ModelSerializationTest.class,
+	
+	LookupResultSerializationTest.class,
+	CodeSystemSerializationTest.class,
+	BundleSerializationTest.class,
+	
+	//This tests are pretty meaningless
 	ValueSetSerializationTest.class,
 	ModelDeserializationTest.class,
-	CodingValidationTest.class,
-	DesignationValidationTest.class,
-	PropertyValidationTest.class,
-	SubPropertyValidationTest.class,
 	ExceptionTest.class,
+
+	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	FilterTest.class
-	*/
 })
 public class AllFhirTests {
 }
