@@ -62,6 +62,7 @@ import com.b2international.snowowl.datastore.internal.session.LogListener;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
+import com.b2international.snowowl.datastore.review.ReviewConfiguration;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.server.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;

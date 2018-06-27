@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.review;
+package com.b2international.snowowl.datastore.review;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -50,11 +50,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.Review;
-import com.b2international.snowowl.datastore.review.ReviewManager;
-import com.b2international.snowowl.datastore.review.ReviewStatus;
-import com.b2international.snowowl.datastore.server.ReviewConfiguration;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
