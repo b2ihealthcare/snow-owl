@@ -6,8 +6,8 @@
    <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
    <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
-   <extension-point id="mappingProvider" name="mappingProvider" schema="schema/mappingProvider.exsd"/>
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
+   <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob

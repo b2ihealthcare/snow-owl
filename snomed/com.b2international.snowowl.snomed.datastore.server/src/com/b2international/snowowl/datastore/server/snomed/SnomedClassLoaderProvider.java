@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore.server.snomed;
 
-import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProvider;
+import com.b2international.snowowl.datastore.RepositoryClassLoaderProvider;
 
 /**
  * @since 4.5

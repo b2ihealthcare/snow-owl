@@ -18,4 +18,4 @@
  * Contains classes for internal use. This package should not be exported.
  * 
  */
-package com.b2international.snowowl.datastore.server.internal;
+package com.b2international.snowowl.datastore.internal;

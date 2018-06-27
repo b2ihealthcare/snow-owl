@@ -14,10 +14,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.datastore.server,
- com.b2international.snowowl.datastore.server.cdo,
  com.b2international.snowowl.datastore.server.importer,
  com.b2international.snowowl.datastore.server.index,
- com.b2international.snowowl.datastore.server.internal,
  com.b2international.snowowl.datastore.server.migrate,
  com.b2international.snowowl.datastore.server.net4j,
  com.b2international.snowowl.datastore.server.oplock,

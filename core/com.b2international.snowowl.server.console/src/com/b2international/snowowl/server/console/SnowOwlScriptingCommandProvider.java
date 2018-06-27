@@ -25,7 +25,7 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.scripting.api.ScriptEngine;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 
 /**
  * OSGi command contribution with groovy script execution command(s).

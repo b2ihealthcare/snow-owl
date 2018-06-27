@@ -34,7 +34,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteLists;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.datastore.internal.JsonSupport;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;

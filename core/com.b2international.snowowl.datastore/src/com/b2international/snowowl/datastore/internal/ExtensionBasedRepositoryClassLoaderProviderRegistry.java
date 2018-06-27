@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal;
+package com.b2international.snowowl.datastore.internal;
 
 import java.util.Collection;
 
 import com.b2international.commons.CompositeClassLoader;
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProvider;
-import com.b2international.snowowl.datastore.server.RepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.datastore.RepositoryClassLoaderProvider;
+import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 
 /**
  * @since 4.5

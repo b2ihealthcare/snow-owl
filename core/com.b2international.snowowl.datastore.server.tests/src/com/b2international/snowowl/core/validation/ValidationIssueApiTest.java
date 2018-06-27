@@ -42,7 +42,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailEx
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.datastore.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
