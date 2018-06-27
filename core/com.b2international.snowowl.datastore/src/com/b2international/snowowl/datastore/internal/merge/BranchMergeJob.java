@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.merge;
+package com.b2international.snowowl.datastore.internal.merge;
 
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
