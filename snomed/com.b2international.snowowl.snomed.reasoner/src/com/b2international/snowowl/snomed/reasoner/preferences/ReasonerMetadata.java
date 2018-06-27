@@ -32,8 +32,6 @@ public class ReasonerMetadata implements Comparable<ReasonerMetadata>, Serializa
 	private final String version;
 	private final String extensionId;
 	
-	private boolean isDefault; //this is configured from outside
-
 	/**
 	 * @param name
 	 * @param version
@@ -60,14 +58,6 @@ public class ReasonerMetadata implements Comparable<ReasonerMetadata>, Serializa
 	
 	public String getExtensionId() {
 		return extensionId;
-	}
-	
-	public boolean isDefault() {
-		return isDefault;
-	}
-	
-	public void setDefault(final boolean isDefault) {
-		this.isDefault = isDefault;
 	}
 
 	/*
@@ -115,7 +105,6 @@ public class ReasonerMetadata implements Comparable<ReasonerMetadata>, Serializa
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append((isDefault ? "* " : "  "));
 		sb.append(id);
 		sb.append(" ");
 		sb.append(name);

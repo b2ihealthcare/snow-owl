@@ -230,9 +230,9 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>edu.stanford.protege</groupId>
-				<artifactId>org.semanticweb.owl.owlapi</artifactId>
-				<version>3.4.4</version>
+				<groupId>net.sourceforge.owlapi</groupId>
+    			<artifactId>owlapi-osgidistribution</artifactId>
+    			<version>4.2.8</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -448,8 +448,8 @@
 			<artifactId>mockito-all</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>edu.stanford.protege</groupId>
-			<artifactId>org.semanticweb.owl.owlapi</artifactId>
+			<groupId>net.sourceforge.owlapi</groupId>
+    		<artifactId>owlapi-osgidistribution</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
