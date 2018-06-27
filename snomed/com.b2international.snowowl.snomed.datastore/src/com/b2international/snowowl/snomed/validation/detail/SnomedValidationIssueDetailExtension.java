@@ -15,31 +15,164 @@
  */
 package com.b2international.snowowl.snomed.validation.detail;
 
+import static com.b2international.snowowl.core.terminology.ComponentCategory.CONCEPT;
+import static com.b2international.snowowl.core.terminology.ComponentCategory.DESCRIPTION;
+import static com.b2international.snowowl.core.terminology.ComponentCategory.RELATIONSHIP;
+import static com.b2international.snowowl.core.terminology.ComponentCategory.SET_MEMBER;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
+
 import java.util.Collection;
 
 import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.QueryBuilder;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 6.4
  */
 public class SnomedValidationIssueDetailExtension implements ValidationIssueDetailExtension {
 
-	@Override
-	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
-		if (options.containsKey(SnomedRf2Headers.FIELD_ACTIVE)) {
-			final Boolean isActive = options.get(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
-			queryBuilder.filter(Expressions.match(SnomedRf2Headers.FIELD_ACTIVE, isActive));
-		}
+	public final static class SnomedIssueDetailFilterFields {
+
+		private SnomedIssueDetailFilterFields() {};
 		
-		if (options.containsKey(SnomedRf2Headers.FIELD_MODULE_ID)) {
-			final Collection<String> moduleIds = options.getCollection(SnomedRf2Headers.FIELD_MODULE_ID, String.class);
-			queryBuilder.filter(Expressions.matchAny(SnomedRf2Headers.FIELD_MODULE_ID, moduleIds));
-		}
+		public static final String COMPONENT_STATUS = "componentStatus";
+		public static final String COMPONENT_MODULE_ID = "componentModuleId";
+		public static final String CONCEPT_STATUS = "conceptStatus";
 		
 	}
+	
+	private static final int SCROLL_SIZE = 10000;
+	
+	@Override
+	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
 
+		if (options.containsKey(COMPONENT_STATUS)) {
+			final Boolean isActive = options.get(COMPONENT_STATUS, Boolean.class);
+			queryBuilder.filter(Expressions.match(COMPONENT_STATUS, isActive));
+		}
+
+		if (options.containsKey(COMPONENT_MODULE_ID)) {
+			final Collection<String> moduleIds = options.getCollection(COMPONENT_MODULE_ID, String.class);
+			queryBuilder.filter(Expressions.matchAny(COMPONENT_MODULE_ID, moduleIds));
+		}
+		
+		if (options.containsKey(CONCEPT_STATUS)) {
+			final Boolean isConceptActive = options.get(CONCEPT_STATUS, Boolean.class);
+			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
+		}
+
+	}
+	
+	@Override
+	public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issues) {
+		final Multimap<String, ValidationIssue> issuesByComponentId = Multimaps.index(issues, issue -> issue.getAffectedComponent().getComponentId());
+
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+
+		Multimap<ComponentCategory, String> issueComponentIdsByComponentCategory = HashMultimap.create();
+		
+		issues.stream().forEach(issue -> {
+			final ComponentCategory componentCategory = getComponentCategory(issue.getAffectedComponent().getTerminologyComponentId());
+			issueComponentIdsByComponentCategory.put(componentCategory, issue.getAffectedComponent().getComponentId());
+		});
+		
+		for (ComponentCategory category : issueComponentIdsByComponentCategory.keySet()) {
+			final Query<String[]> query = buildQuery(category, issueComponentIdsByComponentCategory.get(category));
+			
+			Multimap<String, String> issueIdsByConceptIds = HashMultimap.create();
+			for (Hits<String[]> hits : searcher.scroll(query)) {
+				for (String[] hit : hits) {
+					issuesByComponentId.get(hit[0]).forEach(validationIssue -> {
+						validationIssue.setDetails(COMPONENT_STATUS, hit[1]);
+						validationIssue.setDetails(COMPONENT_MODULE_ID, hit[2]);
+						if (CONCEPT == category) {
+							validationIssue.setDetails(CONCEPT_STATUS, hit[1]);
+						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
+							issueIdsByConceptIds.put(hit[3], hit[0]);
+						}
+					});
+					
+				}
+			}
+			
+			if (!issueIdsByConceptIds.isEmpty()) {
+				final Query<String[]> conceptStatusQuery = Query.select(String[].class)
+					.from(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE)
+					.where(SnomedConceptDocument.Expressions.ids(issueIdsByConceptIds.keySet()))
+					.limit(SCROLL_SIZE)
+					.build();
+				
+				for (Hits<String[]> hits : searcher.scroll(conceptStatusQuery)) {
+					for (String[] hit : hits) {
+						Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
+						issueIds.stream().forEach(id -> {
+							issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
+						});
+					}
+				}
+				
+			}
+			
+		}
+	}
+	
+	private Query<String[]> buildQuery(ComponentCategory category, Collection<String> issueIds) {
+		final QueryBuilder<String[]> queryBuilder = Query.select(String[].class);
+		switch (category) {
+		case CONCEPT:
+			queryBuilder.from(SnomedConceptDocument.class)
+				.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE, SnomedConceptDocument.Fields.MODULE_ID);
+			break;
+		case DESCRIPTION:
+			queryBuilder.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.ACTIVE, SnomedDescriptionIndexEntry.Fields.MODULE_ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID);
+			break;
+		case RELATIONSHIP:
+			queryBuilder.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.ACTIVE, SnomedRelationshipIndexEntry.Fields.MODULE_ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID);
+			break;
+		default:
+			break;
+		}
+		return queryBuilder.where(SnomedDocument.Expressions.ids(issueIds)).limit(SCROLL_SIZE).build();
+	}
+	
+	private ComponentCategory getComponentCategory(short terminologyComponentId) {
+		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == terminologyComponentId) {
+			return CONCEPT;
+		} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == terminologyComponentId) {
+			return DESCRIPTION;
+		} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
+			return RELATIONSHIP;
+		} else if (SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER == terminologyComponentId) {
+			return SET_MEMBER;
+		} else {
+			throw new UnsupportedOperationException("Unsupported terminology component id: " + terminologyComponentId);
+		}
+	}
+
+	@Override
+	public String getToolingId() {
+		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	}
 }
