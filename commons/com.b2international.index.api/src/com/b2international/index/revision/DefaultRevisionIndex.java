@@ -16,6 +16,7 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -35,12 +36,13 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
  */
-public final class DefaultRevisionIndex implements InternalRevisionIndex {
+public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks {
 
 	private static final String SCROLL_KEEP_ALIVE = "2m";
 	
@@ -52,6 +54,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private final BaseRevisionBranching branching;
 	private final RevisionIndexAdmin admin;
 	private final ObjectMapper mapper;
+	private final List<Hooks.Hook> hooks = newArrayList();
 
 	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching, ObjectMapper mapper) {
 		this.index = index;
@@ -278,6 +281,31 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					.build())
 					.getHits();
 		});
+	}
+	
+	@Override
+	public Hooks hooks() {
+		return this;
+	}
+	
+	@Override
+	public void addHook(Hook hook) {
+		if (!this.hooks.contains(hook)) {
+			this.hooks.add(hook);
+		}
+	}
+	
+	@Override
+	public void removeHook(Hook hook) {
+		this.hooks.remove(hook);
+	}
+	
+	/**
+	 * Returns the currently registered {@link List} of {@link Hook}s.
+	 * @return
+	 */
+	List<Hooks.Hook> getHooks() {
+		return ImmutableList.copyOf(hooks);
 	}
 
 	private RevisionBranchRef getBranchRef(final String branchPath) {

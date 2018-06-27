@@ -133,6 +133,11 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	StagingArea prepareCommit(String branchPath);
 	
 	/**
+	 * @return the Hooks API to register/unregister hooks to this {@link RevisionIndex}.
+	 */
+	Hooks hooks();
+	
+	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.
 	 * @param base
 	 * @param compare

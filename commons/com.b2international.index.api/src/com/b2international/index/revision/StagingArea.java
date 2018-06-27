@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,10 +31,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.Hooks.Hook;
+import com.b2international.index.revision.Hooks.PostCommitHook;
+import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -59,16 +64,48 @@ public final class StagingArea {
 	private final String branchPath;
 	private final ObjectMapper mapper;
 
-	private Map<String, Object> newDocuments;
-	private Map<String, Object> changedDocuments;
+	private Map<String, Object> newObjects;
+	private Map<String, Object> changedObjects;
 	private Map<String, RevisionDiff> changedRevisions;
-	private Map<String, Object> removedDocuments;
+	private Map<String, Object> removedObjects;
 	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
 		this.branchPath = branchPath;
 		this.mapper = mapper;
 		reset();
+	}
+	
+	public Map<String, Object> getNewObjects() {
+		return newObjects;
+	}
+	
+	public <T> Stream<T> getNewObjects(Class<T> type) {
+		return newObjects.values().stream().filter(type::isInstance).map(type::cast);
+	}
+	
+	public Map<String, Object> getChangedObjects() {
+		return changedObjects;
+	}
+	
+	public <T> Stream<T> getChangedObjects(Class<T> type) {
+		return changedObjects.values().stream().filter(type::isInstance).map(type::cast);
+	}
+	
+	public Map<String, Object> getRemovedObjects() {
+		return removedObjects;
+	}
+	
+	public <T> Stream<T> getRemovedObjects(Class<T> type) {
+		return removedObjects.values().stream().filter(type::isInstance).map(type::cast);
+	}
+	
+	public Map<String, RevisionDiff> getChangedRevisions() {
+		return changedRevisions;
+	}
+	
+	public <T> Stream<T> getChangedRevisions(Class<T> type) {
+		return changedRevisions.values().stream().map(diff -> diff.newRevision).filter(type::isInstance).map(type::cast);
 	}
 	
 	/**
@@ -84,7 +121,7 @@ public final class StagingArea {
 	}
 	
 	/**
-	 * Commits the changes so far staged to the staging area.
+	 * Commits the changes so far staged to the staging area. Runs any commit {@link Hook}s registered  
 	 *  
 	 * @param commitGroupId - can be used to connect multiple commits and consider them as a single commit
 	 * @param timestamp - long timestamp when the commit happened
@@ -93,142 +130,160 @@ public final class StagingArea {
 	 * @return
 	 */
 	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
-		return index.write(branchPath, timestamp, writer -> {
-			Commit.Builder commit = Commit.builder();
+		// run pre-commit hooks
+		final List<Hook> hooks = index.getHooks(); // get a snapshot of the current hooks so we use the same hooks before and after commit
+		hooks.stream()
+			.filter(PreCommitHook.class::isInstance)
+			.map(PreCommitHook.class::cast)
+			.forEach(hook -> hook.run(this));
+		
+		// commit the registered changes
+		final Commit commit = index.write(branchPath, timestamp, writer -> doCommit(commitGroupId, timestamp, author, commitComment, writer));
+		
+		// run post-commit hooks
+		hooks.stream()
+			.filter(PostCommitHook.class::isInstance)
+			.map(PostCommitHook.class::cast)
+			.forEach(hook -> hook.run(commit));
+		
+		return commit;
+	}
 
-			final Multimap<ObjectId, ObjectId> newComponentsByContainer = HashMultimap.create();
-			final Multimap<ObjectId, ObjectId> changedComponentsByContainer = HashMultimap.create();
-			final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
-			final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
-			
-			removedDocuments.forEach((key, value) -> {
-				deletedIdsByType.put(value.getClass(), key);
-				if (value instanceof Revision) {
-					Revision rev = (Revision) value;
-					removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
-				}
-			});
-			
-			// apply removals first
-			for (Class<?> type : deletedIdsByType.keySet()) {
-				final ImmutableSet<String> deletedDocIds = ImmutableSet.copyOf(deletedIdsByType.get(type));
-				writer.remove(type, deletedDocIds);
-			}
-			
-			// then new documents and revisions
-			for (Entry<String, Object> doc : newDocuments.entrySet()) {
-				if (!removedDocuments.containsKey(doc.getKey())) {
-					Object document = doc.getValue();
-					writer.put(doc.getKey(), document);
-					if (document instanceof Revision) {
-						Revision rev = (Revision) document;
-						newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
-					}
-				}
-			}
-			
-			// and changed documents
-			for (Entry<String, Object> doc : changedDocuments.entrySet()) {
-				if (!removedDocuments.containsKey(doc.getKey())) {
-					Object document = doc.getValue();
-					writer.put(doc.getKey(), document);
-				}
-			}
-			
-			final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
-			
-			// and changed revisions
-			for (Entry<String, RevisionDiff> changedRevision : changedRevisions.entrySet()) {
-				if (!removedDocuments.containsKey(changedRevision.getKey())) {
-					RevisionDiff revisionDiff = changedRevision.getValue();
-					final Revision rev = revisionDiff.newRevision;
-					// XXX temporal coupling between writer.put() and revisionDiff.diff(mapper) call
-					// first put the new revision into the writer so that created and revised fields will get their values properly
-					// then call the diff method to calculate the diff and serialize the new node into a JsonNode with _changes and created, revised fields
-					writer.put(changedRevision.getKey(), rev);
-					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
-					ObjectId objectId = rev.getObjectId();
-					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, objectId);
-					}
-					revisionDiff.diff(mapper).forEach(node -> {
-						if (node instanceof ObjectNode) {
-							revisionsByChange.put((ObjectNode) node, objectId);
-						}
-					});
-				}
-			}
-			
-			final List<CommitDetail> details = newArrayList();
-			
-			// collect property changes
-			revisionsByChange.asMap().forEach((change, objects) -> {
-				final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
-				final String from = change.get("fromValue").asText(); 
-				final String to = change.get("value").asText();
-				details.add(CommitDetail.changedProperty(prop, from, to, objects.iterator().next().type(), objects.stream().map(ObjectId::id).collect(Collectors.toSet())));
-			});
+	private Commit doCommit(String commitGroupId, long timestamp, String author, String commitComment, RevisionWriter writer) throws IOException {
+		Commit.Builder commit = Commit.builder();
 
-			final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
-				Pair.of(newComponentsByContainer, CommitDetail::added),
-				Pair.of(changedComponentsByContainer, CommitDetail::changed),
-				Pair.of(removedComponentsByContainer, CommitDetail::removed)
-			);
-			for (Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>> entry : maps) {
-				final Multimap<ObjectId, ObjectId> multimap = entry.getA();
-				if (!multimap.isEmpty()) {
-					BiFunction<String, String, CommitDetail.Builder> builderFactory = entry.getB();
-					Map<Pair<String, String>, CommitDetail.Builder> buildersByRelationship = newHashMap();
-					// collect hierarchical changes and register them by container ID
-					multimap.asMap().forEach((container, components) -> {
-						Multimap<String, String> componentsByType = HashMultimap.create();
-						components.forEach(c -> componentsByType.put(c.type(), c.id()));
-						componentsByType.asMap().forEach((componentType, componentIds) -> {
-							final Pair<String, String> typeKey = Pair.identicalPairOf(container.type(), componentType);
-							if (!buildersByRelationship.containsKey(typeKey)) {
-								buildersByRelationship.put(typeKey, builderFactory.apply(typeKey.getA(), typeKey.getB()));
-							}
-							buildersByRelationship.get(typeKey).putObjects(container.id(), componentIds);
-						});
-					});
-					buildersByRelationship.values()
-						.stream()
-						.map(CommitDetail.Builder::build)
-						.forEach(details::add);
-				}
+		final Multimap<ObjectId, ObjectId> newComponentsByContainer = HashMultimap.create();
+		final Multimap<ObjectId, ObjectId> changedComponentsByContainer = HashMultimap.create();
+		final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
+		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
+		
+		removedObjects.forEach((key, value) -> {
+			deletedIdsByType.put(value.getClass(), key);
+			if (value instanceof Revision) {
+				Revision rev = (Revision) value;
+				removedComponentsByContainer.put(rev.getContainerId(), rev.getObjectId());
 			}
-			
-			// free up memory before committing 
-			reset();
-			newComponentsByContainer.clear();
-			changedComponentsByContainer.clear();
-			removedComponentsByContainer.clear();
-			deletedIdsByType.clear();
-			
-			// generate a commit entry that marks the end of the commit and contains all changes in a details property
-			Commit commitDoc = commit
-					.id(UUID.randomUUID().toString())
-					.groupId(commitGroupId)
-					.author(author)
-					.branch(branchPath)
-					.comment(commitComment)
-					.timestamp(timestamp)
-					.details(details)
-					.build();
-			writer.put(commitDoc.getId(), commitDoc);
-			writer.commit();
-			return commitDoc;
 		});
+		
+		// apply removals first
+		for (Class<?> type : deletedIdsByType.keySet()) {
+			final ImmutableSet<String> deletedDocIds = ImmutableSet.copyOf(deletedIdsByType.get(type));
+			writer.remove(type, deletedDocIds);
+		}
+		
+		// then new documents and revisions
+		for (Entry<String, Object> doc : newObjects.entrySet()) {
+			if (!removedObjects.containsKey(doc.getKey())) {
+				Object document = doc.getValue();
+				writer.put(doc.getKey(), document);
+				if (document instanceof Revision) {
+					Revision rev = (Revision) document;
+					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
+				}
+			}
+		}
+		
+		// and changed documents
+		for (Entry<String, Object> doc : changedObjects.entrySet()) {
+			if (!removedObjects.containsKey(doc.getKey())) {
+				Object document = doc.getValue();
+				writer.put(doc.getKey(), document);
+			}
+		}
+		
+		final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
+		
+		// and changed revisions
+		for (Entry<String, RevisionDiff> changedRevision : changedRevisions.entrySet()) {
+			if (!removedObjects.containsKey(changedRevision.getKey())) {
+				RevisionDiff revisionDiff = changedRevision.getValue();
+				final Revision rev = revisionDiff.newRevision;
+				// XXX temporal coupling between writer.put() and revisionDiff.diff(mapper) call
+				// first put the new revision into the writer so that created and revised fields will get their values properly
+				// then call the diff method to calculate the diff and serialize the new node into a JsonNode with _changes and created, revised fields
+				writer.put(changedRevision.getKey(), rev);
+				ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
+				ObjectId objectId = rev.getObjectId();
+				if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
+					changedComponentsByContainer.put(containerId, objectId);
+				}
+				revisionDiff.diff().forEach(node -> {
+					if (node instanceof ObjectNode) {
+						revisionsByChange.put((ObjectNode) node, objectId);
+					}
+				});
+			}
+		}
+		
+		final List<CommitDetail> details = newArrayList();
+		
+		// collect property changes
+		revisionsByChange.asMap().forEach((change, objects) -> {
+			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
+			final String from = change.get("fromValue").asText(); 
+			final String to = change.get("value").asText();
+			details.add(CommitDetail.changedProperty(prop, from, to, objects.iterator().next().type(), objects.stream().map(ObjectId::id).collect(Collectors.toSet())));
+		});
+
+		final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
+			Pair.of(newComponentsByContainer, CommitDetail::added),
+			Pair.of(changedComponentsByContainer, CommitDetail::changed),
+			Pair.of(removedComponentsByContainer, CommitDetail::removed)
+		);
+		for (Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>> entry : maps) {
+			final Multimap<ObjectId, ObjectId> multimap = entry.getA();
+			if (!multimap.isEmpty()) {
+				BiFunction<String, String, CommitDetail.Builder> builderFactory = entry.getB();
+				Map<Pair<String, String>, CommitDetail.Builder> buildersByRelationship = newHashMap();
+				// collect hierarchical changes and register them by container ID
+				multimap.asMap().forEach((container, components) -> {
+					Multimap<String, String> componentsByType = HashMultimap.create();
+					components.forEach(c -> componentsByType.put(c.type(), c.id()));
+					componentsByType.asMap().forEach((componentType, componentIds) -> {
+						final Pair<String, String> typeKey = Pair.identicalPairOf(container.type(), componentType);
+						if (!buildersByRelationship.containsKey(typeKey)) {
+							buildersByRelationship.put(typeKey, builderFactory.apply(typeKey.getA(), typeKey.getB()));
+						}
+						buildersByRelationship.get(typeKey).putObjects(container.id(), componentIds);
+					});
+				});
+				buildersByRelationship.values()
+					.stream()
+					.map(CommitDetail.Builder::build)
+					.forEach(details::add);
+			}
+		}
+		
+		// free up memory before committing 
+		reset();
+		newComponentsByContainer.clear();
+		changedComponentsByContainer.clear();
+		removedComponentsByContainer.clear();
+		deletedIdsByType.clear();
+		
+		// generate a commit entry that marks the end of the commit and contains all changes in a details property
+		Commit commitDoc = commit
+				.id(UUID.randomUUID().toString())
+				.groupId(commitGroupId)
+				.author(author)
+				.branch(branchPath)
+				.comment(commitComment)
+				.timestamp(timestamp)
+				.details(details)
+				.build();
+		writer.put(commitDoc.getId(), commitDoc);
+		writer.commit();
+		return commitDoc;
 	}
 
 	/**
 	 * Reset staging area to empty.
 	 */
 	private void reset() {
-		newDocuments = newHashMap();
-		changedDocuments = newHashMap();
+		newObjects = newHashMap();
+		changedObjects = newHashMap();
 		changedRevisions = newHashMap();
-		removedDocuments = newHashMap();
+		removedObjects = newHashMap();
 	}
 
 	public StagingArea stageNew(Revision newRevision) {
@@ -236,7 +291,7 @@ public final class StagingArea {
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument) {
-		newDocuments.put(key, newDocument);
+		newObjects.put(key, newDocument);
 		return this;
 	}
 	
@@ -248,7 +303,7 @@ public final class StagingArea {
 	
 	public StagingArea stageChange(String key, Object changed) {
 		checkArgument(!(changed instanceof Revision), "Use the other stageChange method properly track changes for revision documents.");
-		changedDocuments.put(key, changed);
+		changedObjects.put(key, changed);
 		return this;
 	}
 	
@@ -257,7 +312,7 @@ public final class StagingArea {
 	}
 
 	public StagingArea stageRemove(String key, Object removed) {
-		removedDocuments.put(key, removed);
+		removedObjects.put(key, removed);
 		return this;
 	}
 	
@@ -266,33 +321,38 @@ public final class StagingArea {
 		final Revision oldRevision;
 		final Revision newRevision;
 		
+		private ArrayNode changes;
+		
 		public RevisionDiff(Revision oldRevision, Revision newRevision) {
 			this.oldRevision = oldRevision;
 			this.newRevision = newRevision;
 		}
 
-		public ArrayNode diff(ObjectMapper mapper) {
-			final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
-			final Set<String> diffFields = mapping.getHashedFields();
-			if (diffFields.isEmpty()) {
-				return null; // in case of no hash fields, do NOT try to compute the diff
-			}
-			ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
-			ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
-			final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
-			// remove revision specific fields from diff
-			final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
-			final ArrayNode changes = mapper.createArrayNode();
-			final Iterator<JsonNode> elements = diffNode.elements();
-			while (elements.hasNext()) {
-				JsonNode node = elements.next();
-				final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-				final String property = change.get("path").asText().replaceFirst("/", "");
-				if (diffFields.contains(property)) {
-					changes.add(change);
+		public ArrayNode diff() {
+			if (changes == null) {
+				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
+				final Set<String> diffFields = mapping.getHashedFields();
+				if (diffFields.isEmpty()) {
+					return null; // in case of no hash fields, do NOT try to compute the diff
 				}
+				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
+				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
+				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
+				// remove revision specific fields from diff
+				final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
+				final ArrayNode changes = mapper.createArrayNode();
+				final Iterator<JsonNode> elements = diffNode.elements();
+				while (elements.hasNext()) {
+					JsonNode node = elements.next();
+					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
+					final String property = change.get("path").asText().replaceFirst("/", "");
+					if (diffFields.contains(property)) {
+						changes.add(change);
+					}
+				}
+				this.changes = changes;
 			}
-			return changes;
+			return this.changes;
 		}
 		
 	}
