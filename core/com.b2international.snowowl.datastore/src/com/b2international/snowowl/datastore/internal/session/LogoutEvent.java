@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.session;
+package com.b2international.snowowl.datastore.internal.session;
 
 import com.b2international.snowowl.rpc.RpcSession;
 
 /**
  * 
  */
-public final class LoginEvent extends SessionEvent {
+public final class LogoutEvent extends SessionEvent {
 
 	private static final long serialVersionUID = 1L;
 
-	public LoginEvent(final ApplicationSessionManager manager, final RpcSession session) {
+	public LogoutEvent(final ApplicationSessionManager manager, final RpcSession session) {
 		super(manager, session);
 	}
 }

@@ -31,7 +31,7 @@ import org.eclipse.spi.net4j.Protocol;
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.cdo.ImpersonatingSessionProtocol;
-import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
+import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.identity.domain.Role;
 import com.b2international.snowowl.rpc.RpcSession;

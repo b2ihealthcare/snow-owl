@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.internal.session;
+
+import com.b2international.snowowl.rpc.RpcSession;
 
 /**
  * 
  */
-public interface InternalApplicationSessionManager {
+public final class LoginEvent extends SessionEvent {
 
-	void connectSystemUser();
+	private static final long serialVersionUID = 1L;
 
+	public LoginEvent(final ApplicationSessionManager manager, final RpcSession session) {
+		super(manager, session);
+	}
 }

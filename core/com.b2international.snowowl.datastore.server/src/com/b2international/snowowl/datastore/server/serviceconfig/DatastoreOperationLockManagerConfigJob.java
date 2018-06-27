@@ -18,12 +18,12 @@ package com.b2international.snowowl.datastore.server.serviceconfig;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.IServiceChangeListener;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.server.DatastoreServerActivator;
 import com.b2international.snowowl.datastore.server.oplock.impl.DatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.server.oplock.impl.RemoteLockTargetListener;
 import com.b2international.snowowl.datastore.server.oplock.impl.Slf4jOperationLockTargetListener;
-import com.b2international.snowowl.datastore.server.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.serviceconfig.AbstractServerServiceConfigJob;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 

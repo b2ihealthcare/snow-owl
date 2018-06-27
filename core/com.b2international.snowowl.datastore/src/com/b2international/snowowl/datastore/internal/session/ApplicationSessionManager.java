@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.session;
+package com.b2international.snowowl.datastore.internal.session;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -50,7 +50,6 @@ import com.b2international.commons.encoding.RSAUtils;
 import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.AlreadyLoggedInException;
 import com.b2international.snowowl.datastore.net4j.Net4jUtils;
-import com.b2international.snowowl.datastore.server.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.session.AccessToken;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.identity.IdentityProvider;
