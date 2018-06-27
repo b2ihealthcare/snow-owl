@@ -51,5 +51,8 @@
          <bootstrapFragment
                class="com.b2international.snowowl.core.internal.validation.ValidationBootstrap">
          </bootstrapFragment>
+	     <bootstrapFragment
+	           class="com.b2international.snowowl.datastore.internal.DatastoreServerBootstrap">
+	     </bootstrapFragment>
       </extension>
 </plugin>

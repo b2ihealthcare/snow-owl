@@ -9,10 +9,4 @@
             terminologyId="UNSPECIFIED">
       </serviceConfigJob>
    </extension>
-   <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.datastore.server.DatastoreServerBootstrap">
-      </bootstrapFragment>
-   </extension>
 </plugin>

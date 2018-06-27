@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.datastore.internal;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -55,10 +55,6 @@ import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManagerImpl;
-import com.b2international.snowowl.datastore.internal.DefaultRepositoryContextProvider;
-import com.b2international.snowowl.datastore.internal.DefaultRepositoryManager;
-import com.b2international.snowowl.datastore.internal.ExtensionBasedRepositoryClassLoaderProviderRegistry;
-import com.b2international.snowowl.datastore.internal.JsonSupport;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.LogListener;
