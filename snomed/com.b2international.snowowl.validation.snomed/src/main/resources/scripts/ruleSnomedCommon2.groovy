@@ -1,3 +1,5 @@
+package scripts
+
 import com.b2international.index.Hits
 import com.b2international.index.aggregations.Aggregation
 import com.b2international.index.aggregations.AggregationBuilder

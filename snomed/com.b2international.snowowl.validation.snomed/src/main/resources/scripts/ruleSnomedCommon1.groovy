@@ -1,3 +1,5 @@
+package scripts
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expression
 import com.b2international.index.query.Expressions
