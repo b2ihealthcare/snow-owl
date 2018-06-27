@@ -221,6 +221,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.build();
 		
 		applyFilter(codeSystem);
+		printPrettyJson(codeSystem);
 		
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 				+ "\"status\":\"active\","
@@ -259,6 +260,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.description("Code system description")
+			.date("2018-03-09T19:50:21+0000")
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.identifier(identifier)
 			.language("en")
