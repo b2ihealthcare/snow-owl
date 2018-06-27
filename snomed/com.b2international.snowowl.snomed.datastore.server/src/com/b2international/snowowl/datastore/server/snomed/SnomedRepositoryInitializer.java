@@ -37,7 +37,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.server.RepositoryInitializer;
+import com.b2international.snowowl.datastore.RepositoryInitializer;
 import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemCreateRequestBuilder;

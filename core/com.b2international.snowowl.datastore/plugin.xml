@@ -8,6 +8,7 @@
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
    <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>
+   <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
       <serviceConfigJob
