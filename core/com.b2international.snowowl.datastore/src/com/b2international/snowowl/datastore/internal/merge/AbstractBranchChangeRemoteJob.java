@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRule;
+import com.b2international.snowowl.datastore.remotejobs.BranchExclusiveRule;
 
 /**
  * @since 4.6

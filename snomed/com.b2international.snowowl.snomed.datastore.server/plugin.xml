@@ -20,14 +20,6 @@
       </serviceConfigJob>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.changeProcessorFactory">
-      <changeProcessorFactory
-            class="com.b2international.snowowl.datastore.server.snomed.index.SnomedCDOChangeProcessorFactory"
-            id="com.b2international.snowowl.datastore.server.snomed.snor.SnomedSnorCDOChangeProcessorFactory"
-            repositoryUuid="snomedStore">
-      </changeProcessorFactory>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.server.conflictProcessor">
       <processor
             class="com.b2international.snowowl.datastore.server.snomed.SnomedCDOConflictProcessor">

@@ -29,8 +29,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelComponentRenderer;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 
