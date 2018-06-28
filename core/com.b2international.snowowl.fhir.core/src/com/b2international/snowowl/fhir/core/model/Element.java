@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model;
 import java.util.Collection;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 /**
  * 
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/element.html">FHIR:Element</a>
  * @since 6.6
  */
-public class Element {
+public abstract class Element {
 	
 	@JsonProperty
 	private String id;
@@ -34,6 +35,39 @@ public class Element {
 	@JsonProperty("extension")
 	private Collection<Extension> extensions;
 	
+	protected Element(final String id, final Collection<Extension> extensions) {
+		this.id = id;
+		this.extensions = extensions;
+	}
 	
+	public String getId() {
+		return id;
+	}
+	
+	public Collection<Extension> getExtensions() {
+		return extensions;
+	}
+	
+	public static abstract class Builder<B extends Builder<B, T>, T extends Element> extends ValidatingBuilder<T> {
+
+		protected String id;
+
+		protected Collection<Extension> extensions = Lists.newArrayList();
+		
+		public Builder() {
+		}
+		
+		protected abstract B getSelf();
+		
+		public B id(String id) {
+			this.id = id;
+			return getSelf();
+		}
+		
+		public B addExtension(final Extension extension) {
+			extensions.add(extension);
+			return getSelf();
+		}
+	}
 
 }

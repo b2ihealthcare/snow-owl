@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  * Custom serializer for concept properties returned.
  * Example: 
  * <pre>
- * [
  *   {
  *       "url": "http://hl7.org/fhir/StructureDefinition/structuredefinition-ballot-status",
  *       "valueString": "Informative"
@@ -50,12 +49,10 @@ public class ExtensionSerializer extends JsonSerializer<Extension<?>> {
 	public void serialize(Extension<?> extension, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(extension.getExtensionType().getCodeValue());
-		jGen.writeStartArray();
 		jGen.writeStartObject();
 		jGen.writeStringField(URL, extension.getUrl().getUriValue());
 		jGen.writeObjectField(typeName, extension.getValue());
 		jGen.writeEndObject();
-		jGen.writeEndArray();
 	}
 
 }

@@ -27,11 +27,15 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.ContactDetail;
+import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Period;
 
 /**
  * 
@@ -47,6 +51,36 @@ public class ModelSerializationTest extends FhirTest {
 			.code(IssueType.INVALID)
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error");
+	
+	@Test
+	public void contactDetailTest() throws Exception {
+		
+		ContactPoint cp = ContactPoint.builder()
+				.period(new Period(null, null))
+				.rank(1)
+				.system("system")
+				.value("value")
+				.build();
+		
+		ContactDetail cd = ContactDetail.builder()
+				.name("name")
+				.addContactPoint(cp)
+				.build();
+		
+		printPrettyJson(cd);
+		
+		String expected = "{\"name\":\"name\","
+				+ "\"telecom\":"
+					+ "[{\"system\":\"system\","
+					+ "\"value\":\"value\","
+					+ "\"rank\":1,"
+					+ "\"period\":{}}"
+					+ "]"
+				+ "}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(cd));
+				
+	}
 	
 	@Test
 	public void operationOutcomeTest() throws Exception {

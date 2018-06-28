@@ -34,14 +34,18 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Extension;
+import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Period;
 import com.b2international.snowowl.fhir.core.model.dt.Reference;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * 
@@ -148,6 +152,45 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(reference));
 	}
 	
+	@Test
+	public void extensionTest() throws Exception {
+		
+		@SuppressWarnings("rawtypes")
+		Extension extension = new IntegerExtension("url", 1);
+		
+		printPrettyJson(extension);
+		
+		String expected = "{\"url\":\"url\",\"valueInteger\":1}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(extension));
+	}
+	
+	@Test
+	public void contactPointTest() throws Exception {
+		
+		ContactPoint cp = ContactPoint.builder()
+				.id("element_id")
+				.addExtension(new IntegerExtension("url", 1))
+				.addExtension(new IntegerExtension("url2", 2))
+				.period(new Period(null, null))
+				.rank(1)
+				.system("system")
+				.value("value")
+				.build();
+		
+		printPrettyJson(cp);
+		
+		String expected = "{\"id\":\"element_id\","
+				+ "\"system\":\"system\","
+				+ "\"value\":\"value\","
+				+ "\"rank\":1,"
+				+ "\"period\":{},"
+				+ "\"extension\":"
+					+ "[{\"url\":\"url\",\"valueInteger\":1},{\"url\":\"url2\",\"valueInteger\":2}]"
+				+ "}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(cp));
+	}
 	
 	@Test
 	public void identifierTest() throws Exception {

@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public abstract class Extension<T> {
 	
 	//Identifies the meaning of the extension
+	//TODO: validator needs to be called.
 	@Valid
 	@NotNull
 	protected final Uri url;
