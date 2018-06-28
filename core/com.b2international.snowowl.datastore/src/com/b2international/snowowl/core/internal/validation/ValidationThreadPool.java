@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.internal.validation;
 
 import java.util.UUID;
 
+import javax.xml.bind.ValidationException;
+
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
@@ -29,31 +31,34 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
  * @since 6.0
  */
 public final class ValidationThreadPool {
-	
+
 	private final int maxValidationThreadCount;
 
 	public ValidationThreadPool(final int maxValidationThreadCount) {
 		this.maxValidationThreadCount = maxValidationThreadCount;
 	}
-	
+
 	public Promise<Object> submit(CheckType checkType, Runnable runnable) {
 		final Job job = new ValidationJob(checkType.getName(), runnable);
 		String uniqueRuleId = UUID.randomUUID().toString();
 		final ISchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType, maxValidationThreadCount, uniqueRuleId);
 		final Promise<Object> isRuleDonePromise = new Promise<>();
-		
+
 		job.setSystem(true);
 		job.setRule(schedulingRule);
 		job.addJobChangeListener(new JobChangeAdapter() {
-			
+
 			public void done(IJobChangeEvent event) {
-					isRuleDonePromise.resolve(event.getResult().isOK());
-					
+				if (event.getResult().isOK()) {
+					isRuleDonePromise.resolve(Boolean.TRUE);
+				} else {
+					isRuleDonePromise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
+				}
 			};
-			
+
 		});
 		job.schedule();
 		return isRuleDonePromise;
 	}
-	
+
 }
