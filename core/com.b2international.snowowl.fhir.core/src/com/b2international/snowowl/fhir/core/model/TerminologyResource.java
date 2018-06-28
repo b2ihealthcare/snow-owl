@@ -91,7 +91,7 @@ public abstract class TerminologyResource extends DomainResource {
 	 * @param text
 	 */
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date, String publisher, String description) {
+			String name, String title, Code status, final Date date, final ContactDetail contact, final String publisher, final String description) {
 		super(id, language, text);
 		this.url = url;
 		this.identifier = identifier;
@@ -100,6 +100,7 @@ public abstract class TerminologyResource extends DomainResource {
 		this.title = title;
 		this.status = status;
 		this.date = date;
+		this.contact = contact;
 		this.publisher = publisher;
 		this.description = description;
 	}
@@ -123,6 +124,8 @@ public abstract class TerminologyResource extends DomainResource {
 		protected Code status;
 		
 		protected Date date;
+		
+		protected ContactDetail contact;
 		
 		protected String publisher;
 		
@@ -185,6 +188,11 @@ public abstract class TerminologyResource extends DomainResource {
 			} catch (ParseException e) {
 				throw new IllegalArgumentException(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, e);
 			}
+			return getSelf();
+		}
+		
+		public B contact(ContactDetail contact) {
+			this.contact = contact;
 			return getSelf();
 		}
 		

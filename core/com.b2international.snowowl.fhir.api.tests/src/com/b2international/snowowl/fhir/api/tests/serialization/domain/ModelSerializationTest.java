@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.fhir.api.tests.serialization.domain;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,19 +26,20 @@ import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
-import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Period;
 
 /**
@@ -79,7 +84,33 @@ public class ModelSerializationTest extends FhirTest {
 				+ "}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(cd));
-				
+	}
+	
+	@Test
+	public void metaTest() throws Exception {
+		
+		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		Date date = df.parse(TEST_DATE_STRING);
+		Instant instant = Instant.builder().instant(date).build();
+		
+		Meta meta = Meta.builder()
+			.versionId(new Id("versionId"))
+			.lastUpdated(instant)
+			.addProfile("profileValue")
+			.addSecurity(Coding.builder().build())
+			.addTag(Coding.builder().build())
+			.build();
+		
+		printPrettyJson(meta);
+		
+		String expected = "{\"versionId\":\"versionId\","
+				+ "\"lastUpdated\":\"2018-03-23T07:49:40Z\","
+				+ "\"profile\""
+					+ ":[\"profileValue\"],"
+				+ "\"security\":[{}],"
+				+ "\"tag\":[{}]}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(meta));
 	}
 	
 	@Test

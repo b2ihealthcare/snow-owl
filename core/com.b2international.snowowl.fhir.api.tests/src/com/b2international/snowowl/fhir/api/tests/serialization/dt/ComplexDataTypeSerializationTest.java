@@ -77,7 +77,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		String expected = "{\"code\":\"1234\","
 				+ "\"system\":\"http://snomed.info/sct\","
-				+ "\"version\":\"20180131\",\"userSelected\":false}";
+				+ "\"version\":\"20180131\"}";
 		
 		Assert.assertEquals(expected, jsonString);
 	}
@@ -230,8 +230,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 					+ "{\"text\":\"codingText\","
 					+ "\"coding\":"
 						+ "[{\"code\":\"codingCode\","
-						+ "\"display\":\"codingDisplay\","
-						+ "\"userSelected\":false}]},"
+						+ "\"display\":\"codingDisplay\"}"
+						+ "]},"
 					+ "\"system\":\"system\","
 					+ "\"value\":\"value\","
 					+ "\"period\":"

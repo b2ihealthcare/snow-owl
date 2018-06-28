@@ -134,7 +134,13 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	private ValueSet.Builder createValueSetBuilder(final SnomedReferenceSet referenceSet, final String displayLanguage) {
 		
 		String referenceSetId = referenceSet.getId();
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, getFhirUri(), referenceSetId);
+		
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(getFhirUri())
+			.value(referenceSetId)
+			.build();
+		
 		String id = repositoryId() + "/" + referenceSetId;
 		
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)

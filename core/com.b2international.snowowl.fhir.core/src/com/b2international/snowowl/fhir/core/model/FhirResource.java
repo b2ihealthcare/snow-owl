@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
@@ -39,6 +40,9 @@ public abstract class FhirResource {
 	
 	@Mandatory
 	private Id id;
+	
+	@Summary
+	private Meta meta;
 
 	private Code language;
 	
@@ -59,6 +63,8 @@ public abstract class FhirResource {
 
 		protected Id id;
 
+		protected Meta meta;
+		
 		protected Code language;
 		
 		/**

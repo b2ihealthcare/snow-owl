@@ -48,7 +48,7 @@ public class Coding {
 	private String version;
 	
 	@JsonProperty("userSelected")
-	private boolean isUserSelected;
+	private Boolean isUserSelected;
 	
 	private String display;
 
@@ -63,7 +63,7 @@ public class Coding {
 	 * @param isUserSelected
 	 * @param display
 	 */
-	Coding(Code code, Uri system, String version, boolean isUserSelected, String display) {
+	Coding(Code code, Uri system, String version, Boolean isUserSelected, String display) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
@@ -112,7 +112,7 @@ public class Coding {
 	/**
 	 * @return the isUserSelected
 	 */
-	public boolean isUserSelected() {
+	public Boolean isUserSelected() {
 		return isUserSelected;
 	}
 
@@ -129,7 +129,7 @@ public class Coding {
 		int result = 1;
 		result = prime * result + ((code == null) ? 0 : code.hashCode());
 		result = prime * result + ((display == null) ? 0 : display.hashCode());
-		result = prime * result + (isUserSelected ? 1231 : 1237);
+		result = prime * result + ((isUserSelected == null) ? 0 : isUserSelected.hashCode());
 		result = prime * result + ((system == null) ? 0 : system.hashCode());
 		result = prime * result + ((version == null) ? 0 : version.hashCode());
 		return result;
@@ -154,7 +154,10 @@ public class Coding {
 				return false;
 		} else if (!display.equals(other.display))
 			return false;
-		if (isUserSelected != other.isUserSelected)
+		if (isUserSelected == null) {
+			if (other.isUserSelected != null)
+				return false;
+		} else if (!isUserSelected.equals(other.isUserSelected))
 			return false;
 		if (system == null) {
 			if (other.system != null)
@@ -178,7 +181,7 @@ public class Coding {
 		private Code code;
 		private Uri system;
 		private String version;
-		private boolean isUserSelected;
+		private Boolean isUserSelected;
 		private String display;
 
 		public Builder code(final String code) {
@@ -196,7 +199,6 @@ public class Coding {
 			return this;
 		}
 
-		
 		public Builder isUserSelected(final boolean isUserSelected) {
 			this.isUserSelected = isUserSelected;
 			return this;

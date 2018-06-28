@@ -20,6 +20,7 @@ import java.util.Date;
 
 import javax.validation.Valid;
 
+import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -55,9 +56,9 @@ public class ValueSet extends TerminologyResource {
 	private final Collection<Compose> composeParts;
 	
 	public ValueSet(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, final Date date, String publisher, String description, Collection<Compose> composeParts) {
+			String title, Code status, final Date date, final ContactDetail contact, String publisher, String description, Collection<Compose> composeParts) {
 		
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, description);
+		super(id, language, text, url, identifier, version, name, title, status, date, contact, publisher, description);
 		this.composeParts = composeParts;
 	}
 	
@@ -86,7 +87,7 @@ public class ValueSet extends TerminologyResource {
 		@Override
 		protected ValueSet doBuild() {
 			return new ValueSet(id, language, text, url, identifier, version, name, 
-					title, status, date, publisher, description, composeParts);
+					title, status, date, contact, publisher, description, composeParts);
 		}
 	}
 		

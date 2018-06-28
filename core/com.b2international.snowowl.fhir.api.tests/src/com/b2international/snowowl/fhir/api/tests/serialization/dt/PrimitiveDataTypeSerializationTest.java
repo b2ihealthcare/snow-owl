@@ -17,11 +17,17 @@ package com.b2international.snowowl.fhir.api.tests.serialization.dt;
 
 import static org.junit.Assert.assertEquals;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
@@ -55,6 +61,17 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 		printPrettyJson(uri);
 		String expectedJson = "\"value\"";
 		assertEquals(expectedJson, objectMapper.writeValueAsString(uri));
+	}
+	
+	@Test
+	public void instantTest() throws Exception {
+		
+		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		Date date = df.parse(TEST_DATE_STRING);
+		Instant instant = Instant.builder().instant(date).build();
+		printPrettyJson(instant);
+		String expectedJson = "\"2018-03-23T07:49:40Z\"";
+		assertEquals(expectedJson, objectMapper.writeValueAsString(instant));
 	}
 
 }
