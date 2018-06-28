@@ -3,8 +3,6 @@
  *******************************************************************************/
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**

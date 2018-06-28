@@ -203,9 +203,5 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Assert.assertEquals(expected, jsonString);
 	}
-	
-	
-	
-	
 
 }

@@ -70,7 +70,6 @@ public class Identifier {
 		private Period period;
 		private Reference assigner;
 
-		
 		/**
 		 * usual | official | temp | secondary (If known)
 		 * @param identifierUse
