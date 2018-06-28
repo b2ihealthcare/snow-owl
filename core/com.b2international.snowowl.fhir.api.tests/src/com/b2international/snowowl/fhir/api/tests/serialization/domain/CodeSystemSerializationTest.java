@@ -255,7 +255,12 @@ public class CodeSystemSerializationTest extends FhirTest {
 	@Test 
 	public void codeSystemTest() throws Exception {
 		
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), "OID:1234.1234");
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(new Uri("www.hl7.org"))
+			.value("OID:1234.1234")
+			.build();
+		
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())

@@ -70,11 +70,6 @@ public class CodeSystem extends TerminologyResource {
 	@JsonProperty
 	private String resourceType = "CodeSystem";
 
-	//Revision date
-	@Summary
-	@JsonProperty
-	private Date date;
-	
 	@Summary
 	@JsonProperty
 	private Code hierarchyMeaning;
@@ -112,13 +107,12 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final String publisher, final String description, 
-			final Date date, final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
+			final Date date, final String publisher, final String description, 
+			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
 			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, language, text, url, identifier, version, name, title, status, publisher, description);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, description);
 
-		this.date = date;
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
 		this.count = count;
@@ -137,8 +131,6 @@ public class CodeSystem extends TerminologyResource {
 
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
-		private Date date;
-		
 		private Code hierarchyMeaning;
 
 		private Code content;
@@ -166,21 +158,6 @@ public class CodeSystem extends TerminologyResource {
 			return this;
 		}
 		
-		public Builder date(Date date) {
-			this.date = date;
-			return getSelf();
-		}
-		
-		public Builder date(String dateString) {
-			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-			try {
-				this.date = df.parse(dateString);
-			} catch (ParseException e) {
-				throw new IllegalArgumentException(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, e);
-			}
-			return getSelf();
-		}
-
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
 			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
 			return getSelf();
@@ -213,8 +190,8 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, publisher, description, 
-					date, hierarchyMeaning, content, count, filters, properties, concepts);
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, description, 
+					hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}
 

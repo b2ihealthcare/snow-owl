@@ -61,7 +61,12 @@ public class FilterTest extends FhirTest {
 	@Before
 	public void setupFilter() {
 		filteredClass = new FilteredClass("ID123", "Balazs", "Banfai", "Andrassy Ave.");
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri("www.hl7.org"), "OID:1234.1234");
+		
+		Identifier identifier = Identifier.builder()
+				.use(IdentifierUse.OFFICIAL)
+				.system(new Uri("www.hl7.org"))
+				.value("OID:1234.1234")
+				.build();
 		
 		codeSystem = CodeSystem.builder("repo/shortName")
 				.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
@@ -173,7 +178,6 @@ public class FilterTest extends FhirTest {
 		System.out.println("Requested fields: " + requestedFields);
 		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
 
-
 		setupSummaryFilter(summaryParameter);
 
 		printPrettyJson(filteredClass);
@@ -191,6 +195,7 @@ public class FilterTest extends FhirTest {
 				+ "\"name\":\"Local code system\","
 				+ "\"title\":\"title\","
 				+ "\"status\":\"active\","
+				+ "\"publisher\":\"B2i\","
 				+ "\"description\":\"Code system description\","
 				+ "\"hierarchyMeaning\":\"is-a\","
 				+ "\"content\":\"complete\","
@@ -233,7 +238,9 @@ public class FilterTest extends FhirTest {
 				+ "\"identifier\":"
 				+ "{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
-				+ "\"title\":\"title\",\"status\":\"active\","
+				+ "\"title\":\"title\","
+				+ "\"status\":\"active\","
+				+ "\"publisher\":\"B2i\","
 				+ "\"hierarchyMeaning\":\"is-a\","
 				+ "\"content\":\"complete\","
 				+ "\"property\":[{\"code\":\"child\","

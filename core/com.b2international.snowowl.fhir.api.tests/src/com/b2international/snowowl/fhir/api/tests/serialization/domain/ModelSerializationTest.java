@@ -49,58 +49,6 @@ public class ModelSerializationTest extends FhirTest {
 			.diagnostics("1 validation error");
 	
 	@Test
-	public void codingTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-			.code("1234")
-			.system("http://snomed.info/sct")
-			.version("20180131")
-			.build();
-		
-		String jsonString = objectMapper.writeValueAsString(coding);
-		
-		String expected = "{\"code\":\"1234\","
-				+ "\"system\":\"http://snomed.info/sct\","
-				+ "\"version\":\"20180131\",\"userSelected\":false}";
-		
-		Assert.assertEquals(expected, jsonString);
-	}
-	
-	@Test
-	public void narrativeTest() throws Exception {
-		
-		Narrative narrative = Narrative.builder()
-				.div("<div>This is text</div>")
-				.status(NarrativeStatus.GENERATED)
-				.build();
-		
-		printPrettyJson(narrative);
-		
-		
-		String expected = "{\"status\":\"generated\"," + 
-				"\"div\":\"<div>This is text</div>\"}";
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(narrative));
-	}
-	
-	@Test
-	public void incorrentNarrativeTest() throws Exception {
-		
-		Issue expectedIssue = builder.addLocation("Narrative.div")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
-				.build();
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-
-		Narrative.builder()
-			.div("<div>")
-			.status(NarrativeStatus.GENERATED)
-			.build();
-	}
-	
-	@Test
 	public void operationOutcomeTest() throws Exception {
 		OperationOutcome ou = OperationOutcome.builder()
 				.addIssue(Issue.builder()
@@ -123,11 +71,6 @@ public class ModelSerializationTest extends FhirTest {
 	
 	@Test
 	public void missingIssueTest() throws Exception {
-
-		Builder builder = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")

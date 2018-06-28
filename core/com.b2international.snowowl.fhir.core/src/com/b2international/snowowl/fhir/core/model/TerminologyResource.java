@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
@@ -62,9 +69,18 @@ public abstract class TerminologyResource extends DomainResource {
 	@JsonProperty
 	private Code status;
 	
+	//Revision date
+	@Summary
+	@JsonProperty
+	private Date date;
+	
 	@Summary
 	@JsonProperty
 	private String publisher;
+	
+	@Summary
+	@JsonProperty
+	private ContactDetail contact;
 
 	@JsonProperty
 	private String description;
@@ -75,7 +91,7 @@ public abstract class TerminologyResource extends DomainResource {
 	 * @param text
 	 */
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, String publisher, String description) {
+			String name, String title, Code status, final Date date, String publisher, String description) {
 		super(id, language, text);
 		this.url = url;
 		this.identifier = identifier;
@@ -83,6 +99,7 @@ public abstract class TerminologyResource extends DomainResource {
 		this.name = name;
 		this.title = title;
 		this.status = status;
+		this.date = date;
 		this.publisher = publisher;
 		this.description = description;
 	}
@@ -104,6 +121,8 @@ public abstract class TerminologyResource extends DomainResource {
 		protected String title;
 
 		protected Code status;
+		
+		protected Date date;
 		
 		protected String publisher;
 		
@@ -151,6 +170,21 @@ public abstract class TerminologyResource extends DomainResource {
 
 		public B status(PublicationStatus status) {
 			this.status = status.getCode();
+			return getSelf();
+		}
+		
+		public B date(Date date) {
+			this.date = date;
+			return getSelf();
+		}
+		
+		public B date(String dateString) {
+			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+			try {
+				this.date = df.parse(dateString);
+			} catch (ParseException e) {
+				throw new IllegalArgumentException(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, e);
+			}
 			return getSelf();
 		}
 		

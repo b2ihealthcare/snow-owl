@@ -118,8 +118,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 */
 	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
 		
-		
-		Identifier identifier = new Identifier(IdentifierUse.OFFICIAL, null, new Uri(codeSystemEntry.getOrgLink()), codeSystemEntry.getOid());
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(codeSystemEntry.getOrgLink())
+			.value(codeSystemEntry.getOid())
+			.build();
 		
 		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
 		

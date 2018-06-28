@@ -41,11 +41,9 @@ import io.swagger.annotations.ApiModel;
 public class Coding {
 	
 	@Valid
-	@NotNull
 	private Code code;
 	
 	@Valid
-	@NotNull
 	private Uri system;
 	
 	private String version;

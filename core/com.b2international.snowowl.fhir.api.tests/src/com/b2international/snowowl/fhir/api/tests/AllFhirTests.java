@@ -26,6 +26,8 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSyste
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ValueSetSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.dt.ComplexDataTypeSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.DesignationSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.LookupResultSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterDeserializationTest;
@@ -39,7 +41,10 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
+	PrimitiveDataTypeSerializationTest.class,
+	ComplexDataTypeSerializationTest.class,
 	/*
+	 */
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
 	PropertySerializationTest.class,
@@ -47,9 +52,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 	ModelSerializationTest.class,
 	
 	LookupResultSerializationTest.class,
-	 */
 	CodeSystemSerializationTest.class,
-/*
 	BundleSerializationTest.class,
 	
 	//This tests are pretty meaningless
@@ -60,6 +63,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	FilterTest.class
+	/*
 	*/
 })
 public class AllFhirTests {

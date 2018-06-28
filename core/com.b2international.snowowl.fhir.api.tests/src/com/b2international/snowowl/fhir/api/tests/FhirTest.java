@@ -32,6 +32,8 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
  */
 public class FhirTest {
 	
+	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40+0000"; //$NON-NLS-N$
+	
 	protected static ObjectMapper objectMapper;
 	
 	@BeforeClass
