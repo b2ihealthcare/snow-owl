@@ -18,7 +18,7 @@ package com.b2international.snowowl.datastore.internal;
 import java.util.Collection;
 
 import com.b2international.commons.CompositeClassLoader;
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 import com.b2international.snowowl.datastore.RepositoryClassLoaderProvider;
 import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 

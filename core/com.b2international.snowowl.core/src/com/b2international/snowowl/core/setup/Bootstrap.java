@@ -24,7 +24,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.framework.BundleContext;
 
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 

@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ConflictException;
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.b2international.snowowl.core.merge.MergeConflict;

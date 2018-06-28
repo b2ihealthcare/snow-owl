@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore;
 
-import static com.b2international.commons.platform.Extensions.getExtensions;
+import static com.b2international.commons.extension.Extensions.getExtensions;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Predicate;
