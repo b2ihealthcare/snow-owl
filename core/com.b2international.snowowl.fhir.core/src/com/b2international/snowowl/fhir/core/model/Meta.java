@@ -47,6 +47,7 @@ public class Meta extends Element {
 	 */
 	protected Meta(String id, Collection<Extension> extensions,
 			final Id versionId, final Instant lastUpdated, final Collection<Uri> profiles, final Collection<Coding> securities, final Collection<Coding> tags) {
+		
 		super(id, extensions);
 		this.versionId = versionId;
 		this.lastUpdated = lastUpdated;

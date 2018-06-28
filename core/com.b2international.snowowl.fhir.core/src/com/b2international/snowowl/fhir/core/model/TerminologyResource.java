@@ -91,7 +91,7 @@ public abstract class TerminologyResource extends DomainResource {
 	 * @param text
 	 */
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date, final ContactDetail contact, final String publisher, final String description) {
+			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description) {
 		super(id, language, text);
 		this.url = url;
 		this.identifier = identifier;
@@ -125,9 +125,9 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		protected Date date;
 		
-		protected ContactDetail contact;
-		
 		protected String publisher;
+
+		protected ContactDetail contact;
 		
 		protected String description;
 		
@@ -191,15 +191,16 @@ public abstract class TerminologyResource extends DomainResource {
 			return getSelf();
 		}
 		
+		public B publisher(String publisher) {
+			this.publisher = publisher;
+			return getSelf();
+		}
+
 		public B contact(ContactDetail contact) {
 			this.contact = contact;
 			return getSelf();
 		}
 		
-		public B publisher(String publisher) {
-			this.publisher = publisher;
-			return getSelf();
-		}
 	}
 
 }

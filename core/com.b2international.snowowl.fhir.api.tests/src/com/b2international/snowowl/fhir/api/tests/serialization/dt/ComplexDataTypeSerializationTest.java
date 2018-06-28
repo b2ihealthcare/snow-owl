@@ -33,6 +33,7 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
@@ -44,8 +45,10 @@ import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Period;
+import com.b2international.snowowl.fhir.core.model.dt.Quantity;
+import com.b2international.snowowl.fhir.core.model.dt.Range;
 import com.b2international.snowowl.fhir.core.model.dt.Reference;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.SimpleQuantity;
 
 /**
  * 
@@ -116,6 +119,48 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	}
 	
 	@Test
+	public void quantityTest() throws Exception {
+		
+		Quantity quantity = Quantity.builder()
+			.value(12.3)
+			.unit("mg")
+			.system("uri:LOINC")
+			.code("code")
+			.comparator(QuantityComparator.GREATER_OR_EQUAL_TO)
+			.build();
+		
+		printPrettyJson(quantity);
+		
+		String expected = "{\"value\":12.3,"
+				+ "\"comparator\":\">=\","
+				+ "\"unit\":\"mg\""
+				+ ",\"system\":\"uri:LOINC\","
+				+ "\"code\":\"code\"}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(quantity));
+	}
+	
+	@Test
+	public void incorrectSimpleQuantityTest() throws Exception {
+		
+		Issue expectedIssue = builder.addLocation("Builder.comparator")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'comparator' content is invalid [Code [codeValue=>=]]. Violation: must be null.")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		//exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		SimpleQuantity.builder()
+			.value(12.3)
+			.unit("mg")
+			.system("uri:LOINC")
+			.code("code")
+			.comparator(QuantityComparator.GREATER_OR_EQUAL_TO)
+			.build();
+	}
+	
+	@Test
 	public void periodTest() throws Exception {
 		
 		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
@@ -132,6 +177,34 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				"\"end\":\"2018-03-24T07:49:40+0000\"}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(period));
+	}
+	
+	@Test
+	public void rangeTest() throws Exception {
+		
+		SimpleQuantity low = (SimpleQuantity) SimpleQuantity.builder()
+			.value(12.3)
+			.unit("mg")
+			.system("uri:LOINC")
+			.code("code1")
+			.build();
+		
+		SimpleQuantity high = (SimpleQuantity) SimpleQuantity.builder()
+				.value(120.3)
+				.unit("mg")
+				.system("uri:LOINC")
+				.code("code1")
+				.build();
+			
+		
+		Range range = new Range(low, high);
+		
+		printPrettyJson(range);
+		
+		String expected = "{\"low\":{\"value\":12.3,\"unit\":\"mg\",\"system\":\"uri:LOINC\",\"code\":\"code1\"},"
+				+ "\"high\":{\"value\":120.3,\"unit\":\"mg\",\"system\":\"uri:LOINC\",\"code\":\"code1\"}}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(range));
 	}
 	
 	@Test

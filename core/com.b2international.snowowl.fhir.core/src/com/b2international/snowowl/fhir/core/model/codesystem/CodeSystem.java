@@ -104,11 +104,11 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final Date date, final ContactDetail contact, final String publisher, final String description, 
+			final Date date, final String publisher, final ContactDetail contact, final String description, 
 			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
 			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, language, text, url, identifier, version, name, title, status, date, contact, publisher, description);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description);
 
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
@@ -187,7 +187,7 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, contact, publisher, description, 
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, 
 					hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}

@@ -16,54 +16,45 @@
 package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.Collection;
-import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * FHIR period complex datatype
+ * FHIR Range complex datatype
  * 
- * If the start element is missing, the start of the period is not known. 
- * If the end element is missing, it means that the period is ongoing, or the start may be in the past, 
- * and the end date in the future, which means that period is expected/planned to end at the specified time.
+ * The unit and code/system elements of the low or high elements SHALL match.
+ * If the low or high elements are missing, the meaning is that the low or high boundaries 
+ * are not known and therefore neither is the complete range.
  *
- * @see <a href="https://www.hl7.org/fhir/datatypes.html#period">FHIR:Data Types:Period</a>
+ * @see <a href="https://www.hl7.org/fhir/datatypes.html#range">FHIR:Data Types:Range</a>
  * @since 6.6
  */
-public class Period extends Element {
+public class Range extends Element {
 	
 	@JsonProperty
-	private Date start;
+	private SimpleQuantity low;
 	
 	@JsonProperty
-	private Date end;
+	private SimpleQuantity high;
 	
-	public Period(final Date start, final Date end) {
-		this(start, end, null, null);
+	public Range(final SimpleQuantity low, final SimpleQuantity high) {
+		this(low, high, null, null);
 	}
 	
-	public Period(final Date start, final Date end, final String id, final Collection<Extension> extensions) {
+	public Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final Collection<Extension> extensions) {
 		super(id, extensions);
-		this.start = start;
-		this.end = end;
+		this.low = low;
+		this.high = high;
 	}
 
-	/**
-	 * Returns the start date with inclusive boundary
-	 * @return
-	 */
-	public Date getStart() {
-		return start;
+	public SimpleQuantity getLow() {
+		return low;
 	}
 	
-	/**
-	 * Returns the end date with inclusive boundary
-	 * @return
-	 */
-	public Date getEnd() {
-		return end;
+	public SimpleQuantity getHigh() {
+		return high;
 	}
 
 }

@@ -13,70 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.property;
+package com.b2international.snowowl.fhir.core.model.usagecontext;
+
+import java.util.Collection;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
+import com.b2international.snowowl.fhir.core.model.Element;
+import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty.Builder;
 import com.b2international.snowowl.fhir.core.model.serialization.ConceptPropertySerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * FHIR Concept return property
- * @since 6.3
+ * 
+ * FHIR Usage Context
+ * 
+ * https://www.hl7.org/fhir/metadatatypes.html#UsageContext
+ * 
+ * It can be {@link CodeableConcept}, {@link Quantity} and {@link Range} 
+ * @since 6.6
  */
-@JsonSerialize(using=ConceptPropertySerializer.class)
-@JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public abstract class ConceptProperty<T> {
-	
-	//Identifies the property returned (1..1)
+@JsonSerialize(using=UsageContextSerializer.class)
+public abstract class UsageContext<T> extends Element {
+
+	//Type of the context being specified (1..1)
+	//UsageContextType (Extensible)
 	@Valid
 	@NotNull
-	protected final Code code;
+	protected final Coding code;
 	
-	@Valid
-	@NotEmpty
+	//@Valid
+	//@NotEmpty
+	@NotNull
 	protected final T value;
 	
-	ConceptProperty(final Code code, final T value) {
+	/**
+	 * @param id
+	 * @param extensions
+	 */
+	protected UsageContext(final String id, final Collection<Extension> extensions,
+			final Coding code, final T value) {
+		super(id, extensions);
 		this.code = code;
 		this.value = value;
 	}
 	
-	public Code getCode() {
+	public Coding getCode() {
 		return code;
-	}
-	
-	public abstract PropertyType getPropertyType();
-	
-	@JsonIgnore
-	public String getCodeValue() {
-		return code.getCodeValue();
 	}
 	
 	public T getValue() {
 		return value;
 	}
 	
-	public static abstract class Builder<B extends Builder<B, CP, T>, CP extends ConceptProperty<T>, T> extends ValidatingBuilder<CP> {
+	/**
+	 * @return the type to append during serialization
+	 */
+	public abstract String getType();
+	
+	public static abstract class Builder<B extends Builder<B, UC, T>, UC extends UsageContext<T>, T> extends Element.Builder<B, UC> {
 		
-		protected Code code;
+		protected Coding code;
 		protected T value;
 
-		public B code(final String code) {
-			this.code = new Code(code);
-			return getSelf();
-		}
-		
-		public B code(final Code code) {
+		public B code(final Coding code) {
 			this.code = code;
 			return getSelf();
 		}

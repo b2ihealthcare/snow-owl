@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.BundleSer
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.UsageContextSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.ValueSetSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.ComplexDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
@@ -41,16 +42,16 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
-	PrimitiveDataTypeSerializationTest.class,
+	//PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
 	/*
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
 	PropertySerializationTest.class,
 	DesignationSerializationTest.class,
-	 */
 	ModelSerializationTest.class,
-	
+	 */
+	UsageContextSerializationTest.class
 	/*
 	LookupResultSerializationTest.class,
 	CodeSystemSerializationTest.class,
