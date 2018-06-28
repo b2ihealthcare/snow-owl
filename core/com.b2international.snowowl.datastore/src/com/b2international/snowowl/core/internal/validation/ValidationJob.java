@@ -15,14 +15,10 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
-import java.util.UUID;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-
-import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 
 /**
  * @since 6.6
@@ -35,7 +31,7 @@ public class ValidationJob extends Job {
 	private final Runnable runnable;
 	
 	public ValidationJob(Object family, Runnable runnable) {
-		super(UUID.randomUUID().toString());
+		super(VALIDATION_JOB_NAME);
 		this.family = family;
 		this.runnable = runnable;
 	}

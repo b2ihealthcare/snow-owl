@@ -31,6 +31,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequ
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -72,7 +74,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			// clear all previously reported issues on this branch for each rule
 			final Set<String> ruleIds = rules.stream().map(ValidationRule::getId).collect(Collectors.toSet());
-
 			final Set<String> issuesToDelete = ValidationRequests.issues().prepareSearch()
 					.all()
 					.filterByBranchPath(branchPath)
@@ -86,15 +87,16 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			index.removeAll(Collections.singletonMap(ValidationIssue.class, issuesToDelete));
 			
-			ValidationThreadPool pool = context.service(ValidationThreadPool.class);
+			final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
 			final Multimap<String, IssueDetail> newIssuesByRule = HashMultimap.create();
 			
 			// evaluate selected rules
+			final List<Promise<Object>> validationPromises = Lists.newArrayList();
 			for (ValidationRule rule : rules) {
-				ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
+				final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 				if (evaluator != null) {
-					pool.submit(() -> {
+					validationPromises.add(pool.submit(rule.getCheckType(), () -> {
 						try {
 							LOG.info("Executing rule '{}'...", rule.getId());
 							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
@@ -105,12 +107,13 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 							// TODO report failed validation rule
 							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
 						}
-						return Boolean.TRUE;
-					})
-					.getSync();
-					
+					}));
 				}
 			}
+			
+			
+			Promise.all(validationPromises).getSync();
+			
 			
 			// fetch all white list entries to determine whether an issue is whitelisted already or not
 			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
@@ -155,7 +158,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		});
 		
 	}
-
+	
 	public void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
 	}

@@ -16,8 +16,9 @@
 package com.b2international.snowowl.core.internal.validation;
 
 import java.util.Objects;
+import java.util.UUID;
 
-import org.eclipse.core.internal.jobs.JobManager;
+import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 
@@ -26,13 +27,16 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
 /**
  * @since 6.6
  */
-@SuppressWarnings("restriction")
 public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
 	private final CheckType checkType;
+	private final int maxConcurrentJobs;
+	private final String uniqueRuleId;
 	
-	public ValidationRuleSchedulingRule(CheckType checkType) {
+	public ValidationRuleSchedulingRule(final CheckType checkType, final int maxConcurrentJobs, final String uniqueRuleId) {
 		this.checkType = checkType;
+		this.maxConcurrentJobs = maxConcurrentJobs;
+		this.uniqueRuleId = uniqueRuleId;
 	}
 
 	@Override
@@ -42,31 +46,49 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
 	@Override
 	public boolean isConflicting(ISchedulingRule schedulingRule) {
-		if (this.equals(schedulingRule)) {
-			return true;
-		}
-		
 		if (schedulingRule instanceof ValidationRuleSchedulingRule) {
 			final ValidationRuleSchedulingRule rule = (ValidationRuleSchedulingRule) schedulingRule;
-			final JobManager manager = (JobManager) Job.getJobManager();
-			if (CheckType.NORMAL == checkType) {
-				return manager.find(checkType.getName()).length >= 4;
-			}
+			final IJobManager manager = Job.getJobManager();
 			
-			if (CheckType.EXPENSIVE == checkType || CheckType.EXPENSIVE == rule.checkType) {
+			int existingExpensiveJobs = manager.find(CheckType.EXPENSIVE.getName()).length;
+			int existingFastJobs = manager.find(CheckType.FAST.getName()).length;
+			int existingNormalJobs = manager.find(CheckType.NORMAL.getName()).length;
+			
+			int allRunningJobs = existingExpensiveJobs + existingFastJobs + existingNormalJobs;
+			
+			if (allRunningJobs >= maxConcurrentJobs) {
 				return true;
 			}
 			
-			if (CheckType.FAST == checkType || CheckType.FAST == rule.checkType) {
-				return false;
+			if (allRunningJobs != 0 && (CheckType.EXPENSIVE == checkType || CheckType.EXPENSIVE == rule.checkType)) {
+				return true;
 			}
+			
+			if (CheckType.NORMAL == checkType || CheckType.NORMAL == rule.checkType) {
+				return existingNormalJobs >= 4;
+			}
+			
+			if (CheckType.FAST == checkType || CheckType.FAST == rule.checkType && uniqueRuleId.equals(rule.uniqueRuleId)) {
+				return true;
+			}
+			
 		}
+		
+		if (equals(schedulingRule)) {
+			return true;
+		}
+		
 		return false;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(checkType);
+		int hash = 17;
+		hash = hash * 31 + Objects.hash(checkType);
+		hash = hash * 31 + maxConcurrentJobs;
+		hash = hash * 31 + Objects.hash(uniqueRuleId); 
+		
+		return hash;
 	}
 	
 	@Override
@@ -74,8 +96,8 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		ValidationRuleSchedulingRule other = (ValidationRuleSchedulingRule) obj;
-		return Objects.equals(this.checkType, other.checkType);
+		final ValidationRuleSchedulingRule other = (ValidationRuleSchedulingRule) obj;
+		return Objects.equals(this.checkType, other.checkType) && Objects.equals(uniqueRuleId, other.uniqueRuleId);
 	}
 
 }

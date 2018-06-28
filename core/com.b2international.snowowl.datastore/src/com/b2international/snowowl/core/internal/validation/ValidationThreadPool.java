@@ -15,8 +15,12 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
-import org.eclipse.core.internal.jobs.JobManager;
+import java.util.UUID;
+
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
@@ -25,19 +29,31 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
  * @since 6.0
  */
 public final class ValidationThreadPool {
+	
+	private final int maxValidationThreadCount;
 
-	public ValidationThreadPool(int nThreads) {
+	public ValidationThreadPool(final int maxValidationThreadCount) {
+		this.maxValidationThreadCount = maxValidationThreadCount;
 	}
 	
-	public Promise<Boolean> submit(CheckType checkType, Runnable runnable) {
-		final ValidationJob job = new ValidationJob(checkType.getName(), runnable);
-		final ValidationRuleSchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType);
+	public Promise<Object> submit(CheckType checkType, Runnable runnable) {
+		final Job job = new ValidationJob(checkType.getName(), runnable);
+		String uniqueRuleId = UUID.randomUUID().toString();
+		final ISchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType, maxValidationThreadCount, uniqueRuleId);
+		final Promise<Object> isRuleDonePromise = new Promise<>();
+		
 		job.setSystem(true);
 		job.setRule(schedulingRule);
+		job.addJobChangeListener(new JobChangeAdapter() {
+			
+			public void done(IJobChangeEvent event) {
+					isRuleDonePromise.resolve(event.getResult().isOK());
+					
+			};
+			
+		});
 		job.schedule();
-		final JobManager manager = (JobManager) Job.getJobManager();
-		Job[] find = manager.find(checkType.getName());
-		return Promise.immediate(Boolean.TRUE);
+		return isRuleDonePromise;
 	}
 	
 }
