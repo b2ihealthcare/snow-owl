@@ -18,14 +18,32 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 import java.io.Serializable;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 7.0
  */
 public final class EquivalentConceptSet implements Serializable {
 
+	/**
+	 * Enumerates expandable property keys.
+	 */
+	public static final class Expand {
+		public static final String EQUIVALENT_CONCEPTS = "equivalentConcepts";
+	}
+
+	private String classificationId;
 	private boolean unsatisfiable;
 	private SnomedConcepts equivalentConcepts;
+
+	@JsonIgnore
+	public String getClassificationId() {
+		return classificationId;
+	}
+
+	public void setClassificationId(final String classificationId) {
+		this.classificationId = classificationId;
+	}
 
 	public boolean isUnsatisfiable() {
 		return unsatisfiable;
@@ -46,7 +64,9 @@ public final class EquivalentConceptSet implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("EquivalentConceptSet [unsatisfiable=");
+		builder.append("EquivalentConceptSet [classificationId=");
+		builder.append(classificationId);
+		builder.append(", unsatisfiable=");
 		builder.append(unsatisfiable);
 		builder.append(", equivalentConcepts=");
 		builder.append(equivalentConcepts);

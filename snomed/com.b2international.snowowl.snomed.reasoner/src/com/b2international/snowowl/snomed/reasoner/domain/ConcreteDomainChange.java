@@ -18,21 +18,32 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 import java.io.Serializable;
 
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 7.0
  */
 public final class ConcreteDomainChange implements Serializable {
 
-	private ChangeNature changeNature;
-
-	/*
-	 * Inferred change: UUID and moduleId are unset, referencedComponentId is set to
-	 * the inference target, other CD properties are not modified
-	 * 
-	 * Redundant change: reference set member is fully populated and unmodified
+	/**
+	 * Enumerates expandable property keys.
 	 */
+	public static final class Expand {
+		public static final String CONCRETE_DOMAIN_MEMBER = "concreteDomainMember";
+	}
+	
+	private String classificationId;
+	private ChangeNature changeNature;
 	private SnomedReferenceSetMember concreteDomainMember;
+
+	@JsonIgnore
+	public String getClassificationId() {
+		return classificationId;
+	}
+
+	public void setClassificationId(final String classificationId) {
+		this.classificationId = classificationId;
+	}
 
 	public ChangeNature getChangeNature() {
 		return changeNature;
@@ -53,7 +64,9 @@ public final class ConcreteDomainChange implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("ConcreteDomainChange [changeNature=");
+		builder.append("ConcreteDomainChange [classificationId=");
+		builder.append(classificationId);
+		builder.append(", changeNature=");
 		builder.append(changeNature);
 		builder.append(", concreteDomainMember=");
 		builder.append(concreteDomainMember);

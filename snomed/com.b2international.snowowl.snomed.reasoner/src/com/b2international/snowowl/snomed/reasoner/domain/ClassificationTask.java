@@ -23,6 +23,15 @@ import java.util.Date;
  */
 public final class ClassificationTask implements Serializable {
 
+	/**
+	 * Enumerates expandable property keys.
+	 */
+	public static final class Expand {
+		public static final String EQUIVALENT_CONCEPT_SETS = "equivalentConceptSets";
+		public static final String RELATIONSHIP_CHANGES = "relationshipChanges";
+		public static final String CONCRETE_DOMAIN_CHANGES = "concreteDomainChanges";
+	}
+
 	private String id;
 	private String userId;
 	private String reasonerId;
