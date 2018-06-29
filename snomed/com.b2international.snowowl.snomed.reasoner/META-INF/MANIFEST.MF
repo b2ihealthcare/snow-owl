@@ -17,6 +17,5 @@ Export-Package: com.b2international.snowowl.snomed.reasoner.classification,
  com.b2international.snowowl.snomed.reasoner.exceptions,
  com.b2international.snowowl.snomed.reasoner.model,
  com.b2international.snowowl.snomed.reasoner.ontology,
- com.b2international.snowowl.snomed.reasoner.preferences,
  com.b2international.snowowl.snomed.reasoner.request
 Import-Package: org.slf4j

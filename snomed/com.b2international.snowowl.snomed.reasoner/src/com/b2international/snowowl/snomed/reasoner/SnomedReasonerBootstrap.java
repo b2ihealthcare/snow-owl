@@ -24,8 +24,6 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServerService;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
 import com.b2international.snowowl.snomed.reasoner.ontology.SnomedOntologyService;
-import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.b2international.snowowl.snomed.reasoner.preferences.ReasonerPreferencesService;
 
 /**
  * @since 7.0
@@ -40,7 +38,6 @@ public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
 		if (env.isServer() || env.isEmbedded()) {
 
 			env.services().registerService(SnomedOntologyService.class, new SnomedOntologyService());
-			env.services().registerService(IReasonerPreferencesService.class, new ReasonerPreferencesService());
 
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerCount = snomedConfig.getMaxReasonerCount();
