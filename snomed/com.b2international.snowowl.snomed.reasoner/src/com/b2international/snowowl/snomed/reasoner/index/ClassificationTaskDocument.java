@@ -16,8 +16,11 @@
 package com.b2international.snowowl.snomed.reasoner.index;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyEnum;
 import static com.b2international.index.query.Expressions.matchRange;
 
+import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.index.Doc;
@@ -39,12 +42,17 @@ public final class ClassificationTaskDocument {
 		public static final String USER_ID = "userId";
 		public static final String BRANCH = "branch";
 		public static final String TIMESTAMP = "timestamp";
+		public static final String STATUS = "status";
 		public static final String CREATION_DATE = "creationDate";
 	}
 
 	public static class Expressions {
 		public static Expression id(final String id) {
 			return exactMatch(Fields.ID, id);
+		}
+
+		public static final Expression ids(final Collection<String> ids) {
+			return matchAny(Fields.ID, ids);
 		}
 
 		public static Expression userId(final String userId) {
@@ -55,12 +63,20 @@ public final class ClassificationTaskDocument {
 			return exactMatch(Fields.BRANCH, branch);
 		}
 
+		public static Expression branches(final Iterable<String> branches) {
+			return matchAny(Fields.BRANCH, branches);
+		}
+
+		public static Expression statuses(final Iterable<ClassificationStatus> statuses) {
+			return matchAnyEnum(Fields.STATUS, statuses);
+		}
+
 		public static Expression timestampBefore(final long endInclusive) {
 			return matchRange(Fields.TIMESTAMP, 0L, endInclusive);
 		}
 
-		public static Expression createdBefore(final Date endExclusive) {
-			return matchRange(Fields.CREATION_DATE, 0L, endExclusive.getTime(), true, false);
+		public static Expression created(final long startInclusive, final long endExclusive) {
+			return matchRange(Fields.CREATION_DATE, startInclusive, endExclusive, true, false);
 		}
 	}
 

@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.reasoner.index;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
 
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -42,8 +42,16 @@ public final class RelationshipChangeDocument {
 			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
 		}
 
+		public static Expression classificationId(final Iterable<String> classificationIds) {
+			return matchAny(Fields.CLASSIFICATION_ID, classificationIds);
+		}
+
 		public static Expression sourceId(final String sourceId) {
 			return exactMatch(Fields.SOURCE_ID, sourceId);
+		}
+
+		public static Expression sourceId(final Iterable<String> sourceIds) {
+			return matchAny(Fields.SOURCE_ID, sourceIds);
 		}
 	}
 
@@ -106,7 +114,7 @@ public final class RelationshipChangeDocument {
 		}
 	}
 
-	@Keyword private final String classificationId;
+	private final String classificationId;
 	private final ChangeNature nature;
 
 	// The origin (stated relationship) SCTID for inferences, or the SCTID of the relationship to remove/inactivate
