@@ -18,19 +18,19 @@ package com.b2international.snowowl.fhir.core.model.usagecontext;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Range;
 
 /**
  * 
- * FHIR Range Usage Context
+ * FHIR Codeable Concept Usage Context
  * 
  * https://www.hl7.org/fhir/metadatatypes.html#UsageContext
  * @since 6.6
  */
-public class RangeUsageContext extends UsageContext<Range> {
+public class CodeableConceptUsageContext extends UsageContext<CodeableConcept> {
 
-	protected RangeUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final Range value) {
+	protected CodeableConceptUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final CodeableConcept value) {
 		super(id, extensions, code, value);
 	}
 	
@@ -41,14 +41,14 @@ public class RangeUsageContext extends UsageContext<Range> {
 	
 	@Override
 	public String getType() {
-		return "Range";
+		return "CodeableConcept";
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends UsageContext.Builder<Builder, RangeUsageContext, Range> {
+	public static class Builder extends UsageContext.Builder<Builder, CodeableConceptUsageContext, CodeableConcept> {
 		
 		@Override
 		protected Builder getSelf() {
@@ -56,8 +56,8 @@ public class RangeUsageContext extends UsageContext<Range> {
 		}
 
 		@Override
-		protected RangeUsageContext doBuild() {
-			return new RangeUsageContext(id, extensions, code, value);
+		protected CodeableConceptUsageContext doBuild() {
+			return new CodeableConceptUsageContext(id, extensions, code, value);
 		}
 	}
 
