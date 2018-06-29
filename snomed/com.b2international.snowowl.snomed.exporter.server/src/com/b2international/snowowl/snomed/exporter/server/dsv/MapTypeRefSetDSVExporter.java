@@ -108,6 +108,15 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				.execute(bus)
 				.getSync();
 		
+		SnomedDescription ptOfRefset = SnomedRequests.prepareGetConcept(exportSetting.getRefSetId())
+				.setLocales(exportSetting.getLocales())
+				.setExpand("pt()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.getPt();
+		
+		String fileName = ptOfRefset == null ? exportSetting.getRefSetId() : ptOfRefset.getTerm();
 		
 		final int activeMemberCount = refSet.getMembers().getTotal();
 		if (activeMemberCount < memberNumberToSignal) {
@@ -115,7 +124,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		} else {
 			monitor.begin(activeMemberCount/memberNumberToSignal);
 		}
-		final File file = new File(tmpDir, refSet.getId() + ".csv");
+		final File file = new File(tmpDir, fileName + ".csv");
 		DataOutputStream os = null;
 		try {
 			file.createNewFile();
