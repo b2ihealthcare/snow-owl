@@ -91,11 +91,8 @@ public class CoreTerminologyBroker {
 	public static final String PRIMARY_COMPONENT_ID_ATTRIBUTE = "primaryComponentId";
 	public static final String CLASS_ATTRIBUTE = "class";
 	public static final String ID_ATTRIBUTE = "id";
-	public static final String OID_ATTRIBUTE = "oid";
 	public static final String SUPPORTS_EFFECTIVE_TIME_ATTRIBUTE = "supportsEffectiveTime";
 	public static final String INT_ID_ATTRIBUTE = "intId";
-	public static final String HIERARCHICAL_ATTRIBUTE = "hierarchical";
-	public static final String TOP_LEVEL_ATTRIBUTE = "topLevel";
 	public static final String NAME_ATTRIBUTE = "name";
 
 	private static final Map<Integer, String> INT_TO_ID_CACHE = Maps.newConcurrentMap();

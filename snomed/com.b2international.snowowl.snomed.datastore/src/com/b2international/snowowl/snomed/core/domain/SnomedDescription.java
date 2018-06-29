@@ -20,9 +20,12 @@ import java.util.Map;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,6 +51,19 @@ import com.google.common.collect.Multimap;
  * @see SnomedReferenceSet
  * @see SnomedReferenceSetMember
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.DESCRIPTION, 
+	shortId = SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER,
+	name = "SNOMED CT Description",
+	componentCategory = ComponentCategory.DESCRIPTION,
+	docType = SnomedDescriptionIndexEntry.class,
+	supportedRefSetTypes = {
+		"SIMPLE",
+		"ATTRIBUTE_VALUE",
+		"SIMPLE_MAP",
+		"SIMPLE_MAP_WITH_DESCRIPTION"
+	}
+)
 public final class SnomedDescription extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;

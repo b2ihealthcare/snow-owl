@@ -17,11 +17,14 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set.
@@ -48,6 +51,16 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
  * 
  * @since 4.5
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.REFSET,
+	shortId = SnomedTerminologyComponentConstants.REFSET_NUMBER,
+	componentCategory = ComponentCategory.SET,
+	name = "SNOMED CT Reference Set",
+	docType = SnomedConceptDocument.class,
+	supportedRefSetTypes = {
+		"QUERY"
+	}
+)
 public final class SnomedReferenceSet extends SnomedComponent {
 
 	private static final long serialVersionUID = 6190078291559073421L;

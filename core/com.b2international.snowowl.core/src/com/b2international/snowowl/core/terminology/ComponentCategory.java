@@ -23,6 +23,11 @@ import com.b2international.commons.StringUtils;
 public enum ComponentCategory {
 
 	/**
+	 * Use if a terminology component cannot be categorized into any of the other literals.
+	 */
+	UNKNOWN,
+	
+	/**
 	 * A category for ideas, physical objects or events.
 	 */
 	CONCEPT,

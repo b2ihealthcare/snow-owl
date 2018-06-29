@@ -22,6 +22,11 @@ import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
@@ -33,6 +38,13 @@ import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
  * 
  * @since 6.5
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.CONSTRAINT,
+	shortId = SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER,
+	componentCategory = ComponentCategory.UNKNOWN,
+	name = "SNOMED CT MRCM Constraint",
+	docType = SnomedConstraintDocument.class
+)
 public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
 	public static final String PROP_STRENGTH = "strength";
