@@ -25,14 +25,18 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.request.AllowedHealthStates;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
  * @since 5.7
  */
-public final class ClassificationCreateRequestBuilder extends BaseRequestBuilder<ClassificationCreateRequestBuilder, BranchContext, String> {
+public final class ClassificationCreateRequestBuilder 
+		extends BaseRequestBuilder<ClassificationCreateRequestBuilder, BranchContext, String>
+		implements AllowedHealthStates {
 
 	private String classificationId = UUID.randomUUID().toString();
 	private String reasonerId;
@@ -83,11 +87,14 @@ public final class ClassificationCreateRequestBuilder extends BaseRequestBuilder
 		request.setParentLockContextDescription(parentLockContextDescription);
 		return request;
 	}
-	
-	public AsyncRequest<String> build(String repositoryId, String branch) {
+
+	public AsyncRequest<String> build(final String repositoryId, final String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new BranchRequest<>(branch, build())
+				new HealthCheckingRequest<>(
+					new BranchRequest<>(branch, build()), 
+					allowedHealthstates()
+				)
 			)
 		);
 	}

@@ -15,26 +15,29 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.index.DocSearcher;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationRepository;
 
 /**
  * @since 7.0
  */
-public final class ClassificationDeleteRequestBuilder 
-		extends BaseRequestBuilder<ClassificationDeleteRequestBuilder, RepositoryContext, Boolean>
-		implements RepositoryRequestBuilder<Boolean> {
+final class ClassificationIndexRequest<B> extends DelegatingRequest<ServiceProvider, ServiceProvider, B> {
 
-	private final String classificationId;
-
-	ClassificationDeleteRequestBuilder(final String classificationId) {
-		this.classificationId = classificationId;
+	ClassificationIndexRequest(final Request<ServiceProvider, B> next) {
+		super(next);
 	}
 
 	@Override
-	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new ClassificationDeleteRequest(classificationId);
+	public B execute(final ServiceProvider context) {
+		final ClassificationRepository classificationRepository = context.service(ClassificationRepository.class);
+
+		return classificationRepository.read(docSearcher -> {
+			return next(context.inject()
+					.bind(DocSearcher.class, docSearcher)
+					.build());
+		});
 	}
 }

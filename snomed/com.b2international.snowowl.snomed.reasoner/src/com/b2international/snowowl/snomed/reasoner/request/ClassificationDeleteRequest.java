@@ -19,7 +19,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.BulkDelete;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.index.Index;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationRepository;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
@@ -30,7 +31,7 @@ import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocum
 /**
  * @since 7.0
  */
-final class ClassificationDeleteRequest implements Request<ServiceProvider, Boolean> {
+final class ClassificationDeleteRequest implements Request<RepositoryContext, Boolean> {
 
 	@NotEmpty
 	private final String classificationId;
@@ -40,18 +41,17 @@ final class ClassificationDeleteRequest implements Request<ServiceProvider, Bool
 	}
 
 	@Override
-	public Boolean execute(final ServiceProvider context) {
-		final ClassificationRepository repository = context.service(ClassificationRepository.class);
+	public Boolean execute(final RepositoryContext context) {
+		final Index rawIndex = context.service(Index.class);
+		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
 
-		repository.read(reader -> {
-			final ClassificationTaskDocument document = reader.get(ClassificationTaskDocument.class, classificationId);
+		return repository.write(writer -> {
+			final ClassificationTaskDocument document = writer.searcher().get(ClassificationTaskDocument.class, classificationId);
+
 			if (document == null) {
 				throw new NotFoundException("Classification task", classificationId);
 			}
-			return null;
-		});
 
-		return repository.write(writer -> {
 			writer.remove(ClassificationTaskDocument.class, classificationId);
 			writer.bulkDelete(new BulkDelete<>(EquivalentConceptSetDocument.class, EquivalentConceptSetDocument.Expressions.classificationId(classificationId)));
 			writer.bulkDelete(new BulkDelete<>(ConcreteDomainChangeDocument.class, ConcreteDomainChangeDocument.Expressions.classificationId(classificationId)));

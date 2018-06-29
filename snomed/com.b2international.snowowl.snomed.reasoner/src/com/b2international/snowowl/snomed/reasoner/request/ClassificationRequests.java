@@ -23,16 +23,44 @@ package com.b2international.snowowl.snomed.reasoner.request;
  */
 public abstract class ClassificationRequests {
 
-	public static ClassifyRequestBuilder prepareClassify() {
-		return new ClassifyRequestBuilder();
+	public static ClassificationCreateRequestBuilder prepareCreateClassification() {
+		return new ClassificationCreateRequestBuilder();
 	}
 
-	public static PersistChangesRequestBuilder preparePersistChanges() {
-		return new PersistChangesRequestBuilder();
+	public static ClassificationGetRequestBuilder prepareGetClassification(final String classificationId) {
+		return new ClassificationGetRequestBuilder(classificationId);
 	}
-	
-	public static CreateOntologyRequestBuilder prepareCreateOntology() {
-		return new CreateOntologyRequestBuilder();
+
+	public static ClassificationSearchRequestBuilder prepareSearchClassification() {
+		return new ClassificationSearchRequestBuilder();
+	}
+
+	public static ClassificationSaveRequestBuilder prepareSaveClassification(final String classificationId) {
+		return new ClassificationSaveRequestBuilder(classificationId);
+	}
+
+	public static ClassificationDeleteRequestBuilder prepareDeleteClassification(final String classificationId) {
+		return new ClassificationDeleteRequestBuilder(classificationId);
+	}
+
+	public static EquivalentConceptSetSearchRequestBuilder prepareSearchEquivalentConceptSet() {
+		return new EquivalentConceptSetSearchRequestBuilder();
+	}
+
+	public static ConcreteDomainChangeSearchRequestBuilder prepareSearchConcreteDomainChange() {
+		return new ConcreteDomainChangeSearchRequestBuilder();
+	}
+
+	public static RelationshipChangeSearchRequestBuilder prepareSearchRelationshipChange() {
+		return new RelationshipChangeSearchRequestBuilder();
+	}
+
+	public static OntologyExportRequestBuilder prepareExportOntology() {
+		return new OntologyExportRequestBuilder();
+	}
+
+	public static ReasonerExtensionSearchRequestBuilder prepareSearchReasonerInfo() {
+		return new ReasonerExtensionSearchRequestBuilder();
 	}
 
 	private ClassificationRequests() {

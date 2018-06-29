@@ -16,25 +16,21 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 
 /**
  * @since 7.0
  */
-public final class ClassificationDeleteRequestBuilder 
-		extends BaseRequestBuilder<ClassificationDeleteRequestBuilder, RepositoryContext, Boolean>
-		implements RepositoryRequestBuilder<Boolean> {
+final class ClassificationGetRequest 
+		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTask> {
 
-	private final String classificationId;
-
-	ClassificationDeleteRequestBuilder(final String classificationId) {
-		this.classificationId = classificationId;
+	ClassificationGetRequest(final String classificationId) {
+		super(classificationId);
 	}
 
 	@Override
-	protected Request<RepositoryContext, Boolean> doBuild() {
-		return new ClassificationDeleteRequest(classificationId);
+	protected ClassificationSearchRequestBuilder createSearchRequestBuilder() {
+		return new ClassificationSearchRequestBuilder();
 	}
 }

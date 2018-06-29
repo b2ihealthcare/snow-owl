@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.index.Index;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -38,16 +39,16 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 
 	@NotEmpty
 	private String classificationId;
-	
+
 	@NotEmpty
 	private String reasonerId;
-	
+
 	@NotEmpty
 	private String userId;
-	
+
 	@NotNull
 	private List<SnomedConcept> additionalConcepts;
-	
+
 	@NotEmpty
 	private String parentLockContextDescription;
 
@@ -77,8 +78,9 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	@Override
 	public String execute(final BranchContext context) {
 		final Branch branch = context.branch();
-		final ClassificationRepository repository = context.service(ClassificationRepository.class);
-		
+		final Index rawIndex = context.service(Index.class);
+		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
+
 		final ClassificationTaskDocument classificationRun = ClassificationTaskDocument.builder()
 				.id(classificationId)
 				.reasonerId(reasonerId)
