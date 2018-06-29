@@ -29,7 +29,8 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
  */
 public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
-	private static final int MAXIMUM_AMOUNT_OF_CONCURRENT_NORMAL_JOBS = 3;
+	public static final int MAXIMUM_AMOUNT_OF_CONCURRENT_NORMAL_JOBS = 3;
+	
 	private final CheckType checkType;
 	private final int maxConcurrentJobs;
 	private final String uniqueRuleId;

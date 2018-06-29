@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.internal.validation.ValidationRuleSchedulingRule;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 import com.google.common.collect.Lists;
@@ -36,7 +37,7 @@ public class ValidationThreadPoolTest {
 
 	private static final int MAXIMUM_AMOUNT_OF_RUNNING_EXPENSIVE_JOBS = 1;
 
-	private static final int MAXIMUM_AMOUNT_OF_RUNNING_NORMAL_JOBS = 4;
+	private static final int MAXIMUM_AMOUNT_OF_RUNNING_NORMAL_JOBS = ValidationRuleSchedulingRule.MAXIMUM_AMOUNT_OF_CONCURRENT_NORMAL_JOBS;
 
 	private static final int VALIDATION_THREAD_COUNT = 6;
 

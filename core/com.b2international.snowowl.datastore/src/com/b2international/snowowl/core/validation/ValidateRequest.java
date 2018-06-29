@@ -111,9 +111,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				}
 			}
 			
-			
 			Promise.all(validationPromises).getSync();
-			
 			
 			// fetch all white list entries to determine whether an issue is whitelisted already or not
 			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
