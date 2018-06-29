@@ -35,8 +35,9 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
@@ -89,7 +90,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			
 			final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
-			final Multimap<String, IssueDetail> newIssuesByRule = HashMultimap.create();
+			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
 			
 			// evaluate selected rules
 			final List<Promise<Object>> validationPromises = Lists.newArrayList();
@@ -99,8 +100,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					validationPromises.add(pool.submit(rule.getCheckType(), () -> {
 						try {
 							LOG.info("Executing rule '{}'...", rule.getId());
-							List<IssueDetail> issueDetails = evaluator.eval(context, rule);
-							newIssuesByRule.putAll(rule.getId(), issueDetails);
+							List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
+							newIssuesByRule.putAll(rule.getId(), componentIdentifiers);
 							LOG.info("Execution of rule '{}' successfully completed", rule.getId());
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
@@ -129,24 +130,34 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.stream()
 				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
 			
+			
+			final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
+			
 			// persist new issues by removing them from the newIssues Multimap to save up memory
 			for (String ruleId : newHashSet(newIssuesByRule.keySet())) {
-				for (IssueDetail issueDetail : newIssuesByRule.removeAll(ruleId)) {
-					String issueId = UUID.randomUUID().toString();
-					
+				final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
+				for (ComponentIdentifier componentIdentifier : newIssuesByRule.removeAll(ruleId)) {
 					ValidationIssue validationIssue = new ValidationIssue(
-						issueId,
+						UUID.randomUUID().toString(),
 						ruleId,
 						branchPath,
-						issueDetail.getAffectedComponent(),
-						whiteListedEntries.get(ruleId).contains(issueDetail.getAffectedComponent()));
+						componentIdentifier,
+						whiteListedEntries.get(ruleId).contains(componentIdentifier));
 				
-					validationIssue.setDetails(issueDetail.getDetails());
-					
-					index.put(issueId, validationIssue);
+					issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 				}
+				
 				// remove all processed whitelist entries 
 				whiteListedEntries.removeAll(ruleId);
+			}
+			
+			for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
+				final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
+				final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.get(toolingId);
+				extensions.extendIssuesWithDetails(context, issues);
+				for (ValidationIssue issue : issues) {
+					index.put(issue.getId(), issue);
+				}
 			}
 			
 			index.commit();

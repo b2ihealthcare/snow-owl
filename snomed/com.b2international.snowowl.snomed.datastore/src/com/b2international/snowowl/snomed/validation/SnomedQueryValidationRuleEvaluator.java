@@ -17,10 +17,8 @@ package com.b2international.snowowl.snomed.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,9 +29,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -69,7 +65,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
-	public List<IssueDetail> eval(BranchContext context, ValidationRule rule) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
 		
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = context.service(ObjectMapper.class)
@@ -79,18 +75,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.ACTIVE);
 		
 		SearchResourceRequestIterator it = new SearchResourceRequestIterator(req, searchRequest -> ((SnomedSearchRequestBuilder) searchRequest).build().execute(context));
-		final List<IssueDetail> issues = newArrayList();
+		final List<ComponentIdentifier> issues = newArrayList();
 		while (it.hasNext()) {
 			((PageableCollectionResource<SnomedComponent>) it.next())
 				.stream()
-				.map(component -> {
-					final ComponentIdentifier affectedComponent = component.getComponentIdentifier();
-					final String moduleId = component.getModuleId();
-					final Map<String, Object> details = newHashMap();
-					details.put(SnomedRf2Headers.FIELD_MODULE_ID, moduleId);
-					details.put(SnomedRf2Headers.FIELD_ACTIVE, component.isActive());
-					return new IssueDetail(affectedComponent, details);
-				})
+				.map(SnomedComponent::getComponentIdentifier)
 				.forEach(issues::add);
 		}
 		return issues;
