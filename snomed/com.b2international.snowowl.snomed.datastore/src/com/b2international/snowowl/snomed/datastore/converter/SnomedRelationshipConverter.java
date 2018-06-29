@@ -79,8 +79,8 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		
 		final Set<String> relationshipIds = FluentIterable.from(results).transform(ID_FUNCTION).toSet();
 		new MembersExpander(context(), expand(), locales()).expand(results, relationshipIds);
-		if (expand().containsKey("source")) {
-			final Options sourceOptions = expand().get("source", Options.class);
+		if (expand().containsKey(SnomedRelationship.Expand.SOURCE)) {
+			final Options sourceOptions = expand().get(SnomedRelationship.Expand.SOURCE, Options.class);
 			final Set<String> sourceConceptIds = FluentIterable.from(results).transform(new Function<SnomedRelationship, String>() {
 				@Override
 				public String apply(SnomedRelationship input) {
@@ -104,8 +104,8 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				}
 			}
 		}
-		if (expand().containsKey("destination")) {
-			final Options destinationOptions = expand().get("destination", Options.class);
+		if (expand().containsKey(SnomedRelationship.Expand.DESTINATION)) {
+			final Options destinationOptions = expand().get(SnomedRelationship.Expand.DESTINATION, Options.class);
 			final Set<String> destinationConceptIds = FluentIterable.from(results).transform(new Function<SnomedRelationship, String>() {
 				@Override
 				public String apply(SnomedRelationship input) {
@@ -129,8 +129,8 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				}
 			}
 		}
-		if (expand().containsKey("type")) {
-			final Options typeOptions = expand().get("type", Options.class);
+		if (expand().containsKey(SnomedRelationship.Expand.TYPE)) {
+			final Options typeOptions = expand().get(SnomedRelationship.Expand.TYPE, Options.class);
 			final Set<String> typeConceptIds = FluentIterable.from(results).transform(new Function<SnomedRelationship, String>() {
 				@Override
 				public String apply(SnomedRelationship input) {
