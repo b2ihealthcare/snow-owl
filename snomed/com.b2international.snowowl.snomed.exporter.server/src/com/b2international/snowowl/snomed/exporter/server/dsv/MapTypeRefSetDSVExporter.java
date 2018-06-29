@@ -102,7 +102,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final IEventBus bus = applicationContext.getService(IEventBus.class);
 		
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
-				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(preferredDescriptions()))))")
+				.setLocales(exportSetting.getLocales())
+				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
@@ -130,26 +131,12 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				SnomedCoreComponent referencedComponent = snomedReferenceSetMember.getReferencedComponent();
 				String id = referencedComponent.getId();
 				if (referencedComponent instanceof SnomedConcept) {
-					List<SnomedDescription> descriptions = ((SnomedConcept) referencedComponent).getPreferredDescriptions().getItems();
-					
-					Set<String> availableDescriptionLanguagesOfConcept = descriptions.stream()
-						.flatMap(desc -> desc.getAcceptabilityMap().keySet().stream())
-						.collect(Collectors.toSet());
-					
-					String bestDescriptionLanguage = exportSetting.getLocales().stream()
-						.map(ExtendedLocale::getLanguageRefSetId)
-						.filter(availableDescriptionLanguagesOfConcept::contains)
-						.findFirst()
-						.orElse("");
-					
-					String bestTerm = descriptions.stream()
-						.filter(description -> description.getAcceptabilityMap().get(bestDescriptionLanguage) == Acceptability.PREFERRED)
-						.map(SnomedDescription::getTerm)
-						.findFirst()
-						.orElse(id);
-					
-					labelMap.put(id, bestTerm);
-					
+					SnomedDescription pt = ((SnomedConcept) referencedComponent).getPt();
+					if (pt == null) {
+						labelMap.put(id, id); 
+					} else {
+						labelMap.put(id, pt.getTerm());
+					}
 				} else if (referencedComponent instanceof SnomedDescription) {
 					labelMap.put(id, ((SnomedDescription) referencedComponent).getTerm());
 				} else if (referencedComponent instanceof SnomedRelationship) {
