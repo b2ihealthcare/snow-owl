@@ -124,7 +124,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
-				.with(ValidationThreadPool.class, new ValidationThreadPool(1))
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
 				.with(ValidationRepository.class, repository)
 				.build();
 		evaluator = new SnomedQueryValidationRuleEvaluator();
