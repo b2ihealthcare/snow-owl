@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,25 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
  */
 public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
-	public static final int MAXIMUM_AMOUNT_OF_CONCURRENT_NORMAL_JOBS = 3;
 	
 	private final CheckType checkType;
 	private final int maxConcurrentJobs;
-	private final String uniqueRuleId;
+	private final int maxConcurrentExpensiveJobs;
+	private final int maxConcurrentNormalJobs;
+	private final String id;
 	
-	public ValidationRuleSchedulingRule(final CheckType checkType, final int maxConcurrentJobs, final String uniqueRuleId) {
+	public ValidationRuleSchedulingRule(
+			final CheckType checkType,
+			final int maxConcurrentJobs,
+			final int maxConcurrentExpensiveJobs,
+			final int  maxConcurrentNormalJobs,
+			final String id
+			) {
 		this.checkType = checkType;
 		this.maxConcurrentJobs = maxConcurrentJobs;
-		this.uniqueRuleId = uniqueRuleId;
+		this.maxConcurrentExpensiveJobs = maxConcurrentExpensiveJobs;
+		this.maxConcurrentNormalJobs = maxConcurrentNormalJobs;
+		this.id = id;
 	}
 
 	@Override
@@ -62,11 +71,11 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 				return true;
 			}
 			
-			if (CheckType.EXPENSIVE == checkType || CheckType.EXPENSIVE == other.checkType  || runningExpensiveJobs != 0) {
+			if ((CheckType.EXPENSIVE == checkType || CheckType.EXPENSIVE == other.checkType)  && runningExpensiveJobs >= maxConcurrentExpensiveJobs) {
 				return true;
 			}
 			
-			if ((CheckType.NORMAL == checkType || CheckType.NORMAL == other.checkType) && runningNormalJobs >= MAXIMUM_AMOUNT_OF_CONCURRENT_NORMAL_JOBS) {
+			if ((CheckType.NORMAL == checkType || CheckType.NORMAL == other.checkType) && runningNormalJobs >= maxConcurrentNormalJobs) {
 				return true;
 			}
 			
@@ -83,9 +92,7 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	@Override
 	public int hashCode() {
 		int hash = 17;
-		hash = hash * 31 + Objects.hash(checkType);
-		hash = hash * 31 + maxConcurrentJobs;
-		hash = hash * 31 + Objects.hash(uniqueRuleId); 
+		hash = hash * 31 + Objects.hash(checkType, id, maxConcurrentJobs, maxConcurrentExpensiveJobs);
 		
 		return hash;
 	}
@@ -96,12 +103,12 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		final ValidationRuleSchedulingRule other = (ValidationRuleSchedulingRule) obj;
-		return Objects.equals(this.checkType, other.checkType) && Objects.equals(uniqueRuleId, other.uniqueRuleId);
+		return Objects.equals(this.checkType, other.checkType) && Objects.equals(id, other.id);
 	}
 	
 	@Override
 	public String toString() {
-		return uniqueRuleId;
+		return id + " " + checkType.getName();
 	}
 
 }

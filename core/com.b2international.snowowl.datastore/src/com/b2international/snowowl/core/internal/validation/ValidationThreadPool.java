@@ -33,32 +33,37 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType
 public final class ValidationThreadPool {
 
 	private final int maxValidationThreadCount;
+	private final int maxConcurrentExpensiveJobs;
+	private final int maxConcurrentNormalJobs;
 
-	public ValidationThreadPool(final int maxValidationThreadCount) {
+	public ValidationThreadPool(final int maxValidationThreadCount, final int maxAmountOfConcurrentExpensiveJobs, final int maxConcurrentNormalJobs) {
 		this.maxValidationThreadCount = maxValidationThreadCount;
+		this.maxConcurrentExpensiveJobs = maxAmountOfConcurrentExpensiveJobs;
+		this.maxConcurrentNormalJobs = maxConcurrentNormalJobs;
 	}
 
 	public Promise<Object> submit(CheckType checkType, Runnable runnable) {
 		final Job job = new ValidationJob(checkType.getName(), runnable);
-		String uniqueRuleId = UUID.randomUUID().toString();
-		final ISchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType, maxValidationThreadCount, uniqueRuleId);
-		final Promise<Object> isRuleDonePromise = new Promise<>();
+		final String uniqueRuleId = UUID.randomUUID().toString();
+		final ISchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType, maxValidationThreadCount, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs, uniqueRuleId);
+		final Promise<Object> promise = new Promise<>();
 
 		job.setSystem(true);
 		job.setRule(schedulingRule);
 		job.addJobChangeListener(new JobChangeAdapter() {
-
+			
+			@Override
 			public void done(IJobChangeEvent event) {
 				if (event.getResult().isOK()) {
-					isRuleDonePromise.resolve(Boolean.TRUE);
+					promise.resolve(Boolean.TRUE);
 				} else {
-					isRuleDonePromise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
+					promise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
 				}
 			};
 
 		});
 		job.schedule();
-		return isRuleDonePromise;
+		return promise;
 	}
 
 }

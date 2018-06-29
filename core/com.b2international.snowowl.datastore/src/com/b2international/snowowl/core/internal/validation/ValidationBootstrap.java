@@ -78,7 +78,11 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			// initialize validation thread pool
 			// TODO make this configurable
 			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads));
+			// TODO calculate these based on systems overall strength
+			int maxConcurrentExpensiveJobs = 1;
+			int maxConcurrentNormalJobs = 4;
+			
+			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 
 			
 			final List<File> listOfFiles = Arrays.asList(env.getConfigDirectory().listFiles());

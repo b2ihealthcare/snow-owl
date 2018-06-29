@@ -29,16 +29,15 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
+import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsAggregationBuilder;
 import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -57,7 +56,6 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -121,7 +119,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			.setTrackScores(esQueryBuilder.needsScoring());
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(query, mapping, req);
+		final boolean fetchSource = applySourceFiltering(query.getFields(), query.isDocIdOnly(), mapping, req);
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source
@@ -193,27 +191,27 @@ public class EsDocumentSearcher implements DocSearcher {
 		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
 
-	private <T> boolean applySourceFiltering(Query<T> query, final DocumentMapping mapping, final SearchRequestBuilder req) {
+	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchRequestBuilder req) {
 		// No specific fields requested? Use _source to retrieve all of them
-		if (query.getFields().isEmpty()) {
+		if (fields.isEmpty()) {
 			req.setFetchSource(null, EXCLUDED_SOURCE_FIELDS);
 			return true;
 		}
 		
 		// Only IDs required? _source is not needed at all
-		if (query.isDocIdOnly()) {
+		if (isDocIdOnly) {
 			req.setFetchSource(false);
 			return false;
 		}
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
-		if (requiresDocumentSourceField(mapping, query.getFields())) {
-			req.setFetchSource(Iterables.toArray(query.getFields(), String.class), EXCLUDED_SOURCE_FIELDS);
+		if (requiresDocumentSourceField(mapping, fields)) {
+			req.setFetchSource(Iterables.toArray(fields, String.class), EXCLUDED_SOURCE_FIELDS);
 			return true;
 		}
 		
 		// Use docValues otherwise for field retrieval
-		query.getFields().stream().forEach(req::addDocValueField);
+		fields.stream().forEach(req::addDocValueField);
 		req.setFetchSource(false);
 		return false;
 	}
@@ -354,11 +352,14 @@ public class EsDocumentSearcher implements DocSearcher {
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
 		final SearchRequestBuilder req = client.prepareSearch(admin.getTypeIndex(mapping))
-			.addAggregation(toEsAggregation(mapping, aggregation))
 			.setTypes(mapping.typeAsString())
 			.setQuery(esQuery)
 			.setSize(0)
 			.setTrackScores(false);
+		
+		// field selection
+		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), false, mapping, req);
+		req.addAggregation(toEsAggregation(mapping, aggregation, fetchSource));
 		
 		SearchResponse response = null; 
 		try {
@@ -368,41 +369,35 @@ public class EsDocumentSearcher implements DocSearcher {
 			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
 		}
 		
-		final ObjectReader reader = HitConverter.getResultObjectReader(mapper, aggregation.getFrom(), aggregation.getFrom());
 		
 		ImmutableMap.Builder<Object, Bucket<T>> buckets = ImmutableMap.builder();
 		Terms aggregationResult = response.getAggregations().<Terms>get(aggregationName);
 		for (org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket bucket : aggregationResult.getBuckets()) {
 			final TopHits topHits = bucket.getAggregations().get(topHitsAggName(aggregation));
-			final ImmutableList.Builder<T> hits = ImmutableList.builder();
-			
+			Hits<T> hits;
 			if (topHits != null) {
-				final SearchHits topSearchHits = topHits.getHits();
-				for (SearchHit hit : topSearchHits) {
-					final byte[] bytes = BytesReference.toBytes(hit.getSourceRef());
-					T value = reader.readValue(bytes, 0, bytes.length);
-					hits.add(value);
-				}
+				hits = toHits(aggregation.getSelect(), aggregation.getFrom(), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, null, topHits.getHits()); 
+			} else {
+				hits = new Hits<>(Collections.emptyList(), null, null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount());
 			}
-			
-			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), new Hits<>(hits.build(), null, null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount())));
+			buckets.put(bucket.getKey(), new Bucket<>(bucket.getKey(), hits));
 		}
 		
 		return new Aggregation<>(aggregationName, buckets.build());
 	}
 
-	private org.elasticsearch.search.aggregations.AggregationBuilder toEsAggregation(DocumentMapping mapping, AggregationBuilder<?> aggregation) {
+	private org.elasticsearch.search.aggregations.AggregationBuilder toEsAggregation(DocumentMapping mapping, AggregationBuilder<?> aggregation, boolean fetchSource) {
 		final TermsAggregationBuilder termsAgg = AggregationBuilders
 				.terms(aggregation.getName())
 				.minDocCount(aggregation.getMinBucketSize())
 				.size(Integer.MAX_VALUE);
-		boolean isFieldAgg = !Strings.isNullOrEmpty(aggregation.getField());
-		boolean isScriptAgg = !Strings.isNullOrEmpty(aggregation.getScript());
+		boolean isFieldAgg = !Strings.isNullOrEmpty(aggregation.getGroupByField());
+		boolean isScriptAgg = !Strings.isNullOrEmpty(aggregation.getGroupByScript());
 		if (isFieldAgg) {
 			checkArgument(!isScriptAgg, "Specify either field or script parameter, not both");
-			termsAgg.field(aggregation.getField());
+			termsAgg.field(aggregation.getGroupByField());
 		} else if (isScriptAgg) {
-			final String rawScript = aggregation.getScript();
+			final String rawScript = aggregation.getGroupByScript();
 			termsAgg.script(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Collections.emptyMap()));
 		} else {
 			throw new IllegalArgumentException("Specify either field or script parameter");
@@ -410,9 +405,18 @@ public class EsDocumentSearcher implements DocSearcher {
 		
 		// add top hits agg to get the top N items for each bucket
 		if (aggregation.getBucketHitsLimit() > 0) {
-			termsAgg.subAggregation(AggregationBuilders.topHits(topHitsAggName(aggregation))
-					.fetchSource(null, EXCLUDED_SOURCE_FIELDS)
-					.size(aggregation.getBucketHitsLimit()));
+			TopHitsAggregationBuilder topHitsAgg = AggregationBuilders.topHits(topHitsAggName(aggregation))
+					.size(aggregation.getBucketHitsLimit());
+			
+			if (fetchSource) {
+				topHitsAgg.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+			} else {
+				topHitsAgg
+					.fetchSource(false)
+					.fieldDataFields(aggregation.getFields());
+						
+			}
+			termsAgg.subAggregation(topHitsAgg);
 		}
 		
 		return termsAgg;

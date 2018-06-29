@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@ package com.b2international.snowowl.core.internal.validation;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * @since 6.6
@@ -32,13 +36,21 @@ public class ValidationJob extends Job {
 	
 	public ValidationJob(Object family, Runnable runnable) {
 		super(VALIDATION_JOB_NAME);
+		Preconditions.checkNotNull(family);
+		Preconditions.checkNotNull(runnable);
+		
 		this.family = family;
 		this.runnable = runnable;
 	}
 	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		runnable.run();
+		try {
+			runnable.run();
+		} catch (OperationCanceledException e) {
+			return Status.CANCEL_STATUS;
+		}
+		
 		if (monitor.isCanceled()) {
 			return Status.CANCEL_STATUS;
 				
@@ -48,7 +60,7 @@ public class ValidationJob extends Job {
 	
 	@Override
 	public boolean belongsTo(Object family) {
-		return (this.family == null || family == null) ? false : this.family.equals(family);
+		return Objects.equal(this.family, family);
 	}
 	
 }

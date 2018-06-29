@@ -41,6 +41,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	@NotNull 
 	private Severity severity;
 	
+	@NotNull
 	private CheckType checkType;
 	
 	@NotNull
