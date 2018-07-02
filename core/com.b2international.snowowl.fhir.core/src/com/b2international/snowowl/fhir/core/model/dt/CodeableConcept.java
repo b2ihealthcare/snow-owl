@@ -18,6 +18,9 @@ package com.b2international.snowowl.fhir.core.model.dt;
 import java.util.Arrays;
 import java.util.Collection;
 
+import javax.validation.Valid;
+
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -34,14 +37,15 @@ public class CodeableConcept {
 	
 	// Code defined by a terminology system 0..*
 	@JsonProperty("coding")
-	private Collection<Coding> codings = Lists.newArrayList();
+	@Valid
+	private Collection<Coding> codings;
 	
 	// Plain text representation of the concept 0..1
 	// same as display most of the time
 	private String text;
 	
-	public CodeableConcept(Coding coding, String text) {
-		this.codings.add(coding);
+	CodeableConcept(Collection<Coding> codings, String text) {
+		this.codings = codings;
 		this.text = text;
 	}
 	
@@ -56,6 +60,36 @@ public class CodeableConcept {
 	@Override
 	public String toString() {
 		return "CodeableConcept [codings=" + Arrays.toString(codings.toArray()) + ", text=" + text + "]";
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends ValidatingBuilder<CodeableConcept> {
+		
+		private Collection<Coding> codings = Lists.newArrayList();
+		private String text;
+
+		public Builder addCoding(final Coding coding) {
+			codings.add(coding);
+			return this;
+		}
+		
+		public Builder codings(final Collection<Coding> codings) {
+			this.codings = codings;
+			return this;
+		}
+		
+		public Builder text(final String text) {
+			this.text = text;
+			return this;
+		}
+		
+		@Override
+		protected CodeableConcept doBuild() {
+			return new CodeableConcept(codings, text);
+		}
 	}
 	
 }

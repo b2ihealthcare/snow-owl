@@ -49,12 +49,14 @@ public class UsageContextSerializationTest extends FhirTest {
 				.display("codingDisplay")
 				.build();
 		
-		CodeableConcept cc = new CodeableConcept(coding, "codingText");
-		
+		CodeableConcept codeableConcept = CodeableConcept.builder()
+				.addCoding(coding)
+				.text("codingText")
+				.build();
 		
 		CodeableConceptUsageContext usageContext = CodeableConceptUsageContext.builder()
 			.code(coding)
-			.value(cc)
+			.value(codeableConcept)
 			.build();
 		
 		printPrettyJson(usageContext);

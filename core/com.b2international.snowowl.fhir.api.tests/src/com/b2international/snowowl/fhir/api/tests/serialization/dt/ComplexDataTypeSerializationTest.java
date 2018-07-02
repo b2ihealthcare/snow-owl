@@ -76,13 +76,58 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.version("20180131")
 			.build();
 		
-		String jsonString = objectMapper.writeValueAsString(coding);
-		
 		String expected = "{\"code\":\"1234\","
 				+ "\"system\":\"http://snomed.info/sct\","
 				+ "\"version\":\"20180131\"}";
 		
-		Assert.assertEquals(expected, jsonString);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(coding));
+	}
+	
+	@Test
+	public void invalidCodingTest() throws Exception {
+		
+		Issue expectedIssue = builder.addLocation("Coding.code.codeValue")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. "
+						+ "Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		Coding.builder()
+				.code("")
+				.system("http://snomed.info/sct")
+				.version("20180131")
+				.build();
+	}
+	
+	@Test
+	public void codeableConceptTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+				.code("1234")
+				.system("http://snomed.info/sct")
+				.version("20180131")
+				.build();
+		
+		CodeableConcept cc = CodeableConcept.builder()
+				.addCoding(coding)
+				.text("text")
+				.build();
+		
+		printPrettyJson(cc);
+		
+		String expected = "{\"text\":\"text\","
+				+ "\"coding\":"
+					+ "[{\"code\":\"1234\","
+					+ "\"system\":\"http://snomed.info/sct\","
+					+ "\"version\":\"20180131\"}"
+					+ "]"
+				+ "}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(cc));
+		
 	}
 	
 	@Test
@@ -143,13 +188,13 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void incorrectSimpleQuantityTest() throws Exception {
 		
-		Issue expectedIssue = builder.addLocation("Builder.comparator")
+		Issue expectedIssue = builder.addLocation("SimpleQuantity.comparator")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'comparator' content is invalid [Code [codeValue=>=]]. Violation: must be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
-		//exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
 		SimpleQuantity.builder()
 			.value(12.3)
@@ -287,9 +332,14 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.display("codingDisplay")
 			.build();
 		
+		CodeableConcept codeableConcept = CodeableConcept.builder()
+				.addCoding(coding)
+				.text("codingText")
+				.build();
+		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
-			.type(new CodeableConcept(coding, "codingText"))
+			.type(codeableConcept)
 			.period(period)
 			.system("system")
 			.value("value")

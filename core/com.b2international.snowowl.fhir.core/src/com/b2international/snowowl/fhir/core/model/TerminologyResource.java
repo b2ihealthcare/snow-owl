@@ -27,6 +27,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -91,6 +92,12 @@ public abstract class TerminologyResource extends DomainResource {
 	@JsonProperty("useContext")
 	@SuppressWarnings("rawtypes")
 	private Collection<UsageContext> usageContexts;
+	
+	@Valid
+	@Summary
+	@JsonProperty
+	private CodeableConcept jurisdiction;
+	
 
 	/**
 	 * @param id
@@ -99,7 +106,8 @@ public abstract class TerminologyResource extends DomainResource {
 	 */
 	@SuppressWarnings("rawtypes")
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts) {
+			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, 
+			final Collection<UsageContext> usageContexts, final CodeableConcept jurisdiction) {
 		
 		super(id, language, text);
 		
@@ -114,6 +122,7 @@ public abstract class TerminologyResource extends DomainResource {
 		this.publisher = publisher;
 		this.description = description;
 		this.usageContexts = usageContexts;
+		this.jurisdiction = jurisdiction;
 	}
 	
 	public Uri getUrl() {
@@ -144,6 +153,8 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		@SuppressWarnings("rawtypes")
 		protected Collection<UsageContext> usageContexts = Lists.newArrayList(); 
+
+		protected CodeableConcept jurisdiction;
 		
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -218,6 +229,11 @@ public abstract class TerminologyResource extends DomainResource {
 		@SuppressWarnings("rawtypes")
 		public B addUseContext(final UsageContext usageContext) {
 			usageContexts.add(usageContext);
+			return getSelf();
+		}
+		
+		public B jurisdiction(final CodeableConcept jurisdiction) {
+			this.jurisdiction = jurisdiction;
 			return getSelf();
 		}
 	}

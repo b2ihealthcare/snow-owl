@@ -27,6 +27,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMean
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -107,10 +108,11 @@ public class CodeSystem extends TerminologyResource {
 	@SuppressWarnings("rawtypes")
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts, 
+			final CodeableConcept jurisdiction,
 			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
 			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction);
 
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
@@ -189,7 +191,7 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, 
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction,
 					hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}

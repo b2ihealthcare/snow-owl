@@ -76,7 +76,10 @@ public final class ValidationException extends BadRequestException {
 				.display(builder.toString())
 				.build();
 	
-			CodeableConcept codeableConcept = new CodeableConcept(coding, builder.toString());
+			CodeableConcept codeableConcept = CodeableConcept.builder()
+					.addCoding(coding)
+					.text(builder.toString())
+					.build();
 	
 			String location = violation.getRootBean().getClass().getSimpleName() 
 					+ "." + violation.getPropertyPath().toString();

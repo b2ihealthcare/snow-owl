@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -58,10 +59,11 @@ public class ValueSet extends TerminologyResource {
 	
 	@SuppressWarnings("rawtypes")
 	public ValueSet(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, final Collection<UsageContext> usageContexts, 
+			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
+			final CodeableConcept jurisdiction,
 			final Collection<Compose> composeParts) {
 		
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction);
 		this.composeParts = composeParts;
 	}
 	
@@ -90,7 +92,7 @@ public class ValueSet extends TerminologyResource {
 		@Override
 		protected ValueSet doBuild() {
 			return new ValueSet(id, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contact, description, usageContexts,
+					title, status, date, publisher, contact, description, usageContexts, jurisdiction,
 					composeParts);
 		}
 	}

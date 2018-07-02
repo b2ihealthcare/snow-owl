@@ -142,7 +142,12 @@ public class Issue {
 					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
 					.display(operationOutcomeCode.getDisplayName()).build();
 			
-			this.codeableConcept = new CodeableConcept(coding, operationOutcomeCode.getDisplayName());
+			CodeableConcept codeableConcept = CodeableConcept.builder()
+					.addCoding(coding)
+					.text(operationOutcomeCode.getDisplayName())
+					.build();
+			
+			this.codeableConcept = codeableConcept;
 			return this;
 		}
 		
@@ -156,7 +161,12 @@ public class Issue {
 					.display(substitutedDisplayName)
 					.build();
 			
-			this.codeableConcept = new CodeableConcept(coding, substitutedDisplayName);
+			CodeableConcept codeableConcept = CodeableConcept.builder()
+					.addCoding(coding)
+					.text(substitutedDisplayName)
+					.build();
+			
+			this.codeableConcept = codeableConcept;
 			return this;
 		}
 		
@@ -168,7 +178,12 @@ public class Issue {
 					.display(display)
 					.build();
 			
-			this.codeableConcept = new CodeableConcept(coding, display);
+			CodeableConcept codeableConcept = CodeableConcept.builder()
+					.addCoding(coding)
+					.text(display)
+					.build();
+			
+			this.codeableConcept = codeableConcept;
 			return this;
 		}
 
