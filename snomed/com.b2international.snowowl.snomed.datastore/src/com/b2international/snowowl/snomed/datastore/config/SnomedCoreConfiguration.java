@@ -21,7 +21,6 @@ import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 3.4
  */
-public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
+public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;

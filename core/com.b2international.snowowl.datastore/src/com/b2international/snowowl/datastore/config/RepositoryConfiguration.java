@@ -34,7 +34,7 @@ import com.google.common.net.HostAndPort;
  * 
  * @since 3.4
  */
-public class RepositoryConfiguration extends ConnectionPoolConfiguration {
+public class RepositoryConfiguration {
 	
 	@NotEmpty
 	private String host = "0.0.0.0";
