@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -91,23 +92,27 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 			
 			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
-			
 			// evaluate selected rules
 			final List<Promise<Object>> validationPromises = Lists.newArrayList();
 			for (ValidationRule rule : rules) {
+				
 				final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 				if (evaluator != null) {
 					validationPromises.add(pool.submit(rule.getCheckType(), () -> {
+						long startTime = System.nanoTime();
+						
 						try {
 							LOG.info("Executing rule '{}'...", rule.getId());
 							List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
 							newIssuesByRule.putAll(rule.getId(), componentIdentifiers);
-							LOG.info("Execution of rule '{}' successfully completed", rule.getId());
+							long endTime = System.nanoTime();
+							LOG.info("Execution of rule '{}' successfully completed took {} miliseconds", rule.getId(), (endTime - startTime) / 1000000);
 							// TODO report successfully executed validation rule
 						} catch (Exception e) {
 							// TODO report failed validation rule
 							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
 						}
+					
 					}));
 				}
 			}
@@ -129,7 +134,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.execute(context)
 				.stream()
 				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
-			
 			
 			final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
 			
@@ -159,9 +163,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					index.put(issue.getId(), issue);
 				}
 			}
-			
 			index.commit();
-			
 			// TODO return ValidationResult object with status and new issue IDs as set
 			return new ValidationResult(context.id(), context.branchPath());
 		});

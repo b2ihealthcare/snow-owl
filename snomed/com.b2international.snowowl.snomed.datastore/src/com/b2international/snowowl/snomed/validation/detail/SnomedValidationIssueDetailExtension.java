@@ -24,6 +24,7 @@ import static com.b2international.snowowl.snomed.validation.detail.SnomedValidat
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -44,6 +45,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.4
@@ -60,7 +62,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 	}
 	
-	private static final int SCROLL_SIZE = 10000;
+	private static final int SCROLL_SIZE = 50_000;
 	
 	@Override
 	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
@@ -88,17 +90,17 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 
-		Multimap<ComponentCategory, String> issueComponentIdsByComponentCategory = HashMultimap.create();
-		
+		final Multimap<ComponentCategory, String> issueComponentIdsByComponentCategory = HashMultimap.create();
 		issues.stream().forEach(issue -> {
 			final ComponentCategory componentCategory = getComponentCategory(issue.getAffectedComponent().getTerminologyComponentId());
 			issueComponentIdsByComponentCategory.put(componentCategory, issue.getAffectedComponent().getComponentId());
 		});
 		
+		final Multimap<String, String> issueIdsByConceptIds = HashMultimap.create();
+		final Set<String> alreadyFetchedConceptIds  = Sets.newHashSet();
 		for (ComponentCategory category : issueComponentIdsByComponentCategory.keySet()) {
 			final Query<String[]> query = buildQuery(category, issueComponentIdsByComponentCategory.get(category));
 			
-			Multimap<String, String> issueIdsByConceptIds = HashMultimap.create();
 			for (Hits<String[]> hits : searcher.scroll(query)) {
 				for (String[] hit : hits) {
 					issuesByComponentId.get(hit[0]).forEach(validationIssue -> {
@@ -106,31 +108,32 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 						validationIssue.setDetails(COMPONENT_MODULE_ID, hit[2]);
 						if (CONCEPT == category) {
 							validationIssue.setDetails(CONCEPT_STATUS, hit[1]);
+							alreadyFetchedConceptIds.add(hit[0]);
 						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
-							issueIdsByConceptIds.put(hit[3], hit[0]);
+							if (!issueIdsByConceptIds.containsKey(hit[3]) || !alreadyFetchedConceptIds.contains(hit[3])) {
+								issueIdsByConceptIds.put(hit[3], hit[0]);
+							}
 						}
 					});
-					
 				}
 			}
-			
-			if (!issueIdsByConceptIds.isEmpty()) {
-				final Query<String[]> conceptStatusQuery = Query.select(String[].class)
+		}
+		
+		if (!issueIdsByConceptIds.isEmpty()) {
+			final Query<String[]> conceptStatusQuery = Query.select(String[].class)
 					.from(SnomedConceptDocument.class)
 					.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE)
 					.where(SnomedConceptDocument.Expressions.ids(issueIdsByConceptIds.keySet()))
 					.limit(SCROLL_SIZE)
 					.build();
-				
-				for (Hits<String[]> hits : searcher.scroll(conceptStatusQuery)) {
-					for (String[] hit : hits) {
-						Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
-						issueIds.stream().forEach(id -> {
-							issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
-						});
-					}
+			
+			for (Hits<String[]> hits : searcher.scroll(conceptStatusQuery)) {
+				for (String[] hit : hits) {
+					Collection<String> issueIds = issueIdsByConceptIds.get(hit[0]);
+					issueIds.stream().forEach(id -> {
+						issuesByComponentId.get(id).forEach(validationIssue -> validationIssue.setDetails(CONCEPT_STATUS, hit[1]));
+					});
 				}
-				
 			}
 			
 		}

@@ -61,7 +61,7 @@ import com.google.common.base.Strings;
  */
 public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleEvaluator {
 
-	private static final int RULE_LIMIT = 10_000;
+	private static final int RULE_LIMIT = 50_000;
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
@@ -72,7 +72,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF)
 				.prepareSearch()
 				.setLimit(RULE_LIMIT)
-				.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.ACTIVE);
+				.setFields(SnomedComponentDocument.Fields.ID);
 		
 		SearchResourceRequestIterator it = new SearchResourceRequestIterator(req, searchRequest -> ((SnomedSearchRequestBuilder) searchRequest).build().execute(context));
 		final List<ComponentIdentifier> issues = newArrayList();
