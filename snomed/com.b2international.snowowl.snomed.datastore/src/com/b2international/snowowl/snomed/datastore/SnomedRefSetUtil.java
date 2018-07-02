@@ -40,8 +40,8 @@ import org.eclipse.emf.ecore.EClass;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
@@ -203,6 +203,15 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static DataType getDataType(String refsetId) {
 		return getConcreteDomainRefSetMap().inverse().get(refsetId);
+	}
+	
+	/**
+	 * Checks whether the supplied reference set identifier corresponds to a valid concrete domain type reference set.
+	 * @param refSetId the reference set ID to check
+	 * @return {@code true} if the ID matches a concrete domain type reference set, {@code false} otherwise  
+	 */
+	public static boolean isConcreteDomain(final String refSetId) {
+		return getConcreteDomainRefSetMap().containsValue(refSetId);
 	}
 	
 	/**
