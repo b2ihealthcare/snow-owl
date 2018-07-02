@@ -36,21 +36,19 @@ Expression activeFsnExpression = Expressions.builder()
 		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds))
 		.build()
 
-Aggregation<SnomedDescriptionIndexEntry> activeDescriptionsByOriginalTerm = searcher
-		.aggregate(AggregationBuilder
-		.bucket("ruleSnomedCommon2", SnomedDescriptionIndexEntry.class)
+Aggregation<String> activeDescriptionsByOriginalTerm = searcher
+		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String.class, SnomedDescriptionIndexEntry.class)
 		.query(activeFsnExpression)
 		.onFieldValue(SnomedDescriptionIndexEntry.Fields.ORIGINAL_TERM)
+		.fields(SnomedDescriptionIndexEntry.Fields.ID)
 		.minBucketSize(2))
 
 List<ComponentIdentifier> issueDetails = Lists.newArrayList()
 
-activeDescriptionsByOriginalTerm.getBuckets()
-		.values()
-		.each({ bucket ->
-			bucket.each({ description ->
-				issueDetails.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()))
-		})
+activeDescriptionsByOriginalTerm.getBuckets().values().each({ bucket ->
+	bucket.each({ descId ->
+		issueDetails.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descId))
+	})
 })
 
 return issueDetails
