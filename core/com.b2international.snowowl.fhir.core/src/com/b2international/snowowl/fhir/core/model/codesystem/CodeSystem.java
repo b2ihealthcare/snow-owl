@@ -71,6 +71,15 @@ public class CodeSystem extends TerminologyResource {
 
 	@Summary
 	@JsonProperty
+	private Boolean caseSensitive;
+	
+	@Summary
+	@Valid
+	@JsonProperty
+	private Uri valueSet;
+	
+	@Summary
+	@JsonProperty
 	private Code hierarchyMeaning;
 
 	@Mandatory
@@ -109,12 +118,18 @@ public class CodeSystem extends TerminologyResource {
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts, 
 			final CodeableConcept jurisdiction, final String purpose, final String copyright,
+			
+			//CodeSystem only
+			final Boolean caseSensitive, final Uri valueSet,
+			
 			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
 			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
 		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 				description, usageContexts, jurisdiction, purpose, copyright);
 
+		this.caseSensitive = caseSensitive;
+		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
 		this.count = count;
@@ -133,6 +148,10 @@ public class CodeSystem extends TerminologyResource {
 
 	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
 
+		private Boolean caseSensitive;
+		
+		private Uri valueSet;
+		
 		private Code hierarchyMeaning;
 
 		private Code content;
@@ -158,6 +177,21 @@ public class CodeSystem extends TerminologyResource {
 		@Override
 		protected Builder getSelf() {
 			return this;
+		}
+		
+		public Builder caseSensitive(Boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
+			return getSelf();
+		}
+		
+		public Builder valueSet(Uri valueSetUri) {
+			this.valueSet = valueSetUri;
+			return getSelf();
+		}
+		
+		public Builder valueSet(String valueSet) {
+			this.valueSet = new Uri(valueSet);
+			return getSelf();
 		}
 		
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
@@ -194,6 +228,7 @@ public class CodeSystem extends TerminologyResource {
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 					description, usageContexts, jurisdiction, purpose, copyright,
+					caseSensitive, valueSet,
 					hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}
