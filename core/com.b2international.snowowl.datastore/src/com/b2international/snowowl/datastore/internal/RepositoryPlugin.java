@@ -16,11 +16,9 @@
 package com.b2international.snowowl.datastore.internal;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.jvm.IJVMConnector;
 import org.eclipse.net4j.jvm.JVMUtil;
@@ -32,11 +30,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -46,13 +45,15 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.ApiRequestHandler;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
-import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.ServerProtocolFactoryRegistry;
+import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
@@ -72,19 +73,23 @@ import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 
 /**
  * @since 3.3
  */
-@ModuleConfig(fieldName = "reviewManager", type = ReviewConfiguration.class)
-public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment {
+public class RepositoryPlugin extends Plugin {
 
-	private static final String REPOSITORY_EXT_ID = "com.b2international.snowowl.datastore.repository";
-	private static final String UUID_ATTRIBUTE = "uuid";
-	private static final String TOOLING_ID_ATTRIBUTE = "toolingId";
-	
 	private static final Logger LOG = LoggerFactory.getLogger("core");
+	
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("reviewManager", ReviewConfiguration.class);
+		registry.add("repository", RepositoryConfiguration.class);
+		registry.add("rpc", RpcConfiguration.class);
+		registry.add("connection", RepositoryConnectionConfiguration.class);
+	}
 	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
@@ -106,6 +111,41 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
 		// initialize Notification support
 		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), classLoader));
+		// initialize Index Settings
+		final IndexSettings indexSettings = new IndexSettings();
+		indexSettings.putAll(initIndexSettings(env));
+		env.services().registerService(IndexSettings.class, indexSettings);
+	}
+	
+	private Map<String, Object> initIndexSettings(Environment env) {
+		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
+		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigDirectory().toPath().toString());
+		
+		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getCommitInterval());
+		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, config.getCommitConcurrencyLevel());
+		
+		final SlowLogConfig slowLog = createSlowLogConfig(config);
+		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
+		
+		return builder.build();
+	}
+
+	private SlowLogConfig createSlowLogConfig(final IndexConfiguration config) {
+		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
+		builder.put(SlowLogConfig.FETCH_DEBUG_THRESHOLD, config.getFetchDebugThreshold());
+		builder.put(SlowLogConfig.FETCH_INFO_THRESHOLD, config.getFetchInfoThreshold());
+		builder.put(SlowLogConfig.FETCH_TRACE_THRESHOLD, config.getFetchTraceThreshold());
+		builder.put(SlowLogConfig.FETCH_WARN_THRESHOLD, config.getFetchWarnThreshold());
+		builder.put(SlowLogConfig.QUERY_DEBUG_THRESHOLD, config.getQueryDebugThreshold());
+		builder.put(SlowLogConfig.QUERY_INFO_THRESHOLD, config.getQueryInfoThreshold());
+		builder.put(SlowLogConfig.QUERY_TRACE_THRESHOLD, config.getQueryTraceThreshold());
+		builder.put(SlowLogConfig.QUERY_WARN_THRESHOLD, config.getQueryWarnThreshold());
+		
+		return new SlowLogConfig(builder.build());
 	}
 
 	@Override
@@ -172,8 +212,8 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	}
 	
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		ServiceConfigJobManager.INSTANCE.registerServices(monitor);
+	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		ServiceConfigJobManager.INSTANCE.registerServices(new ConsoleProgressMonitor());
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
@@ -208,30 +248,30 @@ public class DatastoreServerBootstrap implements PreRunCapableBootstrapFragment 
 	private void initializeRepositories(SnowOwlConfiguration configuration, Environment env) {
 		
 		final Stopwatch branchStopwatch = Stopwatch.createStarted();
-		LOG.debug(">>> Initializing branch and review services.");
+		LOG.debug(">>> Initializing repositories.");
 		
 		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 		
 		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 		
 		//load all CDO repository extensions, instantiate repositories and apply inverse mapping to the namespace URI
-		for (final IConfigurationElement repositoryElement : Platform.getExtensionRegistry().getConfigurationElementsFor(REPOSITORY_EXT_ID)) {
-			
-			final String repositoryId = repositoryElement.getAttribute(UUID_ATTRIBUTE);
-			final String toolingId = repositoryElement.getAttribute(TOOLING_ID_ATTRIBUTE);
-			
-			Repository repo = repositories
-					.prepareCreate(repositoryId, toolingId)
-					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
-					.build(env);
-			if (repo.health() == Health.GREEN) {
-				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
-			} else {
-				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
-			}
-		}
+//		for (final IConfigurationElement repositoryElement : Platform.getExtensionRegistry().getConfigurationElementsFor(REPOSITORY_EXT_ID)) {
+//			
+//			final String repositoryId = repositoryElement.getAttribute(UUID_ATTRIBUTE);
+//			final String toolingId = repositoryElement.getAttribute(TOOLING_ID_ATTRIBUTE);
+//			
+//			Repository repo = repositories
+//					.prepareCreate(repositoryId, toolingId)
+//					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
+//					.build(env);
+//			if (repo.health() == Health.GREEN) {
+//				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
+//			} else {
+//				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
+//			}
+//		}
 		
-		LOG.debug("<<< Branch and review services registered. [{}]", branchStopwatch);
+		LOG.debug("<<< Repository initialization complete. [{}]", branchStopwatch);
 	}
 	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

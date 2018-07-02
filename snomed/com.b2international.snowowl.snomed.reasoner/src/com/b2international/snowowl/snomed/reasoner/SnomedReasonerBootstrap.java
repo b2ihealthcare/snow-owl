@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.reasoner;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServerService;
@@ -40,13 +38,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 7.0
  */
-public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
+public final class SnomedReasonerBootstrap extends Plugin {
 
 	@Override
-	public void run(final SnowOwlConfiguration configuration, 
-			final Environment env, 
-			final IProgressMonitor monitor) throws Exception {
-
+	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 
 			env.services().registerService(SnomedOntologyService.class, new SnomedOntologyService());

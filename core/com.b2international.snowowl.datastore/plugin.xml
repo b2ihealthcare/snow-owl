@@ -45,19 +45,4 @@
             type="java.lang.Object">
       </propertyTester>
    </extension>
-      <extension
-            point="com.b2international.snowowl.core.bootstrapFragments">
-         <bootstrapFragment
-               class="com.b2international.snowowl.datastore.setup.RepositoryBootstrap">
-         </bootstrapFragment>
-         <bootstrapFragment
-               class="com.b2international.snowowl.datastore.connection.RepositoryConnectionBootstrap">
-         </bootstrapFragment>
-         <bootstrapFragment
-               class="com.b2international.snowowl.core.internal.validation.ValidationBootstrap">
-         </bootstrapFragment>
-	     <bootstrapFragment
-	           class="com.b2international.snowowl.datastore.internal.DatastoreServerBootstrap">
-	     </bootstrapFragment>
-      </extension>
 </plugin>

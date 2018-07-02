@@ -25,7 +25,7 @@ import com.b2international.commons.FileUtils;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.google.common.base.Strings;
 
 import ch.qos.logback.classic.Level;
@@ -66,7 +66,7 @@ public class SnowOwlAppRule extends ExternalResource {
 
 	private String configPath;
 	private boolean clearResources = false;
-	private BootstrapFragment[] fragments;
+	private Plugin[] plugins;
 	
 	private final static Logger LOGGER = LoggerFactory.getLogger(SnowOwlAppRule.class);
 
@@ -104,19 +104,19 @@ public class SnowOwlAppRule extends ExternalResource {
 	}
 
 	/**
-	 * Defines additional {@link BootstrapFragment} instances to be part of the setup process.
+	 * Defines additional {@link Plugin} instances to be part of the setup process.
 	 * @param fragments
 	 * @return
 	 */
-	public SnowOwlAppRule fragments(BootstrapFragment...fragments) {
-		this.fragments = fragments;
+	public SnowOwlAppRule fragments(Plugin...fragments) {
+		this.plugins = fragments;
 		return this;
 	}
 
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		SnowOwlApplication.INSTANCE.bootstrap(configPath, fragments);
+		SnowOwlApplication.INSTANCE.bootstrap(configPath, plugins);
 		if (clearResources) {
 			final SnowOwlConfiguration config = SnowOwlApplication.INSTANCE.getConfiguration();
 			final File resourceDirectory = new File(config.getResourceDirectory());

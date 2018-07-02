@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,8 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -54,7 +53,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
-public final class ValidationBootstrap extends DefaultBootstrapFragment implements PreRunCapableBootstrapFragment {
+public final class ValidationPlugin extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	

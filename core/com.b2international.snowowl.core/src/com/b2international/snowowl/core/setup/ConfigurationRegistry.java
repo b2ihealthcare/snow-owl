@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,11 @@
  */
 package com.b2international.snowowl.core.setup;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-
 /**
- * Empty base class for {@link BootstrapFragment} implementors.
- * 
- * @since 3.4
+ * @since 7.0
  */
-public abstract class DefaultBootstrapFragment implements BootstrapFragment {
+public interface ConfigurationRegistry {
 
-	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
-	}
-
-	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-	}
+	void add(String field, Class<?> configurationType);
+	
 }

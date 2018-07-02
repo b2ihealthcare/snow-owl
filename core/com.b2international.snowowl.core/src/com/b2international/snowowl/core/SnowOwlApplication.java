@@ -39,11 +39,12 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.FileConfigurationSourceProvider;
+import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.Bootstrap;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 import com.google.common.base.Strings;
 
@@ -65,7 +66,7 @@ public enum SnowOwlApplication {
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
 
-	private Bootstrap bootstrap;
+	private Plugins bootstrap;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
 
@@ -103,12 +104,13 @@ public enum SnowOwlApplication {
 	 * 
 	 * @param configPath
 	 *            - the configuration file path to use
-	 * @param fragments - additional {@link BootstrapFragment} instances to use during initialization
+	 * @param fragments - additional {@link Plugin} instances to use during initialization
 	 */
-	public void bootstrap(String configPath, BootstrapFragment...fragments) throws Exception {
+	public void bootstrap(String configPath, Plugin...fragments) throws Exception {
 		if (!isRunning()) {
 			LOG.info("Bootstrapping Snow Owl...");
-			this.bootstrap = new Bootstrap(fragments);
+			LOG.info("Scanning plugins...");
+			this.bootstrap = new Plugins(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class));
 			final File homeDirectory = getHomeDirectory(bootstrap.getBundleContext());
 			checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
 			this.configuration = createConfiguration(bootstrap, homeDirectory, configPath);
@@ -132,7 +134,7 @@ public enum SnowOwlApplication {
 		}
 	}
 
-	private SnowOwlConfiguration createConfiguration(Bootstrap bootstrap, File homeDirectory, String configPath) throws Exception {
+	private SnowOwlConfiguration createConfiguration(Plugins bootstrap, File homeDirectory, String configPath) throws Exception {
 		if (Strings.isNullOrEmpty(configPath)) {
 			configPath = getDefaultConfigPath(homeDirectory);
 		}
@@ -190,9 +192,9 @@ public enum SnowOwlApplication {
 	 * 
 	 * @param preRunRunnable
 	 *            - to execute logic between
-	 *            {@link Bootstrap#preRun(SnowOwlConfiguration, Environment)}
+	 *            {@link Plugins#preRun(SnowOwlConfiguration, Environment)}
 	 *            and
-	 *            {@link Bootstrap#run(SnowOwlConfiguration, Environment, IProgressMonitor)}
+	 *            {@link Plugins#run(SnowOwlConfiguration, Environment, IProgressMonitor)}
 	 * @param monitor
 	 *            - to monitor application startup
 	 */
@@ -206,7 +208,7 @@ public enum SnowOwlApplication {
 				preRunRunnable.run();
 			}
 			LOG.info("Preparing to run Snow Owl...");
-			this.bootstrap.run(configuration, environment, monitor);
+			this.bootstrap.run(configuration, environment);
 			checkApplicationState();
 			running.set(true);
 			this.bootstrap.postRun(configuration, environment);

@@ -19,8 +19,10 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
@@ -62,32 +64,96 @@ public enum ClassPathScanner {
 			}
 		}
 		registry = new FastClasspathScanner()
+			.setAnnotationVisibility(RetentionPolicy.RUNTIME)
 			.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
 			.registerClassLoaderHandler(PDEOSGiDefaultClassLoaderHandler.class)
 			.scan();
 	}
 	
 	/**
-	 * Returns extension classes annotated with the given annotation.
+	 * Returns classes annotated with the given annotation.
 	 * 
 	 * @param annotation
 	 * @return
 	 */
-	public Collection<Class<?>> getExtensionsByAnnotation(Class<? extends Annotation> annotation) {
+	public Collection<Class<?>> getComponentClasses(Class<? extends Annotation> annotation) {
 		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesWithAnnotation(annotation);
 		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
 	}
 	
 	/**
-	 * Returns extension classes that implement the given interface type.
+	 * Returns classes that implement the given interface type.
 	 * @param type
 	 * @return
 	 */
-	public Collection<Class<?>> getExtensionsByInterface(Class<?> type) {
+	public Collection<Class<?>> getComponentsClassesByInterface(Class<?> type) {
 		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesImplementing(type);
 		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
 	}
 	
+	/**
+	 * Returns classes that extend the given superclass type.
+	 * @param type
+	 * @return
+	 */
+	public Collection<Class<?>> getComponentsClassesBySuperclass(Class<?> type) {
+		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfSubclassesOf(type);
+		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
+	}
+	
+	/**
+	 * Returns instances of classes annotated with the given annotation.
+	 * @param annotation
+	 * @return
+	 */
+	public Collection<Object> getComponentsByAnnotation(Class<? extends Annotation> annotation) {
+		return getComponentsByAnnotation(annotation, Object.class);
+	}
+	
+	/**
+	 * Returns instances of classes annotated with the given annotation and subtype of the given type.
+	 * 
+	 * @param annotation - the expected annotation
+	 * @param expectedType - the expected type
+	 * @return
+	 */
+	public <T> Collection<T> getComponentsByAnnotation(Class<? extends Annotation> annotation, Class<T> expectedType) {
+		return instantiate(getComponentClasses(annotation), expectedType);
+	}
+	
+	/**
+	 * Returns instances of classes implementing the given interface.
+	 * 
+	 * @param interfaceType - the expected type
+	 * @return
+	 */
+	public <T> Collection<T> getComponentsByInterface(Class<T> interfaceType) {
+		return instantiate(getComponentsClassesByInterface(interfaceType), interfaceType);
+	}
+	
+	/**
+	 * Returns instances of classes extending the given superclass.
+	 * 
+	 * @param interfaceType - the expected type
+	 * @return
+	 */
+	public <T> Collection<T> getComponentsBySuperclass(Class<T> superclass) {
+		return instantiate(getComponentsClassesBySuperclass(superclass), superclass);
+	}
+	
+	private <T> Collection<T> instantiate(Collection<Class<?>> classes, Class<T> type) {
+		return classes.stream()
+			.filter(type::isAssignableFrom)
+			.map(clazz -> {
+				try {
+					return type.cast(clazz.newInstance());
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			})
+			.collect(Collectors.toList());
+	}
+
 	public static class PDEOSGiDefaultClassLoaderHandler extends OSGiDefaultClassLoaderHandler {
 	
 		@Override
@@ -113,5 +179,5 @@ public enum ClassPathScanner {
 		}
 		
 	}
-	
+
 }

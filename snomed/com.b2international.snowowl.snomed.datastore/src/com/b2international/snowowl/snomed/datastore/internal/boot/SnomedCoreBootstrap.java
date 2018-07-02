@@ -15,25 +15,21 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal.boot;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
@@ -43,9 +39,13 @@ import com.google.inject.Injector;
 /**
  * @since 3.4
  */
-@ModuleConfig(fieldName = "snomed", type = SnomedCoreConfiguration.class)
-public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
+public class SnomedCoreBootstrap extends Plugin {
 
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("snomed", SnomedCoreConfiguration.class);
+	}
+	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final SnomedCoreConfiguration coreConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
@@ -62,13 +62,4 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
 	}
 
-	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
-		if (env.isServer() || env.isEmbedded()) {
-			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
-			final ICDORepository repository = env.service(ICDORepositoryManager.class).getByUuid(SnomedDatastoreActivator.REPOSITORY_UUID);
-			repository.setReaderPoolCapacity(snomedConfig.getReaderPoolCapacity());
-			repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
-		}
-	}
 }

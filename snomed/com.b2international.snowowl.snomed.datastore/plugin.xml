@@ -10,15 +10,6 @@
       </provider>
    </extension>
    <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.snomed.datastore.id.SnomedIdentifierBootstrap">
-      </bootstrapFragment>
-      <bootstrapFragment
-            class="com.b2international.snowowl.snomed.datastore.internal.boot.SnomedCoreBootstrap">
-      </bootstrapFragment>
-   </extension>
-   <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester
             class="com.b2international.snowowl.snomed.datastore.ConceptIdPropertyTester"

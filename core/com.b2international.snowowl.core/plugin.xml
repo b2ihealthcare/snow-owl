@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="bootstrapFragments" name="bootstrapFragments" schema="schema/bootstrapFragments.exsd"/>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
        <propertyTester
@@ -11,11 +10,5 @@
              properties="devVersion"
              type="java.lang.Object">
        </propertyTester>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.core.bootstrapFragments">
-      <bootstrapFragment
-            class="com.b2international.snowowl.core.internal.SnowOwlApplicationBootstrap">
-      </bootstrapFragment>
    </extension>
 </plugin>

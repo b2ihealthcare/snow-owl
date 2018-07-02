@@ -44,6 +44,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 		SnomedConstraint.class
 	}
 )
-public class Snomed {
-
+public final class SnomedPlugin {
+	
+	
+	
 }

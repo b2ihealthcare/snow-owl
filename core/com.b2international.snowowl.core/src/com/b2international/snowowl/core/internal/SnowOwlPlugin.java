@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.platform.PlatformUtil;
@@ -28,15 +27,14 @@ import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
 import com.b2international.snowowl.core.events.metrics.MetricsProvider;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.core.setup.Plugin;
 
 /**
  * @since 3.3
  */
-@ModuleConfig(fieldName = "metrics", type = MetricsConfiguration.class)
-public class SnowOwlApplicationBootstrap implements BootstrapFragment {
+public class SnowOwlPlugin extends Plugin {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
@@ -59,10 +57,15 @@ public class SnowOwlApplicationBootstrap implements BootstrapFragment {
 	}
 
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment environment, IProgressMonitor monitor) {
+	public void run(SnowOwlConfiguration configuration, Environment environment) {
 		if (!environment.isEmbedded() && environment.isClient()) {
 			PlatformUtil.enableSystemProxies(CoreActivator.getContext());
 		}
+	}
+	
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("metrics", MetricsConfiguration.class);
 	}
 
 }

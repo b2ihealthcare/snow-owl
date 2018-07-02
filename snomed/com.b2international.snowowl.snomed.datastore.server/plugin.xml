@@ -20,13 +20,13 @@
       </serviceConfigJob>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.conflictProcessor">
+         point="com.b2international.snowowl.datastore.conflictProcessor">
       <processor
             class="com.b2international.snowowl.datastore.server.snomed.SnomedCDOConflictProcessor">
       </processor>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.repositoryInitializer">
+         point="com.b2international.snowowl.datastore.repositoryInitializer">
       <initializer
             class="com.b2international.snowowl.datastore.server.snomed.SnomedRepositoryInitializer"
             repositoryUuid="snomedStore">
@@ -41,22 +41,7 @@
       </manager>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.historyInfo">
-      <detailsBuilder
-            builderClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedConceptHistoryInfoDetailsBuilder">
-      </detailsBuilder>
-      <executor
-            executorClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedConceptHistoryInfoQueryExecutor">
-      </executor>
-      <detailsBuilder
-            builderClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedRefSetHistoryInfoDetailsBuilder">
-      </detailsBuilder>
-      <executor
-            executorClass="com.b2international.snowowl.datastore.server.snomed.history.SnomedRefSetHistoryInfoQueryExecutor">
-      </executor>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.server.classLoaderProvider">
+         point="com.b2international.snowowl.datastore.classLoaderProvider">
       <classLoaderProvider
             class="com.b2international.snowowl.datastore.server.snomed.SnomedClassLoaderProvider">
       </classLoaderProvider>
@@ -68,13 +53,13 @@
       </postProcessor>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.mergeConflictRuleProvider">
+         point="com.b2international.snowowl.datastore.mergeConflictRuleProvider">
       <ruleprovider
             class="com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictRuleProvider">
       </ruleprovider>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.server.protocolFactory">
+         point="com.b2international.snowowl.datastore.serverProtocolFactory">
       <protocolFactory
             class="com.b2international.snowowl.snomed.datastore.server.export.SnomedServerProtocol$Factory"
             id="com.b2international.snowowl.snomed.datastore.server.export.SnomedServerProtocol$Factory">

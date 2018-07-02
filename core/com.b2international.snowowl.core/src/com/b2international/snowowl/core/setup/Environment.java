@@ -42,7 +42,7 @@ public final class Environment implements ServiceProvider {
 	private File resourcesDirectory;
 	private File defaultsDirectory;
 
-	public Environment(final Bootstrap bootstrap, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
+	public Environment(final Plugins bootstrap, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
 		this.homeDirectory = homeDirectory;
 		initializeEnvironmentDirectories(configuration);
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(bootstrap.getBundleContext());

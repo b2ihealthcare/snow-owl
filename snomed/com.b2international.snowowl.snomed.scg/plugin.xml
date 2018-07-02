@@ -10,20 +10,4 @@
        genModel = "com/b2international/snowowl/dsl/SCG.genmodel" /> 
 	
   </extension>
-  <extension
-        point="com.b2international.snowowl.core.representation">
-     <representation
-           class="com.b2international.snowowl.dsl.scg.Concept"
-           terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-     </representation>
-     <representation
-           class="com.b2international.snowowl.dsl.scg.impl.ConceptImpl"
-           terminologyComponentId="com.b2international.snowowl.terminology.snomed.concept">
-     </representation>
-  </extension>
-
-
-
-
-
 </plugin>
