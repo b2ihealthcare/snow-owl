@@ -20,18 +20,12 @@ import java.util.Collection;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.ConceptProperty.Builder;
-import com.b2international.snowowl.fhir.core.model.serialization.ConceptPropertySerializer;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.b2international.snowowl.fhir.core.model.dt.Quantity;
+import com.b2international.snowowl.fhir.core.model.dt.Range;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**

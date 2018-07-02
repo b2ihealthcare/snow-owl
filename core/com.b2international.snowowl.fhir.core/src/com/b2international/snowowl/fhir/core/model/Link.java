@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -29,10 +30,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Link {
 	
+	@Summary
 	@NotEmpty
 	@JsonProperty
 	private String relation = "self";
 	
+	@Summary
 	@Valid
 	@NotNull
 	@JsonProperty

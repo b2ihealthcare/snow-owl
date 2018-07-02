@@ -26,11 +26,12 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.signature.Signature;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 /**
- * 
  * FHIR Bundle domain model.
  * 
  * @see <a href="https://www.hl7.org/fhir/bundle.html">FHIR:Bundle</a>
@@ -42,27 +43,36 @@ public class Bundle extends FhirResource {
 	@JsonProperty
 	private String resourceType = "Bundle";
 
+	@Summary
 	@JsonProperty
 	private Identifier identifier;
 	
+	@Summary
 	@Valid
 	@NotNull
 	@JsonProperty
 	private Code type;
 	
+	@Summary
 	@Min(value = 0, message = "Total must be equal to or larger than 0")
 	@JsonProperty
 	private int total;
 
+	@Summary
 	@JsonProperty("link")
 	private Collection<Link> links;
 	
-	
+	@Summary
 	@JsonProperty("entry")
 	private Collection<Entry> entries;
 	
+	@Summary
+	@JsonProperty
+	private Signature signature;
+	
 	public Bundle(Id id, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries) {
 		super(id, language);
+		
 		this.identifier = identifier;
 		this.type = type;
 		this.total = total;
