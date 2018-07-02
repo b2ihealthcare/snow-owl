@@ -27,6 +27,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -55,10 +56,12 @@ public class ValueSet extends TerminologyResource {
 	@JsonProperty("compose")
 	private final Collection<Compose> composeParts;
 	
+	@SuppressWarnings("rawtypes")
 	public ValueSet(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, Collection<Compose> composeParts) {
+			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, final Collection<UsageContext> usageContexts, 
+			final Collection<Compose> composeParts) {
 		
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts);
 		this.composeParts = composeParts;
 	}
 	
@@ -87,7 +90,8 @@ public class ValueSet extends TerminologyResource {
 		@Override
 		protected ValueSet doBuild() {
 			return new ValueSet(id, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contact, description, composeParts);
+					title, status, date, publisher, contact, description, usageContexts,
+					composeParts);
 		}
 	}
 		

@@ -70,7 +70,7 @@ public class DesignationSerializationTest extends FhirTest {
 						+ "{\"name\":\"use\",\"valueCoding\":"
 							+ "{\"code\":\"1234\","
 							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\",\"userSelected\":false}},"
+							+ "\"version\":\"20180131\"}},"
 						+ "{\"name\":\"value\",\"valueString\":\"dValue\"}"
 					+ "]" 
 				+ "}";

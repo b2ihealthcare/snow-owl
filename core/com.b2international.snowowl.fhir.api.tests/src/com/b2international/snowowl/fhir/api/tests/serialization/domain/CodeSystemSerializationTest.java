@@ -169,7 +169,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 		printPrettyJson(conceptProperty);
 		
 		String expectedJson = "{\"code\":\"child\","
-				+ "\"valueCoding\":{\"code\":\"codingCode\",\"system\":\"uri\",\"userSelected\":false}}";
+				+ "\"valueCoding\":{\"code\":\"codingCode\",\"system\":\"uri\"}}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
 	}
@@ -328,7 +328,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 					+ "\"designation\":[{\"language\":\"uk_en\",\"use\":"
 							+ "{\"code\":\"internal\",\"system\":"
 							+ "\"http://b2i.sg/test\","
-							+ "\"userSelected\":false},"
 						+ "\"value\":\"conceptLabel_uk\","
 						+ "\"languageCode\":\"uk_en\"}],"
 					+ "\"properties\":"

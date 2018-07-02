@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 
 import javax.validation.Valid;
@@ -25,15 +26,16 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 
 /**
  * FHIR terminology resource with common properties.
@@ -84,15 +86,23 @@ public abstract class TerminologyResource extends DomainResource {
 
 	@JsonProperty
 	private String description;
+	
+	@Summary
+	@JsonProperty("useContext")
+	@SuppressWarnings("rawtypes")
+	private Collection<UsageContext> usageContexts;
 
 	/**
 	 * @param id
 	 * @param language
 	 * @param text
 	 */
+	@SuppressWarnings("rawtypes")
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description) {
+			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts) {
+		
 		super(id, language, text);
+		
 		this.url = url;
 		this.identifier = identifier;
 		this.version = version;
@@ -103,6 +113,7 @@ public abstract class TerminologyResource extends DomainResource {
 		this.contact = contact;
 		this.publisher = publisher;
 		this.description = description;
+		this.usageContexts = usageContexts;
 	}
 	
 	public Uri getUrl() {
@@ -131,6 +142,9 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		protected String description;
 		
+		@SuppressWarnings("rawtypes")
+		protected Collection<UsageContext> usageContexts = Lists.newArrayList(); 
+		
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
 		 */
@@ -158,11 +172,6 @@ public abstract class TerminologyResource extends DomainResource {
 
 		public B name(final String name) {
 			this.name = name;
-			return getSelf();
-		}
-		
-		public B description(final String description) {
-			this.description = description;
 			return getSelf();
 		}
 		
@@ -201,6 +210,16 @@ public abstract class TerminologyResource extends DomainResource {
 			return getSelf();
 		}
 		
+		public B description(final String description) {
+			this.description = description;
+			return getSelf();
+		}
+		
+		@SuppressWarnings("rawtypes")
+		public B addUseContext(final UsageContext usageContext) {
+			usageContexts.add(usageContext);
+			return getSelf();
+		}
 	}
 
 }

@@ -36,8 +36,8 @@ public class ValueSetSerializationTest extends FhirTest {
 				
 		printPrettyJson(integerExtension);
 		
-		String expectedJson =  "[{\"url\":\"testUri\","
-					+ "\"valueInteger\":1}]";
+		String expectedJson =  "{\"url\":\"testUri\","
+					+ "\"valueInteger\":1}";
 		
 		assertEquals(expectedJson, objectMapper.writeValueAsString(integerExtension));
 	}

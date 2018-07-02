@@ -43,7 +43,6 @@ public abstract class ConceptProperty<T> {
 	protected final Code code;
 	
 	@Valid
-	@NotEmpty
 	protected final T value;
 	
 	ConceptProperty(final Code code, final T value) {

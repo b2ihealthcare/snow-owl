@@ -209,7 +209,7 @@ public class FilterTest extends FhirTest {
 					+ "\"definition\":\"This is a code definition\","
 					+ "\"designation\":"
 						+ "[{\"language\":\"uk_en\","
-						+ "\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\",\"userSelected\":false},"
+						+ "\"use\":{\"code\":\"internal\",\"system\":\"http://b2i.sg/test\"},"
 					+ "\"value\":\"conceptLabel_uk\","
 					+ "\"languageCode\":\"uk_en\"}],"
 					+ "\"properties\":[{\"code\":\"childConcept\",\"valueCode\":\"childId\"}]"

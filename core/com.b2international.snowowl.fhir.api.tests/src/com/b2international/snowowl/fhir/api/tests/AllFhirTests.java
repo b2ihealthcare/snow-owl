@@ -42,17 +42,16 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
-	//PrimitiveDataTypeSerializationTest.class,
+	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
-	/*
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
 	PropertySerializationTest.class,
 	DesignationSerializationTest.class,
 	ModelSerializationTest.class,
-	 */
-	UsageContextSerializationTest.class
 	/*
+	 */
+	UsageContextSerializationTest.class,
 	LookupResultSerializationTest.class,
 	CodeSystemSerializationTest.class,
 	BundleSerializationTest.class,
@@ -65,6 +64,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Pr
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	FilterTest.class
+	/*
 	*/
 })
 public class AllFhirTests {
