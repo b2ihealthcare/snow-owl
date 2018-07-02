@@ -23,7 +23,6 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServerService;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
-import com.b2international.snowowl.snomed.reasoner.ontology.SnomedOntologyService;
 
 /**
  * @since 7.0
@@ -36,9 +35,6 @@ public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
 			final IProgressMonitor monitor) throws Exception {
 
 		if (env.isServer() || env.isEmbedded()) {
-
-			env.services().registerService(SnomedOntologyService.class, new SnomedOntologyService());
-
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerCount = snomedConfig.getMaxReasonerCount();
 			final int maximumTaxonomiesToKeep = snomedConfig.getMaxReasonerResults();
