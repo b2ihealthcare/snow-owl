@@ -28,9 +28,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Quantity;
  * https://www.hl7.org/fhir/metadatatypes.html#UsageContext
  * @since 6.6
  */
-public class ValueQuantityUsageContext extends UsageContext<Quantity> {
+public class QuantityUsageContext extends UsageContext<Quantity> {
 
-	protected ValueQuantityUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final Quantity value) {
+	protected QuantityUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final Quantity value) {
 		super(id, extensions, code, value);
 	}
 	
@@ -48,7 +48,7 @@ public class ValueQuantityUsageContext extends UsageContext<Quantity> {
 		return new Builder();
 	}
 	
-	public static class Builder extends UsageContext.Builder<Builder, ValueQuantityUsageContext, Quantity> {
+	public static class Builder extends UsageContext.Builder<Builder, QuantityUsageContext, Quantity> {
 		
 		@Override
 		protected Builder getSelf() {
@@ -56,8 +56,8 @@ public class ValueQuantityUsageContext extends UsageContext<Quantity> {
 		}
 
 		@Override
-		protected ValueQuantityUsageContext doBuild() {
-			return new ValueQuantityUsageContext(id, extensions, code, value);
+		protected QuantityUsageContext doBuild() {
+			return new QuantityUsageContext(id, extensions, code, value);
 		}
 	}
 

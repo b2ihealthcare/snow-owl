@@ -25,13 +25,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * FHIR Simple Quantity complex datatype
  * 
- * TODO: How to enforce this?
  * sqty-1: The comparator is not used on a SimpleQuantity (expression : comparator.empty())
  * 
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#quantity">FHIR:Data Types:Quantity</a>
  * @since 6.6
  */
-public class SimpleQuantity extends Quantity {
+public class SimpleQuantity extends BaseQuantity {
 	
 	SimpleQuantity(String id, Collection<Extension> extensions,
 			final Double value, final Code comparator, final String unit, final Uri system, final Code code) {
@@ -52,17 +51,16 @@ public class SimpleQuantity extends Quantity {
 		return new Builder();
 	}
 	
-	public static class Builder extends Quantity.Builder {
+	public static class Builder extends BaseQuantity.Builder<Builder, SimpleQuantity> {
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
-		
-		public SimpleQuantity build() {
-			SimpleQuantity simpleQuantity = new SimpleQuantity(id, extensions, value, comparator, unit, system, code);
-			validateModel(simpleQuantity);
-			return simpleQuantity;
+	
+		@Override
+		protected SimpleQuantity doBuild() {
+			return new SimpleQuantity(id, extensions, value, comparator, unit, system, code);
 		}
 	}
 

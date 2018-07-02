@@ -182,7 +182,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void rangeTest() throws Exception {
 		
-		SimpleQuantity low = (SimpleQuantity) SimpleQuantity.builder()
+		SimpleQuantity low = SimpleQuantity.builder()
 			.value(12.3)
 			.unit("mg")
 			.system("uri:LOINC")

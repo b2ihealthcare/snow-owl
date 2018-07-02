@@ -17,10 +17,7 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
-import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -33,105 +30,37 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/datatypes.html#quantity">FHIR:Data Types:Quantity</a>
  * @since 6.6
  */
-public class Quantity extends Element {
+public class Quantity extends BaseQuantity {
 	
-	@Summary
-	@JsonProperty
-	private Double value;
-	
-	@Summary
-	protected Code comparator;
+	Quantity(String id, Collection<Extension> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
+		super(id, extensions, value, comparator, unit, system, code);
+	}
 	
 	/*
 	 * To enable to override
 	 * @return
 	 */
 	@JsonProperty
+	@Override
 	public Code getComparator() {
 		return comparator;
 	}
-	
-	@Summary
-	@JsonProperty
-	private String unit;
-	
-	@Summary
-	@JsonProperty
-	private Uri system;
-	
-	@Summary
-	@JsonProperty
-	private Code code;
-	
-	Quantity(String id, Collection<Extension> extensions,
-			final Double value, final Code comparator, final String unit, final Uri system, final Code code) {
-		super(id, extensions);
-		
-		this.value = value;
-		this.comparator = comparator;
-		this.unit = unit;
-		this.system = system;
-		this.code = code;
-	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends Element.Builder<Builder, Quantity> {
-		
-		protected Double value;
-		protected Code comparator;
-		protected String unit;
-		protected Uri system;
-		protected Code code;
+	public static class Builder extends BaseQuantity.Builder<Builder, Quantity> {
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
-		
-		public Builder value(Double value) {
-			this.value = value;
-			return getSelf();
-		}
-		
-		public Builder comparator(QuantityComparator comparator) {
-			this.comparator = comparator.getCode();
-			return getSelf();
-		}
-		
-		public Builder unit(String unit) {
-			this.unit = unit;
-			return getSelf();
-		}
-		
-		public Builder system(String system) {
-			this.system = new Uri(system);
-			return getSelf();
-		}
-
-		public Builder system(Uri systemUri) {
-			this.system = systemUri;
-			return getSelf();
-		}
-
-		public Builder code(Code code) {
-			this.code = code;
-			return getSelf();
-		}
-		
-		public Builder code(String codeValue) {
-			this.code = new Code(codeValue);
-			return getSelf();
-		}
-		
+	
 		@Override
 		protected Quantity doBuild() {
 			return new Quantity(id, extensions, value, comparator, unit, system, code);
 		}
 	}
-	
-
 
 }

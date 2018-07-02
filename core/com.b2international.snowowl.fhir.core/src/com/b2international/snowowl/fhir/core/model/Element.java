@@ -54,8 +54,8 @@ public abstract class Element {
 
 		protected Collection<Extension> extensions = Lists.newArrayList();
 		
-		public Builder() {
-		}
+//		public Builder() {
+//		}
 		
 		protected abstract B getSelf();
 		
