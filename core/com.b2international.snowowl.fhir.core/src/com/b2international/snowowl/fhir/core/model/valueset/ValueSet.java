@@ -60,10 +60,11 @@ public class ValueSet extends TerminologyResource {
 	@SuppressWarnings("rawtypes")
 	public ValueSet(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, 
 			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
-			final CodeableConcept jurisdiction,
+			final CodeableConcept jurisdiction, final String purpose, final String copyright,
 			final Collection<Compose> composeParts) {
 		
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact,
+				description, usageContexts, jurisdiction, purpose, copyright);
 		this.composeParts = composeParts;
 	}
 	
@@ -92,7 +93,7 @@ public class ValueSet extends TerminologyResource {
 		@Override
 		protected ValueSet doBuild() {
 			return new ValueSet(id, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contact, description, usageContexts, jurisdiction,
+					title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright,
 					composeParts);
 		}
 	}

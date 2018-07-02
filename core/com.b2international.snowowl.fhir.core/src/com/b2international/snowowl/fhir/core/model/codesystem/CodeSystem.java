@@ -108,11 +108,12 @@ public class CodeSystem extends TerminologyResource {
 	@SuppressWarnings("rawtypes")
 	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts, 
-			final CodeableConcept jurisdiction,
+			final CodeableConcept jurisdiction, final String purpose, final String copyright,
 			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
 			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction);
+		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
+				description, usageContexts, jurisdiction, purpose, copyright);
 
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.content = content;
@@ -191,7 +192,8 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction,
+			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
+					description, usageContexts, jurisdiction, purpose, copyright,
 					hierarchyMeaning, content, count, filters, properties, concepts);
 		}
 	}

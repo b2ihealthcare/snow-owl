@@ -98,6 +98,12 @@ public abstract class TerminologyResource extends DomainResource {
 	@JsonProperty
 	private CodeableConcept jurisdiction;
 	
+	@JsonProperty
+	private String purpose;
+	
+	@JsonProperty
+	private String copyright;
+	
 
 	/**
 	 * @param id
@@ -107,7 +113,7 @@ public abstract class TerminologyResource extends DomainResource {
 	@SuppressWarnings("rawtypes")
 	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
 			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, 
-			final Collection<UsageContext> usageContexts, final CodeableConcept jurisdiction) {
+			final Collection<UsageContext> usageContexts, final CodeableConcept jurisdiction, final String purpose, final String copyright) {
 		
 		super(id, language, text);
 		
@@ -123,6 +129,8 @@ public abstract class TerminologyResource extends DomainResource {
 		this.description = description;
 		this.usageContexts = usageContexts;
 		this.jurisdiction = jurisdiction;
+		this.purpose = purpose;
+		this.copyright = copyright;
 	}
 	
 	public Uri getUrl() {
@@ -155,6 +163,10 @@ public abstract class TerminologyResource extends DomainResource {
 		protected Collection<UsageContext> usageContexts = Lists.newArrayList(); 
 
 		protected CodeableConcept jurisdiction;
+		
+		protected String purpose;
+		
+		protected String copyright;
 		
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -234,6 +246,16 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		public B jurisdiction(final CodeableConcept jurisdiction) {
 			this.jurisdiction = jurisdiction;
+			return getSelf();
+		}
+		
+		public B purpose(final String purpose) {
+			this.purpose = purpose;
+			return getSelf();
+		}
+		
+		public B copyright(final String copyright) {
+			this.copyright = copyright;
 			return getSelf();
 		}
 	}
