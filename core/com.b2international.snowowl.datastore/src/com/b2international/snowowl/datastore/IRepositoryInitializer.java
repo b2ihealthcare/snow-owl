@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.datastore;
 
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
  * Ensures that a particular terminology repository is in the expected state at the beginning of its lifecycle.
@@ -36,7 +36,7 @@ public interface IRepositoryInitializer {
 	/**
 	 * Executes initialization checks for the corresponding repository.
 	 * 
-	 * @param repository  the repository to initialize (may not be {@code null}) 
+	 * @param context - the repository context to initialize (may not be {@code null}) 
 	 */
-	void initialize(ICDORepository repository);
+	void initialize(RepositoryContext context);
 }

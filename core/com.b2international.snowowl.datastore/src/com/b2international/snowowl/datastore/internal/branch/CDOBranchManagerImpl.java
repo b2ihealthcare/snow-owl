@@ -72,7 +72,7 @@ public final class CDOBranchManagerImpl extends BaseRevisionBranching implements
     
     @Override
     protected long getMainBranchId() {
-    	return CDOBranch.MAIN_BRANCH_ID;
+    	return 0L;
     }
     
     @Override

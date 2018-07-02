@@ -15,37 +15,35 @@
  */
 package com.b2international.snowowl.snomed.core;
 
-import com.b2international.snowowl.core.terminology.Terminology;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 7.0
  */
-@Terminology(
-	id = SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
-	repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID,
-	name = SnomedTerminologyComponentConstants.SNOMED_NAME,
-	icon = "icons/terminology_icon.png",
-	supportsEffectiveTime = true,
-	primaryComponentId = SnomedTerminologyComponentConstants.CONCEPT,
-	terminologyComponents = {
-		SnomedConcept.class,
-		SnomedDescription.class,
-		SnomedRelationship.class,
-		SnomedReferenceSet.class,
-		SnomedReferenceSetMember.class,
-		SnomedConstraint.class
+//	name = SnomedTerminologyComponentConstants.SNOMED_NAME,
+//	icon = "icons/terminology_icon.png",
+//	supportsEffectiveTime = true,
+//	primaryComponentId = SnomedTerminologyComponentConstants.CONCEPT,
+//	terminologyComponents = {
+//		SnomedConcept.class,
+//		SnomedDescription.class,
+//		SnomedRelationship.class,
+//		SnomedReferenceSet.class,
+//		SnomedReferenceSetMember.class,
+//		SnomedConstraint.class
+//	}
+public final class SnomedPlugin extends TerminologyRepositoryPlugin {
+
+	@Override
+	protected String getRepositoryId() {
+		return SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
-)
-public final class SnomedPlugin {
 	
-	
+	@Override
+	protected String getToolingId() {
+		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	}
 	
 }

@@ -32,6 +32,7 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.Commit;
+import com.b2international.index.revision.DefaultRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
@@ -43,15 +44,12 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
-import com.b2international.snowowl.datastore.RepositoryInitializerRegistry;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.index.MappingProvider;
-import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.datastore.internal.merge.MergeServiceImpl;
-import com.b2international.snowowl.datastore.replicate.BranchReplicator;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
@@ -65,34 +63,41 @@ import com.google.common.collect.MapMaker;
 /**
  * @since 4.1
  */
-public final class CDOBasedRepository extends DelegatingContext implements InternalRepository {
+public final class TerminologyRepository extends DelegatingContext implements InternalRepository {
 
 	private final String toolingId;
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
-	private Health health = Health.GREEN;
+	private final int mergeMaxResults;
+	
+	private Health health = Health.RED;
 	private String diagnosis;
 	
-	CDOBasedRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
+	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
 		super(env);
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
+		this.mergeMaxResults = mergeMaxResults;
+	}
+	
+	public void activate() {
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
 		RevisionIndex index = initIndex(mapper, branching);
 		bind(Repository.class, this);
-		bind(ClassLoader.class, env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
+		bind(ClassLoader.class, service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
 		// initialize the index
 		index.admin().create();
 		checkHealth();
 		if (health == Health.GREEN) {
-			RepositoryInitializerRegistry.INSTANCE.getInitializer(repositoryId);
+			// TODO repository init
 		}
 	}
 
 	@Override
 	public void checkHealth() {
 		// TODO support health services
+		setHealth(Health.GREEN, null);
 	}
 
 	@Override
@@ -117,9 +122,9 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 	}
 	
 	private BaseRevisionBranching initializeBranchingSupport(int mergeMaxResults) {
-		final CDOBranchManagerImpl branchManager = new CDOBranchManagerImpl(this, service(ObjectMapper.class));
+		final BaseRevisionBranching branchManager = new DefaultRevisionBranching(provider(Index.class), service(ObjectMapper.class));
 		bind(BaseRevisionBranching.class, branchManager);
-		bind(BranchReplicator.class, branchManager);
+//		bind(BranchReplicator.class, branchManager);
 		
 		final ReviewConfiguration reviewConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);

@@ -217,7 +217,6 @@ public class RepositoryPlugin extends Plugin {
 		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
-			initializeRepositories(configuration, env);
 		}
 	}
 	
@@ -245,35 +244,6 @@ public class RepositoryPlugin extends Plugin {
 		env.services().registerService(RepositoryContextProvider.class, new DefaultRepositoryContextProvider(env.service(RepositoryManager.class)));
 	}
 
-	private void initializeRepositories(SnowOwlConfiguration configuration, Environment env) {
-		
-		final Stopwatch branchStopwatch = Stopwatch.createStarted();
-		LOG.debug(">>> Initializing repositories.");
-		
-		final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-		
-		RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
-		
-		//load all CDO repository extensions, instantiate repositories and apply inverse mapping to the namespace URI
-//		for (final IConfigurationElement repositoryElement : Platform.getExtensionRegistry().getConfigurationElementsFor(REPOSITORY_EXT_ID)) {
-//			
-//			final String repositoryId = repositoryElement.getAttribute(UUID_ATTRIBUTE);
-//			final String toolingId = repositoryElement.getAttribute(TOOLING_ID_ATTRIBUTE);
-//			
-//			Repository repo = repositories
-//					.prepareCreate(repositoryId, toolingId)
-//					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
-//					.build(env);
-//			if (repo.health() == Health.GREEN) {
-//				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
-//			} else {
-//				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
-//			}
-//		}
-		
-		LOG.debug("<<< Repository initialization complete. [{}]", branchStopwatch);
-	}
-	
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {
 		// Normally this is done for us by CDOConnectionFactory
 		final IJVMConnector connector = JVMUtil.getConnector(container, Net4jUtils.NET_4_J_CONNECTOR_NAME);

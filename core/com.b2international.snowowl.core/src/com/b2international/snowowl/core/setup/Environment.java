@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,16 +42,16 @@ public final class Environment implements ServiceProvider {
 	private File resourcesDirectory;
 	private File defaultsDirectory;
 
-	public Environment(final Plugins bootstrap, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
+	public Environment(final Plugins plugins, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
 		this.homeDirectory = homeDirectory;
 		initializeEnvironmentDirectories(configuration);
-		final PreferencesService preferences = PlatformUtil.getPreferencesService(bootstrap.getBundleContext());
+		final PreferencesService preferences = PlatformUtil.getPreferencesService(plugins.getBundleContext());
 		services().registerService(PreferencesService.class, preferences);
 		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
 		services().registerService(SnowOwlConfiguration.class, configuration);
 		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
 		services().registerService(ClientPreferences.class, cdoClientConfiguration);
-		
+		services().registerService(Plugins.class, plugins);
 	}
 	
 	private void initializeEnvironmentDirectories(SnowOwlConfiguration configuration) throws Exception {

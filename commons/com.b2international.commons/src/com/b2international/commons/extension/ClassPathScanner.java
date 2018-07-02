@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -144,11 +145,13 @@ public enum ClassPathScanner {
 	private <T> Collection<T> instantiate(Collection<Class<?>> classes, Class<T> type) {
 		return classes.stream()
 			.filter(type::isAssignableFrom)
+			.filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
 			.map(clazz -> {
 				try {
 					return type.cast(clazz.newInstance());
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					e.printStackTrace();
+					throw new RuntimeException("Failed to instantiate type: " + clazz, e);
 				}
 			})
 			.collect(Collectors.toList());

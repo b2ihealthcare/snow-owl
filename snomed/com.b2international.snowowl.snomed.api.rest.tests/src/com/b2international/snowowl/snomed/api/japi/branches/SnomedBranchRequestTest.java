@@ -44,7 +44,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merge.Status;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.internal.CDOBasedRepository;
+import com.b2international.snowowl.datastore.internal.TerminologyRepository;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Merging;
@@ -283,6 +283,6 @@ public class SnomedBranchRequestTest {
 	
 	private CDOBranchManager getSnomedCdoBranchManager() {
 		final RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		return ((CDOBasedRepository) repositoryManager.get(REPOSITORY_ID)).getCdoBranchManager();
+		return ((TerminologyRepository) repositoryManager.get(REPOSITORY_ID)).getCdoBranchManager();
 	}
 }
