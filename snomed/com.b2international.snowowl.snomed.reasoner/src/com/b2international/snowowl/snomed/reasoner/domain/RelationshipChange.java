@@ -18,14 +18,32 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 import java.io.Serializable;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * @since 7.0
  */
 public final class RelationshipChange implements Serializable {
 
+	/**
+	 * Enumerates expandable property keys.
+	 */
+	public static final class Expand {
+		public static final String RELATIONSHIP = "relationship";
+	}
+
+	private String classificationId;
 	private ChangeNature changeNature;
 	private SnomedRelationship relationship;
+
+	@JsonIgnore
+	public String getClassificationId() {
+		return classificationId;
+	}
+
+	public void setClassificationId(final String classificationId) {
+		this.classificationId = classificationId;
+	}
 
 	public ChangeNature getChangeNature() {
 		return changeNature;
@@ -46,7 +64,9 @@ public final class RelationshipChange implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("RelationshipChange [changeNature=");
+		builder.append("RelationshipChange [classificationId=");
+		builder.append(classificationId);
+		builder.append(", changeNature=");
 		builder.append(changeNature);
 		builder.append(", relationship=");
 		builder.append(relationship);

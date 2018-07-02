@@ -63,6 +63,17 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
 	
+	/**
+	 * Enumerates expandable property keys.
+	 * 
+	 * @since 7.0
+	 */
+	public static final class Expand {
+		public static final String SOURCE = "source";
+		public static final String TYPE = "type";
+		public static final String DESTINATION = "destination";
+	}
+	
 	private boolean destinationNegated;
 	private Integer group;
 	private Integer unionGroup;

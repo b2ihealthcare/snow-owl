@@ -71,6 +71,15 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 
 	private static final long serialVersionUID = -7471488952871955209L;
 
+	/**
+	 * Enumerates expandable property keys.
+	 * 
+	 * @since 7.0
+	 */
+	public static final class Expand {
+		public static final String REFERENCED_COMPONENT = "referencedComponent";
+	}
+	
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();
 	
 	private SnomedRefSetType type;

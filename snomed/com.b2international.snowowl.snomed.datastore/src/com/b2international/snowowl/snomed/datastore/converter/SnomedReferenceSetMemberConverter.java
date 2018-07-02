@@ -118,8 +118,8 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	}
 
 	private void expandReferencedComponent(List<SnomedReferenceSetMember> results) {
-		if (expand().containsKey("referencedComponent")) {
-			Options expandOptions = expand().get("referencedComponent", Options.class);
+		if (expand().containsKey(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT)) {
+			Options expandOptions = expand().get(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT, Options.class);
 			
 			final Multimap<String, SnomedReferenceSetMember> referencedComponentIdToMemberMap = collectReferencedComponentIds(results);
 			final Multimap<ComponentCategory, String> componentCategoryToIdMap = collectReferencedComponentCategories(referencedComponentIdToMemberMap);

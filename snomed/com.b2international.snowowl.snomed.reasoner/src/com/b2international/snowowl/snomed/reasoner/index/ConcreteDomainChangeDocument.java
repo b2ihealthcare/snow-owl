@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,6 +31,25 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="concreteDomainChange")
 @JsonDeserialize(builder=ConcreteDomainChangeDocument.Builder.class)
 public final class ConcreteDomainChangeDocument {
+
+	public static class Fields {
+		public static final String CLASSIFICATION_ID = "classificationId";
+		public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
+	}
+
+	public static class Expressions {
+		public static Expression classificationId(final String classificationId) {
+			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
+		}
+
+		public static Expression classificationId(final Iterable<String> classificationIds) {
+			return matchAny(Fields.CLASSIFICATION_ID, classificationIds);
+		}
+
+		public static Expression referencedComponentId(final String referencedComponentId) {
+			return exactMatch(Fields.REFERENCED_COMPONENT_ID, referencedComponentId);
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -74,7 +96,7 @@ public final class ConcreteDomainChangeDocument {
 		}
 	}
 
-	@Keyword private final String classificationId;
+	private final String classificationId;
 	private final ChangeNature nature;
 
 	// The origin (stated) UUID of the CD member for inferences, or the UUID of the member to remove/inactivate

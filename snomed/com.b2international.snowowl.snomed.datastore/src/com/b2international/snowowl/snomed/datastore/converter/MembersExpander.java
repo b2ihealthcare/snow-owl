@@ -18,15 +18,19 @@ package com.b2international.snowowl.snomed.datastore.converter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -49,21 +53,32 @@ class MembersExpander {
 	void expand(List<? extends SnomedCoreComponent> results, Set<String> componentIds) {
 		if (expand.containsKey("members")) {
 			final Options membersOptions = expand.get("members", Options.class);
+			
 			// TODO support limit, offset, filtering, selection
-			final SnomedReferenceSetMembers matchingMembers = SnomedRequests
-				.prepareSearchMember()
+			final SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.all()
-				.filterByReferencedComponent(componentIds)
+				.filterByReferencedComponent(componentIds);
+			
+			addActiveFilter(requestBuilder, membersOptions);
+			addRefSetTypesFilter(requestBuilder, membersOptions);
+			
+			final OptionsBuilder propertyOptionsBuilder = OptionsBuilder.newBuilder();
+			addCharacteristicTypeFilter(propertyOptionsBuilder, membersOptions);
+			
+			final Options propertyOptions = propertyOptionsBuilder.build();
+			if (!propertyOptions.isEmpty()) {
+				requestBuilder.filterByProps(propertyOptions);
+			}
+			
+			final SnomedReferenceSetMembers matchingMembers = requestBuilder
 				.setLocales(locales)
 				.setExpand(membersOptions.get("expand", Options.class))
 				.build()
 				.execute(context);
-			final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(matchingMembers, new Function<SnomedReferenceSetMember, String>() {
-				@Override
-				public String apply(SnomedReferenceSetMember input) {
-					return input.getReferencedComponent().getId();
-				}
-			});
+			
+			final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponentId = Multimaps.index(matchingMembers, 
+					input -> input.getReferencedComponent().getId());
+			
 			for (SnomedCoreComponent component : results) {
 				final Collection<SnomedReferenceSetMember> members = membersByReferencedComponentId.get(component.getId());
 				((SnomedCoreComponent) component).setMembers(new SnomedReferenceSetMembers(ImmutableList.copyOf(members), null, null, members.size(), members.size()));
@@ -71,4 +86,27 @@ class MembersExpander {
 		}
 	}
 
+	private void addActiveFilter(SnomedRefSetMemberSearchRequestBuilder requestBuilder, Options membersOptions) {
+		if (membersOptions.containsKey("active")) {
+			requestBuilder.filterByActive(membersOptions.getBoolean("active"));
+		}
+	}
+
+	private void addRefSetTypesFilter(SnomedRefSetMemberSearchRequestBuilder requestBuilder, Options membersOptions) {
+		if (membersOptions.containsKey("refSetType")) {
+			final Collection<String> refSetTypesAsString = membersOptions.getCollection("refSetType", String.class);
+			final Iterable<SnomedRefSetType> refSetTypes = refSetTypesAsString.stream()
+					.map(SnomedRefSetType::valueOf)
+					.collect(Collectors.toSet());
+
+			requestBuilder.filterByRefSetType(refSetTypes);
+		}
+	}
+
+	private void addCharacteristicTypeFilter(OptionsBuilder propertyOptionsBuilder, Options membersOptions) {
+		if (membersOptions.containsKey(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
+			propertyOptionsBuilder.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, 
+					membersOptions.getCollection(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, String.class));
+		}
+	}
 }

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.check;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.COMPLEX_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.EXTENDED_MAP;
 import static com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType.QUERY;
@@ -40,13 +39,11 @@ import org.eclipse.emf.ecore.EClass;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -203,6 +200,15 @@ public abstract class SnomedRefSetUtil {
 	 */
 	public static DataType getDataType(String refsetId) {
 		return getConcreteDomainRefSetMap().inverse().get(refsetId);
+	}
+	
+	/**
+	 * Checks whether the supplied reference set identifier corresponds to a valid concrete domain type reference set.
+	 * @param refSetId the reference set ID to check
+	 * @return {@code true} if the ID matches a concrete domain type reference set, {@code false} otherwise  
+	 */
+	public static boolean isConcreteDomain(final String refSetId) {
+		return getConcreteDomainRefSetMap().containsValue(refSetId);
 	}
 	
 	/**

@@ -15,9 +15,14 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyLong;
+
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -28,6 +33,25 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="equivalentConceptSet")
 @JsonDeserialize(builder=EquivalentConceptSetDocument.Builder.class)
 public final class EquivalentConceptSetDocument {
+
+	public static class Fields {
+		public static final String CLASSIFICATION_ID = "classificationId";
+		public static final String CONCEPT_IDS = "conceptIds";
+	}
+
+	public static class Expressions {
+		public static Expression classificationId(final String classificationId) {
+			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
+		}
+
+		public static Expression classificationId(final Iterable<String> classificationIds) {
+			return matchAny(Fields.CLASSIFICATION_ID, classificationIds);
+		}
+
+		public static Expression conceptIds(final Iterable<String> conceptIds) {
+			return matchAnyLong(Fields.CONCEPT_IDS, StringToLongFunction.copyOf(conceptIds));
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -67,7 +91,7 @@ public final class EquivalentConceptSetDocument {
 		}
 	}
 
-	@Keyword private final String classificationId;
+	private final String classificationId;
 	private final boolean unsatisfiable;
 	private final LongSet conceptIds;
 

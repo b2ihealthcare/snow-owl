@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
+
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
+import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -28,6 +31,29 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="relationshipChange")
 @JsonDeserialize(builder=RelationshipChangeDocument.Builder.class)
 public final class RelationshipChangeDocument {
+
+	public static class Fields {
+		public static final String CLASSIFICATION_ID = "classificationId";
+		public static final String SOURCE_ID = "sourceId";
+	}
+
+	public static class Expressions {
+		public static Expression classificationId(final String classificationId) {
+			return exactMatch(Fields.CLASSIFICATION_ID, classificationId);
+		}
+
+		public static Expression classificationId(final Iterable<String> classificationIds) {
+			return matchAny(Fields.CLASSIFICATION_ID, classificationIds);
+		}
+
+		public static Expression sourceId(final String sourceId) {
+			return exactMatch(Fields.SOURCE_ID, sourceId);
+		}
+
+		public static Expression sourceId(final Iterable<String> sourceIds) {
+			return matchAny(Fields.SOURCE_ID, sourceIds);
+		}
+	}
 
 	public static Builder builder() {
 		return new Builder();
@@ -88,12 +114,12 @@ public final class RelationshipChangeDocument {
 		}
 	}
 
-	@Keyword private final String classificationId;
+	private final String classificationId;
 	private final ChangeNature nature;
-	
+
 	// The origin (stated relationship) SCTID for inferences, or the SCTID of the relationship to remove/inactivate
 	private final String relationshipId; 
-	
+
 	// Values that should be changed on the origin relationship before saving/presenting it as an inference
 	private final String sourceId; 
 	private final Integer group;
