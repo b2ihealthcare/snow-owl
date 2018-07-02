@@ -16,24 +16,14 @@
 package com.b2international.snowowl.snomed.core;
 
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
+import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 
 /**
  * @since 7.0
  */
-//	name = SnomedTerminologyComponentConstants.SNOMED_NAME,
-//	icon = "icons/terminology_icon.png",
-//	supportsEffectiveTime = true,
-//	primaryComponentId = SnomedTerminologyComponentConstants.CONCEPT,
-//	terminologyComponents = {
-//		SnomedConcept.class,
-//		SnomedDescription.class,
-//		SnomedRelationship.class,
-//		SnomedReferenceSet.class,
-//		SnomedReferenceSetMember.class,
-//		SnomedConstraint.class
-//	}
 public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 
 	@Override
@@ -44,6 +34,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected String getToolingId() {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	}
+	
+	@Override
+	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
+		return new SnomedRepositoryInitializer();
 	}
 	
 }

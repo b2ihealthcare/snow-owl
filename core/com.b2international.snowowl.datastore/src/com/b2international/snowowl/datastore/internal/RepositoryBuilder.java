@@ -16,7 +16,10 @@
 package com.b2international.snowowl.datastore.internal;
 
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 
 /**
  * @since 4.5
@@ -28,6 +31,7 @@ public final class RepositoryBuilder {
 	private final DefaultRepositoryManager manager;
 	
 	private int mergeMaxResults;
+	private TerminologyRepositoryInitializer initializer;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -40,11 +44,24 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder withInitializer(TerminologyRepositoryInitializer initializer) {
+		this.initializer = initializer;
+		return this;
+	}
+	
 	public Repository build(Environment env) {
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.activate();
 		manager.put(repositoryId, repository);
+		
+		// execute initialization steps
+		new IndexReadRequest<Void>((context) -> {
+			initializer.initialize(context);
+			return null;
+		}).execute(env.service(RepositoryContextProvider.class).get(repositoryId));
+		
 		return repository;
 	}
+
 }

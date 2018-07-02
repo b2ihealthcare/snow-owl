@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.internal.DefaultRepositoryManager;
 
@@ -40,6 +41,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final Repository repo = repositories.prepareCreate(getRepositoryId(), getToolingId())
+					.withInitializer(getTerminologyRepositoryInitializer())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
@@ -50,8 +52,18 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 		}		
 	}
 
+	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
+		return null;
+	}
+
+	/**
+	 * @return the associated unique repository ID to use for the repository.
+	 */
 	protected abstract String getRepositoryId();
 	
+	/**
+	 * @return the unique application specific identifier of the terminology.
+	 */
 	protected abstract String getToolingId();
 	
 }

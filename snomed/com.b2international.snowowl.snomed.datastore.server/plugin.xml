@@ -4,11 +4,6 @@
    <extension
          point="com.b2international.snowowl.datastore.serviceConfigJob">
      <serviceConfigJob
-           class="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRefSetDerivationServiceConfigJob"
-           id="com.b2international.snowowl.datastore.server.snomed.jobs.SnomedRefSetDerivationServiceConfigJob"
-           terminologyId="com.b2international.snowowl.terminology.snomed">
-     </serviceConfigJob>
-     <serviceConfigJob
             class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterConfigJob"
             id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterConfigJob"
             terminologyId="com.b2international.snowowl.terminology.snomed">

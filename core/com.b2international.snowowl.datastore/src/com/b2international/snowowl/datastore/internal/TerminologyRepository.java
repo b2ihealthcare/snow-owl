@@ -23,6 +23,9 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.commons.extension.Extensions;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
@@ -69,6 +72,7 @@ public final class TerminologyRepository extends DelegatingContext implements In
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	private final int mergeMaxResults;
+	private final Logger logger;
 	
 	private Health health = Health.RED;
 	private String diagnosis;
@@ -78,9 +82,12 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.mergeMaxResults = mergeMaxResults;
+		this.logger = LoggerFactory.getLogger("repository."+repositoryId);
 	}
 	
 	public void activate() {
+		bind(Logger.class, logger);
+		
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
 		RevisionIndex index = initIndex(mapper, branching);
