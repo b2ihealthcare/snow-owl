@@ -59,7 +59,7 @@ public abstract class ClassificationRequests {
 		return new OntologyExportRequestBuilder();
 	}
 
-	public static ReasonerExtensionSearchRequestBuilder prepareSearchReasonerInfo() {
+	public static ReasonerExtensionSearchRequestBuilder prepareSearchReasonerExtensions() {
 		return new ReasonerExtensionSearchRequestBuilder();
 	}
 
