@@ -81,6 +81,10 @@ public class CodeSystem extends TerminologyResource {
 	@Summary
 	@JsonProperty
 	private Code hierarchyMeaning;
+	
+	@Summary
+	@JsonProperty
+	private Boolean compositional;
 
 	@Mandatory
 	@Valid
@@ -120,10 +124,9 @@ public class CodeSystem extends TerminologyResource {
 			final CodeableConcept jurisdiction, final String purpose, final String copyright,
 			
 			//CodeSystem only
-			final Boolean caseSensitive, final Uri valueSet,
-			
-			final Code hierarchyMeaning, final Code content, final Integer count, Collection<Filter> filters,
-			Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional,
+			final Code content, final Integer count, 
+			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
 		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 				description, usageContexts, jurisdiction, purpose, copyright);
@@ -131,6 +134,7 @@ public class CodeSystem extends TerminologyResource {
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
+		this.compositional = compositional;
 		this.content = content;
 		this.count = count;
 		this.filters = filters;
@@ -153,6 +157,8 @@ public class CodeSystem extends TerminologyResource {
 		private Uri valueSet;
 		
 		private Code hierarchyMeaning;
+		
+		private Boolean compositional;
 
 		private Code content;
 
@@ -198,6 +204,11 @@ public class CodeSystem extends TerminologyResource {
 			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
 			return getSelf();
 		}
+		
+		public Builder compositional(Boolean compositional) {
+			this.compositional = compositional;
+			return getSelf();
+		}
 
 		public Builder content(CodeSystemContentMode contentMode) {
 			this.content = contentMode.getCode();
@@ -228,8 +239,8 @@ public class CodeSystem extends TerminologyResource {
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 					description, usageContexts, jurisdiction, purpose, copyright,
-					caseSensitive, valueSet,
-					hierarchyMeaning, content, count, filters, properties, concepts);
+					caseSensitive, valueSet, hierarchyMeaning, compositional, 
+					content, count, filters, properties, concepts);
 		}
 	}
 
