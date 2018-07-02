@@ -85,7 +85,11 @@ public class CodeSystem extends TerminologyResource {
 	@Summary
 	@JsonProperty
 	private Boolean compositional;
-
+	
+	@Summary
+	@JsonProperty
+	private Boolean versionNeeded;
+	
 	@Mandatory
 	@Valid
 	@NotNull
@@ -124,7 +128,7 @@ public class CodeSystem extends TerminologyResource {
 			final CodeableConcept jurisdiction, final String purpose, final String copyright,
 			
 			//CodeSystem only
-			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional,
+			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
 			final Code content, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
@@ -135,6 +139,7 @@ public class CodeSystem extends TerminologyResource {
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
 		this.compositional = compositional;
+		this.versionNeeded = versionNeeded;
 		this.content = content;
 		this.count = count;
 		this.filters = filters;
@@ -159,6 +164,8 @@ public class CodeSystem extends TerminologyResource {
 		private Code hierarchyMeaning;
 		
 		private Boolean compositional;
+		
+		private Boolean versionNeeded;
 
 		private Code content;
 
@@ -209,6 +216,11 @@ public class CodeSystem extends TerminologyResource {
 			this.compositional = compositional;
 			return getSelf();
 		}
+		
+		public Builder versionNeeded(Boolean versionNeeded) {
+			this.versionNeeded = versionNeeded;
+			return getSelf();
+		}
 
 		public Builder content(CodeSystemContentMode contentMode) {
 			this.content = contentMode.getCode();
@@ -238,9 +250,9 @@ public class CodeSystem extends TerminologyResource {
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
-					description, usageContexts, jurisdiction, purpose, copyright,
-					caseSensitive, valueSet, hierarchyMeaning, compositional, 
-					content, count, filters, properties, concepts);
+				description, usageContexts, jurisdiction, purpose, copyright,
+				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
+				content, count, filters, properties, concepts);
 		}
 	}
 

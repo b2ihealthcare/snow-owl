@@ -44,13 +44,12 @@ public class Concept {
 	@JsonProperty
 	private final String definition;
 	
-	//TODO probably differently serialized :-(
 	@Valid
-	@JsonProperty
-	private final Collection<Designation> designation;
+	@JsonProperty("designation")
+	private final Collection<Designation> designations;
 	
 	@Valid
-	@JsonProperty
+	@JsonProperty("property")
 	private final Collection<ConceptProperty<?>> properties;
 	
 	@Valid
@@ -60,11 +59,11 @@ public class Concept {
 	/**
 	 * @param children
 	 */
-	Concept(Code code, String display, String definition, Collection<Designation> designation, Collection<ConceptProperty<?>> properties, Collection<Concept> children) {
+	Concept(Code code, String display, String definition, Collection<Designation> designations, Collection<ConceptProperty<?>> properties, Collection<Concept> children) {
 		this.code = code;
 		this.display = display;
 		this.definition = definition;
-		this.designation = designation;
+		this.designations = designations;
 		this.properties = properties;
 		this.children = children;
 	}
