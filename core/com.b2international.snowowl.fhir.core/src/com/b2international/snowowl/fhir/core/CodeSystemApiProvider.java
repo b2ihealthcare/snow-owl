@@ -167,18 +167,28 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	protected abstract int getCount();
 
 	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
-		final String version = subsumption.getVersion();
+	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
+		final String version = subsumptionRequest.getVersion();
 		final String branchPath = getBranchPath(version);
 		
-		final Set<String> ancestorsA = fetchAncestors(branchPath, subsumption.getCodeA());
-		final Set<String> ancestorsB = fetchAncestors(branchPath, subsumption.getCodeB());
+		String codeA = null;
+		String codeB = null;
+		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
+			codeA = subsumptionRequest.getCodeA();
+			codeB = subsumptionRequest.getCodeB();
+		} else {
+			codeA = subsumptionRequest.getCodingA().getCodeValue();
+			codeB = subsumptionRequest.getCodingB().getCodeValue();
+		}
 		
-		if (subsumption.getCodeA().equals(subsumption.getCodeB())) {
+		final Set<String> ancestorsA = fetchAncestors(branchPath, codeA);
+		final Set<String> ancestorsB = fetchAncestors(branchPath, codeB);
+		
+		if (codeA.equals(codeB)) {
 			return SubsumptionResult.equivalent();
-		} else if (ancestorsA.contains(subsumption.getCodeB())) {
+		} else if (ancestorsA.contains(codeB)) {
 			return SubsumptionResult.subsumedBy();
-		} else if (ancestorsB.contains(subsumption.getCodeA())) {
+		} else if (ancestorsB.contains(codeA)) {
 			return SubsumptionResult.subsumes();
 		} else {
 			return SubsumptionResult.notSubsumed();

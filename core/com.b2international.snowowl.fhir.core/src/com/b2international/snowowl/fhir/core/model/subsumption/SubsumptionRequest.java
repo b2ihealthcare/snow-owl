@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.subsumption;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -30,28 +29,38 @@ public class SubsumptionRequest {
 	/**
 	 * The "A" code that is to be tested. If a code is provided, a system must be provided
 	 */
-	@NotEmpty
 	private final String codeA;
 	
 	/**
 	 * The "B" code that is to be tested. If a code is provided, a system must be provided
 	 */
-	@NotEmpty
 	private final String codeB;
 	
 	/**
 	 * The code system in which subsumption testing is to be performed. This must be provided unless the operation is invoked on a code system instance
 	 */
-	@NotEmpty
 	private final String system;
 	
 	private final String version;
 	
-	private SubsumptionRequest(String system, String version, String codeA, String codeB) {
+	/**
+	 * The "A" Coding that is to be tested. 
+	 * The code system does not have to match the specified subsumption code system, but the relationships between the code systems must be well established
+	 */
+	private final Coding codingA;
+	
+	/**
+	 * The "B" Coding that is to be tested. The code system does not have to match the specified subsumption code system, but the relationships between the code systems must be well established
+	 */
+	private final Coding codingB;
+	
+	private SubsumptionRequest(String system, String version, String codeA, String codeB, Coding codingA, Coding codingB) {
 		this.system = system;
 		this.version = version;
 		this.codeA = codeA;
 		this.codeB = codeB;
+		this.codingA = codingA;
+		this.codingB = codingB;
 	}
 
 	public String getSystem() {
@@ -70,6 +79,14 @@ public class SubsumptionRequest {
 		return codeB;
 	}
 	
+	public Coding getCodingA() {
+		return codingA;
+	}
+	
+	public Coding getCodingB() {
+		return codingB;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -81,6 +98,8 @@ public class SubsumptionRequest {
 		private String version;
 		private String codeA;
 		private String codeB;
+		private Coding codingA;
+		private Coding codingB;
 		
 		public Builder system(String system) {
 			this.system = system;
@@ -102,9 +121,19 @@ public class SubsumptionRequest {
 			return this;
 		}
 		
+		public Builder codingA(Coding codingA) {
+			this.codingA = codingA;
+			return this;
+		}
+		
+		public Builder codingB(Coding codingB) {
+			this.codingB = codingB;
+			return this;
+		}
+		
 		@Override
 		protected SubsumptionRequest doBuild() {
-			return new SubsumptionRequest(system, version, codeA, codeB);
+			return new SubsumptionRequest(system, version, codeA, codeB, codingA, codingB);
 		}
 		
 	}

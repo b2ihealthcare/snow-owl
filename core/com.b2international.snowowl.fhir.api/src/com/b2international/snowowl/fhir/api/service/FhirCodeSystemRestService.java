@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -202,7 +203,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	 * @param displayLanguage
 	 * @param properties
 	 */
-	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/verion/system, or a Coding, get additional details about the concept.")
+	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -225,6 +226,9 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		return toResponse(result);
 	}
 
+	/*
+	 * Subsumes GET method with no codeSystemId and parameters
+	 */
 	@ApiOperation(
 			value="Subsumption testing",
 			notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
@@ -235,11 +239,14 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
 	public Parameters.Fhir subsumes(
-			@ApiParam(value="The \"A\" code that is to be tested.") @RequestParam(value="codeA") final String codeA,
-			@ApiParam(value="The \"B\" code that is to be tested.") @RequestParam(value="codeB") final String codeB,
+			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
 			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
 			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version
 			) {
+		
+		validateSubsumptionRequest(codeA, codeB, system, version);
+		
 		final SubsumptionRequest req = SubsumptionRequest.builder()
 				.codeA(codeA)
 				.codeB(codeB)
@@ -252,6 +259,44 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		return toResponse(result);
 	}
 	
+	/*
+	 * Subsumes GET method with codeSystemId and parameters
+	 */
+	@ApiOperation(
+			value="Subsumption testing",
+			notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
+	public Parameters.Fhir subsumes(
+			
+			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
+			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
+			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
+			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version
+			) {
+		
+		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
+		
+		final SubsumptionRequest req = SubsumptionRequest.builder()
+				.codeA(codeA)
+				.codeB(codeB)
+				.system(codeSystemId)
+				.version(version)
+				.build();
+		
+		final SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
+		
+		return toResponse(result);
+	}
+	
+	/*
+	 * Subsumes POST method without codeSystemId and body
+	 */
 	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
@@ -263,8 +308,35 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody
 			Parameters.Fhir in) {
-		SubsumptionRequest req = toRequest(in, SubsumptionRequest.class);
-		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
+		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
+		
+		validateSubsumptionRequest(request);
+		
+		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(request.getSystem()).subsumes(request);
+		return toResponse(result);
+	}
+	
+	/*
+	 * Subsumes POST method without codeSystemId and body
+	 */
+	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	public Parameters.Fhir subsumes(
+			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
+			@ApiParam(name = "body", value = "The lookup request parameters")
+			@RequestBody
+			Parameters.Fhir in) {
+		
+		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
+		
+		validateSubsumptionRequest(request);
+		
+		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(request.getSystem()).subsumes(request);
 		return toResponse(result);
 	}
 	
@@ -313,6 +385,72 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
 			}
 		}
+	}
+	
+	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {
+		validateSubsumptionRequest(null, codeA,  codeB, system, version);
+	}
+	
+	private void validateSubsumptionRequest(SubsumptionRequest request) {
+		validateSubsumptionRequest(null, request);
+		
+	}
+	
+	private void validateSubsumptionRequest(String codeSystemId, SubsumptionRequest request) {
+		validateSubsumptionRequest(codeSystemId, request.getCodeA(), request.getCodeB(), request.getSystem(), request.getVersion(), request.getCodingA(), request.getCodingB());
+		
+	}
+
+	private void validateSubsumptionRequest(String codeSystemId, String codeA, String codeB, String system, String version) {
+		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version, null, null);
+	}
+	
+	private void validateSubsumptionRequest(String codeSystemId, String codeA, String codeB, String system, String version, Coding codingA, Coding codingB) {
+		
+		//check the systems
+		if (StringUtils.isEmpty(system) && StringUtils.isEmpty(codeSystemId)) {
+			throw new BadRequestException("Parameter 'system' is not specified for subsumption testing.", "SubsumptionRequest.system");
+		}
+		
+		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(codeSystemId)) {
+			if (!codeSystemId.equals(system)) {
+				throw new BadRequestException("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", "SubsumptionRequest.system", system, codeSystemId);
+			}
+		}
+		
+		//all empty
+		if (StringUtils.isEmpty(codeA) && StringUtils.isEmpty(codeA) && codingA == null && codingB == null) {
+			throw new BadRequestException("No codes or Codings are provided for subsumption testing.", "SubsumptionRequest");
+		}
+		
+		//No codes
+		if (StringUtils.isEmpty(codeA) && StringUtils.isEmpty(codeA)) {
+			if (codingA == null || codingB == null) {
+				throw new BadRequestException("No Codings are provided for subsumption testing.", "SubsumptionRequest.Coding");
+			}
+		}
+		
+		//No codings
+		if (codingA == null && codingB == null) {
+			if (StringUtils.isEmpty(codeA) || StringUtils.isEmpty(codeB)) {
+				throw new BadRequestException("No codes are provided for subsumption testing.", "SubsumptionRequest.code");
+			}
+		}
+		
+		//Codes are there
+		if (!StringUtils.isEmpty(codeA) && !StringUtils.isEmpty(codeA)) {
+			if (codingA != null || codingB != null) {
+				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
+			}
+		}
+		
+		//Coding are there
+		if (codingA != null && codingB != null) {
+			if (!StringUtils.isEmpty(codeA) || !StringUtils.isEmpty(codeA)) {
+				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
+			}
+		}
+		
 	}
 	
 }

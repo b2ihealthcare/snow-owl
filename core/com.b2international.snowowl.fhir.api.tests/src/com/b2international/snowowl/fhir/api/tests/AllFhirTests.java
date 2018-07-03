@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.ComplexDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.SubsumptionRequestTest;
 
 /**
  * FHIR test suite.
@@ -29,9 +30,9 @@ import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveData
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
+	/*
 	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
-	/*
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
 	PropertySerializationTest.class,
@@ -53,6 +54,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveData
 	ParameterParsingTest.class,
 	FilterTest.class
 	*/
+	SubsumptionRequestTest.class
 })
 public class AllFhirTests {
 }
