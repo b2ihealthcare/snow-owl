@@ -38,6 +38,8 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -166,12 +168,12 @@ public class EsDocumentWriter implements Writer {
 			})
 			.setConcurrentRequests(getConcurrencyLevel())
 			.setBulkActions(10_000)
+			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
 			.build();
 
-			for (Entry<String, Object> entry : indexOperations.entrySet()) {
-				final String id = entry.getKey();
+			for (String id : indexOperations.keySet()) {
+				final Object obj = indexOperations.remove(id);
 				if (!deleteOperations.containsValue(id)) {
-					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
 					mappingsToRefresh.add(mapping);
 
