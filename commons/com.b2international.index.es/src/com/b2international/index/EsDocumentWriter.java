@@ -57,6 +57,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -171,9 +172,10 @@ public class EsDocumentWriter implements Writer {
 			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
 			.build();
 
-			for (String id : indexOperations.keySet()) {
-				final Object obj = indexOperations.remove(id);
+			for (Entry<String, Object> entry : Iterables.consumingIterable(indexOperations.entrySet())) {
+				final String id = entry.getKey();
 				if (!deleteOperations.containsValue(id)) {
+					final Object obj = entry.getValue();
 					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
 					mappingsToRefresh.add(mapping);
 
