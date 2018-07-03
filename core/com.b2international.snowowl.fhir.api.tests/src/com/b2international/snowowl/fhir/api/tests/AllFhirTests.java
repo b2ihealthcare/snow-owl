@@ -19,7 +19,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.api.tests.serialization.domain.SignatureSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.dt.ComplexDataTypeSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
 
 /**
  * FHIR test suite.
@@ -28,9 +29,9 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.Signature
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
-	/*
 	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
+	/*
 	ParameterDeserializationTest.class,
 	ParameterSerializationTest.class,
 	PropertySerializationTest.class,
@@ -38,7 +39,6 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.Signature
 	ModelSerializationTest.class,
 	UsageContextSerializationTest.class,
 	 */
-	SignatureSerializationTest.class,
 	/*
 	LookupResultSerializationTest.class,
 	CodeSystemSerializationTest.class,

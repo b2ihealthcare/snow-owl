@@ -25,8 +25,8 @@ import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Signature;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.dt.signature.Signature;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
@@ -67,10 +67,11 @@ public class Bundle extends FhirResource {
 	private Collection<Entry> entries;
 	
 	@Summary
+	@Valid
 	@JsonProperty
 	private Signature signature;
 	
-	public Bundle(Id id, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries) {
+	public Bundle(Id id, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
 		super(id, language);
 		
 		this.identifier = identifier;
@@ -99,6 +100,8 @@ public class Bundle extends FhirResource {
 		private Collection<Link> links = Lists.newArrayList();
 		
 		private Collection<Entry> entries = Lists.newArrayList();
+		
+		private Signature signature;
 		
 		public Builder(String cdoId) {
 			super(cdoId);
@@ -133,6 +136,11 @@ public class Bundle extends FhirResource {
 			entries.add(entry);
 			return getSelf();
 		}
+		
+		public Builder signature(Signature signature) {
+			this.signature = signature;
+			return getSelf();
+		}
 
 		@Override
 		protected Builder getSelf() {
@@ -141,7 +149,7 @@ public class Bundle extends FhirResource {
 
 		@Override
 		protected Bundle doBuild() {
-			return new Bundle(id, language, identifier, type, total, links, entries);
+			return new Bundle(id, language, identifier, type, total, links, entries, signature);
 		}
 	}
 

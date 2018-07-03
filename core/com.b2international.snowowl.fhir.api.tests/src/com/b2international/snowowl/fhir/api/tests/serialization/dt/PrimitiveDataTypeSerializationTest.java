@@ -23,21 +23,32 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
- * 
  * Tests for primitive data type serialization
  * 
  * @see https://www.hl7.org/fhir/datatypes.html
  * @since 6.6
  */
 public class PrimitiveDataTypeSerializationTest extends FhirTest {
+	
+	private Builder issueBuilder = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
 	
 	@Test
 	public void codeTest() throws Exception {
@@ -61,6 +72,21 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 		printPrettyJson(uri);
 		String expectedJson = "\"value\"";
 		assertEquals(expectedJson, objectMapper.writeValueAsString(uri));
+	}
+	
+	@Test
+	public void nullInstantTest() throws Exception {
+		
+		Issue expectedIssue = issueBuilder.addLocation("Instant.instant")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, 
+						"Parameter 'instant' content is invalid [null]. Violation: may not be null.")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		Instant.builder().build();
 	}
 	
 	@Test

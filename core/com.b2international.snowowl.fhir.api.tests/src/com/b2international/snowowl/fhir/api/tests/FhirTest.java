@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
@@ -35,6 +36,9 @@ public class FhirTest {
 	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40+0000"; //$NON-NLS-N$
 	
 	protected static ObjectMapper objectMapper;
+	
+	@Rule
+	public ExpectedException exception = ExpectedException.none();
 	
 	@BeforeClass
 	public static void setup() {

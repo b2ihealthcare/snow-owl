@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Range;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * 
+ * Builder
  * FHIR Usage Context
  * 
  * https://www.hl7.org/fhir/metadatatypes.html#UsageContext

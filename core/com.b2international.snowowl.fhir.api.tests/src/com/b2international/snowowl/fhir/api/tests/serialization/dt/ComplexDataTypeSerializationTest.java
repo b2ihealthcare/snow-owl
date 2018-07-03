@@ -39,16 +39,20 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Period;
 import com.b2international.snowowl.fhir.core.model.dt.Quantity;
 import com.b2international.snowowl.fhir.core.model.dt.Range;
 import com.b2international.snowowl.fhir.core.model.dt.Reference;
+import com.b2international.snowowl.fhir.core.model.dt.Signature;
 import com.b2international.snowowl.fhir.core.model.dt.SimpleQuantity;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
  * 
@@ -346,8 +350,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.assigner(reference)
 			.build();
 		
-		String jsonString = objectMapper.writeValueAsString(identifier);
-		
 		String expected = "{\"use\":\"official\","
 				+ "\"type\":"
 					+ "{\"text\":\"codingText\","
@@ -367,7 +369,89 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 						+ "\"display\":\"displayString\"}"
 					+ "}";
 		
-		Assert.assertEquals(expected, jsonString);
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(identifier));
+	}
+	
+	@Test
+	public void signatureUriTest() throws Exception {
+		
+		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		Date date = df.parse(TEST_DATE_STRING);
+		Instant instant = Instant.builder().instant(date).build();
+		
+		Signature signature = Signature.builder()
+			.addType(Coding.builder().build())
+			.contentType(new Code("contentTypeCode"))
+			.when(instant)
+			.whoUri(new Uri("whoUri"))
+			.onBehalfOfUri(new Uri("onBehalfUri"))
+			.blob("blob".getBytes())
+			.build();
+		
+		printPrettyJson(signature);
+		
+		String expected = "{\"when\":\"2018-03-23T07:49:40Z\","
+				+ "\"whoUri\":\"whoUri\","
+				+ "\"onBehalfOfUri\":\"onBehalfUri\","
+				+ "\"blob\":[98,108,111,98],\"type\":[{}]}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(signature));
+	}
+	
+	@Test
+	public void signatureReferenceTest() throws Exception {
+		
+		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		Date date = df.parse(TEST_DATE_STRING);
+		Instant instant = Instant.builder().instant(date).build();
+		
+		Signature signature = Signature.builder()
+			.addType(Coding.builder().build())
+			.contentType(new Code("contentTypeCode"))
+			.when(instant)
+			.whoReference(new Reference("reference", Identifier.builder().build(), "display"))
+			.onBehalfOfUri(new Uri("onBehalfUri"))
+			.blob("blob".getBytes())
+			.build();
+		
+		printPrettyJson(signature);
+		
+		String expected = "{\"when\":\"2018-03-23T07:49:40Z\","
+				+ "\"whoReference\":"
+					+ "{\"reference\":\"reference\","
+					+ "\"identifier\":{},\"display\":\"display\"},"
+				+ "\"onBehalfOfUri\":\"onBehalfUri\","
+				+ "\"blob\":[98,108,111,98],"
+				+ "\"type\":[{}]}";
+		
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(signature));
+	}
+	
+	@Test
+	public void incorrectSignatureReferenceTest() throws Exception {
+		
+		Issue expectedIssue = builder.addLocation("Signature.valid")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'valid' content is invalid [false]."
+						+ " Violation: Either URI or Reference should be set for the 'who' and 'onBehalfOf' fields.")
+				.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		Date date = df.parse(TEST_DATE_STRING);
+		Instant instant = Instant.builder().instant(date).build();
+		
+		Signature.builder()
+			.addType(Coding.builder().build())
+			.contentType(new Code("contentTypeCode"))
+			.when(instant)
+			.whoUri(new Uri("whoUri"))
+			.whoReference(new Reference("reference", Identifier.builder().build(), "display"))
+			.onBehalfOfUri(new Uri("onBehalfUri"))
+			.blob("blob".getBytes())
+			.build();
 	}
 
 }

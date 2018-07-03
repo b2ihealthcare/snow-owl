@@ -47,31 +47,16 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class ConceptPropertySerializer extends JsonSerializer<ConceptProperty<?>> {
 
 	private static final String VALUE_PREFIX = "value";
-	private static final String VALUE_CODE = "valueCode";
 	private static final String CODE = "code";
-	private static final String NAME = "name";
 
 	@Override
 	public void serialize(ConceptProperty<?> property, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
 		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
 		jGen.writeStartObject();
-		jGen.writeStringField("code",property.getCodeValue());
+		jGen.writeStringField(CODE, property.getCodeValue());
 		jGen.writeObjectField(typeName, property.getValue());
 		jGen.writeEndObject();
-		/*
-		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
-		jGen.writeStartArray();
-		jGen.writeStartObject();
-		jGen.writeStringField(NAME, CODE);
-		jGen.writeStringField(VALUE_CODE, property.getCodeValue());
-		jGen.writeEndObject();
-		jGen.writeStartObject();
-		jGen.writeStringField(NAME, typeName);
-		jGen.writeObjectField(typeName, property.getValue());
-		jGen.writeEndObject();
-		jGen.writeEndArray();
-		*/
 	}
 
 }

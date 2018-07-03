@@ -9,8 +9,11 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.validation.constraints.NotNull;
+
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -26,8 +29,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public class Instant extends Element {
 	
+	@NotNull
 	private java.time.Instant instant;
 
+	@SuppressWarnings("rawtypes")
 	Instant(String id, Collection<Extension> extensions, java.time.Instant instant) {
 		super(id, extensions);
 		this.instant = instant;
