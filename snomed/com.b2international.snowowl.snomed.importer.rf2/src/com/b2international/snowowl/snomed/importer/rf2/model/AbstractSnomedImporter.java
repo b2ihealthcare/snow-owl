@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 	protected static final int COMMIT_WORK_UNITS = 50;
 
 	/** A CDO transaction is committed when the number of processed elements % this value == 0. */
-	protected static final int COMMIT_EVERY_NUM_ELEMENTS = 100_000;
+	protected static final int COMMIT_EVERY_NUM_ELEMENTS = 50_000;
 
 	private static final int ID_IDX = 0;
 	/** 0-based index of the {@code effectiveTime} column in release files. */
