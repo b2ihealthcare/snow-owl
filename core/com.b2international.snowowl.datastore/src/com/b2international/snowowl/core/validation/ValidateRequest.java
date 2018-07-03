@@ -15,20 +15,24 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -43,8 +47,10 @@ import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequ
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Queues;
 
 /**
  * @since 6.0
@@ -59,118 +65,155 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	@Override
 	public ValidationResult execute(BranchContext context) {
-		return context.service(ValidationRepository.class).write(index -> {
-			final String branchPath = context.branchPath();
-			
-			ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
+		return context.service(ValidationRepository.class).write(writer -> doValidate(context, writer));
+	}
+	
+	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
+		final String branchPath = context.branchPath();
+		
+		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
-			if (!CompareUtils.isEmpty(ruleIds)) {
-				req.filterByIds(ruleIds);
-			}
-			
-			final ValidationRules rules = req
-					.all()
-					.build()
-					.execute(context);
-			
-			// clear all previously reported issues on this branch for each rule
-			final Set<String> ruleIds = rules.stream().map(ValidationRule::getId).collect(Collectors.toSet());
-			final Set<String> issuesToDelete = ValidationRequests.issues().prepareSearch()
-					.all()
-					.filterByBranchPath(branchPath)
-					.filterByRules(ruleIds)
-					.setFields(ValidationIssue.Fields.ID)
-					.build()
-					.execute(context)
-					.stream()
-					.map(ValidationIssue::getId)
-					.collect(Collectors.toSet());
-			
-			index.removeAll(Collections.singletonMap(ValidationIssue.class, issuesToDelete));
-			
-			final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
-			
-			final Multimap<String, ComponentIdentifier> newIssuesByRule = HashMultimap.create();
-			// evaluate selected rules
-			final List<Promise<Object>> validationPromises = Lists.newArrayList();
-			for (ValidationRule rule : rules) {
-				
-				final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
-				if (evaluator != null) {
-					validationPromises.add(pool.submit(rule.getCheckType(), () -> {
-						long startTime = System.nanoTime();
-						
-						try {
-							LOG.info("Executing rule '{}'...", rule.getId());
-							List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
-							newIssuesByRule.putAll(rule.getId(), componentIdentifiers);
-							long endTime = System.nanoTime();
-							LOG.info("Execution of rule '{}' successfully completed took {} miliseconds", rule.getId(), (endTime - startTime) / 1000000);
-							// TODO report successfully executed validation rule
-						} catch (Exception e) {
-							// TODO report failed validation rule
-							LOG.info("Execution of rule '{}' failed", rule.getId(), e);
-						}
-					
-					}));
-				}
-			}
-			
-			Promise.all(validationPromises).getSync();
-			
-			// fetch all white list entries to determine whether an issue is whitelisted already or not
-			final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
-			ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList().prepareSearch();
-			
-			// fetch whitelist entries associated with the defined rules
-			if (!CompareUtils.isEmpty(ruleIds)) {
-				whiteListReq.filterByRuleIds(ruleIds);
-			}
-			
-			whiteListReq
+		if (!CompareUtils.isEmpty(ruleIds)) {
+			req.filterByIds(ruleIds);
+		}
+		
+		final ValidationRules rules = req
 				.all()
+				.build()
+				.execute(context);
+		
+		// clear all previously reported issues on this branch for each rule
+		final Set<String> ruleIds = rules.stream().map(ValidationRule::getId).collect(Collectors.toSet());
+		final Set<String> issuesToDelete = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByBranchPath(branchPath)
+				.filterByRules(ruleIds)
+				.setFields(ValidationIssue.Fields.ID)
 				.build()
 				.execute(context)
 				.stream()
-				.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
-			
-			final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
-			
-			// persist new issues by removing them from the newIssues Multimap to save up memory
-			for (String ruleId : newHashSet(newIssuesByRule.keySet())) {
-				final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
-				for (ComponentIdentifier componentIdentifier : newIssuesByRule.removeAll(ruleId)) {
-					ValidationIssue validationIssue = new ValidationIssue(
-						UUID.randomUUID().toString(),
-						ruleId,
-						branchPath,
-						componentIdentifier,
-						whiteListedEntries.get(ruleId).contains(componentIdentifier));
-				
-					issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
-				}
-				
-				// remove all processed whitelist entries 
-				whiteListedEntries.removeAll(ruleId);
-			}
-			
-			for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
-				final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
-				final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.get(toolingId);
-				extensions.extendIssuesWithDetails(context, issues);
-				for (ValidationIssue issue : issues) {
-					index.put(issue.getId(), issue);
-				}
-			}
-			index.commit();
-			// TODO return ValidationResult object with status and new issue IDs as set
-			return new ValidationResult(context.id(), context.branchPath());
-		});
+				.map(ValidationIssue::getId)
+				.collect(Collectors.toSet());
 		
+		index.removeAll(Collections.singletonMap(ValidationIssue.class, issuesToDelete));
+		
+		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
+		
+		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
+		// evaluate selected rules
+		final List<Promise<Object>> validationPromises = Lists.newArrayList();
+		for (ValidationRule rule : rules) {
+			
+			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
+			if (evaluator != null) {
+				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
+					long startTime = System.nanoTime();
+					
+					try {
+						LOG.info("Executing rule '{}'...", rule.getId());
+						List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
+						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
+						long endTime = System.nanoTime();
+						LOG.info("Execution of rule '{}' successfully completed took {} miliseconds", rule.getId(), (endTime - startTime) / 1000000);
+						// TODO report successfully executed validation rule
+					} catch (Exception e) {
+						// TODO report failed validation rule
+						LOG.info("Execution of rule '{}' failed", rule.getId(), e);
+					}
+				
+				}));
+			}
+		}
+		
+		final Multimap<String, ComponentIdentifier> whiteListedEntries = fetchWhiteListEntries(context, ruleIds);
+		
+		Promise<List<Object>> promise = Promise.all(validationPromises);
+		
+		while (!promise.isDone() || !issuesToPersistQueue.isEmpty()) {
+			if (!issuesToPersistQueue.isEmpty()) {
+				LOG.info("Persisting issues generated so far...");
+				final Collection<IssuesToPersist> issuesToPersist = newArrayList(); 
+				issuesToPersistQueue.drainTo(issuesToPersist);
+				
+				// persist new issues generated by rules so far, extending them using the Issue Extension API
+				int persistedIssues = 0;
+				final Multimap<String, ValidationIssue> issuesToExtendWithDetailsByToolingId = HashMultimap.create();
+				
+				for (IssuesToPersist ruleIssues : Iterables.consumingIterable(issuesToPersist)) {
+					final String ruleId = ruleIssues.ruleId;
+					// remove all processed whitelist entries 
+					final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
+					final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
+					for (ComponentIdentifier componentIdentifier : ruleIssues.affectedComponentIds) {
+						ValidationIssue validationIssue = new ValidationIssue(
+								UUID.randomUUID().toString(),
+								ruleId,
+								branchPath,
+								componentIdentifier,
+								ruleWhiteListEntries.contains(componentIdentifier));
+						
+						issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
+						persistedIssues++; 
+					}
+				}
+				
+				for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
+					final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
+					final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
+					extensions.extendIssuesWithDetails(context, issues);
+					for (ValidationIssue issue : issues) {
+						index.put(issue.getId(), issue);
+					}
+				}
+				index.commit();
+				LOG.info("Persisted '{}' issues.", persistedIssues);
+			}
+			
+			try {
+				Thread.sleep(1000L);
+			} catch (InterruptedException e) {
+				throw new SnowowlRuntimeException(e);
+			}
+		}
+		
+		// TODO return ValidationResult object with status and new issue IDs as set
+		return new ValidationResult(context.id(), context.branchPath());
+	}
+
+	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(BranchContext context, final Set<String> ruleIds) {
+		// fetch all white list entries to determine whether an issue is whitelisted already or not
+		final Multimap<String, ComponentIdentifier> whiteListedEntries = HashMultimap.create();
+		ValidationWhiteListSearchRequestBuilder whiteListReq = ValidationRequests.whiteList().prepareSearch();
+		
+		// fetch whitelist entries associated with the defined rules
+		if (!CompareUtils.isEmpty(ruleIds)) {
+			whiteListReq.filterByRuleIds(ruleIds);
+		}
+		
+		whiteListReq
+			.all()
+			.build()
+			.execute(context)
+			.stream()
+			.forEach(whitelist -> whiteListedEntries.put(whitelist.getRuleId(), whitelist.getComponentIdentifier()));
+		
+		return whiteListedEntries;
 	}
 	
 	public void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
+	}
+	
+	private static final class IssuesToPersist {
+		
+		public final String ruleId;
+		public final Collection<ComponentIdentifier> affectedComponentIds;
+
+		public IssuesToPersist(String ruleId, Collection<ComponentIdentifier> affectedComponentIds) {
+			this.ruleId = ruleId;
+			this.affectedComponentIds = affectedComponentIds;
+		}
+		
 	}
 	
 }
