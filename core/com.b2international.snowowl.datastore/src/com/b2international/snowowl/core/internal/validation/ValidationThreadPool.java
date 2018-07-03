@@ -59,7 +59,7 @@ public final class ValidationThreadPool {
 				} else {
 					promise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
 				}
-			};
+			}
 
 		});
 		job.schedule();

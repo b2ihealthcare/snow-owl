@@ -16,20 +16,26 @@
 package com.b2international.snowowl.snomed.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -40,7 +46,11 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
@@ -68,21 +78,37 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
 		
-		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = context.service(ObjectMapper.class)
-				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF)
-				.prepareSearch()
-				.setLimit(RULE_LIMIT)
-				.setFields(SnomedComponentDocument.Fields.ID);
+		SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent> validationQuery = context.service(ObjectMapper.class)
+				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF);
 		
-		SearchResourceRequestIterator it = new SearchResourceRequestIterator(req, searchRequest -> ((SnomedSearchRequestBuilder) searchRequest).build().execute(context));
-		final List<ComponentIdentifier> issues = newArrayList();
-		while (it.hasNext()) {
-			((PageableCollectionResource<SnomedComponent>) it.next())
-				.stream()
-				.map(SnomedComponent::getComponentIdentifier)
-				.forEach(issues::add);
+		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
+				.prepareSearch();
+		
+		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
+		Expression where = searchReq.toRawQuery(context);
+		Iterable<Hits<String>> pages = context.service(RevisionSearcher.class).scroll(Query.select(String.class)
+				.from(validationQuery.getDocType())
+				.fields(SnomedDocument.Fields.ID)
+				.where(where)
+				.limit(RULE_LIMIT)
+				.withScores(false)
+				.build());
+		
+		List<ComponentIdentifier> issues = null; 
+		for (Hits<String> page : pages) {
+			if (issues == null) {
+				issues = newArrayListWithExpectedSize(page.getTotal());
+			}
+			for (String affectedComponentId : page) {
+				short terminologyComponentId = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(affectedComponentId);
+				if (terminologyComponentId == -1) {
+					terminologyComponentId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+				}
+				issues.add(ComponentIdentifier.of(terminologyComponentId, affectedComponentId));
+			}
 		}
-		return issues;
+		
+		return issues == null ? Collections.emptyList() : issues;
 	}
 
 	@Override
@@ -107,6 +133,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		public final SB prepareSearch() {
 			return prepareSearch(createSearch());
 		}
+
+		protected abstract Class<? extends SnomedDocument> getDocType();
 
 		protected abstract SB createSearch();
 
@@ -147,6 +175,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		}
 		
 		@Override
+		protected Class<? extends SnomedDocument> getDocType() {
+			return SnomedConceptDocument.class;
+		}
+		
+		@Override
 		protected SnomedConceptSearchRequestBuilder prepareSearch(SnomedConceptSearchRequestBuilder req) {
 			return super.prepareSearch(req)
 					.filterByParent(parent)
@@ -173,6 +206,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedDescriptionSearchRequestBuilder createSearch() {
 			return SnomedRequests.prepareSearchDescription();
+		}
+		
+		@Override
+		protected Class<? extends SnomedDocument> getDocType() {
+			return SnomedDescriptionIndexEntry.class;
 		}
 		
 		@Override
@@ -222,6 +260,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		}
 		
 		@Override
+		protected Class<? extends SnomedDocument> getDocType() {
+			return SnomedRelationshipIndexEntry.class;
+		}
+		
+		@Override
 		protected SnomedRelationshipSearchRequestBuilder prepareSearch(SnomedRelationshipSearchRequestBuilder req) {
 			return super.prepareSearch(req)
 					.filterByCharacteristicType(characteristicType)
@@ -242,6 +285,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@Override
 		protected SnomedRefSetMemberSearchRequestBuilder createSearch() {
 			return SnomedRequests.prepareSearchMember();
+		}
+		
+		@Override
+		protected Class<? extends SnomedDocument> getDocType() {
+			return SnomedRefSetMemberIndexEntry.class;
 		}
 		
 		@Override
