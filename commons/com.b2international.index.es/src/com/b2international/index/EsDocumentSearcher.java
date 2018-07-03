@@ -68,6 +68,9 @@ import com.google.common.primitives.Ints;
  */
 public class EsDocumentSearcher implements DocSearcher {
 
+	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
+	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
+
 	private static final String[] EXCLUDED_SOURCE_FIELDS = { DocumentMapping._HASH };
 	
 	private final EsIndexAdmin admin;
@@ -409,13 +412,16 @@ public class EsDocumentSearcher implements DocSearcher {
 					.size(aggregation.getBucketHitsLimit());
 			
 			if (fetchSource) {
-				topHitsAgg.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+				topHitsAgg
+					.storedFields(STORED_FIELDS_ID_ONLY)
+					.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
 			} else {
 				topHitsAgg
+					.storedFields(STORED_FIELDS_NONE)
 					.fetchSource(false)
 					.fieldDataFields(aggregation.getFields());
-						
 			}
+			
 			termsAgg.subAggregation(topHitsAgg);
 		}
 		
