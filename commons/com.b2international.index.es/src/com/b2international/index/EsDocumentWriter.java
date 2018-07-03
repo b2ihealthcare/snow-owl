@@ -38,6 +38,8 @@ import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -55,6 +57,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -166,9 +169,10 @@ public class EsDocumentWriter implements Writer {
 			})
 			.setConcurrentRequests(getConcurrencyLevel())
 			.setBulkActions(10_000)
+			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
 			.build();
 
-			for (Entry<String, Object> entry : indexOperations.entrySet()) {
+			for (Entry<String, Object> entry : Iterables.consumingIterable(indexOperations.entrySet())) {
 				final String id = entry.getKey();
 				if (!deleteOperations.containsValue(id)) {
 					final Object obj = entry.getValue();
