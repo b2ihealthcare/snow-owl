@@ -31,11 +31,13 @@ import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.LogConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * CodeSystem REST end-point test cases
- * @since 6.3
+ * @since 6.6
  */
 public class CodeSystemRestTest extends FhirTest {
 	
@@ -48,13 +50,20 @@ public class CodeSystemRestTest extends FhirTest {
 	@BeforeClass
 	public static void setupSpec() {
 		
+		RestAssuredConfig config = RestAssured.config();
 		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(RestAssured.config().logConfig(logConfig));
+		RestAssured.given().config(config.logConfig(logConfig));
+		config.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
 		
 		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
 		//builder.expectStatusCode(200);
 		//builder.expectBody("x.y.size()", is(2));
 		//ResponseSpecification responseSpec = builder.build();
+	}
+	
+	//@AfterClass
+	public static void foo() throws InterruptedException {
+		Thread.sleep(2000);
 	}
 	
 	//@Test
@@ -79,7 +88,13 @@ public class CodeSystemRestTest extends FhirTest {
 			.then()
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", notNullValue())
+			
+			//SNOMED CT
 			.body("entry.resource.url", hasItem("http://snomed.info/sct"))
+			.root("entry.resource.find { it.url == 'http://snomed.info/sct'}")
+			.body("property.size()", equalTo(115))
+			
+			//FHIR issue type code system has children
 			.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
 			.body("concept.size()", equalTo(29))
 			.statusCode(200);
@@ -94,7 +109,9 @@ public class CodeSystemRestTest extends FhirTest {
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", notNullValue())
 			.body("type", equalTo("searchset"))
-			.body("entry.resource", not(hasItem("concept"))) //no concept definitions are part of the summary
+			
+			//no concept definitions are part of the summary
+			.body("entry.resource", not(hasItem("concept"))) 
 			.statusCode(200);
 	}
 	
