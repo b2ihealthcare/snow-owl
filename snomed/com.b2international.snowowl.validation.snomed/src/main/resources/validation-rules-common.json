@@ -4,6 +4,7 @@
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts",
     "severity": "ERROR",
+    "checkType": "FAST",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon1.groovy"
   },
@@ -12,6 +13,7 @@
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Fully-specified names of active concepts should be unique.",
     "severity": "WARNING",
+    "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/ruleSnomedCommon2.groovy"
   }

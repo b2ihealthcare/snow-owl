@@ -144,5 +144,13 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 * @return
 	 */
 	protected abstract B toCollectionResource(C context, Hits<D> hits);
+
+	/**
+	 * @param context
+	 * @return the raw expression configured with all specified filters.
+	 */
+	public final Expression toRawQuery(C context) {
+		return prepareQuery(context);
+	}
 	
 }
