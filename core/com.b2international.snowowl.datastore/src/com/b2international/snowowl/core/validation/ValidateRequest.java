@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
@@ -90,7 +91,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		// evaluate selected rules
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
 		for (ValidationRule rule : rules) {
-			
+			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
 				validationPromises.add(pool.submit(rule.getCheckType(), () -> {

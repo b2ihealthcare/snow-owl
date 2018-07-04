@@ -32,7 +32,7 @@ inactiveConceptBatches.each({ conceptBatch ->
 			.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
 			.build()
 
-	Iterable<Hits<String[]>> invalidRelationshipBatches = searcher.scroll(Query.select(String[].class)
+	Iterable<Hits<String>> invalidRelationshipBatches = searcher.scroll(Query.select(String.class)
 			.from(SnomedRelationshipIndexEntry.class)
 			.fields(SnomedRelationshipIndexEntry.Fields.ID)
 			.where(invalidRelationshipExpression)
@@ -40,8 +40,8 @@ inactiveConceptBatches.each({ conceptBatch ->
 			.build())
 
 	invalidRelationshipBatches.each({ relationshipBatch ->
-		relationshipBatch.each({ relationship ->
-			issueDetails.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship[0]))
+		relationshipBatch.each({ relationshipId ->
+			issueDetails.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
 		})
 	})
 })
