@@ -15,6 +15,13 @@
  */
 package com.b2international.snowowl.fhir.api.tests.endpoints;
 
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -23,14 +30,8 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ValidatableResponse;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertNotNull;
-
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.LogConfig;
 
 /**
  * CodeSystem REST end-point test cases
@@ -44,37 +45,66 @@ public class CodeSystemRestTest extends FhirTest {
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
 	
-	@Test
+	@BeforeClass
+	public static void setupSpec() {
+		
+		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
+		RestAssured.given().config(RestAssured.config().logConfig(logConfig));
+		
+		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
+		//builder.expectStatusCode(200);
+		//builder.expectBody("x.y.size()", is(2));
+		//ResponseSpecification responseSpec = builder.build();
+	}
+	
+	//@Test
 	public void pingTest() {
 		givenAuthenticatedRequest("/fhir")
 			.when().get("/CodeSystem/ping")
 			.then().assertThat().statusCode(200);
 	}
 	
-	@Test
+	//@Test
 	public void printResponse() {
 		givenAuthenticatedRequest("/fhir")
 		.when().get("/CodeSystem").prettyPrint();
 	}
 	
+	//All code systems fully detailed
 	@Test
-	public void getCodeSystemsTest() {
+	public void getFullCodeSystemsTest() {
 		
 		givenAuthenticatedRequest("/fhir")
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", notNullValue())
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"))
+			.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
+			.body("concept.size()", equalTo(29))
+			.statusCode(200);
+	}
+	
+	@Test
+	public void getCodeSystemsSummaryTest() {
+		
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", true)
 			.when().get("/CodeSystem").then()
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", notNullValue())
 			.body("type", equalTo("searchset"))
+			.body("entry.resource", not(hasItem("concept"))) //no concept definitions are part of the summary
 			.statusCode(200);
 	}
 	
-	//@Test
-	public void getCodeSystemTest() {
-		
-		givenAuthenticatedRequest("/admin")
-			.when().get("/CodeSystem/{id}", "http://snomed.info")
-			.then().assertThat().statusCode(200);
+	@Test
+	public void getSnomedCodeSystemTest() {
+		givenAuthenticatedRequest("/fhir")
+		 	.pathParam("id", "snomedStore/SNOMEDCT") 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.statusCode(200);
 	}
 	
-
 }
