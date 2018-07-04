@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -563,6 +564,14 @@ public final class ReasonerTaxonomyBuilder {
 		} else {
 			return Collections.emptySet();
 		}
+	}
+	
+	public Set<String> getAllStatedConcreteDomainLabels() {
+		 return statedConcreteDomainMap.values()
+		 	.stream()
+		 	.flatMap(Collection::stream)
+		 	.map(ConcreteDomainFragment::getLabel)
+			.collect(Collectors.toSet());
 	}
 	
 	public Collection<ConcreteDomainFragment> getInferredConcreteDomainFragments(final long componentId) {
