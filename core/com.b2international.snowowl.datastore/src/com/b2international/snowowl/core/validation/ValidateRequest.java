@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequestBuilder;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -93,20 +94,18 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
 			if (evaluator != null) {
 				validationPromises.add(pool.submit(rule.getCheckType(), () -> {
-					long startTime = System.nanoTime();
+					Stopwatch w = Stopwatch.createStarted();
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
 						List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
-						long endTime = System.nanoTime();
-						LOG.info("Execution of rule '{}' successfully completed took {} miliseconds", rule.getId(), (endTime - startTime) / 1000000);
+						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
 					} catch (Exception e) {
 						// TODO report failed validation rule
-						LOG.info("Execution of rule '{}' failed", rule.getId(), e);
+						LOG.info("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
 					}
-				
 				}));
 			}
 		}
