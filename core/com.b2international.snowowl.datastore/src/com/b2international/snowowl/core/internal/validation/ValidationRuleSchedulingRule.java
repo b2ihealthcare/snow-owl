@@ -91,10 +91,7 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
 	@Override
 	public int hashCode() {
-		int hash = 17;
-		hash = hash * 31 + Objects.hash(checkType, id, maxConcurrentJobs, maxConcurrentExpensiveJobs);
-		
-		return hash;
+		return Objects.hash(checkType, id, maxConcurrentJobs, maxConcurrentExpensiveJobs);
 	}
 	
 	@Override

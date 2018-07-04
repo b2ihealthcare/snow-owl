@@ -15,13 +15,14 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
+import java.util.Objects;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -60,7 +61,7 @@ public class ValidationJob extends Job {
 	
 	@Override
 	public boolean belongsTo(Object family) {
-		return Objects.equal(this.family, family);
+		return Objects.equals(this.family, family);
 	}
 	
 }
