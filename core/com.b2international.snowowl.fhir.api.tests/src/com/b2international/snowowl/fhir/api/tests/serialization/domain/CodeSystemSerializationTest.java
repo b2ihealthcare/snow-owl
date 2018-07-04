@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.api.tests.serialization.domain;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -58,6 +60,7 @@ import com.b2international.snowowl.fhir.core.model.property.CodingConceptPropert
 import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.IntegerConceptProperty;
 import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for checking the serialization from model->JSON.
@@ -261,7 +264,6 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.value("OID:1234.1234")
 			.build();
 		
-		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.description("Code system description")
@@ -299,45 +301,12 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		applyFilter(codeSystem);
 		
-		printPrettyJson(codeSystem);
-		printJson(codeSystem);
+		JsonPath jsonPath = new JsonPath(objectMapper.writeValueAsString(codeSystem));
 		
-		//This is stupid, we should assert parts or use JSONAssert
-		String expectedJson = "{\"resourceType\":\"CodeSystem\","
-				+ "\"id\":\"repo/shortName\","
-				+ "\"language\":\"en\","
-				+ "\"text\":{\"status\":\"additional\",\"div\":\"<div>Some html text</div>\"},"
-				+ "\"url\":\"code system uri\","
-				+ "\"identifier\":{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
-				+ "\"version\":\"2018.01.01\","
-				+ "\"name\":\"Local code system\","
-				+ "\"title\":\"title\","
-				+ "\"status\":\"active\","
-				+ "\"description\":\"Code system description\","
-				+ "\"hierarchyMeaning\":\"is-a\","
-				+ "\"count\":0,"
-				+ "\"property\":"
-					+ "[{\"code\":\"child\","
-					+ "\"uri\":\"http://hl7.org/fhir/concept-properties/child\","
-					+ "\"description\":\"Child\","
-					+ "\"type\":\"code\"}],"
-				+ "\"concept\":"
-					+ "[{\"code\":\"conceptCode\","
-					+ "\"display\":\"Label\","
-					+ "\"definition\":\"This is a code definition\","
-					+ "\"designation\":[{\"language\":\"uk_en\",\"use\":"
-							+ "{\"code\":\"internal\",\"system\":"
-							+ "\"http://b2i.sg/test\","
-						+ "\"value\":\"conceptLabel_uk\","
-						+ "\"languageCode\":\"uk_en\"}],"
-					+ "\"properties\":"
-						+ "[[{\"name\":\"code\",\"valueCode\":\"childConcept\"},"
-						+ "{\"name\":\"valueCode\",\"valueCode\":\"childId\"}]"
-						+ "]}"
-					+ "]"
-				+ "}";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(codeSystem));
+		assertThat(jsonPath.getString("language"), equalTo("en"));
+		assertThat(jsonPath.get("resourceType"), equalTo("CodeSystem"));
+		assertThat(jsonPath.get("property[0].code"), equalTo("child"));
+		assertThat(jsonPath.get("property.size()"), equalTo(1));
 	}
 	
 	@Test
