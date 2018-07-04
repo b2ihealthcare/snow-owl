@@ -121,6 +121,7 @@ public class CodeSystemRestTest extends FhirTest {
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
 			.when().get("/CodeSystem/{id}")
 			.then()
+			.body("resourceType", equalTo("CodeSystem"))
 			.statusCode(200);
 	}
 	
