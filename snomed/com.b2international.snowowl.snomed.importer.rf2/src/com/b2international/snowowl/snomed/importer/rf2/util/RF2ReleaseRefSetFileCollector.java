@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -54,7 +55,11 @@ public class RF2ReleaseRefSetFileCollector {
 			final String relativeRoot = releaseFileSet.getRelativeRoot();
 			
 			for (final String refSetPath : refSetsRelativePaths) {
-				collectedUrlSet.addAll(parseZip(configuration.getArchiveFile(), relativeRoot, refSetPath));
+				Set<URL> urlsFromZip = parseZip(configuration.getArchiveFile(), relativeRoot, refSetPath);
+				collectedUrlSet.addAll(
+						urlsFromZip.stream().filter(url -> !refSetPath.equals("Terminology") || url.getFile().startsWith("der2_sRefset"))
+						.collect(Collectors.toSet())
+				);
 			}
 			
 		}

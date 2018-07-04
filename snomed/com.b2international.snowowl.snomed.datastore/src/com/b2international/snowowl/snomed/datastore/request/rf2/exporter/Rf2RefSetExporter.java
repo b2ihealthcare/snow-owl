@@ -94,7 +94,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		SnomedRF2Folder folder = SnomedRefSetUtil.REFSET_TYPE_TO_FOLDER_MAP.get(refSetType);
 		if (folder != null) {
 			
-			if (refSetType == SnomedRefSetType.OWL_AXIOM) {
+			if (refSetType == SnomedRefSetType.OWL_AXIOM || refSetType == SnomedRefSetType.OWL_ONTOLOGY) {
 				return Paths.get(releaseType.toString(), SnomedRF2Folder.TERMINOLOGY.getDisplayName());
 			} else {
 				return Paths.get(releaseType.toString(), SnomedRF2Folder.REFSET.getDisplayName(), folder.getDisplayName());
