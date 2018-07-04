@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.events.util.Promise;
@@ -35,6 +36,8 @@ import com.google.common.collect.Lists;
  */
 public class ValidationThreadPoolTest {
 	
+	@Rule
+	public final ValidationTestMethodNameRule methodName = new ValidationTestMethodNameRule();
 
 	private static final long FAST_JOB_RUNTIME = 500L;
 
@@ -67,7 +70,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 
 	@Test
@@ -83,7 +85,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 
 	@Test
@@ -99,7 +100,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 
 	@Test
@@ -116,7 +116,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 	
 	@Test
@@ -133,7 +132,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 
 	@Test
@@ -152,7 +150,6 @@ public class ValidationThreadPoolTest {
 		}
 
 		Promise.all(validationPromises).getSync();
-		System.out.println();
 	}
 
 	private Runnable createValidatableRunnable(CheckType checkType, IJobManager manager) {
