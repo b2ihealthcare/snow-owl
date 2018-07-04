@@ -19,8 +19,21 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.api.tests.filter.FilterTest;
+import com.b2international.snowowl.fhir.api.tests.filter.ParameterParsingTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.BundleSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ModelSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.UsageContextSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.domain.ValueSetSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.ComplexDataTypeSerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.dt.PrimitiveDataTypeSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.DesignationSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.LookupResultSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterDeserializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.ParameterSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.PropertySerializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.SubsumptionRequestTest;
 
 /**
@@ -31,6 +44,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 @SuiteClasses({ 
 
 	/*
+	 */
 	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
 	ParameterDeserializationTest.class,
@@ -39,8 +53,6 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	DesignationSerializationTest.class,
 	ModelSerializationTest.class,
 	UsageContextSerializationTest.class,
-	 */
-	/*
 	LookupResultSerializationTest.class,
 	CodeSystemSerializationTest.class,
 	BundleSerializationTest.class,
@@ -52,7 +64,8 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
-	FilterTest.class
+	FilterTest.class,
+	/*
 	*/
 	SubsumptionRequestTest.class
 })

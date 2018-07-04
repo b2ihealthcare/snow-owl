@@ -340,15 +340,15 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		return toResponse(result);
 	}
 	
-	/*
 	@ApiOperation(
 			value="FHIR REST API Ping Test",
 			notes="This is only an FHIR ping test.")
 	@RequestMapping(value="/ping", method=RequestMethod.GET)
 	public String ping() {
-		System.out.println("FhirCodeSystemRestService.ping()");
+		System.out.println("ServeFhirCodeSystemRestService.ping()");
 		return "Ping!";
 	}
+	/*
 	*/
 	
 	/*

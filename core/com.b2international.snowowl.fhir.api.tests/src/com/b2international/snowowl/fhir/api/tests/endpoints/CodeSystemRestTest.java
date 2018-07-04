@@ -23,9 +23,10 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ValidatableResponse;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertNotNull;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
@@ -40,6 +41,7 @@ public class CodeSystemRestTest extends FhirTest {
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(CodeSystemRestTest.class, "fhir-configuration.yml")))
+			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
 	
 	@Test
@@ -49,15 +51,30 @@ public class CodeSystemRestTest extends FhirTest {
 			.then().assertThat().statusCode(200);
 	}
 	
-	public void codeSystemsTest() {
-		
-		
-		
+	@Test
+	public void printResponse() {
 		givenAuthenticatedRequest("/fhir")
-			.when().post("/CodeSystem")
-			.then().assertThat().statusCode(200);
+		.when().get("/CodeSystem").prettyPrint();
 	}
 	
+	@Test
+	public void getCodeSystemsTest() {
+		
+		givenAuthenticatedRequest("/fhir")
+			.when().get("/CodeSystem").then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", notNullValue())
+			.body("type", equalTo("searchset"))
+			.statusCode(200);
+	}
+	
+	//@Test
+	public void getCodeSystemTest() {
+		
+		givenAuthenticatedRequest("/admin")
+			.when().get("/CodeSystem/{id}", "http://snomed.info")
+			.then().assertThat().statusCode(200);
+	}
 	
 
 }

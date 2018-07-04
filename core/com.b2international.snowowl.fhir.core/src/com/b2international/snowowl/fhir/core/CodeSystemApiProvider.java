@@ -130,7 +130,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.identifier(identifier)
 			.language(getLanguageCode(codeSystemEntry.getLanguage()))
 			.name(codeSystemEntry.getShortName())
-			.narrative(NarrativeStatus.ADDITIONAL, codeSystemEntry.getCitation())
+			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystemEntry.getCitation() + "</div>")
 			.publisher(codeSystemEntry.getOrgLink())
 			.status(PublicationStatus.ACTIVE)
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
