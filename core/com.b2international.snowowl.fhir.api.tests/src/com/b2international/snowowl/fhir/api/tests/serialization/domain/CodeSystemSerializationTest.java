@@ -301,7 +301,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		applyFilter(codeSystem);
 		
-		JsonPath jsonPath = new JsonPath(objectMapper.writeValueAsString(codeSystem));
+		JsonPath jsonPath = getJsonPath(codeSystem);
 		
 		assertThat(jsonPath.getString("language"), equalTo("en"));
 		assertThat(jsonPath.get("resourceType"), equalTo("CodeSystem"));
