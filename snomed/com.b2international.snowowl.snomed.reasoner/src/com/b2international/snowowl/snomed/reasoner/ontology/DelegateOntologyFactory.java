@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,62 +15,57 @@
  */
 package com.b2international.snowowl.snomed.reasoner.ontology;
 
-import java.net.URI;
-
+import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.io.OWLOntologyDocumentSource;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyFactory;
 import org.semanticweb.owlapi.model.OWLOntologyID;
+import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
-
-import uk.ac.manchester.cs.owl.owlapi.EmptyInMemOWLOntologyFactory;
+import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 
 /**
- * 
+ * @since 
  */
-public class DelegateOntologyFactory extends EmptyInMemOWLOntologyFactory implements OWLOntologyFactory {
-	
+public final class DelegateOntologyFactory implements OWLOntologyFactory {
+
+	private final ReasonerTaxonomyBuilder taxonomyBuilder;
+
+	public DelegateOntologyFactory(final ReasonerTaxonomyBuilder taxonomyBuilder) {
+		this.taxonomyBuilder = taxonomyBuilder;
+	}
+
 	@Override
 	public boolean canCreateFromDocumentIRI(final IRI documentIRI) {
-		return documentIRI.getStart().startsWith(SnomedOntologyUtils.BASE_NAMESPACE);
+		return DelegateOntology.NAMESPACE_SCTM.equals(documentIRI.getNamespace());
 	}
-	
+
 	@Override
 	public boolean canLoad(final OWLOntologyDocumentSource documentSource) {
-		return canCreateFromDocumentIRI(documentSource.getDocumentIRI());
-	}
-	
-	@Override
-	public OWLOntology createOWLOntology(final OWLOntologyID ontologyID, final IRI documentIRI, final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
-		final URI relativeUri = SnomedOntologyUtils.BASE_IRI.toURI().relativize(documentIRI.toURI());
-		final String path = relativeUri.getPath();
-		final IBranchPath branchPath = BranchPathUtils.createPath(path);
-        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath, getIndex(), isConcreteDomainSupported());
-        handler.ontologyCreated(ont);
-        return ont;
-	}
-	
-	private boolean isConcreteDomainSupported() {
-		return ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class).isConcreteDomainSupported();
-	}
-
-	private RevisionIndex getIndex() {
-		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
+		return false;
 	}
 
 	@Override
-	public OWLOntology loadOWLOntology(final OWLOntologyDocumentSource documentSource, final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
-		return createOWLOntology(new OWLOntologyID(documentSource.getDocumentIRI()), documentSource.getDocumentIRI(), handler);
+	public OWLOntology createOWLOntology(final OWLOntologyManager manager, 
+			final OWLOntologyID ontologyID, 
+			final IRI documentIRI,
+			final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
+
+		final DelegateOntology owlOntology = new DelegateOntology(manager, ontologyID, taxonomyBuilder);
+		handler.ontologyCreated(owlOntology);
+		handler.setOntologyFormat(owlOntology, new RDFXMLDocumentFormat());
+		return owlOntology;
+	}
+
+	@Override
+	public OWLOntology loadOWLOntology(final OWLOntologyManager manager, 
+			final OWLOntologyDocumentSource documentSource,
+			final OWLOntologyCreationHandler handler, 
+			final OWLOntologyLoaderConfiguration configuration) throws OWLOntologyCreationException {
+
+		throw new OWLOntologyCreationException("This ontology factory does not support loading OWL ontologies.");
 	}
 }

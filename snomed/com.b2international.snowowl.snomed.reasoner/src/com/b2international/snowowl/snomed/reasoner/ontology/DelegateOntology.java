@@ -15,1080 +15,282 @@
  */
 package com.b2international.snowowl.snomed.reasoner.ontology;
 
-import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_CONCEPT;
-import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_ROLE;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.LongFunction;
+import java.util.function.LongPredicate;
+import java.util.stream.Collectors;
 
-import org.semanticweb.owlapi.model.*;
+import org.eclipse.net4j.util.StringUtil;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassAxiom;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
+import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
+import org.semanticweb.owlapi.model.OWLEntity;
+import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
+import org.semanticweb.owlapi.model.OWLObject;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
+import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyID;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.OWLPropertyExpression;
+import org.semanticweb.owlapi.model.OWLQuantifiedObjectRestriction;
+import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubDataPropertyOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
+import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
+import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionIndexRead;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
-import com.b2international.snowowl.snomed.reasoner.model.ConcreteDomainDefinition;
-import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
-import com.b2international.snowowl.snomed.reasoner.model.RelationshipDefinition;
-import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
-import com.b2international.snowowl.snomed.reasoner.model.WritableEmptySet;
-import com.google.common.base.Splitter;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Longs;
 
-import uk.ac.manchester.cs.owl.owlapi.OWLObjectImpl;
+/**
+ * @since
+ */
+public final class DelegateOntology extends DelegateOntologyStub implements OWLOntology {
 
-public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntology {
+	// The prefix used for SNOMED CT identifiers (also the default)
+	private static final String PREFIX_SCT = "sct:";
+	private static final String NAMESPACE_SCT = "http://snomed.info/id/";
+
+	// The prefix used for SNOMED CT module ontology identifiers
+	private static final String PREFIX_SCTM = "sctm:";
+	/*package*/ static final String NAMESPACE_SCTM = "http://snomed.info/sct/";
+
+	// Prefix for Snow Owl-specific extension IRIs
+	private static final String PREFIX_SO = "so:";
+	private static final String NAMESPACE_SO = "http://b2i.sg/snowowl/";
+
+	private static final String PREFIX_HAS_UNIT = "so:has_unit";
+	private static final String PREFIX_HAS_VALUE = "so:has_value";
+	private static final String PREFIX_HAS_MEASUREMENT = "so:has_measurement";
+	private static final String PREFIX_LABEL = "so:label_";
+
+	private static final long CONCEPT_MODEL_OBJECT_ATTRIBUTE = 762705008L;
+	private static final long CONCEPT_MODEL_DATA_ATTRIBUTE = 762706009L;
+	private static final long ROLE_GROUP = 609096000L;
+	private static final long DEFAULT_UNIT = 258666001L; // root of the unit (qualifier) hierarchy
+
+	private static final long PART_OF = 123005000L;
+	private static final long LATERALITY = 272741003L;
+	private static final long HAS_DOSE_FORM = 411116001L;
+	private static final long HAS_ACTIVE_INGREDIENT = 127489000L;
+
+	private static final LongSet NEVER_GROUPED_TYPE_IDS = PrimitiveSets.newLongOpenHashSet(PART_OF, 
+			LATERALITY, 
+			HAS_DOSE_FORM, 
+			HAS_ACTIVE_INGREDIENT);
+
+	private static final String[] FIND = new String[] {"%", "(", ")" };
+	private static final String[] REPLACE = new String[] { "%25", "%28", "%29" };
+
+	private final class EntityDeclarationAxiomIterator extends AbstractIterator<OWLDeclarationAxiom> {
+		private final LongIterator idIterator;
+		private final LongFunction<OWLEntity> entityFactory;
+
+		public EntityDeclarationAxiomIterator(final LongIterator idIterator, final LongFunction<OWLEntity> entityFactory) {
+			this.idIterator = idIterator;
+			this.entityFactory = entityFactory;
+		}
+
+		@Override
+		protected OWLDeclarationAxiom computeNext() {
+			if (!idIterator.hasNext()) {
+				return endOfData();
+			}
+
+			final long conceptId = idIterator.next();
+			final OWLEntity entity = entityFactory.apply(conceptId);
+			return getOWLDeclarationAxiom(entity);
+		}
+	}
+
+	private final class ConceptAxiomIterator<T extends OWLClassAxiom> extends AbstractIterator<T> {
+		private final LongIterator idIterator;
+		private final LongPredicate idPredicate;
+		private final BiFunction<OWLClassExpression, OWLClassExpression, T> classAxiomFactory;
+
+		public ConceptAxiomIterator(final LongIterator idIterator,
+				final LongPredicate idPredicate, 
+				final BiFunction<OWLClassExpression, OWLClassExpression, T> classAxiomFactory) {
+
+			this.idIterator = idIterator;
+			this.idPredicate = idPredicate;
+			this.classAxiomFactory = classAxiomFactory;
+		}
+
+		@Override
+		protected T computeNext() {
+			final long conceptId = nextApplicableConceptId();
+			if (conceptId == -1L) {
+				return endOfData();
+			}
+
+			final OWLClass conceptClass = getConceptClass(conceptId);
+			final OWLClassExpression conceptDefinitionExpression = getConceptDefinitionExpression(conceptId);
+			return classAxiomFactory.apply(conceptClass, conceptDefinitionExpression);
+		}
+
+		private long nextApplicableConceptId() {
+			while (idIterator.hasNext()) {
+				final long conceptId = idIterator.next();
+				if (idPredicate.test(conceptId)) {
+					return conceptId;
+				}
+			}
+
+			return -1L;
+		}
+	}
+
+	private final class SubPropertyOfAxiomIterator<P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+		private final LongIterator childIterator;
+		private final LongFunction<P> propertyFactory;
+		private final BiFunction<P, P, A> subPropertyAxiomFactory;
+
+		private long childId = -1L;
+		private LongIterator parentIterator;
+
+		public SubPropertyOfAxiomIterator(final LongIterator childIterator,
+				final LongFunction<P> propertyFactory,
+				final BiFunction<P, P, A> subPropertyAxiomFactory) {
+
+			this.childIterator = childIterator;
+			this.propertyFactory = propertyFactory;
+			this.subPropertyAxiomFactory = subPropertyAxiomFactory;
+		}
+
+		@Override
+		protected A computeNext() {
+			if (computeNextApplicableChildId()) {
+				return endOfData();
+			}
+
+			final long parentId = parentIterator.next();
+			final P childProperty = propertyFactory.apply(childId);
+			final P parentProperty = propertyFactory.apply(parentId);
+			return subPropertyAxiomFactory.apply(childProperty, parentProperty);	
+		}
+
+		private boolean computeNextApplicableChildId() {
+			// Current ID is good if there are more parents to iterate over
+			if (parentIterator != null && parentIterator.hasNext()) {
+				return true;
+			}
+
+			// Otherwise, return the next child which has parents
+			while (childIterator.hasNext()) {
+				childId = childIterator.next();
+				parentIterator = taxonomyBuilder.getSuperTypeIds(childId).iterator();
+
+				if (parentIterator.hasNext()) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	private final class ConcreteDomainAttributeIterator extends AbstractIterator<OWLDeclarationAxiom> {
+		private final Iterator<String> attributeNameIterator;
+
+		private ConcreteDomainAttributeIterator(final Iterator<String> attributeNameIterator) {
+			this.attributeNameIterator = attributeNameIterator;
+		}
+
+		@Override
+		protected OWLDeclarationAxiom computeNext() {
+			if (!attributeNameIterator.hasNext()) {
+				return endOfData();
+			}
+
+			final String attributeName = attributeNameIterator.next();
+			final OWLObjectProperty attributeProperty = getDataFactory().getOWLObjectProperty(PREFIX_LABEL + sanitize(attributeName), prefixManager);
+			return getOWLDeclarationAxiom(attributeProperty);
+		}
+	}
+
+	/**
+	 * Creates a {@link DefaultPrefixManager} instance for the specified ontology.
+	 * Prefixes will be configured in accordance with the OWL reference set
+	 * specification, with the exception of the default prefix.
+	 * 
+	 * @see <a href="https://docs.google.com/document/d/1jn9jiWe2cKNA5WrbQZ2MGWV_VoKU6Una6ZpQLskeRXA/">OWL
+	 *      Reference Sets Specification (draft)</a>
+	 * @return the created prefix manager
+	 */
+	private static DefaultPrefixManager createPrefixManager() {
+		final DefaultPrefixManager prefixManager = new DefaultPrefixManager();
+		// prefixManager.setDefaultPrefix(NAMESPACE_SCT);
+		prefixManager.setPrefix(PREFIX_SCT, NAMESPACE_SCT);
+		prefixManager.setPrefix(PREFIX_SCTM, NAMESPACE_SCTM);
+		prefixManager.setPrefix(PREFIX_SO, NAMESPACE_SO);
+		return prefixManager;
+	}
+
+	// Do limited percent-encoding on incoming text as parentheses may confuse functional OWL parsers
+	private static String sanitize(final String text) {
+		return StringUtil.replace(text, FIND, REPLACE);
+	}
 
 	private final OWLOntologyManager manager;
 	private final OWLOntologyID ontologyID;
+	private final ReasonerTaxonomyBuilder taxonomyBuilder;
+
 	private final DefaultPrefixManager prefixManager;
-	private final RevisionIndex index;
-	private final boolean trackingChanges;
-	private final OWLOntology plusOntology;
-	private final boolean concreteDomainSupport;
-	private final IBranchPath branchPath;
+	private final LongSet nonMetadataConceptIds;
 
-	private volatile ReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
+	public DelegateOntology(final OWLOntologyManager manager, 
+			final OWLOntologyID ontologyID, 
+			final ReasonerTaxonomyBuilder taxonomyBuilder) {
 
-	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final IBranchPath branchPath, final RevisionIndex index, boolean concreteDomainSupport) throws OWLOntologyCreationException {
-		super();
 		this.manager = manager;
 		this.ontologyID = ontologyID;
-		this.branchPath = branchPath;
-		this.index = index;
-		this.concreteDomainSupport = concreteDomainSupport;
-		this.prefixManager = SnomedOntologyUtils.createPrefixManager(this);
-		this.plusOntology = manager.createOntology();
-		this.trackingChanges = (null == ontologyID.getVersionIRI());
-	}
-
-	@Override public OWLOntologyManager getOWLOntologyManager() {
-		return manager;
-	}
-
-	@Override public OWLOntologyID getOntologyID() {
-		return ontologyID;
-	}
-
-	@Override public boolean isAnonymous() {
-		return ontologyID.isAnonymous();
-	}
-
-	@Override public Set<OWLAnnotation> getAnnotations() {
-		// No direct annotations are added to the ontology
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<IRI> getDirectImportsDocuments() throws UnknownOWLOntologyException {
-		// No direct import IRIs will be present
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLOntology> getDirectImports() throws UnknownOWLOntologyException {
-		// No directly imported ontologies will be added
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLOntology> getImports() throws UnknownOWLOntologyException {
-		// No transitive imports will be present, as no direct imports are present
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLOntology> getImportsClosure() throws UnknownOWLOntologyException {
-		// No imports closure needs to be calculated, as no direct imports are present
-		return Sets.<OWLOntology>newHashSet(this);
-	}
-
-	@Override public Set<OWLImportsDeclaration> getImportsDeclarations() {
-		// No imports declarations are present
-		return WritableEmptySet.create();
-	}
-
-	@Override public boolean isEmpty() {
-		return 0 == getAxiomCount();
-	}
-
-	@Override public Set<OWLAxiom> getAxioms() {
-		// All axioms are logical axioms
-		final Set<OWLAxiom> results = newHashSet();
-		results.addAll(getLogicalAxioms());
-		return results;
-	}
-
-	@Override public int getAxiomCount() {
-		// All axioms are logical axioms
-		return getLogicalAxiomCount();
-	}
-
-	@Override public Set<OWLLogicalAxiom> getLogicalAxioms() {
-		final Set<OWLLogicalAxiom> results = newHashSet();
-		results.addAll(getAxioms(AxiomType.SUBCLASS_OF));
-		results.addAll(getAxioms(AxiomType.EQUIVALENT_CLASSES));
-		results.addAll(getAxioms(AxiomType.SUB_OBJECT_PROPERTY));
-		results.addAll(getAxioms(AxiomType.DISJOINT_UNION));
-		return results;
-	}
-
-	@Override public int getLogicalAxiomCount() {
-		int totalCount = 0;
-		totalCount += getAxiomCount(AxiomType.SUBCLASS_OF);
-		totalCount += getAxiomCount(AxiomType.EQUIVALENT_CLASSES);
-		totalCount += getAxiomCount(AxiomType.SUB_OBJECT_PROPERTY);
-		totalCount += getAxiomCount(AxiomType.DISJOINT_UNION);
-		return totalCount;
-	}
-
-	@Override @SuppressWarnings("unchecked") public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType) {
-		if (AxiomType.SUBCLASS_OF.equals(axiomType)) {
-			return (Set<T>) getSubClassAxioms();
-		} else if (AxiomType.EQUIVALENT_CLASSES.equals(axiomType)) {
-			return (Set<T>) getEquivalentClassesAxioms();
-		} else if (AxiomType.SUB_OBJECT_PROPERTY.equals(axiomType)) {
-			return (Set<T>) getObjectSubPropertyAxioms();
-		} else if (AxiomType.DISJOINT_UNION.equals(axiomType)) {
-			return (Set<T>) getDisjointUnionAxioms();
-		} else {
-			return WritableEmptySet.create();
-		}
-	}
-
-	private Set<OWLSubClassOfAxiom> getSubClassAxioms() {
-		final Set<OWLSubClassOfAxiom> result = newHashSet();
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-				continue;
-			}
-
-			collectSubClassAxiomsForConceptId(conceptId, result);
-		}
-
-		result.addAll(plusOntology.getAxioms(AxiomType.SUBCLASS_OF));
-		return result;
-	}
-
-	private Set<OWLEquivalentClassesAxiom> getEquivalentClassesAxioms() {
-		final Set<OWLEquivalentClassesAxiom> result = newHashSet();
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			if (getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-				continue;
-			}
-
-			collectEquivalentClassesAxiomForLHS(conceptId, result);
-		}
-
-		result.addAll(plusOntology.getAxioms(AxiomType.EQUIVALENT_CLASSES));
-		return result;
-	}
-
-	private Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxioms() {
-		final Set<OWLSubObjectPropertyOfAxiom> result = newHashSet();
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
-				continue;
-			}
-
-			collectSubPropertyAxiomsForConceptId(conceptId, result);
-		}
-
-		result.addAll(plusOntology.getAxioms(AxiomType.SUB_OBJECT_PROPERTY));
-		return result;
-	}
-
-	private void collectSubPropertyAxiomsForConceptId(final long conceptId, final Set<OWLSubObjectPropertyOfAxiom> result) {
-
-		final LongSet superTypeIds = getReasonerTaxonomyBuilder().getSuperTypeIds(conceptId);
-
-		for (final LongIterator itr2 = superTypeIds.iterator(); itr2.hasNext(); /* empty */) {
-			final long superTypeId = itr2.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(superTypeId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
-				final OWLObjectProperty subProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + conceptId, prefixManager);
-				final OWLObjectProperty superProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + superTypeId, prefixManager);
-				final OWLSubObjectPropertyOfAxiom propertyAxiom = manager.getOWLDataFactory().getOWLSubObjectPropertyOfAxiom(subProperty, superProperty);
-				result.add(propertyAxiom);
-			}
-		}
-	}
-
-	private Set<OWLDisjointUnionAxiom> getDisjointUnionAxioms() {
-		final Set<OWLDisjointUnionAxiom> result = newHashSet();
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			if (!getReasonerTaxonomyBuilder().isExhaustive(conceptId)) {
-				continue;
-			}
-
-			collectDisjointUnionAxiomForConceptId(conceptId, result);
-		}
-
-		result.addAll(plusOntology.getAxioms(AxiomType.DISJOINT_UNION));
-		return result;
-	}
-
-	private List<OWLAxiom> createRawAxioms(final long conceptId, final boolean primitive) {
-
-		final Collection<ConcreteDomainFragment> conceptDomainFragments = getReasonerTaxonomyBuilder().getStatedConcreteDomainFragments(conceptId);
-		final Set<ConcreteDomainDefinition> conceptDomainDefinitions = newHashSet();
-
-		for (final ConcreteDomainFragment conceptFragment : conceptDomainFragments) {
-			conceptDomainDefinitions.add(new ConcreteDomainDefinition(conceptFragment));
-		}
-
-		final ConceptDefinition definition = new ConceptDefinition(conceptDomainDefinitions, conceptId, primitive, null);
-		final Collection<StatementFragment> statementFragments = getReasonerTaxonomyBuilder().getStatedStatementFragments(conceptId);
-
-		for (final StatementFragment statementFragment : statementFragments) {
-			final long statementId = statementFragment.getStatementId();
-			final Collection<ConcreteDomainFragment> relationshipDomainFragments = getReasonerTaxonomyBuilder().getStatedConcreteDomainFragments(statementId);
-			final Set<ConcreteDomainDefinition> relationshipDomainDefinitions = newHashSet();
-
-			for (final ConcreteDomainFragment relationshipDomainFragment : relationshipDomainFragments) {
-				relationshipDomainDefinitions.add(new ConcreteDomainDefinition(relationshipDomainFragment));
-			}
-
-			final RelationshipDefinition relationshipDefinition = new RelationshipDefinition(relationshipDomainDefinitions,
-					statementFragment.getTypeId(), statementFragment.getDestinationId(), statementFragment.isDestinationNegated(),
-					statementFragment.isUniversal());
-
-			if (LongConcepts.IS_A_ID == statementFragment.getTypeId()) {
-				definition.addIsaDefinition(relationshipDefinition);
-			} else if (Longs.contains(LongConcepts.NEVER_GROUPED_ROLE_IDS, statementFragment.getTypeId()) && 0 == statementFragment.getGroup()) {
-				definition.addNeverGroupedDefinition(relationshipDefinition, statementFragment.getGroup(), statementFragment.getUnionGroup());
-			} else {
-				definition.addGroupDefinition(relationshipDefinition, statementFragment.getGroup(), statementFragment.getUnionGroup());
-			}
-		}
-
-		final List<OWLAxiom> axioms = newArrayList();
-		definition.collect(manager.getOWLDataFactory(), prefixManager, axioms, Sets.<OWLClassExpression>newHashSet());
-		return axioms;
-	}
-
-	@Override public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return getAxioms(axiomType);
-	}
-
-	@Override public Set<OWLAxiom> getTBoxAxioms(final boolean includeImportsClosure) {
-		final Set<OWLAxiom> tboxAxioms = newHashSet();
-		tboxAxioms.addAll(getAxioms(AxiomType.SUBCLASS_OF));
-		tboxAxioms.addAll(getAxioms(AxiomType.EQUIVALENT_CLASSES));
-		tboxAxioms.addAll(getAxioms(AxiomType.DISJOINT_UNION));
-		return tboxAxioms;
-	}
-
-	@Override public Set<OWLAxiom> getABoxAxioms(final boolean includeImportsClosure) {
-		// Not handling individuals
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAxiom> getRBoxAxioms(final boolean includeImportsClosure) {
-		final Set<OWLAxiom> rboxAxioms = newHashSet();
-		rboxAxioms.addAll(getAxioms(AxiomType.SUB_OBJECT_PROPERTY));
-		return rboxAxioms;
-	}
-
-	@Override public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType) {
-		/*
-		 * TODO more optimal solution exists: 
-		 * 
-		 * - subclassof --> number of primitive classes 
-		 * - equivalentclasses --> number of defined classes
-		 * - subobjectpropertyof --> number of role inclusions 
-		 * - disjoint union --> number of exhaustive classes 
-		 */
-		return getAxioms(axiomType).size() + plusOntology.getAxiomCount(axiomType);
-	}
-
-	@Override public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return getAxiomCount(axiomType);
-	}
-
-	@Override public boolean containsAxiom(final OWLAxiom axiom) {
-		return baseContainsAxiom(axiom) || plusOntology.containsAxiom(axiom);
-	}
-
-	private boolean baseContainsAxiom(final OWLAxiom axiom) {
-		final AxiomType<?> axiomType = axiom.getAxiomType();
-		if (AxiomType.SUBCLASS_OF.equals(axiomType)) {
-			return containsSubClassAxiom((OWLSubClassOfAxiom) axiom);
-		} else if (AxiomType.EQUIVALENT_CLASSES.equals(axiomType)) {
-			return containsEquivalentClassesAxiom((OWLEquivalentClassesAxiom) axiom);
-		} else if (AxiomType.SUB_OBJECT_PROPERTY.equals(axiomType)) {
-			return containsObjectSubPropertyAxiom((OWLSubObjectPropertyOfAxiom) axiom);
-		} else if (AxiomType.DISJOINT_UNION.equals(axiomType)) {
-			return containsDisjointUnionAxiom((OWLDisjointUnionAxiom) axiom);
-		} else {
-			return false;
-		}
-	}
-
-	private boolean containsSubClassAxiom(final OWLSubClassOfAxiom axiom) {
-
-		final OWLClassExpression subClass = axiom.getSubClass();
-		if (subClass.isAnonymous()) {
-			return false;
-		}
-
-		final OWLClass namedSubClass = subClass.asOWLClass();
-		if (!isConceptClass(namedSubClass)) {
-			return false;
-		}
-
-		final long conceptId = getConceptId(namedSubClass);
-
-		if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-			return false;
-		}
-
-		return createRawAxioms(conceptId, true).contains(axiom);
-	}
-
-	private boolean containsEquivalentClassesAxiom(final OWLEquivalentClassesAxiom axiom) {
-
-		for (final OWLClassExpression expression : axiom.getClassExpressions()) {
-			if (expression.isAnonymous()) {
-				continue;
-			}
-
-			final OWLClass namedSubClass = expression.asOWLClass();
-			if (!isConceptClass(namedSubClass)) {
-				continue;
-			}
-
-			final long conceptId = getConceptId(namedSubClass);
-			if (getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-				continue;
-			}
-
-			if (createRawAxioms(conceptId, false).contains(axiom)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private boolean containsObjectSubPropertyAxiom(final OWLSubObjectPropertyOfAxiom axiom) {
-
-		final OWLObjectPropertyExpression subProperty = axiom.getSubProperty();
-		final OWLObjectPropertyExpression superProperty = axiom.getSuperProperty();
-		return isConceptModelAttribute(subProperty) && isConceptModelAttribute(superProperty);
-	}
-
-	private boolean isConceptModelAttribute(final OWLObjectPropertyExpression propertyExpression) {
-		if (propertyExpression.isAnonymous()) {
-			return false;
-		}
-
-		final OWLObjectProperty namedSubProperty = propertyExpression.asOWLObjectProperty();
-		if (!isRole(namedSubProperty)) {
-			return false;
-		}
-
-		final long conceptId = getConceptId(namedSubProperty);
-		return getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID);
-	}
-
-	private boolean containsDisjointUnionAxiom(final OWLDisjointUnionAxiom axiom) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override public boolean containsAxiom(final OWLAxiom axiom, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return containsAxiom(axiom);
-	}
-
-	private boolean isConceptClass(final OWLClass owlClass) {
-		return hasPrefix(owlClass, SnomedOntologyUtils.PREFIX_CONCEPT);
-	}
-
-	private boolean isRole(final OWLObjectProperty objectProperty) {
-		return hasPrefix(objectProperty, SnomedOntologyUtils.PREFIX_ROLE);
-	}
-
-	private boolean hasPrefix(final OWLEntity entity, final String prefix) {
-		return prefixManager.getShortForm(entity.getIRI()).startsWith(prefix);
-	}
-
-	private long getConceptId(final OWLEntity entity) {
-		final String strippedShortForm = prefixManager.getShortForm(entity.getIRI()).substring(SnomedOntologyUtils.PREFIX_SNOMED.length());
-		return Long.parseLong(Iterables.get(Splitter.on('_').split(strippedShortForm), 1));
-	}
-
-	@Override public boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom) {
-		// Strip the annotation from the incoming axiom and check
-		return containsAxiom(axiom.getAxiomWithoutAnnotations());
-	}
-
-	@Override public Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom) {
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return getAxiomsIgnoreAnnotations(axiom);
-	}
-
-	@Override public boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return containsAxiomIgnoreAnnotations(axiom);
-	}
-
-	@Override public Set<OWLClassAxiom> getGeneralClassAxioms() {
-		// No GCIs are present in the ontology
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLEntity> getSignature() {
-		final Set<OWLEntity> results = newHashSet();
-		results.addAll(getClassesInSignature());
-		results.addAll(getObjectPropertiesInSignature());
-		return results;
-	}
-
-	@Override public Set<OWLEntity> getSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getSignature();
-	}
-
-	@Override public Set<OWLClass> getClassesInSignature() {
-		final Set<OWLClass> result = newHashSet();
-		if (isEmpty()) {
-			return result;
-		}
-
-		final OWLDataFactory df = manager.getOWLDataFactory();
-		result.add(df.getOWLClass(SnomedOntologyUtils.PREFIX_CONCEPT_UNIT_NOT_APPLICABLE, prefixManager));
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			result.add(df.getOWLClass(SnomedOntologyUtils.PREFIX_CONCEPT + conceptId, prefixManager));
-		}
-
-		result.addAll(plusOntology.getClassesInSignature());
-		return result;
-	}
-
-	@Override public Set<OWLClass> getClassesInSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getClassesInSignature();
-	}
-
-	@Override public Set<OWLObjectProperty> getObjectPropertiesInSignature() {
-		final Set<OWLObjectProperty> result = newHashSet();
-		if (isEmpty()) {
-			return result;
-		}
-
-		final OWLDataFactory df = manager.getOWLDataFactory();
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_HAS_UNIT, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE_GROUP, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE_HAS_MEASUREMENT, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_DATA_HAS_VALUE, prefixManager));
-
-		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
-		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
-			final long conceptId = itr.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
-				result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_CONCEPT + conceptId, prefixManager));
-			}
-		}
-
-		result.addAll(plusOntology.getObjectPropertiesInSignature());
-		return result;
-	}
-
-	@Override public Set<OWLObjectProperty> getObjectPropertiesInSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getObjectPropertiesInSignature();
-	}
-
-	@Override public Set<OWLDataProperty> getDataPropertiesInSignature() {
-		// TODO Consider switching to proper data properties (dataHasValue should be here)
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDataProperty> getDataPropertiesInSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getDataPropertiesInSignature();
-	}
-
-	@Override public Set<OWLNamedIndividual> getIndividualsInSignature() {
-		// No individuals are present in the ontology
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLNamedIndividual> getIndividualsInSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getIndividualsInSignature();
-	}
-
-	@Override public Set<OWLAnonymousIndividual> getReferencedAnonymousIndividuals() {
-		// No anonymous individuals are present in the ontology
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDatatype> getDatatypesInSignature() {
-		// TODO Consider switching to proper datatypes (all used OWL datatypes should be returned here)
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDatatype> getDatatypesInSignature(final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getDatatypesInSignature();
-	}
-
-	@Override public Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature() {
-		// No annotations
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAxiom> getReferencingAxioms(final OWLEntity owlEntity) {
-		// TODO implement this method
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public Set<OWLAxiom> getReferencingAxioms(final OWLEntity owlEntity, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return getReferencingAxioms(owlEntity);
-	}
-
-	@Override public Set<OWLAxiom> getReferencingAxioms(final OWLAnonymousIndividual individual) {
-		// No anonymous individuals
-		return WritableEmptySet.create();
-	}
-
-	@Override public boolean containsEntityInSignature(final OWLEntity owlEntity) {
-		// There is no "punning" (overlap between entity IRIs) in the ontology
-		return containsEntityInSignature(owlEntity.getIRI());
-	}
-
-	@Override public boolean containsEntityInSignature(final OWLEntity owlEntity, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsEntityInSignature(owlEntity);
-	}
-
-	@Override public boolean containsEntityInSignature(final IRI entityIRI) {
-		return containsClassInSignature(entityIRI) 
-				|| containsObjectPropertyInSignature(entityIRI)
-				|| containsAnnotationPropertyInSignature(entityIRI);
-	}
-
-	@Override public boolean containsEntityInSignature(final IRI entityIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsEntityInSignature(entityIRI);
-	}
-
-	@Override public boolean isDeclared(final OWLEntity owlEntity) {
-		// TODO Add declaration axioms if needed
-		return false;
-	}
-
-	@Override public boolean isDeclared(final OWLEntity owlEntity, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return isDeclared(owlEntity);
-	}
+		this.taxonomyBuilder = taxonomyBuilder;
 
-	@Override public boolean containsClassInSignature(final IRI owlClassIRI) {
-		// TODO Implement this method
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public boolean containsClassInSignature(final IRI owlClassIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsClassInSignature(owlClassIRI);
-	}
-
-	@Override public boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI) {
-		// TODO Implement this method
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsObjectPropertyInSignature(owlObjectPropertyIRI);
-	}
-
-	@Override public boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI) {
-		// TODO Add data properties in the future
-		return false;
-	}
-
-	@Override public boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsDataPropertyInSignature(owlDataPropertyIRI);
-	}
-
-	@Override public boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI) {
-		// TODO Implement this method
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsAnnotationPropertyInSignature(owlAnnotationPropertyIRI);
-	}
-
-	@Override public boolean containsIndividualInSignature(final IRI owlIndividualIRI) {
-		// No individuals in the ontology
-		return false;
-	}
-
-	@Override public boolean containsIndividualInSignature(final IRI owlIndividualIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsIndividualInSignature(owlIndividualIRI);
-	}
-
-	@Override public boolean containsDatatypeInSignature(final IRI owlDatatypeIRI) {
-		// TODO Add datatype support in the future (maybe the storage key long needs to be returned here?)
-		return false;
-	}
-
-	@Override public boolean containsDatatypeInSignature(final IRI owlDatatypeIRI, final boolean includeImportsClosure) {
-		// No need to consider an imports closure
-		return containsDatatypeInSignature(owlDatatypeIRI);
-	}
-
-	@Override public Set<OWLEntity> getEntitiesInSignature(final IRI iri) {
-		// TODO Implement this method
-		throw new UnsupportedOperationException("Not implemented.");
-	}
-
-	@Override public Set<OWLEntity> getEntitiesInSignature(final IRI iri, final boolean includeImportsClosure) {
-		// No need to consider imports closure
-		return getEntitiesInSignature(iri);
-	}
-
-	@Override public Set<OWLClassAxiom> getAxioms(final OWLClass cls) {
-		final Set<OWLClassAxiom> results = newHashSet();
-		results.addAll(getSubClassAxiomsForSubClass(cls));
-		results.addAll(getEquivalentClassesAxioms(cls));
-		results.addAll(getDisjointUnionAxioms(cls));
-		return results;
-	}
-
-	@Override public Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression prop) {
-		// The only definition axiom an object property can participate in is the SubObjectPropertyOfAxiom
-		final Set<OWLObjectPropertyAxiom> results = newHashSet();
-		results.addAll(getObjectSubPropertyAxiomsForSubProperty(prop));
-		return results;
-	}
-
-	@Override public Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty prop) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSubAnnotationPropertyOfAxiom> getSubAnnotationPropertyOfAxioms(final OWLAnnotationProperty subProperty) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAnnotationPropertyDomainAxiom> getAnnotationPropertyDomainAxioms(final OWLAnnotationProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAnnotationPropertyRangeAxiom> getAnnotationPropertyRangeAxioms(final OWLAnnotationProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDeclarationAxiom> getDeclarationAxioms(final OWLEntity subject) {
-		// TODO Add class, object property, data property declarations if necessary
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(final OWLAnnotationSubject entity) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSubClassOfAxiom> getSubClassAxiomsForSubClass(final OWLClass cls) {
-
-		if (!isConceptClass(cls)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(cls);
-
-		if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-			return WritableEmptySet.create();
-		}
-
-		final Set<OWLSubClassOfAxiom> result = newHashSet();
-		collectSubClassAxiomsForConceptId(conceptId, result);
-		
-		result.addAll(plusOntology.getSubClassAxiomsForSubClass(cls));
-		return result;
-	}
-
-	@Override public Set<OWLSubClassOfAxiom> getSubClassAxiomsForSuperClass(final OWLClass cls) {
-
-		if (!isConceptClass(cls)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(cls);
-
-		if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-			return WritableEmptySet.create();
-		}
-
-		final LongSet subTypeIds = getReasonerTaxonomyBuilder().getSubTypeIds(conceptId);
-		final Set<OWLSubClassOfAxiom> result = newHashSet();
-
-		for (final LongIterator itr = subTypeIds.iterator(); itr.hasNext(); /* empty */) {
-			final long subTypeId = itr.next();
-
-			// Subtype must be _primitive_, if not, continue
-			if (!getReasonerTaxonomyBuilder().isPrimitive(subTypeId)) {
-				continue;
-			}
-
-			// The only supertype should be the current concept
-			if (getReasonerTaxonomyBuilder().getSuperTypeIds(subTypeId).size() > 1) {
-				continue;
-			}
-
-			// No non-ISA relationships can be present on the subtype
-			if (getReasonerTaxonomyBuilder().getStatedNonIsAFragments(subTypeId).size() > 0) {
-				continue;
-			}
-
-			collectSubClassAxiomsForConceptId(subTypeId, result);
-		}
-
-		result.addAll(plusOntology.getSubClassAxiomsForSuperClass(cls));
-		return result;
-	}
-
-	private void collectSubClassAxiomsForConceptId(final long conceptId, final Set<OWLSubClassOfAxiom> result) {
-
-		final List<OWLAxiom> rawAxioms = createRawAxioms(conceptId, true);
-
-		for (final OWLAxiom axiom : rawAxioms) {
-			if (AxiomType.SUBCLASS_OF.equals(axiom.getAxiomType())) {
-				result.add((OWLSubClassOfAxiom) axiom);
-				break;
-			}
-		}
-	}
-
-	@Override public Set<OWLEquivalentClassesAxiom> getEquivalentClassesAxioms(final OWLClass cls) {
-
-		if (!isConceptClass(cls)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(cls);
-		final Set<OWLEquivalentClassesAxiom> result = newHashSet();
-
-		collectEquivalentClassesAxiomForRHS(conceptId, result);
-
-		if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
-			collectEquivalentClassesAxiomForLHS(conceptId, result);
-		}
-
-		result.addAll(plusOntology.getEquivalentClassesAxioms(cls));
-		return result;
-	}
-
-	private void collectEquivalentClassesAxiomForLHS(final long conceptId, final Set<OWLEquivalentClassesAxiom> result) {
-
-		final List<OWLAxiom> rawAxioms = createRawAxioms(conceptId, false);
-
-		for (final OWLAxiom axiom : rawAxioms) {
-			if (AxiomType.EQUIVALENT_CLASSES.equals(axiom.getAxiomType())) {
-				result.add((OWLEquivalentClassesAxiom) axiom);
-				break;
-			}
-		}
-	}
-
-	private void collectEquivalentClassesAxiomForRHS(final long conceptId, final Set<OWLEquivalentClassesAxiom> result) {
-
-		final LongSet subTypeIds = getReasonerTaxonomyBuilder().getSubTypeIds(conceptId);
-
-		for (final LongIterator itr = subTypeIds.iterator(); itr.hasNext(); /* empty */) {
-			final long subTypeId = itr.next();
-
-			// Subtype must be _defined_, if not, continue
-			if (getReasonerTaxonomyBuilder().isPrimitive(subTypeId)) {
-				continue;
-			}
-
-			// The only supertype should be the current concept
-			if (getReasonerTaxonomyBuilder().getSuperTypeIds(subTypeId).size() > 1) {
-				continue;
-			}
-
-			// No non-ISA relationships can be present on the subtype
-			if (getReasonerTaxonomyBuilder().getStatedNonIsAFragments(subTypeId).size() > 0) {
-				continue;
-			}
-
-			collectEquivalentClassesAxiomForLHS(subTypeId, result);
-		}
-	}
-
-	@Override public Set<OWLDisjointClassesAxiom> getDisjointClassesAxioms(final OWLClass cls) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDisjointUnionAxiom> getDisjointUnionAxioms(final OWLClass cls) {
-
-		if (!isConceptClass(cls)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(cls);
-
-		if (!getReasonerTaxonomyBuilder().isExhaustive(conceptId)) {
-			return WritableEmptySet.create();
-		}
-
-		final Set<OWLDisjointUnionAxiom> result = newHashSet();
-		collectDisjointUnionAxiomForConceptId(conceptId, result);
-		
-		result.addAll(plusOntology.getDisjointUnionAxioms(cls));
-		return result;
-	}
-
-	private void collectDisjointUnionAxiomForConceptId(final long conceptId, final Set<OWLDisjointUnionAxiom> result) {
-
-		final OWLClass conceptClass = manager.getOWLDataFactory().getOWLClass(PREFIX_CONCEPT + conceptId, prefixManager);
-		final Set<OWLClass> disjointUnionClasses = newHashSet();
-
-		final LongSet subTypeIds = getReasonerTaxonomyBuilder().getSubTypeIds(conceptId);
-
-		for (final LongIterator itr2 = subTypeIds.iterator(); itr2.hasNext(); /* empty */) {
-			final long subTypeId = itr2.next();
-			final OWLClass disjointUnionMember = manager.getOWLDataFactory().getOWLClass(PREFIX_CONCEPT + subTypeId, prefixManager);
-			disjointUnionClasses.add(disjointUnionMember);
-		}
-
-		final OWLDisjointUnionAxiom disjointUnionAxiom = manager.getOWLDataFactory().getOWLDisjointUnionAxiom(conceptClass, disjointUnionClasses);
-		result.add(disjointUnionAxiom);
-	}
-
-	@Override public Set<OWLHasKeyAxiom> getHasKeyAxioms(final OWLClass cls) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSubProperty(final OWLObjectPropertyExpression subProperty) {
-
-		if (subProperty.isAnonymous()) {
-			return WritableEmptySet.create();
-		}
-
-		final OWLObjectProperty objectProperty = subProperty.asOWLObjectProperty();
-
-		if (!isRole(objectProperty)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(objectProperty);
-
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
-			return WritableEmptySet.create();
-		}
-
-		final Set<OWLSubObjectPropertyOfAxiom> result = newHashSet();
-		collectSubPropertyAxiomsForConceptId(conceptId, result);
-		
-		result.addAll(plusOntology.getObjectSubPropertyAxiomsForSubProperty(subProperty));
-		return result;
-	}
-
-	@Override public Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSuperProperty(final OWLObjectPropertyExpression superProperty) {
-		if (superProperty.isAnonymous()) {
-			return WritableEmptySet.create();
-		}
-
-		final OWLObjectProperty objectProperty = superProperty.asOWLObjectProperty();
-
-		if (!isRole(objectProperty)) {
-			return WritableEmptySet.create();
-		}
-
-		final long conceptId = getConceptId(objectProperty);
-
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
-			return WritableEmptySet.create();
-		}
-
-		final LongSet subTypeIds = getReasonerTaxonomyBuilder().getSubTypeIds(conceptId);
-		final Set<OWLSubObjectPropertyOfAxiom> result = newHashSet();
-
-		for (final LongIterator itr = subTypeIds.iterator(); itr.hasNext(); /* empty */) {
-			final long subTypeId = itr.next();
-			collectSubPropertyAxiomsForConceptId(subTypeId, result);
-		}
-
-		result.addAll(plusOntology.getObjectSubPropertyAxiomsForSuperProperty(superProperty));
-		return result;
-	}
-
-	@Override public Set<OWLObjectPropertyDomainAxiom> getObjectPropertyDomainAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLObjectPropertyRangeAxiom> getObjectPropertyRangeAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLInverseObjectPropertiesAxiom> getInverseObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLEquivalentObjectPropertiesAxiom> getEquivalentObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDisjointObjectPropertiesAxiom> getDisjointObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLFunctionalObjectPropertyAxiom> getFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLInverseFunctionalObjectPropertyAxiom> getInverseFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSymmetricObjectPropertyAxiom> getSymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLAsymmetricObjectPropertyAxiom> getAsymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLReflexiveObjectPropertyAxiom> getReflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLIrreflexiveObjectPropertyAxiom> getIrreflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLTransitiveObjectPropertyAxiom> getTransitiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSubProperty(final OWLDataProperty subProperty) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSuperProperty(final OWLDataPropertyExpression superProperty) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDataPropertyDomainAxiom> getDataPropertyDomainAxioms(final OWLDataProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDataPropertyRangeAxiom> getDataPropertyRangeAxioms(final OWLDataProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLEquivalentDataPropertiesAxiom> getEquivalentDataPropertiesAxioms(final OWLDataProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDisjointDataPropertiesAxiom> getDisjointDataPropertiesAxioms(final OWLDataProperty property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLFunctionalDataPropertyAxiom> getFunctionalDataPropertyAxioms(final OWLDataPropertyExpression property) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLClassExpression ce) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDataPropertyAssertionAxiom> getDataPropertyAssertionAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLObjectPropertyAssertionAxiom> getObjectPropertyAssertionAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLNegativeObjectPropertyAssertionAxiom> getNegativeObjectPropertyAssertionAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLNegativeDataPropertyAssertionAxiom> getNegativeDataPropertyAssertionAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLSameIndividualAxiom> getSameIndividualAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDifferentIndividualsAxiom> getDifferentIndividualAxioms(final OWLIndividual individual) {
-		return WritableEmptySet.create();
-	}
-
-	@Override public Set<OWLDatatypeDefinitionAxiom> getDatatypeDefinitions(final OWLDatatype datatype) {
-		return WritableEmptySet.create();
-	}
+		this.prefixManager = createPrefixManager();
 
-	@Override public void accept(final OWLObjectVisitor visitor) {
-		visitor.visit(this);
+		this.nonMetadataConceptIds = PrimitiveSets.newLongOpenHashSet(taxonomyBuilder.getConceptIdSet());
+		nonMetadataConceptIds.removeAll(getConceptAndSubTypes(CONCEPT_MODEL_OBJECT_ATTRIBUTE));
+		nonMetadataConceptIds.removeAll(getConceptAndSubTypes(CONCEPT_MODEL_DATA_ATTRIBUTE));
 	}
 
-	@Override public <O> O accept(final OWLObjectVisitorEx<O> visitor) {
-		return visitor.visit(this);
+	@Override
+	protected int index() {
+		return OWLObjectTypeIndexProvider.ONTOLOGY;
 	}
 
-	@Override protected int compareObjectOfSameType(final OWLObject object) {
+	@Override
+	protected int compareObjectOfSameType(final OWLObject object) {
 		if (object == this) {
 			return 0;
 		}
@@ -1096,67 +298,449 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		return ontologyID.compareTo(other.getOntologyID());
 	}
 
-	@Override public List<OWLOntologyChange> applyChange(final OWLOntologyChange change) throws OWLOntologyChangeException {
-		return applyChanges(ImmutableList.of(change));
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("DelegateOntology(");
+		sb.append(ontologyID);
+		sb.append(")");
+		return sb.toString();
 	}
 
-	@Override public List<OWLOntologyChange> applyChanges(final List<OWLOntologyChange> changes) throws OWLOntologyChangeException {
-
-		/*
-		 * If this is the "official" tracking ontology for a branch, we just dispose the previous taxonomy builder and pretend that changes were
-		 * applied.
-		 */
-		if (trackingChanges) {
-			reasonerTaxonomyBuilder = null;
-			return newArrayList(changes);
-		}
-		
-		final List<OWLOntologyChange> plusChanges = newArrayList();
-		
-		for (final OWLOntologyChange change : changes) {
-			if (change instanceof AddAxiom) {
-				plusChanges.add(new AddAxiom(plusOntology, change.getAxiom()));
-			} else if (change instanceof RemoveAxiom) {
-				plusChanges.add(new RemoveAxiom(plusOntology, change.getAxiom()));
-			}
-		}
-		
-		final List<OWLOntologyChange> actuallyAppliedChanges = newArrayList();
-		actuallyAppliedChanges.addAll(manager.applyChanges(plusChanges));
-		
-		if (changes.size() != actuallyAppliedChanges.size()) {
-			final Set<OWLOntologyChange> notAppliedChanges = Sets.difference(ImmutableSet.copyOf(changes), ImmutableSet.copyOf(actuallyAppliedChanges));
-			
-			for (final OWLOntologyChange notAppliedChange : notAppliedChanges) {
-				if (notAppliedChange instanceof RemoveAxiom) {
-					throw new IllegalStateException("One or more removals could not be applied: " + notAppliedChanges);
-				}
-			}
-		}
-		
-		return actuallyAppliedChanges;
+	@Override
+	public OWLOntologyManager getOWLOntologyManager() {
+		return manager;
 	}
 
-	public ReasonerTaxonomyBuilder getReasonerTaxonomyBuilder() {
+	@Override
+	public OWLOntologyID getOntologyID() {
+		return ontologyID;
+	}
 
-		if (null == reasonerTaxonomyBuilder) {
-			reasonerTaxonomyBuilder = index.read(branchPath.getPath(), new RevisionIndexRead<ReasonerTaxonomyBuilder>() {
-				@Override
-				public ReasonerTaxonomyBuilder execute(RevisionSearcher searcher) throws IOException {
-					return new ReasonerTaxonomyBuilder(searcher, concreteDomainSupport);
-				}
+	@Override
+	public boolean isAnonymous() {
+		return ontologyID.isAnonymous();
+	}
+
+	@Override
+	public Set<OWLOntology> getImportsClosure() {
+		return newHashSet(this);
+	}
+
+	@Override
+	public Set<OWLAxiom> getAxioms() {
+		return new AbstractSet<OWLAxiom>() {
+			@Override
+			public Iterator<OWLAxiom> iterator() {
+				return Iterators.concat(conceptDeclarationAxioms(),
+						conceptSubClassOfAxioms(),
+						conceptEquivalentClassesAxioms(),
+						objectAttributeDeclarationAxioms(),
+						objectAttributeSubPropertyOfAxioms(),
+						dataAttributeDeclarationAxioms(),
+						dataAttributeSubPropertyOfAxioms(),
+						concreteDomainAttributeAxioms(),
+						additionalAxioms());
+			}
+
+			@Override
+			public int size() {
+				return getAxiomCount();
+			}
+		};
+	}
+
+	private Iterator<OWLDeclarationAxiom> conceptDeclarationAxioms() {
+		return new EntityDeclarationAxiomIterator(conceptIdIterator(), this::getConceptClass);
+	}
+
+	private Iterator<OWLSubClassOfAxiom> conceptSubClassOfAxioms() {
+		return new ConceptAxiomIterator<>(conceptIdIterator(),
+				conceptId -> taxonomyBuilder.isPrimitive(conceptId), 
+				this::getOWLSubClassOfAxiom);
+	}
+
+	private Iterator<OWLEquivalentClassesAxiom> conceptEquivalentClassesAxioms() {
+		return new ConceptAxiomIterator<>(conceptIdIterator(),
+				conceptId -> !taxonomyBuilder.isPrimitive(conceptId), 
+				this::getOWLEquivalentClassesAxiom);
+	}
+
+	private Iterator<? extends OWLAxiom> objectAttributeDeclarationAxioms() {
+		return new EntityDeclarationAxiomIterator(objectAttributeIdIterator(), this::getConceptObjectProperty);
+	}
+
+	private Iterator<? extends OWLAxiom> objectAttributeSubPropertyOfAxioms() {
+		return new SubPropertyOfAxiomIterator<>(objectAttributeIdIterator(), this::getConceptObjectProperty, this::getOWLSubObjectPropertyOfAxiom);
+	}
+
+	private Iterator<? extends OWLAxiom> dataAttributeDeclarationAxioms() {
+		return new EntityDeclarationAxiomIterator(dataAttributeIdIterator(), this::getConceptDataProperty);
+	}
+
+	private Iterator<? extends OWLAxiom> dataAttributeSubPropertyOfAxioms() {
+		return new SubPropertyOfAxiomIterator<>(dataAttributeIdIterator(), this::getConceptDataProperty, this::getOWLSubDataPropertyOfAxiom);
+	}
+
+	private Iterator<OWLDeclarationAxiom> concreteDomainAttributeAxioms() {
+		return new ConcreteDomainAttributeIterator(concreteDomainLabelIterator());
+	}
+
+	private Iterator<OWLDeclarationAxiom> additionalAxioms() {
+		return ImmutableList.of(getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_MEASUREMENT)),
+				getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_UNIT)),
+				getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_VALUE)))
+				.iterator();
+	}
+
+	private LongIterator conceptIdIterator() {
+		return nonMetadataConceptIds.iterator();
+	}
+
+	private LongIterator objectAttributeIdIterator() {
+		return getConceptAndSubTypes(CONCEPT_MODEL_OBJECT_ATTRIBUTE).iterator();
+	}
+
+	private LongIterator dataAttributeIdIterator() {
+		return getConceptAndSubTypes(CONCEPT_MODEL_DATA_ATTRIBUTE).iterator();
+	}
+
+	private Iterator<String> concreteDomainLabelIterator() {
+		return taxonomyBuilder.getAllStatedConcreteDomainLabels().iterator();
+	}
+
+	@Override
+	public int getAxiomCount() {
+		return 2 * conceptCount()
+				+ objectAttributeCount()
+				+ objectHierarchyCount()
+				+ dataAttributeCount()
+				+ dataHierarchyCount()
+				+ concreteDomainAttributeCount()
+				+ additionalAxiomCount();
+	}
+
+	private int conceptCount() {
+		return taxonomyBuilder.getConceptIdSet().size()
+				- objectAttributeCount()
+				- dataAttributeCount();
+	}
+
+	private int objectAttributeCount() {
+		return getConceptAndSubTypesCount(CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+	}
+
+	private int objectHierarchyCount() {
+		return hierarchyCount(CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+	}
+
+	private int dataAttributeCount() {
+		return getConceptAndSubTypesCount(CONCEPT_MODEL_DATA_ATTRIBUTE);
+	}
+
+	private int dataHierarchyCount() {
+		return hierarchyCount(CONCEPT_MODEL_DATA_ATTRIBUTE);
+	}
+
+	private int concreteDomainAttributeCount() {
+		return taxonomyBuilder.getAllStatedConcreteDomainLabels().size();
+	}
+
+	private int additionalAxiomCount() {
+		// See additionalAxioms() for the source of "3" 
+		return 3;
+	}
+
+	private int getConceptAndSubTypesCount(final long ancestorId) {
+		if (taxonomyBuilder.isActive(ancestorId)) {
+			return taxonomyBuilder.getAllSubTypesIds(ancestorId).size() + 1;
+		} else {
+			return 0;
+		}
+	}
+
+	private LongSet getConceptAndSubTypes(final long ancestorId) {
+		final LongSet conceptAndSubTypes = PrimitiveSets.newLongOpenHashSet();
+
+		if (taxonomyBuilder.isActive(ancestorId)) {
+			conceptAndSubTypes.add(ancestorId);
+			conceptAndSubTypes.addAll(taxonomyBuilder.getAllSubTypesIds(ancestorId));
+		}
+
+		return conceptAndSubTypes;
+	}
+
+	private int hierarchyCount(final long ancestorId) {
+		int parentsCount = 0;
+
+		if (taxonomyBuilder.isActive(ancestorId)) {
+			for (final LongIterator itr = getConceptAndSubTypes(ancestorId).iterator(); itr.hasNext(); /* empty */) {
+				final int parents = taxonomyBuilder.getSuperTypeIds(itr.next()).size();
+				parentsCount += parents;
+			}
+		}
+
+		return parentsCount;
+	}
+
+	private OWLDataFactory getDataFactory() {
+		return manager.getOWLDataFactory();
+	}
+
+	private OWLClass getConceptClass(final long conceptId) {
+		return getDataFactory().getOWLClass(PREFIX_SCT + conceptId, prefixManager);
+	}
+
+	private OWLObjectProperty getConceptObjectProperty(final long conceptId) {
+		return getOWLObjectProperty(PREFIX_SCT + conceptId);
+	}
+
+	private OWLDataProperty getConceptDataProperty(final long conceptId) {
+		return getDataFactory().getOWLDataProperty(PREFIX_SCT + conceptId, prefixManager);
+	}
+
+	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final long destinationId, final boolean destinationNegated, final boolean universal) {
+		final OWLClass destinationClass = getConceptClass(destinationId);
+		final OWLClassExpression filler = destinationNegated 
+				? getOWLObjectComplementOf(destinationClass) 
+						: destinationClass;
+
+				return getRelationshipExpression(typeId, filler, universal);
+	}
+
+	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final OWLClassExpression filler, final boolean universal) {
+		final OWLObjectProperty property = getConceptObjectProperty(typeId);
+
+		if (universal) {
+			return getDataFactory().getOWLObjectAllValuesFrom(property, filler);
+		} else {
+			return getDataFactory().getOWLObjectSomeValuesFrom(property, filler);
+		}
+	}
+
+	private OWLObjectSomeValuesFrom getRoleGroupExpression(final OWLClassExpression filler) {
+		final OWLObjectProperty property = getConceptObjectProperty(ROLE_GROUP);
+		return getDataFactory().getOWLObjectSomeValuesFrom(property, filler);
+	}
+
+	private OWLClassExpression getMeasurementExpression(final OWLClassExpression filler) {
+		final OWLObjectProperty property = getDataFactory().getOWLObjectProperty(PREFIX_HAS_MEASUREMENT, prefixManager);
+		return getDataFactory().getOWLObjectSomeValuesFrom(property, filler);
+	}
+
+	private OWLClassExpression getConceptDefinitionExpression(final long conceptId) {
+		final Set<OWLClassExpression> intersection = Sets.newHashSet();
+
+		for (final LongIterator itr = taxonomyBuilder.getSuperTypeIds(conceptId).iterator(); itr.hasNext(); /* empty */) {
+			final long parentId = itr.next();
+			addParent(parentId, intersection);
+		}
+
+		final Collection<StatementFragment> statedNonIsAFragments = taxonomyBuilder.getStatedNonIsAFragments(conceptId);
+
+		statedNonIsAFragments.stream()
+		.filter(r -> isNeverGrouped(r))
+		.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
+		.entrySet()
+		.stream()
+		.forEachOrdered(ug -> addUnionGroup(ug, intersection));
+
+		statedNonIsAFragments.stream()
+		.filter(r -> !isNeverGrouped(r))
+		.collect(Collectors.groupingBy(StatementFragment::getGroup))
+		.entrySet()
+		.stream()
+		.forEachOrdered(g -> addGroup(conceptId, g, intersection));
+
+		final Collection<ConcreteDomainFragment> conceptConcreteDomainFragments = taxonomyBuilder.getStatedConcreteDomainFragments(conceptId);
+
+		conceptConcreteDomainFragments.stream()
+		.forEach(c -> addConcreteDomainMember(c, intersection));
+
+		return getOWLObjectIntersectionOf(intersection);
+	}
+
+	private void addParent(final long parentId, final Set<OWLClassExpression> intersection) {
+		final OWLClass parentClass = getConceptClass(parentId);
+		intersection.add(parentClass);
+	}
+
+	private boolean isNeverGrouped(final StatementFragment r) {
+		return NEVER_GROUPED_TYPE_IDS.contains(r.getTypeId()) && r.getGroup() == 0;
+	}
+
+	private boolean isActiveIngredient(final StatementFragment r) {
+		return HAS_ACTIVE_INGREDIENT == r.getTypeId() && r.getUnionGroup() == 0;
+	}
+
+	private void addUnionGroup(final Entry<Integer, List<StatementFragment>> unionGroup, final Set<OWLClassExpression> intersection) {
+		if (unionGroup.getKey() > 0) {
+			final long commonTypeId = unionGroup.getValue().get(0).getTypeId();
+			final boolean isUniversal = unionGroup.getValue().get(0).isUniversal();
+
+			checkState(unionGroup.getValue()
+					.stream()
+					.allMatch(r -> commonTypeId == r.getTypeId() && isUniversal == r.isUniversal()));
+
+			final Set<OWLClassExpression> unionGroupDisjuncts = unionGroup.getValue()
+					.stream()
+					.map(ugr -> getConceptClass(ugr.getDestinationId()))
+					.collect(Collectors.toSet());
+
+			final OWLClassExpression unionGroupExpression = getOWLObjectUnionOf(unionGroupDisjuncts);
+			final OWLQuantifiedObjectRestriction relationshipExpression = getRelationshipExpression(commonTypeId, unionGroupExpression, isUniversal);
+			intersection.add(relationshipExpression);
+		} else {
+			unionGroup.getValue()
+			.stream()
+			.map(ugr -> getRelationshipExpression(ugr.getTypeId(), 
+					ugr.getDestinationId(), 
+					ugr.isDestinationNegated(), 
+					ugr.isUniversal()))
+			.forEachOrdered(intersection::add);
+		}
+
+		// Add relationship-referenced concrete domain members alongside the relationships
+		unionGroup.getValue()
+		.stream()
+		.flatMap(r -> taxonomyBuilder.getStatedConcreteDomainFragments(r.getStatementId()).stream())
+		.forEachOrdered(m -> addConcreteDomainMember(m, intersection));
+	}
+
+	private void addGroup(final long conceptId, final Entry<Integer, List<StatementFragment>> group, final Set<OWLClassExpression> intersection) {
+		final Set<OWLClassExpression> groupIntersection = Sets.newHashSet();
+
+		group.getValue()
+		.stream()
+		.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
+		.entrySet()
+		.stream()
+		.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
+
+		if (group.getKey() > 0) {
+
+			final Set<StatementFragment> activeIngredientRelationships = group.getValue()
+					.stream()
+					.filter(r -> isActiveIngredient(r))
+					.collect(Collectors.toSet());
+
+			final OWLClassExpression groupExpression;
+
+			if (activeIngredientRelationships.size() > 1) {
+				throw new IllegalStateException(String.format("Multiple 'has active ingredient' relationships were found in group %s of concept %s.", group.getKey(), conceptId));
+			} else if (activeIngredientRelationships.size() == 1) {
+				// Add it in never-grouped form to the outer intersection 
+				final StatementFragment r = Iterables.getOnlyElement(activeIngredientRelationships);
+				intersection.add(getRelationshipExpression(r.getTypeId(), r.getDestinationId(), r.isDestinationNegated(), r.isUniversal()));
+				groupExpression = getMeasurementExpression(getOWLObjectIntersectionOf(groupIntersection));
+			} else {
+				groupExpression = getRoleGroupExpression(getOWLObjectIntersectionOf(groupIntersection));
+			}
+
+			intersection.add(groupExpression);
+
+		} else {
+			groupIntersection.forEach(ce -> {
+				final OWLClassExpression singleGroupExpression = getRoleGroupExpression(ce);
+				intersection.add(singleGroupExpression);
 			});
 		}
-
-		return reasonerTaxonomyBuilder;
 	}
 
-	@Override public String toString() {
-		return "DelegateOntology[branch=" + branchPath + "]";
+	private void addConcreteDomainMember(final ConcreteDomainFragment member, final Set<OWLClassExpression> intersection) {
+		final long uomId = member.getUomId();
+		final String attributeName = member.getLabel();
+		final String serializedValue = member.getValue();
+		final DataType sctDataType = member.getDataType();
+
+		final OWL2Datatype owl2Datatype = getOWL2Datatype(sctDataType);
+
+		final OWLClassExpression hasUnitExpression = createHasUnitExpression(uomId);
+		final OWLClassExpression hasValueExpression = createHasValueExpression(owl2Datatype, serializedValue);
+		final OWLClassExpression unitAndValueExpression = getOWLObjectIntersectionOf(ImmutableSet.of(hasUnitExpression, hasValueExpression));
+		final OWLObjectProperty attributeProperty = getDataFactory().getOWLObjectProperty(PREFIX_LABEL + sanitize(attributeName), prefixManager);
+		// TODO: add declaration axiom for all object properties declared above 
+		final OWLClassExpression concreteDomainExpression = getDataFactory().getOWLObjectSomeValuesFrom(attributeProperty, unitAndValueExpression);
+
+		intersection.add(concreteDomainExpression);
 	}
 
-	public void dispose() {
-		manager.removeOntology(plusOntology);
-		manager.removeOntology(this);
+	private OWL2Datatype getOWL2Datatype(final DataType dataType) {
+		switch (dataType) {
+		case BOOLEAN: return OWL2Datatype.XSD_BOOLEAN;
+		case DATE: return OWL2Datatype.XSD_DATE_TIME;
+		case DECIMAL: return OWL2Datatype.XSD_DECIMAL;
+		case INTEGER: return OWL2Datatype.XSD_INT;
+		case STRING: return OWL2Datatype.RDF_PLAIN_LITERAL;
+		default: throw new IllegalStateException(MessageFormat.format("Unhandled datatype enum ''{0}''.", dataType));
+		}
+	}
+
+	private OWLClassExpression createHasUnitExpression(long uomId) {
+		if (uomId == -1L) {
+			uomId = DEFAULT_UNIT;
+		}
+
+		final OWLObjectProperty hasUnitProperty = getDataFactory().getOWLObjectProperty(PREFIX_HAS_UNIT, prefixManager);
+		final OWLClassExpression hasUnitExpression = getDataFactory().getOWLObjectSomeValuesFrom(hasUnitProperty, getConceptClass(uomId));
+		return hasUnitExpression;
+	}
+
+	private OWLClassExpression createHasValueExpression(final OWL2Datatype dataType, final String serializedValue) {
+		/*
+		 * TODO: Replace when reasoners get full OWL2 datatype support
+		 *
+		 * final OWLDataProperty hasValueProperty = df.getOWLDataProperty(PREFIX_DATA_HAS_VALUE, prefixManager);
+		 * final OWLLiteral value = df.getOWLLiteral(literal, datatype);
+		 * final OWLDataHasValue hasValueExpression = df.getOWLDataHasValue(hasValueProperty, value);
+		 */
+		final OWLObjectProperty hasValueProperty = getDataFactory().getOWLObjectProperty(PREFIX_HAS_VALUE, prefixManager);
+		final OWLClass value = getDataFactory().getOWLClass(PREFIX_SO + sanitize(serializedValue) + "_" + dataType.getShortForm(), prefixManager);
+		final OWLClassExpression hasValueExpression = getDataFactory().getOWLObjectSomeValuesFrom(hasValueProperty, value);
+		return hasValueExpression;
+	}
+
+	private OWLObjectProperty getOWLObjectProperty(final String abbreviatedIRI) {
+		return getDataFactory().getOWLObjectProperty(abbreviatedIRI, prefixManager);
+	}
+
+	private OWLClassExpression getOWLObjectIntersectionOf(final Set<OWLClassExpression> conjuncts) {
+		if (conjuncts.size() > 1) {
+			return getDataFactory().getOWLObjectIntersectionOf(conjuncts);
+		} else {
+			return Iterables.getOnlyElement(conjuncts);
+		}
+	}
+
+	private OWLClassExpression getOWLObjectUnionOf(final Set<OWLClassExpression> disjuncts) {
+		if (disjuncts.size() > 1) {
+			return getDataFactory().getOWLObjectUnionOf(disjuncts);
+		} else {
+			return Iterables.getOnlyElement(disjuncts);
+		}
+	}
+
+	private OWLClassExpression getOWLObjectComplementOf(final OWLClass owlClass) {
+		return getDataFactory().getOWLObjectComplementOf(owlClass);
+	}
+
+	private OWLDeclarationAxiom getOWLDeclarationAxiom(final OWLEntity e) {
+		return getDataFactory().getOWLDeclarationAxiom(e);
+	}
+
+	private OWLSubClassOfAxiom getOWLSubClassOfAxiom(final OWLClassExpression child, final OWLClassExpression parent) {
+		return getDataFactory().getOWLSubClassOfAxiom(child, parent);
+	}
+
+	private OWLEquivalentClassesAxiom getOWLEquivalentClassesAxiom(final OWLClassExpression... expressions) {
+		return getDataFactory().getOWLEquivalentClassesAxiom(expressions);
+	}
+
+	private OWLSubObjectPropertyOfAxiom getOWLSubObjectPropertyOfAxiom(final OWLObjectPropertyExpression child, final OWLObjectPropertyExpression parent) {
+		return getDataFactory().getOWLSubObjectPropertyOfAxiom(child, parent);
+	}
+
+	private OWLSubDataPropertyOfAxiom getOWLSubDataPropertyOfAxiom(final OWLDataPropertyExpression child, final OWLDataPropertyExpression parent) {
+		return getDataFactory().getOWLSubDataPropertyOfAxiom(child, parent);
 	}
 }
