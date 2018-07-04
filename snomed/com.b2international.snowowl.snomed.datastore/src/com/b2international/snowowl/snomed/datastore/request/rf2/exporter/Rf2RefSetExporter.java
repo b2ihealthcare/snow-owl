@@ -94,7 +94,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		SnomedRF2Folder folder = SnomedRefSetUtil.REFSET_TYPE_TO_FOLDER_MAP.get(refSetType);
 		if (folder != null) {
 			
-			if (refSetType == SnomedRefSetType.OWL_AXIOM || refSetType == SnomedRefSetType.OWL_ONTOLOGY) {
+			if (SnomedRF2Folder.TERMINOLOGY == folder) {
 				return Paths.get(releaseType.toString(), SnomedRF2Folder.TERMINOLOGY.getDisplayName());
 			} else {
 				return Paths.get(releaseType.toString(), SnomedRF2Folder.REFSET.getDisplayName(), folder.getDisplayName());
@@ -106,7 +106,14 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected final Path getFileName() {
-		return Paths.get(String.format("der2_%sRefset_%s%s%s_%s_%s.txt",
+		final String prefix;
+		if (refSetType == SnomedRefSetType.OWL_AXIOM || refSetType == SnomedRefSetType.OWL_ONTOLOGY) {
+			prefix = "sct2";
+		} else {
+			prefix = "der2";
+		}
+		return Paths.get(String.format("%s_%sRefset_%s%s%s_%s_%s.txt",
+				prefix,
 				getColumnTypePrefix(),
 				getRefSetName(),
 				releaseType.toString(),

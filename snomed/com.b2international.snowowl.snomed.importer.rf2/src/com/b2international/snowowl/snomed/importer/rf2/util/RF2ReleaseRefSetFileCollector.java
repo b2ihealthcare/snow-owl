@@ -57,7 +57,8 @@ public class RF2ReleaseRefSetFileCollector {
 			for (final String refSetPath : refSetsRelativePaths) {
 				Set<URL> urlsFromZip = parseZip(configuration.getArchiveFile(), relativeRoot, refSetPath);
 				collectedUrlSet.addAll(
-						urlsFromZip.stream().filter(url -> !refSetPath.equals("Terminology") || url.getFile().startsWith("der2_sRefset"))
+					urlsFromZip.stream()
+						.filter(url -> !refSetPath.equals("Terminology") || url.getFile().contains("sct2_sRefset"))
 						.collect(Collectors.toSet())
 				);
 			}

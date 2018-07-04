@@ -93,13 +93,14 @@ public abstract class SnomedRefSetUtil {
 	}
 	
 	public static final Multimap<SnomedRF2Folder, SnomedRefSetType> FOLDER_TO_REFSET_TYPE_MAP = ImmutableListMultimap.<SnomedRF2Folder, SnomedRefSetType>builder()
+			.putAll(SnomedRF2Folder.TERMINOLOGY, 
+						SnomedRefSetType.OWL_AXIOM,
+						SnomedRefSetType.OWL_ONTOLOGY)
 			.putAll(SnomedRF2Folder.CONTENT, 
 						SnomedRefSetType.SIMPLE,
 						SnomedRefSetType.ASSOCIATION,
 						SnomedRefSetType.ATTRIBUTE_VALUE,
 						SnomedRefSetType.QUERY,
-						SnomedRefSetType.OWL_AXIOM,
-						SnomedRefSetType.OWL_ONTOLOGY,
 						SnomedRefSetType.CONCRETE_DATA_TYPE)
 			.putAll(SnomedRF2Folder.LANGUAGE, 
 						SnomedRefSetType.LANGUAGE)
