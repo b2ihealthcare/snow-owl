@@ -77,7 +77,7 @@ public class ForkJoinUtils {
 			final IStatus result = event.getResult();
 			
 			if (IStatus.ERROR == result.getSeverity()) {
-				LOGGER.error(MessageFormat.format("Parallel task failed: {0}", result.getMessage()), result.getException());
+				LOGGER.error("Parallel task failed: {}", result.getMessage(), result.getException());
 			}
 			
 			progressMonitor.worked(1);
