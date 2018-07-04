@@ -36,6 +36,7 @@ import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.PreRunCapableBootstrapFragment;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
@@ -54,6 +55,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
+@ModuleConfig(fieldName = "validation", type = ValidationConfiguration.class)
 public final class ValidationBootstrap extends DefaultBootstrapFragment implements PreRunCapableBootstrapFragment {
 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
@@ -76,12 +78,13 @@ public final class ValidationBootstrap extends DefaultBootstrapFragment implemen
 			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigDirectory().toPath()));
 			
 			// initialize validation thread pool
-			// TODO make this configurable
-			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-			// TODO calculate these based on systems overall strength
-			int maxConcurrentExpensiveJobs = 1;
-			int maxConcurrentNormalJobs = 4;
+			final ValidationConfiguration validationConfig = configuration.getModuleConfig(ValidationConfiguration.class);
+
+			int numberOfValidationThreads = validationConfig.getNumberOfValidationThreads();
+			int maxConcurrentExpensiveJobs = validationConfig.getMaxConcurrentExpensiveJobs();
+			int maxConcurrentNormalJobs = validationConfig.getMaxConcurrentNormalJobs();
 			
+			env.services().registerService(ValidationConfiguration.class, validationConfig);
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 
 			
