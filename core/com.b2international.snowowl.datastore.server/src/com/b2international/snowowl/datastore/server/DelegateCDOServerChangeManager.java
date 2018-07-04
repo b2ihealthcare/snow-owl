@@ -73,7 +73,7 @@ import com.google.common.collect.Sets;
  */
 public class DelegateCDOServerChangeManager {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(DelegateCDOServerChangeManager.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
 
 	private final Collection<CDOChangeProcessorFactory> factories;
 	private final ICDOCommitChangeSet commitChangeSet;
