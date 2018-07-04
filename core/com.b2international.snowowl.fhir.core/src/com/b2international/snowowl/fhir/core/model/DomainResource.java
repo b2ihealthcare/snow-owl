@@ -23,6 +23,7 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
@@ -51,8 +52,8 @@ public abstract class DomainResource extends FhirResource {
 	@JsonProperty("extension")
 	private Collection<Extension<?>> extensions;
 
-	public DomainResource(final Id id, final Code language, final Narrative text) {
-		super(id, language);
+	public DomainResource(final Id id, final Meta meta, final Uri impliciteRules, final Code language, final Narrative text) {
+		super(id, meta, impliciteRules, language);
 		this.text = text;
 	}
 

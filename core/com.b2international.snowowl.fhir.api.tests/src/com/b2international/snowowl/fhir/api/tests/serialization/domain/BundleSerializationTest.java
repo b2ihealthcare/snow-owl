@@ -17,47 +17,18 @@ package com.b2international.snowowl.fhir.api.tests.serialization.domain;
 
 import static org.junit.Assert.assertEquals;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
-import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Entry;
-import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
-import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.property.BooleanConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.CodingConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.DateTimeConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.IntegerConceptProperty;
-import com.b2international.snowowl.fhir.core.model.property.StringConceptProperty;
 
 /**
  * Test for checking the serialization from model->JSON.

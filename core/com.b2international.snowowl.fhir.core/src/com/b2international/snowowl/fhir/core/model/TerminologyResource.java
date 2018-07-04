@@ -111,11 +111,12 @@ public abstract class TerminologyResource extends DomainResource {
 	 * @param text
 	 */
 	@SuppressWarnings("rawtypes")
-	public TerminologyResource(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, 
+	public TerminologyResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+			Narrative text, Uri url, Identifier identifier, String version, 
 			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, 
 			final Collection<UsageContext> usageContexts, final CodeableConcept jurisdiction, final String purpose, final String copyright) {
 		
-		super(id, language, text);
+		super(id, meta, impliciteRules, language, text);
 		
 		this.url = url;
 		this.identifier = identifier;

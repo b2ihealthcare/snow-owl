@@ -17,8 +17,10 @@ package com.b2international.snowowl.fhir.core.model;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
@@ -38,32 +40,60 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({ "resourceType", "id" })
 public abstract class FhirResource {
 	
+	/**
+	 * Logical id of this artifact
+	 * Set the ID to -1 when submitting for creation.
+	 */
 	@Mandatory
-	private Id id;
+	private final Id id;
 	
+	/**
+	 * Metadata about the resource
+	 */
 	@Summary
-	private Meta meta;
-
-	private Code language;
+	private final Meta meta;
 	
-	FhirResource(final Id id, final Code language) {
+	/**
+	 * A set of rules under which this content was created
+	 */
+	@Summary
+	private final Uri implicitRules;
+	
+	/**
+	 * Language of the resource content
+     * Common Languages (Extensible but limited to All Languages)
+	 */
+	private final Code language;
+	
+	FhirResource(final Id id, final Meta meta, final Uri implicitRules, final Code language) {
 		this.id = id;
+		this.meta = meta;
+		this.implicitRules = implicitRules;
 		this.language = language;
-	}
-	
-	public Code getLanguage() {
-		return language;
 	}
 	
 	public Id getId() {
 		return id;
 	}
 	
+	public Meta getMeta() {
+		return meta;
+	}
+	public Uri getImplicitRules() {
+		return implicitRules;
+	}
+
+	public Code getLanguage() {
+		return language;
+	}
+
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends ValidatingBuilder<T> {
 
 		protected Id id;
 
 		protected Meta meta;
+		
+		protected Uri implicitRules;
 		
 		protected Code language;
 		
@@ -95,6 +125,16 @@ public abstract class FhirResource {
 		 */
 		public B id(String resourceId) {
 			this.id = new Id(resourceId);
+			return getSelf();
+		}
+		
+		public B meta(final Meta meta) {
+			this.meta = meta;
+			return getSelf();
+		}
+		
+		public B implicitRules(final Uri implicitRules) {
+			this.implicitRules = implicitRules;
 			return getSelf();
 		}
 		

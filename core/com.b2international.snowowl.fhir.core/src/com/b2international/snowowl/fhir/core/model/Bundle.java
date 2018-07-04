@@ -71,8 +71,8 @@ public class Bundle extends FhirResource {
 	@JsonProperty
 	private Signature signature;
 	
-	public Bundle(Id id, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
-		super(id, language);
+	public Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
+		super(id, meta, impliciteRules, language);
 		
 		this.identifier = identifier;
 		this.type = type;
@@ -81,8 +81,8 @@ public class Bundle extends FhirResource {
 		this.entries = entries;
 	}
 	
-	public Bundle(final Id id, final Code language) {
-		super(id, language);
+	public Bundle(final Id id, final Meta meta, final Uri impliciteRules, final Code language) {
+		super(id, meta, impliciteRules, language);
 	}
 	
 	public static Builder builder(String bundleId) {
@@ -149,7 +149,7 @@ public class Bundle extends FhirResource {
 
 		@Override
 		protected Bundle doBuild() {
-			return new Bundle(id, language, identifier, type, total, links, entries, signature);
+			return new Bundle(id, meta, implicitRules, language, identifier, type, total, links, entries, signature);
 		}
 	}
 

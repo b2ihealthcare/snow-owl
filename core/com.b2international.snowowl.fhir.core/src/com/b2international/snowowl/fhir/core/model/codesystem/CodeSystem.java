@@ -25,6 +25,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
+import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
@@ -123,7 +124,8 @@ public class CodeSystem extends TerminologyResource {
 	private Collection<Concept> concepts;
 
 	@SuppressWarnings("rawtypes")
-	public CodeSystem(Id id, Code language, Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
+	public CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts, 
 			final CodeableConcept jurisdiction, final String purpose, final String copyright,
 			
@@ -132,7 +134,7 @@ public class CodeSystem extends TerminologyResource {
 			final Code content, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
+		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 				description, usageContexts, jurisdiction, purpose, copyright);
 
 		this.caseSensitive = caseSensitive;
@@ -249,7 +251,7 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
+			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
 				description, usageContexts, jurisdiction, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, count, filters, properties, concepts);
