@@ -108,7 +108,7 @@ public class ValidationRuleSchedulingRule implements ISchedulingRule {
 	
 	@Override
 	public String toString() {
-		return id + " " + checkType.getName();
+		return String.format("%s %s", id, checkType.getName());
 	}
 
 }
