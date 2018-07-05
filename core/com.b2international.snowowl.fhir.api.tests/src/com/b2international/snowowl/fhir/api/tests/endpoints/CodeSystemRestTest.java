@@ -16,23 +16,18 @@
 package com.b2international.snowowl.fhir.api.tests.endpoints;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.test.commons.BundleStartRule;
-import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 

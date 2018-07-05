@@ -65,7 +65,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			FhirCodeSystem fhirCodeSystem = (FhirCodeSystem) enumObject;
 			CodeSystem codeSystem = buildCodeSystem(fhirCodeSystem);
 			codeSystems.add(codeSystem);
-			}
+		}
 		return codeSystems;
 	}
 
@@ -135,7 +135,6 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.name(id)
 			.publisher("www.hl7.org")
 			.copyright("© 2011+ HL7")
-			
 			.caseSensitive(true)
 			.status(PublicationStatus.ACTIVE)
 			.url(new Uri(supportedUri))
@@ -226,7 +225,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	@Override
 	protected int getCount() {
-		// TODO Auto-generated method stub
+		//handled on the per Core terminology basis (like LCS) 
 		return 0;
 	}
 
