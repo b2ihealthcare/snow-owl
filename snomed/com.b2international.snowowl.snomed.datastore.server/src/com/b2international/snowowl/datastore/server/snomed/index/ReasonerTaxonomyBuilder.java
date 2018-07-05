@@ -618,6 +618,16 @@ public final class ReasonerTaxonomyBuilder {
 	}
 
 	/**
+	 * Returns the set of exhaustive concept IDs (the stated children of which form
+	 * a disjoint union in OWL terms).
+	 * 
+	 * @return the exhaustive concept IDs in this builder
+	 */
+	public LongSet getExhaustiveConceptIdSet() {
+		return exhaustiveConceptIds;
+	}
+
+	/**
 	 * Returns {@code true} if the current builder instance does not contain any concepts.
 	 * Other wise returns {@code false}.
 	 * @return {@code true} if the current instance is empty. Otherwise {@code false}.
