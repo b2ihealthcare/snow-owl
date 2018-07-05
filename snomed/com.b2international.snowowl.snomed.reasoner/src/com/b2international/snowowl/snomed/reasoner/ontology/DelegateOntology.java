@@ -530,6 +530,16 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return manager.getOWLDataFactory();
 	}
 
+	public long getConceptId(final OWLClass conceptClass) {
+		final String shortForm = prefixManager.getShortForm(conceptClass);
+		if (shortForm.startsWith(PREFIX_SCT)) {
+			final String idString = shortForm.substring(PREFIX_SCT.length());
+			return Long.parseLong(idString); 
+		} else {
+			return -1L;
+		}
+	}
+	
 	private OWLClass getConceptClass(final long conceptId) {
 		return getDataFactory().getOWLClass(PREFIX_SCT + conceptId, prefixManager);
 	}
