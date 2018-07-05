@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
@@ -71,6 +72,17 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	 */
 	public ScheduleJobRequestBuilder setDescription(String description) {
 		this.description = description;
+		return getSelf();
+	}
+	
+	/**
+	 * Extracts the {@link Request} from the specified {@link AsyncRequest} that will be 
+	 * {@link Request#execute(ServiceProvider) executed} by the job. 
+	 * @param request - the request to execute
+	 * @return this builder
+	 */
+	public ScheduleJobRequestBuilder setRequest(AsyncRequest<?> request) {
+		this.request = request.getRequest();
 		return getSelf();
 	}
 	
