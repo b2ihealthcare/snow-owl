@@ -26,6 +26,7 @@ import java.util.function.Function;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.spi.cdo.InternalCDOTransaction;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -44,7 +45,7 @@ import com.google.common.collect.Sets;
 
 public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTerminologyComponentRow, C extends Component> extends AbstractSnomedImporter<T, C> {
 
-	private final Set<String> componentIdsToRegister = Sets.newHashSet();
+	private Set<String> componentIdsToRegister;
 	private boolean importSupported;
 
 	protected AbstractSnomedTerminologyImporter(final SnomedImportConfiguration<T> importConfiguration, 
@@ -86,6 +87,9 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	protected void registerNewComponent(C component) {
 		getComponentLookup().addNewComponent(component, component.getId());
 		if (importSupported) {
+			if (componentIdsToRegister == null) {
+				componentIdsToRegister = Sets.newHashSet();
+			}
 			componentIdsToRegister.add(component.getId());
 		}
 	}
@@ -97,14 +101,14 @@ public abstract class AbstractSnomedTerminologyImporter<T extends AbstractTermin
 	
 	@Override
 	protected void preCommit(final InternalCDOTransaction transaction) throws SnowowlServiceException {
-		if (importSupported && !componentIdsToRegister.isEmpty()) {
+		if (importSupported && !CompareUtils.isEmpty(componentIdsToRegister)) {
 			SnomedRequests.identifiers().prepareRegister()
 					.setComponentIds(componentIdsToRegister)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 					.getSync();
 
-			componentIdsToRegister.clear();
+			componentIdsToRegister = null;
 		}
 
 		super.preCommit(transaction);

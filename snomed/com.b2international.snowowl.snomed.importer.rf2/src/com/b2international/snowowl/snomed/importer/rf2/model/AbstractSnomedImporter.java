@@ -606,6 +606,8 @@ public abstract class AbstractSnomedImporter<T extends AbstractComponentRow, C e
 					.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
 					.commit();
 			
+			importContext.getEditingContext().clearCache();
+			
 			final String comment = Iterables.getOnlyElement(commitInfos).getComment();
 			final String commitId = CDOCommitInfoUtils.getUuid(comment);
 			importContext.setCommitId(commitId);
