@@ -70,862 +70,862 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public void accept(final OWLNamedObjectVisitor visitor) {
+	public final void accept(final OWLNamedObjectVisitor visitor) {
 		unsupportedOntology.accept(visitor);
 	}
 
 	@Override
-	public <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
+	public final <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
 		return unsupportedOntology.accept(visitor);
 	}
 
 	@Override
-	public void accept(final OWLObjectVisitor visitor) {
+	public final void accept(final OWLObjectVisitor visitor) {
 		unsupportedOntology.accept(visitor);
 	}
 
 	@Override
-	public <O> O accept(final OWLObjectVisitorEx<O> visitor) {
+	public final <O> O accept(final OWLObjectVisitorEx<O> visitor) {
 		return unsupportedOntology.accept(visitor);
 	}
 
 	@Override
-	public boolean contains(final OWLAxiomSearchFilter filter, final Object key, final Imports includeImportsClosure) {
+	public final boolean contains(final OWLAxiomSearchFilter filter, final Object key, final Imports includeImportsClosure) {
 		return unsupportedOntology.contains(filter, key, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI) {
+	public final boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI) {
 		return unsupportedOntology.containsAnnotationPropertyInSignature(owlAnnotationPropertyIRI);
 	}
 
 	@Override
-	public boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI, final boolean includeImportsClosure) {
+	public final boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsAnnotationPropertyInSignature(owlAnnotationPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI, final Imports includeImportsClosure) {
+	public final boolean containsAnnotationPropertyInSignature(final IRI owlAnnotationPropertyIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsAnnotationPropertyInSignature(owlAnnotationPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsAxiom(final OWLAxiom axiom) {
+	public final boolean containsAxiom(final OWLAxiom axiom) {
 		return unsupportedOntology.containsAxiom(axiom);
 	}
 
 	@Override
-	public boolean containsAxiom(final OWLAxiom axiom, final boolean includeImportsClosure) {
+	public final boolean containsAxiom(final OWLAxiom axiom, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsAxiom(axiom, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsAxiom(final OWLAxiom axiom, final Imports includeImportsClosure, final AxiomAnnotations ignoreAnnotations) {
+	public final boolean containsAxiom(final OWLAxiom axiom, final Imports includeImportsClosure, final AxiomAnnotations ignoreAnnotations) {
 		return unsupportedOntology.containsAxiom(axiom, includeImportsClosure, ignoreAnnotations);
 	}
 
 	@Override
-	public boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom) {
+	public final boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom) {
 		return unsupportedOntology.containsAxiomIgnoreAnnotations(axiom);
 	}
 
 	@Override
-	public boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
+	public final boolean containsAxiomIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsAxiomIgnoreAnnotations(axiom, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsClassInSignature(final IRI owlClassIRI) {
+	public final boolean containsClassInSignature(final IRI owlClassIRI) {
 		return unsupportedOntology.containsClassInSignature(owlClassIRI);
 	}
 
 	@Override
-	public boolean containsClassInSignature(final IRI owlClassIRI, final boolean includeImportsClosure) {
+	public final boolean containsClassInSignature(final IRI owlClassIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsClassInSignature(owlClassIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsClassInSignature(final IRI owlClassIRI, final Imports includeImportsClosure) {
+	public final boolean containsClassInSignature(final IRI owlClassIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsClassInSignature(owlClassIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI) {
+	public final boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI) {
 		return unsupportedOntology.containsDataPropertyInSignature(owlDataPropertyIRI);
 	}
 
 	@Override
-	public boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI, final boolean includeImportsClosure) {
+	public final boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsDataPropertyInSignature(owlDataPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI, final Imports includeImportsClosure) {
+	public final boolean containsDataPropertyInSignature(final IRI owlDataPropertyIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsDataPropertyInSignature(owlDataPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsDatatypeInSignature(final IRI owlDatatypeIRI) {
+	public final boolean containsDatatypeInSignature(final IRI owlDatatypeIRI) {
 		return unsupportedOntology.containsDatatypeInSignature(owlDatatypeIRI);
 	}
 
 	@Override
-	public boolean containsDatatypeInSignature(final IRI owlDatatypeIRI, final boolean includeImportsClosure) {
+	public final boolean containsDatatypeInSignature(final IRI owlDatatypeIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsDatatypeInSignature(owlDatatypeIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsDatatypeInSignature(final IRI owlDatatypeIRI, final Imports includeImportsClosure) {
+	public final boolean containsDatatypeInSignature(final IRI owlDatatypeIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsDatatypeInSignature(owlDatatypeIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final IRI entityIRI) {
+	public final boolean containsEntityInSignature(final IRI entityIRI) {
 		return unsupportedOntology.containsEntityInSignature(entityIRI);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final IRI entityIRI, final boolean includeImportsClosure) {
+	public final boolean containsEntityInSignature(final IRI entityIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsEntityInSignature(entityIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final IRI entityIRI, final Imports includeImportsClosure) {
+	public final boolean containsEntityInSignature(final IRI entityIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsEntityInSignature(entityIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final OWLEntity owlEntity) {
+	public final boolean containsEntityInSignature(final OWLEntity owlEntity) {
 		return unsupportedOntology.containsEntityInSignature(owlEntity);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final OWLEntity owlEntity, final boolean includeImportsClosure) {
+	public final boolean containsEntityInSignature(final OWLEntity owlEntity, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsEntityInSignature(owlEntity, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsEntityInSignature(final OWLEntity owlEntity, final Imports includeImportsClosure) {
+	public final boolean containsEntityInSignature(final OWLEntity owlEntity, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsEntityInSignature(owlEntity, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsIndividualInSignature(final IRI owlIndividualIRI) {
+	public final boolean containsIndividualInSignature(final IRI owlIndividualIRI) {
 		return unsupportedOntology.containsIndividualInSignature(owlIndividualIRI);
 	}
 
 	@Override
-	public boolean containsIndividualInSignature(final IRI owlIndividualIRI, final boolean includeImportsClosure) {
+	public final boolean containsIndividualInSignature(final IRI owlIndividualIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsIndividualInSignature(owlIndividualIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsIndividualInSignature(final IRI owlIndividualIRI, final Imports includeImportsClosure) {
+	public final boolean containsIndividualInSignature(final IRI owlIndividualIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsIndividualInSignature(owlIndividualIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI) {
+	public final boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI) {
 		return unsupportedOntology.containsObjectPropertyInSignature(owlObjectPropertyIRI);
 	}
 
 	@Override
-	public boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI, final boolean includeImportsClosure) {
+	public final boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsObjectPropertyInSignature(owlObjectPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI, final Imports includeImportsClosure) {
+	public final boolean containsObjectPropertyInSignature(final IRI owlObjectPropertyIRI, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsObjectPropertyInSignature(owlObjectPropertyIRI, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsReference(final OWLEntity entity) {
+	public final boolean containsReference(final OWLEntity entity) {
 		return unsupportedOntology.containsReference(entity);
 	}
 
 	@Override
-	public boolean containsReference(final OWLEntity entity, final boolean includeImportsClosure) {
+	public final boolean containsReference(final OWLEntity entity, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsReference(entity, includeImportsClosure);
 	}
 
 	@Override
-	public boolean containsReference(final OWLEntity entity, final Imports includeImportsClosure) {
+	public final boolean containsReference(final OWLEntity entity, final Imports includeImportsClosure) {
 		return unsupportedOntology.containsReference(entity, includeImportsClosure);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Collection<T> filterAxioms(final OWLAxiomSearchFilter filter, final Object key, final Imports includeImportsClosure) {
+	public final <T extends OWLAxiom> Collection<T> filterAxioms(final OWLAxiomSearchFilter filter, final Object key, final Imports includeImportsClosure) {
 		return unsupportedOntology.filterAxioms(filter, key, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getABoxAxioms(final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getABoxAxioms(final Imports includeImportsClosure) {
 		return unsupportedOntology.getABoxAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(final OWLAnnotationSubject entity) {
+	public final Set<OWLAnnotationAssertionAxiom> getAnnotationAssertionAxioms(final OWLAnnotationSubject entity) {
 		return unsupportedOntology.getAnnotationAssertionAxioms(entity);
 	}
 
 	@Override
-	public Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature() {
+	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature() {
 		return unsupportedOntology.getAnnotationPropertiesInSignature();
 	}
 
 	@Override
-	public Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getAnnotationPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getAnnotationPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnnotationPropertyDomainAxiom> getAnnotationPropertyDomainAxioms(final OWLAnnotationProperty property) {
+	public final Set<OWLAnnotationPropertyDomainAxiom> getAnnotationPropertyDomainAxioms(final OWLAnnotationProperty property) {
 		return unsupportedOntology.getAnnotationPropertyDomainAxioms(property);
 	}
 
 	@Override
-	public Set<OWLAnnotationPropertyRangeAxiom> getAnnotationPropertyRangeAxioms(final OWLAnnotationProperty property) {
+	public final Set<OWLAnnotationPropertyRangeAxiom> getAnnotationPropertyRangeAxioms(final OWLAnnotationProperty property) {
 		return unsupportedOntology.getAnnotationPropertyRangeAxioms(property);
 	}
 
 	@Override
-	public Set<OWLAnnotation> getAnnotations() {
+	public final Set<OWLAnnotation> getAnnotations() {
 		return unsupportedOntology.getAnnotations();
 	}
 
 	@Override
-	public Set<OWLAnonymousIndividual> getAnonymousIndividuals() {
+	public final Set<OWLAnonymousIndividual> getAnonymousIndividuals() {
 		return unsupportedOntology.getAnonymousIndividuals();
 	}
 
 	@Override
-	public Set<OWLAsymmetricObjectPropertyAxiom> getAsymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLAsymmetricObjectPropertyAxiom> getAsymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getAsymmetricObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType) {
+	public final <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType) {
 		return unsupportedOntology.getAxiomCount(axiomType);
 	}
 
 	@Override
-	public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
+	public final <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxiomCount(axiomType, includeImportsClosure);
 	}
 
 	@Override
-	public <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType, final Imports includeImportsClosure) {
+	public final <T extends OWLAxiom> int getAxiomCount(final AxiomType<T> axiomType, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxiomCount(axiomType, includeImportsClosure);
 	}
 
 	@Override
-	public int getAxiomCount(final boolean includeImportsClosure) {
+	public final int getAxiomCount(final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxiomCount(includeImportsClosure);
 	}
 
 	@Override
-	public int getAxiomCount(final Imports includeImportsClosure) {
+	public final int getAxiomCount(final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxiomCount(includeImportsClosure);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType) {
+	public final <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType) {
 		return unsupportedOntology.getAxioms(axiomType);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
+	public final <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(axiomType, includeImportsClosure);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final Imports includeImportsClosure) {
+	public final <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(axiomType, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getAxioms(final boolean b) {
+	public final Set<OWLAxiom> getAxioms(final boolean b) {
 		return unsupportedOntology.getAxioms(b);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Set<T> getAxioms(final Class<T> type, final Class<? extends OWLObject> explicitClass, final OWLObject entity, final Imports includeImports, final Navigation forSubPosition) {
+	public final <T extends OWLAxiom> Set<T> getAxioms(final Class<T> type, final Class<? extends OWLObject> explicitClass, final OWLObject entity, final Imports includeImports, final Navigation forSubPosition) {
 		return unsupportedOntology.getAxioms(type, explicitClass, entity, includeImports, forSubPosition);
 	}
 
 	@Override
-	public <T extends OWLAxiom> Set<T> getAxioms(final Class<T> type, final OWLObject entity, final Imports includeImports, final Navigation forSubPosition) {
+	public final <T extends OWLAxiom> Set<T> getAxioms(final Class<T> type, final OWLObject entity, final Imports includeImports, final Navigation forSubPosition) {
 		return unsupportedOntology.getAxioms(type, entity, includeImports, forSubPosition);
 	}
 
 	@Override
-	public Set<OWLAxiom> getAxioms(final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getAxioms(final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property) {
+	public final Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property) {
 		return unsupportedOntology.getAxioms(property);
 	}
 
 	@Override
-	public Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property, final boolean includeImportsClosure) {
+	public final Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property, final Imports includeImportsClosure) {
+	public final Set<OWLAnnotationAxiom> getAxioms(final OWLAnnotationProperty property, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLClassAxiom> getAxioms(final OWLClass cls) {
+	public final Set<OWLClassAxiom> getAxioms(final OWLClass cls) {
 		return unsupportedOntology.getAxioms(cls);
 	}
 
 	@Override
-	public Set<OWLClassAxiom> getAxioms(final OWLClass cls, final boolean includeImportsClosure) {
+	public final Set<OWLClassAxiom> getAxioms(final OWLClass cls, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(cls, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLClassAxiom> getAxioms(final OWLClass cls, final Imports includeImportsClosure) {
+	public final Set<OWLClassAxiom> getAxioms(final OWLClass cls, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(cls, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property) {
+	public final Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property) {
 		return unsupportedOntology.getAxioms(property);
 	}
 
 	@Override
-	public Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property, final boolean includeImportsClosure) {
+	public final Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property, final Imports includeImportsClosure) {
+	public final Set<OWLDataPropertyAxiom> getAxioms(final OWLDataProperty property, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype) {
+	public final Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype) {
 		return unsupportedOntology.getAxioms(datatype);
 	}
 
 	@Override
-	public Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype, final boolean includeImportsClosure) {
+	public final Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(datatype, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype, final Imports includeImportsClosure) {
+	public final Set<OWLDatatypeDefinitionAxiom> getAxioms(final OWLDatatype datatype, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(datatype, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual) {
+	public final Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual, final boolean includeImportsClosure) {
+	public final Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(individual, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual, final Imports includeImportsClosure) {
+	public final Set<OWLIndividualAxiom> getAxioms(final OWLIndividual individual, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(individual, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getAxioms(property);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property, final boolean includeImportsClosure) {
+	public final Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property, final Imports includeImportsClosure) {
+	public final Set<OWLObjectPropertyAxiom> getAxioms(final OWLObjectPropertyExpression property, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxioms(property, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom) {
+	public final Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom) {
 		return unsupportedOntology.getAxiomsIgnoreAnnotations(axiom);
 	}
 
 	@Override
-	public Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
+	public final Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom, final boolean includeImportsClosure) {
 		return unsupportedOntology.getAxiomsIgnoreAnnotations(axiom, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom, final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getAxiomsIgnoreAnnotations(final OWLAxiom axiom, final Imports includeImportsClosure) {
 		return unsupportedOntology.getAxiomsIgnoreAnnotations(axiom, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLClassExpression ce) {
+	public final Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLClassExpression ce) {
 		return unsupportedOntology.getClassAssertionAxioms(ce);
 	}
 
 	@Override
-	public Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLIndividual individual) {
+	public final Set<OWLClassAssertionAxiom> getClassAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getClassAssertionAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLClass> getClassesInSignature() {
+	public final Set<OWLClass> getClassesInSignature() {
 		return unsupportedOntology.getClassesInSignature();
 	}
 
 	@Override
-	public Set<OWLClass> getClassesInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLClass> getClassesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getClassesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLClass> getClassesInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLClass> getClassesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getClassesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDataProperty> getDataPropertiesInSignature() {
+	public final Set<OWLDataProperty> getDataPropertiesInSignature() {
 		return unsupportedOntology.getDataPropertiesInSignature();
 	}
 
 	@Override
-	public Set<OWLDataProperty> getDataPropertiesInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLDataProperty> getDataPropertiesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getDataPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDataProperty> getDataPropertiesInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLDataProperty> getDataPropertiesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getDataPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDataPropertyAssertionAxiom> getDataPropertyAssertionAxioms(final OWLIndividual individual) {
+	public final Set<OWLDataPropertyAssertionAxiom> getDataPropertyAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getDataPropertyAssertionAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLDataPropertyDomainAxiom> getDataPropertyDomainAxioms(final OWLDataProperty property) {
+	public final Set<OWLDataPropertyDomainAxiom> getDataPropertyDomainAxioms(final OWLDataProperty property) {
 		return unsupportedOntology.getDataPropertyDomainAxioms(property);
 	}
 
 	@Override
-	public Set<OWLDataPropertyRangeAxiom> getDataPropertyRangeAxioms(final OWLDataProperty property) {
+	public final Set<OWLDataPropertyRangeAxiom> getDataPropertyRangeAxioms(final OWLDataProperty property) {
 		return unsupportedOntology.getDataPropertyRangeAxioms(property);
 	}
 
 	@Override
-	public Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSubProperty(final OWLDataProperty subProperty) {
+	public final Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSubProperty(final OWLDataProperty subProperty) {
 		return unsupportedOntology.getDataSubPropertyAxiomsForSubProperty(subProperty);
 	}
 
 	@Override
-	public Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSuperProperty(final OWLDataPropertyExpression superProperty) {
+	public final Set<OWLSubDataPropertyOfAxiom> getDataSubPropertyAxiomsForSuperProperty(final OWLDataPropertyExpression superProperty) {
 		return unsupportedOntology.getDataSubPropertyAxiomsForSuperProperty(superProperty);
 	}
 
 	@Override
-	public Set<OWLDatatypeDefinitionAxiom> getDatatypeDefinitions(final OWLDatatype datatype) {
+	public final Set<OWLDatatypeDefinitionAxiom> getDatatypeDefinitions(final OWLDatatype datatype) {
 		return unsupportedOntology.getDatatypeDefinitions(datatype);
 	}
 
 	@Override
-	public Set<OWLDatatype> getDatatypesInSignature() {
+	public final Set<OWLDatatype> getDatatypesInSignature() {
 		return unsupportedOntology.getDatatypesInSignature();
 	}
 
 	@Override
-	public Set<OWLDatatype> getDatatypesInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLDatatype> getDatatypesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getDatatypesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDatatype> getDatatypesInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLDatatype> getDatatypesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getDatatypesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLDeclarationAxiom> getDeclarationAxioms(final OWLEntity subject) {
+	public final Set<OWLDeclarationAxiom> getDeclarationAxioms(final OWLEntity subject) {
 		return unsupportedOntology.getDeclarationAxioms(subject);
 	}
 
 	@Override
-	public Set<OWLDifferentIndividualsAxiom> getDifferentIndividualAxioms(final OWLIndividual individual) {
+	public final Set<OWLDifferentIndividualsAxiom> getDifferentIndividualAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getDifferentIndividualAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLOntology> getDirectImports() {
+	public final Set<OWLOntology> getDirectImports() {
 		return unsupportedOntology.getDirectImports();
 	}
 
 	@Override
-	public Set<IRI> getDirectImportsDocuments() {
+	public final Set<IRI> getDirectImportsDocuments() {
 		return unsupportedOntology.getDirectImportsDocuments();
 	}
 
 	@Override
-	public Set<OWLDisjointClassesAxiom> getDisjointClassesAxioms(final OWLClass cls) {
+	public final Set<OWLDisjointClassesAxiom> getDisjointClassesAxioms(final OWLClass cls) {
 		return unsupportedOntology.getDisjointClassesAxioms(cls);
 	}
 
 	@Override
-	public Set<OWLDisjointDataPropertiesAxiom> getDisjointDataPropertiesAxioms(final OWLDataProperty property) {
+	public final Set<OWLDisjointDataPropertiesAxiom> getDisjointDataPropertiesAxioms(final OWLDataProperty property) {
 		return unsupportedOntology.getDisjointDataPropertiesAxioms(property);
 	}
 
 	@Override
-	public Set<OWLDisjointObjectPropertiesAxiom> getDisjointObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLDisjointObjectPropertiesAxiom> getDisjointObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getDisjointObjectPropertiesAxioms(property);
 	}
 
 	@Override
-	public Set<OWLDisjointUnionAxiom> getDisjointUnionAxioms(final OWLClass owlClass) {
+	public final Set<OWLDisjointUnionAxiom> getDisjointUnionAxioms(final OWLClass owlClass) {
 		return unsupportedOntology.getDisjointUnionAxioms(owlClass);
 	}
 
 	@Override
-	public Set<OWLEntity> getEntitiesInSignature(final IRI entityIRI) {
+	public final Set<OWLEntity> getEntitiesInSignature(final IRI entityIRI) {
 		return unsupportedOntology.getEntitiesInSignature(entityIRI);
 	}
 
 	@Override
-	public Set<OWLEntity> getEntitiesInSignature(final IRI iri, final boolean includeImportsClosure) {
+	public final Set<OWLEntity> getEntitiesInSignature(final IRI iri, final boolean includeImportsClosure) {
 		return unsupportedOntology.getEntitiesInSignature(iri, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLEntity> getEntitiesInSignature(final IRI iri, final Imports includeImportsClosure) {
+	public final Set<OWLEntity> getEntitiesInSignature(final IRI iri, final Imports includeImportsClosure) {
 		return unsupportedOntology.getEntitiesInSignature(iri, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLEquivalentClassesAxiom> getEquivalentClassesAxioms(final OWLClass cls) {
+	public final Set<OWLEquivalentClassesAxiom> getEquivalentClassesAxioms(final OWLClass cls) {
 		return unsupportedOntology.getEquivalentClassesAxioms(cls);
 	}
 
 	@Override
-	public Set<OWLEquivalentDataPropertiesAxiom> getEquivalentDataPropertiesAxioms(final OWLDataProperty property) {
+	public final Set<OWLEquivalentDataPropertiesAxiom> getEquivalentDataPropertiesAxioms(final OWLDataProperty property) {
 		return unsupportedOntology.getEquivalentDataPropertiesAxioms(property);
 	}
 
 	@Override
-	public Set<OWLEquivalentObjectPropertiesAxiom> getEquivalentObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLEquivalentObjectPropertiesAxiom> getEquivalentObjectPropertiesAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getEquivalentObjectPropertiesAxioms(property);
 	}
 
 	@Override
-	public Set<OWLFunctionalDataPropertyAxiom> getFunctionalDataPropertyAxioms(final OWLDataPropertyExpression property) {
+	public final Set<OWLFunctionalDataPropertyAxiom> getFunctionalDataPropertyAxioms(final OWLDataPropertyExpression property) {
 		return unsupportedOntology.getFunctionalDataPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLFunctionalObjectPropertyAxiom> getFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLFunctionalObjectPropertyAxiom> getFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getFunctionalObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLClassAxiom> getGeneralClassAxioms() {
+	public final Set<OWLClassAxiom> getGeneralClassAxioms() {
 		return unsupportedOntology.getGeneralClassAxioms();
 	}
 
 	@Override
-	public Set<OWLHasKeyAxiom> getHasKeyAxioms(final OWLClass cls) {
+	public final Set<OWLHasKeyAxiom> getHasKeyAxioms(final OWLClass cls) {
 		return unsupportedOntology.getHasKeyAxioms(cls);
 	}
 
 	@Override
-	public Set<OWLOntology> getImports() {
+	public final Set<OWLOntology> getImports() {
 		return unsupportedOntology.getImports();
 	}
 
 	@Override
-	public Set<OWLImportsDeclaration> getImportsDeclarations() {
+	public final Set<OWLImportsDeclaration> getImportsDeclarations() {
 		return unsupportedOntology.getImportsDeclarations();
 	}
 
 	@Override
-	public Set<OWLNamedIndividual> getIndividualsInSignature() {
+	public final Set<OWLNamedIndividual> getIndividualsInSignature() {
 		return unsupportedOntology.getIndividualsInSignature();
 	}
 
 	@Override
-	public Set<OWLNamedIndividual> getIndividualsInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLNamedIndividual> getIndividualsInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getIndividualsInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLNamedIndividual> getIndividualsInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLNamedIndividual> getIndividualsInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getIndividualsInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLInverseFunctionalObjectPropertyAxiom> getInverseFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLInverseFunctionalObjectPropertyAxiom> getInverseFunctionalObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getInverseFunctionalObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLInverseObjectPropertiesAxiom> getInverseObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLInverseObjectPropertiesAxiom> getInverseObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getInverseObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLIrreflexiveObjectPropertyAxiom> getIrreflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLIrreflexiveObjectPropertyAxiom> getIrreflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getIrreflexiveObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public int getLogicalAxiomCount() {
+	public final int getLogicalAxiomCount() {
 		return unsupportedOntology.getLogicalAxiomCount();
 	}
 
 	@Override
-	public int getLogicalAxiomCount(final boolean includeImportsClosure) {
+	public final int getLogicalAxiomCount(final boolean includeImportsClosure) {
 		return unsupportedOntology.getLogicalAxiomCount(includeImportsClosure);
 	}
 
 	@Override
-	public int getLogicalAxiomCount(final Imports includeImportsClosure) {
+	public final int getLogicalAxiomCount(final Imports includeImportsClosure) {
 		return unsupportedOntology.getLogicalAxiomCount(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLLogicalAxiom> getLogicalAxioms() {
+	public final Set<OWLLogicalAxiom> getLogicalAxioms() {
 		return unsupportedOntology.getLogicalAxioms();
 	}
 
 	@Override
-	public Set<OWLLogicalAxiom> getLogicalAxioms(final boolean includeImportsClosure) {
+	public final Set<OWLLogicalAxiom> getLogicalAxioms(final boolean includeImportsClosure) {
 		return unsupportedOntology.getLogicalAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLLogicalAxiom> getLogicalAxioms(final Imports includeImportsClosure) {
+	public final Set<OWLLogicalAxiom> getLogicalAxioms(final Imports includeImportsClosure) {
 		return unsupportedOntology.getLogicalAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLNegativeDataPropertyAssertionAxiom> getNegativeDataPropertyAssertionAxioms(final OWLIndividual individual) {
+	public final Set<OWLNegativeDataPropertyAssertionAxiom> getNegativeDataPropertyAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getNegativeDataPropertyAssertionAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLNegativeObjectPropertyAssertionAxiom> getNegativeObjectPropertyAssertionAxioms(final OWLIndividual individual) {
+	public final Set<OWLNegativeObjectPropertyAssertionAxiom> getNegativeObjectPropertyAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getNegativeObjectPropertyAssertionAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLClassExpression> getNestedClassExpressions() {
+	public final Set<OWLClassExpression> getNestedClassExpressions() {
 		return unsupportedOntology.getNestedClassExpressions();
 	}
 
 	@Override
-	public Set<OWLObjectProperty> getObjectPropertiesInSignature() {
+	public final Set<OWLObjectProperty> getObjectPropertiesInSignature() {
 		return unsupportedOntology.getObjectPropertiesInSignature();
 	}
 
 	@Override
-	public Set<OWLObjectProperty> getObjectPropertiesInSignature(final boolean includeImportsClosure) {
+	public final Set<OWLObjectProperty> getObjectPropertiesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getObjectPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLObjectProperty> getObjectPropertiesInSignature(final Imports includeImportsClosure) {
+	public final Set<OWLObjectProperty> getObjectPropertiesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getObjectPropertiesInSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyAssertionAxiom> getObjectPropertyAssertionAxioms(final OWLIndividual individual) {
+	public final Set<OWLObjectPropertyAssertionAxiom> getObjectPropertyAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getObjectPropertyAssertionAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyDomainAxiom> getObjectPropertyDomainAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLObjectPropertyDomainAxiom> getObjectPropertyDomainAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getObjectPropertyDomainAxioms(property);
 	}
 
 	@Override
-	public Set<OWLObjectPropertyRangeAxiom> getObjectPropertyRangeAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLObjectPropertyRangeAxiom> getObjectPropertyRangeAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getObjectPropertyRangeAxioms(property);
 	}
 
 	@Override
-	public Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSubProperty(final OWLObjectPropertyExpression subProperty) {
+	public final Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSubProperty(final OWLObjectPropertyExpression subProperty) {
 		return unsupportedOntology.getObjectSubPropertyAxiomsForSubProperty(subProperty);
 	}
 
 	@Override
-	public Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSuperProperty(final OWLObjectPropertyExpression superProperty) {
+	public final Set<OWLSubObjectPropertyOfAxiom> getObjectSubPropertyAxiomsForSuperProperty(final OWLObjectPropertyExpression superProperty) {
 		return unsupportedOntology.getObjectSubPropertyAxiomsForSuperProperty(superProperty);
 	}
 
 	@Override
-	public Set<IRI> getPunnedIRIs(final Imports includeImportsClosure) {
+	public final Set<IRI> getPunnedIRIs(final Imports includeImportsClosure) {
 		return unsupportedOntology.getPunnedIRIs(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getRBoxAxioms(final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getRBoxAxioms(final Imports includeImportsClosure) {
 		return unsupportedOntology.getRBoxAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnonymousIndividual> getReferencedAnonymousIndividuals(final boolean includeImportsClosure) {
+	public final Set<OWLAnonymousIndividual> getReferencedAnonymousIndividuals(final boolean includeImportsClosure) {
 		return unsupportedOntology.getReferencedAnonymousIndividuals(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAnonymousIndividual> getReferencedAnonymousIndividuals(final Imports includeImportsClosure) {
+	public final Set<OWLAnonymousIndividual> getReferencedAnonymousIndividuals(final Imports includeImportsClosure) {
 		return unsupportedOntology.getReferencedAnonymousIndividuals(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity) {
+	public final Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity) {
 		return unsupportedOntology.getReferencingAxioms(owlEntity);
 	}
 
 	@Override
-	public Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity, final boolean includeImportsClosure) {
+	public final Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity, final boolean includeImportsClosure) {
 		return unsupportedOntology.getReferencingAxioms(owlEntity, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity, final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getReferencingAxioms(final OWLPrimitive owlEntity, final Imports includeImportsClosure) {
 		return unsupportedOntology.getReferencingAxioms(owlEntity, includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLReflexiveObjectPropertyAxiom> getReflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLReflexiveObjectPropertyAxiom> getReflexiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getReflexiveObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLSameIndividualAxiom> getSameIndividualAxioms(final OWLIndividual individual) {
+	public final Set<OWLSameIndividualAxiom> getSameIndividualAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getSameIndividualAxioms(individual);
 	}
 
 	@Override
-	public Set<OWLEntity> getSignature() {
+	public final Set<OWLEntity> getSignature() {
 		return unsupportedOntology.getSignature();
 	}
 
 	@Override
-	public Set<OWLEntity> getSignature(final Imports includeImportsClosure) {
+	public final Set<OWLEntity> getSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getSignature(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLSubAnnotationPropertyOfAxiom> getSubAnnotationPropertyOfAxioms(final OWLAnnotationProperty subProperty) {
+	public final Set<OWLSubAnnotationPropertyOfAxiom> getSubAnnotationPropertyOfAxioms(final OWLAnnotationProperty subProperty) {
 		return unsupportedOntology.getSubAnnotationPropertyOfAxioms(subProperty);
 	}
 
 	@Override
-	public Set<OWLSubClassOfAxiom> getSubClassAxiomsForSubClass(final OWLClass cls) {
+	public final Set<OWLSubClassOfAxiom> getSubClassAxiomsForSubClass(final OWLClass cls) {
 		return unsupportedOntology.getSubClassAxiomsForSubClass(cls);
 	}
 
 	@Override
-	public Set<OWLSubClassOfAxiom> getSubClassAxiomsForSuperClass(final OWLClass cls) {
+	public final Set<OWLSubClassOfAxiom> getSubClassAxiomsForSuperClass(final OWLClass cls) {
 		return unsupportedOntology.getSubClassAxiomsForSuperClass(cls);
 	}
 
 	@Override
-	public Set<OWLSymmetricObjectPropertyAxiom> getSymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLSymmetricObjectPropertyAxiom> getSymmetricObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getSymmetricObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public Set<OWLAxiom> getTBoxAxioms(final Imports includeImportsClosure) {
+	public final Set<OWLAxiom> getTBoxAxioms(final Imports includeImportsClosure) {
 		return unsupportedOntology.getTBoxAxioms(includeImportsClosure);
 	}
 
 	@Override
-	public Set<OWLTransitiveObjectPropertyAxiom> getTransitiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
+	public final Set<OWLTransitiveObjectPropertyAxiom> getTransitiveObjectPropertyAxioms(final OWLObjectPropertyExpression property) {
 		return unsupportedOntology.getTransitiveObjectPropertyAxioms(property);
 	}
 
 	@Override
-	public boolean isBottomEntity() {
+	public final boolean isBottomEntity() {
 		return unsupportedOntology.isBottomEntity();
 	}
 
 	@Override
-	public boolean isDeclared(final OWLEntity owlEntity) {
+	public final boolean isDeclared(final OWLEntity owlEntity) {
 		return unsupportedOntology.isDeclared(owlEntity);
 	}
 
 	@Override
-	public boolean isDeclared(final OWLEntity owlEntity, final Imports includeImportsClosure) {
+	public final boolean isDeclared(final OWLEntity owlEntity, final Imports includeImportsClosure) {
 		return unsupportedOntology.isDeclared(owlEntity, includeImportsClosure);
 	}
 
 	@Override
-	public boolean isEmpty() {
+	public final boolean isEmpty() {
 		return unsupportedOntology.isEmpty();
 	}
 
 	@Override
-	public boolean isTopEntity() {
+	public final boolean isTopEntity() {
 		return unsupportedOntology.isTopEntity();
 	}
 
 	@Override
-	public void saveOntology() throws OWLOntologyStorageException {
+	public final void saveOntology() throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology();
 	}
 
 	@Override
-	public void saveOntology(final IRI documentIRI) throws OWLOntologyStorageException {
+	public final void saveOntology(final IRI documentIRI) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(documentIRI);
 	}
 
 	@Override
-	public void saveOntology(final OutputStream outputStream) throws OWLOntologyStorageException {
+	public final void saveOntology(final OutputStream outputStream) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(outputStream);
 	}
 
 	@Override
-	public void saveOntology(final OWLDocumentFormat ontologyFormat) throws OWLOntologyStorageException {
+	public final void saveOntology(final OWLDocumentFormat ontologyFormat) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(ontologyFormat);
 	}
 
 	@Override
-	public void saveOntology(final OWLDocumentFormat ontologyFormat, final IRI documentIRI) throws OWLOntologyStorageException {
+	public final void saveOntology(final OWLDocumentFormat ontologyFormat, final IRI documentIRI) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(ontologyFormat, documentIRI);
 	}
 
 	@Override
-	public void saveOntology(final OWLDocumentFormat ontologyFormat, final OutputStream outputStream) throws OWLOntologyStorageException {
+	public final void saveOntology(final OWLDocumentFormat ontologyFormat, final OutputStream outputStream) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(ontologyFormat, outputStream);
 	}
 
 	@Override
-	public void saveOntology(final OWLDocumentFormat ontologyFormat, final OWLOntologyDocumentTarget documentTarget) throws OWLOntologyStorageException {
+	public final void saveOntology(final OWLDocumentFormat ontologyFormat, final OWLOntologyDocumentTarget documentTarget) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(ontologyFormat, documentTarget);
 	}
 
 	@Override
-	public void saveOntology(final OWLOntologyDocumentTarget documentTarget) throws OWLOntologyStorageException {
+	public final void saveOntology(final OWLOntologyDocumentTarget documentTarget) throws OWLOntologyStorageException {
 		unsupportedOntology.saveOntology(documentTarget);
 	}
 
 	@Override
-	public void setOWLOntologyManager(final OWLOntologyManager manager) {
+	public final void setOWLOntologyManager(final OWLOntologyManager manager) {
 		unsupportedOntology.setOWLOntologyManager(manager);
 	}
 }
