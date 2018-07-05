@@ -180,12 +180,7 @@ public final class ReasonerTaxonomyWalker {
 			collectConceptIds(parentNode, parentConceptIds);
 		}
 
-		final NodeSet<OWLClass> ancestorNodeSet = reasoner.getSuperClasses(node.getRepresentativeElement(), false);
-		final LongSet ancestorConceptIds = PrimitiveSets.newLongOpenHashSet();
-		for (final Node<OWLClass> ancestorNode : ancestorNodeSet) {
-			collectConceptIds(ancestorNode, ancestorConceptIds);
-		}		
-
+		final LongSet ancestorConceptIds = getAncestors(node.getRepresentativeElement());		
 		processedConceptIds.addAll(conceptIds);
 
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* empty */) {
@@ -248,5 +243,18 @@ public final class ReasonerTaxonomyWalker {
 		} else {
 			return EMPTY_NODE_SET;
 		}
+	}
+
+	public LongSet getAncestors(final long conceptId) {
+		return getAncestors(ontology.getConceptClass(conceptId));
+	}
+
+	private LongSet getAncestors(final OWLClass conceptClass) {
+		final NodeSet<OWLClass> ancestorNodeSet = reasoner.getSuperClasses(conceptClass, false);
+		final LongSet ancestorConceptIds = PrimitiveSets.newLongOpenHashSet();
+		for (final Node<OWLClass> ancestorNode : ancestorNodeSet) {
+			collectConceptIds(ancestorNode, ancestorConceptIds);
+		}
+		return ancestorConceptIds;
 	}
 }

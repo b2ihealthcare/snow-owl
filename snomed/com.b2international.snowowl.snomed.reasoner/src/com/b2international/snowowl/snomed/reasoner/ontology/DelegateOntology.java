@@ -540,7 +540,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 	
-	private OWLClass getConceptClass(final long conceptId) {
+	public OWLClass getConceptClass(final long conceptId) {
 		return getDataFactory().getOWLClass(PREFIX_SCT + conceptId, prefixManager);
 	}
 
