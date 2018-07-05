@@ -244,4 +244,31 @@ public class CodeSystemRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
+	/*
+	 * Incorrect elements should be ignored.
+	 */
+	@Test
+	public void getFhirCodeSystemIncorrectElementsTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_elements", "xyz", "abcs")
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			//mandatory fields
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("meta.tag.code", hasItem("SUBSETTED"))
+			.body("status", equalTo("active"))
+			.body("content", equalTo("complete"))
+			.body("id", equalTo("issue-type"))
+			//summary and optional fields
+			.body("text", nullValue())
+			.body("count", nullValue())
+			.body("concept", nullValue()) 
+			.body("copyright", nullValue()) 
+			//requested fields
+			.body("name",  nullValue())
+			.body("url",  nullValue()) 
+			.statusCode(200);
+	}
+	
 }
