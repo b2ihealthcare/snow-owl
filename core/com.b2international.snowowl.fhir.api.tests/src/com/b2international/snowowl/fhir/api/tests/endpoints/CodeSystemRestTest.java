@@ -120,6 +120,8 @@ public class CodeSystemRestTest extends FhirTest {
 			.when().get("/CodeSystem/{id}")
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
+			.body("content", equalTo("not-present"))
+			.body("status", equalTo("active"))
 			.statusCode(200);
 	}
 	
@@ -168,7 +170,7 @@ public class CodeSystemRestTest extends FhirTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.statusCode(500);
+			.statusCode(400);
 	}
 	
 	//Summary-data FHIR code system (remove text element)
@@ -218,23 +220,27 @@ public class CodeSystemRestTest extends FhirTest {
 	/*
 	 * ?elements=name, url means
 	 */
-	//@Test
+	@Test
 	public void getFhirCodeSystemElementsTest() {
 		givenAuthenticatedRequest("/fhir")
 			.param("_elements", "name", "url")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
 			.then()
+			//mandatory fields
 			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", equalTo("SUBSETTED"))
+			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
-			.body("text", notNullValue())
-			.body("id", notNullValue())
+			.body("content", equalTo("complete"))
+			.body("id", equalTo("issue-type"))
+			//summary and optional fields
+			.body("text", nullValue())
 			.body("count", nullValue())
-			.body("name", nullValue())
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
-			.body("url", nullValue()) 
+			//requested fields
+			.body("name", notNullValue())
+			.body("url", notNullValue()) 
 			.statusCode(200);
 	}
 	

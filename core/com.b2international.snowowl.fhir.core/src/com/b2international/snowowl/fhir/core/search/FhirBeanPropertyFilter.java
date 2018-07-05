@@ -28,8 +28,9 @@ import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.google.common.collect.Lists;
 
 /**
+ * Jackson property filter to subset the response.
+ * 
  * @since 6.4
- *
  */
 public class FhirBeanPropertyFilter implements PropertyFilter {
 	

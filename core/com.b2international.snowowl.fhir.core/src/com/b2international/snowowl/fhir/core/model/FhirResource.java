@@ -51,7 +51,13 @@ public abstract class FhirResource {
 	/**
 	 * Metadata about the resource
 	 */
-	//not final as this field can mark the resource as SUBSETTED
+	/*
+	 * Not final as this field can mark the resource as SUBSETTED
+	 * bbanfai: this is great as according to https://www.hl7.org/fhir/search.html#summary only mandatory elements should be returned
+	 * and meta (carrying the subsetted tag) is not mandatory based on the spec.
+	 * Changed field to mandatory (to be serialized if present)
+	 */
+	@Mandatory
 	@Summary
 	private Meta meta; 
 	
