@@ -67,8 +67,9 @@ public final class ReasonerTaxonomyWalker {
 
 	private final DelegateOntology ontology;
 	private final OWLReasoner reasoner;
-	private final ReasonerTaxonomyCallback callback;
 	private final BranchContext branchContext;
+	private final TaxonomyCallback taxonomyCallback;
+	private final EquivalenceCallback equivalenceCallback;
 
 	private LongSet processedConceptIds;
 	// owl:Nothing should only be considered once
@@ -112,12 +113,14 @@ public final class ReasonerTaxonomyWalker {
 	public ReasonerTaxonomyWalker(final String reasonerId, 
 			final DelegateOntology ontology, 
 			final BranchContext branchContext, 
-			final ReasonerTaxonomyCallback callback) {
+			final TaxonomyCallback taxonomyCallback,
+			final EquivalenceCallback equivalenceCallback) {
 
 		this.ontology = ontology;
 		this.reasoner = createReasoner(reasonerId, ontology);
 		this.branchContext = branchContext;
-		this.callback = callback;
+		this.taxonomyCallback = taxonomyCallback;
+		this.equivalenceCallback = equivalenceCallback;
 	}
 
 	public void walk() {
@@ -186,7 +189,7 @@ public final class ReasonerTaxonomyWalker {
 		processedConceptIds.addAll(conceptIds);
 
 		for (final LongIterator itr = conceptIds.iterator(); itr.hasNext(); /* empty */) {
-			callback.onConcept(itr.next(), parentConceptIds, ancestorConceptIds);
+			taxonomyCallback.onConcept(itr.next(), parentConceptIds, ancestorConceptIds);
 		}
 
 		return computeNextNodeSet(node);
@@ -211,7 +214,7 @@ public final class ReasonerTaxonomyWalker {
 		conceptIds.remove(representativeId);
 		sortedConceptIds.addAll(conceptIds);
 
-		callback.onEquivalentSet(unsatisfiable, sortedConceptIds);
+		equivalenceCallback.onEquivalentSet(unsatisfiable, sortedConceptIds);
 	}
 
 	private boolean isNodeProcessed(final Node<OWLClass> node) {

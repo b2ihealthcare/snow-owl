@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
-import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 
 /**
  * @since 7.0
  */
-public interface ReasonerTaxonomyCallback {
+@FunctionalInterface
+public interface TaxonomyCallback {
 
 	/**
 	 * @param conceptId
@@ -29,10 +29,4 @@ public interface ReasonerTaxonomyCallback {
 	 * @param ancestorIds
 	 */
 	void onConcept(long conceptId, LongSet parentIds, LongSet ancestorIds);
-
-	/**
-	 * @param unsatisfiable
-	 * @param conceptIds
-	 */
-	void onEquivalentSet(boolean unsatisfiable, LongList conceptIds);
 }
