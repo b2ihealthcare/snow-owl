@@ -58,7 +58,6 @@ public abstract class TerminologyResource extends DomainResource {
 	@JsonProperty
 	private String version; //not necessarily available - and what to do when we have more than 1??
 	
-	@Mandatory
 	@JsonProperty
 	private String name;
 	
@@ -103,7 +102,6 @@ public abstract class TerminologyResource extends DomainResource {
 	
 	@JsonProperty
 	private String copyright;
-	
 
 	/**
 	 * @param id

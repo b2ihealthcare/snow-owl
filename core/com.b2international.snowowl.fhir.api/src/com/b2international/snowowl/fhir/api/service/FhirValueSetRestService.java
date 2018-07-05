@@ -75,7 +75,7 @@ public class FhirValueSetRestService extends BaseFhirRestService {
 			@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements) {
 		
-		validateSearchParams(_summary, _elements);
+		validateRequestParams(_summary, _elements);
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -121,7 +121,7 @@ public class FhirValueSetRestService extends BaseFhirRestService {
 			@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements) {
 		
-		validateSearchParams(_summary, _elements);
+		validateRequestParams(_summary, _elements);
 
 		Path valueSetPath = Paths.get(valueSetId);
 		ValueSet valueSet = IValueSetApiProvider.Registry

@@ -10,6 +10,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
@@ -40,6 +41,14 @@ public class Meta extends Element {
 	@Summary
 	@JsonProperty("tag")
 	private Collection<Coding> tags;
+	
+	/**
+	 * @return the tags
+	 */
+	@JsonIgnore
+	public Collection<Coding> getTags() {
+		return tags;
+	}
 	
 	/**
 	 * @param id

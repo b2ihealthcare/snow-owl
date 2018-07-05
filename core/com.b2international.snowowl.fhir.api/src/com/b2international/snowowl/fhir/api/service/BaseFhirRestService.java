@@ -23,6 +23,7 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.SummaryParameter;
@@ -49,25 +50,40 @@ public abstract class BaseFhirRestService {
 		return new Parameters.Fhir(Parameters.from(response));
 	}
 	
-	protected MappingJacksonValue applyResponseFilter(String summaryParameter, List<String> elementsParameter, Object filteredObject) {
+	protected MappingJacksonValue applyResponseFilter(String summaryParameter, List<String> elementsParameter, FhirResource filteredFhirResource) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
 		
 		if (summaryParameter !=null) {
 			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameter.fromRequestParameter(summaryParameter)));
+			filteredFhirResource.setSubsetted();
 		} else if (elementsParameter != null) {
 			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameter)));
+			filteredFhirResource.setSubsetted();
 		}
 		
-		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
+		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredFhirResource);
 		mappingJacksonValue.setFilters(filterProvider);
 		mapper.setFilterProvider(filterProvider);
+		
 		return mappingJacksonValue;
 	}
 	
-	protected void validateSearchParams(String summary, List<String> elements) {
+	protected void validateRequestParams(String summary, List<String> elements) {
+		
 		if (summary != null && elements !=null) {
 			throw new BadRequestException("Both search parameters '_summary' and '_elements' cannot be specified at the same time.");
+		}
+		
+		if (summary != null) {
+			try {
+				SummaryParameter fromRequestParameter = SummaryParameter.fromRequestParameter(summary);
+				if (fromRequestParameter == SummaryParameter.COUNT) {
+					throw new BadRequestException("'Count' summary parameter is only allowed for search operations.");
+				}
+			} catch (RuntimeException re) {
+				throw new BadRequestException("Unknown _summary parameter value '" + summary + "'. Only true, false, text, data are permitted.");
+			}
 		}
 	}
 	

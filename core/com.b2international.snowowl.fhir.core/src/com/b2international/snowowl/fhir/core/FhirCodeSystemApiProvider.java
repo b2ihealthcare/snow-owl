@@ -27,10 +27,12 @@ import org.osgi.framework.wiring.BundleWiring;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -132,10 +134,22 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.language("en")
 			.name(id)
 			.publisher("www.hl7.org")
+			.copyright("© 2011+ HL7")
+			
+			.caseSensitive(true)
 			.status(PublicationStatus.ACTIVE)
 			.url(new Uri(supportedUri))
 			.content(CodeSystemContentMode.COMPLETE);
-				
+		
+		//human-readable narrative
+		ResourceNarrative resourceNarrative = fhirCodeSystem.getClass().getAnnotation(ResourceNarrative.class);
+		if (resourceNarrative !=null) {
+			builder.text(Narrative.builder()
+				.div("<div>" + resourceNarrative.value() + "</div>")
+				.status(NarrativeStatus.GENERATED)
+				.build());
+		}
+		
 		int counter = 0;
 		
 		Field[] declaredFields = fhirCodeSystem.getClass().getDeclaredFields();

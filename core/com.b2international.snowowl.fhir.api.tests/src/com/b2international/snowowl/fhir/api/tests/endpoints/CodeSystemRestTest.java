@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.api.tests.endpoints;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
@@ -41,11 +42,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
  */
 public class CodeSystemRestTest extends FhirTest {
 	
-	@ClassRule
-	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(CodeSystemRestTest.class, "fhir-configuration.yml")))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "issue-type";
 	
 	@BeforeClass
 	public static void setupSpec() {
@@ -53,7 +50,7 @@ public class CodeSystemRestTest extends FhirTest {
 		RestAssuredConfig config = RestAssured.config();
 		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
 		RestAssured.given().config(config.logConfig(logConfig));
-		config.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
+		//config.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
 		
 		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
 		//builder.expectStatusCode(200);
@@ -74,7 +71,7 @@ public class CodeSystemRestTest extends FhirTest {
 	}
 	
 	//@Test
-	public void printResponse() {
+	public void printAllCodesystems() {
 		givenAuthenticatedRequest("/fhir")
 		.when().get("/CodeSystem").prettyPrint();
 	}
@@ -115,6 +112,7 @@ public class CodeSystemRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
+	//Fully detailed SNOMED CT code system
 	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest("/fhir")
@@ -122,6 +120,121 @@ public class CodeSystemRestTest extends FhirTest {
 			.when().get("/CodeSystem/{id}")
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
+			.statusCode(200);
+	}
+	
+	//Full FHIR code system
+	@Test
+	public void getFhirCodeSystemTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", false)
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("status", equalTo("active")) //mandatory
+			.body("name", equalTo("issue-type")) //summary
+			.body("concept", notNullValue()) //optional
+			.body("copyright", containsString("2011+ HL7")) //optional
+			.statusCode(200);
+	}
+	
+	//Summary-only FHIR code system
+	@Test
+	public void getFhirCodeSystemSummaryTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", true)
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("meta.tag.code", hasItem("SUBSETTED"))
+			.body("status", equalTo("active"))
+			//NOT part of the summary
+			.body("name", nullValue())
+			.body("concept", nullValue()) 
+			.body("copyright", nullValue()) 
+			.statusCode(200);
+	}
+	
+	//Summary-count should not be allowed for non-search type operations
+	@Test
+	public void getFhirCodeSystemCountTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", "count")
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.statusCode(500);
+	}
+	
+	//Summary-data FHIR code system (remove text element)
+	@Test
+	public void getFhirCodeSystemDataTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", "data")
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("meta.tag.code", hasItem("SUBSETTED"))
+			//only text, id, meta and mandatory
+			.body("text", nullValue())
+			.body("status", equalTo("active"))
+			.body("id", notNullValue())
+			.body("count", notNullValue())
+			.body("name", notNullValue())
+			.body("concept", notNullValue()) 
+			.body("copyright", notNullValue()) 
+			.body("url", notNullValue()) 
+			.statusCode(200);
+	}
+	
+	//Summary-text FHIR code system (text, id, meta, mandatory)
+	@Test
+	public void getFhirCodeSystemTextTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_summary", "text")
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("meta.tag.code", hasItem("SUBSETTED"))
+			//only text, id, meta and mandatory
+			.body("text.div", equalTo("<div>A code that describes the type of issue.</div>"))
+			.body("status", equalTo("active"))
+			.body("id", notNullValue())
+			.body("count", nullValue())
+			.body("name", nullValue())
+			.body("concept", nullValue()) 
+			.body("copyright", nullValue()) 
+			.body("url", nullValue()) 
+			.statusCode(200);
+	}
+	
+	/*
+	 * ?elements=name, url means
+	 */
+	//@Test
+	public void getFhirCodeSystemElementsTest() {
+		givenAuthenticatedRequest("/fhir")
+			.param("_elements", "name", "url")
+		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+			.when().get("/CodeSystem/{id}")
+			.then()
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("meta.tag.code", equalTo("SUBSETTED"))
+			.body("status", equalTo("active"))
+			.body("text", notNullValue())
+			.body("id", notNullValue())
+			.body("count", nullValue())
+			.body("name", nullValue())
+			.body("concept", nullValue()) 
+			.body("copyright", nullValue()) 
+			.body("url", nullValue()) 
 			.statusCode(200);
 	}
 	

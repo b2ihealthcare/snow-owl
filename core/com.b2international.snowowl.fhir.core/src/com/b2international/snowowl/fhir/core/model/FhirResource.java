@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
@@ -50,8 +51,9 @@ public abstract class FhirResource {
 	/**
 	 * Metadata about the resource
 	 */
+	//not final as this field can mark the resource as SUBSETTED
 	@Summary
-	private final Meta meta;
+	private Meta meta; 
 	
 	/**
 	 * A set of rules under which this content was created
@@ -85,6 +87,21 @@ public abstract class FhirResource {
 
 	public Code getLanguage() {
 		return language;
+	}
+	
+	/**
+	 * Marks the resource to be SUBSETTED
+	 * to indicate that the resource is not fully detailed (e.g. summary mode)
+	 */
+	public void setSubsetted() {
+		if (meta == null) {
+			meta = Meta.builder()
+				.addTag(Coding.CODING_SUBSETTED)
+				.build();
+		} else {
+			meta.getTags().add(Coding.CODING_SUBSETTED);
+		}
+		
 	}
 
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends ValidatingBuilder<T> {

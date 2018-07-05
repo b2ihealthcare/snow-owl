@@ -39,6 +39,12 @@ import io.swagger.annotations.ApiModel;
 @JsonInclude(Include.NON_NULL)
 public class Coding {
 	
+	public static final Coding CODING_SUBSETTED = Coding.builder()
+			.system("http://hl7.org/fhir/v3/ObservationValue")
+			.code("SUBSETTED")
+			.display("As requested, resource is not fully detailed.")
+			.build();
+	
 	@Valid
 	private Code code;
 	

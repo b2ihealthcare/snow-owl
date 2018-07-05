@@ -51,7 +51,7 @@ public interface FhirCodeSystem {
 	 * @return
 	 */
 	String getDisplayName();
-
+	
 	/**
 	 * Returns the full URI of the code. By default this is in the format of `{@link #getCodeSystemUri() uri}/{@link #getCodeValue() value}`.
 	 * @return

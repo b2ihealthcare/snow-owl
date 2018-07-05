@@ -96,7 +96,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	public Bundle getCodeSystems(@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements) {
 		
-		validateSearchParams(_summary, _elements);
+		validateRequestParams(_summary, _elements);
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -142,7 +142,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements) {
 		
-		validateSearchParams(_summary, _elements);
+		validateRequestParams(_summary, _elements);
 
 		Path codeSystemPath = Paths.get(codeSystemId);
 		CodeSystem codeSystem = ICodeSystemApiProvider.Registry

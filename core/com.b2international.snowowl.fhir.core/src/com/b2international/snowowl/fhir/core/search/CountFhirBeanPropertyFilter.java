@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ser.PropertyWriter;
 /**
  * Property filter to the count element
  * @since 6.4
- *
  */
 public class CountFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 
@@ -36,7 +35,7 @@ public class CountFhirBeanPropertyFilter extends FhirBeanPropertyFilter {
 		//Summary should always cover mandatory, but just in case
 		Mandatory mandatoryAnnotation = writer.findAnnotation(Mandatory.class);
 		
-		if (mandatoryAnnotation!=null) {
+		if (mandatoryAnnotation != null) {
 			return true;
 		}
 		

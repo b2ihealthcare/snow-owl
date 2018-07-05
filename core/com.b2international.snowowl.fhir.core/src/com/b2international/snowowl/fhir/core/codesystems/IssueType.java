@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR Issue type codesystem
  * 
@@ -43,6 +45,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
  * 
  * @since 6.4
  */
+@ResourceNarrative("A code that describes the type of issue.")
 public enum IssueType implements FhirCodeSystem {
 	
 	/**
