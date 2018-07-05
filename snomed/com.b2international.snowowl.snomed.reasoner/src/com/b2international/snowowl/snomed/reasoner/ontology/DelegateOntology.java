@@ -84,7 +84,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	// The prefix used for SNOMED CT module ontology identifiers
 	private static final String PREFIX_SCTM = "sctm:";
-	/*package*/ static final String NAMESPACE_SCTM = "http://snomed.info/sct/";
+	public static final String NAMESPACE_SCTM = "http://snomed.info/sct/";
 
 	// Prefix for Snow Owl-specific extension IRIs
 	private static final String PREFIX_SO = "so:";
