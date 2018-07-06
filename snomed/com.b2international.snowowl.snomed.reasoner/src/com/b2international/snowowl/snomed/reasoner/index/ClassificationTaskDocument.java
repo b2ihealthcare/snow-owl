@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,7 +36,12 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc(type="classificationTask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
+@Script(name=ClassificationTaskDocument.BEGIN_CLASSIFICATION, script="ctx._source.status = params.status; ctx._source.headTimestamp = params.headTimestamp")
+@Script(name=ClassificationTaskDocument.END_CLASSIFICATION, script="ctx._source.status = params.status; ctx._source.completionDate = params.completionDate")
 public final class ClassificationTaskDocument {
+
+	public static final String BEGIN_CLASSIFICATION = "beginClassification";
+	public static final String END_CLASSIFICATION = "endClassification";
 
 	public static class Fields {
 		public static final String ID = "id";

@@ -15,16 +15,17 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
-import java.util.Date;
 import java.util.Map;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.BulkDelete;
+import com.b2international.index.BulkUpdate;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 7.0
@@ -98,12 +99,30 @@ public final class ClassificationRepository implements Index {
 			return null;
 		});
 	}
-	
-	public void updateStatus(final String classificationId, final ClassificationStatus status) {
-		// TODO Auto-generated method stub
+
+	public void beginClassification(final String classificationId, final long headTimestamp) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.BEGIN_CLASSIFICATION, 
+					ImmutableMap.of("status", ClassificationStatus.RUNNING,
+							"headTimestamp", headTimestamp)));
+			writer.commit();
+			return null;
+		});
 	}
 
-	public void updateStatus(final String classificationId, final ClassificationStatus status, final Date completionDate) {
-		// TODO Auto-generated method stub
+	public void endClassification(final String classificationId, final ClassificationStatus status) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.BEGIN_CLASSIFICATION, 
+					ImmutableMap.of("status", status,
+							"completionDate", System.currentTimeMillis())));
+			writer.commit();
+			return null;
+		});
 	}
 }

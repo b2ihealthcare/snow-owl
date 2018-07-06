@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +33,7 @@ import com.b2international.index.DocWriter;
 import com.b2international.index.Index;
 import com.b2international.index.IndexException;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
@@ -159,9 +159,12 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 		final RemoteJob job = context.service(RemoteJob.class);
 		classificationId = job.getId();
 
+		final Branch branch = context.branch();
+		final long headTimestamp = branch.headTimestamp();
 		final Index rawIndex = context.service(Index.class);
 		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
-		repository.updateStatus(classificationId, ClassificationStatus.RUNNING);
+		
+		repository.beginClassification(classificationId, headTimestamp);
 
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
@@ -192,10 +195,10 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 				return null;
 			});
 
-			repository.updateStatus(classificationId, ClassificationStatus.COMPLETED, new Date());
+			repository.endClassification(classificationId, ClassificationStatus.COMPLETED);
 
 		} catch (final OWLOntologyCreationException e) {
-			repository.updateStatus(classificationId, ClassificationStatus.FAILED, new Date());
+			repository.endClassification(classificationId, ClassificationStatus.FAILED);
 			// throw createExportFailedException(context, e);
 			// set job status
 		}
