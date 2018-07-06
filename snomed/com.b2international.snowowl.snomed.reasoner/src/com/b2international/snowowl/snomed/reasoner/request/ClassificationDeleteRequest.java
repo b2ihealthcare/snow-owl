@@ -38,6 +38,7 @@ final class ClassificationDeleteRequest implements Request<RepositoryContext, Bo
 	public Boolean execute(final RepositoryContext context) {
 		final Index rawIndex = context.service(Index.class);
 		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
-		return repository.delete(classificationId);
+		repository.delete(classificationId);
+		return Boolean.TRUE;
 	}
 }
