@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -39,6 +40,8 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -47,7 +50,7 @@ import com.google.common.collect.Multimaps;
  * @since 7.0
  */
 public final class RelationshipChangeConverter 
-		extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
+extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -70,9 +73,11 @@ public final class RelationshipChangeConverter
 		resource.setChangeNature(entry.getNature());
 
 		final SnomedRelationship relationship = new SnomedRelationship(entry.getRelationshipId());
-		relationship.setSourceId(entry.getSourceId());
-		
+
 		if (ChangeNature.INFERRED.equals(entry.getNature())) {
+			relationship.setSourceId(entry.getSourceId());
+			relationship.setTypeId(entry.getTypeId());
+			relationship.setDestinationId(entry.getDestinationId());
 			relationship.setGroup(entry.getGroup());
 			relationship.setUnionGroup(entry.getUnionGroup());
 		}
@@ -101,38 +106,35 @@ public final class RelationshipChangeConverter
 
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
 		final Options expandOptions = expand().get(RelationshipChange.Expand.RELATIONSHIP, Options.class);
+
 		final Options sourceOptions = expandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
+		final Options typeOptions = expandOptions.getOptions(SnomedRelationship.Expand.TYPE);
+		final Options destinationOptions = expandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
+
 		final boolean needsSource = expandOptions.keySet().remove(SnomedRelationship.Expand.SOURCE);
+		final boolean needsType = expandOptions.keySet().remove(SnomedRelationship.Expand.TYPE);
+		final boolean needsDestination = expandOptions.keySet().remove(SnomedRelationship.Expand.DESTINATION);
 
 		for (final String branch : itemsByBranch.keySet()) {
 			final Collection<RelationshipChange> itemsForCurrentBranch = itemsByBranch.get(branch);
 
-			// Expand source concept on the initial, "blank" relationship of each item
+			/*
+			 *  Expand concepts on the initial, "blank" relationship of each item first, as they might have changed when compared to
+			 *  the reference relationship.
+			 */
 			if (needsSource) {
-				final List<SnomedRelationship> blankRelationships = itemsForCurrentBranch.stream()
-						.map(RelationshipChange::getRelationship)
-						.collect(Collectors.toList());
-
-				final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(blankRelationships, m -> m.getSourceId());
-				final Set<String> sourceIds = relationshipsBySource.keySet();
-
-				final Request<BranchContext, SnomedConcepts> sourceConceptSearchRequest = SnomedRequests.prepareSearchConcept()
-						.filterByIds(sourceIds)
-						.all()
-						.setExpand(sourceOptions.get("expand", Options.class))
-						.setLocales(locales())
-						.build();
-
-				final SnomedConcepts sourceConcepts = new BranchRequest<>(branch, sourceConceptSearchRequest).execute(context());
-
-				for (final SnomedConcept concept : sourceConcepts) {
-					for (final SnomedRelationship relationship : relationshipsBySource.get(concept.getId())) {
-						relationship.setSource(concept);
-					}
-				}
+				expandConcepts(branch, itemsForCurrentBranch, sourceOptions, m -> m.getSourceId(), (r, c) -> r.setSource(c));
 			}
 
-			// Then fetch all relationships (these will have a source ID that is no longer valid for inferred members)
+			if (needsType) {
+				expandConcepts(branch, itemsForCurrentBranch, typeOptions, m -> m.getTypeId(), (r, c) -> r.setType(c));
+			}
+
+			if (needsDestination) {
+				expandConcepts(branch, itemsForCurrentBranch, destinationOptions, m -> m.getDestinationId(), (r, c) -> r.setDestination(c));
+			}
+
+			// Then fetch all relationships
 			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
 					.map(c -> c.getRelationship().getId())
 					.collect(Collectors.toSet());
@@ -151,17 +153,57 @@ public final class RelationshipChangeConverter
 			for (final RelationshipChange item : itemsForCurrentBranch) {
 				final SnomedRelationship blankRelationship = item.getRelationship();
 				final String relationshipId = blankRelationship.getId();
-				final SnomedConcept adjustedSource = blankRelationship.getSource();
 				final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
 
+				final SnomedConcept adjustedSource = blankRelationship.getSource();
+				final SnomedConcept adjustedType = blankRelationship.getType();
+				final SnomedConcept adjustedDestination = blankRelationship.getDestination();
+
 				expandedRelationship.setSource(adjustedSource);
-				
+
 				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
+					expandedRelationship.setType(adjustedType == null ? expandedRelationship.getType() : adjustedType);
+					expandedRelationship.setDestination(adjustedDestination == null ? expandedRelationship.getDestination() : adjustedDestination);
 					expandedRelationship.setGroup(blankRelationship.getGroup());
 					expandedRelationship.setUnionGroup(blankRelationship.getUnionGroup());
 				}
 
 				item.setRelationship(expandedRelationship);
+			}
+		}
+	}
+
+	private void expandConcepts(final String branch, 
+			final Collection<RelationshipChange> relationshipChanges,
+			final Options options,
+			final Function<SnomedRelationship, String> conceptIdFunction,
+			final BiConsumer<SnomedRelationship, SnomedConcept> conceptIdConsumer) {
+
+		final List<SnomedRelationship> blankRelationships = relationshipChanges.stream()
+				.map(RelationshipChange::getRelationship)
+				.collect(Collectors.toList());
+
+		final Multimap<String, SnomedRelationship> relationshipsByConceptId = FluentIterable.from(blankRelationships)
+				.filter(r -> conceptIdFunction.apply(r) != null)
+				.index(conceptIdFunction);
+
+		final Set<String> conceptIds = relationshipsByConceptId.keySet();
+
+		final Request<BranchContext, SnomedConcepts> sourceConceptSearchRequest = SnomedRequests.prepareSearchConcept()
+				.filterByIds(conceptIds)
+				.all()
+				.setExpand(options.get("expand", Options.class))
+				.setLocales(locales())
+				.build();
+
+		final SnomedConcepts sourceConcepts = new BranchRequest<>(branch, sourceConceptSearchRequest).execute(context());
+
+		for (final SnomedConcept concept : sourceConcepts) {
+			final String conceptId = concept.getId();
+			final Collection<SnomedRelationship> relationshipsForConcept = relationshipsByConceptId.get(conceptId);
+
+			for (final SnomedRelationship relationship : relationshipsForConcept) {
+				conceptIdConsumer.accept(relationship, concept);
 			}
 		}
 	}
