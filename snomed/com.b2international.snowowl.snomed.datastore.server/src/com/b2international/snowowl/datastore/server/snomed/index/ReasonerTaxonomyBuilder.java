@@ -294,7 +294,8 @@ public final class ReasonerTaxonomyBuilder {
 							dataType,
 							unitId, 
 							entry.getStorageKey(), 
-							refsetId);
+							refsetId,
+							entry.getId());
 					
 					if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
 						addToLongMultimap(statedFragments, referencedComponentId, fragment);

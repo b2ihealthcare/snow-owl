@@ -35,6 +35,7 @@ public class ConcreteDomainFragment implements Serializable {
 	private final long uomId;
 	private final long storageKey;
 	private final long refSetId;
+	private final String memberId;
 
 	/**
 	 * Creates a new instance.
@@ -45,13 +46,21 @@ public class ConcreteDomainFragment implements Serializable {
 	 * @param uomId UOM concept ID.
 	 * @param storageKey the storage key of the concrete domain.
 	 */
-	public ConcreteDomainFragment(final String value, final String label, final byte type, final long uomId, final long storageKey, final long refSetId) {
+	public ConcreteDomainFragment(final String value, 
+			final String label, 
+			final byte type, 
+			final long uomId, 
+			final long storageKey, 
+			final long refSetId,
+			final String memberId) {
+
 		this.value = Preconditions.checkNotNull(value, "Value argument cannot be null.");
 		this.label = Preconditions.checkNotNull(label, "Label argument cannot be null.");
 		this.storageKey = storageKey;
 		this.uomId = uomId;
 		this.type = type;
 		this.refSetId = refSetId;
+		this.memberId = memberId;
 	}
 
 	/**
@@ -113,6 +122,13 @@ public class ConcreteDomainFragment implements Serializable {
 		return refSetId;
 	}
 
+	/**
+	 * @return the originating reference set member's UUID
+	 */
+	public String getMemberId() {
+		return memberId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -155,8 +171,22 @@ public class ConcreteDomainFragment implements Serializable {
 
 	@Override
 	public String toString() {
-		return "ConcreteDomainFragment [value=" + value + ", label=" + label
-				+ ", type=" + type + ", uomId=" + uomId + ", storageKey="
-				+ storageKey + ", refSetId=" + refSetId + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("ConcreteDomainFragment [value=");
+		builder.append(value);
+		builder.append(", label=");
+		builder.append(label);
+		builder.append(", type=");
+		builder.append(type);
+		builder.append(", uomId=");
+		builder.append(uomId);
+		builder.append(", storageKey=");
+		builder.append(storageKey);
+		builder.append(", refSetId=");
+		builder.append(refSetId);
+		builder.append(", memberId=");
+		builder.append(memberId);
+		builder.append("]");
+		return builder.toString();
 	}
 }
