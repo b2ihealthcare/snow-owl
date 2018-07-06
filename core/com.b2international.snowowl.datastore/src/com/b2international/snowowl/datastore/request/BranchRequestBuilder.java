@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,28 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
  * Provides a default method for wrapping {@link BranchContext}-based requests
- * into {@link AsyncRequest}s. The provided {@code BranchContext} allows
- * searching for document revisions via a {@link RevisionSearcher} service
- * reference.
+ * into {@link AsyncRequest}s. The provided {@code BranchContext} does not
+ * include a service for accessing the repository index.
  * 
- * @since 5.7
+ * @since 7.0
  * @param <R> - the return type
  */
-public interface RevisionIndexRequestBuilder<R> extends RequestBuilder<BranchContext, R> {
+public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
 	default AsyncRequest<R> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
-				new IndexReadRequest<>(
-					new BranchRequest<>(branch, 
-						new RevisionIndexReadRequest<>(build())
-					)
+				new HealthCheckingRequest<>(
+					new BranchRequest<>(branch, build()), 
+					allowedHealthstates()
 				)
 			)
 		);
 	}
-	
 }
