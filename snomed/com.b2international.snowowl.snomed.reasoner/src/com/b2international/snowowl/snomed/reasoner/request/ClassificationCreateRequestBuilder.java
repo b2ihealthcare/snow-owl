@@ -21,14 +21,9 @@ import java.util.List;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.request.AllowedHealthStates;
-import com.b2international.snowowl.datastore.request.BranchRequest;
-import com.b2international.snowowl.datastore.request.HealthCheckingRequest;
-import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.BranchRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
@@ -36,16 +31,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
  */
 public final class ClassificationCreateRequestBuilder 
 		extends BaseRequestBuilder<ClassificationCreateRequestBuilder, BranchContext, String>
-		implements AllowedHealthStates {
+		implements BranchRequestBuilder<String> {
 
 	private String classificationId = UUID.randomUUID().toString();
 	private String reasonerId;
 	private String userId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();
-	private String parentLockContextDescription = DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW;
 
-	ClassificationCreateRequestBuilder() {
-	}
+	ClassificationCreateRequestBuilder() {}
 
 	public ClassificationCreateRequestBuilder setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
@@ -72,11 +65,6 @@ public final class ClassificationCreateRequestBuilder
 		return this;
 	}
 
-	public ClassificationCreateRequestBuilder setParentLockContextDescription(final String parentLockContextDescription) {
-		this.parentLockContextDescription = parentLockContextDescription;
-		return this;
-	}
-
 	@Override
 	protected Request<BranchContext, String> doBuild() {
 		final ClassificationCreateRequest request = new ClassificationCreateRequest();
@@ -84,18 +72,6 @@ public final class ClassificationCreateRequestBuilder
 		request.setReasonerId(reasonerId);
 		request.setUserId(userId);
 		request.setAdditionalConcepts(additionalConcepts);
-		request.setParentLockContextDescription(parentLockContextDescription);
 		return request;
-	}
-
-	public AsyncRequest<String> build(final String repositoryId, final String branch) {
-		return new AsyncRequest<>(
-			new RepositoryRequest<>(repositoryId,
-				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch, build()), 
-					allowedHealthstates()
-				)
-			)
-		);
 	}
 }
