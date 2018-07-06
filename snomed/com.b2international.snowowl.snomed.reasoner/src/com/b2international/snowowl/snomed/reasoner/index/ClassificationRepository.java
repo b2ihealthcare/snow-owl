@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.index;
 
+import java.util.Date;
 import java.util.Map;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -23,6 +24,7 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 
 /**
  * @since 7.0
@@ -79,8 +81,8 @@ public final class ClassificationRepository implements Index {
 		});
 	}
 
-	public Boolean delete(final String classificationId) {
-		return write(writer -> {
+	public void delete(final String classificationId) {
+		write(writer -> {
 			final ClassificationTaskDocument document = writer.searcher().get(ClassificationTaskDocument.class, classificationId);
 
 			if (document == null) {
@@ -93,7 +95,15 @@ public final class ClassificationRepository implements Index {
 			writer.bulkDelete(new BulkDelete<>(RelationshipChangeDocument.class, RelationshipChangeDocument.Expressions.classificationId(classificationId)));
 
 			writer.commit();
-			return Boolean.TRUE;
+			return null;
 		});
+	}
+	
+	public void updateStatus(final String classificationId, final ClassificationStatus status) {
+		// TODO Auto-generated method stub
+	}
+
+	public void updateStatus(final String classificationId, final ClassificationStatus status, final Date completionDate) {
+		// TODO Auto-generated method stub
 	}
 }
