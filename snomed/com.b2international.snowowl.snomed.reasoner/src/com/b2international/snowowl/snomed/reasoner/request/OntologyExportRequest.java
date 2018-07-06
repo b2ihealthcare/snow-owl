@@ -36,7 +36,6 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.file.FileRegistry;
@@ -79,10 +78,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 	@Override
 	public String execute(final BranchContext context) {
 
-		final SnomedCoreConfiguration config = SnowOwlApplication.INSTANCE
-				.getConfiguration()
-				.getModuleConfig(SnomedCoreConfiguration.class);
-
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(revisionSearcher, concreteDomainSupportEnabled);
