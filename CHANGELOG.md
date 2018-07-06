@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.6.0
+
+### Added
+- Configuration options for validation thread pool sizes and parallel execution of rules (#246, 09c971e)
+- Support field selection in low-level aggregations API (b429a46, a59cb7e)
+
+### Changed
+- Support delimiter parameter in DSV exports (7ad7d6f)
+- Support latest specification changes in OWL Axiom and Ontology Reference Sets (#248, 72994dc)
+- Increase number of default shards for revision indexes to `6` (11ca54d) 
+
+### Bugs
+- Use Groovy Eclipse release update site instead of snapshot (0e15090) 
+- Fix missing FSNs, PTs in RefSet DSV exports, change default file names to PT of the Reference Set (1bb3fe3, 3f7cd3e, af6d9d1)
+
+### Performance
+- Reduce memory consumption and execution time of large scale validation jobs (#246, 9e35a24)
+
 ## 6.5.0
 
 ### Breaking changes
