@@ -543,12 +543,14 @@ public final class ReasonerTaxonomyBuilder {
 		return new ReasonerTaxonomy(builtConceptMap,
 				statedAncestors.build(),
 				statedDescendants.build(),
-				null,
 				fullyDefinedConcepts.build(),
 				exhaustiveConcepts.build(),
 				statedNonIsARelationships.build(),
 				inferredNonIsARelationships.build(),
 				statedConcreteDomainMembers.build(),
-				inferredConcreteDomainMembers.build());
+				inferredConcreteDomainMembers.build(),
+				null, 
+				null,
+				null);
 	}
 }

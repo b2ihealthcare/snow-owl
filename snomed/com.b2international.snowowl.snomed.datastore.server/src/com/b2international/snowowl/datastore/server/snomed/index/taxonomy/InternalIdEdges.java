@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.collections.PrimitiveSets;
@@ -42,6 +43,8 @@ public final class InternalIdEdges {
 
 	public static final class Builder {
 
+		private static final int[] EMPTY_ARRAY = new int[0];
+		
 		private final InternalIdMap internalIdMap;
 		private final IntSet[] edges;
 
@@ -76,11 +79,13 @@ public final class InternalIdEdges {
 			// Convert IntLists to arrays
 			final int[][] builtEdges = Arrays.asList(edges)
 					.stream()
-					.map(IntSet::toArray)
-					.map(destinations -> {
-						Arrays.sort(destinations);
-						return destinations;
-					})
+					.map(ds -> Optional.ofNullable(ds)
+							.map(IntSet::toArray)
+							.map(da -> {
+								Arrays.sort(da);
+								return da;
+							})
+							.orElse(EMPTY_ARRAY))
 					.toArray(length -> new int[length][]);
 
 			return new InternalIdEdges(internalIdMap, builtEdges);

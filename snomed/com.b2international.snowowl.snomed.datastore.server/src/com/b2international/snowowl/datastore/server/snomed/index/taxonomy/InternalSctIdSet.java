@@ -54,7 +54,7 @@ public final class InternalSctIdSet {
 			return addAll(longSctIds);
 		}
 
-		private Builder addAll(final LongSet sctIdsToAdd) {
+		public Builder addAll(final LongSet sctIdsToAdd) {
 			for (final LongIterator itr = sctIdsToAdd.iterator(); itr.hasNext(); /*empty*/) {
 				final long sctId = itr.next();
 				final int internalId = internalIdMap.getInternalId(sctId);

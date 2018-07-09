@@ -32,7 +32,6 @@ public final class ReasonerTaxonomy {
 
 	private final InternalIdEdges statedAncestors;
 	private final InternalIdEdges statedDescendants;
-	private final InternalIdEdges inferredAncestors;
 
 	private final InternalSctIdSet fullyDefinedConcepts;
 	private final InternalSctIdSet exhaustiveConcepts;
@@ -42,27 +41,35 @@ public final class ReasonerTaxonomy {
 	private final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers;
 	private final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers;
 
+	private final InternalIdEdges inferredAncestors;
+	private final InternalSctIdSet unsatisfiableConcepts;
+	private final InternalSctIdMultimap equivalentConcepts;
+
 	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
 			final InternalIdEdges statedAncestors,
 			final InternalIdEdges statedDescendants, 
-			final InternalIdEdges inferredAncestors, 
 			final InternalSctIdSet fullyDefinedConcepts,
 			final InternalSctIdSet exhaustiveConcepts, 
 			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
 			final InternalIdMultimap<StatementFragment> inferredNonIsARelationships,
 			final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers,
-			final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers) {
+			final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers,
+			final InternalIdEdges inferredAncestors,
+			final InternalSctIdSet unsatisfiableConcepts,
+			final InternalSctIdMultimap equivalentConcepts) {
 
 		this.conceptMap = conceptMap;
 		this.statedAncestors = statedAncestors;
 		this.statedDescendants = statedDescendants;
-		this.inferredAncestors = inferredAncestors;
 		this.fullyDefinedConcepts = fullyDefinedConcepts;
 		this.exhaustiveConcepts = exhaustiveConcepts;
 		this.statedNonIsARelationships = statedNonIsARelationships;
 		this.inferredNonIsARelationships = inferredNonIsARelationships;
 		this.statedConcreteDomainMembers = statedConcreteDomainMembers;
 		this.inferredConcreteDomainMembers = inferredConcreteDomainMembers;
+		this.inferredAncestors = inferredAncestors;
+		this.unsatisfiableConcepts = unsatisfiableConcepts;
+		this.equivalentConcepts = equivalentConcepts;
 	}
 
 	public InternalIdMap getConceptMap() {
@@ -79,6 +86,14 @@ public final class ReasonerTaxonomy {
 
 	public InternalIdEdges getInferredAncestors() {
 		return checkNotNull(inferredAncestors, "Inferred ancestors are unset on this taxonomy.");
+	}
+
+	public InternalSctIdSet getUnsatisfiableConcepts() {
+		return checkNotNull(unsatisfiableConcepts, "Unsatisfiable concept IDs are unset on this taxonomy.");
+	}
+
+	public InternalSctIdMultimap getEquivalentConcepts() {
+		return checkNotNull(equivalentConcepts, "Inferred equivalences are unset on this taxonomy.");
 	}
 
 	public InternalSctIdSet getFullyDefinedConcepts() {
@@ -105,19 +120,29 @@ public final class ReasonerTaxonomy {
 		return inferredConcreteDomainMembers;
 	}
 
-	public ReasonerTaxonomy withInferredAncestors(final InternalIdEdges newInferredAncestors) {
-		checkNotNull(inferredAncestors, "Inferred ancestor argument may not be null.");
-		checkState(this.inferredAncestors == null, "Inferred ancestors are already set on this taxonomy.");
+	public ReasonerTaxonomy withInferences(final InternalIdEdges newInferredAncestors, 
+			final InternalSctIdSet newUnsatisfiableConcepts,
+			final InternalSctIdMultimap newEquivalentConcepts) {
+
+		checkNotNull(newInferredAncestors, "Inferred ancestors may not be null.");
+		checkNotNull(newUnsatisfiableConcepts, "Inferred unsatisfiable concepts may not be null.");
+		checkNotNull(newEquivalentConcepts, "Inferred equivalent concept sets may not be null.");
+
+		checkState(this.inferredAncestors == null, "Inferred ancestors are already present in this taxonomy.");
+		checkState(this.unsatisfiableConcepts == null, "Inferred unsatisfiable concepts are already present in this taxonomy.");
+		checkState(this.equivalentConcepts == null, "Inferred equivalent concept sets are already present in this taxonomy.");
 
 		return new ReasonerTaxonomy(conceptMap, 
 				statedAncestors, 
 				statedDescendants, 
-				newInferredAncestors, 
 				fullyDefinedConcepts, 
 				exhaustiveConcepts, 
 				statedNonIsARelationships, 
 				inferredNonIsARelationships, 
 				statedConcreteDomainMembers, 
-				inferredConcreteDomainMembers);
+				inferredConcreteDomainMembers,
+				newInferredAncestors, 
+				newUnsatisfiableConcepts,
+				newEquivalentConcepts);
 	}
 }
