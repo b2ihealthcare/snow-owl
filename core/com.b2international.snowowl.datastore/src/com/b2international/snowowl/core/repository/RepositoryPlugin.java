@@ -39,6 +39,7 @@ import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
+import com.b2international.snowowl.core.branch.TimestampProvider;
 import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
@@ -106,13 +107,13 @@ public final class RepositoryPlugin extends Plugin {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		mapper.registerModule(new PrimitiveCollectionModule());
 		env.services().registerService(ObjectMapper.class, mapper);
-		// initialize class loader registry
 		// initialize Notification support
 		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), env.plugins().getCompositeClassLoader()));
 		// initialize Index Settings
 		final IndexSettings indexSettings = new IndexSettings();
 		indexSettings.putAll(initIndexSettings(env));
 		env.services().registerService(IndexSettings.class, indexSettings);
+		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 	}
 	
 	private Map<String, Object> initIndexSettings(Environment env) {
