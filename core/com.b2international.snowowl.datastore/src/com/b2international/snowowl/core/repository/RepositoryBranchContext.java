@@ -25,9 +25,9 @@ import com.b2international.snowowl.core.domain.TransactionContextProvider;
 /**
  * @since 4.5
  */
-public class CDOBranchContext extends DefaultBranchContext implements TransactionContextProvider {
+public final class RepositoryBranchContext extends DefaultBranchContext implements TransactionContextProvider {
 	
-	CDOBranchContext(RepositoryContext context, Branch branch, String branchPath) {
+	RepositoryBranchContext(RepositoryContext context, Branch branch, String branchPath) {
 		super(context, branch, branchPath);
 	}
 	
@@ -41,7 +41,7 @@ public class CDOBranchContext extends DefaultBranchContext implements Transactio
 	
 	@Override
 	public TransactionContext get(BranchContext context, String userId, String commitComment, String parentContextDescription) {
-		return new CDOTransactionContext(context, userId, commitComment, parentContextDescription);
+		return new RepositoryTransactionContext(context, userId, commitComment, parentContextDescription);
 	}
 	
 }

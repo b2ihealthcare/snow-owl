@@ -69,7 +69,7 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 	
 	@Override
 	public BranchContext get(RepositoryContext context, Branch branch, String branchPath) {
-		return new CDOBranchContext(context, branch, branchPath);
+		return new RepositoryBranchContext(context, branch, branchPath);
 	}
 
 }

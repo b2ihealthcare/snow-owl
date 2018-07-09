@@ -62,7 +62,7 @@ import com.google.common.base.Throwables;
 /**
  * @since 4.5
  */
-public final class CDOTransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class RepositoryTransactionContext extends DelegatingBranchContext implements TransactionContext {
 
 	private final String userId;
 	private final String commitComment;
@@ -76,7 +76,7 @@ public final class CDOTransactionContext extends DelegatingBranchContext impleme
 	@JsonIgnore
 	private transient final StagingArea staging;
 
-	CDOTransactionContext(BranchContext context, String userId, String commitComment, String parentContextDescription) {
+	RepositoryTransactionContext(BranchContext context, String userId, String commitComment, String parentContextDescription) {
 		super(context);
 		this.userId = userId;
 		this.commitComment = commitComment;
