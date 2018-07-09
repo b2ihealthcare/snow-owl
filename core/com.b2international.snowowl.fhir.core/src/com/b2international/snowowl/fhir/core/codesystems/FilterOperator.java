@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
@@ -23,6 +24,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * 
  * @since 6.3
  */
+@ResourceNarrative("The kind of operation to perform as a part of a property based filter.")
 public enum FilterOperator implements FhirCodeSystem {
 	
 	//The specified property of the code equals the provided value.

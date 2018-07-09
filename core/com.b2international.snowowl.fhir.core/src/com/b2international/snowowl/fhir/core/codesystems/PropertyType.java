@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR property type code system
  * 
  * @since 6.4
  */
+@ResourceNarrative("The type of a property value.")
 public enum PropertyType implements FhirCodeSystem {
 	
 	CODE("code"),

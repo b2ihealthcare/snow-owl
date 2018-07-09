@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR extension type code system
  * TODO: finish this list
@@ -22,6 +24,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
  * 
  * @since 6.4
  */
+@ResourceNarrative("The type of a property value.")
 public enum ExtensionType implements FhirCodeSystem {
 	
 	CODE("code"),

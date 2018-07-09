@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR Concept property type code system
  * @since 6.4
  */
+@ResourceNarrative("The type of a property value.")
 public enum ConceptPropertyType implements FhirCodeSystem {
 	
 	CODE(PropertyType.CODE.getCodeValue(), "code (internal reference)"),

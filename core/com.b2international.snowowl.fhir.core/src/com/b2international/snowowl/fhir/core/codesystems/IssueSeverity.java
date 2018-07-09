@@ -16,12 +16,14 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
 
 /**
  * FHIR Issue Severity Code system
  * 
  * @since 6.4
  */
+@ResourceNarrative("How the issue affects the success of the action.")
 public enum IssueSeverity implements FhirCodeSystem {
 	
 	//The issue caused the action to fail, and no further checking could be performed.

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR Operation outcome codesystem.
  * 
@@ -22,6 +24,7 @@ package com.b2international.snowowl.fhir.core.codesystems;
  *  
  * @since 6.4
  */
+@ResourceNarrative("Operation Outcome codes used by FHIR test servers (see Implementation file translations.xml).")
 public enum OperationOutcomeCode implements FhirCodeSystem {
 	
 	MSG_AUTH_REQUIRED("You must authenticate before you can use this service"),

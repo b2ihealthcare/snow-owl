@@ -15,11 +15,14 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR Bundle type code system
  * 
  * @since 6.4
  */
+@ResourceNarrative("Indicates the purpose of a bundle - how it was intended to be used.")
 public enum BundleType implements FhirCodeSystem {
 	
 	//The bundle is a document. The first resource is a Composition

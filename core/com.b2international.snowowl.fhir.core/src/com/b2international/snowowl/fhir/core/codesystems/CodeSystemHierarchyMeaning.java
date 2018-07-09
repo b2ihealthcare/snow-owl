@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.codesystems;
 
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
+
 /**
  * FHIR Code system hierarchy meaning code system
  * @since 6.4
  */
+@ResourceNarrative("The meaning of the hierarchy of concepts in a code system.")
 public enum CodeSystemHierarchyMeaning implements FhirCodeSystem {
 	
 	GROUPED_BY("Grouped By"),

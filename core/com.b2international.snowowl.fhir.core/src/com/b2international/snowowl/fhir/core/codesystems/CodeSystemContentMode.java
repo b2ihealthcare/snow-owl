@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.google.common.collect.Lists;
 
 /**
@@ -26,6 +27,7 @@ import com.google.common.collect.Lists;
  * 
  * @since 6.4
  */
+@ResourceNarrative("How much of the content of the code system - the concepts and codes it defines - are represented in a code system resource.")
 public enum CodeSystemContentMode implements FhirCodeSystem {
 	
 	//None of the concepts defined by the code system are included in the code system resource.

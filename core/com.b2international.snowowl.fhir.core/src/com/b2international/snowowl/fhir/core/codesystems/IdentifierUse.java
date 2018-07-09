@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
 
 /**
  * usual	 The identifier recommended for display and use in real-world interactions.
@@ -26,6 +27,7 @@ import com.b2international.commons.StringUtils;
  * @see <a href="https://www.hl7.org/fhir/codesystem-identifier-use.html">FHIR:CodeSystem:Terminology</a>
  * @since 6.4
  */
+@ResourceNarrative("Identifies the purpose for this identifier, if known.")
 public enum IdentifierUse implements FhirCodeSystem {
 	
 	USUAL,
