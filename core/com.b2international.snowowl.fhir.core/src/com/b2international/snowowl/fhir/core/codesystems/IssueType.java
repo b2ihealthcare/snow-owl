@@ -51,61 +51,67 @@ public enum IssueType implements FhirCodeSystem {
 	/**
 	 * Content invalid against the specification or a profile.
 	 */
-	INVALID,
+	INVALID("Invalid Content"),
 	
 	/**
 	 * A structural issue in the content such as wrong namespace, or unable to parse the content completely, or invalid json syntax.
 	 */
-	STRUCTURE,
+	STRUCTURE("Structural Issue"),
 	
 	/**
 	 * A required element is missing.
 	 */
-	REQUIRED,
+	REQUIRED("Required element missing"),
 	
 	/**
 	 * An element value is invalid.
 	 */
-	VALUE,
+	VALUE("Element value invalid"),
 	
 	/**
 	 * A content validation rule failed - e.g. a schematron rule.
 	 */
-	INVARIANT,
+	INVARIANT("Validation rule failed"),
 	
 	/**
 	 * An authentication/authorization/permissions issue of some kind.
 	 */
-	SECURITY,
+	SECURITY("Security Problem"),
 	
 	/**
 	 * The client needs to initiate an authentication process.
 	 */
-	LOGIN,
-	UNKNOWN,
-	EXPIRED,
-	FORBIDDEN,
-	SUPPRESSED,
-	PROCESSING,
-	NOT_SUPPORTED,
-	DUPLICATE,
-	NOT_FOUND,
-	TOO_LONG,
-	CODE_INVALID,
-	EXTENSION,
-	TOO_COSTLY,
-	BUSINESS_RULE,
-	CONFLICT,
-	INCOMPLETE,
-	TRANSIENT,
-	LOCK_ERROR,
-	NO_STORE,
-	EXCEPTION,
-	TIMEOUT,
-	THROTTLED,
-	INFORMATIONAL;
+	LOGIN("Login Required"),
+	UNKNOWN("Unknown User"),
+	EXPIRED("Session Expired"),
+	FORBIDDEN("Forbidden"),
+	SUPPRESSED("Information Suppressed"),
+	PROCESSING("Processing Failure"),
+	NOT_SUPPORTED("Content not supported"),
+	DUPLICATE("Duplicate"),
+	NOT_FOUND("Not Found"),
+	TOO_LONG("Content too long"),
+	CODE_INVALID("Invalid code"),
+	EXTENSION("Unacceptable extension"),
+	TOO_COSTLY("Operation Too Constly"),
+	BUSINESS_RULE("Business Rule Violation"),
+	CONFLICT("Edit Version Conflict"),
+	INCOMPLETE("Incomplete Results"),
+	TRANSIENT("Transient Issue"),
+	LOCK_ERROR("Lock Error"),
+	NO_STORE("No Store Available"),
+	EXCEPTION("Exception"),
+	TIMEOUT("Timeout"),
+	THROTTLED("Throttled"),
+	INFORMATIONAL("Informational Note");
 	
 	public static final String CODE_SYSTEM_URI = "http://hl7.org/fhir/issue-type";
+	
+	private String displayName;
+	
+	private IssueType(String displayName) {
+		this.displayName = displayName;
+	}
 	
 	@Override
 	public String getCodeValue() {
@@ -114,7 +120,7 @@ public enum IssueType implements FhirCodeSystem {
 	
 	@Override
 	public String getDisplayName() {
-		return getCodeValue();
+		return displayName;
 	}
 	
 	@Override

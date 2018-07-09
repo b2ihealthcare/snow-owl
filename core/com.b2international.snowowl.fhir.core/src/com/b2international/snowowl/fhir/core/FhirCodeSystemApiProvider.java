@@ -21,10 +21,13 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -95,7 +98,46 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	@Override
 	public LookupResult lookup(LookupRequest lookupRequest) {
-		throw new UnsupportedOperationException();
+		
+		String system = lookupRequest.getSystem();
+		String code = lookupRequest.getCode();
+		
+		if (StringUtils.isEmpty(system) || StringUtils.isEmpty(code)) {
+			throw new BadRequestException("System or code parameters must not be null.");
+		}
+		validateRequestedProperties(lookupRequest);
+		
+		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
+		
+		//find the matching code system first
+		Class<?> codeSytemClass = codeSystemClasses.stream()
+			.filter(csc -> {
+				Object codeSystemEnum = createCodeSystemEnum(csc);
+				if (codeSystemEnum instanceof FhirCodeSystem) {
+					FhirCodeSystem fhirCodeSystem = (FhirCodeSystem) codeSystemEnum;
+					return system.equals(fhirCodeSystem.getCodeSystemUri());
+				}
+				return false;
+			})
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("Could not find code system [%s].", system));
+		
+		//map the code system class to enum constants
+		Set<FhirCodeSystem> codeSystemEnums = Sets.newHashSet(codeSytemClass.getDeclaredFields()).stream()
+			.filter(Field::isEnumConstant)
+			.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), codeSytemClass))
+			.collect(Collectors.toSet());
+			
+		//find the matching enum code
+		FhirCodeSystem fhirCodeSystem = codeSystemEnums.stream()
+			.filter(cs -> code.equals(cs.getCodeValue()))
+			.findAny()
+			.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, system));
+		
+		return LookupResult.builder()
+			.name(codeSytemClass.getSimpleName())
+			.display(fhirCodeSystem.getDisplayName())
+			.build();
 	}
 	
 	@Override
@@ -127,12 +169,12 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	private CodeSystem buildCodeSystem(FhirCodeSystem fhirCodeSystem) {
 		
 		String supportedUri = fhirCodeSystem.getCodeSystemUri();
-	
-		String id = supportedUri.substring(supportedUri.lastIndexOf("/") + 1, supportedUri.length());
-	
+
+		String id = getIdFromSystem(supportedUri);
+		
 		Builder builder = CodeSystem.builder(id)
 			.language("en")
-			.name(id)
+			.name(fhirCodeSystem.getClass().getSimpleName())
 			.publisher("www.hl7.org")
 			.copyright("© 2011+ HL7")
 			.caseSensitive(true)
@@ -170,6 +212,14 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return builder.build();
 	}
 	
+/**
+	 * @param supportedUri
+	 * @return
+	 */
+	private String getIdFromSystem(String supportedUri) {
+		return supportedUri.substring(supportedUri.lastIndexOf("/") + 1, supportedUri.length());
+	}
+
 	/**
 	 * @param codeSystemPackageClass
 	 * @return

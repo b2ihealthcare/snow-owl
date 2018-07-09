@@ -31,7 +31,7 @@ public interface FhirCodeSystem {
 	 * @return
 	 */
 	String getCodeSystemUri();
-
+	
 	/**
 	 * Returns the code from this code system.
 	 * @return

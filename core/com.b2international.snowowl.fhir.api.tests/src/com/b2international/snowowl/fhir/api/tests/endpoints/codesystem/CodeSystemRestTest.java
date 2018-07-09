@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.endpoints;
+package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -130,7 +130,7 @@ public class CodeSystemRestTest extends FhirTest {
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("status", equalTo("active")) //mandatory
-			.body("name", equalTo("issue-type")) //summary
+			.body("name", equalTo("IssueType")) //summary
 			.body("concept", notNullValue()) //optional
 			.body("copyright", containsString("2011+ HL7")) //optional
 			.statusCode(200);
