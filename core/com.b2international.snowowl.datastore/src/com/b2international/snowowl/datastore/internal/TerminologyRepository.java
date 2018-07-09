@@ -46,7 +46,6 @@ import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
@@ -92,7 +91,7 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
 		RevisionIndex index = initIndex(mapper, branching);
 		bind(Repository.class, this);
-		bind(ClassLoader.class, service(RepositoryClassLoaderProviderRegistry.class).getClassLoader());
+		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
 		// initialize the index
 		index.admin().create();
 		checkHealth();

@@ -21,25 +21,12 @@
       </processor>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.repositoryInitializer">
-      <initializer
-            class="com.b2international.snowowl.datastore.server.snomed.SnomedRepositoryInitializer"
-            repositoryUuid="snomedStore">
-      </initializer>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.versioningManager">
       <manager
             class="com.b2international.snowowl.datastore.server.snomed.version.SnomedVersioningManager"
             interface="com.b2international.snowowl.datastore.server.snomed.ISnomedVersioningManager"
             terminologyId="com.b2international.snowowl.terminology.snomed">
       </manager>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.classLoaderProvider">
-      <classLoaderProvider
-            class="com.b2international.snowowl.datastore.server.snomed.SnomedClassLoaderProvider">
-      </classLoaderProvider>
    </extension>
    <extension
          point="com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor">

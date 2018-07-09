@@ -49,7 +49,6 @@ import com.b2international.snowowl.core.events.util.ApiRequestHandler;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
 import com.b2international.snowowl.datastore.ServerProtocolFactoryRegistry;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
@@ -109,10 +108,8 @@ public final class RepositoryPlugin extends Plugin {
 		mapper.registerModule(new PrimitiveCollectionModule());
 		env.services().registerService(ObjectMapper.class, mapper);
 		// initialize class loader registry
-		env.services().registerService(RepositoryClassLoaderProviderRegistry.class, new ExtensionBasedRepositoryClassLoaderProviderRegistry());
-		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
 		// initialize Notification support
-		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), classLoader));
+		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), env.plugins().getCompositeClassLoader()));
 		// initialize Index Settings
 		final IndexSettings indexSettings = new IndexSettings();
 		indexSettings.putAll(initIndexSettings(env));
@@ -238,7 +235,7 @@ public final class RepositoryPlugin extends Plugin {
 
 	private void initializeRequestSupport(Environment env, int numberOfWorkers) {
 		final IEventBus events = env.service(IEventBus.class);
-		final ClassLoader classLoader = env.service(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
+		final ClassLoader classLoader = env.plugins().getCompositeClassLoader();
 		for (int i = 0; i < numberOfWorkers; i++) {
 			events.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
 		}

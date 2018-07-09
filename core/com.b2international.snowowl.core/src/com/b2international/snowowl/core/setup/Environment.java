@@ -37,12 +37,14 @@ public final class Environment implements ServiceProvider {
 	private final ApplicationContext context = ApplicationContext.getInstance();
 	private final IManagedContainer container = IPluginContainer.INSTANCE;
 	private final File homeDirectory;
+	private final Plugins plugins;
 	
 	private File configDirectory;
 	private File resourcesDirectory;
 	private File defaultsDirectory;
 
 	public Environment(final Plugins plugins, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
+		this.plugins = plugins;
 		this.homeDirectory = homeDirectory;
 		initializeEnvironmentDirectories(configuration);
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(plugins.getBundleContext());
@@ -66,6 +68,14 @@ public final class Environment implements ServiceProvider {
 		configuration.setDefaultsDirectory(this.defaultsDirectory.getAbsolutePath());
 	}
 
+	/**
+	 * Returns the currently loaded list of {@link Plugin}s via a {@link Plugins} instance. 
+	 * @return
+	 */
+	public Plugins plugins() {
+		return plugins;
+	}
+	
 	/**
 	 * Returns the {@link ApplicationContext} instance to register/retrieve
 	 * services.

@@ -3,12 +3,9 @@
 <plugin>
    <extension-point id="serviceConfigJob" name="serviceConfigJob" schema="schema/serviceConfigJob.exsd"/>
    <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
-   <extension-point id="repository" name="Repository" schema="schema/repository.exsd"/>
    <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
-   <extension-point id="classLoaderProvider" name="classLoaderProvider" schema="schema/classLoaderProvider.exsd"/>
-   <extension-point id="repositoryInitializer" name="Repository Initializer" schema="schema/repositoryInitializer.exsd"/>
    <extension-point id="serverProtocolFactory" name="Net4j Protocol Factory" schema="schema/serverProtocolFactory.exsd"/>
    <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
    <extension-point id="mergeConflictRuleProvider" name="mergeConflictRuleProvider" schema="schema/mergeConflictRuleProvider.exsd"/>

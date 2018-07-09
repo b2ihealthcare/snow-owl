@@ -23,6 +23,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.framework.BundleContext;
 
+import com.b2international.commons.CompositeClassLoader;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -36,6 +37,7 @@ public final class Plugins {
 	private BundleContext bundleContext = CoreActivator.getContext();
 
 	private final Collection<Plugin> plugins;
+	private final CompositeClassLoader compositeClassLoader;
 
 	/**
 	 * Constructs a new {@link Plugins} instance with the given set of Plug-ins.
@@ -44,6 +46,9 @@ public final class Plugins {
 	 */
 	public Plugins(Collection<Plugin> plugins) {
 		this.plugins = ImmutableList.copyOf(plugins);
+		final CompositeClassLoader classLoader = new CompositeClassLoader();
+		plugins.stream().map(Plugin::getClass).map(Class::getClassLoader).forEach(classLoader::add);
+		this.compositeClassLoader = classLoader;
 	}
 
 	/**
@@ -139,6 +144,13 @@ public final class Plugins {
 			});
 		}
 		return moduleConfigMap;
+	}
+
+	/**
+	 * @return a class loader instance that can load classes from all available {@link Plugin} instances.
+	 */
+	public ClassLoader getCompositeClassLoader() {
+		return compositeClassLoader;
 	}
 
 }
