@@ -20,6 +20,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.api.tests.serialization.domain.CodeSystemSerializationTest;
+import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.LookupRequestDeserializationTest;
 import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.SubsumptionRequestTest;
 
 /**
@@ -47,13 +48,14 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	//This tests are pretty meaningless
 	ValueSetSerializationTest.class,
 	ModelDeserializationTest.class,
+//	LookupRequestDeserializationTest.class,
 	ExceptionTest.class,
 
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	FilterTest.class,
-	*/
 	SubsumptionRequestTest.class
+	 */
 })
 public class AllFhirTests {
 }

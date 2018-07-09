@@ -28,6 +28,7 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.4
  */
 @JsonDeserialize(builder = LookupRequest.Builder.class)
+@JsonPropertyOrder({"code", "system", "version", "coding"})
 public class LookupRequest {
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)

@@ -16,17 +16,17 @@
 package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.api.service.BaseFhirRestService;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -47,12 +47,7 @@ public class LookupCodeSystemRestTest extends FhirTest {
 		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
-	//@Test
-	public void printAllCodesystems() {
-		givenAuthenticatedRequest("/fhir")
-		.when().get("/CodeSystem").prettyPrint();
-	}
-	
+	//GET with parameters
 	@Test
 	public void lookupFhirCodeSystemCodeTest() {
 		givenAuthenticatedRequest("/fhir")
@@ -69,5 +64,35 @@ public class LookupCodeSystemRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
+	//POST with request body
+	@Test
+	public void lookupFhirCodeSystemCodingTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+				.system("http://hl7.org/fhir/issue-severity")
+				.code("fatal")
+				.build();
+
+		LookupRequest request = LookupRequest.builder()
+				.coding(coding)
+				.build();
+		
+		Fhir fhirParameters = new Parameters.Fhir(request);
+		
+		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		printPrettyJson(fhirParameters);
+		
+		givenAuthenticatedRequest("/fhir")
+			.contentType(BaseFhirRestService.APPLICATION_FHIR_JSON)
+			.body(jsonBody)
+			.when().post("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("IssueSeverity"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Fatal"))
+			.statusCode(200);
+	}
 	
 }

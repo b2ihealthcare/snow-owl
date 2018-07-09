@@ -135,5 +135,10 @@ public final class Parameter extends FhirProperty {
 				.part(ImmutableList.copyOf(parts))
 				.build();
 	}
+
+	@Override
+	public String toString() {
+		return "Parameter [name=" + name + " value=" + getValue() + "]";
+	}
 	
 }
