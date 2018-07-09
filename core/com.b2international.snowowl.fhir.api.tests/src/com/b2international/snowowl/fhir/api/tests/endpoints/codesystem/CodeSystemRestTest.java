@@ -60,14 +60,14 @@ public class CodeSystemRestTest extends FhirTest {
 	
 	//@Test
 	public void pingTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("/CodeSystem/ping")
 			.then().assertThat().statusCode(200);
 	}
 	
 	//@Test
 	public void printAllCodesystems() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		.when().get("/CodeSystem").prettyPrint();
 	}
 	
@@ -75,7 +75,7 @@ public class CodeSystemRestTest extends FhirTest {
 	@Test
 	public void getFullCodeSystemsTest() {
 		
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("/CodeSystem")
 			.then()
 			.body("resourceType", equalTo("Bundle"))
@@ -95,7 +95,7 @@ public class CodeSystemRestTest extends FhirTest {
 	@Test
 	public void getCodeSystemsSummaryTest() {
 		
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", true)
 			.when().get("/CodeSystem").then()
 			.body("resourceType", equalTo("Bundle"))
@@ -110,7 +110,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Fully detailed SNOMED CT code system
 	@Test
 	public void getSnomedCodeSystemTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
 			.when().get("/CodeSystem/{id}")
 			.then()
@@ -123,7 +123,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Full FHIR code system
 	@Test
 	public void getFhirCodeSystemTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", false)
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -139,7 +139,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Summary-only FHIR code system
 	@Test
 	public void getFhirCodeSystemSummaryTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", true)
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -157,7 +157,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Summary-count should not be allowed for non-search type operations
 	@Test
 	public void getFhirCodeSystemCountTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "count")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -171,7 +171,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Summary-data FHIR code system (remove text element)
 	@Test
 	public void getFhirCodeSystemDataTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "data")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -193,7 +193,7 @@ public class CodeSystemRestTest extends FhirTest {
 	//Summary-text FHIR code system (text, id, meta, mandatory)
 	@Test
 	public void getFhirCodeSystemTextTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "text")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -217,7 +217,7 @@ public class CodeSystemRestTest extends FhirTest {
 	 */
 	@Test
 	public void getFhirCodeSystemElementsTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_elements", "name", "url")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")
@@ -244,7 +244,7 @@ public class CodeSystemRestTest extends FhirTest {
 	 */
 	@Test
 	public void getFhirCodeSystemIncorrectElementsTest() {
-		givenAuthenticatedRequest("/fhir")
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_elements", "xyz", "abcs")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
 			.when().get("/CodeSystem/{id}")

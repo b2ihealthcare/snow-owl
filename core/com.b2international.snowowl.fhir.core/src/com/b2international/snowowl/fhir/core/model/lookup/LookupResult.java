@@ -25,6 +25,8 @@ import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
 import com.b2international.snowowl.fhir.core.model.dt.Property;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -33,6 +35,7 @@ import com.google.common.collect.ImmutableList;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#lookup">FHIR:CodeSystem:Operations:lookup</a>
  * @since 6.4
  */
+@JsonDeserialize(builder = LookupResult.Builder.class)
 @JsonPropertyOrder({"name", "version", "display", "designation", "property"})
 public final class LookupResult {
 	
@@ -96,14 +99,15 @@ public final class LookupResult {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<LookupResult> {
 		
 		private String name;
 		private String version;
 		private String display;
 		
-		private final ImmutableList.Builder<Designation> designations = ImmutableList.builder();
-		private final ImmutableList.Builder<Property> properties = ImmutableList.builder();
+		private ImmutableList.Builder<Designation> designations = ImmutableList.builder();
+		private ImmutableList.Builder<Property> properties = ImmutableList.builder();
 
 		public Builder name(final String name) {
 			this.name = name;
@@ -127,6 +131,18 @@ public final class LookupResult {
 		
 		public Builder addDesignation(Designation designation) {
 			designations.add(designation);
+			return this;
+		}
+		
+		public Builder designation(Collection<Designation> designs) {
+			designations = ImmutableList.builder();
+			designations.addAll(designs);
+			return this;
+		}
+		
+		public Builder property(Collection<Property> props) {
+			properties = ImmutableList.builder();
+			properties.addAll(props);
 			return this;
 		}
 

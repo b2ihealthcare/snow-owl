@@ -21,7 +21,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -30,6 +33,7 @@ import com.google.common.collect.ImmutableList;
  * @since 6.4
  */
 @JsonPropertyOrder({"code", "value", "description", "subProperty"})
+@JsonDeserialize(builder = Property.Builder.class)
 public final class Property extends FhirProperty {
 	
 	//Identifies the property returned (1..1)
@@ -70,11 +74,13 @@ public final class Property extends FhirProperty {
 	/**
 	 * @since 6.4
 	 */
+	@JsonIgnoreProperties("value")
+	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends FhirProperty.Builder<Property, Builder> {
 		
 		private Code code;
 		private String description;
-		private ImmutableList.Builder<SubProperty> subProperty = ImmutableList.builder();
+		private ImmutableList.Builder<SubProperty> subProperties = ImmutableList.builder();
 
 		Builder() {}
 		
@@ -93,8 +99,14 @@ public final class Property extends FhirProperty {
 			return this;
 		}
 		
-		public Builder subProperty(final SubProperty subProperty) {
-			this.subProperty.add(subProperty);
+		public Builder subProperty(Collection<SubProperty> properties) {
+			subProperties = ImmutableList.builder();
+			subProperties.addAll(properties);
+			return this;
+		}
+		
+		public Builder addSubProperty(final SubProperty subProperty) {
+			this.subProperties.add(subProperty);
 			return this;
 		}
 		
@@ -105,7 +117,7 @@ public final class Property extends FhirProperty {
 		
 		@Override
 		protected Property doBuild() {
-			return new Property(type(), value(), code, description, subProperty.build());
+			return new Property(type(), value(), code, description, subProperties.build());
 		}
 		
 	}

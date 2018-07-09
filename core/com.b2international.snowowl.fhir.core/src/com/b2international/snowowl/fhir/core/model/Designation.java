@@ -19,7 +19,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * This class represents a FHIR designation.
@@ -40,6 +43,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @see <a href="https://www.hl7.org/fhir/codesystem-operations.html#4.7.15.2.1">FHIR:CodeSystem:Operations</a>
  * @since 6.4
  */
+@JsonDeserialize(builder = Designation.Builder.class)
 @JsonPropertyOrder({"language", "use", "value"})
 public final class Designation {
 	
@@ -79,14 +83,20 @@ public final class Designation {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends ValidatingBuilder<Designation>{
 		
-		private Code languageCode;
+		private Code language;
 		private Coding use;
 		private String value;
 
 		public Builder languageCode(final String languageCode) {
-			this.languageCode = new Code(languageCode);
+			this.language = new Code(languageCode);
+			return this;
+		}
+		
+		public Builder language(final Code language) {
+			this.language = language;
 			return this;
 		}
 		
@@ -102,7 +112,7 @@ public final class Designation {
 
 		@Override
 		protected Designation doBuild() {
-			return new Designation(languageCode, use, value);
+			return new Designation(language, use, value);
 		}
 	}
 	

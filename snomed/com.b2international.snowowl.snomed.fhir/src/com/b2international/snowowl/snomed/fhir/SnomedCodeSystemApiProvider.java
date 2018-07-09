@@ -33,6 +33,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -113,6 +114,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	@Override
 	public LookupResult lookup(LookupRequest lookup) {
+		
 		String version = lookup.getVersion();
 		String branchPath = getBranchPath(version);
 		
@@ -126,7 +128,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
 		
 		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
-				.setExpand(String.format("descriptions(),pt()%s%s", expandDescendants, expandAncestors))
+				.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
 		
 		return req.build(repositoryId(), branchPath)
@@ -150,13 +152,21 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		result.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
 		
 		// add remaining terms as designations
+		
+		String languageCode = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
 		for (SnomedDescription description : concept.getDescriptions()) {
-			final String preferredTermId = concept.getPt() == null ? "" : concept.getPt().getId();
-			if (!description.getId().equals(preferredTermId)) {
+				
+				Coding coding = Coding.builder()
+					.system(FHIR_URI.getUriValue())
+					.code(description.getTypeId())
+					.display(description.getType().getPt().getTerm())
+					.build();
+				
 				result.addDesignation(Designation.builder()
+					.languageCode(languageCode)
+					.use(coding)
 					.value(description.getTerm())
 					.build());
-			}
 		}
 		
 		if (requestedChild && concept.getDescendants() != null) {

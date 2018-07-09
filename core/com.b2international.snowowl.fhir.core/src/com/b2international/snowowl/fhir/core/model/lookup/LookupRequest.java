@@ -109,7 +109,7 @@ public class LookupRequest {
 	public String getSystem() {
 		if (system != null) {
 			return system;
-		} else if (coding != null) {
+		} else if (coding != null && coding.getSystem() != null) {
 			return coding.getSystem().getUriValue();
 		}
 		return null;

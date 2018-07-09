@@ -29,6 +29,7 @@ import io.swagger.annotations.ApiModelProperty;
 public abstract class FhirProperty {
 	
 	private final FhirDataType type;
+	
 	private final Object value;
 	
 	public FhirProperty(FhirDataType type, Object value) {
@@ -48,7 +49,9 @@ public abstract class FhirProperty {
 	
 	public static abstract class Builder<T extends FhirProperty, B extends Builder<T, B>> extends ValidatingBuilder<T> {
 		
+		@JsonIgnore
 		private Object value;
+		
 		private FhirDataType type;
 
 		protected Builder() {}

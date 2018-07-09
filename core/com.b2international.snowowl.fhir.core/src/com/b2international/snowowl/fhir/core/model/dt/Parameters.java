@@ -260,6 +260,17 @@ public final class Parameters {
 	 * @return
 	 */
 	public static Parameters from(Object object) {
+		
+		if (object instanceof Fhir) {
+			Fhir fhir = (Fhir) object;
+			return fhir.parameters;
+		}
+		
+		if (object instanceof Json) {
+			Json json = (Json) object;
+			return json.parameters;
+		}
+		
 		final Class<?> type = object.getClass();
 		checkArgument(type.getAnnotation(JsonPropertyOrder.class) != null, "%s must be annotated with @JsonPropertyOrder to specify FHIR properties and their order", type.getName());
 		String[] fhirFields = type.getAnnotation(JsonPropertyOrder.class).value();

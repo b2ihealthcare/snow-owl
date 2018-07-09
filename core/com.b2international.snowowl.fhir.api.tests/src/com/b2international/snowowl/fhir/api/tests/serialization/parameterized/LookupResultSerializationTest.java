@@ -125,7 +125,7 @@ public class LookupResultSerializationTest extends FhirTest {
 					.code("1234")
 					.description("propDescription")
 					.valueString("sds")
-					.subProperty(SubProperty.builder()
+					.addSubProperty(SubProperty.builder()
 						.code("subCode")
 						.description("subDescription")
 						.valueInteger(1)
