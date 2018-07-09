@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal;
 
+import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**

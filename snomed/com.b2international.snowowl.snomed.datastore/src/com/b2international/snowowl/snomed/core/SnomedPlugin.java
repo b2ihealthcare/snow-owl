@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.core;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
-import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;

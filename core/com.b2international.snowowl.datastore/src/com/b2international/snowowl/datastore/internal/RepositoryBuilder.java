@@ -17,8 +17,8 @@ package com.b2international.snowowl.datastore.internal;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 
 /**
