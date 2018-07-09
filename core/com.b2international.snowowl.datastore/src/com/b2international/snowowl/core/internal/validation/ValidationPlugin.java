@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -53,6 +54,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 6.0
  */
+@Component
 public final class ValidationPlugin extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");

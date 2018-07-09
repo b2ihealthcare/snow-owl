@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -42,7 +43,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 4.5
  */
-public class SnomedIdentifierBootstrap extends Plugin {
+@Component
+public final class SnomedIdentifierBootstrap extends Plugin {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
 	private static final String SNOMED_IDS_INDEX = "snomedids";

@@ -79,9 +79,9 @@ public enum ClassPathScanner {
 	 */
 	public Collection<Class<?>> getComponentClasses(Class<? extends Annotation> annotation) {
 		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesWithAnnotation(annotation);
-		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
+		return getComponentClasses(namesOfClassesWithAnnotation);
 	}
-	
+
 	/**
 	 * Returns classes that implement the given interface type.
 	 * @param type
@@ -89,7 +89,7 @@ public enum ClassPathScanner {
 	 */
 	public Collection<Class<?>> getComponentsClassesByInterface(Class<?> type) {
 		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesImplementing(type);
-		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
+		return getComponentClasses(namesOfClassesWithAnnotation);
 	}
 	
 	/**
@@ -99,7 +99,14 @@ public enum ClassPathScanner {
 	 */
 	public Collection<Class<?>> getComponentsClassesBySuperclass(Class<?> type) {
 		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfSubclassesOf(type);
-		return registry.classNamesToClassRefs(namesOfClassesWithAnnotation);
+		return getComponentClasses(namesOfClassesWithAnnotation);
+	}
+	
+	/*Filters and returns Class<?> instances for the given classNames, where the class is annotated with the Component annotation*/
+	private List<Class<?>> getComponentClasses(final List<String> classNames) {
+		return registry.classNamesToClassRefs(classNames).stream()
+				.filter(type -> type.isAnnotationPresent(Component.class))
+				.collect(Collectors.toList());
 	}
 	
 	/**

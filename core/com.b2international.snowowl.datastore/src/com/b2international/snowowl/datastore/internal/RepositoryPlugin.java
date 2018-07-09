@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.ConsoleProgressMonitor;
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
@@ -79,7 +80,8 @@ import com.google.common.net.HostAndPort;
 /**
  * @since 3.3
  */
-public class RepositoryPlugin extends Plugin {
+@Component
+public final class RepositoryPlugin extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger("core");
 	

@@ -19,6 +19,7 @@ import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -39,7 +40,8 @@ import com.google.inject.Injector;
 /**
  * @since 3.4
  */
-public class SnomedCoreBootstrap extends Plugin {
+@Component
+public final class SnomedCoreBootstrap extends Plugin {
 
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {

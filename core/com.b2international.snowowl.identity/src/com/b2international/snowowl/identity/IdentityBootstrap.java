@@ -17,6 +17,7 @@ package com.b2international.snowowl.identity;
 
 import java.util.List;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -27,7 +28,8 @@ import com.google.common.collect.Iterables;
 /**
  * @since 5.11
  */
-public class IdentityBootstrap extends Plugin {
+@Component
+public final class IdentityBootstrap extends Plugin {
 
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {

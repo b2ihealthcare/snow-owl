@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.internal;
 
 import org.osgi.service.prefs.PreferencesService;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -34,7 +35,8 @@ import com.b2international.snowowl.core.setup.Plugin;
 /**
  * @since 3.3
  */
-public class SnowOwlPlugin extends Plugin {
+@Component
+public final class SnowOwlPlugin extends Plugin {
 
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
