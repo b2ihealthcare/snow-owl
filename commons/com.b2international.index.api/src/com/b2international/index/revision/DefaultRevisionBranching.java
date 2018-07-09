@@ -31,14 +31,16 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	private final AtomicInteger branchIds = new AtomicInteger(0);
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
+	private final TimestampProvider timestampProvider;
 
-	public DefaultRevisionBranching(Provider<Index> index, ObjectMapper mapper) {
+	public DefaultRevisionBranching(Provider<Index> index, TimestampProvider timestampProvider, ObjectMapper mapper) {
 		super(index, mapper);
+		this.timestampProvider = timestampProvider;
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
 	}
 	
 	public long currentTime() {
-		return System.nanoTime();
+		return timestampProvider.getTimestamp();
 	}
 
 	public long nextBranchId() {

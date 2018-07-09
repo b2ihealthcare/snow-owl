@@ -58,6 +58,7 @@ public abstract class BaseRevisionIndexTest {
 	private Mappings mappings;
 	private Index rawIndex;
 	private RevisionIndex index;
+	private TimestampProvider timestampProvider;
 	
 	protected final String nextId() {
 		return Long.toString(storageKeys.getAndIncrement());
@@ -70,12 +71,13 @@ public abstract class BaseRevisionIndexTest {
 		configureMapper(mapper);
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, mapper), mapper);
+		timestampProvider = new TimestampProvider.Default();
+		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, timestampProvider, mapper), mapper);
 		index.admin().create();
 	}
 
-	protected BaseRevisionBranching createBranchingSupport(Index rawIndex, ObjectMapper mapper) {
-		return new DefaultRevisionBranching(Providers.of(rawIndex), mapper);
+	protected BaseRevisionBranching createBranchingSupport(Index rawIndex, TimestampProvider timestampProvider, ObjectMapper mapper) {
+		return new DefaultRevisionBranching(Providers.of(rawIndex), timestampProvider, mapper);
 	}
 
 	@After

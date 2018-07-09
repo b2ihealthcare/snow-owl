@@ -38,6 +38,7 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.DefaultRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -128,7 +129,7 @@ public final class TerminologyRepository extends DelegatingContext implements In
 	}
 	
 	private BaseRevisionBranching initializeBranchingSupport(int mergeMaxResults) {
-		final BaseRevisionBranching branchManager = new DefaultRevisionBranching(provider(Index.class), service(ObjectMapper.class));
+		final BaseRevisionBranching branchManager = new DefaultRevisionBranching(provider(Index.class), service(TimestampProvider.class), service(ObjectMapper.class));
 		bind(BaseRevisionBranching.class, branchManager);
 //		bind(BranchReplicator.class, branchManager);
 		

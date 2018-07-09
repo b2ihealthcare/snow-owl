@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.branch;
+package com.b2international.index.revision;
 
 /**
  * Represents an object capable of providing timestamp(s).
  * 
- * @since 4.1
+ * @since 7.0
  */
 public interface TimestampProvider {
 
 	/**
-	 * Provides a timestamp. Timestamps may be repeated on multiple invocations. 
+	 * Provides a timestamp. The method should return different timestamp on each invocation to represent the flow of time.
 	 * 
 	 * @return
 	 */
