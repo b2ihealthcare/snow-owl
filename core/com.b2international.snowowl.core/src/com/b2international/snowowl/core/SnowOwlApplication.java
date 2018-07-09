@@ -66,7 +66,7 @@ public enum SnowOwlApplication {
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
 
-	private Plugins bootstrap;
+	private Plugins plugins;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
 
@@ -110,13 +110,14 @@ public enum SnowOwlApplication {
 		if (!isRunning()) {
 			LOG.info("Bootstrapping Snow Owl...");
 			LOG.info("Scanning plugins...");
-			this.bootstrap = new Plugins(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class));
-			final File homeDirectory = getHomeDirectory(bootstrap.getBundleContext());
+			this.plugins = new Plugins(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class));
+			plugins.getPlugins().forEach(plugin -> LOG.info("loaded plugin [{}]", plugin));
+			final File homeDirectory = getHomeDirectory(plugins.getBundleContext());
 			checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
-			this.configuration = createConfiguration(bootstrap, homeDirectory, configPath);
-			this.environment = new Environment(bootstrap, homeDirectory, configuration);
+			this.configuration = createConfiguration(plugins, homeDirectory, configPath);
+			this.environment = new Environment(plugins, homeDirectory, configuration);
 			logEnvironment();
-			this.bootstrap.init(this.configuration, this.environment);
+			this.plugins.init(this.configuration, this.environment);
 		}
 	}
 
@@ -200,18 +201,18 @@ public enum SnowOwlApplication {
 	 */
 	public void run(PreRunRunnable preRunRunnable, IProgressMonitor monitor) throws Exception {
 		if (!isRunning()) {
-			checkState(bootstrap != null, "Bootstrap the application first");
+			checkState(plugins != null, "Bootstrap the application first");
 			if (preRunCompleted.compareAndSet(false, true)) {
-				this.bootstrap.preRun(configuration, environment);
+				this.plugins.preRun(configuration, environment);
 			}
 			if (preRunRunnable != null) {
 				preRunRunnable.run();
 			}
 			LOG.info("Preparing to run Snow Owl...");
-			this.bootstrap.run(configuration, environment);
+			this.plugins.run(configuration, environment);
 			checkApplicationState();
 			running.set(true);
-			this.bootstrap.postRun(configuration, environment);
+			this.plugins.postRun(configuration, environment);
 			LOG.info("Snow Owl successfully started.");
 		} else {
 			LOG.info("Snow Owl is already running.");

@@ -78,5 +78,10 @@ public abstract class Plugin {
 	 */
 	public void postRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 	}
+	
+	@Override
+	public String toString() {
+		return getClass().getName();
+	}
 
 }

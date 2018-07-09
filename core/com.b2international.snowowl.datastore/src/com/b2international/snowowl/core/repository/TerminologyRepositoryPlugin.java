@@ -47,7 +47,17 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 			} else {
 				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", repo.id(), repo.health(), repo.diagnosis());
 			}
-		}		
+		}
+		afterRun(configuration, env);
+	}
+
+	/**
+	 * Subclasses may override to provide additional service configuration via this {@link TerminologyRepositoryPlugin} after the initialization of the repository.
+	 * @param configuration
+	 * @param env
+	 * @throws Exception
+	 */
+	protected void afterRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 	}
 
 	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
