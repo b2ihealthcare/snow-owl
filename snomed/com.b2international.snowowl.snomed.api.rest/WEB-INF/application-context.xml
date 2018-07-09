@@ -18,8 +18,6 @@
 	<bean class="com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl" />
 	<bean class="com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl" />
 	
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedExportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedClassificationServiceImpl" />
