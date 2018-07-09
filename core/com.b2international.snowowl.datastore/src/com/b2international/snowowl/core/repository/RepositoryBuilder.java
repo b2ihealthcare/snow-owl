@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
+package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
-import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 

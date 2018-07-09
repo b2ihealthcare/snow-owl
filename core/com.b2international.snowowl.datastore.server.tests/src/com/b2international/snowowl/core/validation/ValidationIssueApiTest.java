@@ -38,11 +38,11 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
-import com.b2international.snowowl.datastore.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
+package com.b2international.snowowl.core.repository;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManagerImpl;
+import com.b2international.snowowl.datastore.internal.RpcServerServiceLookup;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.LogListener;

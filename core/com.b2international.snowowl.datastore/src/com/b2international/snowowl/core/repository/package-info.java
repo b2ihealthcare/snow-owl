@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
-
-import com.b2international.snowowl.core.Repository;
 
 /**
- * @since 4.1
+ * Contains classes related to configuring terminology repositories.
  */
-public interface InternalRepository extends Repository {
-
-	void setHealth(Health health, String diagnosis);
-
-	void checkHealth();
-}
+package com.b2international.snowowl.core.repository;

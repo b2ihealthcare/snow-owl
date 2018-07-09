@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal;
+package com.b2international.snowowl.core.repository;
 
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;

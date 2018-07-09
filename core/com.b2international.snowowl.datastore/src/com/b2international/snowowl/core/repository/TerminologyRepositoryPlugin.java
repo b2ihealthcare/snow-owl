@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
-import com.b2international.snowowl.datastore.internal.DefaultRepositoryManager;
 
 /**
  * @since 7.0

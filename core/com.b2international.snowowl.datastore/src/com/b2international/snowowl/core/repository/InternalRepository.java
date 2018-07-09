@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.core.repository;
+
+import com.b2international.snowowl.core.Repository;
 
 /**
- * Contains classes for internal use. This package should not be exported.
- * 
+ * @since 4.1
  */
-package com.b2international.snowowl.datastore.internal;
+public interface InternalRepository extends Repository {
+
+	void setHealth(Health health, String diagnosis);
+
+	void checkHealth();
+}

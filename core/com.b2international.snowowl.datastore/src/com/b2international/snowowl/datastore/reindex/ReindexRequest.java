@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.datastore.internal.InternalRepository;
+import com.b2international.snowowl.core.repository.InternalRepository;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
 /**

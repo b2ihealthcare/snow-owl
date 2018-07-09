@@ -30,9 +30,9 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
-import com.b2international.snowowl.datastore.internal.JsonSupport;
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

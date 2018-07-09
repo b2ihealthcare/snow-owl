@@ -135,7 +135,7 @@ class MigrationReplicationContext implements CDOReplicationContext {
 				final CDOBranch branch = currentBranchToReplicate.getValue();
 				LOGGER.info("Replicating branch: " + branch.getName() + " at " + branch.getBase().getTimeStamp());
 
-				com.b2international.snowowl.datastore.internal.InternalRepository internalRepository = (com.b2international.snowowl.datastore.internal.InternalRepository) context
+				com.b2international.snowowl.core.repository.InternalRepository internalRepository = (com.b2international.snowowl.core.repository.InternalRepository) context
 						.service(Repository.class);
 				InternalCDOBranchManager cdoBranchManager = (InternalCDOBranchManager) internalRepository
 						.getCdoBranchManager();				

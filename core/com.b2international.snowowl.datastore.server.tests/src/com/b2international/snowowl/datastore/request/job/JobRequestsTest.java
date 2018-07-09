@@ -35,7 +35,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.SystemNotification;
-import com.b2international.snowowl.datastore.internal.JsonSupport;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
