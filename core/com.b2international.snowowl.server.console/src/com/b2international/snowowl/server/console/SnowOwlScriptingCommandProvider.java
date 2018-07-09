@@ -25,7 +25,7 @@ import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.scripting.api.ScriptEngine;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.RepositoryClassLoaderProviderRegistry;
+import com.b2international.snowowl.core.setup.Plugins;
 
 /**
  * OSGi command contribution with groovy script execution command(s).
@@ -68,7 +68,7 @@ public class SnowOwlScriptingCommandProvider implements CommandProvider {
 		
 		try {
 			final String script = Files.lines(Paths.get(groovyScriptFile)).collect(Collectors.joining(System.getProperty("line.separator")));
-			final ClassLoader classLoader = ApplicationContext.getServiceForClass(RepositoryClassLoaderProviderRegistry.class).getClassLoader();
+			final ClassLoader classLoader = ApplicationContext.getServiceForClass(Plugins.class).getCompositeClassLoader();
 			ScriptEngine.run("groovy", classLoader, script, Collections.emptyMap());
 		} catch (Exception e) {
 			interpreter.printStackTrace(e);

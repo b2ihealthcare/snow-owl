@@ -21,12 +21,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 
 /**
  * WIP - Mainly client side SNOMED CT module preference provider, but currently it is used by the server as well.
@@ -55,23 +51,6 @@ public class ModulePreference {
 
 	private static SnomedConfiguration getSnomedConfiguration() {
 		return ApplicationContext.getInstance().getService(SnomedConfiguration.class);
-	}
-
-	/**
-	 * Returns a preference list of SNOMED CT module IDs that exist on the given branch.
-	 * 
-	 * @param branch
-	 * @return
-	 * @see #getModulePreference()
-	 */
-	public static List<String> getModulePreference(final IBranchPath branch) {
-		final SnomedConceptLookupService lookup = new SnomedConceptLookupService();
-		return FluentIterable.from(getModulePreference()).filter(new Predicate<String>() {
-			@Override
-			public boolean apply(String input) {
-				return lookup.exists(branch, input);
-			}
-		}).toList();
 	}
 
 }

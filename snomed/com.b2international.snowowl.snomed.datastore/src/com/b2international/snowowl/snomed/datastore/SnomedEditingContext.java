@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import static com.b2international.snowowl.datastore.cdo.CDOUtils.getObjectIfExists;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ENTIRE_TERM_CASE_INSENSITIVE;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
@@ -30,7 +29,6 @@ import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMes
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_REFERENCE_SET_MESSAGE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
-import static org.eclipse.emf.cdo.common.id.CDOID.NULL;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -44,12 +42,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
-import org.eclipse.emf.cdo.eresource.CDOResource;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
@@ -58,7 +50,6 @@ import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.ILookupService;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -66,16 +57,9 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Concepts;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -87,14 +71,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.ConceptModel;
-import com.b2international.snowowl.snomed.mrcm.ConstraintBase;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedStructuralRefSet;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
