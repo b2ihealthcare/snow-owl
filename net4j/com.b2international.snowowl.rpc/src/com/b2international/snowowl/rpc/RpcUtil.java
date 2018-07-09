@@ -26,6 +26,19 @@ import org.eclipse.spi.net4j.ClientProtocolFactory;
 public class RpcUtil {
 
 	/**
+	 * Registers and returns a service proxy for the given serviceClass.
+	 * 
+	 * @param container
+	 * @param serviceClass
+	 * @return
+	 */
+	public static <T> T createProxy(IManagedContainer container, Class<T> serviceClass) {
+		RpcProtocol protocol = getRpcClientProtocol(container);
+		protocol.registerClassLoader(serviceClass, serviceClass.getClassLoader());
+		return protocol.getServiceProxy(serviceClass);
+	}
+	
+	/**
 	 * 
 	 * @param container
 	 * @return

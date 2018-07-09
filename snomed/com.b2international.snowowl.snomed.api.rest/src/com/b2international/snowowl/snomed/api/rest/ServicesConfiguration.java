@@ -44,10 +44,10 @@ import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
 import com.b2international.commons.options.MetadataMixin;
 import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -195,8 +195,8 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public FileRegistry fileRegistry() {
-		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(FileRegistry.class);
+	public AttachmentRegistry fileRegistry() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(AttachmentRegistry.class);
 	}
 	
 	@Bean

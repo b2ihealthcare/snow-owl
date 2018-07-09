@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,50 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.file;
+package com.b2international.snowowl.core.attachments;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 
 /**
- * Registry that can manage zip files uploaded by clients via FileRequests.
+ * Registry that can manage file attachments uploaded by clients using this
+ * interface.
  * 
  * @since 5.7
  */
-public interface FileRegistry {
+public interface AttachmentRegistry {
 
 	/**
-	 * Uploads a zip file and saves it in the server's current data directory.
+	 * Uploads an attachment and saves it in the server's current data directory.
 	 * 
 	 * @param id
-	 *            - the unique identifier of the file
-	 * @param in - the contents of the file
-	 * @throws BadRequestException - if the file is not a valid zip file
+	 *            - the unique identifier of the attachment
+	 * @param in
+	 *            - the contents of the attachment
 	 * @throws AlreadyExistsException
-	 *             - if a file already exists with the given {@link UUID}
+	 *             - if an attachment already exists with the given {@link UUID}
 	 */
 	void upload(UUID id, InputStream in);
 
 	/**
-	 * Downloads a zip file from the server identified by the given {@link UUID}.
+	 * Downloads an attachment from the server identified by the given {@link UUID}.
 	 * 
 	 * @param id
-	 *            - the unique identifier of the file
-	 * @param out - the stream where we write the contents of the file
+	 *            - the unique identifier of the attachment
+	 * @param out
+	 *            - the stream where we write the contents of the attachment
 	 * @throws NotFoundException
-	 *             - if the file does not exist with the given identifier
+	 *             - if the attachment does not exist with the given identifier
 	 */
 	void download(UUID id, OutputStream out);
-	
+
 	/**
-	 * Deletes the file associated with the given identifier. Does nothing when the file is missing or already deleted.
+	 * Deletes the attachment associated with the given identifier. Does nothing
+	 * when the attachment is missing or has been already deleted.
 	 * 
-	 * @param id - the unique identifier of the file
+	 * @param id
+	 *            - the unique identifier of the attachment
 	 */
 	void delete(UUID id);
 

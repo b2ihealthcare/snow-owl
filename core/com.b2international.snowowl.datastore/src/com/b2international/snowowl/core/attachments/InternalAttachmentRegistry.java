@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.internal.file;
+package com.b2international.snowowl.core.attachments;
 
 import java.io.File;
 import java.util.UUID;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 
 /**
  * @since 5.7
  */
-public interface InternalFileRegistry extends FileRegistry {
+public interface InternalAttachmentRegistry extends AttachmentRegistry {
 
 	/**
-	 * Returns the file associated with the given identifier.
-	 * @param id - the unique identifier of the file
+	 * Returns the attachment associated with the given identifier.
+	 * @param id - the unique identifier of the attachment
 	 * @return the file
 	 * @throws NotFoundException
-	 *             - if the file does not exist with the given identifier
+	 *             - if the attachment does not exist with the given identifier
 	 */
-	File getFile(UUID id);
+	File getAttachment(UUID id);
 	
 }

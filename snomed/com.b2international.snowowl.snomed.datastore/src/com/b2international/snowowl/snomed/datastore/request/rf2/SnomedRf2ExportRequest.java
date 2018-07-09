@@ -49,6 +49,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -61,7 +62,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -312,7 +312,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			}
 
 			// Step 6: compress to archive and upload to the file registry
-			final FileRegistry fileRegistry = context.service(FileRegistry.class);
+			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
 			final String fileName = releaseDirectory.getFileName() + ".zip";
 			return new Rf2ExportResult(fileName, exportId);
@@ -825,7 +825,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 				.collect(Collectors.toList());
 	}
 
-	private void registerResult(final FileRegistry fileRegistry, final UUID exportId, final Path exportDirectory) {
+	private void registerResult(final AttachmentRegistry fileRegistry, final UUID exportId, final Path exportDirectory) {
 		File archiveFile = null;
 
 		try {

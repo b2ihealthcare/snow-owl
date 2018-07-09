@@ -33,11 +33,11 @@ import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
@@ -149,7 +149,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					codeSystemShortName);
 		}
 
-		ApplicationContext.getServiceForClass(FileRegistry.class).upload(importId, inputStream);
+		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(importId, inputStream);
 		
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(importId)

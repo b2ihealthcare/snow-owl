@@ -39,12 +39,12 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -103,8 +103,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String feature = SnomedFeatures.getImportFeatureToggle(context.branchPath());
 
-		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
-		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
+		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
+		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 
 		try {
 			features.enable(feature);

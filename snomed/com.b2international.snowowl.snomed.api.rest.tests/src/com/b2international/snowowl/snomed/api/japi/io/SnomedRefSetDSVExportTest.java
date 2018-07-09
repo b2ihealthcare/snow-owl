@@ -35,9 +35,9 @@ import org.junit.Test;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -87,7 +87,7 @@ public class SnomedRefSetDSVExportTest {
 	
 	private IEventBus bus;
 	
-	private FileRegistry fileRegistry;
+	private AttachmentRegistry fileRegistry;
 
 	private File tempDir;
 
@@ -96,7 +96,7 @@ public class SnomedRefSetDSVExportTest {
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
-		fileRegistry = ApplicationContext.getInstance().getService(FileRegistry.class);
+		fileRegistry = ApplicationContext.getInstance().getService(AttachmentRegistry.class);
 		tempDir = Files.createTempDir();
 		branchPath = createBranch(methodName.get());
 	}

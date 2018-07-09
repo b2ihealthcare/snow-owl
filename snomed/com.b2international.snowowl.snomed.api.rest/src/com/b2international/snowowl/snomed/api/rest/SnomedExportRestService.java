@@ -47,11 +47,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.exception.ExportRunNotFoundException;
@@ -87,7 +87,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 	private ISnomedExportService exportService;
 	
 	@Autowired
-	private FileRegistry fileRegistry;
+	private AttachmentRegistry fileRegistry;
 	
 	private ConcurrentMap<UUID, SnomedExportRestRun> exports = new MapMaker().makeMap();
 	
@@ -258,7 +258,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(bus)
 			.getSync();
 		
-		final File file = ((InternalFileRegistry) fileRegistry).getFile(exportedFile.getRegistryId());
+		final File file = ((InternalAttachmentRegistry) fileRegistry).getAttachment(exportedFile.getRegistryId());
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
