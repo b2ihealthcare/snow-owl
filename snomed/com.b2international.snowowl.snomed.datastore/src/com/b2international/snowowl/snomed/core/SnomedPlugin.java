@@ -15,12 +15,31 @@
  */
 package com.b2international.snowowl.snomed.core;
 
+import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.validation.IResourceValidator;
+
 import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
+import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
+import com.b2international.snowowl.snomed.core.ecl.EclParser;
+import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
+import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
+import com.google.inject.Injector;
 
 /**
  * @since 7.0
@@ -28,6 +47,27 @@ import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryIni
 @Component
 public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("snomed", SnomedCoreConfiguration.class);
+	}
+	
+	@Override
+	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		final SnomedCoreConfiguration coreConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
+		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
+		env.services().registerService(LanguageSetting.class, new StaticLanguageSetting(coreConfig.getLanguage(), SnomedCoreConfiguration.DEFAULT_LANGUAGE));
+		
+		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
+		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
+		
+		// register SNOMED CT Query based validation rule evaluator
+		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
+
+		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
+	}
+	
 	@Override
 	protected String getRepositoryId() {
 		return SnomedDatastoreActivator.REPOSITORY_UUID;
