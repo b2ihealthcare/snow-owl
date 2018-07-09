@@ -31,9 +31,7 @@ import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.mrcm.ConceptModel;
 
 /**
  * @since 4.4

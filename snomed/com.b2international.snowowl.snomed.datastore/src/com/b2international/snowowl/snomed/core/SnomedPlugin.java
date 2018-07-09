@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -33,6 +34,10 @@ import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
+import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
+import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
+import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
+import com.b2international.snowowl.snomed.core.mrcm.io.XMIMrcmImporter;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
@@ -66,6 +71,18 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 
 		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
+		
+		// initialize MRCM Import-Export API
+		if (!env.isEmbedded()) {
+			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
+			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
+		}
+		if (env.isServer() || env.isEmbedded()) {
+			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl());
+			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmExporter.class, MrcmExporterImpl.class.getClassLoader());
+			env.services().registerService(MrcmImporter.class, new XMIMrcmImporter());
+			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, XMIMrcmImporter.class.getClassLoader());
+		}
 	}
 	
 	@Override

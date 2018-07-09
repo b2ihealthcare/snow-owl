@@ -20,19 +20,6 @@
       </propertyTester>
    </extension>
    <extension
-         point="com.b2international.snowowl.datastore.serviceConfigJob">
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporterClientConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-      <serviceConfigJob
-            class="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
-            id="com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterClientConfigJob"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </serviceConfigJob>
-   </extension>  
-   <extension
          point="com.b2international.snowowl.datastore.validationIssueDetailExtension">
       <validationIssueDetailExtension
             class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension">
