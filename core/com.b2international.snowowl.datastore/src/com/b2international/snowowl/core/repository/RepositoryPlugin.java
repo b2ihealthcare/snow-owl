@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.commons.ConsoleProgressMonitor;
 import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
@@ -64,7 +63,6 @@ import com.b2international.snowowl.datastore.net4j.Net4jUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobTracker;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
-import com.b2international.snowowl.datastore.serviceconfig.ServiceConfigJobManager;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.net4j.EventBusNet4jUtil;
@@ -213,8 +211,6 @@ public final class RepositoryPlugin extends Plugin {
 	
 	@Override
 	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
-		ServiceConfigJobManager.INSTANCE.registerServices(new ConsoleProgressMonitor());
-		
 		if (env.isEmbedded() || env.isServer()) {
 			initializeJobSupport(env, configuration);
 		}
