@@ -50,7 +50,6 @@ import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.repository.OptimizeRequest;
 import com.b2international.snowowl.datastore.request.repository.PurgeRequest;
 import com.b2international.snowowl.datastore.request.repository.RepositorySearchRequestBuilder;
-import com.b2international.snowowl.datastore.server.ServerDbUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -70,7 +69,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String DEFAULT_BRANCH_PREFIX = "|--";
 	private static final String DEFAULT_INDENT = "   ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
-	private static final String DBCREATEINDEX_COMMAND = "dbcreateindex";
 	private static final String REPOSITORIES_COMMAND = "repositories";
 	private static final String VERSION_COMMAND = "--version";
 	
@@ -79,7 +77,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
 		buffer.append("\tsnowowl --version - returns the current version\n");
-		buffer.append("\tsnowowl dbcreateindex [nsUri] - creates the CDO_CREATED index on the proper DB tables for all classes contained by a package identified by its unique namespace URI.\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system. \n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
 		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
@@ -102,11 +99,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	public void _snowowl(CommandInterpreter interpreter) throws InterruptedException {
 		String cmd = interpreter.nextArgument();
 		try {
-			if (DBCREATEINDEX_COMMAND.equals(cmd)) {
-				createDbIndex(interpreter);
-				return;
-			}
-
 			if (LISTBRANCHES_COMMAND.equals(cmd)) {
 				listBranches(interpreter);
 				return;
@@ -206,15 +198,6 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		}
 		
 		return results;
-	}
-
-	public synchronized void createDbIndex(CommandInterpreter interpreter) {
-		String nsUri = interpreter.nextArgument();
-		if (!Strings.isNullOrEmpty(nsUri)) {
-			ServerDbUtils.createCdoCreatedIndexOnTables(nsUri);
-		} else {
-			interpreter.println("Namespace URI should be specified.");
-		}
 	}
 
 	private void purge(CommandInterpreter interpreter) {
