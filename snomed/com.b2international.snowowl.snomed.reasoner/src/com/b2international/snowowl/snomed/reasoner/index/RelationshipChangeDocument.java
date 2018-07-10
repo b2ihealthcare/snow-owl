@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="relationshipChange")
+@Doc(type="relationshipchange")
 @JsonDeserialize(builder=RelationshipChangeDocument.Builder.class)
 public final class RelationshipChangeDocument {
 

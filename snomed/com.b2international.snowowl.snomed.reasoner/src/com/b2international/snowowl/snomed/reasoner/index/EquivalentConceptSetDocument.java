@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="equivalentConceptSet")
+@Doc(type="equivalentconceptset")
 @JsonDeserialize(builder=EquivalentConceptSetDocument.Builder.class)
 public final class EquivalentConceptSetDocument {
 

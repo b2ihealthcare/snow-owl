@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="classificationTask")
+@Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
 @Script(name=ClassificationTaskDocument.BEGIN_CLASSIFICATION, script="ctx._source.status = params.status; ctx._source.headTimestamp = params.headTimestamp")
 @Script(name=ClassificationTaskDocument.END_CLASSIFICATION, script="ctx._source.status = params.status; ctx._source.completionDate = params.completionDate")
