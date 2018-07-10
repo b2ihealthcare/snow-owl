@@ -27,12 +27,12 @@ public enum SupportedCodeSystemRequestProperties implements ConceptProperties {
 	NAME,
 	VERSION,
 	DISPLAY,
-	DEFINITION,
-	DESIGNATION,
-	PARENT,
-	CHILD;
-	//LANG.X?
+	DESIGNATION, 
+	PARENT, //this is also part of the common concept properties, what gives?
+	CHILD; //this is also part of the common concept properties, what gives?
+	//LANG.X? where X is the designation language code
 
+	//this is not really a code system
 	@Override
 	public String getCodeSystemUri() {
 		return null;

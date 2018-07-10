@@ -67,6 +67,10 @@ public class ParameterParsingTest extends FhirTest {
 		requestedFields = getRequestedFields(queryParams, "_elements");
 		assertThat(requestedFields, contains("id"));
 		
+		queryParams = createQueryParams("http://localhost?property=isActive&property=effectiveTime");
+		requestedFields = getRequestedFields(queryParams, "property");
+		assertThat(requestedFields, contains("isActive", "effectiveTime"));
+		
 	}
 	
 	private MultiValueMap<String, String> createQueryParams(String urlString) {

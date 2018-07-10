@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -143,6 +144,36 @@ public class LookupRequest {
 	 */
 	public final boolean containsProperty(String property) {
 		return properties.contains(property);
+	}
+	
+	/**
+	 * Returns true if the <i>name</i> property is requested to be returned.
+	 * @return
+	 */
+	public final boolean isNamePropertyRequested() {
+		return properties == null ||
+			properties.isEmpty() ||
+			containsProperty(SupportedCodeSystemRequestProperties.NAME.getCodeValue());
+	}
+	
+	/**
+	 * Returns true if the <i>version</i> property is requested to be returned.
+	 * @return
+	 */
+	public final boolean isVersionPropertyRequested() {
+		return properties == null ||
+			properties.isEmpty() ||
+			containsProperty(SupportedCodeSystemRequestProperties.VERSION.getCodeValue());
+	}
+	
+	/**
+	 * Returns true if the <i>display</i> property is requested to be returned.
+	 * @return
+	 */
+	public final boolean isDisplayPropertyRequested() {
+		return properties == null ||
+			properties.isEmpty() ||
+			containsProperty(SupportedCodeSystemRequestProperties.DISPLAY.getCodeValue());
 	}
 
 	public static Builder builder() {

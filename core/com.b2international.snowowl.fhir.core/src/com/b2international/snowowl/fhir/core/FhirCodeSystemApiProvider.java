@@ -94,7 +94,6 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		.findFirst()
 		.get();
 	}
-	
 
 	@Override
 	public LookupResult lookup(LookupRequest lookupRequest) {
@@ -134,10 +133,15 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.findAny()
 			.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, system));
 		
-		return LookupResult.builder()
-			.name(codeSytemClass.getSimpleName())
-			.display(fhirCodeSystem.getDisplayName())
-			.build();
+		LookupResult.Builder resultBuilder = LookupResult.builder();
+		if (lookupRequest.isNamePropertyRequested()) {
+			resultBuilder.name(codeSytemClass.getSimpleName());
+		}
+		
+		if (lookupRequest.isDisplayPropertyRequested()) {
+			resultBuilder.display(fhirCodeSystem.getDisplayName());
+		}
+		return resultBuilder.build();
 	}
 	
 	@Override
