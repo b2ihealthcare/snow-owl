@@ -20,8 +20,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Set;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -30,12 +28,10 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.DeleteRequestBuilder;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -46,11 +42,13 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -201,7 +199,7 @@ public abstract class SnomedRequests {
 		return new SnomedRefSetMemberGetRequestBuilder(memberId);
 	}
 
-	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends EObject> type) {
+	private static DeleteRequestBuilder prepareDelete(String componentId, Class<? extends RevisionDocument> type) {
 		return new SnomedDeleteRequestBuilder(componentId, type);
 	}
 	
@@ -211,7 +209,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given constraint
 	 */
 	public static DeleteRequestBuilder prepareDeleteConstraint(String constraintId) {
-		return prepareDelete(constraintId, AttributeConstraint.class);
+		return prepareDelete(constraintId, SnomedConstraintDocument.class);
 	}
 	
 	/**
@@ -220,7 +218,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given concept
 	 */
 	public static DeleteRequestBuilder prepareDeleteConcept(String conceptId) {
-		return prepareDelete(conceptId, Concept.class);
+		return prepareDelete(conceptId, SnomedConceptDocument.class);
 	}
 	
 	/**
@@ -229,7 +227,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given description
 	 */
 	public static DeleteRequestBuilder prepareDeleteDescription(String descriptionId) {
-		return prepareDelete(descriptionId, Description.class);
+		return prepareDelete(descriptionId, SnomedDescriptionIndexEntry.class);
 	}
 	
 	/**
@@ -238,7 +236,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given relationship
 	 */
 	public static DeleteRequestBuilder prepareDeleteRelationship(String relationshipId) {
-		return prepareDelete(relationshipId, Relationship.class);
+		return prepareDelete(relationshipId, SnomedRelationshipIndexEntry.class);
 	}
 	
 	/**
@@ -247,7 +245,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given reference set
 	 */
 	public static DeleteRequestBuilder prepareDeleteReferenceSet(String refSetId) {
-		return prepareDelete(refSetId, SnomedRefSet.class);
+		return prepareDelete(refSetId, SnomedConceptDocument.class);
 	}
 	
 	/**
@@ -256,7 +254,7 @@ public abstract class SnomedRequests {
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given reference set member
 	 */
 	public static DeleteRequestBuilder prepareDeleteMember(String memberId) {
-		return prepareDelete(memberId, SnomedRefSetMember.class);
+		return prepareDelete(memberId, SnomedRefSetMemberIndexEntry.class);
 	}
 	
 	/**

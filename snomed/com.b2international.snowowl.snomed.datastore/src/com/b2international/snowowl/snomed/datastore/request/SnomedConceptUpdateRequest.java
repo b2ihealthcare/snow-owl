@@ -30,12 +30,11 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ComponentStatusConflictException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
@@ -53,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMultimap;
@@ -122,36 +122,37 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final Concept concept = context.lookup(getComponentId(), Concept.class);
+		final SnomedConceptDocument concept = context.lookup(getComponentId(), SnomedConceptDocument.class);
+		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
 
 		boolean changed = false;
-		changed |= updateModule(context, concept);
-		changed |= updateDefinitionStatus(context, concept);
-		changed |= updateSubclassDefinitionStatus(context, concept);
+		changed |= updateModule(context, concept, updatedConcept);
+		changed |= updateDefinitionStatus(context, concept, updatedConcept);
+		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (descriptions != null) {
-			updateComponents(context, concept, 
+			updateComponents(context, concept.getId(), 
 					getComponentIds(concept.getDescriptions()), descriptions, 
 					id -> SnomedRequests.prepareDeleteDescription(id).build());
 		}
 		
 		if (relationships != null) {
-			updateComponents(context, concept, 
+			updateComponents(context, concept.getId(), 
 					getComponentIds(concept.getOutboundRelationships()), relationships, 
 					id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
 		
 		if (members != null) {
-			updateComponents(context, concept, 
-					getPreviousMemberIds(concept, context), members, 
+			updateComponents(context, concept.getId(), 
+					getPreviousMemberIds(concept.getId(), context), members, 
 					id -> SnomedRequests.prepareDeleteMember(id).build());
 		}
 		
 		changed |= processInactivation(context, concept);
 
 		if (changed) {
-			if (concept.isSetEffectiveTime()) {
-				concept.unsetEffectiveTime();
+			if (concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+				updatedConcept.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			} else {
 				if (concept.isReleased()) {
 					long start = new Date().getTime();
@@ -162,7 +163,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 								.execute(context.service(IEventBus.class))
 								.getSync();
 						if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
-							concept.setEffectiveTime(releasedConcept.getEffectiveTime());
+							updatedConcept.effectiveTime(releasedConcept.getEffectiveTime().getTime());
 						}
 						LOGGER.trace("Previous version comparison took {}", new Date().getTime() - start);
 					}
@@ -173,13 +174,13 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		return changed;
 	}
 
-	private Set<String> getComponentIds(Iterable<? extends Component> components) {
+	private Set<String> getComponentIds(Iterable<? extends IComponent> components) {
 		return FluentIterable.from(components).transform(c -> c.getId()).toSet();
 	}
 
-	private Set<String> getPreviousMemberIds(Concept concept, TransactionContext context) {
+	private Set<String> getPreviousMemberIds(final String conceptId, TransactionContext context) {
 		SnomedReferenceSetMembers members = SnomedRequests.prepareSearchMember()
-			.filterByReferencedComponent(concept.getId())
+			.filterByReferencedComponent(conceptId)
 			.build()
 			.execute(context);
 		
@@ -189,37 +190,38 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				.toSet();
 	}
 
-	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConcept releasedConcept) {
+	private boolean isDifferentToPreviousRelease(SnomedConceptDocument concept, SnomedConcept releasedConcept) {
 		if (releasedConcept.isActive() != concept.isActive()) return true;
-		if (!releasedConcept.getModuleId().equals(concept.getModule().getId())) return true;
-		if (!releasedConcept.getDefinitionStatus().getConceptId().equals(concept.getDefinitionStatus().getId())) return true;
+		if (!releasedConcept.getModuleId().equals(concept.getModuleId())) return true;
+		if (releasedConcept.getDefinitionStatus().isPrimitive() != concept.isPrimitive()) return true;
 		return false;
 	}
 
-	private boolean updateDefinitionStatus(final TransactionContext context, final Concept concept) {
+	private boolean updateDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
 		if (null == definitionStatus) {
 			return false;
 		}
 
-		final String existingDefinitionStatusId = concept.getDefinitionStatus().getId();
-		final String newDefinitionStatusId = definitionStatus.getConceptId();
-		if (!existingDefinitionStatusId.equals(newDefinitionStatusId)) {
-			concept.setDefinitionStatus(context.lookup(newDefinitionStatusId, Concept.class));
+		final boolean existingDefinitionStatus = original.isPrimitive();
+		final boolean newDefinitionStatus = definitionStatus.isPrimitive();
+		if (existingDefinitionStatus != newDefinitionStatus) {
+			context.lookup(definitionStatus.getConceptId(), SnomedConceptDocument.class);
+			concept.primitive(newDefinitionStatus);
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final Concept concept) {
+	private boolean updateSubclassDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
 		if (null == subclassDefinitionStatus) {
 			return false;
 		}
 
-		final boolean currentExhaustive = concept.isExhaustive();
+		final boolean currentExhaustive = original.isExhaustive();
 		final boolean newExhaustive = subclassDefinitionStatus.isExhaustive();
 		if (currentExhaustive != newExhaustive) {
-			concept.setExhaustive(newExhaustive);
+			concept.exhaustive(newExhaustive);
 			return true;
 		} else {
 			return false;
@@ -328,12 +330,12 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private void reactivateConcept(final TransactionContext context, final Concept concept) {
-		if (concept.isActive()) {
-			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
+	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
+		if (original.isActive()) {
+			throw new ComponentStatusConflictException(original.getId(), original.isActive());
 		}
 		
-		concept.setActive(true);
+		concept.active(true);
 		
 		for (final Description description : concept.getDescriptions()) {
 			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
@@ -350,7 +352,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	}
 	
 	private <T extends EObject, U extends SnomedComponent> boolean updateComponents(final TransactionContext context, 
-			final Concept concept, 
+			final String conceptId, 
 			final Set<String> previousComponentIds,
 			final Iterable<U> currentComponents, 
 			final Function<String, Request<TransactionContext, ?>> toDeleteRequest) {
@@ -375,7 +377,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.map(componentId -> {
 				if (!previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// new component
-					return currentComponentsById.get(componentId).toCreateRequest(concept.getId());
+					return currentComponentsById.get(componentId).toCreateRequest(conceptId);
 				} else if (previousComponentIds.contains(componentId) && currentComponentsById.containsKey(componentId)) {
 					// changed component
 					return currentComponentsById.get(componentId).toUpdateRequest();

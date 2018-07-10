@@ -41,7 +41,7 @@ public class ReferenceSetMembershipUpdater {
 		this.currentActiveMemberOf = currentActiveMemberOf;
 	}
 	
-	public <B extends SnomedComponentDocument.SnomedComponentDocumentBuilder<B>> void update(B doc) {
+	public <B extends SnomedComponentDocument.Builder<B>> void update(B doc) {
 		// get reference set membership fields
 		final Multiset<String> newMemberOf = HashMultiset.create(currentMemberOf);
 		final Multiset<String> newActiveMemberOf = HashMultiset.create(currentActiveMemberOf);

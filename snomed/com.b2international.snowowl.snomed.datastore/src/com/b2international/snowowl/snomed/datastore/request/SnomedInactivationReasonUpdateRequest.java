@@ -31,6 +31,8 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.google.common.base.Function;
@@ -77,15 +79,15 @@ import com.google.common.collect.ImmutableList;
  * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Component> implements Request<TransactionContext, Void> {
+final class SnomedInactivationReasonUpdateRequest<B extends SnomedComponentDocument.Builder<B, C>, C extends SnomedComponentDocument> implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedInactivationReasonUpdateRequest.class);
 
 	private static final String CLEAR = "";
 
-	private final String componentId;
-	private final Class<C> componentType;
 	private final String inactivationRefSetId;
+	private final C original;
+	private final B newComponent;
 
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
@@ -96,9 +98,12 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 	private String inactivationValueId;
 
-	SnomedInactivationReasonUpdateRequest(final String componentId, final Class<C> componentType, final String inactivationRefSetId) {
-		this.componentId = componentId;
-		this.componentType = componentType;
+	SnomedInactivationReasonUpdateRequest(
+			final C original,
+			final B newComponent,
+			final String inactivationRefSetId) {
+		this.original = original;
+		this.newComponent = newComponent;
 		this.inactivationRefSetId = inactivationRefSetId;
 	}
 
@@ -112,13 +117,12 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 		if (null == inactivationValueId) {
 			return null;
 		} else {
-			final Inactivatable inactivatable = context.lookup(componentId, componentType);
-			updateInactivationReason(context, inactivatable);
+			updateInactivationReason(context);
 			return null;
 		}
 	}
 
-	private void updateInactivationReason(final TransactionContext context, final Inactivatable component) {
+	private void updateInactivationReason(final TransactionContext context) {
 		final List<SnomedAttributeValueRefSetMember> existingMembers = ImmutableList.copyOf(component.getInactivationIndicatorRefSetMembers());
 		boolean firstMemberFound = false;
 		
@@ -162,16 +166,12 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 		// Add the new member if the intention was not to remove the existing value (which had already happened if so)
 		if (!firstMemberFound && !CLEAR.equals(inactivationValueId)) {
-
-			final SnomedAttributeValueRefSetMember member = SnomedComponents
-					.newAttributeValueMember()
-					.withReferencedComponent(componentId)
-					.withRefSet(inactivationRefSetId)
-					.withModule(((Component) component).getModule().getId())
-					.withValueId(inactivationValueId)
-					.addTo(context);
-
-			component.getInactivationIndicatorRefSetMembers().add(member);
+			SnomedComponents.newAttributeValueMember()
+				.withReferencedComponent(original.getId())
+				.withRefSet(inactivationRefSetId)
+				.withModule(original.getModuleId())
+				.withValueId(inactivationValueId)
+				.addTo(context);
 		}
 	}
 
@@ -179,7 +179,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 		return referenceBranchFunction.apply(context);
 	}
 
-	private void ensureMemberActive(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
+	private void ensureMemberActive(final TransactionContext context, final SnomedRefSetMemberIndexEntry existingMember) {
 
 		if (!existingMember.isActive()) {
 

@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.5
@@ -87,7 +87,8 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 
 	@Override
 	public Boolean execute(TransactionContext context) {
-		SnomedRefSetMember member = context.lookup(memberId, SnomedRefSetMember.class);
+		SnomedRefSetMemberIndexEntry member = context.lookup(memberId, SnomedRefSetMemberIndexEntry.class);
+		SnomedRefSetMemberIndexEntry.Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(member); 
 
 		/* 
 		 * TODO: Generalize the logic below: any attempts of retrieving a missing component during component update
@@ -95,19 +96,19 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 		 */
 		try {
 
-			SnomedRefSetType type = member.getRefSet().getType();
+			SnomedRefSetType type = member.getReferenceSetType();
 
 			boolean changed = false;
 
-			changed |= updateStatus(member);
-			changed |= updateModule(member);
-			changed |= updateEffectiveTime(member);
+			changed |= updateStatus(member, updatedMember);
+			changed |= updateModule(member, updatedMember);
+			changed |= updateEffectiveTime(member, updatedMember);
 
 			SnomedRefSetMemberUpdateDelegate delegate = getDelegate(type);
-			changed |= delegate.execute(member, context);
+			changed |= delegate.execute(member, updatedMember, context);
 
 			if (changed && !isEffectiveTimeUpdate()) {
-				member.unsetEffectiveTime();
+				updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			}
 
 			return changed;
@@ -159,40 +160,40 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 		}
 	}
 	
-	private boolean updateStatus(SnomedRefSetMember member) {
+	private boolean updateStatus(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member) {
 		Boolean newStatus = getProperty(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
-		if (newStatus != null && !newStatus.equals(member.isActive())) {
-			member.setActive(newStatus);
+		if (newStatus != null && !newStatus.equals(original.isActive())) {
+			member.active(newStatus);
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateModule(SnomedRefSetMember member) {
+	private boolean updateModule(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member) {
 		String newModuleId = getComponentId(SnomedRf2Headers.FIELD_MODULE_ID);
-		if (newModuleId != null && !newModuleId.equals(member.getModuleId())) {
-			member.setModuleId(newModuleId);
+		if (newModuleId != null && !newModuleId.equals(original.getModuleId())) {
+			member.moduleId(newModuleId);
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	private boolean updateEffectiveTime(SnomedRefSetMember member) {
+	private boolean updateEffectiveTime(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member) {
 		if (!isEffectiveTimeUpdate()) {
 			return false;
 		}
 		
 		Date newEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME), DateFormats.SHORT);
-		if (!Objects.equals(newEffectiveTime, member.getEffectiveTime())) {
+		if (!Objects.equals(newEffectiveTime, original.getEffectiveTime())) {
 			if (newEffectiveTime == null) {
 				// if effective time is null, then unset the effective time but don't change the released flag
-				member.unsetEffectiveTime();
+				member.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			} else {
 				// otherwise set the value and toggle the "relased" flag
-				member.setEffectiveTime(newEffectiveTime);
-				member.setReleased(true);
+				member.effectiveTime(newEffectiveTime.getTime());
+				member.released(true);
 			}
 			return true;
 		} else {

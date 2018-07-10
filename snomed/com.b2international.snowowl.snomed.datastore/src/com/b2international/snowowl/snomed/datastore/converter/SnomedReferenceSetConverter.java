@@ -70,7 +70,6 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 	@Override
 	public SnomedReferenceSet toResource(SnomedConceptDocument entry) {
 		final SnomedReferenceSet refset = new SnomedReferenceSet();
-		refset.setStorageKey(entry.getRefSetStorageKey());
 		refset.setId(entry.getId());
 		refset.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
 		refset.setActive(entry.isActive());

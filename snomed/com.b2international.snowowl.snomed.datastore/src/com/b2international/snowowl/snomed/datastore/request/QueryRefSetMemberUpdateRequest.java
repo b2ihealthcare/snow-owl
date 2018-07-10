@@ -22,12 +22,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.MemberChange;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -53,7 +53,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 		
 		// lookup IDs before applying change to speed up query member update
 		final Set<String> referencedComponents = evaluation.getChanges().stream().map(MemberChange::getReferencedComponent).map(SnomedConcept::getId).collect(Collectors.toSet());
-		context.lookup(referencedComponents, Concept.class);
+		context.lookup(referencedComponents, SnomedConceptDocument.class);
 		
 		// apply all change as request on the target reference set
 		for (MemberChange change : evaluation.getChanges()) {

@@ -45,7 +45,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -112,7 +111,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		result.setScore(input.getScore());
 		
 		// XXX: Core reference set information will not be included if the expand option is not set
-		if (expand().containsKey(SnomedConcept.Expand.REFERENCE_SET) && input.getRefSetStorageKey() != CDOUtils.NO_STORAGE_KEY) {
+		if (expand().containsKey(SnomedConcept.Expand.REFERENCE_SET) && input.isRefSet()) {
 			result.setReferenceSet(getReferenceSetConverter().toResource(input));
 		}
 		

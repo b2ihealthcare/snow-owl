@@ -17,24 +17,20 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMAttributeRangeMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
+final class SnomedMRCMAttributeRangeMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 
 	SnomedMRCMAttributeRangeMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
 		super(request);
 	}
 
 	@Override
-	boolean execute(final SnomedRefSetMember member, final TransactionContext context) {
-
-		final SnomedMRCMAttributeRangeRefSetMember attributeRangeMember = (SnomedMRCMAttributeRangeRefSetMember) member;
-
+	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, final TransactionContext context) {
 		final String rangeConstraint = getProperty(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT);
 		final String attributeRule = getProperty(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE);
 		final String ruleStrengthId = getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID);
@@ -42,23 +38,23 @@ public class SnomedMRCMAttributeRangeMemberUpdateDelegate extends SnomedRefSetMe
 
 		boolean changed = false;
 
-		if (!Strings.isNullOrEmpty(rangeConstraint) && !rangeConstraint.equals(attributeRangeMember.getRangeConstraint())) {
-			attributeRangeMember.setRangeConstraint(rangeConstraint);
+		if (!Strings.isNullOrEmpty(rangeConstraint) && !rangeConstraint.equals(original.getRangeConstraint())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, rangeConstraint);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(attributeRule) && !attributeRule.equals(attributeRangeMember.getAttributeRule())) {
-			attributeRangeMember.setAttributeRule(attributeRule);
+		if (!Strings.isNullOrEmpty(attributeRule) && !attributeRule.equals(original.getAttributeRule())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, attributeRule);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(ruleStrengthId) && !ruleStrengthId.equals(attributeRangeMember.getRuleStrengthId())) {
-			attributeRangeMember.setRuleStrengthId(ruleStrengthId);
+		if (!Strings.isNullOrEmpty(ruleStrengthId) && !ruleStrengthId.equals(original.getRuleStrengthId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, ruleStrengthId);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(contentTypeId) && !contentTypeId.equals(attributeRangeMember.getContentTypeId())) {
-			attributeRangeMember.setContentTypeId(contentTypeId);
+		if (!Strings.isNullOrEmpty(contentTypeId) && !contentTypeId.equals(original.getContentTypeId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, contentTypeId);
 			changed |= true;
 		}
 

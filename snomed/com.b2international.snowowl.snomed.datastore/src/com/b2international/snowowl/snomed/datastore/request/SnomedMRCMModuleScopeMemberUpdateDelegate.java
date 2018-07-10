@@ -17,27 +17,24 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMModuleScopeMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
+final class SnomedMRCMModuleScopeMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 
 	SnomedMRCMModuleScopeMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
 		super(request);
 	}
 
 	@Override
-	boolean execute(final SnomedRefSetMember member, final TransactionContext context) {
-
-		final SnomedMRCMModuleScopeRefSetMember moduleMember = (SnomedMRCMModuleScopeRefSetMember) member;
+	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, final TransactionContext context) {
 		final String mrcmRuleRefsetId = getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
 
-		if (!Strings.isNullOrEmpty(mrcmRuleRefsetId) && !mrcmRuleRefsetId.equals(moduleMember.getMrcmRuleRefsetId())) {
-			moduleMember.setMrcmRuleRefsetId(mrcmRuleRefsetId);
+		if (!Strings.isNullOrEmpty(mrcmRuleRefsetId) && !mrcmRuleRefsetId.equals(original.getMrcmRuleRefsetId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, mrcmRuleRefsetId);
 			return true;
 		}
 

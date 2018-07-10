@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -90,22 +91,23 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final Description description = context.lookup(getComponentId(), Description.class);
+		final SnomedDescriptionIndexEntry description = context.lookup(getComponentId(), SnomedDescriptionIndexEntry.class);
+		final SnomedDescriptionIndexEntry.Builder updatedDescription = SnomedDescriptionIndexEntry.builder(description); 
 
 		boolean changed = false;
-		changed |= updateModule(context, description);
-		changed |= updateCaseSignificance(context, description, caseSignificance);
-		changed |= updateTypeId(context, description);
-		changed |= updateTerm(context, description);
-		changed |= updateLanguageCode(context, description);
-		changed |= processInactivation(context, description);
+		changed |= updateModule(context, description, updatedDescription);
+		changed |= updateCaseSignificance(context, description, updatedDescription, caseSignificance);
+		changed |= updateTypeId(context, description, updatedDescription);
+		changed |= updateTerm(context, description, updatedDescription);
+		changed |= updateLanguageCode(context, description, updatedDescription);
+		changed |= processInactivation(context, description, updatedDescription);
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
-		updateAcceptability(context, description);
+		updateAcceptability(context, description, updatedDescription);
 
 		if (changed) {
-			if (description.isSetEffectiveTime()) {
-				description.unsetEffectiveTime();
+			if (description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+				updatedDescription.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			} else {
 				if (description.isReleased()) {
 					long start = new Date().getTime();
@@ -119,7 +121,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 								.getSync();
 						
 						if (!isDifferentToPreviousRelease(description, releasedDescription)) {
-							description.setEffectiveTime(releasedDescription.getEffectiveTime());
+							updatedDescription.effectiveTime(releasedDescription.getEffectiveTime().getTime());
 						}
 						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
 					}
@@ -130,7 +132,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		return changed;
 	}
 
-	private void updateAcceptability(TransactionContext context, final Description description) {
+	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
 		acceptabilityUpdate.setAcceptability(acceptability);
 		acceptabilityUpdate.setDescriptionId(description.getId());
@@ -143,7 +145,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		associationUpdateRequest.execute(context);
 	}
 	
-	private boolean processInactivation(final TransactionContext context, final Description description) {
+	private boolean processInactivation(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
 			return false;
 		}
@@ -209,69 +211,69 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		inactivationUpdateRequest.execute(context);
 	}
 
-	private boolean isDifferentToPreviousRelease(Description description, SnomedDescription releasedDescription) {
+	private boolean isDifferentToPreviousRelease(SnomedDescriptionIndexEntry description, SnomedDescription releasedDescription) {
 		if (releasedDescription.isActive() != description.isActive()) return true;
-		if (!releasedDescription.getModuleId().equals(description.getModule().getId())) return true;
-		if (!releasedDescription.getConceptId().equals(description.getConcept().getId())) return true;
+		if (!releasedDescription.getModuleId().equals(description.getModuleId())) return true;
+		if (!releasedDescription.getConceptId().equals(description.getConceptId())) return true;
 		if (!releasedDescription.getLanguageCode().equals(description.getLanguageCode())) return true;
-		if (!releasedDescription.getTypeId().equals(description.getType().getId())) return true;
+		if (!releasedDescription.getTypeId().equals(description.getTypeId())) return true;
 		if (!releasedDescription.getTerm().equals(description.getTerm())) return true;
-		if (!releasedDescription.getCaseSignificance().getConceptId().equals(description.getCaseSignificance().getId())) return true;
+		if (!releasedDescription.getCaseSignificance().getConceptId().equals(description.getCaseSignificanceId())) return true;
 
 		return false;
 	}
 
-	private boolean updateCaseSignificance(final TransactionContext context, final Description description, final CaseSignificance newCaseSignificance) {
+	private boolean updateCaseSignificance(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description, final CaseSignificance newCaseSignificance) {
 		if (null == newCaseSignificance) {
 			return false;
 		}
 
-		final String existingCaseSignificanceId = description.getCaseSignificance().getId();
+		final String existingCaseSignificanceId = original.getCaseSignificanceId();
 		final String newCaseSignificanceId = newCaseSignificance.getConceptId();
 		if (!existingCaseSignificanceId.equals(newCaseSignificanceId)) {
-			description.setCaseSignificance(context.lookup(newCaseSignificanceId, Concept.class));
+			description.caseSignificanceId(context.lookup(newCaseSignificanceId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	private boolean updateTypeId(final TransactionContext context, final Description description) {
+	private boolean updateTypeId(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == typeId) {
 			return false;
 		}
 		
-		if (!description.getType().getId().equals(typeId)) {
-			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
-			description.setType(context.lookup(typeId, Concept.class));
+		if (!original.getTypeId().equals(typeId)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
+			description.typeId(context.lookup(typeId, SnomedConceptDocument.class).getId());
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private boolean updateTerm(final TransactionContext context, final Description description) {
+	private boolean updateTerm(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == term) {
 			return false;
 		}
 		
-		if (!description.getTerm().equals(term)) {
-			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_TERM, term);
-			description.setTerm(term);
+		if (!original.getTerm().equals(term)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TERM, term);
+			description.term(term);
 			return true;
 		}
 		
 		return false;
 	}
 	
-	private boolean updateLanguageCode(final TransactionContext context, final Description description) {
+	private boolean updateLanguageCode(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
 		if (null == languageCode) {
 			return false;
 		}
 		
-		if (!description.getLanguageCode().equals(languageCode)) {
-			checkUpdateOnReleased(description, SnomedRf2Headers.FIELD_LANGUAGE_CODE, languageCode);
-			description.setLanguageCode(languageCode);
+		if (!original.getLanguageCode().equals(languageCode)) {
+			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_LANGUAGE_CODE, languageCode);
+			description.languageCode(languageCode);
 			return true;
 		}
 		return false;

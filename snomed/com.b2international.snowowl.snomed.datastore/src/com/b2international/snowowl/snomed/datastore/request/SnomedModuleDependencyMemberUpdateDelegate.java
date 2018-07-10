@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
-
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Objects;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -35,23 +31,22 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedModuleDependencyRefSetMember moduleDependencyMember = (SnomedModuleDependencyRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 
 		boolean changed = false;
 
 		if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
-			Date newSourceEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT);
-			if (!Objects.equal(newSourceEffectiveTime, moduleDependencyMember.getSourceEffectiveTime())) {
-				moduleDependencyMember.setSourceEffectiveTime(newSourceEffectiveTime);
+			long newSourceEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT).getTime();
+			if (newSourceEffectiveTime != original.getSourceEffectiveTime()) {
+				member.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, newSourceEffectiveTime);
 				changed |= true;
 			}
 		}
 
 		if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
-			Date newTargetEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT);
-			if (!Objects.equal(newTargetEffectiveTime, moduleDependencyMember.getTargetEffectiveTime())) {
-				moduleDependencyMember.setTargetEffectiveTime(newTargetEffectiveTime);
+			long newTargetEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT).getTime();
+			if (newTargetEffectiveTime != original.getTargetEffectiveTime()) {
+				member.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, newTargetEffectiveTime);
 				changed |= true;
 			}
 		}
