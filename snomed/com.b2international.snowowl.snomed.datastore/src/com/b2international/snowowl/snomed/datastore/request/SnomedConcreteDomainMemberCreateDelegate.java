@@ -23,11 +23,10 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -40,7 +39,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.CONCRETE_DATA_TYPE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
@@ -66,7 +65,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_UNIT_ID);
 		}
 
-		SnomedConcreteDataTypeRefSetMember member = SnomedComponents.newConcreteDomainReferenceSetMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withAttributeLabel(getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME))
@@ -79,7 +78,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 				.withUom(getComponentId(SnomedRf2Headers.FIELD_UNIT_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

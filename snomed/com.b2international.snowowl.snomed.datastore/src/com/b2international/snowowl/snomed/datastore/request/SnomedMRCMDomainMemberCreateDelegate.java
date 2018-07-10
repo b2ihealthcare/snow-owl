@@ -18,9 +18,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
@@ -32,7 +32,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 	}
 
 	@Override
-	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_DOMAIN);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT);
@@ -43,7 +43,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		final SnomedMRCMDomainRefSetMember member = SnomedComponents.newMRCMDomainReferenceSetMember()
+		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newMRCMDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withModule(getModuleId())
@@ -58,7 +58,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 				.withEditorialGuideReference(getProperty(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 }

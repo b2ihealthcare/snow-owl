@@ -20,9 +20,9 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -35,7 +35,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 	}
 
 	@Override
-	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_MODULE_SCOPE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID);
@@ -45,7 +45,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
 
-		final SnomedMRCMModuleScopeRefSetMember member = SnomedComponents.newMRCMModuleScopeReferenceSetMember()
+		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newMRCMModuleScopeReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withModule(getModuleId())
@@ -54,7 +54,7 @@ final class SnomedMRCMModuleScopeMemberCreateDelegate extends SnomedRefSetMember
 				.withMRCMRuleRefsetId(getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

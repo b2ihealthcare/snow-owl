@@ -538,6 +538,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return structural;
 	}
 	
+	@JsonIgnore
+	public boolean isRefSet() {
+		return getRefSetType() != null;
+	}
+	
 	public List<SnomedDescriptionFragment> getPreferredDescriptions() {
 		return preferredDescriptions;
 	}

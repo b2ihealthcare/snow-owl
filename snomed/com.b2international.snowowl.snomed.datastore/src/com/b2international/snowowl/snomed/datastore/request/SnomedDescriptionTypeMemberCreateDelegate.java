@@ -20,9 +20,9 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -35,7 +35,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.DESCRIPTION_TYPE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
@@ -45,7 +45,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT);
 
-		SnomedDescriptionTypeRefSetMember member = SnomedComponents.newDescriptionTypeMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newDescriptionTypeMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -55,7 +55,7 @@ final class SnomedDescriptionTypeMemberCreateDelegate extends SnomedRefSetMember
 				.withDescriptionLength(getProperty(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, Integer.class))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 	
 	@Override

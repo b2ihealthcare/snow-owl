@@ -20,9 +20,9 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -35,7 +35,7 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 	}
 
 	@Override
-	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT);
@@ -49,7 +49,7 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID));
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, getProperty(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 
-		final SnomedMRCMAttributeRangeRefSetMember member = SnomedComponents.newMRCMAttributeRangeReferenceSetMember()
+		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newMRCMAttributeRangeReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withModule(getModuleId())
@@ -61,7 +61,7 @@ final class SnomedMRCMAttributeRangeMemberCreateDelegate extends SnomedRefSetMem
 				.withContentTypeId(getProperty(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

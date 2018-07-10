@@ -21,9 +21,9 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -36,7 +36,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.LANGUAGE);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
@@ -45,7 +45,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 
-		SnomedLanguageRefSetMember member = SnomedComponents.newLanguageMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newLanguageMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -54,7 +54,7 @@ final class SnomedLanguageMemberCreateDelegate extends SnomedRefSetMemberCreateD
 				.withAcceptability(Acceptability.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID)))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

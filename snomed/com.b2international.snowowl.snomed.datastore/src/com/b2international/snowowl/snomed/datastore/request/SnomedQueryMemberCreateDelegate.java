@@ -20,9 +20,9 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
 /**
@@ -38,7 +38,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.QUERY);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_QUERY);
 
@@ -49,7 +49,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		}
 	}
 
-	private String createWithNewRefSet(SnomedRefSet refSet, TransactionContext context) {
+	private String createWithNewRefSet(SnomedReferenceSet refSet, TransactionContext context) {
 		checkNonEmptyProperty(refSet, REFERENCED_COMPONENT);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 
@@ -80,13 +80,13 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 		return createWithExistingRefSet(refSet, context);
 	}
 
-	private String createWithExistingRefSet(SnomedRefSet refSet, TransactionContext context) {
+	private String createWithExistingRefSet(SnomedReferenceSet refSet, TransactionContext context) {
 		checkReferencedComponent(refSet);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		SnomedQueryRefSetMember member = SnomedComponents.newQueryMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newQueryMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -95,7 +95,7 @@ final class SnomedQueryMemberCreateDelegate extends SnomedRefSetMemberCreateDele
 				.withQuery(getProperty(SnomedRf2Headers.FIELD_QUERY))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 }

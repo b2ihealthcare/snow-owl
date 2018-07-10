@@ -205,7 +205,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	 * @since 4.7
 	 */
 	@JsonPOJOBuilder(withPrefix="")
-	public static final class Builder extends RevisionDocumentBuilder<Builder> {
+	public static final class Builder extends RevisionDocumentBuilder<Builder, SnomedConstraintDocument> {
 
 		private boolean active;
 		private long effectiveTime;

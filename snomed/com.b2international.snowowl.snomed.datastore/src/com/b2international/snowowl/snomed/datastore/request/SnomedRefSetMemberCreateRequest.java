@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,11 +26,14 @@ import javax.annotation.Nonnull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -138,7 +142,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		try {
-			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedReferenceSet refSet = getRefSet(context);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
 			Builder<String> requiredComponentIds = ImmutableSet.<String>builder().addAll(delegate.getRequiredComponentIds());
 			requiredComponentIds.add(referenceSetId);
@@ -161,12 +165,16 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 		 * should return a 400 response instead of a 404. 
 		 */
 		try {
-			SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
+			SnomedReferenceSet refSet = getRefSet(context);
 			SnomedRefSetMemberCreateDelegate delegate = getDelegate(refSet.getType());
 			return delegate.execute(refSet, context);
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
+	}
+
+	private SnomedReferenceSet getRefSet(TransactionContext context) {
+		return SnomedConverters.newRefSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
 	}
 
 	private SnomedRefSetMemberCreateDelegate getDelegate(SnomedRefSetType referenceSetType) {

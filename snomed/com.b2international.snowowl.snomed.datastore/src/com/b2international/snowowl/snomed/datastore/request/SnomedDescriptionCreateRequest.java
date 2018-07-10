@@ -24,11 +24,11 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -129,7 +129,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 	public String execute(TransactionContext context) {
 		try {
 			final String descriptionId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
-			final Description description = SnomedComponents.newDescription()
+			final SnomedDescriptionIndexEntry description = SnomedComponents.newDescription()
 				.withId(descriptionId)
 				.withActive(isActive())
 				.withModule(getModuleId())
