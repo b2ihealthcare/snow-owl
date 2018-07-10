@@ -17,10 +17,15 @@ package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Supplier;
 
+import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntSet;
+import com.b2international.collections.longs.AbstractLongIterator;
+import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 
 /**
@@ -48,8 +53,8 @@ public final class InternalSctIdSet {
 			final LongSet longSctIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(sctIds.size()); 
 
 			sctIds.stream()
-				.map(Long::parseLong)
-				.forEachOrdered(longSctIds::add);
+			.map(Long::parseLong)
+			.forEachOrdered(longSctIds::add);
 
 			return addAll(longSctIds);
 		}
@@ -91,5 +96,38 @@ public final class InternalSctIdSet {
 		} else {
 			return Arrays.binarySearch(internalIdArray, internalId) >= 0;
 		}
+	}
+
+	public LongList toLongList() {
+		return toLongCollection(() -> PrimitiveLists.newLongArrayListWithExpectedSize(size()));
+	}
+
+	public <T extends LongCollection> T toLongCollection(final Supplier<T> collectionSupplier) {
+		final T result = collectionSupplier.get();
+
+		for (final LongIterator itr = iterator(); itr.hasNext(); /*empty*/) {
+			result.add(itr.next());
+		}
+
+		return result;
+	}
+
+	public LongIterator iterator() {
+		return new AbstractLongIterator() {
+			private int i = 0;
+
+			@Override
+			protected long computeNext() {
+				if (i < internalIdArray.length) {
+					return internalIdMap.getSctId(internalIdArray[i++]);
+				} else {
+					return endOfData();
+				}
+			}
+		};
+	}
+
+	public int size() {
+		return internalIdArray.length;
 	}
 }

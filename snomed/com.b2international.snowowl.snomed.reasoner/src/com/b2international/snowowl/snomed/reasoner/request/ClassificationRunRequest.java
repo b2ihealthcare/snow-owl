@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.reasoner.request;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +29,8 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.DocWriter;
@@ -37,15 +41,20 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdMultimap;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdSet;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyWalker;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
-import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -141,8 +150,6 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 
 	private int writeOps;
 	private String classificationId;
-	private RelationshipNormalFormGenerator relationshipGenerator;
-	private ConceptConcreteDomainNormalFormGenerator concreteDomainGenerator;
 
 	ClassificationRunRequest() {}
 
@@ -163,35 +170,74 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 		final long headTimestamp = branch.headTimestamp();
 		final Index rawIndex = context.service(Index.class);
 		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
-		
+
 		repository.beginClassification(classificationId, headTimestamp);
 
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
 
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(revisionSearcher, concreteDomainSupportEnabled);
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
+		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
+		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream()
+				.map(SnomedConcept::getId));
+		taxonomyBuilder.finishConcepts();
+		
+		taxonomyBuilder.addConceptFlags(revisionSearcher);
+		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
+		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
+		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
 
+		if (concreteDomainSupportEnabled) {
+			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
+		}
+
+		// Add the extra definitions
+		taxonomyBuilder.addConceptFlags(additionalConcepts.stream()
+				.filter(c -> DefinitionStatus.FULLY_DEFINED.equals(c.getDefinitionStatus()))
+				.map(SnomedConcept::getId));
+
+		final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
+				.flatMap(c -> c.getRelationships().stream());
+		
+		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
+		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
+		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
+
+		if (concreteDomainSupportEnabled) {
+			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
+				.flatMap(c -> c.getMembers().stream());
+			
+			final Stream<SnomedReferenceSetMember> relationshipMembers = additionalConcepts.stream()
+				.flatMap(c -> c.getRelationships().stream())
+				.flatMap(c -> c.getMembers().stream());
+			
+			taxonomyBuilder.addActiveConcreteDomainMembers(Stream.concat(conceptMembers, relationshipMembers));
+		}
+		
+		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomyBuilder)));
+		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + Concepts.MODULE_SCT_CORE); // TODO: custom moduleId in ontology IRI?
 
 		try {
 
 			final DelegateOntology ontology = (DelegateOntology) ontologyManager.createOntology(ontologyIRI);
+			final ReasonerTaxonomyInferrer inferrer = new ReasonerTaxonomyInferrer(reasonerId, ontology, context);
+			final ReasonerTaxonomy inferredTaxonomy = inferrer.addInferences(taxonomy);
 
 			repository.write(writer -> {
-				final ReasonerTaxonomyWalker taxonomyWalker = new ReasonerTaxonomyWalker(reasonerId, ontology, context, 
-						(conceptId, parentIds, ancestorIds) -> onConcept(writer, classificationId, conceptId, parentIds, ancestorIds),
-						(unsatisfiable, conceptIds) -> onEquivalentSet(writer, classificationId, unsatisfiable, conceptIds));
 
-				relationshipGenerator = new RelationshipNormalFormGenerator(taxonomyBuilder, taxonomyWalker, 
-						new RelationshipChangeProcessor(writer), StatementFragmentOrdering.INSTANCE);
+				indexUnsatisfiableConcepts(writer, inferredTaxonomy.getUnsatisfiableConcepts());
+				indexEquivalentConcepts(writer, inferredTaxonomy.getEquivalentConcepts());
 
-				concreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(taxonomyBuilder, taxonomyWalker, 
-						new ConcreteDomainChangeProcessor(writer), ConcreteDomainChangeOrdering.INSTANCE);
-
-				taxonomyWalker.walk();
+				final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(inferredTaxonomy);
+				final ConceptConcreteDomainNormalFormGenerator concreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(inferredTaxonomy);
+				
+				relationshipGenerator.collectNormalFormChanges(null, new RelationshipChangeProcessor(writer), StatementFragmentOrdering.INSTANCE);
+				concreteDomainGenerator.collectNormalFormChanges(null, new ConcreteDomainChangeProcessor(writer));
+				
+				writer.commit();
 				return null;
 			});
 
@@ -199,33 +245,40 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 
 		} catch (final OWLOntologyCreationException e) {
 			repository.endClassification(classificationId, ClassificationStatus.FAILED);
-			// throw createExportFailedException(context, e);
-			// set job status
+			// throw createClassificationException(context, e);
+			// set job status via qualified property
 		}
 
 		return Boolean.TRUE;
 	}
 
-	public void onConcept(final DocWriter writer, final String classificationId, 
-			final long conceptId, 
-			final LongSet parentIds, 
-			final LongSet ancestorIds) {
-
-		relationshipGenerator.onConcept(conceptId, parentIds, ancestorIds);
-		concreteDomainGenerator.onConcept(conceptId, parentIds, ancestorIds);
-	}
-
-	public void onEquivalentSet(final DocWriter writer, final String classificationId, 
-			final boolean unsatisfiable, 
-			final LongList conceptIds) {
-
+	private void indexUnsatisfiableConcepts(final DocWriter writer, final InternalSctIdSet unsatisfiableConcepts) {
 		final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
 				.classificationId(classificationId)
-				.conceptIds(conceptIds)
-				.unsatisfiable(unsatisfiable)
+				.conceptIds(unsatisfiableConcepts.toLongList())
+				.unsatisfiable(true)
 				.build();
 
 		indexChange(writer, classificationId, equivalentDoc);
+	}
+
+	private void indexEquivalentConcepts(final DocWriter writer, final InternalSctIdMultimap equivalentConcepts) {
+		for (final LongIterator itr = equivalentConcepts.keySet().iterator(); itr.hasNext(); /*empty*/) {
+			final long representativeConcept = itr.next();
+			final LongSet equivalents = equivalentConcepts.get(representativeConcept);
+			final LongList orderedConcepts = PrimitiveLists.newLongArrayListWithExpectedSize(equivalents.size() + 1);
+
+			orderedConcepts.add(representativeConcept);
+			orderedConcepts.addAll(equivalents);
+
+			final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
+					.classificationId(classificationId)
+					.conceptIds(orderedConcepts)
+					.unsatisfiable(false)
+					.build();
+
+			indexChange(writer, classificationId, equivalentDoc);			
+		}
 	}
 
 	private void indexChange(final DocWriter writer, final String classificationId, final Object doc) {

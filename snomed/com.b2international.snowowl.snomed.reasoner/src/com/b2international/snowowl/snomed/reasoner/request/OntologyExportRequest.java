@@ -39,7 +39,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
@@ -81,10 +82,22 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(revisionSearcher, concreteDomainSupportEnabled);
+		
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
+		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
+		taxonomyBuilder.finishConcepts();
+		
+		taxonomyBuilder.addConceptFlags(revisionSearcher);
+		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
+		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
+		
+		if (concreteDomainSupportEnabled) {
+			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
+		}
 
+		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomyBuilder)));
+		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {

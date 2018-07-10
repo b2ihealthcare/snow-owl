@@ -60,9 +60,11 @@ import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.AbstractLongIterator;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdMap;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
@@ -72,6 +74,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 
 /**
  * @since
@@ -98,7 +101,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private static final long CONCEPT_MODEL_OBJECT_ATTRIBUTE = 762705008L;
 	private static final long CONCEPT_MODEL_DATA_ATTRIBUTE = 762706009L;
 	private static final long ROLE_GROUP = 609096000L;
-	private static final long DEFAULT_UNIT = 258666001L; // root of the unit (qualifier) hierarchy
 
 	private static final long PART_OF = 123005000L;
 	private static final long LATERALITY = 272741003L;
@@ -210,7 +212,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			// Otherwise, return the next child which has parents
 			while (childIterator.hasNext()) {
 				childId = childIterator.next();
-				parentIterator = taxonomyBuilder.getSuperTypeIds(childId).iterator();
+				parentIterator = taxonomy.getStatedAncestors()
+						.getDestinations(childId, true)
+						.iterator();
 
 				if (parentIterator.hasNext()) {
 					return true;
@@ -255,19 +259,21 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 			final long parentId = idIterator.next();
 			final OWLClass parentClass = getConceptClass(parentId);
-			final LongSet directChildIds = taxonomyBuilder.getSubTypeIds(parentId);
+			final LongSet directChildIds = taxonomy.getStatedDescendants()
+					.getDestinations(parentId, true);
+
 			final Set<OWLClass> childClasses = newHashSet();
-			
+
 			for (final LongIterator itr = directChildIds.iterator(); itr.hasNext(); /*empty*/) {
 				final long childId = itr.next();
 				final OWLClass childClass = getConceptClass(childId);
 				childClasses.add(childClass);
 			}
-			
+
 			return getOWLDisjointUnionAxiom(parentClass, childClasses);
 		}
 	}
-	
+
 	/**
 	 * Creates a {@link DefaultPrefixManager} instance for the specified ontology.
 	 * Prefixes will be configured in accordance with the OWL reference set
@@ -293,24 +299,19 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private final OWLOntologyManager manager;
 	private final OWLOntologyID ontologyID;
-	private final ReasonerTaxonomyBuilder taxonomyBuilder;
+	private final ReasonerTaxonomy taxonomy;
 
 	private final DefaultPrefixManager prefixManager;
-	private final LongSet nonMetadataConceptIds;
 
 	public DelegateOntology(final OWLOntologyManager manager, 
 			final OWLOntologyID ontologyID, 
-			final ReasonerTaxonomyBuilder taxonomyBuilder) {
+			final ReasonerTaxonomy taxonomy) {
 
 		this.manager = manager;
 		this.ontologyID = ontologyID;
-		this.taxonomyBuilder = taxonomyBuilder;
+		this.taxonomy = taxonomy;
 
 		this.prefixManager = createPrefixManager();
-
-		this.nonMetadataConceptIds = PrimitiveSets.newLongOpenHashSet(taxonomyBuilder.getConceptIdSet());
-		nonMetadataConceptIds.removeAll(getConceptAndSubTypes(CONCEPT_MODEL_OBJECT_ATTRIBUTE));
-		nonMetadataConceptIds.removeAll(getConceptAndSubTypes(CONCEPT_MODEL_DATA_ATTRIBUTE));
 	}
 
 	@Override
@@ -360,6 +361,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	public Set<OWLAxiom> getAxioms() {
 		return new AbstractSet<OWLAxiom>() {
 			@Override
+			@SuppressWarnings("unchecked")
 			public Iterator<OWLAxiom> iterator() {
 				return Iterators.concat(conceptDeclarationAxioms(),
 						conceptSubClassOfAxioms(),
@@ -386,13 +388,15 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private Iterator<OWLSubClassOfAxiom> conceptSubClassOfAxioms() {
 		return new ConceptAxiomIterator<>(conceptIdIterator(),
-				conceptId -> taxonomyBuilder.isPrimitive(conceptId), 
+				conceptId -> !taxonomy.getFullyDefinedConcepts()
+				.contains(conceptId), 
 				this::getOWLSubClassOfAxiom);
 	}
 
 	private Iterator<OWLEquivalentClassesAxiom> conceptEquivalentClassesAxioms() {
 		return new ConceptAxiomIterator<>(conceptIdIterator(),
-				conceptId -> !taxonomyBuilder.isPrimitive(conceptId), 
+				conceptId -> taxonomy.getFullyDefinedConcepts()
+				.contains(conceptId), 
 				this::getOWLEquivalentClassesAxiom);
 	}
 
@@ -428,7 +432,25 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private LongIterator conceptIdIterator() {
-		return nonMetadataConceptIds.iterator();
+		return new AbstractLongIterator() {
+			private final LongIterator delegate = taxonomy.getConceptMap().getSctIds();
+
+			@Override
+			protected long computeNext() {
+				while (delegate.hasNext()) {
+					final long candidate = delegate.next();
+					final LongSet allAncestors = taxonomy.getStatedAncestors()
+							.getDestinations(candidate, false);
+
+					if (!allAncestors.contains(CONCEPT_MODEL_OBJECT_ATTRIBUTE) 
+							&& !allAncestors.contains(CONCEPT_MODEL_DATA_ATTRIBUTE)) {
+						return candidate;
+					}
+				}
+
+				return endOfData();
+			}
+		};
 	}
 
 	private LongIterator objectAttributeIdIterator() {
@@ -440,11 +462,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private Iterator<String> concreteDomainLabelIterator() {
-		return taxonomyBuilder.getAllStatedConcreteDomainLabels().iterator();
+		return taxonomy.getStatedConcreteDomainMembers().valueStream()
+				.map(ConcreteDomainFragment::getLabel)
+				.distinct()
+				.iterator();
 	}
-	
+
 	private LongIterator exhaustiveIdIterator() {
-		return taxonomyBuilder.getExhaustiveConceptIdSet().iterator();
+		return taxonomy.getExhaustiveConcepts().iterator();
 	}
 
 	@Override
@@ -460,7 +485,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int conceptCount() {
-		return taxonomyBuilder.getConceptIdSet().size()
+		return taxonomy.getConceptMap().size()
 				- objectAttributeCount()
 				- dataAttributeCount();
 	}
@@ -482,11 +507,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int concreteDomainAttributeCount() {
-		return taxonomyBuilder.getAllStatedConcreteDomainLabels().size();
+		return Ints.checkedCast(taxonomy.getStatedConcreteDomainMembers().valueStream()
+				.map(ConcreteDomainFragment::getLabel)
+				.distinct()
+				.count());
 	}
-	
+
 	private int disjointUnionCount() {
-		return taxonomyBuilder.getExhaustiveConceptIdSet().size();
+		return taxonomy.getExhaustiveConcepts().size();
 	}
 
 	private int additionalAxiomCount() {
@@ -495,8 +523,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int getConceptAndSubTypesCount(final long ancestorId) {
-		if (taxonomyBuilder.isActive(ancestorId)) {
-			return taxonomyBuilder.getAllSubTypesIds(ancestorId).size() + 1;
+		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
+			return taxonomy.getStatedDescendants()
+					.getDestinations(ancestorId, false)
+					.size() + 1;
 		} else {
 			return 0;
 		}
@@ -505,9 +535,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private LongSet getConceptAndSubTypes(final long ancestorId) {
 		final LongSet conceptAndSubTypes = PrimitiveSets.newLongOpenHashSet();
 
-		if (taxonomyBuilder.isActive(ancestorId)) {
+		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
 			conceptAndSubTypes.add(ancestorId);
-			conceptAndSubTypes.addAll(taxonomyBuilder.getAllSubTypesIds(ancestorId));
+			conceptAndSubTypes.addAll(taxonomy.getStatedDescendants()
+					.getDestinations(ancestorId, false));
 		}
 
 		return conceptAndSubTypes;
@@ -516,9 +547,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private int hierarchyCount(final long ancestorId) {
 		int parentsCount = 0;
 
-		if (taxonomyBuilder.isActive(ancestorId)) {
+		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
 			for (final LongIterator itr = getConceptAndSubTypes(ancestorId).iterator(); itr.hasNext(); /* empty */) {
-				final int parents = taxonomyBuilder.getSuperTypeIds(itr.next()).size();
+				final int parents = taxonomy.getStatedAncestors()
+						.getDestinations(itr.next(), true)
+						.size();
+
 				parentsCount += parents;
 			}
 		}
@@ -539,9 +573,13 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			return -1L;
 		}
 	}
-	
+
 	public OWLClass getConceptClass(final long conceptId) {
 		return getDataFactory().getOWLClass(PREFIX_SCT + conceptId, prefixManager);
+	}
+
+	public OWLClassExpression getOWLThing() {
+		return getDataFactory().getOWLThing();
 	}
 
 	private OWLObjectProperty getConceptObjectProperty(final long conceptId) {
@@ -556,9 +594,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		final OWLClass destinationClass = getConceptClass(destinationId);
 		final OWLClassExpression filler = destinationNegated 
 				? getOWLObjectComplementOf(destinationClass) 
-				: destinationClass;
+						: destinationClass;
 
-		return getRelationshipExpression(typeId, filler, universal);
+				return getRelationshipExpression(typeId, filler, universal);
 	}
 
 	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final OWLClassExpression filler, final boolean universal) {
@@ -583,32 +621,36 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private OWLClassExpression getConceptDefinitionExpression(final long conceptId) {
 		final Set<OWLClassExpression> intersection = Sets.newHashSet();
+		final LongSet superTypeIds = taxonomy.getStatedAncestors()
+				.getDestinations(conceptId, true);
 
-		for (final LongIterator itr = taxonomyBuilder.getSuperTypeIds(conceptId).iterator(); itr.hasNext(); /* empty */) {
+		for (final LongIterator itr = superTypeIds.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
 			addParent(parentId, intersection);
 		}
 
-		final Collection<StatementFragment> statedNonIsAFragments = taxonomyBuilder.getStatedNonIsAFragments(conceptId);
+		final Collection<StatementFragment> statedNonIsAFragments = taxonomy.getStatedNonIsARelationships()
+				.get(conceptId);
 
 		statedNonIsAFragments.stream()
-				.filter(r -> isNeverGrouped(r))
-				.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
-				.entrySet()
-				.stream()
-				.forEachOrdered(ug -> addUnionGroup(ug, intersection));
+			.filter(r -> isNeverGrouped(r))
+			.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
+			.entrySet()
+			.stream()
+			.forEachOrdered(ug -> addUnionGroup(ug, intersection));
 
 		statedNonIsAFragments.stream()
-				.filter(r -> !isNeverGrouped(r))
-				.collect(Collectors.groupingBy(StatementFragment::getGroup))
-				.entrySet()
-				.stream()
-				.forEachOrdered(g -> addGroup(conceptId, g, intersection));
+			.filter(r -> !isNeverGrouped(r))
+			.collect(Collectors.groupingBy(StatementFragment::getGroup))
+			.entrySet()
+			.stream()
+			.forEachOrdered(g -> addGroup(conceptId, g, intersection));
 
-		final Collection<ConcreteDomainFragment> conceptConcreteDomainFragments = taxonomyBuilder.getStatedConcreteDomainFragments(conceptId);
+		final Collection<ConcreteDomainFragment> conceptConcreteDomainFragments = taxonomy.getStatedConcreteDomainMembers()
+				.get(conceptId);
 
 		conceptConcreteDomainFragments.stream()
-				.forEach(c -> addConcreteDomainMember(c, intersection));
+			.forEach(c -> addConcreteDomainMember(c, intersection));
 
 		return getOWLObjectIntersectionOf(intersection);
 	}
@@ -645,30 +687,32 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			intersection.add(relationshipExpression);
 		} else {
 			unionGroup.getValue()
-					.stream()
-					.map(ugr -> getRelationshipExpression(ugr.getTypeId(), 
-							ugr.getDestinationId(), 
-							ugr.isDestinationNegated(), 
-							ugr.isUniversal()))
-					.forEachOrdered(intersection::add);
+			.stream()
+			.map(ugr -> getRelationshipExpression(ugr.getTypeId(), 
+					ugr.getDestinationId(), 
+					ugr.isDestinationNegated(), 
+					ugr.isUniversal()))
+			.forEachOrdered(intersection::add);
 		}
 
 		// Add relationship-referenced concrete domain members alongside the relationships
 		unionGroup.getValue()
-				.stream()
-				.flatMap(r -> taxonomyBuilder.getStatedConcreteDomainFragments(r.getStatementId()).stream())
-				.forEachOrdered(m -> addConcreteDomainMember(m, intersection));
+			.stream()
+			.flatMap(r -> taxonomy.getStatedConcreteDomainMembers()
+					.get(r.getStatementId())
+					.stream())
+			.forEachOrdered(m -> addConcreteDomainMember(m, intersection));
 	}
 
 	private void addGroup(final long conceptId, final Entry<Integer, List<StatementFragment>> group, final Set<OWLClassExpression> intersection) {
 		final Set<OWLClassExpression> groupIntersection = Sets.newHashSet();
 
 		group.getValue()
-				.stream()
-				.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
-				.entrySet()
-				.stream()
-				.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
+			.stream()
+			.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
+			.entrySet()
+			.stream()
+			.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
 
 		if (group.getKey() > 0) {
 
@@ -719,20 +763,16 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private OWL2Datatype getOWL2Datatype(final DataType dataType) {
 		switch (dataType) {
-			case BOOLEAN: return OWL2Datatype.XSD_BOOLEAN;
-			case DATE: return OWL2Datatype.XSD_DATE_TIME;
-			case DECIMAL: return OWL2Datatype.XSD_DECIMAL;
-			case INTEGER: return OWL2Datatype.XSD_INT;
-			case STRING: return OWL2Datatype.RDF_PLAIN_LITERAL;
-			default: throw new IllegalStateException(MessageFormat.format("Unhandled datatype enum ''{0}''.", dataType));
+		case BOOLEAN: return OWL2Datatype.XSD_BOOLEAN;
+		case DATE: return OWL2Datatype.XSD_DATE_TIME;
+		case DECIMAL: return OWL2Datatype.XSD_DECIMAL;
+		case INTEGER: return OWL2Datatype.XSD_INT;
+		case STRING: return OWL2Datatype.RDF_PLAIN_LITERAL;
+		default: throw new IllegalStateException(MessageFormat.format("Unhandled datatype enum ''{0}''.", dataType));
 		}
 	}
 
-	private OWLClassExpression createHasUnitExpression(long uomId) {
-		if (uomId == -1L) {
-			uomId = DEFAULT_UNIT;
-		}
-
+	private OWLClassExpression createHasUnitExpression(final long uomId) {
 		final OWLObjectProperty hasUnitProperty = getDataFactory().getOWLObjectProperty(PREFIX_HAS_UNIT, prefixManager);
 		final OWLClassExpression hasUnitExpression = getDataFactory().getOWLObjectSomeValuesFrom(hasUnitProperty, getConceptClass(uomId));
 		return hasUnitExpression;
@@ -791,7 +831,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private OWLDisjointUnionAxiom getOWLDisjointUnionAxiom(final OWLClass parent, final Set<OWLClass> children) {
 		return getDataFactory().getOWLDisjointUnionAxiom(parent, children);
 	}
-	
+
 	private OWLSubObjectPropertyOfAxiom getOWLSubObjectPropertyOfAxiom(final OWLObjectPropertyExpression child, final OWLObjectPropertyExpression parent) {
 		return getDataFactory().getOWLSubObjectPropertyOfAxiom(child, parent);
 	}

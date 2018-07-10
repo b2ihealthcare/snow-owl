@@ -122,4 +122,8 @@ public final class InternalIdMap {
 		builder.append("]");
 		return builder.toString();
 	}
+
+	public LongIterator getSctIds() {
+		return sctIdToInternal.keySet().iterator();
+	}
 }

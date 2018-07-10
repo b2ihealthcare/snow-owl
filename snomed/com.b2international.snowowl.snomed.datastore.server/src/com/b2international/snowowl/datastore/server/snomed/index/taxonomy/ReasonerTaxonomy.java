@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.b2international.collections.longs.LongList;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 
@@ -37,13 +38,14 @@ public final class ReasonerTaxonomy {
 	private final InternalSctIdSet exhaustiveConcepts;
 
 	private final InternalIdMultimap<StatementFragment> statedNonIsARelationships;
-	private final InternalIdMultimap<StatementFragment> inferredNonIsARelationships;
+	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
 	private final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers;
 	private final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private final InternalIdEdges inferredAncestors;
 	private final InternalSctIdSet unsatisfiableConcepts;
 	private final InternalSctIdMultimap equivalentConcepts;
+	private final LongList iterationOrder;
 
 	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
 			final InternalIdEdges statedAncestors,
@@ -51,12 +53,13 @@ public final class ReasonerTaxonomy {
 			final InternalSctIdSet fullyDefinedConcepts,
 			final InternalSctIdSet exhaustiveConcepts, 
 			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
-			final InternalIdMultimap<StatementFragment> inferredNonIsARelationships,
+			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
 			final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers,
 			final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers,
 			final InternalIdEdges inferredAncestors,
 			final InternalSctIdSet unsatisfiableConcepts,
-			final InternalSctIdMultimap equivalentConcepts) {
+			final InternalSctIdMultimap equivalentConcepts, 
+			final LongList iterationOrder) {
 
 		this.conceptMap = conceptMap;
 		this.statedAncestors = statedAncestors;
@@ -64,12 +67,13 @@ public final class ReasonerTaxonomy {
 		this.fullyDefinedConcepts = fullyDefinedConcepts;
 		this.exhaustiveConcepts = exhaustiveConcepts;
 		this.statedNonIsARelationships = statedNonIsARelationships;
-		this.inferredNonIsARelationships = inferredNonIsARelationships;
+		this.existingInferredRelationships = existingInferredRelationships;
 		this.statedConcreteDomainMembers = statedConcreteDomainMembers;
 		this.inferredConcreteDomainMembers = inferredConcreteDomainMembers;
 		this.inferredAncestors = inferredAncestors;
 		this.unsatisfiableConcepts = unsatisfiableConcepts;
 		this.equivalentConcepts = equivalentConcepts;
+		this.iterationOrder = iterationOrder;
 	}
 
 	public InternalIdMap getConceptMap() {
@@ -108,8 +112,8 @@ public final class ReasonerTaxonomy {
 		return statedNonIsARelationships;
 	}
 
-	public InternalIdMultimap<StatementFragment> getInferredNonIsARelationships() {
-		return inferredNonIsARelationships;
+	public InternalIdMultimap<StatementFragment> getExistingInferredRelationships() {
+		return existingInferredRelationships;
 	}
 
 	public InternalIdMultimap<ConcreteDomainFragment> getStatedConcreteDomainMembers() {
@@ -119,18 +123,25 @@ public final class ReasonerTaxonomy {
 	public InternalIdMultimap<ConcreteDomainFragment> getInferredConcreteDomainMembers() {
 		return inferredConcreteDomainMembers;
 	}
+	
+	public LongList getIterationOrder() {
+		return iterationOrder;
+	}
 
 	public ReasonerTaxonomy withInferences(final InternalIdEdges newInferredAncestors, 
 			final InternalSctIdSet newUnsatisfiableConcepts,
-			final InternalSctIdMultimap newEquivalentConcepts) {
+			final InternalSctIdMultimap newEquivalentConcepts, 
+			final LongList iterationOrder) {
 
 		checkNotNull(newInferredAncestors, "Inferred ancestors may not be null.");
 		checkNotNull(newUnsatisfiableConcepts, "Inferred unsatisfiable concepts may not be null.");
 		checkNotNull(newEquivalentConcepts, "Inferred equivalent concept sets may not be null.");
+		checkNotNull(iterationOrder, "Inferred concept iteration order may not be null.");
 
 		checkState(this.inferredAncestors == null, "Inferred ancestors are already present in this taxonomy.");
 		checkState(this.unsatisfiableConcepts == null, "Inferred unsatisfiable concepts are already present in this taxonomy.");
 		checkState(this.equivalentConcepts == null, "Inferred equivalent concept sets are already present in this taxonomy.");
+		checkState(this.iterationOrder == null, "Inferred concept iteration order is already set in this taxonomy.");
 
 		return new ReasonerTaxonomy(conceptMap, 
 				statedAncestors, 
@@ -138,11 +149,12 @@ public final class ReasonerTaxonomy {
 				fullyDefinedConcepts, 
 				exhaustiveConcepts, 
 				statedNonIsARelationships, 
-				inferredNonIsARelationships, 
+				existingInferredRelationships, 
 				statedConcreteDomainMembers, 
 				inferredConcreteDomainMembers,
 				newInferredAncestors, 
 				newUnsatisfiableConcepts,
-				newEquivalentConcepts);
+				newEquivalentConcepts,
+				iterationOrder);
 	}
 }

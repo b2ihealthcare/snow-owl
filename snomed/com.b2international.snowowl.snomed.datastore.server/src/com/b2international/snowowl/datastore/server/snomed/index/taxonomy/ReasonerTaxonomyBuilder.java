@@ -21,7 +21,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDoc
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
@@ -31,6 +30,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
@@ -85,7 +87,7 @@ public final class ReasonerTaxonomyBuilder {
 	private InternalSctIdSet.Builder exhaustiveConcepts;
 
 	private InternalIdMultimap.Builder<StatementFragment> statedNonIsARelationships;
-	private InternalIdMultimap.Builder<StatementFragment> inferredNonIsARelationships;
+	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
 	private InternalIdMultimap.Builder<ConcreteDomainFragment> statedConcreteDomainMembers;
 	private InternalIdMultimap.Builder<ConcreteDomainFragment> inferredConcreteDomainMembers;
 
@@ -147,7 +149,7 @@ public final class ReasonerTaxonomyBuilder {
 		this.fullyDefinedConcepts = InternalSctIdSet.builder(builtConceptMap);
 		this.exhaustiveConcepts = InternalSctIdSet.builder(builtConceptMap);
 		this.statedNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
-		this.inferredNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
+		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
 
 		// Concrete domain builders are only initialized once relationships are handled
 		return this;
@@ -267,9 +269,41 @@ public final class ReasonerTaxonomyBuilder {
 		return this;
 	}
 
-	public ReasonerTaxonomyBuilder addActiveNonIsARelationships(final RevisionSearcher searcher) {
-		entering("Registering active non-IS A relationships using revision searcher");
+	public ReasonerTaxonomyBuilder addActiveStatedNonIsARelationships(final RevisionSearcher searcher) {
+		entering("Registering active stated non-IS A relationships using revision searcher");
 
+		final Expression activeStatedNonIsAExpression = Expressions.builder()
+				.filter(active())
+				.filter(characteristicTypeId(Concepts.STATED_RELATIONSHIP))
+				.mustNot(typeId(Concepts.IS_A))
+				.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
+				.build();
+		
+		addRelationships(searcher, activeStatedNonIsAExpression, statedNonIsARelationships::putAll);
+
+		leaving("Registering active stated non-IS A relationships using revision searcher");
+		return this;
+	}
+	
+	public ReasonerTaxonomyBuilder addActiveInferredRelationships(final RevisionSearcher searcher) {
+		entering("Registering active inferred relationships using revision searcher");
+		
+		final Expression activeInferredExpression = Expressions.builder()
+				.filter(active())
+				.filter(characteristicTypeId(Concepts.INFERRED_RELATIONSHIP))
+				.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
+				.build();
+				
+		addRelationships(searcher, activeInferredExpression, existingInferredRelationships::putAll);
+				
+		leaving("Registering active inferred relationships using revision searcher");
+		return this;
+	}
+
+	private void addRelationships(final RevisionSearcher searcher, 
+			final Expression expression,
+			final BiConsumer<String, List<StatementFragment>> consumer) {
+		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
 				.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0
@@ -281,31 +315,25 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 6
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
 						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 8
-				.where(Expressions.builder()
-						.filter(active())
-						.filter(characteristicTypeIds(CHARACTERISTIC_TYPE_IDS))
-						.mustNot(typeId(Concepts.IS_A))
-						.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
-						.build())
+				.where(expression)
 				.sortBy(SortBy.field(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC))
 				.limit(SCROLL_LIMIT)
 				.build();
 
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
-
-		final List<StatementFragment> statedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final List<StatementFragment> inferredFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final String lastSourceId = "";
+		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		String lastSourceId = "";
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
 				final String sourceId = relationship[1];
 
-				if (!lastSourceId.equals(sourceId)) {
-					statedNonIsARelationships.putAll(lastSourceId, statedFragments);
-					inferredNonIsARelationships.putAll(lastSourceId, inferredFragments);
-					statedFragments.clear();
-					inferredFragments.clear();
+				if (lastSourceId.isEmpty()) {
+					lastSourceId = sourceId;
+				} else if (!lastSourceId.equals(sourceId)) {
+					consumer.accept(lastSourceId, fragments);
+					fragments.clear();
+					lastSourceId = sourceId;
 				}
 
 				final long statementId = Long.parseLong(relationship[0]);
@@ -325,22 +353,40 @@ public final class ReasonerTaxonomyBuilder {
 						universal,
 						statementId);
 
-				if (Concepts.STATED_RELATIONSHIP.equals(relationship[8])) {
-					statedFragments.add(statement);
-				} else {
-					inferredFragments.add(statement);
-				}
+				fragments.add(statement);
 			}
 		}
 
 		if (!lastSourceId.isEmpty()) {
-			statedNonIsARelationships.putAll(lastSourceId, statedFragments);
-			inferredNonIsARelationships.putAll(lastSourceId, inferredFragments);
-			statedFragments.clear();
-			inferredFragments.clear();
+			consumer.accept(lastSourceId, fragments);
+			fragments.clear();
 		}
+	}
 
-		leaving("Registering active non-IS A relationships using revision searcher");
+	public ReasonerTaxonomyBuilder addActiveStatedNonIsARelationships(final Stream<SnomedRelationship> sortedRelationships) {
+		entering("Registering active stated non-IS A relationships using relationship stream");
+
+		final Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
+				&& CharacteristicType.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& !Concepts.IS_A.equals(relationship.getTypeId())
+				&& !Concepts.UK_MODULES_NOCLASSIFY.contains(relationship.getModuleId());
+		
+		addRelationships(sortedRelationships, predicate, (BiConsumer<String, List<StatementFragment>>) statedNonIsARelationships::putAll);
+
+		leaving("Registering active stated non-IS A relationships using relationship stream");
+		return this;
+	}
+	
+	public ReasonerTaxonomyBuilder addActiveInferredRelationships(final Stream<SnomedRelationship> sortedRelationships) {
+		entering("Registering active inferred relationships using relationship stream");
+		
+		final Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
+				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& !Concepts.UK_MODULES_NOCLASSIFY.contains(relationship.getModuleId());
+		
+		addRelationships(sortedRelationships, predicate, (BiConsumer<String, List<StatementFragment>>) statedNonIsARelationships::putAll);
+		
+		leaving("Registering active inferred relationships using relationship stream");
 		return this;
 	}
 
@@ -348,28 +394,23 @@ public final class ReasonerTaxonomyBuilder {
 	 * XXX: Relationships with the same source ID should be consecutive in the
 	 * Stream! We can not verify this in advance.
 	 */
-	public ReasonerTaxonomyBuilder addActiveNonIsARelationships(final Stream<SnomedRelationship> sortedRelationships) {
-		entering("Registering active non-IS A relationships using relationship stream");
-
-		final List<StatementFragment> statedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final List<StatementFragment> inferredFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-
-		final String lastSourceId = "";
+	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships,
+			final Predicate<SnomedRelationship> predicate,
+			final BiConsumer<String, List<StatementFragment>> consumer) {
+		
+		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		String lastSourceId = "";
 
 		for (final List<SnomedRelationship> chunk : Iterables.partition(sortedRelationships::iterator, SCROLL_LIMIT)) {
 			for (final SnomedRelationship relationship : chunk) {
-				final CharacteristicType characteristicType = relationship.getCharacteristicType();
-
-				if (relationship.isActive() 
-						&& CHARACTERISTIC_TYPE_IDS.contains(characteristicType.getConceptId())
-						&& !Concepts.IS_A.equals(relationship.getTypeId())
-						&& !Concepts.UK_MODULES_NOCLASSIFY.contains(relationship.getModuleId())) {
-
-					if (!lastSourceId.equals(relationship.getSourceId())) {
-						statedNonIsARelationships.putAll(lastSourceId, statedFragments);
-						inferredNonIsARelationships.putAll(lastSourceId, inferredFragments);
-						statedFragments.clear();
-						inferredFragments.clear();
+				if (predicate.test(relationship)) {
+					final String sourceId = relationship.getSourceId();
+					
+					if (lastSourceId.isEmpty()) {
+						lastSourceId = sourceId;
+					} else if (!lastSourceId.equals(relationship.getSourceId())) {
+						consumer.accept(lastSourceId, fragments);
+						fragments.clear();
 					}
 
 					final long statementId = Long.parseLong(relationship.getId());
@@ -389,24 +430,15 @@ public final class ReasonerTaxonomyBuilder {
 							universal,
 							statementId);
 
-					if (CharacteristicType.STATED_RELATIONSHIP.equals(characteristicType)) {
-						statedFragments.add(statement);
-					} else {
-						inferredFragments.add(statement);
-					}
+					fragments.add(statement);
 				}
 			}
 		}
 
 		if (!lastSourceId.isEmpty()) {
-			statedNonIsARelationships.putAll(lastSourceId, statedFragments);
-			inferredNonIsARelationships.putAll(lastSourceId, inferredFragments);
-			statedFragments.clear();
-			inferredFragments.clear();
+			consumer.accept(lastSourceId, fragments);
+			fragments.clear();
 		}
-
-		leaving("Registering active non-IS A relationships using relationship stream");
-		return this;
 	}
 
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
@@ -546,10 +578,11 @@ public final class ReasonerTaxonomyBuilder {
 				fullyDefinedConcepts.build(),
 				exhaustiveConcepts.build(),
 				statedNonIsARelationships.build(),
-				inferredNonIsARelationships.build(),
+				existingInferredRelationships.build(),
 				statedConcreteDomainMembers.build(),
 				inferredConcreteDomainMembers.build(),
 				null, 
+				null,
 				null,
 				null);
 	}

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.ints.IntIterator;
@@ -77,9 +78,9 @@ public final class InternalIdMultimap<T> {
 		public InternalIdMultimap<B> build() {
 			// Freeze lists, re-using the IntKeyMap in the process
 			final IntSet internalIdKeys = internalIdMultimap.keySet();
-			for (IntIterator itr = internalIdKeys.iterator(); itr.hasNext(); /* empty */) {
+			for (final IntIterator itr = internalIdKeys.iterator(); itr.hasNext(); /* empty */) {
 				final int key = itr.next();
-				ImmutableList.Builder<B> itemsForKey = (ImmutableList.Builder<B>) internalIdMultimap.get(key);
+				final ImmutableList.Builder<B> itemsForKey = (ImmutableList.Builder<B>) internalIdMultimap.get(key);
 				internalIdMultimap.put(key, itemsForKey.build());
 			}
 
@@ -108,5 +109,14 @@ public final class InternalIdMultimap<T> {
 		} else {
 			return values;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stream<T> valueStream() {
+		return internalIdMultimap.values()
+				.stream()
+				.flatMap(obj -> {
+					return ((ImmutableList<T>) obj).stream();
+				});
 	}
 }

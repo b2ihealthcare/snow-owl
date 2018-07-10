@@ -18,44 +18,92 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
+
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyWalker;
-import com.b2international.snowowl.snomed.reasoner.classification.TaxonomyCallback;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.google.common.collect.Ordering;
 
 /**
- * Base class for different implementations, which generate a set of components
- * in normal form, based on a subsumption hierarchy encapsulated in a reasoner.
+ * Base class for different implementations, which generate a set of components in normal form, based on a subsumption
+ * hierarchy encapsulated in a reasoner.
  * 
  * @param <T> the generated component type
  * @since
  */
-public abstract class NormalFormGenerator<T extends Serializable> implements TaxonomyCallback {
+public abstract class NormalFormGenerator<T extends Serializable> {
 
-	protected final ReasonerTaxonomyBuilder taxonomyBuilder;
-	protected final ReasonerTaxonomyWalker taxonomyWalker;
+	protected final ReasonerTaxonomy taxonomy;
 
-	private final OntologyChangeProcessor<T> processor;
-	private final Ordering<T> ordering;
+	public NormalFormGenerator(final ReasonerTaxonomy taxonomy) {
+		this.taxonomy = taxonomy;
+	}
+	
+	/**
+	 * Computes and returns all changes as a result of normal form computation.
+	 * 
+	 * @param monitor   the progress monitor to use for reporting progress to the
+	 *                  user. It is the caller's responsibility to call
+	 *                  <code>done()</code> on the given monitor. Accepts
+	 *                  <code>null</code>, indicating that no progress should be
+	 *                  reported and that the operation cannot be cancelled.
+	 * @param processor the change processor to route changes to
+	 * @param ordering  an ordering defined over existing and generated components,
+	 *                  used for detecting changes
+	 * @return the total number of generated components
+	 */
+	public final int collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<T> processor, final Ordering<T> ordering) {
 
-	protected NormalFormGenerator(final ReasonerTaxonomyBuilder taxonomyBuilder,
-			final ReasonerTaxonomyWalker taxonomyWalker,
-			final OntologyChangeProcessor<T> processor,
-			final Ordering<T> ordering) {
-
-		this.taxonomyBuilder = taxonomyBuilder;
-		this.taxonomyWalker = taxonomyWalker;
-		this.processor = processor;
-		this.ordering = ordering;
+		final LongList entries = taxonomy.getIterationOrder();
+		LongSet previousLayer = null;
+		LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
+		
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Generating normal form...", entries.size());
+		int generatedComponentCount = 0;
+		
+		try {
+		
+			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
+				final long conceptId = itr.next();
+				
+				if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
+					if (previousLayer != null) {
+						invalidate(previousLayer);
+					}
+					
+					previousLayer = currentLayer;
+					currentLayer = PrimitiveSets.newLongOpenHashSet();
+				} else {
+					final Collection<T> existingComponents = getExistingComponents(conceptId);
+					final Collection<T> generatedComponents = getGeneratedComponents(conceptId);
+					processor.apply(conceptId, existingComponents, generatedComponents, ordering, subMonitor.newChild(1));
+					generatedComponentCount += generatedComponents.size();
+					currentLayer.add(conceptId);
+				}
+			}
+			
+		} finally {
+			subMonitor.done();
+		}
+		
+		return generatedComponentCount; 
 	}
 
-	@Override
-	public final void onConcept(final long conceptId, final LongSet parentIds, final LongSet ancestorIds) {
-		final Collection<T> existingComponents = getExistingComponents(conceptId);
-		final Collection<T> generatedComponents = getGeneratedComponents(conceptId, parentIds, ancestorIds);
-		processor.apply(conceptId, existingComponents, generatedComponents, ordering);
+	/**
+	 * Indicates that the BFS iteration has reached a new level in the tree.
+	 * Generators are free to drop caches associated with components in the previous
+	 * layer.
+	 * 
+	 * @param keysToInvalidate 
+	 */
+	protected void invalidate(final LongSet keysToInvalidate) {
+		return;
 	}
 
 	/**
@@ -72,11 +120,8 @@ public abstract class NormalFormGenerator<T extends Serializable> implements Tax
 	 * Computes and returns a set of components in normal form for the specified
 	 * concept.
 	 * 
-	 * @param concept     the concept for which components should be generated
-	 * @param parentIds   the inferred direct parents of the concept
-	 * @param ancestorIds the inferred ancestors (both direct and indirect) of the
-	 *                    concept
+	 * @param concept the concept for which components should be generated
 	 * @return the generated components of the specified concept in normal form
 	 */
-	public abstract Collection<T> getGeneratedComponents(final long conceptId, final LongSet parentIds, final LongSet ancestorIds);
+	public abstract Collection<T> getGeneratedComponents(final long conceptId);
 }

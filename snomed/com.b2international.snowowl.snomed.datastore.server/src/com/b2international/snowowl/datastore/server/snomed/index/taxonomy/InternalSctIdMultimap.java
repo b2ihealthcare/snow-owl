@@ -60,9 +60,9 @@ public final class InternalSctIdMultimap {
 			}
 
 			values.stream()
-				.map(Long::parseLong)
-				.map(internalIdMap::getInternalIdChecked)
-				.forEachOrdered(itemsForKey::add);
+			.map(Long::parseLong)
+			.map(internalIdMap::getInternalIdChecked)
+			.forEachOrdered(itemsForKey::add);
 
 			return this;
 		}
@@ -100,5 +100,17 @@ public final class InternalSctIdMultimap {
 
 			return sctIdValues;
 		}
+	}
+
+	public LongSet keySet() {
+		final LongSet keySet = PrimitiveSets.newLongOpenHashSetWithExpectedSize(internalIdMultimap.size());
+
+		for (final IntIterator itr = internalIdMultimap.keySet().iterator(); itr.hasNext(); /*empty*/) {
+			final int keyInternalId = itr.next();
+			final long keySctId = internalIdMap.getSctId(keyInternalId);
+			keySet.add(keySctId);
+		}
+
+		return keySet;
 	}
 }

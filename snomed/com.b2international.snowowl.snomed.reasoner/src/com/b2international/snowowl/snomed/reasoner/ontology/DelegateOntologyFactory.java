@@ -25,17 +25,17 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 
 /**
  * @since 
  */
 public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
-	private final ReasonerTaxonomyBuilder taxonomyBuilder;
+	private final ReasonerTaxonomy taxonomy;
 
-	public DelegateOntologyFactory(final ReasonerTaxonomyBuilder taxonomyBuilder) {
-		this.taxonomyBuilder = taxonomyBuilder;
+	public DelegateOntologyFactory(final ReasonerTaxonomy taxonomy) {
+		this.taxonomy = taxonomy;
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public final class DelegateOntologyFactory implements OWLOntologyFactory {
 			final IRI documentIRI,
 			final OWLOntologyCreationHandler handler) throws OWLOntologyCreationException {
 
-		final DelegateOntology owlOntology = new DelegateOntology(manager, ontologyID, taxonomyBuilder);
+		final DelegateOntology owlOntology = new DelegateOntology(manager, ontologyID, taxonomy);
 		handler.ontologyCreated(owlOntology);
 		handler.setOntologyFormat(owlOntology, new RDFXMLDocumentFormat());
 		return owlOntology;
