@@ -19,6 +19,7 @@ import java.util.Date;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -86,6 +87,12 @@ public abstract class FhirProperty {
 		
 		public final B valueDateTime(Date value) {
 			return setValue(FhirDataType.DATETIME, value);
+		}
+		
+		@JsonProperty
+		final B value(Object value) {
+			this.value = value;
+			return getSelf();
 		}
 		
 		protected final B setValue(FhirDataType type, Object value) {

@@ -72,7 +72,7 @@ public abstract class BaseFhirRestService {
 	protected void validateRequestParams(String summary, List<String> elements) {
 		
 		if (summary != null && elements !=null) {
-			throw new BadRequestException("Both search parameters '_summary' and '_elements' cannot be specified at the same time.");
+			throw new BadRequestException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.");
 		}
 		
 		if (summary != null) {
@@ -82,7 +82,7 @@ public abstract class BaseFhirRestService {
 					throw new BadRequestException("'Count' summary parameter is only allowed for search operations.");
 				}
 			} catch (RuntimeException re) {
-				throw new BadRequestException("Unknown _summary parameter value '" + summary + "'. Only true, false, text, data are permitted.");
+				throw new BadRequestException("Unknown '_summary' parameter value '" + summary + "'. Only 'true', 'false', 'text', 'data' are permitted.");
 			}
 		}
 	}

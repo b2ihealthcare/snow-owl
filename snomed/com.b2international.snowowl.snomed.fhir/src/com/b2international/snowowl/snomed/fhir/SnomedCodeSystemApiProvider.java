@@ -26,6 +26,8 @@ import java.util.Set;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
@@ -67,25 +69,26 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		FHIR_URI.getUriValue()
 	);
 	
-	private final Collection<ConceptProperties> supportedProperties;
-	
 	public SnomedCodeSystemApiProvider() {
 		super(SnomedDatastoreActivator.REPOSITORY_UUID);
-
+	}
+	
+	@Override
+	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+		
 		// what should be the locale here? Likely we need to add the config locale as well
 		final List<ExtendedLocale> locales = newArrayList(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference());
 		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
- 
-		final ImmutableList.Builder<ConceptProperties> supportedProperties = ImmutableList.builder();
+		
+		final ImmutableList.Builder<ConceptProperties> properties = ImmutableList.builder();
 		
 		// add basic properties
-		supportedProperties.add(
-			CoreSnomedConceptProperties.INACTIVE, 
-			CoreSnomedConceptProperties.MODULE_ID, 
-			CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED, 
-			CommonConceptProperties.CHILD, 
-			CommonConceptProperties.PARENT
-		);
+		properties.add(CoreSnomedConceptProperties.INACTIVE); 
+		properties.add(CoreSnomedConceptProperties.MODULE_ID); 
+		properties.add(CoreSnomedConceptProperties.EFFECTIVE_TIME); 
+		properties.add(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED); 
+		properties.add(CommonConceptProperties.CHILD); 
+		properties.add(CommonConceptProperties.PARENT); 
 		
 		// fetch available relationship types and register them as supported concept property
 		SnomedRequests.prepareSearchConcept()
@@ -102,9 +105,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				final String displayName = type.getPt() == null ? "N/A" : type.getPt().getTerm();
 				return ConceptProperties.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
 			})
-			.forEach(supportedProperties::add);
+			.forEach(properties::add);
 		
-		this.supportedProperties = supportedProperties.build();
+		return properties.build();
 	}
 	
 	@Override
@@ -150,9 +153,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		result.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
 		result.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId(), null));
 		result.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
+		result.addProperty(CoreSnomedConceptProperties.EFFECTIVE_TIME.propertyOf(EffectiveTimes.format(concept.getEffectiveTime(), DateFormats.SHORT), null));
 		
 		// add remaining terms as designations
-		
 		String languageCode = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
 		for (SnomedDescription description : concept.getDescriptions()) {
 				
@@ -169,6 +172,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 					.build());
 		}
 		
+		//Optionally requested properties
 		if (requestedChild && concept.getDescendants() != null) {
 			for (SnomedConcept child : concept.getDescendants()) {
 				result.addProperty(CommonConceptProperties.CHILD.propertyOf(child.getId(), getPreferredTermOrId(child)));
@@ -180,12 +184,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				result.addProperty(CommonConceptProperties.PARENT.propertyOf(parent.getId(), getPreferredTermOrId(parent)));
 			}
 		}
-		
 		return result.build();
-	}
-
-	private String getPreferredTermOrId(SnomedConcept concept) {
-		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 	}
 	
 	@Override
@@ -204,11 +203,6 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Collection<ConceptProperties> getSupportedConceptProperties() {
-		return supportedProperties;
-	}
-	
-	@Override
 	protected Collection<Filter> getSupportedFilters() {
 		return ImmutableList.of(Filter.IS_A_FILTER, Filter.EXPRESSION_FILTER, Filter.EXPRESSIONS_FILTER);
 	}
@@ -221,6 +215,10 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	protected Uri getFhirUri() {
 		return FHIR_URI;
+	}
+	
+	private String getPreferredTermOrId(SnomedConcept concept) {
+		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 	}
 	
 }

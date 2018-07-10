@@ -47,7 +47,15 @@ public enum CoreSnomedConceptProperties implements ConceptProperties {
 	NORMAL_FORM(ConceptPropertyType.STRING),
 	
 	//Generated Normal form expression for the provided code or expression, conceptIds only
-	NORMAL_FORM_TERSE(ConceptPropertyType.STRING);
+	NORMAL_FORM_TERSE(ConceptPropertyType.STRING),
+	
+	/**
+	 * Effective time in DateTime format.
+	 * <br>Note1: This property is not part of the FHIR specification (https://www.hl7.org/fhir/snomedct.html)
+	 * <br>Note2: There is no Date concept property type within the concept property type code system (http://hl7.org/fhir/codesystem-concept-property-type.html)
+	 * hence, we need to substitute it with the <i>String<i> type.
+	 */
+	EFFECTIVE_TIME(ConceptPropertyType.STRING);
 	
 	private ConceptPropertyType conceptPropertyType;
 	

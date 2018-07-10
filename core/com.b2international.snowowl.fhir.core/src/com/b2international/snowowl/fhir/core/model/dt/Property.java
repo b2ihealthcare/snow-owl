@@ -67,6 +67,12 @@ public final class Property extends FhirProperty {
 		return subProperty;
 	}
 	
+	@Override
+	public String toString() {
+		return "Property [code=" + code + ", description=" + description + ", subProperty=" + subProperty + ", getType()=" + getType()
+				+ ", getValue()=" + getValue() + "]";
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -74,7 +80,6 @@ public final class Property extends FhirProperty {
 	/**
 	 * @since 6.4
 	 */
-	@JsonIgnoreProperties("value")
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends FhirProperty.Builder<Property, Builder> {
 		

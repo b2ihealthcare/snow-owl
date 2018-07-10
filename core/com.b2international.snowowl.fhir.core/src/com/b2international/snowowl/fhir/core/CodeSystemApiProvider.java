@@ -36,6 +36,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -44,6 +45,7 @@ import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionReques
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR provider base class.
@@ -53,11 +55,24 @@ import com.google.common.base.Strings;
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
 	private final String repositoryId;
+	
+	private final Collection<ConceptProperties> supportedProperties = Sets.newHashSet();
 
 	public CodeSystemApiProvider(String repositoryId) {
 		this.repositoryId = repositoryId;
+		supportedProperties.addAll(Sets.newHashSet(SupportedCodeSystemRequestProperties.values()));
+		supportedProperties.addAll(getSupportedConceptProperties());
 	}
 	
+	/**
+	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
+	 * @param supportedProperties
+	 * @return
+	 */
+	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+		return Collections.emptySet();
+	}
+
 	protected final String repositoryId() {
 		return repositoryId;
 	}
@@ -152,7 +167,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 		
 		// include supported concept properties
-		getSupportedConceptProperties().stream()
+		getSupportedProperties().stream()
+			.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
 			.map(SupportedConceptProperty::builder)
 			.map(SupportedConceptProperty.Builder::build)
 			.forEach(builder::addProperty);
@@ -205,11 +221,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	protected abstract Set<String> fetchAncestors(String branchPath, String componentId);
 
 	/**
-	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
+	 * Returns the supported properties
 	 * @return the supported properties
 	 */
-	protected Collection<ConceptProperties> getSupportedConceptProperties() {
-		return Collections.emptySet();
+	protected Collection<ConceptProperties> getSupportedProperties() {
+		return supportedProperties;
 	}
 	
 	/**
@@ -225,11 +241,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
 		final Collection<String> properties = request.getProperties();
-		final Set<String> supportedCodes = getSupportedConceptProperties().stream().map(ConceptProperties::getCodeValue).collect(Collectors.toSet());
+		final Set<String> supportedCodes = getSupportedProperties().stream().map(ConceptProperties::getCodeValue).collect(Collectors.toSet());
 		if (!supportedCodes.containsAll(properties)) {
 			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
 		}
 	}
-	
 	
 }

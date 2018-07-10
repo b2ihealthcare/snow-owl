@@ -24,6 +24,10 @@ import org.junit.rules.TestName;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.snowowl.fhir.api.FhirApiConfig;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -85,6 +89,18 @@ public class FhirTest {
 	
 	protected JsonPath getJsonPath(Object object) throws JsonProcessingException {
 		return new JsonPath(objectMapper.writeValueAsString(object));
+	}
+	
+	/**
+	 * Converts the parameter-formatted response string to a {@link LookupResult} object
+	 * @param responseString
+	 * @return
+	 * @throws Exception
+	 */
+	protected LookupResult convertToResult(String responseString) throws Exception {
+		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		return objectMapper.convertValue(json, LookupResult.class);
 	}
 
 }

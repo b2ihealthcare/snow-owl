@@ -24,6 +24,7 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.CodeSystemRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.LookupCodeSystemRestTest;
+import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed.LookupSnomedRestTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
@@ -34,13 +35,14 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	//CodeSystemRestTest.class,
-	LookupCodeSystemRestTest.class
+	//LookupCodeSystemRestTest.class,
+	LookupSnomedRestTest.class
 })
 public class AllFhirRestTests {
 	
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
-			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
+		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
+		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
+		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
 }
