@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -32,25 +30,15 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Expressions;
-import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
@@ -62,7 +50,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.0.0
@@ -119,49 +106,11 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 	void doImport(final String userId, final BranchContext context, final File rf2Archive) throws Exception {
 		try (final DB db = createDb()) {
-			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
-			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
-			
-			// TODO in case of FULL or SNAPSHOT import load all component storage key pairs into the above Maps, so we can avoid loading them during tx commit
-			if (!isLoadOnDemandEnabled()) {
-				Stopwatch w = Stopwatch.createStarted();
-				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
-					System.err.println(String.format("Loading available '%s' IDs and StorageKeys...", type.getName()));
-					final List<String> fieldsToLoad;
-					if (SnomedConceptDocument.class == type) {
-						fieldsToLoad = ImmutableList.of(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
-					} else {
-						fieldsToLoad = ImmutableList.of(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY);
-					}
-					
-					for (Hits<Map> hits : context.service(RevisionSearcher.class).scroll(Query.select(Map.class)
-							.from(type)
-							.fields(fieldsToLoad)
-							.where(Expressions.matchAll())
-							.limit(10_000)
-							.build())) {
-						for (Map hit : hits) {
-							final String componentId = (String) hit.get(RevisionDocument.Fields.ID);
-							final long storageKey = (long) hit.get(RevisionDocument.Fields.STORAGE_KEY);
-							storageKeysByComponent.put(componentId, storageKey);
-							// add refset storagekey if this concept has a non negative value
-							if (type == SnomedConceptDocument.class && hit.containsKey(SnomedConceptDocument.Fields.REFSET_STORAGEKEY)) {
-								final long refSetStorageKey = (long) hit.get(SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
-								if (refSetStorageKey != -1L) {
-									storageKeysByRefSet.put(componentId, refSetStorageKey);
-								}
-							}
-						}
-					}
-				}
-				System.err.println("Loading available components IDs and StorageKeys took: " + w);
-			}
-			
 			// create executor service to parallel update the underlying index store
 
-			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
+			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(rf2Archive, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
+			read(rf2Archive, effectiveTimeSlices);
 			System.err.println("Preparing RF2 import took: " + w);
 			w.reset().start();
 
@@ -175,7 +124,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		return Rf2ReleaseType.DELTA == type;
 	}
 
-	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
+	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
 		final CsvSchema schema = CsvSchema.emptySchema()
@@ -191,7 +140,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
 					w.reset().start();
 					try (final InputStream in = zip.getInputStream(entry)) {
-						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet);
+						readFile(entry, in, oReader, slices);
 					}
 					System.err.println(entry.getName() + " - " + w);
 				}
@@ -203,7 +152,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		slices.flushAll();
 	}
 
-	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet)
+	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;

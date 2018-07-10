@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.CDOObject;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
@@ -43,20 +42,19 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologyregistry.core.builder.CodeSystemVersionBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -78,15 +76,11 @@ public final class Rf2EffectiveTimeSlice {
 	private final Map<String, String[]> tmpComponentsById;
 	private final HTreeMap<String, String[]> componentsById;
 	
-	private final Map<String, Long> storageKeysByComponent;
-	private final Map<String, Long> storageKeysByRefSet;
 	private final boolean loadOnDemand;
 	
-	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, boolean loadOnDemand) {
+	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, boolean loadOnDemand) {
 		this.effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		this.effectiveTime = EffectiveTimes.format(effectiveDate, DateFormats.DEFAULT);
-		this.storageKeysByComponent = storageKeysByComponent;
-		this.storageKeysByRefSet = storageKeysByRefSet;
 		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
 		this.tmpComponentsById = newHashMapWithExpectedSize(BATCH_SIZE);
 		this.dependenciesByComponent = PrimitiveMaps.newLongKeyOpenHashMap();
@@ -160,7 +154,7 @@ public final class Rf2EffectiveTimeSlice {
 	public void doImport(String userId, BranchContext context, boolean createVersions) throws Exception {
 		Stopwatch w = Stopwatch.createStarted();
 		System.err.println("Importing components from " + effectiveTime);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
@@ -188,27 +182,21 @@ public final class Rf2EffectiveTimeSlice {
 				tx.add(componentsToImport, getDependencies(componentsToImport));
 				
 				if (createVersions && !importPlan.hasNext()) {
-					final CodeSystemVersion version = new CodeSystemVersionBuilder()
-							.withDescription("")
-							.withEffectiveDate(effectiveDate)
-							.withImportDate(new Date())
-							.withParentBranchPath(context.branch().path())
-							.withVersionId(effectiveTime)
-							.build();
-					tx.lookup(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, CodeSystem.class).getCodeSystemVersions().add(version);
+					tx.add(CodeSystemVersionEntry.builder()
+							.codeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
+							.description("")
+							.parentBranchPath(context.branch().path())
+							.effectiveDate(effectiveDate.getTime())
+							.versionId(effectiveTime)
+							.importDate(new Date().getTime())
+							.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
+							.build());
 				}
 				
 				tx.commit(userId, "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
 			}
 			
 			if (createVersions) {
-				// purge index
-//				PurgeRequest.builder()
-//					.setBranchPath(context.branch().path())
-//					.setPurge(Purge.LATEST)
-//					.build()
-//					.execute(context);
-				
 				// do actually create a branch with the effective time name
 				RepositoryRequests
 					.branching()
@@ -222,8 +210,8 @@ public final class Rf2EffectiveTimeSlice {
 		System.err.println("Imported components from " + effectiveTime + " in " + w);
 	}
 
-	private Multimap<Class<? extends CDOObject>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {
-		final Multimap<Class<? extends CDOObject>, String> dependenciesByComponent = HashMultimap.create();
+	private Multimap<Class<? extends SnomedDocument>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {
+		final Multimap<Class<? extends SnomedDocument>, String> dependenciesByComponent = HashMultimap.create();
 		for (SnomedComponent component : componentsToImport) {
 			if (component instanceof SnomedCoreComponent) {
 				LongSet dependencies = this.dependenciesByComponent.get(Long.parseLong(component.getId()));
@@ -234,17 +222,17 @@ public final class Rf2EffectiveTimeSlice {
 					}
 				}
 			} else if (component instanceof SnomedReferenceSetMember) {
-				dependenciesByComponent.put(SnomedRefSet.class, ((SnomedReferenceSetMember) component).getReferenceSetId());
+				dependenciesByComponent.put(SnomedConceptDocument.class, ((SnomedReferenceSetMember) component).getReferenceSetId());
 			}
 		}
 		return dependenciesByComponent;
 	}
 
-	private Class<? extends CDOObject> getCdoType(String componentId) {
+	private Class<? extends SnomedDocument> getCdoType(String componentId) {
 		switch (SnomedIdentifiers.getComponentCategory(componentId)) {
-		case CONCEPT: return Concept.class;
-		case DESCRIPTION: return Description.class;
-		case RELATIONSHIP: return Relationship.class;
+		case CONCEPT: return SnomedConceptDocument.class;
+		case DESCRIPTION: return SnomedDescriptionIndexEntry.class;
+		case RELATIONSHIP: return SnomedRelationshipIndexEntry.class;
 		default: throw new UnsupportedOperationException("Cannot determine cdo type from component ID: " + componentId);
 		}
 	}
