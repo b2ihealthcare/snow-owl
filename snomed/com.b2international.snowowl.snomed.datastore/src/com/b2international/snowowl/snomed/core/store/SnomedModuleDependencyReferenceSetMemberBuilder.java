@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import java.util.Date;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
  */
-public final class SnomedModuleDependencyReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedModuleDependencyReferenceSetMemberBuilder, SnomedModuleDependencyRefSetMember> {
+public final class SnomedModuleDependencyReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedModuleDependencyReferenceSetMemberBuilder> {
 
 	private Date sourceEffectiveTime = new Date(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 	private Date targetEffectiveTime = new Date(EffectiveTimes.UNSET_EFFECTIVE_TIME);
@@ -41,15 +41,11 @@ public final class SnomedModuleDependencyReferenceSetMemberBuilder extends Snome
 	}
 
 	@Override
-	protected SnomedModuleDependencyRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedModuleDependencyRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setSourceEffectiveTime(sourceEffectiveTime);
-		component.setTargetEffectiveTime(targetEffectiveTime);
+		component
+			.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, sourceEffectiveTime)
+			.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime);
 	}
 
 }

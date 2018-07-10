@@ -45,10 +45,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -132,22 +130,22 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		return builder;
 	}
 	
-	public static Builder builder(Description description) {
-		String id = description.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-				.id(id) 
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.term(description.getTerm())
-				.moduleId(description.getModule().getId())
-				.released(description.isReleased()) 
-				.active(description.isActive()) 
-				.typeId(description.getType().getId()) 
-				.caseSignificanceId(description.getCaseSignificance().getId()) 
-				.conceptId(description.getConcept().getId())
-				.languageCode(description.getLanguageCode())
-				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
+//	public static Builder builder(Description description) {
+//		String id = description.getId();
+//		return builder()
+//				.storageKey(CDOIDUtils.asLong(description.cdoID()))
+//				.id(id) 
+//				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
+//				.term(description.getTerm())
+//				.moduleId(description.getModule().getId())
+//				.released(description.isReleased()) 
+//				.active(description.isActive()) 
+//				.typeId(description.getType().getId()) 
+//				.caseSignificanceId(description.getCaseSignificance().getId()) 
+//				.conceptId(description.getConcept().getId())
+//				.languageCode(description.getLanguageCode())
+//				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+//	}
 	
 	/**
 	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the
@@ -299,7 +297,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedDescriptionIndexEntry> {
 
 		private String term;
 		private String conceptId;

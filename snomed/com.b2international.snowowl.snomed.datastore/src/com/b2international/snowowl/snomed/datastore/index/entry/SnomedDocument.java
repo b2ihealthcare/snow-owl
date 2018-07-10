@@ -100,7 +100,7 @@ public abstract class SnomedDocument extends RevisionDocument {
 	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
-	public static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends SnomedDocument> extends RevisionDocumentBuilder<B, T> {
 
 		protected String moduleId;
 		protected boolean active;

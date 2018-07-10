@@ -16,17 +16,16 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, Relationship> {
+public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, SnomedRelationshipIndexEntry.Builder, SnomedRelationshipIndexEntry> {
 
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	private RelationshipModifier modifier = RelationshipModifier.EXISTENTIAL;
@@ -141,23 +140,23 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	}
 
 	@Override
-	protected Relationship create() {
-		return SnomedFactory.eINSTANCE.createRelationship();
+	protected SnomedRelationshipIndexEntry.Builder create() {
+		return SnomedRelationshipIndexEntry.builder();
 	}
 
 	@Override
-	public void init(Relationship component, TransactionContext context) {
+	public void init(SnomedRelationshipIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setCharacteristicType(context.lookup(characteristicType.getConceptId(), Concept.class));
-		component.setModifier(context.lookup(modifier.getConceptId(), Concept.class));
-		component.setType(context.lookup(type, Concept.class));
+		component.characteristicTypeId(context.lookup(characteristicType.getConceptId(), SnomedConceptDocument.class).getId());
+		component.modifierId(context.lookup(modifier.getConceptId(), SnomedConceptDocument.class).getId());
+		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
 		if (source != null) {
-			component.setSource(context.lookup(source, Concept.class));
+			component.sourceId(context.lookup(source, SnomedConceptDocument.class).getId());
 		}
-		component.setDestination(context.lookup(destination, Concept.class));
-		component.setDestinationNegated(destinationNegated);
-		component.setGroup(group);
-		component.setUnionGroup(unionGroup);
+		component.destinationId(context.lookup(destination, SnomedConceptDocument.class).getId());
+		component.destinationNegated(destinationNegated);
+		component.group(group);
+		component.unionGroup(unionGroup);
 	}
 
 }

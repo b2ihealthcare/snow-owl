@@ -62,7 +62,7 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	 * @param <B> - the builder type
 	 * @since 4.7
 	 */
-	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B>> {
+	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> {
 		
 		protected String id;
 		protected String label;
@@ -113,6 +113,8 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		}
 		
 		protected abstract B getSelf();
+		
+		public abstract T build();
 		
 	}
 	

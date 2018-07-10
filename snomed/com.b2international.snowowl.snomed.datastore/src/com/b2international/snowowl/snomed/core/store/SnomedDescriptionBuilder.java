@@ -16,15 +16,14 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<SnomedDescriptionBuilder, Description> {
+public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<SnomedDescriptionBuilder, SnomedDescriptionIndexEntry.Builder, SnomedDescriptionIndexEntry> {
 
 	private CaseSignificance caseSignificance = CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE;
 	private String type;
@@ -88,20 +87,20 @@ public final class SnomedDescriptionBuilder extends SnomedComponentBuilder<Snome
 	}
 
 	@Override
-	public void init(Description component, TransactionContext context) {
+	public void init(SnomedDescriptionIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setCaseSignificance(context.lookup(caseSignificance.getConceptId(), Concept.class));
-		component.setType(context.lookup(type, Concept.class));
-		component.setTerm(term);
-		component.setLanguageCode(languageCode);
+		component.caseSignificanceId(context.lookup(caseSignificance.getConceptId(), SnomedConceptDocument.class).getId());
+		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
+		component.term(term);
+		component.languageCode(languageCode);
 		if (concept != null) {
-			component.setConcept(context.lookup(concept, Concept.class));
+			component.conceptId(context.lookup(concept, SnomedConceptDocument.class).getId());
 		}
 	}
 
 	@Override
-	protected Description create() {
-		return SnomedFactory.eINSTANCE.createDescription();
+	protected SnomedDescriptionIndexEntry.Builder create() {
+		return SnomedDescriptionIndexEntry.builder();
 	}
 
 }

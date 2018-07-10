@@ -28,8 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.StringUtils;
@@ -42,15 +40,12 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -241,7 +236,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.ancestors(input.getAncestors())
 				.statedParents(input.getStatedParents())
 				.statedAncestors(input.getStatedAncestors())
-				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
@@ -288,7 +282,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
 
 		private boolean primitive;
 		private boolean exhaustive;
@@ -300,7 +294,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private short referencedComponentType;
 		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
-		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 		private boolean structural = false;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
@@ -354,21 +347,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public Builder clearRefSet() {
 			referencedComponentType = 0;
 			mapTargetComponentType = 0;
-			refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 			refSetType = null;
 			structural = false;
 			return getSelf();
-		}
-		
-		@JsonIgnore
-		public Builder refSet(final SnomedRefSet refSet) {
-			if (refSet instanceof SnomedMappingRefSet) {
-				mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
-			}
-			return structural(SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType()))
-					.refSetType(refSet.getType())
-					.referencedComponentType(refSet.getReferencedComponentType())
-					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
 		}
 		
 		@JsonIgnore
@@ -380,8 +361,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			}
 			
 			Builder b = structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
-					.refSetType(refSet.getType())
-					.refSetStorageKey(refSet.getStorageKey());
+					.refSetType(refSet.getType());
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
 				b.referencedComponentType(getValue(refSet.getReferencedComponentType()));
 			}
@@ -393,11 +373,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
-		Builder refSetStorageKey(long refSetStorageKey) {
-			this.refSetStorageKey = refSetStorageKey;
-			return getSelf();
-		}
-
 		Builder referencedComponentType(short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
@@ -441,7 +416,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					refSetType, 
 					referencedComponentType,
 					mapTargetComponentType,
-					refSetStorageKey,
 					structural,
 					memberOf,
 					activeMemberOf,
@@ -477,7 +451,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final short referencedComponentType;
 	private final int mapTargetComponentType;
 	private final boolean structural;
-	private final long refSetStorageKey;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -500,7 +473,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedRefSetType refSetType, 
 			final short referencedComponentType,
 			final int mapTargetComponentType,
-			final long refSetStorageKey,
 			final boolean structural,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
@@ -512,13 +484,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
-		this.refSetStorageKey = refSetStorageKey;
 		this.structural = structural;
 		this.preferredDescriptions = preferredDescriptions;
-	}
-	
-	public long getRefSetStorageKey() {
-		return refSetStorageKey;
 	}
 	
 	public float getDoi() {
@@ -584,7 +551,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.add("referencedComponentType", referencedComponentType)
 				.add("mapTargetComponentType", mapTargetComponentType)
 				.add("structural", structural)
-				.add("refSetStorageKey", refSetStorageKey)
 				.add("parents", parents)
 				.add("ancestors", ancestors)
 				.add("statedParents", statedParents)

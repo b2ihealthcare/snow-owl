@@ -22,14 +22,14 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -84,13 +84,13 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		request.setReferencedComponentId(referencedComponentId);
 	}
 
-	protected final void checkRefSetType(SnomedRefSet refSet, SnomedRefSetType expectedType) {
+	protected final void checkRefSetType(SnomedReferenceSet refSet, SnomedRefSetType expectedType) {
 		if (!expectedType.equals(refSet.getType())) {
-			throw new BadRequestException("Reference set '%s' is of type '%s', expected type '%s'.", refSet.getIdentifierId(), refSet.getType(), expectedType);
+			throw new BadRequestException("Reference set '%s' is of type '%s', expected type '%s'.", refSet.getId(), refSet.getType(), expectedType);
 		}
 	}
 
-	protected final void checkReferencedComponent(SnomedRefSet refSet) {
+	protected final void checkReferencedComponent(SnomedReferenceSet refSet) {
 		if (Strings.isNullOrEmpty(getReferencedComponentId())) {
 			throw new BadRequestException("'%s' cannot be null or empty for '%s' type reference sets.", SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, refSet.getType());
 		}
@@ -98,42 +98,40 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		// XXX referenced component ID for query type reference set cannot be defined, validate only if defined
 		SnomedIdentifiers.validate(getReferencedComponentId());
 
-		short refSetReferencedComponentType = refSet.getReferencedComponentType();
-		if (CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT != refSetReferencedComponentType) {
-			short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(getReferencedComponentId());
-			if (refSetReferencedComponentType != referencedComponentType) {
-				String expectedType = SnomedTerminologyComponentConstants.getId(referencedComponentType);
-				String actualType = SnomedTerminologyComponentConstants.getId(refSetReferencedComponentType);
+		String expectedReferencedComponentType = refSet.getReferencedComponentType();
+		if (!Strings.isNullOrEmpty(expectedReferencedComponentType) && !CoreTerminologyBroker.UNSPECIFIED.equals(expectedReferencedComponentType)) {
+			String actualReferencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(getReferencedComponentId());
+			if (!expectedReferencedComponentType.equals(actualReferencedComponentType)) {
 				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", 
-						refSet.getIdentifierId(), 
+						refSet.getId(), 
 						getReferencedComponentId(), 
-						expectedType, 
-						actualType);
+						expectedReferencedComponentType, 
+						actualReferencedComponentType);
 			}
 		}
 	}
 
-	protected final void checkComponentExists(SnomedRefSet refSet, TransactionContext context, String key) {
+	protected final void checkComponentExists(SnomedReferenceSet refSet, TransactionContext context, String key) {
 		checkComponentExists(refSet, context, key, getComponentId(key));
 	}
 
-	protected final void checkComponentExists(SnomedRefSet refSet, TransactionContext context, String key, String componentId) {
+	protected final void checkComponentExists(SnomedReferenceSet refSet, TransactionContext context, String key, String componentId) {
 		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
 
 		try {
 
 			switch (referencedComponentType) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-				context.lookup(componentId, Concept.class);
+				context.lookup(componentId, SnomedConceptDocument.class);
 				break;
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				context.lookup(componentId, Description.class);
+				context.lookup(componentId, SnomedDescriptionIndexEntry.class);
 				break;
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-				context.lookup(componentId, Relationship.class);
+				context.lookup(componentId, SnomedRelationshipIndexEntry.class);
 				break;
 			default:
-				throw new BadRequestException("Property '%s' must be an identifier for a core component for '%s' reference set members.", key, refSet.getIdentifierId());
+				throw new BadRequestException("Property '%s' must be an identifier for a core component for '%s' reference set members.", key, refSet.getId());
 			}
 
 		} catch (ComponentNotFoundException e) {
@@ -141,16 +139,16 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		}
 	}
 
-	protected final void checkHasProperty(SnomedRefSet refSet, String key) {
+	protected final void checkHasProperty(SnomedReferenceSet refSet, String key) {
 		if (!hasProperty(key)) {
-			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, refSet.getIdentifierId());
+			throw new BadRequestException("Property '%s' must be set for '%s' reference set members.", key, refSet.getId());
 		}
 	}
 
-	protected final void checkNonEmptyProperty(SnomedRefSet refSet, String key) {
+	protected final void checkNonEmptyProperty(SnomedReferenceSet refSet, String key) {
 		checkHasProperty(refSet, key);
 		if (CompareUtils.isEmpty(getProperty(key, Object.class))) {
-			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, refSet.getIdentifierId());
+			throw new BadRequestException("Property '%s' may not be null or empty for '%s' reference set members.", key, refSet.getId());
 		}
 	}
 
@@ -163,5 +161,5 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		return ImmutableSet.of();
 	}
 
-	abstract String execute(SnomedRefSet refSet, TransactionContext context);
+	abstract String execute(SnomedReferenceSet refSet, TransactionContext context);
 }

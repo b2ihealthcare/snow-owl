@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMDomainReferenceSetMemberBuilder, SnomedMRCMDomainRefSetMember> {
+public final class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMDomainReferenceSetMemberBuilder> {
 
 	private String domainConstraint;
 	private String parentDomain;
@@ -68,20 +68,16 @@ public class SnomedMRCMDomainReferenceSetMemberBuilder extends SnomedMemberBuild
 	}
 
 	@Override
-	protected SnomedMRCMDomainRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMDomainRefSetMember();
-	}
-
-	@Override
-	public void init(final SnomedMRCMDomainRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedRefSetMemberIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
-		component.setDomainConstraint(domainConstraint);
-		component.setParentDomain(parentDomain);
-		component.setProximalPrimitiveConstraint(proximalPrimitiveConstraint);
-		component.setProximalPrimitiveRefinement(proximalPrimitiveRefinement);
-		component.setDomainTemplateForPrecoordination(domainTemplateForPrecoordination);
-		component.setDomainTemplateForPostcoordination(domainTemplateForPostcoordination);
-		component.setEditorialGuideReference(editorialGuideReference);
+		component
+			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, domainConstraint)
+			.field(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, parentDomain)
+			.field(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, proximalPrimitiveConstraint)
+			.field(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, proximalPrimitiveRefinement)
+			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, domainTemplateForPrecoordination)
+			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, domainTemplateForPostcoordination)
+			.field(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, editorialGuideReference);
 	}
 
 }

@@ -30,10 +30,8 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -98,30 +96,30 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		return builder;
 	}
 	
-	public static Builder builder(Relationship relationship) {
-		String id = relationship.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
-				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.active(relationship.isActive())
-				.sourceId(relationship.getSource().getId())
-				.typeId(relationship.getType().getId())
-				.destinationId(relationship.getDestination().getId())
-				.characteristicTypeId(relationship.getCharacteristicType().getId())
-				.group(relationship.getGroup())
-				.unionGroup(relationship.getUnionGroup())
-				.released(relationship.isReleased())
-				.modifierId(relationship.getModifier().getId())
-				.destinationNegated(relationship.isDestinationNegated())
-				.moduleId(relationship.getModule().getId())
-				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
+//	public static Builder builder(Relationship relationship) {
+//		String id = relationship.getId();
+//		return builder()
+//				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
+//				.id(id)
+//				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
+//				.active(relationship.isActive())
+//				.sourceId(relationship.getSource().getId())
+//				.typeId(relationship.getType().getId())
+//				.destinationId(relationship.getDestination().getId())
+//				.characteristicTypeId(relationship.getCharacteristicType().getId())
+//				.group(relationship.getGroup())
+//				.unionGroup(relationship.getUnionGroup())
+//				.released(relationship.isReleased())
+//				.modifierId(relationship.getModifier().getId())
+//				.destinationNegated(relationship.isDestinationNegated())
+//				.moduleId(relationship.getModule().getId())
+//				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+//	}
 	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
 		String id = input.getId();
 		return builder()
-				.storageKey(CDOIDUtils.asLong(input.cdoID()))
+				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
@@ -217,7 +215,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedRelationshipIndexEntry> {
 
 		private String sourceId;
 		private String typeId;

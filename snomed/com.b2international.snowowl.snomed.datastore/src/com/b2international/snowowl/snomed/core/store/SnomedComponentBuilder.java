@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,20 @@ import java.util.Date;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.eclipse.emf.cdo.CDOObject;
-
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
  * @since 4.5
  *
  * @param <T> the type of the Component to build.
  */
-public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B, T>, T extends CDOObject> extends SnomedBaseComponentBuilder<B, T> {
+public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B, CB, T>, CB extends SnomedDocument.Builder<CB, T>, T extends SnomedDocument> extends SnomedBaseComponentBuilder<B, CB, T> {
+
+	protected SnomedComponentBuilder() {
+	}
 
 	private String id;
 	private Date effectiveTime;
@@ -81,46 +82,25 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}
-
-	/**
-	 * Builds and returns a component based on the configured properties.
-	 * 
-	 * @param context the context to use when building the component
-	 * @return
-	 */
+	
 	@OverridingMethodsMustInvokeSuper
-	public void init(T t, TransactionContext context) {
-		if (t instanceof Component) {
-			final Component component = (Component) t;
-			component.setId(id);
-			component.setActive(active);
- 			if (id.equals(moduleId) && component instanceof Concept) {
-				component.setModule((Concept) component);
-			} else {
-				component.setModule(context.lookup(moduleId, Concept.class));
-			}
-
-			if (effectiveTime == null) {
-				component.unsetEffectiveTime();
-				component.setReleased(false);
-			} else {
-				component.setEffectiveTime(effectiveTime);
-				component.setReleased(true);
-			}
-			
-		} else if (t instanceof SnomedRefSetMember) {
-			final SnomedRefSetMember member = (SnomedRefSetMember) t;
-			member.setUuid(id);
-			member.setActive(active);
-			member.setModuleId(moduleId);
-			
-			if (effectiveTime == null) {
-				member.unsetEffectiveTime();
-				member.setReleased(false);
-			} else {
-				member.setEffectiveTime(effectiveTime);
-				member.setReleased(true);
-			}
+	public void init(CB component, TransactionContext context) {
+		component
+			.id(id)
+			.active(active)
+			.moduleId(moduleId);
+		
+		// check that the module does exist in the system
+		if (!id.equals(moduleId)) {
+			context.lookup(moduleId, SnomedConceptDocument.class);
+		}
+		
+		if (effectiveTime == null) {
+			component.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			component.released(false);
+		} else {
+			component.effectiveTime(effectiveTime.getTime());
+			component.released(true);
 		}
 	}
 

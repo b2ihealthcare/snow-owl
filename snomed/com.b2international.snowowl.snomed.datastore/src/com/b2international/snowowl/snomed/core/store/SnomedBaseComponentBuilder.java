@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,44 +15,49 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import org.eclipse.emf.cdo.CDOObject;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedBaseComponentBuilder<B extends SnomedBaseComponentBuilder<B, T>, T extends CDOObject> {
+public abstract class SnomedBaseComponentBuilder<B extends SnomedBaseComponentBuilder<B, CB, T>, CB extends SnomedDocument.Builder<CB, T>, T extends SnomedDocument> {
 
 	protected SnomedBaseComponentBuilder() {
 	}
 	
+	/**
+	 * Builds and returns the final version of the SNOMED CT component.
+	 * 
+	 * @param context
+	 * @return
+	 */
 	public final T build(TransactionContext context) {
-		final T component = create();
+		final CB component = create();
 		init(component, context);
-		return component;
+		return component.build();
 	}
 	
-	/**
-	 * Initialize any additional properties on the given component.
-	 * 
-	 * @param component
-	 *            - the component to initialize with additional props
-	 * @param context
-	 *            - the context to use to get configuration options and other components
-	 */
-	protected abstract void init(T component, TransactionContext context);
-
 	/**
 	 * Creates an instance of the component.
 	 * 
 	 * @return
 	 */
-	protected abstract T create();
+	protected abstract CB create();
 	
 	@SuppressWarnings("unchecked")
 	protected final B getSelf() {
 		return (B) this;
 	}
 	
+	/**
+	 * Initialize any additional properties on the given component.
+	 * 
+	 * @param component
+	 *            - the current component builder state to initialize with additional props
+	 * @param context
+	 *            - the context to use to get configuration options and other components
+	 */
+	protected abstract void init(CB component, TransactionContext context);
+
 }

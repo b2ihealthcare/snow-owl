@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
  */
-public class SnomedOWLExpressionReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedOWLExpressionReferenceSetMemberBuilder, SnomedOWLExpressionRefSetMember> {
+public final class SnomedOWLExpressionReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedOWLExpressionReferenceSetMemberBuilder> {
 
 	private String owlExpression;
 
@@ -32,13 +32,8 @@ public class SnomedOWLExpressionReferenceSetMemberBuilder extends SnomedMemberBu
 	}
 
 	@Override
-	protected SnomedOWLExpressionRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedOWLExpressionRefSetMember();
-	}
-
-	@Override
-	public void init(final SnomedOWLExpressionRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedRefSetMemberIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
-		component.setOwlExpression(owlExpression);
+		component.field(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression);
 	}
 }

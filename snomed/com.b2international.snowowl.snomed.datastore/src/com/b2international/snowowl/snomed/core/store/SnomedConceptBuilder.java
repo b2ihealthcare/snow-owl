@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,17 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import static com.google.common.collect.Sets.newHashSet;
-
-import java.util.Collection;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * @since 4.5
  */
-public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedConceptBuilder, Concept> {
+public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedConceptBuilder, SnomedConceptDocument.Builder, SnomedConceptDocument> {
 
 	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 	private boolean exhaustive = false;
-	private final Collection<Description> descriptions = newHashSet();
-	private final Collection<Relationship> relationships = newHashSet();
 
 	/**
 	 * Specifies the exhaustive flag to use for the new concept.
@@ -59,42 +50,18 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 		return getSelf();
 	}
 
-	/**
-	 * Adds the given SNOMED CT Description to the list of descriptions of the new SNOMED CT Concept.
-	 * 
-	 * @param description
-	 *            - the description to add
-	 * @return
-	 */
-	public final SnomedConceptBuilder withDescription(Description description) {
-		this.descriptions.add(description);
-		return getSelf();
-	}
-
-	/**
-	 * Adds the given SNOMED CT Relationship to the list of relationships of the new SNOMED CT Concept.
-	 * 
-	 * @param relationship
-	 *            - the relationship to add
-	 * @return
-	 */
-	public final SnomedConceptBuilder withRelationship(Relationship relationship) {
-		this.relationships.add(relationship);
-		return getSelf();
+	@Override
+	protected SnomedConceptDocument.Builder create() {
+		return SnomedConceptDocument.builder();
 	}
 
 	@Override
-	protected Concept create() {
-		return SnomedFactory.eINSTANCE.createConcept();
-	}
-
-	@Override
-	public void init(Concept component, TransactionContext context) {
+	public void init(SnomedConceptDocument.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setDefinitionStatus(context.lookup(definitionStatus.getConceptId(), Concept.class));
-		component.setExhaustive(exhaustive);
-		component.getDescriptions().addAll(descriptions);
-		component.getOutboundRelationships().addAll(relationships);
+		// check that the definitionStatus concept does exist before using it in this concept
+		context.lookup(definitionStatus.getConceptId(), SnomedConceptDocument.class);
+		component.primitive(definitionStatus.isPrimitive());
+		component.exhaustive(exhaustive);
 	}
 
 }
