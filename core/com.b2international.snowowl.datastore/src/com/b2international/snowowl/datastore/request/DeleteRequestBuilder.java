@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
  * <i>Builder</i> class to build a generic requests responsible for deleting a SNOMED CT component.
@@ -30,10 +31,10 @@ import com.b2international.snowowl.core.events.Request;
 public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
 
 	private final String componentId;
-	private final Class<? extends EObject> type;
+	private final Class<? extends RevisionDocument> type;
 	private Boolean force = Boolean.FALSE;
 
-	public DeleteRequestBuilder(String componentId, Class<? extends EObject> type) {
+	public DeleteRequestBuilder(String componentId, Class<? extends RevisionDocument> type) {
 		super();
 		this.componentId = componentId;
 		this.type = type;
