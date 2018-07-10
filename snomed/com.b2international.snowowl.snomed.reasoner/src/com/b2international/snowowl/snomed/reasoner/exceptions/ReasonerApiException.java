@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,19 @@
  */
 package com.b2international.snowowl.snomed.reasoner.exceptions;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.commons.exceptions.ApiException;
 
 /**
- * Generic runtime exception thrown when an OWL reasoner-related operation fails for some reason.
- * 
- * @since
+ * @since 7.0
  */
-public final class ReasonerException extends SnowowlRuntimeException {
+public final class ReasonerApiException extends ApiException {
 
-	public ReasonerException() {
-		super();
+	public ReasonerApiException(final String template, final Object... args) {
+		super(template, args);
 	}
 
-	public ReasonerException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
-
-	public ReasonerException(final String message) {
-		super(message);
-	}
-
-	public ReasonerException(final Throwable cause) {
-		super(cause);
+	@Override
+	protected Integer getStatus() {
+		return 500;
 	}
 }

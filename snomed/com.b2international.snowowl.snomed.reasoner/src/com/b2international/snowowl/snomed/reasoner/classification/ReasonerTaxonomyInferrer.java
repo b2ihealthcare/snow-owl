@@ -56,7 +56,7 @@ import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.Reason
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerException;
+import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.google.common.base.Stopwatch;
 
@@ -106,7 +106,7 @@ public final class ReasonerTaxonomyInferrer {
 						.findFirst();
 
 				if (!classElement.isPresent()) {
-					throw new ReasonerException(String.format("Couldn't create reasoner info instance for extension '%s'.", reasonerId));
+					throw new ReasonerApiException("Couldn't create reasoner info instance for extension '%s'.", reasonerId);
 				}
 
 				final ProtegeOWLReasonerInfo reasonerInfo;
@@ -114,7 +114,7 @@ public final class ReasonerTaxonomyInferrer {
 				try {
 					reasonerInfo = (ProtegeOWLReasonerInfo) classElement.get().createExecutableExtension(VALUE_ATTRIBUTE);
 				} catch (final CoreException e) {
-					throw new ReasonerException(String.format("Couldn't create reasoner info instance for extension '%s'.", reasonerId), e);
+					throw new ReasonerApiException("Couldn't create reasoner info instance for extension '%s'.", reasonerId, e);
 				}
 
 				final OWLReasonerFactory reasonerFactory = reasonerInfo.getReasonerFactory();
@@ -122,7 +122,7 @@ public final class ReasonerTaxonomyInferrer {
 			}
 		}
 
-		throw new ReasonerException(String.format("Couldn't create reasoner info instance for extension '%s'.", reasonerId));
+		throw new ReasonerApiException("Couldn't create reasoner info instance for extension '%s'.", reasonerId);
 	}
 
 	public ReasonerTaxonomyInferrer(final String reasonerId, final DelegateOntology ontology, final BranchContext branchContext) {

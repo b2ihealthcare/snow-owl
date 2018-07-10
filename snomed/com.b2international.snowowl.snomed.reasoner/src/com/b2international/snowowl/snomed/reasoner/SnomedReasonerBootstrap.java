@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.snomed.reasoner;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import com.b2international.index.Index;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerServerService;
-import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 
 /**
  * @since 7.0
@@ -35,12 +40,17 @@ public final class SnomedReasonerBootstrap extends DefaultBootstrapFragment {
 			final IProgressMonitor monitor) throws Exception {
 
 		if (env.isServer() || env.isEmbedded()) {
+
+			final RepositoryManager repositoryManager = env.service(RepositoryManager.class);
+			final Repository repository = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID);
+			final Index repositoryIndex = repository.service(Index.class);
+			
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
-			final int maximumReasonerCount = snomedConfig.getMaxReasonerCount();
-			final int maximumTaxonomiesToKeep = snomedConfig.getMaxReasonerResults();
-			final SnomedReasonerServerService reasonerService = new SnomedReasonerServerService(maximumReasonerCount, maximumTaxonomiesToKeep);
-			env.services().registerService(SnomedReasonerService.class, reasonerService);
-			reasonerService.registerListeners();
+			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
+			final long cleanUpInterval = TimeUnit.MINUTES.toMillis(5L); // TODO: make this configurable
+			final ClassificationTracker classificationTracker = new ClassificationTracker(repositoryIndex, maximumReasonerRuns, cleanUpInterval);
+			
+			env.services().registerService(ClassificationTracker.class, classificationTracker);
 		}
 	}
 }

@@ -17,10 +17,9 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.Index;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationRepository;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 
 /**
  * @since 7.0
@@ -36,9 +35,8 @@ final class ClassificationDeleteRequest implements Request<RepositoryContext, Bo
 
 	@Override
 	public Boolean execute(final RepositoryContext context) {
-		final Index rawIndex = context.service(Index.class);
-		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
-		repository.delete(classificationId);
+		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
+		tracker.classificationDeleted(classificationId);
 		return Boolean.TRUE;
 	}
 }
