@@ -26,6 +26,8 @@ import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocum
  */
 public final class RelationshipWriter extends OntologyChangeWriter<StatementFragment> {
 
+	private boolean hasRedundantStatedChanges;
+	
 	public RelationshipWriter(final String classificationId, final DocWriter writer) {
 		super(classificationId, writer);
 	}
@@ -46,7 +48,15 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 		} else {
 			builder.relationshipId(Long.toString(fragment.getStatementId()));
 		}
+		
+		if (ChangeNature.REDUNDANT.equals(nature) && fragment.hasStatedPair()) {
+			hasRedundantStatedChanges = true;
+		}
 
 		indexChange(builder.build());
+	}
+
+	public boolean hasRedundantStatedChanges() {
+		return hasRedundantStatedChanges;
 	}
 }

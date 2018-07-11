@@ -37,8 +37,12 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
 @Script(name=ClassificationTaskDocument.CLASSIFICATION_RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.headTimestamp = params.headTimestamp")
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_COMPLETED, script="ctx._source.status = 'COMPLETED'; ctx._source.completionDate = params.completionDate;")
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate;")
+@Script(name=ClassificationTaskDocument.CLASSIFICATION_COMPLETED, script="ctx._source.status = 'COMPLETED'; "
+		+ "ctx._source.completionDate = params.completionDate; "
+		+ "ctx._source.hasInferredChanges = params.hasInferredChanges; "
+		+ "ctx._source.hasRedundantStatedChanges = params.hasRedundantStatedChanges; "
+		+ "ctx._source.hasEquivalentConcepts = params.hasEquivalentConcepts")
+@Script(name=ClassificationTaskDocument.CLASSIFICATION_FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate")
 @Script(name=ClassificationTaskDocument.CLASSIFICATION_DELETED, script="ctx._source.deleted = true")
 @Script(name=ClassificationTaskDocument.SAVE_FAILED, script="ctx._source.status = 'SAVE_FAILED'")
 public final class ClassificationTaskDocument {

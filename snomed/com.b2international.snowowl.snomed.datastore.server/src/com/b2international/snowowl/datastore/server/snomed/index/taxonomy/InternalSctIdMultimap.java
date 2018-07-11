@@ -113,4 +113,8 @@ public final class InternalSctIdMultimap {
 
 		return keySet;
 	}
+
+	public boolean isEmpty() {
+		return internalIdMultimap.isEmpty();
+	}
 }

@@ -34,6 +34,7 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 	protected final String classificationId;
 	protected final DocWriter writer;
 	private int writeOps;
+	private boolean hasInferredChanges;
 
 	public OntologyChangeWriter(final String classificationId, final DocWriter writer) {
 		this.classificationId = classificationId;
@@ -42,6 +43,7 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 
 	@Override
 	protected final void handleAddedSubject(final String conceptId, final T addedSubject) {
+		hasInferredChanges = true;
 		indexChange(conceptId, addedSubject, ChangeNature.INFERRED);
 	}
 
@@ -50,6 +52,10 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 		indexChange(conceptId, removedSubject, ChangeNature.REDUNDANT);
 	}
 
+	public boolean hasInferredChanges() {
+		return hasInferredChanges;
+	}
+	
 	protected abstract void indexChange(final String conceptId, final T subject, final ChangeNature nature);
 
 	protected void indexChange(final Object doc) {

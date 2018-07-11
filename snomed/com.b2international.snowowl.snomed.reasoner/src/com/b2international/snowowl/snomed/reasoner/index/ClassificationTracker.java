@@ -49,7 +49,6 @@ import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.Intern
 import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainWriter;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.RelationshipWriter;
-import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.normalform.ConceptConcreteDomainNormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.normalform.RelationshipNormalFormGenerator;
@@ -224,16 +223,27 @@ public final class ClassificationTracker implements IDisposableService {
 			indexEquivalentConcepts(writer, classificationId, inferredTaxonomy.getEquivalentConcepts());
 
 			final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(inferredTaxonomy);
+			final RelationshipWriter relationshipWriter = new RelationshipWriter(classificationId, writer);
 			final ConceptConcreteDomainNormalFormGenerator concreteDomainGenerator = new ConceptConcreteDomainNormalFormGenerator(inferredTaxonomy);
+			final ConcreteDomainWriter concreteDomainWriter = new ConcreteDomainWriter(classificationId, writer);
 
-			relationshipGenerator.collectNormalFormChanges(null, new RelationshipWriter(classificationId, writer), StatementFragmentOrdering.INSTANCE);
-			concreteDomainGenerator.collectNormalFormChanges(null, new ConcreteDomainWriter(classificationId, writer));
+			relationshipGenerator.collectNormalFormChanges(null, relationshipWriter);
+			concreteDomainGenerator.collectNormalFormChanges(null, concreteDomainWriter);
 
+			final boolean hasEquivalentConcepts = !inferredTaxonomy.getUnsatisfiableConcepts().isEmpty()
+					|| !inferredTaxonomy.getEquivalentConcepts().isEmpty();
+			final boolean hasInferredChanges = relationshipWriter.hasInferredChanges()
+					|| concreteDomainWriter.hasInferredChanges();
+			final boolean hasRedundantStatedChanges = relationshipWriter.hasRedundantStatedChanges();
+			
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.CLASSIFICATION_COMPLETED, 
-					ImmutableMap.of("completionDate", System.currentTimeMillis())));
+					ImmutableMap.of("completionDate", System.currentTimeMillis(),
+							"hasEquivalentConcepts", hasEquivalentConcepts,
+							"hasInferredChanges", hasInferredChanges,
+							"hasRedundantStatedChanges", hasRedundantStatedChanges)));
 
 			writer.commit();
 			return null;

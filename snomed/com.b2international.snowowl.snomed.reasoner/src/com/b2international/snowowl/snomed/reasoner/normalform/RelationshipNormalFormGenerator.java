@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntValueMap;
@@ -41,11 +45,14 @@ import com.b2international.commons.collect.LongSets.InverseLongFunction;
 import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
+import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -63,6 +70,8 @@ import com.google.common.collect.Sets;
  * @author law223 - initial implementation in Snorocket's SNOMED API
  */
 public final class RelationshipNormalFormGenerator extends NormalFormGenerator<StatementFragment> {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(RelationshipNormalFormGenerator.class);
 
 	/**
 	 * Represents any item in an ontology which can be compared for
@@ -396,6 +405,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		public long getStatementId() {
 			return fragment.getStatementId();
+		}
+		
+		public boolean hasStatedPair() {
+			return fragment.hasStatedPair();
 		}
 
 		@Override
@@ -980,8 +993,16 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 						groupNumber,
 						unionGroupNumber,
 						input.isUniversal(),
-						input.getStatementId());
+						input.getStatementId(),
+						input.hasStatedPair());
 			}
 		});
+	}
+	
+	public void collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<StatementFragment> processor) {
+		LOGGER.info(">>> Relationship normal form generation");
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		collectNormalFormChanges(monitor, processor, StatementFragmentOrdering.INSTANCE);
+		LOGGER.info("<<< Relationship normal form generation [{}]", stopwatch.toString());
 	}
 }

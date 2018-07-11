@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDoc
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
@@ -290,7 +291,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Expression activeInferredExpression = Expressions.builder()
 				.filter(active())
-				.filter(characteristicTypeId(Concepts.INFERRED_RELATIONSHIP))
+				.filter(characteristicTypeIds(CHARACTERISTIC_TYPE_IDS))
 				.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 				.build();
 				
@@ -316,16 +317,30 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
 						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 8
 				.where(expression)
-				.sortBy(SortBy.field(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC))
+				.sortBy(SortBy.builder()
+						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.TYPE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
+						.build())
 				.limit(SCROLL_LIMIT)
 				.build();
 
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastSourceId = "";
+		String[] lastStatedRelationship = null;
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
+				
+				if (Concepts.STATED_RELATIONSHIP.equals(relationship[8])) {
+					lastStatedRelationship = relationship;
+					continue;
+				}
+				
 				final String sourceId = relationship[1];
 
 				if (lastSourceId.isEmpty()) {
@@ -343,7 +358,13 @@ public final class ReasonerTaxonomyBuilder {
 				final int group = Integer.parseInt(relationship[5]);
 				final int unionGroup = Integer.parseInt(relationship[6]);
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[7]);
-
+				final boolean hasStatedPair = lastStatedRelationship != null
+						&& lastStatedRelationship[1].equals(relationship[1]) // source
+						&& lastStatedRelationship[2].equals(relationship[2]) // type
+						&& lastStatedRelationship[3].equals(relationship[3]) // destination
+						&& lastStatedRelationship[5].equals(relationship[5]); // group
+				
+				
 				final StatementFragment statement = new StatementFragment(
 						typeId,
 						destinationId,
@@ -351,7 +372,8 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
-						statementId);
+						statementId,
+						hasStatedPair);
 
 				fragments.add(statement);
 			}
@@ -428,7 +450,9 @@ public final class ReasonerTaxonomyBuilder {
 							group,
 							unionGroup,
 							universal,
-							statementId);
+							statementId,
+							false); // XXX: "injected" concepts will not set the flag correctly, but they are
+									// usually only added for equivalence checks
 
 					fragments.add(statement);
 				}

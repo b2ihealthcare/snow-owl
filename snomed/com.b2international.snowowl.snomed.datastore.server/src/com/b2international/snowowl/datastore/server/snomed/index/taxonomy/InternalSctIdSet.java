@@ -130,4 +130,8 @@ public final class InternalSctIdSet {
 	public int size() {
 		return internalIdArray.length;
 	}
+
+	public boolean isEmpty() {
+		return size() == 0;
+	}
 }
