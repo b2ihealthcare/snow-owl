@@ -60,7 +60,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
-import com.google.common.primitives.Ints;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -139,7 +138,7 @@ public class EsDocumentWriter implements DocWriter {
 		// apply bulk updates first
 		final ListeningExecutorService executor;
 		if (bulkUpdateOperations.size() > 1 || bulkDeleteOperations.size() > 1) {
-			final int threads = Ints.min(4, bulkUpdateOperations.size(), bulkDeleteOperations.size());
+			final int threads = Math.min(4, Math.max(bulkUpdateOperations.size(), bulkDeleteOperations.size()));
 			executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threads));
 		} else {
 			executor = MoreExecutors.newDirectExecutorService();
