@@ -34,9 +34,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	//CodeSystemRestTest.class,
+	CodeSystemRestTest.class,
 	//LookupFhirCodeSystemRestTest.class,
-	LookupSnomedRestTest.class
+	//LookupSnomedRestTest.class
 })
 public class AllFhirRestTests {
 	

@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.api.service;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -23,18 +25,22 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.4
  */
-public abstract class BaseFhirRestService {
+public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 
 	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	public static final String APPLICATION_JSON = MediaType.APPLICATION_JSON_VALUE;
@@ -67,6 +73,25 @@ public abstract class BaseFhirRestService {
 		mapper.setFilterProvider(filterProvider);
 		
 		return mappingJacksonValue;
+	}
+	
+	protected int applySearchParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, String _id, String _summary, List<String> _elements) {
+		
+		Collection<FhirResource> filteredResources = Sets.newHashSet(fhirResources);
+		int total = 0;
+		
+		if (_id !=null) {
+			filteredResources = fhirResources.stream().filter(cs -> cs.getId().getIdValue().equals(_id)).collect(Collectors.toSet());
+		}
+		
+		for (FhirResource fhirResource : filteredResources) {
+			applyResponseFilter(_summary, _elements, fhirResource);
+			String resourceUrl = String.format("%s/%s", uri, fhirResource.getId().getIdValue());
+			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
+			builder.addEntry(entry);
+			total++;
+		}
+		return total;
 	}
 	
 	protected void validateRequestParams(String summary, List<String> elements) {

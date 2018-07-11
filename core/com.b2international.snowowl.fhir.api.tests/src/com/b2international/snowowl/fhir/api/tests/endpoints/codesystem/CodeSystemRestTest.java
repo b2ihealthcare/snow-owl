@@ -107,6 +107,34 @@ public class CodeSystemRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
+	//Id parameter
+	@Test
+	public void getCodeSystemsIdParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_id", "issue-type")
+			.when().get("/CodeSystem").then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.concept", notNullValue())
+			.statusCode(200);
+	}
+	
+	//Invalid ID parameter
+	@Test
+	public void getCodeSystemsInvalidIdParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_id", "whatever")
+			.when().get("/CodeSystem").then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"))
+			.body("entry", nullValue())
+			.statusCode(200);
+	}
+	
 	//Fully detailed SNOMED CT code system
 	@Test
 	public void getSnomedCodeSystemTest() {

@@ -55,8 +55,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "ValueSet", description="FHIR ValueSet Resource", tags = { "ValueSet" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/ValueSet", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
-public class FhirValueSetRestService extends BaseFhirRestService {
+@RequestMapping(value="/ValueSet", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
+public class FhirValueSetRestService extends BaseFhirResourceRestService {
 	
 	/**
 	 * ValueSets

@@ -43,12 +43,10 @@ import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -77,8 +75,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/CodeSystem", produces = { BaseFhirRestService.APPLICATION_FHIR_JSON })
-public class FhirCodeSystemRestService extends BaseFhirRestService {
+@RequestMapping(value="/CodeSystem", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
+public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeSystem> {
 	
 	/**
 	 * CodeSystems
@@ -94,7 +92,8 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getCodeSystems(@RequestParam(required=false) String _summary,
-			@RequestParam(required=false) List<String> _elements) {
+			@RequestParam(required=false) List<String> _elements,
+			@RequestParam(required=false) String _id) {
 		
 		validateRequestParams(_summary, _elements);
 		
@@ -108,15 +107,11 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 			.addLink(uri);
 		
 		int total = 0;
+		
 		for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders()) {
 			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-			for (CodeSystem codeSystem : codeSystems) {
-				applyResponseFilter(_summary, _elements, codeSystem);
-				String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-				builder.addEntry(entry);
-				total++;
-			}
+			
+			total = total + applySearchParameters(builder, uri, codeSystems, _id, _summary, _elements);
 		}
 		return builder.total(total).build();
 	}
@@ -209,7 +204,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody
@@ -303,7 +298,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody
@@ -325,7 +320,7 @@ public class FhirCodeSystemRestService extends BaseFhirRestService {
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(name = "body", value = "The lookup request parameters")

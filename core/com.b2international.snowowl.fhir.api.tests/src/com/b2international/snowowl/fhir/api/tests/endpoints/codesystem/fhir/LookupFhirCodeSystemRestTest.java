@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.service.BaseFhirRestService;
+import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
@@ -133,7 +133,7 @@ public class LookupFhirCodeSystemRestTest extends FhirTest {
 		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirRestService.APPLICATION_FHIR_JSON)
+			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()
@@ -165,7 +165,7 @@ public class LookupFhirCodeSystemRestTest extends FhirTest {
 		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirRestService.APPLICATION_FHIR_JSON)
+			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()
@@ -197,7 +197,7 @@ public class LookupFhirCodeSystemRestTest extends FhirTest {
 		printPrettyJson(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirRestService.APPLICATION_FHIR_JSON)
+			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 			.body(jsonBody)
 			.when().post("/CodeSystem/$lookup")
 			.then()
