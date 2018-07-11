@@ -26,12 +26,14 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Sets;
 
 /**
  * This class represents a FHIR lookup operation request.
@@ -147,13 +149,14 @@ public class LookupRequest {
 	}
 	
 	/**
-	 * Returns true if the <i>name</i> property is requested to be returned.
+	 * Returns true if the property is requested
+	 * @param the property to check
 	 * @return
 	 */
-	public final boolean isNamePropertyRequested() {
+	public boolean isPropertyRequested(IConceptProperty conceptProperty) {
 		return properties == null ||
 			properties.isEmpty() ||
-			containsProperty(SupportedCodeSystemRequestProperties.NAME.getCodeValue());
+			containsProperty(conceptProperty.getCodeValue());
 	}
 	
 	/**
@@ -167,15 +170,15 @@ public class LookupRequest {
 	}
 	
 	/**
-	 * Returns true if the <i>display</i> property is requested to be returned.
+	 * Returns true if the <i>designation</i> property is requested to be returned.
 	 * @return
 	 */
-	public final boolean isDisplayPropertyRequested() {
+	public final boolean isDesignationPropertyRequested() {
 		return properties == null ||
 			properties.isEmpty() ||
-			containsProperty(SupportedCodeSystemRequestProperties.DISPLAY.getCodeValue());
+			containsProperty(SupportedCodeSystemRequestProperties.DESIGNATION.getCodeValue());
 	}
-
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -189,7 +192,7 @@ public class LookupRequest {
 		private Coding coding;
 		private Date date;
 		private String displayLanguage;
-		private Set<String> properties = Collections.emptySet();
+		private Set<String> properties = Sets.newHashSet();
 		
 		Builder() {}
 		
@@ -237,6 +240,11 @@ public class LookupRequest {
 		
 		public Builder properties(Collection<String> properties) {
 			this.properties = Collections3.toImmutableSet(properties);
+			return this;
+		}
+		
+		public Builder addProperty(String property) {
+			this.properties.add(property);
 			return this;
 		}
 

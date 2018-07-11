@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
+package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.fhir;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -33,11 +33,11 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.api.service.BaseFhirRestService;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.core.model.dt.Property;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.jayway.restassured.RestAssured;
@@ -45,11 +45,11 @@ import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
- * CodeSystem $lookup operation REST end-point test cases
+ * CodeSystem $lookup operation for FHIR code systems REST end-point test cases
  * 
  * @since 6.6
  */
-public class LookupCodeSystemRestTest extends FhirTest {
+public class LookupFhirCodeSystemRestTest extends FhirTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
@@ -76,6 +76,42 @@ public class LookupCodeSystemRestTest extends FhirTest {
 			.body("parameter[1].name", equalTo("display"))
 			.body("parameter[1].valueString", equalTo("Login Required"))
 			.statusCode(200);
+	}
+	
+	//GET FHIR with parameters and a property
+	@Test
+	public void lookupFhirCodeSystemCodeWithPropertyTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", FHIR_ISSUE_TYPE_CODESYSTEM_URI)
+			.param("code", "login")
+			.param("property", "name")
+			.param("_format", "json")
+			.when().get("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("IssueType"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Login Required"))
+			.statusCode(200);
+	}
+	
+	//GET FHIR with parameters and an invalid property
+	@Test
+	public void lookupFhirCodeSystemCodeWithInvalidPropertyTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", FHIR_ISSUE_TYPE_CODESYSTEM_URI)
+			.param("code", "login")
+			.param("property", "name")
+			.param("property", "http://snomed.info/id/116676008") //associated morphology
+			.param("_format", "json")
+			.when().get("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.body("issue.diagnostics", hasItem("Unrecognized properties [name, http://snomed.info/id/116676008]. Supported properties are: [parent, system, display, name, designation, version, child]."))
+			.statusCode(400);
 	}
 	
 	//POST with request body
@@ -109,7 +145,40 @@ public class LookupCodeSystemRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
-	//POST with request body
+	//POST with request body with property
+	@Test
+	public void lookupFhirCodeSystemPropertiesCodingTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+				.system("http://hl7.org/fhir/issue-severity")
+				.code("fatal")
+				.build();
+
+		LookupRequest request = LookupRequest.builder()
+				.coding(coding)
+				.addProperty("name")
+				.build();
+		
+		Fhir fhirParameters = new Parameters.Fhir(request);
+		
+		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		printPrettyJson(fhirParameters);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(BaseFhirRestService.APPLICATION_FHIR_JSON)
+			.body(jsonBody)
+			.when().post("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("IssueSeverity"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Fatal"))
+			.statusCode(200);
+	}
+	
+	
+	//POST invalid request body
 	@Test
 	public void lookupFhirCodeSystemInvalidCodingTest() throws Exception {
 		

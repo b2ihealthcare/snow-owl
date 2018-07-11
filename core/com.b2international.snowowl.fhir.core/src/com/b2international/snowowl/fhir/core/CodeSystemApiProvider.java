@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
@@ -31,16 +30,18 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMean
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -56,7 +57,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	private final String repositoryId;
 	
-	private final Collection<ConceptProperties> supportedProperties = Sets.newHashSet();
+	private final Collection<IConceptProperty> supportedProperties = Sets.newHashSet();
 
 	public CodeSystemApiProvider(String repositoryId) {
 		this.repositoryId = repositoryId;
@@ -69,7 +70,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param supportedProperties
 	 * @return
 	 */
-	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+	protected Collection<IConceptProperty> getSupportedConceptProperties() {
 		return Collections.emptySet();
 	}
 
@@ -224,7 +225,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * Returns the supported properties
 	 * @return the supported properties
 	 */
-	protected Collection<ConceptProperties> getSupportedProperties() {
+	protected Collection<IConceptProperty> getSupportedProperties() {
 		return supportedProperties;
 	}
 	
@@ -241,10 +242,48 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
 		final Collection<String> properties = request.getProperties();
-		final Set<String> supportedCodes = getSupportedProperties().stream().map(ConceptProperties::getCodeValue).collect(Collectors.toSet());
+		
+		final Set<String> supportedCodes = getSupportedProperties().stream().map(p -> {
+			if (p instanceof IConceptProperty.Dynamic) {
+				return p.getUri().getUriValue();
+			} else {
+				return p.getCodeValue();
+			}
+		})
+		.collect(Collectors.toSet());
+		
 		if (!supportedCodes.containsAll(properties)) {
-			throw new BadRequestException("Unrecognized properties '%s.'", Arrays.toString(properties.toArray()));
+			if (properties.size() == 1) {
+				throw new BadRequestException("Unrecognized property %s. Supported properties are: %s.", "LookupRequest.property", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()));
+			} else {
+				throw new BadRequestException("Unrecognized properties %s. Supported properties are: %s.", "LookupRequest.property", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()));
+			}
 		}
+	}
+	
+	/**
+	 * Set the base properties if requested
+	 * @param lookupRequest
+	 * @param resultBuilder 
+	 * @param snomedName
+	 * @param version
+	 * @param displayString
+	 */
+	protected void setBaseProperties(LookupRequest lookupRequest, LookupResult.Builder resultBuilder, String name, String version, String displayString) {
+		
+		/*
+		 * Name is mandatory, why is it allowed to be listed as a requested property in the spec?? - bbanfai
+		 */
+		resultBuilder.name(name);
+				
+		if (lookupRequest.isVersionPropertyRequested()) {
+			resultBuilder.version(version);
+		}
+			
+		/*
+		 * Display is mandatory, why is it allowed to be listed as a requested property in the spec?? - bbanfai
+		 */
+		resultBuilder.display(displayString);
 	}
 	
 }

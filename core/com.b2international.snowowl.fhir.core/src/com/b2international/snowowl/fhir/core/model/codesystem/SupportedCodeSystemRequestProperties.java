@@ -21,7 +21,7 @@ import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
  * FHIR Code system request properties
  * @since 6.6
  */
-public enum SupportedCodeSystemRequestProperties implements ConceptProperties {
+public enum SupportedCodeSystemRequestProperties implements IConceptProperty {
 	
 	SYSTEM,
 	NAME,

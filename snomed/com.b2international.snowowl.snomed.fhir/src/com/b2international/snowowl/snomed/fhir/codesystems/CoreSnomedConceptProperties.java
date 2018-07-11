@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.fhir.codesystems;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
-import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 
 /**
@@ -30,7 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * @see CommonConceptProperties
  * @since 6.4
  */
-public enum CoreSnomedConceptProperties implements ConceptProperties {
+public enum CoreSnomedConceptProperties implements IConceptProperty {
 	
 	//Whether the code is active or not (defaults to false). 
 	//This is derived from the active column in the Concept file of the RF2 Distribution (by inverting the value)

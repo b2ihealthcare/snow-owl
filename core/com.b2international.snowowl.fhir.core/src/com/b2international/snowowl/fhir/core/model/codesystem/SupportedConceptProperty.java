@@ -80,7 +80,7 @@ public class SupportedConceptProperty {
 		return new Builder();
 	}
 	
-	public static Builder builder(ConceptProperties conceptProperty) {
+	public static Builder builder(IConceptProperty conceptProperty) {
 		return new Builder()
 			.code(conceptProperty.getCode())
 			.uri(conceptProperty.getUri())

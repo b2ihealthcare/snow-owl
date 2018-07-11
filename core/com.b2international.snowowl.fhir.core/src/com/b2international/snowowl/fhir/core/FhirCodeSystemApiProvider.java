@@ -134,13 +134,8 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, system));
 		
 		LookupResult.Builder resultBuilder = LookupResult.builder();
-		if (lookupRequest.isNamePropertyRequested()) {
-			resultBuilder.name(codeSytemClass.getSimpleName());
-		}
-		
-		if (lookupRequest.isDisplayPropertyRequested()) {
-			resultBuilder.display(fhirCodeSystem.getDisplayName());
-		}
+		resultBuilder.name(codeSytemClass.getSimpleName());
+		resultBuilder.display(fhirCodeSystem.getDisplayName());
 		return resultBuilder.build();
 	}
 	

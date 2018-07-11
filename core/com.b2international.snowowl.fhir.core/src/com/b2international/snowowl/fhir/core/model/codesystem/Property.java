@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.dt;
+package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Collection;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.b2international.snowowl.fhir.core.model.dt.FhirProperty;
+import com.b2international.snowowl.fhir.core.model.dt.FhirType;
+import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
+import com.b2international.snowowl.fhir.core.model.dt.FhirProperty.Builder;
 import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

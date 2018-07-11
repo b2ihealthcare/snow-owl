@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.validation.Valid;
@@ -137,15 +138,20 @@ public class Issue {
 
 		public Builder codeableConcept(OperationOutcomeCode operationOutcomeCode) {
 			
+			String outcomeCodeString = operationOutcomeCode.getDisplayName();
+			if (outcomeCodeString.contains("%s")) {
+				String.format(outcomeCodeString, Arrays.toString(locations.toArray()));
+			}
+			
 			Coding coding = Coding.builder()
-					.code(operationOutcomeCode.getCodeValue())
-					.system(OperationOutcomeCode.CODE_SYSTEM_URI)
-					.display(operationOutcomeCode.getDisplayName()).build();
+				.code(operationOutcomeCode.getCodeValue())
+				.system(OperationOutcomeCode.CODE_SYSTEM_URI)
+				.display(outcomeCodeString).build();
 			
 			CodeableConcept codeableConcept = CodeableConcept.builder()
-					.addCoding(coding)
-					.text(operationOutcomeCode.getDisplayName())
-					.build();
+				.addCoding(coding)
+				.text(outcomeCodeString)
+				.build();
 			
 			this.codeableConcept = codeableConcept;
 			return this;

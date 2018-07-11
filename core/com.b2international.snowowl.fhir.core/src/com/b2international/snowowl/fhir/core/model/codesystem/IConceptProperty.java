@@ -17,14 +17,13 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.Property.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Property;
-import com.b2international.snowowl.fhir.core.model.dt.Property.Builder;
 
 /**
  * @since 6.4
  */
-public interface ConceptProperties extends FhirCodeSystem {
+public interface IConceptProperty extends FhirCodeSystem {
 
 	/**
 	 * Returns the FHIR type of the property.
@@ -63,11 +62,36 @@ public interface ConceptProperties extends FhirCodeSystem {
 	}
 	
 	/**
-	 * Class that represents {@link ConceptProperties} computed dynamically from certain data sources, code systems, etc..
+	 * Creates a property for the value without description
+	 * @param value
+	 * @return
+	 */
+	default Property propertyOf(Object value) {
+		Builder prop = Property.builder()
+				.code(getCodeValue());
+		
+		switch (getConceptPropertyType()) {
+		case CODE:
+			prop.valueCode((String) value);
+			break;
+		case BOOLEAN:
+			prop.valueBoolean((Boolean) value);
+			break;
+		case STRING:
+			prop.valueString((String) value);
+			break;
+		default: 
+			throw new UnsupportedOperationException("Unsupported property type " + getConceptPropertyType());
+		}
+		return prop.build();
+	}
+	
+	/**
+	 * Class that represents {@link IConceptProperty} computed dynamically from certain data sources, code systems, etc..
 	 * 
 	 * @since 6.4
 	 */
-	final class Dynamic implements ConceptProperties {
+	final class Dynamic implements IConceptProperty {
 
 		private final String codeSystemUri;
 		private final String displayName;
@@ -101,15 +125,15 @@ public interface ConceptProperties extends FhirCodeSystem {
 			return propertyType;
 		}
 		
-		public static ConceptProperties valueCode(String codeSystemUri, String displayName, String code) {
+		public static IConceptProperty valueCode(String codeSystemUri, String displayName, String code) {
 			return new Dynamic(codeSystemUri, displayName, code, ConceptPropertyType.CODE);
 		}
 		
-		public static ConceptProperties valueBoolean(String codeSystemUri, String displayName, String code) {
+		public static IConceptProperty valueBoolean(String codeSystemUri, String displayName, String code) {
 			return new Dynamic(codeSystemUri, displayName, code, ConceptPropertyType.BOOLEAN);
 		}
 		
-		public static ConceptProperties valueString(String codeSystemUri, String displayName, String code) {
+		public static IConceptProperty valueString(String codeSystemUri, String displayName, String code) {
 			return new Dynamic(codeSystemUri, displayName, code, ConceptPropertyType.STRING);
 		}
 		

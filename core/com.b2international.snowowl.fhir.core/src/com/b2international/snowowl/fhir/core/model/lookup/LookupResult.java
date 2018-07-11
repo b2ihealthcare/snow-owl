@@ -21,9 +21,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
-import com.b2international.snowowl.fhir.core.model.dt.Property;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -134,12 +135,14 @@ public final class LookupResult {
 			return this;
 		}
 		
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder designation(Collection<Designation> designs) {
 			designations = ImmutableList.builder();
 			designations.addAll(designs);
 			return this;
 		}
 		
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder property(Collection<Property> props) {
 			properties = ImmutableList.builder();
 			properties.addAll(props);

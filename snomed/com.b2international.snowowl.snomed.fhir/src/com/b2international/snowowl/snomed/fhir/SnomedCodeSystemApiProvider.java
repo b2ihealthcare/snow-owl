@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -33,14 +34,18 @@ import com.b2international.snowowl.fhir.core.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult.Builder;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -74,13 +79,13 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Collection<ConceptProperties> getSupportedConceptProperties() {
+	protected Collection<IConceptProperty> getSupportedConceptProperties() {
 		
 		// what should be the locale here? Likely we need to add the config locale as well
 		final List<ExtendedLocale> locales = newArrayList(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference());
 		locales.add(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
 		
-		final ImmutableList.Builder<ConceptProperties> properties = ImmutableList.builder();
+		final ImmutableList.Builder<IConceptProperty> properties = ImmutableList.builder();
 		
 		// add basic properties
 		properties.add(CoreSnomedConceptProperties.INACTIVE); 
@@ -103,7 +108,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.stream()
 			.map(type -> {
 				final String displayName = type.getPt() == null ? "N/A" : type.getPt().getTerm();
-				return ConceptProperties.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
+				return IConceptProperty.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
 			})
 			.forEach(properties::add);
 		
@@ -144,46 +149,49 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		final LookupResult.Builder resultBuilder = LookupResult.builder();
 		
-		//base response properties
-		if (lookupRequest.isNamePropertyRequested()) {
-			resultBuilder.name(SnomedTerminologyComponentConstants.SNOMED_NAME);
-		}
+		setBaseProperties(lookupRequest, resultBuilder, SnomedTerminologyComponentConstants.SNOMED_NAME, lookupRequest.getVersion(), getPreferredTermOrId(concept));
 		
-		if (lookupRequest.isVersionPropertyRequested()) {
-			resultBuilder.version(lookupRequest.getVersion());
-		}
-		
-		if (lookupRequest.isDisplayPropertyRequested()) {
-			resultBuilder.display(getPreferredTermOrId(concept));
-		}
-
-		// add basic properties
-		resultBuilder.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive(), null));
-		resultBuilder.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId(), null));
-		resultBuilder.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED, null));
-		resultBuilder.addProperty(CoreSnomedConceptProperties.EFFECTIVE_TIME.propertyOf(EffectiveTimes.format(concept.getEffectiveTime(), DateFormats.SHORT), null));
-		
-		// add remaining terms as designations
-		String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage() : "en-GB";
-		for (SnomedDescription description : concept.getDescriptions()) {
+		//add terms as designations
+		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
 				
-				Coding coding = Coding.builder()
-					.system(FHIR_URI.getUriValue())
-					.code(description.getTypeId())
-					.display(description.getType().getPt().getTerm())
-					.build();
+			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage() : "en-GB";
+				for (SnomedDescription description : concept.getDescriptions()) {
+						
+					Coding coding = Coding.builder()
+						.system(FHIR_URI.getUriValue())
+						.code(description.getTypeId())
+						.display(description.getType().getPt().getTerm())
+						.build();
+						
+					resultBuilder.addDesignation(Designation.builder()
+						.languageCode(languageCode)
+						.use(coding)
+						.value(description.getTerm())
+						.build());
+				}
+		}
 				
-				resultBuilder.addDesignation(Designation.builder()
-					.languageCode(languageCode)
-					.use(coding)
-					.value(description.getTerm())
-					.build());
+		// add basic SNOMED properties
+		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.INACTIVE)) {
+			resultBuilder.addProperty(CoreSnomedConceptProperties.INACTIVE.propertyOf(!concept.isActive()));
 		}
 		
+		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.MODULE_ID)) {
+			resultBuilder.addProperty(CoreSnomedConceptProperties.MODULE_ID.propertyOf(concept.getModuleId()));
+		}
+		
+		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED)) {
+			resultBuilder.addProperty(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED.propertyOf(concept.getDefinitionStatus() == DefinitionStatus.FULLY_DEFINED));
+		}
+		
+		if (lookupRequest.isPropertyRequested(CoreSnomedConceptProperties.EFFECTIVE_TIME)) {
+			resultBuilder.addProperty(CoreSnomedConceptProperties.EFFECTIVE_TIME.propertyOf(EffectiveTimes.format(concept.getEffectiveTime(), DateFormats.SHORT)));
+		}
+		
+		//Optionally requested properties
 		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
 		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
 		
-		//Optionally requested properties
 		if (requestedChild && concept.getDescendants() != null) {
 			for (SnomedConcept child : concept.getDescendants()) {
 				resultBuilder.addProperty(CommonConceptProperties.CHILD.propertyOf(child.getId(), getPreferredTermOrId(child)));
@@ -195,6 +203,36 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				resultBuilder.addProperty(CommonConceptProperties.PARENT.propertyOf(parent.getId(), getPreferredTermOrId(parent)));
 			}
 		}
+		
+		//Relationship target properties
+		Collection<String> properties = lookupRequest.getProperties();
+		Set<String> relationshipTypeIds = properties.stream()
+			.filter(p -> p.startsWith("http://snomed.info/id/"))
+			.map(p -> p.substring(p.lastIndexOf('/') + 1, p.length()))
+			.collect(Collectors.toSet());
+		
+		String branchPath = getBranchPath(lookupRequest.getVersion());
+		
+		SnomedRequests.prepareSearchRelationship()
+			.all()
+			.filterByActive(true)
+			.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
+			.filterBySource(concept.getId())
+			.filterByType(relationshipTypeIds)
+			.build(repositoryId(), branchPath)
+			.execute(getBus())
+			.then(rels -> {
+				rels.forEach(r -> {
+					Property property = Property.builder()
+						.code(r.getTypeId())
+						.valueCode(r.getDestinationId())
+						.build();
+					resultBuilder.addProperty(property);
+				});
+				return null;
+			})
+			.getSync();
+		
 		return resultBuilder.build();
 	}
 	

@@ -17,14 +17,14 @@ package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
-import com.b2international.snowowl.fhir.core.model.codesystem.ConceptProperties;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 
 /**
  * FHIR Common concept properties code system
  * @since 6.4
  */
 @ResourceNarrative("A set of common concept properties for use on coded systems through out the FHIR eco-system.")
-public enum CommonConceptProperties implements ConceptProperties {
+public enum CommonConceptProperties implements IConceptProperty {
 	
 	//True if the concept is not considered active - e.g. not a valid concept any more. Property type is boolean, default value is false
 	INACTIVE("Inactive", ConceptPropertyType.BOOLEAN),
