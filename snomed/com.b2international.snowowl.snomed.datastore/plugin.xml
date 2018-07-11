@@ -238,7 +238,7 @@
    <extension
          point="com.b2international.snowowl.snomed.datastore.snomedNamespaceAndModuleAssigner">
       <assigner
-            class="com.b2international.snowowl.snomed.datastore.id.assigner.DefaultNamespaceAndModuleAssigner"
+            class="com.b2international.snowowl.snomed.datastore.id.assigner.SourceConceptNamespaceAndModuleAssigner"
             priority="10">
       </assigner>
    </extension>
