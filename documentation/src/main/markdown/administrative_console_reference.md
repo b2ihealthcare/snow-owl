@@ -1,3 +1,4 @@
+
 # Console command reference
 
 This section lists commands available to the system administrator when connecting to the OSGi console of a running Snow Owl Server instance using telnet or SSH. Instructions for setting up the console can be found in the section titled “OSGi console” of the Configuration guide.
@@ -476,9 +477,8 @@ To list all available repositories and their identifiers, one should execute the
 
 To view a table of acquired locks, their targets and owners, execute the command:
 
-    ```
-osgi> session showlocks
-No locks are currently granted on this server.
+	osgi> session showlocks
+	No locks are currently granted on this server.
 
 	osgi> session lock allrepositories
 	Acquired lock for all repositories.
