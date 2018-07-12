@@ -103,8 +103,7 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 			return false;
 		}
 
-		final String currentModuleId = original.getModuleId();
-		if (!currentModuleId.equals(moduleId)) {
+		if (!original.getModuleId().equals(moduleId)) {
 			component.moduleId(context.lookup(moduleId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {

@@ -127,6 +127,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 					}
 				}
 			}
+			context.update(description, updatedDescription.build());
 		}
 		
 		return changed;

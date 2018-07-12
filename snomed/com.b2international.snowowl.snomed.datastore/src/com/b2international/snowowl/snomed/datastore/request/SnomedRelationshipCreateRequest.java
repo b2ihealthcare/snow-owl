@@ -167,6 +167,9 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withModifier(getModifier())
 					.withDestinationNegated(isDestinationNegated())
 					.build(context);
+			
+			context.add(relationship);
+			
 			return relationship.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();

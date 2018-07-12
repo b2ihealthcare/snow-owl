@@ -107,8 +107,11 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 			SnomedRefSetMemberUpdateDelegate delegate = getDelegate(type);
 			changed |= delegate.execute(member, updatedMember, context);
 
-			if (changed && !isEffectiveTimeUpdate()) {
-				updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			if (changed) {
+				if (!isEffectiveTimeUpdate()) {
+					updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+				}
+				context.update(member, updatedMember.build());
 			}
 
 			return changed;

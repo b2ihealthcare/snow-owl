@@ -169,6 +169,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 					}
 				}
 			}
+			context.update(concept, updatedConcept.build());
 		}
 		
 		return changed;

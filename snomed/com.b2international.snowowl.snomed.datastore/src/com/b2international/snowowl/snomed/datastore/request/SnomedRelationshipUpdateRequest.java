@@ -120,6 +120,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 					}
 				}
 			}
+			context.update(relationship, updatedRelationship.build());
 		}
 		
 		return changed;

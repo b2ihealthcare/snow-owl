@@ -145,6 +145,8 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			acceptabilityUpdate.setDescriptionId(description.getId());
 			acceptabilityUpdate.execute(context);
 			
+			context.add(description);
+			
 			return description.getId();
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
