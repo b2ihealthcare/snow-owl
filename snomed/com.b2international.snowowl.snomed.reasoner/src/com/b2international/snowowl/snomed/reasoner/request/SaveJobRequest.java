@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -49,7 +48,6 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -62,18 +60,13 @@ import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
-import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Longs;
 
 /**
  * @since 7.0
@@ -87,7 +80,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 	private static final int SCROLL_LIMIT = 10_000;
 	private static final String SCROLL_KEEP_ALIVE = "5m";
 
-	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
+//	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
 
 	@JsonProperty
 	private final String classificationId;
@@ -416,42 +409,42 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private void fixEquivalences(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 
-		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
-				.setLimit(SCROLL_LIMIT)
-				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand("equivalentConcepts()")
-				.filterByClassificationId(classificationId);
-
-		final SearchResourceRequestIterator<EquivalentConceptSetSearchRequestBuilder, EquivalentConceptSets> equivalentConceptIterator = 
-				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
-						r -> r.build().execute(context));
-
-		final List<EquivalentConceptSet> equivalenciesToFix = Lists.newArrayList();
-
-		while (equivalentConceptIterator.hasNext()) {
-			final EquivalentConceptSets nextBatch = equivalentConceptIterator.next();
-
-			for (final EquivalentConceptSet equivalentSet : nextBatch) {
-				if (equivalentSet.isUnsatisfiable()) {
-					continue;
-				}
-
-				final SnomedConcept representativeConcept = equivalentSet.getEquivalentConcepts()
-						.first()
-						.get();
-
-				// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
-				if (Longs.asList(representativeConcept.getStatedParentIds()).contains(SMP_ROOT)
-						|| Longs.asList(representativeConcept.getStatedAncestorIds()).contains(SMP_ROOT)) {
-					equivalenciesToFix.add(equivalentSet);
-				}
-			}
-		}
-
-		if (!equivalenciesToFix.isEmpty()) {
-			final EquivalentConceptMerger merger = new EquivalentConceptMerger(context, bulkRequestBuilder, equivalenciesToFix);
-			merger.fixEquivalencies();
-		}
+//		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
+//				.setLimit(SCROLL_LIMIT)
+//				.setScroll(SCROLL_KEEP_ALIVE)
+//				.setExpand("equivalentConcepts()")
+//				.filterByClassificationId(classificationId);
+//
+//		final SearchResourceRequestIterator<EquivalentConceptSetSearchRequestBuilder, EquivalentConceptSets> equivalentConceptIterator = 
+//				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
+//						r -> r.build().execute(context));
+//
+//		final List<EquivalentConceptSet> equivalenciesToFix = Lists.newArrayList();
+//
+//		while (equivalentConceptIterator.hasNext()) {
+//			final EquivalentConceptSets nextBatch = equivalentConceptIterator.next();
+//
+//			for (final EquivalentConceptSet equivalentSet : nextBatch) {
+//				if (equivalentSet.isUnsatisfiable()) {
+//					continue;
+//				}
+//
+//				final SnomedConcept representativeConcept = equivalentSet.getEquivalentConcepts()
+//						.first()
+//						.get();
+//
+//				// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
+//				if (Longs.asList(representativeConcept.getStatedParentIds()).contains(SMP_ROOT)
+//						|| Longs.asList(representativeConcept.getStatedAncestorIds()).contains(SMP_ROOT)) {
+//					equivalenciesToFix.add(equivalentSet);
+//				}
+//			}
+//		}
+//
+//		if (!equivalenciesToFix.isEmpty()) {
+//			final EquivalentConceptMerger merger = new EquivalentConceptMerger(context, bulkRequestBuilder, equivalenciesToFix);
+//			merger.fixEquivalencies();
+//		}
 	}
 
 	private boolean isConcreteDomainSupported(final BranchContext context) {

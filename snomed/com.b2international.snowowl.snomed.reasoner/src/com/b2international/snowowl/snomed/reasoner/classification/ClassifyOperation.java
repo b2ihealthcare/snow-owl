@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -25,22 +26,34 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
-import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
 /**
- * Represents an abstract operation which requires the classification of the SNOMED&nbsp;CT terminology on the active branch path.
+ * Represents an abstract operation which requires the classification of the
+ * SNOMED CT terminology on the active branch path.
  * 
- * @param T the return type of the custom {@link #processResults(IProgressMonitor, long)} method
+ * @param T the operation return type
+ * @since
  */
 public abstract class ClassifyOperation<T> {
 
 	private static final long CHECK_JOB_INTERVAL_SECONDS = 2L;
 
-	protected final ClassificationSettings settings;
+	protected final String reasonerId;
+	protected final String userId;
+	protected final List<SnomedConcept> additionalConcepts;
+	protected final String repositoryId;
+	protected final String branch;
 
-	public ClassifyOperation(ClassificationSettings settings) {
-		this.settings = settings;
+	public ClassifyOperation(final String reasonerId, final String userId, final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, final String branch) {
+
+		this.reasonerId = reasonerId;
+		this.userId = userId;
+		this.additionalConcepts = additionalConcepts;
+		this.repositoryId = repositoryId;
+		this.branch = branch;
 	}
 
 	/**
@@ -49,13 +62,19 @@ public abstract class ClassifyOperation<T> {
 	 * @return the value returned by {@link #processResults(IProgressMonitor, long)}
 	 * @throws OperationCanceledException
 	 */
-	public T run(IProgressMonitor monitor) throws OperationCanceledException {
+	public T run(final IProgressMonitor monitor) throws OperationCanceledException {
 
 		monitor.beginTask("Classification in progress...", IProgressMonitor.UNKNOWN);
 
 		try {
 
-			getReasonerService().beginClassification(settings);
+			final String classificationId = ClassificationRequests.prepareCreateClassification()
+					.setReasonerId(reasonerId)
+					.setUserId(userId)
+					.addAllConcepts(additionalConcepts)
+					.build(repositoryId, branch)
+					.execute(getEventBus())
+					.getSync();
 
 			while (true) {
 
@@ -63,32 +82,32 @@ public abstract class ClassifyOperation<T> {
 					throw new OperationCanceledException();
 				}
 
-				RemoteJobEntry jobEntry = getEntry();
+				final RemoteJobEntry jobEntry = getEntry(classificationId);
 
 				switch (jobEntry.getState()) {
-					case SCHEDULED: //$FALL-THROUGH$
-					case RUNNING:
-					case CANCEL_REQUESTED:
-						break;
-					case FINISHED:
-						try {
-							return processResults(getClassificationId());
-						} finally {
-							deleteEntry();
-						}
-					case CANCELED:
-						deleteEntry();
-						throw new OperationCanceledException();
-					case FAILED:
-						deleteEntry();
-						throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
-					default:
-						throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
+				case SCHEDULED: //$FALL-THROUGH$
+				case RUNNING:
+				case CANCEL_REQUESTED:
+					break;
+				case FINISHED:
+					try {
+						return processResults(classificationId);
+					} finally {
+						deleteEntry(classificationId);
+					}
+				case CANCELED:
+					deleteEntry(classificationId);
+					throw new OperationCanceledException();
+				case FAILED:
+					deleteEntry(classificationId);
+					throw new SnowowlRuntimeException("Failed to retrieve the results of the classification.");
+				default:
+					throw new IllegalStateException("Unexpected state '" + jobEntry.getState() + "'.");
 				}
 
 				try {
 					TimeUnit.SECONDS.sleep(CHECK_JOB_INTERVAL_SECONDS);
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// Nothing to do
 				}
 			}
@@ -98,29 +117,21 @@ public abstract class ClassifyOperation<T> {
 		}
 	}
 
-	private String getClassificationId() {
-		return settings.getClassificationId();
-	}
-
-	private RemoteJobEntry getEntry() {
-		return JobRequests.prepareGet(getClassificationId())
+	private RemoteJobEntry getEntry(final String classificationId) {
+		return JobRequests.prepareGet(classificationId)
 				.buildAsync()
 				.execute(getEventBus())
 				.getSync();
 	}
 
-	private void deleteEntry() {
-		JobRequests.prepareDelete(getClassificationId())
+	private void deleteEntry(final String classificationId) {
+		JobRequests.prepareDelete(classificationId)
 				.buildAsync()
 				.execute(getEventBus());
 	}
 
 	protected IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-
-	protected SnomedReasonerService getReasonerService() {
-		return ApplicationContext.getServiceForClass(SnomedReasonerService.class);
 	}
 
 	/**
