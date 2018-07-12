@@ -186,14 +186,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
 		
-		public static Expression structuralRefSet() {
-			return match(Fields.STRUCTURAL, true);
-		}
-		
-		public static Expression regularRefSet() {
-			return match(Fields.STRUCTURAL, false);
-		}
-		
 		public static Expression referringPredicate(String referringPredicate) {
 			return exactMatch(Fields.REFERRING_PREDICATES, referringPredicate);
 		}
@@ -209,11 +201,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String PARENTS = "parents";
 		public static final String STATED_PARENTS = "statedParents";
-		public static final String PREDICATES = "predicates";
 		public static final String REFSET_TYPE = "refSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
-		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
 		public static final String DESCRIPTIONS = "preferredDescriptions";
 	}
@@ -239,7 +229,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
-				.structural(input.isStructural())
 				.doi(input.getDoi());
 	}
 	
@@ -292,7 +281,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private short referencedComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
-		private boolean structural = false;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
 		@JsonCreator
@@ -346,7 +334,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			referencedComponentType = 0;
 			mapTargetComponentType = 0;
 			refSetType = null;
-			structural = false;
 			return getSelf();
 		}
 		
@@ -358,34 +345,28 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				mapTargetComponentType(componentType);
 			}
 			
-			Builder b = structural(isStructural(refSet.getId(), refSet.getType()))
-					.refSetType(refSet.getType());
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
-				b.referencedComponentType(getValue(refSet.getReferencedComponentType()));
+				referencedComponentType(getValue(refSet.getReferencedComponentType()));
 			}
-			return b;
+			
+			return refSetType(refSet.getType());
 		}
 		
-		Builder mapTargetComponentType(int mapTargetComponentType) {
+		public Builder mapTargetComponentType(int mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
 		
-		Builder referencedComponentType(short referencedComponentType) {
+		public Builder referencedComponentType(short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
 		}
 
-		Builder refSetType(SnomedRefSetType refSetType) {
+		public Builder refSetType(SnomedRefSetType refSetType) {
 			this.refSetType = refSetType;
 			return getSelf();
 		}
 
-		Builder structural(boolean structural) {
-			this.structural = structural;
-			return getSelf();
-		}
-		
 		public Builder doi(float doi) {
 			this.doi = doi;
 			return getSelf();
@@ -413,7 +394,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					refSetType, 
 					referencedComponentType,
 					mapTargetComponentType,
-					structural,
 					memberOf,
 					activeMemberOf,
 					preferredDescriptions);
@@ -447,7 +427,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
 	private final int mapTargetComponentType;
-	private final boolean structural;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -469,7 +448,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedRefSetType refSetType, 
 			final short referencedComponentType,
 			final int mapTargetComponentType,
-			final boolean structural,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
@@ -480,7 +458,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
-		this.structural = structural;
 		this.preferredDescriptions = preferredDescriptions;
 	}
 	
@@ -530,10 +507,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return mapTargetComponentType;
 	}
 	
-	public boolean isStructural() {
-		return structural;
-	}
-	
 	@JsonIgnore
 	public boolean isRefSet() {
 		return getRefSetType() != null;
@@ -551,7 +524,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.add("refSetType", refSetType)
 				.add("referencedComponentType", referencedComponentType)
 				.add("mapTargetComponentType", mapTargetComponentType)
-				.add("structural", structural)
 				.add("parents", parents)
 				.add("ancestors", ancestors)
 				.add("statedParents", statedParents)
