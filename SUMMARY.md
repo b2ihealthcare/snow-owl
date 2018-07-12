@@ -2,4 +2,4 @@
 
 * [Administration](./documentation/src/main/asciidoc/administration.md)
 * [Changelog](./CHANGELOG.md)
-* [Contributing](./Contributing.md)
+* [Contributing](./CONTRIBUTING.md)
