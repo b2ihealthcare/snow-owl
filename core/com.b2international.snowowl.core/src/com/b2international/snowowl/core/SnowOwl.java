@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -33,7 +34,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
-import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,28 +47,76 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 3.3
  */
-public enum SnowOwlApplication {
-
-	INSTANCE;
+public final class SnowOwl {
 
 	private static final String NEW_LINE = "\r\n"; //$NON-NLS-1$
 	private static final String DEFAULT_CONFIGURATION_FILE_NAME = "snowowl_config"; //$NON-NLS-1$
-	private static final String[] SUPPORTED_CONFIG_EXTENSIONS = new String[]{"yml"};
+	private static final String SUPPORTED_CONFIG_EXTENSION = "yml";
 	private static final String SNOWOWL_HOME = "snowowl.home";
 	private static final String OSGI_INSTALL_AREA = "osgi.install.area";
 	
-	private static final Logger LOG = LoggerFactory.getLogger(SnowOwlApplication.class);
-
+	private static final Logger LOG = LoggerFactory.getLogger("snowowl");
+	
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
 
 	private Plugins plugins;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
+
+	private SnowOwl(String configPath, Plugin...additionalPlugins) throws Exception {
+		final File homeDirectory = getHomeDirectory();		
+		checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
+		LOG.info("Scanning plugins...");
+		List<Plugin> plugins = ImmutableList.<Plugin>builder()
+			.addAll(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class))
+			.add(additionalPlugins != null ? additionalPlugins : new Plugin[]{})
+			.build();
+		this.plugins = new Plugins(plugins);
+		this.plugins.getPlugins().forEach(plugin -> LOG.info("loaded plugin [{}]", plugin));
+		this.configuration = createConfiguration(this.plugins, homeDirectory, configPath);
+		this.environment = new Environment(this.plugins, homeDirectory, configuration);
+		logEnvironment();
+	}
+	
+	private static File getHomeDirectory() {
+		String homeDirectory = System.getProperty(SNOWOWL_HOME);
+		if (Strings.isNullOrEmpty(homeDirectory)) {
+			String installArea = CoreActivator.getContext().getProperty(OSGI_INSTALL_AREA);
+			try {
+				return URIUtil.toFile(URIUtil.fromString(installArea));
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			return new File(homeDirectory);
+		}
+	}
+
+	/**
+	 * Creates a new Snow Owl application ready to be initialized via {@link #bootstrap()} and started via {@link #run()}.
+	 * @throws Exception 
+	 */
+	public static SnowOwl create() throws Exception {
+		return create(null);
+	}
+	
+	/**
+	 * Creates a new Snow Owl application ready to be initialized via {@link #bootstrap()} and started via {@link #run()}.
+	 * 
+	 * @param configPath
+	 *            - the configuration file path to use
+	 * @param additionalPlugins - additional {@link Plugin} instances to use during initialization
+	 * @throws Exception 
+	 */
+	public static SnowOwl create(String configPath, Plugin...additionalPlugins) throws Exception {
+		return new SnowOwl(configPath, additionalPlugins);
+	}
 
 	/**
 	 * Returns the {@link Environment} of the Snow Owl Application.
@@ -81,7 +129,7 @@ public enum SnowOwlApplication {
 
 	/**
 	 * Returns the global {@link SnowOwlConfiguration} of this
-	 * {@link SnowOwlApplication}.
+	 * {@link SnowOwl}.
 	 * 
 	 * @return
 	 */
@@ -91,48 +139,17 @@ public enum SnowOwlApplication {
 
 	/**
 	 * Bootstraps the application with a default configuration.
+	 * @return 
 	 * 
 	 * @throws Exception
 	 * @see {@link #bootstrap(String)}
 	 */
-	public void bootstrap() throws Exception {
-		bootstrap(null);
-	}
-
-	/**
-	 * Bootstraps the application to a minimum runnable form.
-	 * 
-	 * @param configPath
-	 *            - the configuration file path to use
-	 * @param fragments - additional {@link Plugin} instances to use during initialization
-	 */
-	public void bootstrap(String configPath, Plugin...fragments) throws Exception {
+	public SnowOwl bootstrap() throws Exception {
 		if (!isRunning()) {
-			LOG.info("Bootstrapping Snow Owl...");
-			LOG.info("Scanning plugins...");
-			this.plugins = new Plugins(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class));
-			plugins.getPlugins().forEach(plugin -> LOG.info("loaded plugin [{}]", plugin));
-			final File homeDirectory = getHomeDirectory(plugins.getBundleContext());
-			checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
-			this.configuration = createConfiguration(plugins, homeDirectory, configPath);
-			this.environment = new Environment(plugins, homeDirectory, configuration);
-			logEnvironment();
+			LOG.info("Initializing...");
 			this.plugins.init(this.configuration, this.environment);
 		}
-	}
-
-	private File getHomeDirectory(BundleContext context) {
-		String homeDirectory = System.getProperty(SNOWOWL_HOME);
-		if (Strings.isNullOrEmpty(homeDirectory)) {
-			String installArea = context.getProperty(OSGI_INSTALL_AREA);
-			try {
-				return URIUtil.toFile(URIUtil.fromString(installArea));
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			return new File(homeDirectory);
-		}
+		return this;
 	}
 
 	private SnowOwlConfiguration createConfiguration(Plugins bootstrap, File homeDirectory, String configPath) throws Exception {
@@ -146,33 +163,32 @@ public enum SnowOwlApplication {
 	}
 	
 	private String getDefaultConfigPath(File homeDirectory) {
-		for (String supportedExtension : SUPPORTED_CONFIG_EXTENSIONS) {
-			final File configFile = new File(homeDirectory, String.format("%s.%s", DEFAULT_CONFIGURATION_FILE_NAME, supportedExtension));
-			if (configFile.exists()) {
-				return configFile.getAbsolutePath();
-			}
+		final File configFile = new File(homeDirectory, String.format("%s.%s", DEFAULT_CONFIGURATION_FILE_NAME, SUPPORTED_CONFIG_EXTENSION));
+		if (configFile.exists()) {
+			return configFile.getAbsolutePath();
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	private void logEnvironment() {
-		LOG.info(String.format("Application home directory: %s", this.environment.getHomeDirectory()));
-		LOG.info(String.format("Application config directory: %s", this.environment.getConfigDirectory()));
-		LOG.info(String.format("Application data directory: %s", this.environment.getDataDirectory()));
-		LOG.info(String.format("Application defaults directory: %s", this.environment.getDefaultsDirectory()));
+		LOG.info(String.format("Home directory: %s", this.environment.getHomeDirectory()));
+		LOG.info(String.format("Config directory: %s", this.environment.getConfigDirectory()));
+		LOG.info(String.format("Data directory: %s", this.environment.getDataDirectory()));
 	}
 
 	/**
 	 * Runs the Snow Owl application by performing all necessary initialization
 	 * logic. Uses a <code>null</code> {@link PreRunRunnable} and a
 	 * {@link NullProgressMonitor} instance.
+	 * @return 
 	 * 
 	 * @throws Exception
 	 * @see {@link #run(IProgressMonitor)}
 	 * @see #run(PreRunRunnable, IProgressMonitor)
 	 */
-	public void run() throws Exception {
-		run(new NullProgressMonitor());
+	public SnowOwl run() throws Exception {
+		return run(new NullProgressMonitor());
 	}
 
 	/**
@@ -183,8 +199,8 @@ public enum SnowOwlApplication {
 	 * @throws Exception
 	 * @see #run(PreRunRunnable, IProgressMonitor)
 	 */
-	public void run(IProgressMonitor monitor) throws Exception {
-		run(null, monitor);
+	public SnowOwl run(IProgressMonitor monitor) throws Exception {
+		return run(null, monitor);
 	}
 
 	/**
@@ -199,7 +215,7 @@ public enum SnowOwlApplication {
 	 * @param monitor
 	 *            - to monitor application startup
 	 */
-	public void run(PreRunRunnable preRunRunnable, IProgressMonitor monitor) throws Exception {
+	public SnowOwl run(PreRunRunnable preRunRunnable, IProgressMonitor monitor) throws Exception {
 		if (!isRunning()) {
 			checkState(plugins != null, "Bootstrap the application first");
 			if (preRunCompleted.compareAndSet(false, true)) {
@@ -217,6 +233,7 @@ public enum SnowOwlApplication {
 		} else {
 			LOG.info("Snow Owl is already running.");
 		}
+		return this;
 	}
 
 	/**

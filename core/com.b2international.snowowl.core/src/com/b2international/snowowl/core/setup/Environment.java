@@ -23,6 +23,7 @@ import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
 import com.b2international.snowowl.core.config.ClientPreferences;
@@ -47,13 +48,14 @@ public final class Environment implements ServiceProvider {
 		this.plugins = plugins;
 		this.homeDirectory = homeDirectory;
 		initializeEnvironmentDirectories(configuration);
-		final PreferencesService preferences = PlatformUtil.getPreferencesService(plugins.getBundleContext());
+		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
 		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
 		services().registerService(SnowOwlConfiguration.class, configuration);
 		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
 		services().registerService(ClientPreferences.class, cdoClientConfiguration);
 		services().registerService(Plugins.class, plugins);
+		services().registerService(Environment.class, this);
 	}
 	
 	private void initializeEnvironmentDirectories(SnowOwlConfiguration configuration) throws Exception {

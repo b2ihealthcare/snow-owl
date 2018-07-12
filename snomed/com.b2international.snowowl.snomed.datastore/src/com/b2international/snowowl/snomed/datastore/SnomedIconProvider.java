@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.collect.Sets;
 
@@ -60,7 +60,7 @@ public final class SnomedIconProvider {
 	 * @return the file instance describing the folder containing the icons for the components.
 	 */
 	private File getIconDirectory() {
-		return new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), SNOMEDICONS_FOLDER);
+		return new File(SnowOwl.INSTANCE.getEnviroment().getDataDirectory(), SNOMEDICONS_FOLDER);
 	}
 	
 	/**

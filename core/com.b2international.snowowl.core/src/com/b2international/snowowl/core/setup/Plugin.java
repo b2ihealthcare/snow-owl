@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.setup;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 
 /**
@@ -56,7 +56,7 @@ public abstract class Plugin {
 	}
 
 	/**
-	 * Invoked by {@link SnowOwlApplication} at the end of the bootstrap process to let plug-ins initialize themselves finally before indicating that
+	 * Invoked by {@link SnowOwl} at the end of the bootstrap process to let plug-ins initialize themselves finally before indicating that
 	 * Snow Owl is ready to receive requests, data, etc.
 	 * 
 	 * @param configuration

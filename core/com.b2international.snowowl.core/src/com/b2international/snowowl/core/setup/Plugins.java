@@ -21,11 +21,9 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.osgi.framework.BundleContext;
 
 import com.b2international.commons.CompositeClassLoader;
-import com.b2international.snowowl.core.CoreActivator;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.common.collect.ImmutableList;
 
@@ -33,8 +31,6 @@ import com.google.common.collect.ImmutableList;
  * @since 7.0
  */
 public final class Plugins {
-
-	private BundleContext bundleContext = CoreActivator.getContext();
 
 	private final Collection<Plugin> plugins;
 	private final CompositeClassLoader compositeClassLoader;
@@ -49,15 +45,6 @@ public final class Plugins {
 		final CompositeClassLoader classLoader = new CompositeClassLoader();
 		plugins.stream().map(Plugin::getClass).map(Class::getClassLoader).forEach(classLoader::add);
 		this.compositeClassLoader = classLoader;
-	}
-
-	/**
-	 * Returns the enclosing {@link BundleContext}.
-	 * 
-	 * @return
-	 */
-	public BundleContext getBundleContext() {
-		return bundleContext;
 	}
 
 	/**
@@ -138,7 +125,7 @@ public final class Plugins {
 				public void add(String field, Class<?> configurationType) {
 					Class<?> prev = moduleConfigMap.put(field, configurationType);
 					if (prev != null) {
-						throw new SnowOwlApplication.InitializationException("Configuration node already registered for " + field + " - " + prev + " vs. " + configurationType);
+						throw new SnowOwl.InitializationException("Configuration node already registered for " + field + " - " + prev + " vs. " + configurationType);
 					}
 				}
 			});

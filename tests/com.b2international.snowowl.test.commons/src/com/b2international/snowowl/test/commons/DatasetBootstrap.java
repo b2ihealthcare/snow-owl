@@ -65,7 +65,7 @@ public class DatasetBootstrap extends Plugin {
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final String datasetLocation = System.getProperty(LOC_PARAM_NAME);
 		if (Strings.isNullOrEmpty(datasetLocation)) {
-			return; //throw new SnowowlRuntimeException(String.format("%s JVM argument is missing", LOC_PARAM_NAME));
+			throw new SnowowlRuntimeException(String.format("%s JVM argument is missing", LOC_PARAM_NAME));
 		}
 		final File datasetFile = new File(datasetLocation);
 		if (!datasetFile.canRead()) {

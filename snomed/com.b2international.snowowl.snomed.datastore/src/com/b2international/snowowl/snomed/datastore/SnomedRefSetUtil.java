@@ -37,7 +37,9 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EClass;
 
 import com.b2international.commons.BooleanUtils;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.SnowOwl;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
@@ -133,7 +135,7 @@ public abstract class SnomedRefSetUtil {
 	public static final Set<DataType> SUPPORTED_DATATYPES = ImmutableSet.copyOf(Sets.difference(ALL_DATATYPES, UNSUPPORTED_DATATYPES));
 	
 	private static SnomedCoreConfiguration getCoreConfiguration() {
-		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
+		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class);
 	}
 	
 	public static EClass getRefSetMemberClass(final SnomedRefSetType type) {
@@ -444,25 +446,4 @@ public abstract class SnomedRefSetUtil {
 		// Suppress instantiation
 	}
 
-	/**
-	 * Computes whether a reference set is structural or not.
-	 * @param refSetId
-	 * @param type
-	 * @return
-	 */
-	public static boolean isStructural(final String refSetId, final SnomedRefSetType type) {
-		switch (type) {
-			case LANGUAGE: //$FALL-THROUGH$
-			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
-			case ASSOCIATION: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: //$FALL-THROUGH$
-				return true;
-			case ATTRIBUTE_VALUE:
-				return 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetId) 
-						|| Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetId) 
-						|| Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetId);
-			default: return false;
-		}
-	}
 }

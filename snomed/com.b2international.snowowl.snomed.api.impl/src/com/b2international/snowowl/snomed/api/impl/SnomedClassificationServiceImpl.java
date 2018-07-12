@@ -37,8 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.events.Notifications;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -101,7 +102,7 @@ public class SnomedClassificationServiceImpl implements ISnomedClassificationSer
 	protected void init() {
 		LOG.info("Initializing classification service; keeping indexed data for {} recent run(s).", maxReasonerRuns); 
 		this.mapper = new ObjectMapper();
-		final File dir = new File(new File(SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory(), "indexes"), "classification_runs");
+		final File dir = new File(new File(ApplicationContext.getServiceForClass(Environment.class).getDataDirectory(), "indexes"), "classification_runs");
 		indexService = new ClassificationRunIndex(dir, mapper);
 		ApplicationContext.getInstance().getServiceChecked(SingleDirectoryIndexManager.class).registerIndex(indexService);
 

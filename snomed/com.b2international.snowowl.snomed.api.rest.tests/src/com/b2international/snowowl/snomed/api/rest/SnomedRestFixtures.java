@@ -29,11 +29,11 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -498,7 +498,7 @@ public abstract class SnomedRestFixtures {
 	}
 
 	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {
-		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
+		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class);
 	}
 
 	private SnomedRestFixtures() {

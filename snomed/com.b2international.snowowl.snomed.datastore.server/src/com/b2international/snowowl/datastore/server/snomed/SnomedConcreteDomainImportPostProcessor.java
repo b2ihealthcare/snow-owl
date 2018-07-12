@@ -29,7 +29,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
@@ -85,8 +86,7 @@ public class SnomedConcreteDomainImportPostProcessor implements ISnomedImportPos
 	@Override
 	public void postProcess(final ISnomedPostProcessorContext context) {
 		
-		final SnomedCoreConfiguration config = SnowOwlApplication.INSTANCE
-				.getConfiguration()
+		final SnomedCoreConfiguration config = ApplicationContext.getServiceForClass(SnowOwlConfiguration.class)
 				.getModuleConfig(SnomedCoreConfiguration.class);
 		
 		final String branch = context.branch();

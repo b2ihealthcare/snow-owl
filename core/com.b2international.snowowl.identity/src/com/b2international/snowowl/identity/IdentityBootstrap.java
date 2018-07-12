@@ -18,7 +18,7 @@ package com.b2international.snowowl.identity;
 import java.util.List;
 
 import com.b2international.commons.extension.Component;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -43,7 +43,7 @@ public final class IdentityBootstrap extends Plugin {
 		
 		IdentityProvider identityProvider = null; 
 		if (providers.isEmpty()) {
-			throw new SnowOwlApplication.InitializationException("No identity provider configured");
+			throw new SnowOwl.InitializationException("No identity provider configured");
 		} else if (providers.size() == 1) {
 			identityProvider = Iterables.getOnlyElement(providers);
 		} else {
