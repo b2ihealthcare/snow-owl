@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.api.rest.domain;
 
-import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 
 /**
  */

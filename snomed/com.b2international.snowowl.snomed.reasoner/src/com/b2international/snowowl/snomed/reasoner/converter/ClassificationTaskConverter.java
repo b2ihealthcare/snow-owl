@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.b2international.snowowl.snomed.reasoner.request.RelationshipChangeSearchRequestBuilder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
@@ -150,9 +151,16 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 		}
 
 		final Options expandOptions = expand().get(ClassificationTask.Expand.RELATIONSHIP_CHANGES, Options.class);
-		final RelationshipChanges relationshipChanges = ClassificationRequests.prepareSearchRelationshipChange()
-				.filterByClassificationId(classificationTaskIds)
+		
+		final RelationshipChangeSearchRequestBuilder builder = ClassificationRequests.prepareSearchRelationshipChange()
 				.all()
+				.filterByClassificationId(classificationTaskIds);
+
+		if (expandOptions.containsKey("sourceId")) {
+			builder.filterBySourceId(expandOptions.getCollection("sourceId", String.class));
+		}
+		
+		final RelationshipChanges relationshipChanges = builder
 				.setExpand(expandOptions.get("expand", Options.class))
 				.setLocales(locales())
 				.build()
