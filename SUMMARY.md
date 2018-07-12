@@ -1,5 +1,5 @@
 # Table of content
 
-* [Administration](./documentation/src/main/asciidoc/administration.md)
+* [Administration](./documentation/src/main/markdown/administration.md)
 * [Changelog](./CHANGELOG.md)
 * [Contributing](./CONTRIBUTING.md)
