@@ -61,6 +61,11 @@ public class Instant extends Element {
 			return getSelf();
 		}
 		
+		public Builder instant(long ms) {
+			this.instant = new Date(ms).toInstant();
+			return getSelf();
+		}
+		
 		public Builder instant(Date date) {
 			this.instant = date.toInstant();
 			return getSelf();

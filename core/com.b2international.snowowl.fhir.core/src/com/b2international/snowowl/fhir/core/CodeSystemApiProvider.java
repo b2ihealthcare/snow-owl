@@ -38,6 +38,7 @@ import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
@@ -46,6 +47,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -139,24 +141,27 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.execute(getBus())
 				.getSync();
 		
+		//fetch all the versions
+		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.all()
+			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync();
+		
 		List<CodeSystem> fhirCodeSystemList = Lists.newArrayList();
 		
 		codeSystems.forEach(cse -> { 
-			List<CodeSystem> fhirCodeSystems = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.all()
-				.filterByCodeSystemShortName(cse.getShortName())
-				.build(repositoryId)
-				.execute(getBus())
-				.then(csvs -> {
-					return csvs.stream()
-						.map(csve -> createCodeSystemBuilder(cse, csve))
-						.map(Builder::build)
-						.collect(Collectors.toList());
-				})
-				.getSync();
-				fhirCodeSystemList.addAll(fhirCodeSystems);
-			});
-		
+			
+			List<CodeSystem> fhirCodeSystems = codeSystemVersions.stream()
+				.filter(csv -> csv.getCodeSystemShortName().equals(cse.getShortName()))
+				.map(csve -> createCodeSystemBuilder(cse, csve))
+				.map(Builder::build)
+				.collect(Collectors.toList());
+			
+			fhirCodeSystemList.addAll(fhirCodeSystems);
+			
+		});
 		return fhirCodeSystemList;
 	}
 	
@@ -180,12 +185,23 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.value(codeSystemEntry.getOid())
 			.build();
 		
-		String id = codeSystemEntry.getRepositoryUuid() + "/" + codeSystemEntry.getShortName();
+		String id = null;
+		StringBuilder sb = new StringBuilder(getFhirUri(codeSystemEntry).getUriValue());
+		
+		if (codeSystemVersion != null) {
+			id = codeSystemVersion.getRepositoryUuid() + "://" + codeSystemVersion.getPath();
+			//TODO: edition module should come here
+			//sb.append("/");
+			//sb.append(moduleId);
+			sb.append("/version/");
+			sb.append(codeSystemVersion.getVersionId());
+		} else {
+			id = codeSystemEntry.getRepositoryUuid() + "://" + codeSystemEntry.getBranchPath();
+		}
 		
 		final Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
 			.language(getLanguageCode(codeSystemEntry.getLanguage()))
-			.version(codeSystemVersion.getVersionId())
 			.name(codeSystemEntry.getShortName())
 			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystemEntry.getCitation() + "</div>")
 			.publisher(codeSystemEntry.getOrgLink())
@@ -193,10 +209,20 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(getFhirUri(codeSystemEntry))
+			.url(new Uri(sb.toString()))
 			.content(CodeSystemContentMode.NOT_PRESENT)
 			.count(getCount());
 		
+		if (codeSystemVersion !=null) {
+			builder.version(codeSystemVersion.getVersionId());
+			
+			Meta meta = Meta.builder()
+				.lastUpdated(Instant.builder().instant(codeSystemVersion.getLatestUpdateDate()).build())
+				.build();
+			
+			builder.meta(meta);
+		}
+
 		//add filters here
 		Collection<Filter> supportedFilters = getSupportedFilters();
 		for (Filter filter : supportedFilters) {

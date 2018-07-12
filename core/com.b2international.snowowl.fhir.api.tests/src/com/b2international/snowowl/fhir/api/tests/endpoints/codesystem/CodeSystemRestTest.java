@@ -65,7 +65,7 @@ public class CodeSystemRestTest extends FhirTest {
 			.then().assertThat().statusCode(200);
 	}
 	
-	@Test
+	//@Test
 	public void printAllCodesystems() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		.when().get("/CodeSystem").prettyPrint();
@@ -82,8 +82,8 @@ public class CodeSystemRestTest extends FhirTest {
 			.body("total", notNullValue())
 			
 			//SNOMED CT
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"))
-			.root("entry.resource.find { it.url == 'http://snomed.info/sct'}")
+			.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
+			.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/2017-07-31'}")
 			.body("property.size()", equalTo(116))
 			
 			//FHIR issue type code system has children
