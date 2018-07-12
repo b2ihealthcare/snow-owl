@@ -15,11 +15,18 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.solr.common.util.JavaBinCodec;
+
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
@@ -50,7 +57,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the search after parameter to the specified array of scroll values.
+	 * Sets the "search after" parameter to the specified array of scroll values.
 	 * @param searchAfter
 	 * @return
 	 * @see PageableCollectionResource#getSearchAfter()
@@ -58,6 +65,27 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	public B setSearchAfter(Object[] scrollValues) {
 		this.searchAfter = scrollValues;
 		return getSelf();
+	}
+	
+	/**
+	 * Sets the "search after" parameter via a specially crafted (Base64 URL-safe encoded) token.
+	 * @param token
+	 * @return
+	 */
+	public B setSearchAfter(String token) {
+		final byte[] decodedToken = Base64
+				.getUrlDecoder()
+				.decode(token);
+		
+		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
+			final Object[] values = new JavaBinCodec()
+					.readArray(dis)
+					.toArray();
+			
+			return setSearchAfter(values);
+		} catch (final IOException e) {
+			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
+		}
 	}
 	
 	/**
