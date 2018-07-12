@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
@@ -30,7 +31,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -70,9 +71,9 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		final Map<String, SnomedConceptDocument> treeItemsById = newHashMap();
 		
 		// all matching concepts should be in the componentMap
-		treeItemsById.putAll(FluentIterable.from(nodes).uniqueIndex(ComponentUtils.<String>getIdFunction()));
+		treeItemsById.putAll(FluentIterable.from(nodes).uniqueIndex(IComponent::getId));
 		
-		final Collection<String> requiredTopLevelConceptIds = ComponentUtils.getIdSet(topLevelConcepts);
+		final Collection<String> requiredTopLevelConceptIds = topLevelConcepts.stream().map(IComponent::getId).collect(Collectors.toSet());
 		
 		// compute subType and superType maps for the tree
 		final SetMultimap<String, String> superTypeMap = HashMultimap.create();

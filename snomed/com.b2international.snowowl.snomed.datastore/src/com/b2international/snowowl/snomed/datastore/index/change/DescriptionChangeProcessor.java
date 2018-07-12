@@ -31,6 +31,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Description;
@@ -94,7 +95,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Hits<SnomedDescriptionIndexEntry> changedDescriptionHits = searcher.search(query);
 		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits,
-				ComponentUtils.<String> getIdFunction());
+				IComponent::getId);
 		
 		// load missing descriptions with only changed acceptability values
 		final Set<String> descriptionsToBeLoaded = newHashSet();

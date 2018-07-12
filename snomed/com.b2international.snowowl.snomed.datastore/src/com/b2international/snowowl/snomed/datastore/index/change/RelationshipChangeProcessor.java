@@ -30,6 +30,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.Relationship;
@@ -87,7 +88,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 		
 		final Hits<SnomedRelationshipIndexEntry> changedRelationshipHits = searcher.search(query);
 		final ImmutableMap<String, SnomedRelationshipIndexEntry> changedRelationshipRevisionsById = Maps
-				.uniqueIndex(changedRelationshipHits, ComponentUtils.<String> getIdFunction());
+				.uniqueIndex(changedRelationshipHits, IComponent::getId);
 		
 		for (final String id : changedRelationshipIds) {
 			final SnomedRelationshipIndexEntry currentDoc = changedRelationshipRevisionsById.get(id);
