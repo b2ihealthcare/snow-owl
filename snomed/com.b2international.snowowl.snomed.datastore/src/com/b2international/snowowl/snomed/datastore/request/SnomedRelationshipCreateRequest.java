@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,6 +153,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		}
 		
 		try {
+			
 			final String relationshipId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			final Relationship relationship = SnomedComponents.newRelationship()
 					.withActive(isActive())
@@ -167,7 +168,11 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 					.withModifier(getModifier())
 					.withDestinationNegated(isDestinationNegated())
 					.build(context);
+			
+			convertMembers(context, relationshipId);
+			
 			return relationship.getId();
+			
 		} catch (ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}

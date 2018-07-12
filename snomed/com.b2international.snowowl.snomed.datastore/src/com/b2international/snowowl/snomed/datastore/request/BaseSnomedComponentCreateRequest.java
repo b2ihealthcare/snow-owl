@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,19 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.core.domain.IdGenerationStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.0
@@ -36,6 +42,8 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 	private IdGenerationStrategy idGenerationStrategy;
 	
 	private String moduleId;
+	
+	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
 
 	@Override
 	public IdGenerationStrategy getIdGenerationStrategy() {
@@ -61,8 +69,12 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 		this.moduleId = moduleId;
 	}
 	
-	final void setActive(Boolean active) {
+	final void setActive(final Boolean active) {
 		this.active = active;
+	}
+	
+	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
+		this.members = ImmutableList.copyOf(members);
 	}
 	
 	@JsonIgnore
@@ -70,4 +82,22 @@ public abstract class BaseSnomedComponentCreateRequest implements SnomedCoreComp
 		return ImmutableList.of(this);
 	}
 
+	@Override
+	public Set<String> getRequiredComponentIds(final TransactionContext context) {
+		return ImmutableSet.<String>builder()
+				.add(getModuleId())
+				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
+				.build();
+	}
+	
+	protected void convertMembers(final TransactionContext context, final String referencedComponentId) {
+		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
+			memberRequest.setReferencedComponentId(referencedComponentId);
+			if (null == memberRequest.getModuleId()) {
+				memberRequest.setModuleId(getModuleId());
+			}
+			
+			memberRequest.execute(context);
+		}
+	}
 }

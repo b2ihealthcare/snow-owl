@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@Size(min = 1)
 	private List<SnomedRelationshipCreateRequest> relationships = Collections.emptyList();
 	
-	private List<SnomedRefSetMemberCreateRequest> members = Collections.emptyList();
-	
 	private SnomedRefSetCreateRequest refSetRequest;
 
 	@NotNull
@@ -73,8 +71,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@NotNull
 	private SubclassDefinitionStatus subclassDefinitionStatus = SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 
-	SnomedConceptCreateRequest() {
-	}
+	SnomedConceptCreateRequest() {}
 	
 	void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {
 		this.subclassDefinitionStatus = subclassDefinitionStatus;
@@ -92,10 +89,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		this.relationships = ImmutableList.copyOf(relationships);
 	}
 	
-	void setMembers(final List<SnomedRefSetMemberCreateRequest> members) {
-		this.members = ImmutableList.copyOf(members);
-	}
-	
 	void setRefSet(SnomedRefSetCreateRequest refSet) {
 		this.refSetRequest = refSet;
 	}
@@ -103,11 +96,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		return ImmutableSet.<String>builder()
-				.add(getModuleId())
+				.addAll(super.getRequiredComponentIds(context))
 				.add(definitionStatus.getConceptId())
 				.addAll(descriptions.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.addAll(relationships.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
-				.addAll(members.stream().flatMap(req -> req.getRequiredComponentIds(context).stream()).collect(Collectors.toSet()))
 				.build();
 	}
 
@@ -180,7 +172,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	private void convertRelationships(final TransactionContext context, String conceptId) {
-		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
+		final Set<Pair<String, CharacteristicType>> requiredRelationships = newHashSet();
+		requiredRelationships.add(Tuples.pair(Concepts.IS_A, CharacteristicType.STATED_RELATIONSHIP));
 		
 		for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
 			relationshipRequest.setSourceId(conceptId);
@@ -196,17 +189,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		
 		if (!requiredRelationships.isEmpty()) {
 			throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
-		}
-	}
-	
-	private void convertMembers(final TransactionContext context, final String conceptId) {
-		for (final SnomedRefSetMemberCreateRequest memberRequest : members) {
-			memberRequest.setReferencedComponentId(conceptId);
-			if (null == memberRequest.getModuleId()) {
-				memberRequest.setModuleId(getModuleId());
-			}
-			
-			memberRequest.execute(context);
 		}
 	}
 	
