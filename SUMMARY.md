@@ -1,5 +1,16 @@
 # Table of content
 
 * [Administration](./documentation/src/main/markdown/administration.md)
+* [Console command reference](./documentation/src/main/markdown/administrative_console_reference.md)
+* [Administratice REST API reference](./documentation/src/main/markdown/administrative_rest_reference.md)
+* [Configuration reference](./documentation/src/main/markdown/configuration_reference.md)
+* [Installation](./documentation/src/main/markdown/installation.md)
+* [Introduction](./documentation/src/main/markdown/introduction.md)
+* [Task tracking](./documentation/src/main/markdown/issue_tracker.md)
+* [User and Acces control](./documentation/src/main/markdown/ldap_uac.md)
+* [Data migration](./documentation/src/main/markdown/migration.md)
+* [List of single administrator operations](./documentation/src/main/markdown/old_single_admin_ops.md)
+* [SNOMED CT Extension management](./documentation/src/main/markdown/snomed_extension_management.md)
+* [Software requirements](./documentation/src/main/markdown/software_requierements.md)
 * [Changelog](./CHANGELOG.md)
 * [Contributing](./CONTRIBUTING.md)
