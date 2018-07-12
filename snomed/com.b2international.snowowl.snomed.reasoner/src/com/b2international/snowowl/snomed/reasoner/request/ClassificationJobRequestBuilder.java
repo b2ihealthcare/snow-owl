@@ -28,28 +28,28 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 /**
  * @since 7.0
  */
-public final class ClassificationRunRequestBuilder 
-		extends BaseRequestBuilder<ClassificationRunRequestBuilder, BranchContext, Boolean>
+public final class ClassificationJobRequestBuilder 
+		extends BaseRequestBuilder<ClassificationJobRequestBuilder, BranchContext, Boolean>
 		implements RevisionIndexRequestBuilder<Boolean> {
 
 	private String reasonerId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();
 
-	ClassificationRunRequestBuilder() {}
+	ClassificationJobRequestBuilder() {}
 
-	public ClassificationRunRequestBuilder setReasonerId(final String reasonerId) {
+	public ClassificationJobRequestBuilder setReasonerId(final String reasonerId) {
 		this.reasonerId = reasonerId;
 		return this;
 	}
 
-	public ClassificationRunRequestBuilder addAllConcepts(final List<SnomedConcept> additionalConcepts) {
+	public ClassificationJobRequestBuilder addAllConcepts(final List<SnomedConcept> additionalConcepts) {
 		this.additionalConcepts.addAll(additionalConcepts);
 		return this;
 	}
 
 	@Override
 	protected Request<BranchContext, Boolean> doBuild() {
-		final ClassificationRunRequest request = new ClassificationRunRequest();
+		final ClassificationJobRequest request = new ClassificationJobRequest();
 		request.setReasonerId(reasonerId);
 		request.setAdditionalConcepts(additionalConcepts);
 		return request;

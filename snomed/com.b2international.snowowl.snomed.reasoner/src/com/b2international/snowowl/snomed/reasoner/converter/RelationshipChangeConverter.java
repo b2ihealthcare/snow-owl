@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -166,6 +167,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 					expandedRelationship.setDestination(adjustedDestination == null ? expandedRelationship.getDestination() : adjustedDestination);
 					expandedRelationship.setGroup(blankRelationship.getGroup());
 					expandedRelationship.setUnionGroup(blankRelationship.getUnionGroup());
+					expandedRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
 				}
 
 				item.setRelationship(expandedRelationship);

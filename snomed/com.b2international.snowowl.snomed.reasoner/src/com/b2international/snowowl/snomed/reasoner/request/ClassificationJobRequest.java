@@ -50,7 +50,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 5.7
  */
-final class ClassificationRunRequest implements Request<BranchContext, Boolean> {
+final class ClassificationJobRequest implements Request<BranchContext, Boolean> {
 
 	@NotEmpty
 	private String reasonerId;
@@ -60,7 +60,7 @@ final class ClassificationRunRequest implements Request<BranchContext, Boolean> 
 
 	private String classificationId;
 
-	ClassificationRunRequest() {}
+	ClassificationJobRequest() {}
 
 	void setReasonerId(final String reasonerId) {
 		this.reasonerId = reasonerId;

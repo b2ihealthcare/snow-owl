@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,33 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 
 /**
- * @since 5.7
+ * @since 7.0
  */
-public final class ClassificationSaveRequestBuilder 
-		extends BaseRequestBuilder<ClassificationSaveRequestBuilder, RepositoryContext, String> 
-		implements RepositoryRequestBuilder<String> {
+public final class SaveJobRequestBuilder 
+		extends BaseRequestBuilder<SaveJobRequestBuilder, BranchContext, Boolean>
+		implements RevisionIndexRequestBuilder<Boolean> {
 
-	private final String classificationId;
-	private final String userId;
+	private String classificationId;
+	private String userId;
 
-	ClassificationSaveRequestBuilder(final String classificationId, final String userId) {
+	public SaveJobRequestBuilder setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
+		return getSelf();
+	}
+
+	public SaveJobRequestBuilder setUserId(final String userId) {
 		this.userId = userId;
+		return getSelf();
 	}
 
 	@Override
-	protected Request<RepositoryContext, String> doBuild() {
-		return new ClassificationSaveRequest(classificationId, userId);
+	protected Request<BranchContext, Boolean> doBuild() {
+		return new SaveJobRequest(classificationId, userId);
 	}
 }

@@ -83,11 +83,17 @@ public final class SourceConceptNamespaceAndModuleAssigner implements SnomedName
 
 	private void collectModules(final Set<String> conceptIds, final BranchContext context, final Consumer<SnomedConcept> consumer) {
 		SnomedRequests.prepareSearchConcept()
-		.setLimit(conceptIds.size())
-		.filterByIds(conceptIds)
-		.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID)
-		.build()
-		.execute(context)
-		.forEach(consumer);
+			.setLimit(conceptIds.size())
+			.filterByIds(conceptIds)
+			.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID)
+			.build()
+			.execute(context)
+			.forEach(consumer);
+	}
+	
+	@Override
+	public void clear() {
+		relationshipModuleMap.clear();
+		concreteDomainModuleMap.clear();
 	}
 }

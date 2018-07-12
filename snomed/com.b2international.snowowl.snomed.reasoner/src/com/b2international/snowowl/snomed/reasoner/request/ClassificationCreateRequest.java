@@ -74,7 +74,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 
 		tracker.classificationScheduled(classificationId, reasonerId, userId, branch.path());
 
-		final AsyncRequest<Boolean> runRequest = new ClassificationRunRequestBuilder()
+		final AsyncRequest<Boolean> runRequest = new ClassificationJobRequestBuilder()
 				.setReasonerId(reasonerId)
 				.addAllConcepts(additionalConcepts)
 				.build(repositoryId, branch.path());

@@ -104,11 +104,11 @@ public final class ClassificationTracker implements IDisposableService {
 		this.index.write(writer -> {
 			// Set classification statuses where a process was interrupted by a shutdown to FAILED
 			updateTasksByStatus(writer, ImmutableSet.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED), 
-					ClassificationTaskDocument.CLASSIFICATION_FAILED,
+					ClassificationTaskDocument.Scripts.FAILED,
 					ImmutableMap.of("completionDate", System.currentTimeMillis()));
 
 			updateTasksByStatus(writer, ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS), 
-					ClassificationTaskDocument.SAVE_FAILED,
+					ClassificationTaskDocument.Scripts.SAVE_FAILED,
 					ImmutableMap.of());
 
 			// Trim the list 
@@ -209,7 +209,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
-					ClassificationTaskDocument.CLASSIFICATION_RUNNING, 
+					ClassificationTaskDocument.Scripts.RUNNING, 
 					ImmutableMap.of("headTimestamp", headTimestamp)));
 			writer.commit();
 			return null;
@@ -239,12 +239,51 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
-					ClassificationTaskDocument.CLASSIFICATION_COMPLETED, 
+					ClassificationTaskDocument.Scripts.COMPLETED, 
 					ImmutableMap.of("completionDate", System.currentTimeMillis(),
 							"hasEquivalentConcepts", hasEquivalentConcepts,
 							"hasInferredChanges", hasInferredChanges,
 							"hasRedundantStatedChanges", hasRedundantStatedChanges)));
 
+			writer.commit();
+			return null;
+		});
+	}
+	
+	public void classificationSaving(final String classificationId) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(
+					ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, 
+					ImmutableMap.of()));
+			writer.commit();
+			return null;
+		});
+	}
+
+	public void classificationSaved(final String classificationId, final long commitTimestamp) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(
+					ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.SAVED, 
+					ImmutableMap.of("saveDate", commitTimestamp)));
+			writer.commit();
+			return null;
+		});
+	}
+
+	public void classificationSaveFailed(final String classificationId) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(
+					ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.SAVE_FAILED, 
+					ImmutableMap.of()));
 			writer.commit();
 			return null;
 		});
@@ -290,7 +329,7 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
-					ClassificationTaskDocument.CLASSIFICATION_FAILED, 
+					ClassificationTaskDocument.Scripts.FAILED, 
 					ImmutableMap.of("completionDate", System.currentTimeMillis())));
 			writer.commit();
 			return null;
@@ -307,7 +346,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
-					ClassificationTaskDocument.CLASSIFICATION_DELETED));
+					ClassificationTaskDocument.Scripts.DELETED));
 
 			writer.commit();
 			return null;

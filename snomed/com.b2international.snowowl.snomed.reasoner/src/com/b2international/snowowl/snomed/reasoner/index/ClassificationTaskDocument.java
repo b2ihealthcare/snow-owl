@@ -36,22 +36,29 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.headTimestamp = params.headTimestamp")
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_COMPLETED, script="ctx._source.status = 'COMPLETED'; "
+@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.headTimestamp = params.headTimestamp")
+@Script(name=ClassificationTaskDocument.Scripts.COMPLETED, script="ctx._source.status = 'COMPLETED'; "
 		+ "ctx._source.completionDate = params.completionDate; "
 		+ "ctx._source.hasInferredChanges = params.hasInferredChanges; "
 		+ "ctx._source.hasRedundantStatedChanges = params.hasRedundantStatedChanges; "
 		+ "ctx._source.hasEquivalentConcepts = params.hasEquivalentConcepts")
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate")
-@Script(name=ClassificationTaskDocument.CLASSIFICATION_DELETED, script="ctx._source.deleted = true")
-@Script(name=ClassificationTaskDocument.SAVE_FAILED, script="ctx._source.status = 'SAVE_FAILED'")
+@Script(name=ClassificationTaskDocument.Scripts.FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate")
+@Script(name=ClassificationTaskDocument.Scripts.DELETED, script="ctx._source.deleted = true")
+@Script(name=ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, script="ctx._source.status = 'SAVING_IN_PROGRESS'")
+@Script(name=ClassificationTaskDocument.Scripts.SAVED, script="ctx._source.status = 'SAVED'; "
+		+ "ctx._source.saveDate = params.saveDate")
+@Script(name=ClassificationTaskDocument.Scripts.SAVE_FAILED, script="ctx._source.status = 'SAVE_FAILED'")
 public final class ClassificationTaskDocument {
 
-	public static final String CLASSIFICATION_RUNNING = "classificationRunning";
-	public static final String CLASSIFICATION_COMPLETED = "classificationCompleted";
-	public static final String CLASSIFICATION_FAILED = "classificationFailed";
-	public static final String CLASSIFICATION_DELETED = "classificationDeleted";
-	public static final String SAVE_FAILED = "saveFailed";
+	public static class Scripts {
+		public static final String RUNNING = "running";
+		public static final String COMPLETED = "completed";
+		public static final String FAILED = "failed";
+		public static final String DELETED = "deleted";
+		public static final String SAVING_IN_PROGRESS = "saving_in_progress";
+		public static final String SAVE_FAILED = "save_failed";
+		public static final String SAVED = "saved";
+	}
 
 	public static class Fields {
 		public static final String ID = "id";

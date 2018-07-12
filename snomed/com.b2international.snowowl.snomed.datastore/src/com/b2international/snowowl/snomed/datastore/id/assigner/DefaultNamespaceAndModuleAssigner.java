@@ -85,4 +85,10 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 					.get();
 		}
 	}
+	
+	@Override
+	public void clear() {
+		defaultModule = null;
+		defaultNamespace = null;
+	}
 }

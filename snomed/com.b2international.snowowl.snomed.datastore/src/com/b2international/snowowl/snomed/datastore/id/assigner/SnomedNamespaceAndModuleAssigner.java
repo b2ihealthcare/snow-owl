@@ -73,4 +73,9 @@ public interface SnomedNamespaceAndModuleAssigner {
 	 * @param context
 	 */
 	void collectConcreteDomainModules(Set<String> conceptIds, BranchContext context);
+
+	/**
+	 * Clears the internal maps of this assigner.
+	 */
+	void clear();
 }
