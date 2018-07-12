@@ -255,19 +255,25 @@ public class EsDocumentWriter implements Writer {
 			
 			boolean created = r.getCreated() > 0;
 			if (created) {
-				mappingsToRefresh.add(mapping);
+				synchronized (mappingsToRefresh) {
+					mappingsToRefresh.add(mapping);
+				}
 				admin.log().info("Created {} {} documents with script '{}'", r.getCreated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean updated = r.getUpdated() > 0;
 			if (updated) {
-				mappingsToRefresh.add(mapping);
+				synchronized (mappingsToRefresh) {
+					mappingsToRefresh.add(mapping);
+				}
 				admin.log().info("Updated {} {} documents with script '{}'", r.getUpdated(), mapping.typeAsString(), update.getScript());
 			}
 			
 			boolean deleted = r.getDeleted() > 0;
 			if (deleted) {
-				mappingsToRefresh.add(mapping);
+				synchronized (mappingsToRefresh) {
+					mappingsToRefresh.add(mapping);
+				}
 				admin.log().info("Deleted {} {} documents with script '{}'", r.getDeleted(), mapping.typeAsString(), update.getScript());
 			}
 			

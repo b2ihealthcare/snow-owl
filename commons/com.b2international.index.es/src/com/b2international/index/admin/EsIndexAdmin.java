@@ -33,9 +33,11 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,7 @@ import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import com.google.common.primitives.Primitives;
@@ -338,10 +341,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
 			String[] indicesToRefresh = typesToRefresh.stream().map(this::getTypeIndex).collect(toSet()).toArray(new String[0]);
 			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
-			client().admin()
+			RefreshResponse response = client().admin()
 			        .indices()
 			        .prepareRefresh(indicesToRefresh)
 			        .get();
+			if (RestStatus.OK != response.getStatus()) {
+				log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), response.getStatus());
+			}
 			waitForYellowHealth(indicesToRefresh);
 		}
 	}
