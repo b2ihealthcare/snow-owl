@@ -32,7 +32,7 @@ public final class Rf2EffectiveTimeSlices {
 
 	private final DB db;
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
-	private final boolean loadOnDemand; 
+	private final boolean loadOnDemand;
 
 	public Rf2EffectiveTimeSlices(DB db, boolean loadOnDemand) {
 		this.db = db;

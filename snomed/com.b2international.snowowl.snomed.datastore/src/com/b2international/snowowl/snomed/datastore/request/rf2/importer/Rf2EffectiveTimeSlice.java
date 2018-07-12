@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -75,7 +76,6 @@ public final class Rf2EffectiveTimeSlice {
 	// tmp map to quickly collect batch of items before flushing it to disk
 	private final Map<String, String[]> tmpComponentsById;
 	private final HTreeMap<String, String[]> componentsById;
-	
 	private final boolean loadOnDemand;
 	
 	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, boolean loadOnDemand) {
@@ -213,27 +213,32 @@ public final class Rf2EffectiveTimeSlice {
 	private Multimap<Class<? extends SnomedDocument>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {
 		final Multimap<Class<? extends SnomedDocument>, String> dependenciesByComponent = HashMultimap.create();
 		for (SnomedComponent component : componentsToImport) {
+			final long sourceId;
 			if (component instanceof SnomedCoreComponent) {
-				LongSet dependencies = this.dependenciesByComponent.get(Long.parseLong(component.getId()));
-				if (dependencies != null) {
-					Set<String> requiredDependencies = LongSets.toStringSet(dependencies);
-					for (String requiredDependency : requiredDependencies) {
-						dependenciesByComponent.put(getCdoType(requiredDependency), requiredDependency);
-					}
-				}
+				sourceId = Long.parseLong(component.getId());
 			} else if (component instanceof SnomedReferenceSetMember) {
-				dependenciesByComponent.put(SnomedConceptDocument.class, ((SnomedReferenceSetMember) component).getReferenceSetId());
+				sourceId = Long.parseLong(((SnomedReferenceSetMember) component).getReferencedComponent().getId());
+			} else {
+				throw new UnsupportedOperationException("Unsupported component type " + component);
+			}
+			LongSet dependencies = this.dependenciesByComponent.get(sourceId);
+			if (dependencies != null) {
+				Set<String> requiredDependencies = LongSets.toStringSet(dependencies);
+				for (String requiredDependency : requiredDependencies) {
+					dependenciesByComponent.put(getCdoType(requiredDependency), requiredDependency);
+				}
 			}
 		}
 		return dependenciesByComponent;
 	}
 
 	private Class<? extends SnomedDocument> getCdoType(String componentId) {
-		switch (SnomedIdentifiers.getComponentCategory(componentId)) {
+		ComponentCategory type = SnomedIdentifiers.getComponentCategory(componentId);
+		switch (type) {
 		case CONCEPT: return SnomedConceptDocument.class;
 		case DESCRIPTION: return SnomedDescriptionIndexEntry.class;
 		case RELATIONSHIP: return SnomedRelationshipIndexEntry.class;
-		default: throw new UnsupportedOperationException("Cannot determine cdo type from component ID: " + componentId);
+		default: throw new UnsupportedOperationException(String.format("Cannot determine document type from component ID and type: [%s,%s]", componentId, type));
 		}
 	}
 

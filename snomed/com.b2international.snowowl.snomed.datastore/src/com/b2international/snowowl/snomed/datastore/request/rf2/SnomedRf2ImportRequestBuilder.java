@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,13 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -65,6 +70,19 @@ public final class SnomedRf2ImportRequestBuilder
 		req.setCreateVersions(createVersions);
 		req.setUserId(userId);
 		return req;
+	}
+	
+	@Override
+	public AsyncRequest<Boolean> build(String repositoryId, String branch) {
+		return new AsyncRequest<>(
+			new RepositoryRequest<>(repositoryId,
+				new IndexReadRequest<>(
+					new BranchRequest<>(branch, 
+						new RevisionIndexReadRequest<>(build(), false)
+					)
+				)
+			)
+		);
 	}
 
 }

@@ -25,7 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -79,7 +79,7 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	
 	@Override
 	public SnowOwlConfiguration config() {
-		return SnowOwlApplication.INSTANCE.getConfiguration();
+		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class);
 	}
 
 	@Override

@@ -47,6 +47,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.exception.RepositoryLockException;
 import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
@@ -82,6 +83,10 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
 		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath());
+	}
+	
+	public <T> T getResolvedObjectById(String componentId, Class<T> type) {
+		return type.cast(resolvedObjectsById.get(createComponentKey(componentId, type)));
 	}
 	
 	@Override
@@ -168,6 +173,10 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			final CodeSystemEntry cs = (CodeSystemEntry) o;
 			staging.stageNew(cs.getShortName(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getShortName(), cs.getClass()), cs);
+		} else if (o instanceof CodeSystemVersionEntry) { 
+			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
+			staging.stageNew(cs.getVersionId(), cs);
+			resolvedObjectsById.put(createComponentKey(cs.getVersionId(), cs.getClass()), cs);
 		} else if (o instanceof Revision) {
 			Revision rev = (Revision) o;
 			staging.stageNew(rev);
@@ -209,9 +218,9 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		try {
 			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
-			log.info("Persisting changes to revision index at ", timestamp);
+			log.info("Persisting changes to {}@{}", branchPath(), timestamp);
 			commit = staging.commit(null, timestamp, userId, commitComment);
-			log.info("Changes have been successfully persisted.");
+			log.info("Changes have been successfully persisted to {}@{}.", branchPath(), timestamp);
 			return commit.getTimestamp();
 		} catch (RepositoryLockException e) {
 			throw new LockedException(e.getMessage());
