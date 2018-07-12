@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 			final Repository repo = repositories.prepareCreate(getRepositoryId(), getToolingId())
 					.withInitializer(getTerminologyRepositoryInitializer())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
+					.addMappings(getMappings())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
@@ -50,6 +53,9 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 		}
 		afterRun(configuration, env);
 	}
+	
+	
+	protected abstract Collection<Class<?>> getMappings();
 
 	/**
 	 * Subclasses may override to provide additional service configuration via this {@link TerminologyRepositoryPlugin} after the initialization of the repository.

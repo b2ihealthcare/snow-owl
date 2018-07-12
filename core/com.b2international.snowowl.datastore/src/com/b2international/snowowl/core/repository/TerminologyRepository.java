@@ -16,17 +16,13 @@
 package com.b2international.snowowl.core.repository;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.extension.Extensions;
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
@@ -34,7 +30,6 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.DefaultRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
@@ -45,16 +40,11 @@ import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.RepositoryEvent;
 import com.b2international.snowowl.core.merge.MergeService;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.datastore.CodeSystemEntry;
-import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
-import com.b2international.snowowl.datastore.index.MappingProvider;
 import com.b2international.snowowl.datastore.internal.merge.MergeServiceImpl;
-import com.b2international.snowowl.datastore.review.ConceptChanges;
-import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.review.ReviewManagerImpl;
@@ -72,16 +62,18 @@ public final class TerminologyRepository extends DelegatingContext implements In
 	private final String repositoryId;
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	private final int mergeMaxResults;
+	private final Mappings mappings;
 	private final Logger logger;
 	
 	private Health health = Health.RED;
 	private String diagnosis;
 	
-	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env) {
+	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env, Mappings mappings) {
 		super(env);
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.mergeMaxResults = mergeMaxResults;
+		this.mappings = mappings;
 		this.logger = LoggerFactory.getLogger("repository."+repositoryId);
 	}
 	
@@ -90,7 +82,7 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
-		RevisionIndex index = initIndex(mapper, branching);
+		RevisionIndex index = initIndex(mapper, branching, mappings);
 		bind(Repository.class, this);
 		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
 		// initialize the index
@@ -143,19 +135,11 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		return branchManager;
 	}
 
-	private RevisionIndex initIndex(final ObjectMapper mapper, BaseRevisionBranching branching) {
-		final Collection<Class<?>> types = newArrayList();
-		types.add(Review.class);
-		types.add(ConceptChanges.class);
-		types.add(CodeSystemEntry.class);
-		types.add(CodeSystemVersionEntry.class);
-		types.addAll(getToolingTypes(toolingId));
-		types.add(Commit.class);
-		
+	private RevisionIndex initIndex(final ObjectMapper mapper, BaseRevisionBranching branching, Mappings mappings) {
 		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
 		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
-		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, new Mappings(types), indexSettings);
+		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, branching, mapper);
 		// register index and revision index access, the underlying index is the same
@@ -164,22 +148,10 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		return revisionIndex;
 	}
 
-	private Collection<Class<?>> getToolingTypes(String toolingId) {
-		final Collection<Class<?>> types = newHashSet();
-		final Collection<MappingProvider> providers = Extensions.getExtensions("com.b2international.snowowl.datastore.mappingProvider", MappingProvider.class);
-		for (MappingProvider provider : providers) {
-			if (provider.getToolingId().equals(toolingId)) {
-				types.addAll(provider.getMappings());
-			}
-		}
-		return types;
-	}
-
 	@Override
 	public void doDispose() {
 		service(RevisionIndex.class).admin().close();
 	}
-	
 	
 	@Override
 	protected Environment getDelegate() {

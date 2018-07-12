@@ -15,10 +15,17 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import java.util.Collection;
+
+import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
+import com.b2international.snowowl.datastore.review.ConceptChanges;
+import com.b2international.snowowl.datastore.review.Review;
 
 /**
  * @since 4.5
@@ -31,6 +38,12 @@ public final class RepositoryBuilder {
 	
 	private int mergeMaxResults;
 	private TerminologyRepositoryInitializer initializer;
+	private final Mappings mappings = new Mappings(
+		Review.class, 
+		ConceptChanges.class, 
+		CodeSystemEntry.class, 
+		CodeSystemVersionEntry.class
+	);
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -48,8 +61,13 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder addMappings(Collection<Class<?>> mappings) {
+		mappings.forEach(this.mappings::putMapping);
+		return this;
+	}
+	
 	public Repository build(Environment env) {
-		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env);
+		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.activate();
 		manager.put(repositoryId, repository);

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core;
 
+import java.util.Collection;
+
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
@@ -41,9 +43,15 @@ import com.b2international.snowowl.snomed.core.mrcm.io.XMIMrcmImporter;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
 
 /**
@@ -83,6 +91,17 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmImporter.class, new XMIMrcmImporter());
 			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, XMIMrcmImporter.class.getClassLoader());
 		}
+	}
+	
+	@Override
+	protected Collection<Class<?>> getMappings() {
+		return ImmutableList.<Class<?>>of(
+			SnomedConceptDocument.class,
+			SnomedDescriptionIndexEntry.class,
+			SnomedRelationshipIndexEntry.class,
+//			SnomedConstraintDocument.class,
+			SnomedRefSetMemberIndexEntry.class
+		);
 	}
 	
 	@Override
