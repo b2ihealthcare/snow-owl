@@ -19,12 +19,19 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersions;
+import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -46,6 +53,7 @@ import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionReques
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -91,8 +99,23 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	public CodeSystem getCodeSystem(Path codeSystemPath) {
 		String repositoryId = codeSystemPath.getParent().toString();
 		String shortName = codeSystemPath.getFileName().toString();
-		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName).build(repositoryId).execute(getBus()).getSync();
-		return createCodeSystemBuilder(codeSystemEntry).build();
+		
+		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName)
+				.build(repositoryId)
+				.execute(getBus())
+				.getSync();
+		
+		//get the last version for now
+		Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByCodeSystemShortName(codeSystemEntry.getShortName())
+			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync()
+			.first();
+		
+		return createCodeSystemBuilder(codeSystemEntry, latestVersion.get()).build();
 	}
 	
 	@Override
@@ -108,31 +131,48 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	@Override
 	public Collection<CodeSystem> getCodeSystems() {
-		return CodeSystemRequests.prepareSearchCodeSystem()
+		
+		//Create a code system for every extension and every version
+		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
 				.build(repositoryId)
 				.execute(getBus())
-				.then(codeSystems -> {
-					return codeSystems.stream()
-						.map(this::createCodeSystemBuilder)
+				.getSync();
+		
+		List<CodeSystem> fhirCodeSystemList = Lists.newArrayList();
+		
+		codeSystems.forEach(cse -> { 
+			List<CodeSystem> fhirCodeSystems = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.all()
+				.filterByCodeSystemShortName(cse.getShortName())
+				.build(repositoryId)
+				.execute(getBus())
+				.then(csvs -> {
+					return csvs.stream()
+						.map(csve -> createCodeSystemBuilder(cse, csve))
 						.map(Builder::build)
 						.collect(Collectors.toList());
 				})
 				.getSync();
+				fhirCodeSystemList.addAll(fhirCodeSystems);
+			});
+		
+		return fhirCodeSystemList;
 	}
 	
 	/**
 	 * Returns the designated FHIR Uri for the given code system
+	 * @param codeSystemEntry 
 	 * @return
 	 */
-	protected abstract Uri getFhirUri();
+	protected abstract Uri getFhirUri(CodeSystemEntry codeSystemEntry);
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystemEntry}
 	 * @param codeSystemEntry
 	 * @return FHIR Code system
 	 */
-	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry) {
+	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry, final CodeSystemVersionEntry codeSystemVersion) {
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
@@ -145,6 +185,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		final Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
 			.language(getLanguageCode(codeSystemEntry.getLanguage()))
+			.version(codeSystemVersion.getVersionId())
 			.name(codeSystemEntry.getShortName())
 			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystemEntry.getCitation() + "</div>")
 			.publisher(codeSystemEntry.getOrgLink())
@@ -152,7 +193,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(getFhirUri())
+			.url(getFhirUri(codeSystemEntry))
 			.content(CodeSystemContentMode.NOT_PRESENT)
 			.count(getCount());
 		

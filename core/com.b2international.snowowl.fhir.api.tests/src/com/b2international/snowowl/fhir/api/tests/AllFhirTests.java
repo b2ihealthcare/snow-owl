@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.api.tests.serialization.domain.BundleSer
 @SuiteClasses({ 
 
 	/*
+	UriParsingTest.class,
 	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
 	ParameterDeserializationTest.class,

@@ -28,6 +28,7 @@ import org.osgi.framework.wiring.BundleWiring;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -267,7 +268,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri() {
+	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry) {
 		//handled on the per Core terminology basis (like LCS) 
 		return null;
 	}

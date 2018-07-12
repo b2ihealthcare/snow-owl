@@ -24,7 +24,7 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
 2	  expired	Session Expired	User session expired; a login may be required.
 2	  forbidden	Forbidden	The user does not have the rights to perform this action.
 2	  suppressed	Information Suppressed	Some information was not or may not have been returned due to business rules, consent or privacy rules, or access permission constraints. This information may be accessible through alternate processes.
-1	processing	Processing Failure	Processing issues. These are expected to be final e.g. there is no point resubmitting the same content unchanged.
+1	  processing	Processing Failure	Processing issues. These are expected to be final e.g. there is no point resubmitting the same content unchanged.
 2	  not-supported	Content not supported	The resource or profile is not supported.
 2	  duplicate	Duplicate	An attempt was made to create a duplicate record.
 2	  not-found	Not Found	The reference provided was not found. In a pure RESTful environment, this would be an HTTP 404 error, but this code may be used where the content is not found further into the application architecture.
@@ -35,13 +35,13 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
 2	  business-rule	Business Rule Violation	The content/operation failed to pass some business rule, and so could not proceed.
 2	  conflict	Edit Version Conflict	Content could not be accepted because of an edit conflict (i.e. version aware updates) (In a pure RESTful environment, this would be an HTTP 404 error, but this code may be used where the conflict is discovered further into the application architecture.)
 2	  incomplete	Incomplete Results	Not all data sources typically accessed could be reached, or responded in time, so the returned information may not be complete.
-1	transient	Transient Issue	Transient processing issues. The system receiving the error may be able to resubmit the same content once an underlying issue is resolved.
+1	  transient	Transient Issue	Transient processing issues. The system receiving the error may be able to resubmit the same content once an underlying issue is resolved.
 2	  lock-error	Lock Error	A resource/record locking failure (usually in an underlying database).
 2	  no-store	No Store Available	The persistent store is unavailable; e.g. the database is down for maintenance or similar action.
 2	  exception	Exception	An unexpected internal error has occurred.
 2	  timeout	Timeout	An internal timeout has occurred.
 2	  throttled	Throttled	The system is not prepared to handle this request due to load management.
-1	informational	Informational Note	A message unrelated to the processing success of the completed operation (examples of the latter include things like reminders of password expiry, system maintenance times, etc.).
+1	  informational	Informational Note	A message unrelated to the processing success of the completed operation (examples of the latter include things like reminders of password expiry, system maintenance times, etc.).
  * 
  * @since 6.4
  */

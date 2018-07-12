@@ -65,7 +65,7 @@ public class CodeSystemRestTest extends FhirTest {
 			.then().assertThat().statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void printAllCodesystems() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		.when().get("/CodeSystem").prettyPrint();
