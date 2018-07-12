@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.io.IOException;
 import java.util.EnumSet;
@@ -48,6 +49,7 @@ import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 /**
@@ -113,8 +115,8 @@ public final class StagingArea {
 		return changedRevisions;
 	}
 	
-	public <T> Stream<T> getChangedRevisions(Class<T> type) {
-		return changedRevisions.values().stream().map(diff -> diff.newRevision).filter(type::isInstance).map(type::cast);
+	public Stream<RevisionDiff> getChangedRevisions(Class<?> type) {
+		return changedRevisions.values().stream().filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()));
 	}
 	
 	/**
@@ -229,7 +231,7 @@ public final class StagingArea {
 		// collect property changes
 		revisionsByChange.asMap().forEach((change, objects) -> {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
-			final String from = change.get("fromValue").asText(); 
+			final String from = change.get("fromValue").asText();
 			final String to = change.get("value").asText();
 			details.add(CommitDetail.changedProperty(prop, from, to, objects.iterator().next().type(), objects.stream().map(ObjectId::id).collect(Collectors.toSet())));
 		});
@@ -325,14 +327,15 @@ public final class StagingArea {
 		return this;
 	}
 	
-	private class RevisionDiff {
+	public final class RevisionDiff {
 		
-		final Revision oldRevision;
-		final Revision newRevision;
+		public final Revision oldRevision;
+		public final Revision newRevision;
 		
 		private ArrayNode changes;
+		private Map<String, RevisionPropertyDiff> propertyChanges;
 		
-		public RevisionDiff(Revision oldRevision, Revision newRevision) {
+		private RevisionDiff(Revision oldRevision, Revision newRevision) {
 			this.oldRevision = oldRevision;
 			this.newRevision = newRevision;
 		}
@@ -354,7 +357,7 @@ public final class StagingArea {
 				while (elements.hasNext()) {
 					JsonNode node = elements.next();
 					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					final String property = change.get("path").asText().replaceFirst("/", "");
+					final String property = change.get("path").asText().substring(1);
 					if (diffFields.contains(property)) {
 						changes.add(change);
 					}
@@ -362,6 +365,47 @@ public final class StagingArea {
 				this.changes = changes;
 			}
 			return this.changes;
+		}
+
+		public RevisionPropertyDiff getRevisionPropertyDiff(String property) {
+			if (propertyChanges == null) {
+				propertyChanges = newHashMapWithExpectedSize(2);
+			}
+			for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
+				String prop = change.get("path").asText().substring(1);
+				if (property.equals(prop)) {
+					final String from = change.get("fromValue").asText();
+					final String to = change.get("value").asText();
+					propertyChanges.put(property, new RevisionPropertyDiff(property, from, to));
+				}
+			}
+			return propertyChanges.get(property);
+		}
+		
+	}
+	
+	public final class RevisionPropertyDiff {
+		
+		private final String property;
+		private final String oldValue;
+		private final String newValue;
+		
+		private RevisionPropertyDiff(String property, String oldValue, String newValue) {
+			this.property = property;
+			this.oldValue = oldValue;
+			this.newValue = newValue;
+		}
+		
+		public String getProperty() {
+			return property;
+		}
+		
+		public String getOldValue() {
+			return oldValue;
+		}
+		
+		public String getNewValue() {
+			return newValue;
 		}
 		
 	}
