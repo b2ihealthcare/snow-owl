@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.MoreObjects;
 import com.google.common.primitives.Longs;
 
 /**
@@ -339,7 +340,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return new StringBuilder(versionId).append(patched ? "*" : "").toString();
+		return MoreObjects.toStringHelper(getClass())
+				.add("codeSystemShortName", codeSystemShortName)
+				.add("versionId", versionId)
+				.toString();
 	}
 	
 }

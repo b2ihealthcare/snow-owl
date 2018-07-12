@@ -144,12 +144,11 @@ public abstract class SnomedDocument extends RevisionDocument {
 	protected SnomedDocument(final String id,
 			final String label,
 			final String iconId,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
 			final long effectiveTime) {
-		super(id, label, iconId, storageKey);
+		super(id, label, iconId);
 		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = moduleId;
 		this.released = released;

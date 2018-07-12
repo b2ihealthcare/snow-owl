@@ -70,15 +70,9 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		protected float score = 0.0f;
 		
 		// XXX only for JSON deserialization
-		protected long storageKey;
 		protected RevisionBranchPoint created;
 		protected List<RevisionBranchPoint> revised = Collections.emptyList();
 
-		public final B storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return getSelf();
-		} 
-		
 		public B id(final String id) {
 			this.id = id;
 			return getSelf();
@@ -121,17 +115,11 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	private final String label;
 	private final String iconId;
 	private float score = 0.0f;
-	private final long storageKey;
 	
-	protected RevisionDocument(final String id, final String label, String iconId, final long storageKey) {
+	protected RevisionDocument(final String id, final String label, String iconId) {
 		super(id);
 		this.label = label;
 		this.iconId = iconId;
-		this.storageKey = storageKey;
-	}
-	
-	public final long getStorageKey() {
-		return storageKey;
 	}
 	
 	@JsonIgnore
@@ -159,7 +147,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add(Fields.STORAGE_KEY, storageKey)
 				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);

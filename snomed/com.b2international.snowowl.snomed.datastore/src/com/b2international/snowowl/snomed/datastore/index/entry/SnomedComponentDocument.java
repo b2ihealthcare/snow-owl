@@ -103,7 +103,6 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 	SnomedComponentDocument(String id, 
 			String label, 
 			String iconId, 
-			long storageKey,
 			String moduleId,
 			boolean released, 
 			boolean active,
@@ -111,7 +110,7 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			String namespace,
 			List<String> memberOf,
 			List<String> activeMemberOf) {
-		super(id, label, iconId, storageKey, moduleId, released, active, effectiveTime);
+		super(id, label, iconId, moduleId, released, active, effectiveTime);
 		this.namespace = namespace;
 		this.memberOf = memberOf;
 		this.activeMemberOf = activeMemberOf;

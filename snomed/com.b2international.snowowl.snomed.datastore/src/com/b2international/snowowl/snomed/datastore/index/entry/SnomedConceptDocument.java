@@ -40,11 +40,11 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -221,7 +221,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	public static Builder builder(final SnomedConceptDocument input) {
 		final String id = input.getId();
 		return builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 //				.score(input.getScore())
@@ -247,7 +246,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	public static Builder builder(SnomedConcept input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.moduleId(input.getModuleId())
@@ -291,7 +289,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private short referencedComponentType;
+		private short referencedComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 		private int mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
 		private boolean structural = false;
@@ -360,7 +358,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				mapTargetComponentType(componentType);
 			}
 			
-			Builder b = structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
+			Builder b = structural(isStructural(refSet.getId(), refSet.getType()))
 					.refSetType(refSet.getType());
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
 				b.referencedComponentType(getValue(refSet.getReferencedComponentType()));
@@ -405,7 +403,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
 					iconId, 
-					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -462,7 +459,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private SnomedConceptDocument(final String id,
 			final String label,
 			final String iconId,
-			final long storageKey,
 			final String moduleId,
 			final boolean released,
 			final boolean active,
@@ -478,7 +474,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
-		super(id, label, iconId, storageKey, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
+		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
@@ -561,6 +557,28 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.add("statedParents", statedParents)
 				.add("statedAncestors", statedAncestors)
 				.add("doi", doi);
+	}
+	
+	/**
+	 * Computes whether a reference set is structural or not.
+	 * @param refSetId
+	 * @param type
+	 * @return
+	 */
+	public static boolean isStructural(final String refSetId, final SnomedRefSetType type) {
+		switch (type) {
+			case LANGUAGE: //$FALL-THROUGH$
+			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
+			case ASSOCIATION: //$FALL-THROUGH$
+			case MODULE_DEPENDENCY: //$FALL-THROUGH$
+				return true;
+			case ATTRIBUTE_VALUE:
+				return 
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetId);
+			default: return false;
+		}
 	}
 
 }

@@ -166,7 +166,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
-				.storageKey(source.getStorageKey())
 				.active(source.isActive())
 				.effectiveTime(source.getEffectiveTime())
 				.id(source.getId())
@@ -181,7 +180,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static final Builder builder(final SnomedReferenceSetMember input) {
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.active(input.isActive())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.id(input.getId())
@@ -493,7 +491,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
-		private short referencedComponentType;
+		private short referencedComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
@@ -858,7 +856,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
 					label,
-					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -1027,7 +1024,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -1040,16 +1036,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		super(id, 
 				label,
 				referencedComponentId, // XXX: iconId is the referenced component identifier
-				storageKey,
 				moduleId, 
 				released, 
 				active, 
 				effectiveTimeLong);
-
-		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
 		this.referencedComponentId = referencedComponentId;
 		this.referenceSetId = referenceSetId;
 		this.referenceSetType = referenceSetType;
+		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
 		this.referencedComponentType = referencedComponentType;
 	}
 

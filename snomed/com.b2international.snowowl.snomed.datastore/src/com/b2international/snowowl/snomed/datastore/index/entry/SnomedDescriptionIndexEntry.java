@@ -101,7 +101,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(final SnomedDescription input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
@@ -157,7 +156,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
 		String id = doc.getId();
 		return builder()
-				.storageKey(doc.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
@@ -395,7 +393,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			}
 			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
 					term,
-					storageKey,
 					moduleId,
 					released, 
 					active, 
@@ -434,7 +431,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
@@ -454,7 +450,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		super(id,
 				label,
 				typeId /* XXX: iconId is the same as typeId*/,
-				storageKey,
 				moduleId,
 				released,
 				active,
