@@ -44,8 +44,8 @@ public final class SnomedModuleDependencyReferenceSetMemberBuilder extends Snome
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
 		component
-			.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, sourceEffectiveTime)
-			.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime);
+			.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, sourceEffectiveTime.getTime())
+			.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime.getTime());
 	}
 
 }
