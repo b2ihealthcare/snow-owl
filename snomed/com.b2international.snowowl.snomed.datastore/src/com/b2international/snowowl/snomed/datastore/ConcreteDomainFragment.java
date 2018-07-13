@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,28 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.google.common.base.Preconditions;
 
 /**
  * Bare minimum representation of a concrete domain.
+ * 
+ * @since
  */
-public class ConcreteDomainFragment implements Serializable {
-	
+public final class ConcreteDomainFragment implements Serializable {
+
 	private static final long serialVersionUID = -160835407410122373L;
 
-	public static final long UNSET_UOM_ID = -1L;
-	
 	private final String value;
 	private final String label;
 	private final byte type;
 	private final long uomId;
-	private final long storageKey;
 	private final long refSetId;
+
+	// For tracking the original member
+	private final String memberId;
 
 	/**
 	 * Creates a new instance.
@@ -43,15 +46,20 @@ public class ConcreteDomainFragment implements Serializable {
 	 * @param label the label of the data type.
 	 * @param type the ordinal of the type.
 	 * @param uomId UOM concept ID.
-	 * @param storageKey the storage key of the concrete domain.
 	 */
-	public ConcreteDomainFragment(final String value, final String label, final byte type, final long uomId, final long storageKey, final long refSetId) {
+	public ConcreteDomainFragment(final String value, 
+			final String label, 
+			final byte type, 
+			final long uomId, 
+			final long refSetId,
+			final String memberId) {
+
 		this.value = Preconditions.checkNotNull(value, "Value argument cannot be null.");
 		this.label = Preconditions.checkNotNull(label, "Label argument cannot be null.");
-		this.storageKey = storageKey;
 		this.uomId = uomId;
 		this.type = type;
 		this.refSetId = refSetId;
+		this.memberId = memberId;
 	}
 
 	/**
@@ -62,7 +70,7 @@ public class ConcreteDomainFragment implements Serializable {
 	public String getLabel() {
 		return label;
 	}
-	
+
 	/**
 	 * Returns with the serialized value of the concrete domain as a {@code byte[]}.
 	 * @return the serialized value.
@@ -80,7 +88,7 @@ public class ConcreteDomainFragment implements Serializable {
 	public byte getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Returns with the {@link DataType data type}.
 	 * @return the data type.
@@ -88,7 +96,7 @@ public class ConcreteDomainFragment implements Serializable {
 	public DataType getDataType() {
 		return DataType.get(type);
 	}
-	
+
 	/**
 	 * Returns with the ID of the UOM concept.
 	 * @return the ID of the UOM concept.
@@ -96,15 +104,7 @@ public class ConcreteDomainFragment implements Serializable {
 	public long getUomId() {
 		return uomId;
 	}
-	
-	/**
-	 * Returns with the unique storage key (CDO ID) of the concrete domain.
-	 * @return the storage key of the concrete domain.
-	 */
-	public long getStorageKey() {
-		return storageKey;
-	}
-	
+
 	/**
 	 * Returns with the identifier concept ID of the conrete domain member's reference set.
 	 * @return the reference set identifier concept ID.
@@ -113,50 +113,51 @@ public class ConcreteDomainFragment implements Serializable {
 		return refSetId;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((label == null) ? 0 : label.hashCode());
-		result = prime * result + (int) (refSetId ^ (refSetId >>> 32));
-		result = prime * result + type;
-		result = prime * result + (int) (uomId ^ (uomId >>> 32));
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+	/**
+	 * @return the originating reference set member's UUID
+	 */
+	public String getMemberId() {
+		return memberId;
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof ConcreteDomainFragment))
-			return false;
-		ConcreteDomainFragment other = (ConcreteDomainFragment) obj;
-		if (label == null) {
-			if (other.label != null)
-				return false;
-		} else if (!label.equals(other.label))
-			return false;
-		if (refSetId != other.refSetId)
-			return false;
-		if (type != other.type)
-			return false;
-		if (uomId != other.uomId)
-			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
+	public int hashCode() {
+		return Objects.hash(label, refSetId, type, uomId, value);
+	}
+
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof ConcreteDomainFragment)) { return false; }
+
+		final ConcreteDomainFragment other = (ConcreteDomainFragment) obj;
+
+		if (!Objects.equals(label, other.label)) { return false; }
+		if (!Objects.equals(value, other.value)) { return false; }
+		if (refSetId != other.refSetId) { return false; }
+		if (type != other.type) { return false; }
+		if (uomId != other.uomId) { return false; }
+
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "ConcreteDomainFragment [value=" + value + ", label=" + label
-				+ ", type=" + type + ", uomId=" + uomId + ", storageKey="
-				+ storageKey + ", refSetId=" + refSetId + "]";
+		final StringBuilder builder = new StringBuilder();
+		builder.append("ConcreteDomainFragment [value=");
+		builder.append(value);
+		builder.append(", label=");
+		builder.append(label);
+		builder.append(", type=");
+		builder.append(type);
+		builder.append(", uomId=");
+		builder.append(uomId);
+		builder.append(", refSetId=");
+		builder.append(refSetId);
+		builder.append(", memberId=");
+		builder.append(memberId);
+		builder.append("]");
+		return builder.toString();
 	}
 }

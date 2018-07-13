@@ -28,14 +28,13 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ft.FeatureToggles;
+import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.index.BaseCDOChangeProcessor;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
@@ -56,7 +55,6 @@ import com.google.common.collect.Sets;
 /**
  * Change processor implementation for SNOMED&nbsp;CT ontology.
  * @see BaseCDOChangeProcessor
- * @see ICDOCommitChangeSet
  */
 public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
@@ -162,11 +160,9 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
 		LOG.trace("Retrieving taxonomic information from store...");
 		
-		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String reindexFeature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
-		final String importFeature = SnomedFeatures.getImportFeatureToggle(index.branch());
-		final boolean importRunning = features.exists(importFeature) ? features.check(importFeature) : false;
-		final boolean reindexRunning = features.exists(reindexFeature) ? features.check(reindexFeature) : false;
+		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
+		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, index.branch()));
+		final boolean reindexRunning = featureToggles.isEnabled(Features.getReindexFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID));
 		final boolean checkCycles = !importRunning && !reindexRunning;
 		
 		

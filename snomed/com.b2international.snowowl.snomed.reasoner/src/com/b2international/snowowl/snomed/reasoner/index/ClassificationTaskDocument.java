@@ -16,14 +16,15 @@
 package com.b2international.snowowl.snomed.reasoner.index;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyEnum;
 import static com.b2international.index.query.Expressions.matchRange;
 
-import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.index.Doc;
+import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -33,12 +34,35 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="classificationTask")
+@Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
+@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.headTimestamp = params.headTimestamp")
+@Script(name=ClassificationTaskDocument.Scripts.COMPLETED, script="ctx._source.status = 'COMPLETED'; "
+		+ "ctx._source.completionDate = params.completionDate; "
+		+ "ctx._source.hasInferredChanges = params.hasInferredChanges; "
+		+ "ctx._source.hasRedundantStatedChanges = params.hasRedundantStatedChanges; "
+		+ "ctx._source.hasEquivalentConcepts = params.hasEquivalentConcepts")
+@Script(name=ClassificationTaskDocument.Scripts.FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate")
+@Script(name=ClassificationTaskDocument.Scripts.DELETED, script="ctx._source.deleted = true")
+@Script(name=ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, script="ctx._source.status = 'SAVING_IN_PROGRESS'")
+@Script(name=ClassificationTaskDocument.Scripts.SAVED, script="ctx._source.status = 'SAVED'; "
+		+ "ctx._source.saveDate = params.saveDate")
+@Script(name=ClassificationTaskDocument.Scripts.SAVE_FAILED, script="ctx._source.status = 'SAVE_FAILED'")
 public final class ClassificationTaskDocument {
+
+	public static class Scripts {
+		public static final String RUNNING = "running";
+		public static final String COMPLETED = "completed";
+		public static final String FAILED = "failed";
+		public static final String DELETED = "deleted";
+		public static final String SAVING_IN_PROGRESS = "saving_in_progress";
+		public static final String SAVE_FAILED = "save_failed";
+		public static final String SAVED = "saved";
+	}
 
 	public static class Fields {
 		public static final String ID = "id";
+		public static final String DELETED = "deleted";
 		public static final String USER_ID = "userId";
 		public static final String BRANCH = "branch";
 		public static final String TIMESTAMP = "timestamp";
@@ -51,8 +75,12 @@ public final class ClassificationTaskDocument {
 			return exactMatch(Fields.ID, id);
 		}
 
-		public static final Expression ids(final Collection<String> ids) {
+		public static Expression ids(final Iterable<String> ids) {
 			return matchAny(Fields.ID, ids);
+		}
+		
+		public static Expression deleted(final boolean deleted) {
+			return match(Fields.DELETED, deleted);
 		}
 
 		public static Expression userId(final String userId) {
@@ -87,6 +115,7 @@ public final class ClassificationTaskDocument {
 	public static Builder builder(final ClassificationTaskDocument source) {
 		return new Builder()
 				.id(source.id)
+				.deleted(source.deleted)
 				.userId(source.userId)
 				.reasonerId(source.reasonerId)
 				.branch(source.branch)
@@ -104,6 +133,7 @@ public final class ClassificationTaskDocument {
 	public static class Builder {
 
 		private String id;
+		private boolean deleted;
 		private String userId;
 		private String reasonerId;
 		private String branch;
@@ -123,6 +153,11 @@ public final class ClassificationTaskDocument {
 
 		public Builder id(final String id) {
 			this.id = id;
+			return this;
+		}
+		
+		public Builder deleted(final boolean deleted) {
+			this.deleted = deleted;
 			return this;
 		}
 
@@ -183,6 +218,7 @@ public final class ClassificationTaskDocument {
 
 		public ClassificationTaskDocument build() {
 			return new ClassificationTaskDocument(id, 
+					deleted,
 					userId, 
 					reasonerId, 
 					branch, 
@@ -198,6 +234,7 @@ public final class ClassificationTaskDocument {
 	}
 
 	private final String id;
+	private final boolean deleted;
 	private final String userId;
 	private final String reasonerId;
 	private final String branch;
@@ -211,6 +248,7 @@ public final class ClassificationTaskDocument {
 	private final Boolean hasEquivalentConcepts;
 
 	private ClassificationTaskDocument(final String id, 
+			final boolean deleted,
 			final String userId, 
 			final String reasonerId, 
 			final String branch,
@@ -224,6 +262,7 @@ public final class ClassificationTaskDocument {
 			final Boolean hasEquivalentConcepts) {
 
 		this.id = id;
+		this.deleted = deleted;
 		this.userId = userId;
 		this.reasonerId = reasonerId;
 		this.branch = branch;
@@ -239,6 +278,10 @@ public final class ClassificationTaskDocument {
 
 	public String getId() {
 		return id;
+	}
+	
+	public boolean isDeleted() {
+		return deleted;
 	}
 
 	public String getUserId() {
@@ -290,6 +333,8 @@ public final class ClassificationTaskDocument {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("ClassificationRunDocument [id=");
 		builder.append(id);
+		builder.append(", deleted=");
+		builder.append(deleted);
 		builder.append(", userId=");
 		builder.append(userId);
 		builder.append(", reasonerId=");

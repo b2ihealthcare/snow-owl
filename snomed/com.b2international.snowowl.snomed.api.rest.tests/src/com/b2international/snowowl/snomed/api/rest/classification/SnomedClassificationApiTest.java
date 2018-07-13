@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,26 +38,21 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.domain.classification.ChangeNature;
-import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
-import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConcept;
-import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChange;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConcept;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.EquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChange;
-import com.b2international.snowowl.snomed.api.impl.domain.classification.RelationshipChangeList;
+import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -68,21 +63,8 @@ import com.google.common.collect.Multimaps;
  */
 public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 
-	private static final ObjectMapper MAPPER = getObjectMapper();
-	private static final TypeReference<CollectionResource<IEquivalentConceptSet>> EQUIVALENT_CONCEPTS_REFERENCE = new TypeReference<CollectionResource<IEquivalentConceptSet>>() { };
-
-	private static ObjectMapper getObjectMapper() {
-		ObjectMapper mapper = new ObjectMapper();
-		SimpleModule module = new SimpleModule("classification", Version.unknownVersion());
-		module.addAbstractTypeMapping(IRelationshipChange.class, RelationshipChange.class);
-		module.addAbstractTypeMapping(IRelationshipChangeList.class, RelationshipChangeList.class);
-		mapper.registerModule(module);
-		module.addAbstractTypeMapping(IEquivalentConceptSet.class, EquivalentConceptSet.class);
-		module.addAbstractTypeMapping(IEquivalentConcept.class, EquivalentConcept.class);
-		mapper.registerModule(module);
-		return mapper;
-	}
-
+	private static final ObjectMapper MAPPER = JsonSupport.getDefaultObjectMapper();
+	
 	private static int getPersistedInferredRelationshipCount(IBranchPath conceptPath, String conceptId) {
 		List<Map<String, Object>> relationships = getComponent(conceptPath, SnomedComponentType.CONCEPT, conceptId, 
 				"relationships(\"active\":true,\"characteristicType\":\"" + CharacteristicType.INFERRED_RELATIONSHIP.getConceptId() + "\")")
@@ -107,40 +89,40 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
-		Collection<IRelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		Collection<RelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), IRelationshipChangeList.class)
+				.asInputStream(), RelationshipChanges.class)
 				.getItems();
 
-		Multimap<String, IRelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getSourceId());
-		Collection<IRelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
-		Collection<IRelationshipChange> childRelationshipChanges = changesBySource.get(childConceptId);
+		Multimap<String, RelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getRelationship().getSourceId());
+		Collection<RelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
+		Collection<RelationshipChange> childRelationshipChanges = changesBySource.get(childConceptId);
 
 		// parent concept should have two inferred relationships, one ISA and one MORPHOLOGY, both inferred
 		assertEquals(2, parentRelationshipChanges.size());
 		// child concept should have two inferred relationships, one ISA and one MORPHOLOGY from parent, both inferred
 		assertEquals(2, childRelationshipChanges.size());
 
-		for (IRelationshipChange change : parentRelationshipChanges) {
+		for (RelationshipChange change : parentRelationshipChanges) {
 			assertEquals(ChangeNature.INFERRED, change.getChangeNature());
-			switch (change.getTypeId()) {
+			switch (change.getRelationship().getTypeId()) {
 			case Concepts.IS_A:
-				assertEquals(Concepts.ROOT_CONCEPT, change.getDestinationId());
+				assertEquals(Concepts.ROOT_CONCEPT, change.getRelationship().getDestinationId());
 				break;
 			case Concepts.MORPHOLOGY:
-				assertEquals(targetConceptId, change.getDestinationId());
+				assertEquals(targetConceptId, change.getRelationship().getDestinationId());
 				break;
 			}
 		}
 
-		for (IRelationshipChange change : childRelationshipChanges) {
+		for (RelationshipChange change : childRelationshipChanges) {
 			assertEquals(ChangeNature.INFERRED, change.getChangeNature());
-			switch (change.getTypeId()) {
+			switch (change.getRelationship().getTypeId()) {
 			case Concepts.IS_A:
-				assertEquals(parentConceptId, change.getDestinationId());
+				assertEquals(parentConceptId, change.getRelationship().getDestinationId());
 				break;
 			case Concepts.MORPHOLOGY:
-				assertEquals(targetConceptId, change.getDestinationId());
+				assertEquals(targetConceptId, change.getRelationship().getDestinationId());
 				break;
 			}
 		}
@@ -171,16 +153,16 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
 
-		IRelationshipChangeList changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		RelationshipChanges changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), IRelationshipChangeList.class);
+				.asInputStream(), RelationshipChanges.class);
 
 		assertEquals(1, changes.getTotal());
-		IRelationshipChange relationshipChange = Iterables.getOnlyElement(changes.getItems());
+		RelationshipChange relationshipChange = Iterables.getOnlyElement(changes.getItems());
 		assertEquals(ChangeNature.REDUNDANT, relationshipChange.getChangeNature());
-		assertEquals(childConceptId, relationshipChange.getSourceId());
-		assertEquals(Concepts.IS_A, relationshipChange.getTypeId());
-		assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.getDestinationId());
+		assertEquals(childConceptId, relationshipChange.getRelationship().getSourceId());
+		assertEquals(Concepts.IS_A, relationshipChange.getRelationship().getTypeId());
+		assertEquals(Concepts.ROOT_CONCEPT, relationshipChange.getRelationship().getDestinationId());
 
 		beginClassificationSave(branchPath, classificationId);
 		waitForClassificationSaveJob(branchPath, classificationId)
@@ -211,23 +193,24 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		 * Expecting lots of changes; all concepts receive the "Part of" relationship because it was added to the root concept, however, the original inferred relationship 
 		 * with group 5 should be redundant.
 		 */
-		IRelationshipChangeList changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		RelationshipChanges changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), IRelationshipChangeList.class);
+				.asInputStream(), RelationshipChanges.class);
 
 		boolean redundantFound = false;
 
-		for (IRelationshipChange relationshipChange : changes.getItems()) {
-			assertEquals(Concepts.PART_OF, relationshipChange.getTypeId());
-			assertEquals(Concepts.NAMESPACE_ROOT, relationshipChange.getDestinationId());
+		for (RelationshipChange relationshipChange : changes.getItems()) {
+			SnomedRelationship relationship = relationshipChange.getRelationship();
+			assertEquals(Concepts.PART_OF, relationship.getTypeId());
+			assertEquals(Concepts.NAMESPACE_ROOT, relationship.getDestinationId());
 
 			if (ChangeNature.REDUNDANT.equals(relationshipChange.getChangeNature())) {
 				assertFalse("Two redundant relationships found in response.", redundantFound);
-				assertEquals(5, relationshipChange.getGroup());
-				assertEquals(conceptId, relationshipChange.getSourceId());
+				assertEquals(5, (int) relationship.getGroup());
+				assertEquals(conceptId, relationship.getSourceId());
 				redundantFound = true;
 			} else {
-				assertEquals(0, relationshipChange.getGroup());
+				assertEquals(0, (int) relationship.getGroup());
 			}
 		}
 
@@ -251,11 +234,11 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		 * Expecting that childConceptId will get two inferred IS A-s pointing to parentConceptId and equivalentConceptId, respectively, 
 		 * while parentConceptId and equivalentConceptId each will get a single inferred IS A pointing to the root concept.
 		 */
-		IRelationshipChangeList changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
+		RelationshipChanges changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), IRelationshipChangeList.class);
+				.asInputStream(), RelationshipChanges.class);
 
-		FluentIterable<IRelationshipChange> changesIterable = FluentIterable.from(changes.getItems());
+		FluentIterable<RelationshipChange> changesIterable = FluentIterable.from(changes.getItems());
 		
 		assertEquals(4, changes.getTotal());
 		assertTrue("All changes should be inferred.", changesIterable.allMatch(relationshipChange -> ChangeNature.INFERRED.equals(relationshipChange.getChangeNature())));
@@ -265,32 +248,35 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		assertInferredIsAExists(changesIterable, parentConceptId, Concepts.ROOT_CONCEPT);
 		assertInferredIsAExists(changesIterable, equivalentConceptId, Concepts.ROOT_CONCEPT);
 		
-		CollectionResource<IEquivalentConceptSet> equivalentConceptSets = MAPPER.readValue(getEquivalentConceptSets(branchPath, classificationId).statusCode(200)
+		EquivalentConceptSets equivalentConceptSets = MAPPER.readValue(getEquivalentConceptSets(branchPath, classificationId).statusCode(200)
 				.extract()
-				.asInputStream(), EQUIVALENT_CONCEPTS_REFERENCE);
+				.asInputStream(), EquivalentConceptSets.class);
 		
 		assertEquals(1, equivalentConceptSets.getItems().size());
 		
-		List<IEquivalentConcept> equivalentConceptsInFirstSet = equivalentConceptSets.first().get().getEquivalentConcepts();
-		FluentIterable<IEquivalentConcept> equivalentConceptsIterable = FluentIterable.from(equivalentConceptsInFirstSet);
+		SnomedConcepts equivalentConceptsInFirstSet = equivalentConceptSets.first().get().getEquivalentConcepts();
+		FluentIterable<SnomedConcept> equivalentConceptsIterable = FluentIterable.from(equivalentConceptsInFirstSet);
 		
-		assertEquals(2, equivalentConceptsInFirstSet.size());
+		assertEquals(2, equivalentConceptsInFirstSet.getTotal());
 		assertEquivalentConceptPresent(equivalentConceptsIterable, parentConceptId);
 		assertEquivalentConceptPresent(equivalentConceptsIterable, equivalentConceptId);
 	}
 
-	private static void assertInferredIsAExists(FluentIterable<IRelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
+	private static void assertInferredIsAExists(FluentIterable<RelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
 		assertTrue("Inferred IS A between " + childConceptId + " and " + parentConceptId + " not found.", 
-				changesIterable.anyMatch(relationshipChange -> Concepts.IS_A.equals(relationshipChange.getTypeId())
-				&& childConceptId.equals(relationshipChange.getSourceId())
-				&& parentConceptId.equals(relationshipChange.getDestinationId())
-				&& relationshipChange.getGroup() == 0
-				&& relationshipChange.getUnionGroup() == 0
-				&& RelationshipModifier.EXISTENTIAL.equals(relationshipChange.getModifier())
-				&& Concepts.INFERRED_RELATIONSHIP.equals(relationshipChange.getCharacteristicTypeId())));
+				changesIterable.anyMatch(relationshipChange -> {
+					final SnomedRelationship relationship = relationshipChange.getRelationship();
+					return Concepts.IS_A.equals(relationship.getTypeId())
+							&& childConceptId.equals(relationship.getSourceId())
+							&& parentConceptId.equals(relationship.getDestinationId())
+							&& relationship.getGroup() == 0
+							&& relationship.getUnionGroup() == 0
+							&& RelationshipModifier.EXISTENTIAL.equals(relationship.getModifier())
+							&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType());
+				}));
 	}
 	
-	private static void assertEquivalentConceptPresent(FluentIterable<IEquivalentConcept> equivalentConceptsIterable, String conceptId) {
+	private static void assertEquivalentConceptPresent(FluentIterable<SnomedConcept> equivalentConceptsIterable, String conceptId) {
 		assertTrue("Equivalent concept with ID " + conceptId + " not found in set.", 
 				equivalentConceptsIterable.anyMatch(equivalentConcept -> conceptId.equals(equivalentConcept.getId())));
 	}

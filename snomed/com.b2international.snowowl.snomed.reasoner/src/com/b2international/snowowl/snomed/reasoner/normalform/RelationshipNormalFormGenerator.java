@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntValueMap;
 import com.b2international.collections.longs.LongIterator;
@@ -43,10 +42,9 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.collect.LongSets.InverseLongFunction;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
 import com.google.common.base.Function;
@@ -72,6 +70,8 @@ import com.google.common.collect.Sets;
  * @author law223 - initial implementation in Snorocket's SNOMED API
  */
 public final class RelationshipNormalFormGenerator extends NormalFormGenerator<StatementFragment> {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(RelationshipNormalFormGenerator.class);
 
 	/**
 	 * Represents any item in an ontology which can be compared for
@@ -406,10 +406,9 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		public long getStatementId() {
 			return fragment.getStatementId();
 		}
-
-
-		public long getStorageKey() {
-			return fragment.getStorageKey();
+		
+		public boolean hasStatedPair() {
+			return fragment.hasStatedPair();
 		}
 
 		@Override
@@ -440,7 +439,8 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 			} else if (isDestinationNegated() && !other.isDestinationNegated()) {
 
 				final LongSet otherAttributeClosure = getConceptAndAllSuperTypes(other.getTypeId());
-				final LongSet superTypes = reasonerTaxonomy.getAncestors(getDestinationId());
+				final LongSet superTypes = taxonomy.getInferredAncestors()
+						.getDestinations(getDestinationId(), false);
 
 				/*
 				 * Note that "other" itself may be exhaustive in this case --
@@ -483,8 +483,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		private boolean hasCommonExhaustiveSuperType(final RelationshipFragment other) {
 
-			final LongSet valueAncestors = reasonerTaxonomy.getAncestors(getDestinationId());
-			final LongSet otherValueAncestors = reasonerTaxonomy.getAncestors(other.getDestinationId());
+			final LongSet valueAncestors = taxonomy.getInferredAncestors()
+					.getDestinations(getDestinationId(), false);
+			final LongSet otherValueAncestors = taxonomy.getInferredAncestors()
+					.getDestinations(other.getDestinationId(), false);
 			final LongSet commonAncestors = LongSets.intersection(valueAncestors, otherValueAncestors);
 
 			for (final LongIterator itr = commonAncestors.iterator(); itr.hasNext(); /* empty */) {
@@ -498,7 +500,7 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 
 		private boolean isExhaustive(final long conceptId) {
-			return reasonerTaxonomyBuilder.isExhaustive(conceptId);
+			return taxonomy.getExhaustiveConcepts().contains(conceptId);
 		}
 
 		/**
@@ -512,10 +514,10 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		 *         supertypes
 		 */
 		private LongSet getConceptAndAllSuperTypes(final long conceptId) {
-			final LongSet ancestors = reasonerTaxonomy.getAncestors(conceptId);
-			final LongSet conceptAndAncestors = PrimitiveSets.newLongOpenHashSet(ancestors);
-			conceptAndAncestors.add(conceptId);
-			return conceptAndAncestors;
+			final LongSet ancestors = taxonomy.getInferredAncestors()
+					.getDestinations(conceptId, false);
+			ancestors.add(conceptId);
+			return ancestors;
 		}
 
 		@Override
@@ -661,8 +663,6 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		}
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RelationshipNormalFormGenerator.class);
-
 	private static final long IS_A_LONG = Long.valueOf(Concepts.IS_A);
 
 	/**
@@ -673,21 +673,16 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	private static final int NUMBER_NOT_PRESERVED = -1;
 
 	private static final int ZERO_GROUP = 0;
-
+	
 	private final LongKeyMap<Collection<StatementFragment>> generatedNonIsACache = PrimitiveMaps.newLongKeyOpenHashMap();
 
-	/**
-	 * Creates a new distribution normal form generator instance.
-	 *
-	 * @param reasonerTaxonomy the reasoner to extract results from (may not be {@code null})
-	 */
-	public RelationshipNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
-		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
+	public RelationshipNormalFormGenerator(final ReasonerTaxonomy taxonomy) {
+		super(taxonomy);
 	}
 
 	@Override
 	public Collection<StatementFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
+		return taxonomy.getExistingInferredRelationships().get(conceptId);
 	}
 
 	/**
@@ -720,10 +715,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 	 */
 	@Override
 	public Collection<StatementFragment> getGeneratedComponents(final long conceptId) {
-		final LongSet directSuperTypes = reasonerTaxonomy.getParents(conceptId);
-
+		final LongSet parents = taxonomy.getInferredAncestors()
+			.getDestinations(conceptId, true);
+		
 		// Step 1: create IS-A relationships
-		final Iterable<StatementFragment> inferredIsAFragments = getInferredIsAFragments(conceptId, directSuperTypes);
+		final Iterable<StatementFragment> inferredIsAFragments = getInferredIsAFragments(conceptId, parents);
 
 		// Step 2: get all non IS-A relationships from ancestors and remove redundancy, then cache the results for later use
 		final LongKeyMap<Collection<StatementFragment>> otherNonIsAFragments = PrimitiveMaps.newLongKeyOpenHashMap();
@@ -732,13 +728,15 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		 * We can rely on the fact that the tree is processed in breadth-first order, so the parents' non-IS A relationships
 		 * will already be present in the cache
 		 */
-		for (final LongIterator itr = directSuperTypes.iterator(); itr.hasNext(); /* empty */) {
+		for (final LongIterator itr = parents.iterator(); itr.hasNext(); /* empty */) {
 			final long directSuperTypeId = itr.next();
 			otherNonIsAFragments.put(directSuperTypeId, getCachedNonIsAFragments(directSuperTypeId));
 		}
 
-		final Collection<StatementFragment> ownStatedNonIsaFragments = reasonerTaxonomyBuilder.getStatedNonIsAFragments(conceptId);
-		final Collection<StatementFragment> ownInferredFragments = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaFragments = taxonomy.getStatedNonIsARelationships()
+				.get(conceptId);
+		final Collection<StatementFragment> ownInferredFragments = taxonomy.getExistingInferredRelationships()
+				.get(conceptId);
 		final Collection<StatementFragment> ownInferredNonIsaFragments = Collections2.filter(ownInferredFragments, new Predicate<StatementFragment>() {
 			@Override
 			public boolean apply(final StatementFragment input) {
@@ -756,6 +754,11 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 
 		// Step 3: concatenate and return
 		return ImmutableList.copyOf(Iterables.concat(inferredIsAFragments, inferredNonIsAFragments));
+	}
+	
+	@Override
+	protected void invalidate(final LongSet keysToInvalidate) {
+		generatedNonIsACache.keySet().removeAll(keysToInvalidate);
 	}
 
 	private Collection<StatementFragment> getCachedNonIsAFragments(final long directSuperTypeId) {
@@ -991,16 +994,15 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 						unionGroupNumber,
 						input.isUniversal(),
 						input.getStatementId(),
-						input.getStorageKey());
+						input.hasStatedPair());
 			}
 		});
 	}
-
-	public final int collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<StatementFragment> processor) {
+	
+	public void collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<StatementFragment> processor) {
 		LOGGER.info(">>> Relationship normal form generation");
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int results = collectNormalFormChanges(monitor, processor, StatementFragmentOrdering.INSTANCE);
-		LOGGER.info(MessageFormat.format("<<< Relationship normal form generation [{0}]", stopwatch.toString()));
-		return results;
+		collectNormalFormChanges(monitor, processor, StatementFragmentOrdering.INSTANCE);
+		LOGGER.info("<<< Relationship normal form generation [{}]", stopwatch.toString());
 	}
 }

@@ -25,6 +25,9 @@ public class ClassificationRestInput {
 	@NotEmpty
 	private String reasonerId;
 
+	@NotEmpty
+	private String branch;
+
 	public String getReasonerId() {
 		return reasonerId;
 	}
@@ -33,11 +36,21 @@ public class ClassificationRestInput {
 		this.reasonerId = reasonerId;
 	}
 
+	public String getBranch() {
+		return branch;
+	}
+
+	public void setBranch(final String branch) {
+		this.branch = branch;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("ClassificationRestInput [reasonerId=");
 		builder.append(reasonerId);
+		builder.append(", branch=");
+		builder.append(branch);
 		builder.append("]");
 		return builder.toString();
 	}

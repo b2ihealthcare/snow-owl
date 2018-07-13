@@ -15,11 +15,17 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
+ * Provides a default method for wrapping {@link BranchContext}-based requests
+ * into {@link AsyncRequest}s. The provided {@code BranchContext} allows
+ * searching for document revisions via a {@link RevisionSearcher} service
+ * reference.
+ * 
  * @since 5.7
  * @param <R> - the return type
  */

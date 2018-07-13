@@ -45,7 +45,6 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -61,11 +60,9 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 /**
  * This class implements the export process of the DSV export for map type reference sets. 
  * Used by the SnomedSimpleTypeRefSetExportServerIndication class.
@@ -100,10 +97,21 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		final IEventBus bus = applicationContext.getService(IEventBus.class);
 		
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
+				.setLocales(exportSetting.getLocales())
 				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
-				.setLocales(languageSetting.getLanguagePreference())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync();
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(bus)
+				.getSync();
 		
+		SnomedDescription ptOfRefset = SnomedRequests.prepareGetConcept(exportSetting.getRefSetId())
+				.setLocales(exportSetting.getLocales())
+				.setExpand("pt()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.getPt();
+		
+		String fileName = ptOfRefset == null ? exportSetting.getRefSetId() : ptOfRefset.getTerm();
 		
 		final int activeMemberCount = refSet.getMembers().getTotal();
 		if (activeMemberCount < memberNumberToSignal) {
@@ -111,7 +119,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		} else {
 			monitor.begin(activeMemberCount/memberNumberToSignal);
 		}
-		final File file = new File(tmpDir, refSet.getId() + ".csv");
+		final File file = new File(tmpDir, fileName + ".csv");
 		DataOutputStream os = null;
 		try {
 			file.createNewFile();
@@ -150,23 +158,16 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					.setLocales(languageSetting.getLanguagePreference())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 					.execute(bus)
-							.then(new Function<SnomedConcepts, Collection<SnomedConcept>>() {
-								@Override
-								public Collection<SnomedConcept> apply(SnomedConcepts input) {
-									final Collection<SnomedConcept> additionalConcepts = newHashSet();
-									additionalConcepts.addAll(input.getItems());
-									for (SnomedConcept concept : input) {
-										additionalConcepts.addAll(concept.getDescendants().getItems());
-									}
-									return additionalConcepts;
-								}
-							})
-							.then(new Function<Collection<SnomedConcept>, Collection<SnomedConceptDocument>>() {
-								@Override
-								public Collection<SnomedConceptDocument> apply(Collection<SnomedConcept> input) {
-									return SnomedConceptDocument.fromConcepts(input);
-								}
-							}).getSync();
+					.then(input -> {
+						final Collection<SnomedConcept> additionalConcepts = newHashSet();
+						additionalConcepts.addAll(input.getItems());
+						for (SnomedConcept concept : input) {
+							additionalConcepts.addAll(concept.getDescendants().getItems());
+						}
+						return additionalConcepts;
+					})
+					.then(input -> SnomedConceptDocument.fromConcepts(input))
+					.getSync();
 				
 			for (SnomedConceptDocument modelComponentIndexEntry : modelComponents) {
 				labelMap.put(modelComponentIndexEntry.getId(), modelComponentIndexEntry.getLabel());

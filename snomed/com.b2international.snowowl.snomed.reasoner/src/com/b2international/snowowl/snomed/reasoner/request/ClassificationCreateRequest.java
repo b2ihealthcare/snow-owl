@@ -21,16 +21,15 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.Index;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationRepository;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 
 /**
  * @since 7.0
@@ -49,11 +48,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	@NotNull
 	private List<SnomedConcept> additionalConcepts;
 
-	@NotEmpty
-	private String parentLockContextDescription;
-
-	ClassificationCreateRequest() {
-	}
+	ClassificationCreateRequest() {}
 
 	void setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
@@ -71,40 +66,31 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		this.additionalConcepts = additionalConcepts;
 	}
 
-	void setParentLockContextDescription(final String parentLockContextDescription) {
-		this.parentLockContextDescription = parentLockContextDescription;
-	}
-
 	@Override
 	public String execute(final BranchContext context) {
+		final String repositoryId = context.id();
 		final Branch branch = context.branch();
-		final Index rawIndex = context.service(Index.class);
-		final ClassificationRepository repository = new ClassificationRepository(rawIndex);
+		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		final ClassificationTaskDocument classificationRun = ClassificationTaskDocument.builder()
-				.id(classificationId)
-				.reasonerId(reasonerId)
-				.userId(userId)
-				.branch(branch.path())
-				.timestamp(branch.headTimestamp())
-				.creationDate(Dates.todayGmt())
-				.status(ClassificationStatus.SCHEDULED)
-				.build();
+		tracker.classificationScheduled(classificationId, reasonerId, userId, branch.path());
 
-		repository.save(classificationId, classificationRun);
+		final AsyncRequest<Boolean> runRequest = new ClassificationJobRequestBuilder()
+				.setReasonerId(reasonerId)
+				.addAllConcepts(additionalConcepts)
+				.build(repositoryId, branch.path());
 
-		final ClassificationRunRequest jobRequest = new ClassificationRunRequest();
-		jobRequest.setBranch(branch.path());
-		jobRequest.setReasonerId(reasonerId);
-		jobRequest.setAdditionalConcepts(additionalConcepts);
-		jobRequest.setParentLockContextDescription(parentLockContextDescription);
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
+		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
+				config.getMaxReasonerCount(), 
+				repositoryId, 
+				branch.path());
 
-		// TODO: scheduling rule to limit concurrent classifications
 		return JobRequests.prepareSchedule()
 				.setId(classificationId)
 				.setUser(userId)
-				.setRequest(jobRequest)
+				.setRequest(runRequest)
 				.setDescription(String.format("Classifying the ontology on %s", branch))
+				.setSchedulingRule(rule)
 				.build()
 				.execute(context);
 	}

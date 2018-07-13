@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 
 /**
- * 
  * @since 6.4
  */
 @RunWith(Suite.class)
@@ -38,8 +37,7 @@ public class AllGenericValidationTests {
 	@BeforeClass
 	public static void init() {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
-		String resourcesDir = PlatformUtil
-				.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
+		String resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
 		ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(Paths.get(resourcesDir)));
 	}
 

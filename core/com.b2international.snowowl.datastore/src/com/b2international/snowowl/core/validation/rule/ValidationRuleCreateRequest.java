@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.core.validation.rule;
 
-import java.io.IOException;
-
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 
 /**
@@ -43,6 +40,9 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	
 	@NotNull 
 	private Severity severity;
+	
+	@NotNull
+	private CheckType checkType;
 	
 	@NotNull
 	private String type;
@@ -68,6 +68,10 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 		this.severity = severity;
 	}
 	
+	void setCheckType(CheckType checkType) {
+		this.checkType = checkType;
+	}
+	
 	void setType(String type) {
 		this.type = type;
 	}
@@ -78,7 +82,7 @@ final class ValidationRuleCreateRequest implements Request<ServiceProvider, Stri
 	
 	@Override
 	public String execute(ServiceProvider context) {
-		context.service(ValidationRepository.class).save(id, new ValidationRule(id, toolingId, messageTemplate, severity, type, implementation));
+		context.service(ValidationRepository.class).save(id, new ValidationRule(id, toolingId, messageTemplate, severity, checkType,  type, implementation));
 		return id;
 	}
 

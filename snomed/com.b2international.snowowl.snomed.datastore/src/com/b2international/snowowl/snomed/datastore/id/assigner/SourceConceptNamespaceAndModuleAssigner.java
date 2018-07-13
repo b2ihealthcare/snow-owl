@@ -15,22 +15,18 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.assigner;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
+import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.longs.LongKeyLongMap;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * Simple assigner that allocates the namespaces and modules for relationships
@@ -39,59 +35,65 @@ import com.google.common.collect.Multiset;
  * @since 5.11.5
  */
 public final class SourceConceptNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
-
-	private Set<String> reservedIds = newHashSet();
-	private Map<String, Iterator<String>> namespaceToRelationshipIdMap = newHashMap();
-	private Map<String, Concept> conceptIdToRelationshipModuleMap = newHashMap();
-	private Map<String, Concept> conceptIdToConcreteDomainModuleMap = newHashMap();
+	private final LongKeyLongMap relationshipModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
+	private final LongKeyLongMap concreteDomainModuleMap = PrimitiveMaps.newLongKeyLongOpenHashMap();
 
 	@Override
-	public String getRelationshipId(String sourceConceptId) {
-		String sourceConceptNamespace = SnomedIdentifiers.create(sourceConceptId).getNamespace();
-		return namespaceToRelationshipIdMap.get(sourceConceptNamespace).next();
+	public String getRelationshipNamespace(final String sourceConceptId) {
+		return SnomedIdentifiers.getNamespace(sourceConceptId);
 	}
 
 	@Override
-	public Concept getRelationshipModule(String sourceConceptId) {
-		return conceptIdToRelationshipModuleMap.get(sourceConceptId);
+	public String getRelationshipModuleId(final String sourceConceptId) {
+		final long sourceConceptIdAsLong = Long.parseLong(sourceConceptId);
+		checkArgument(relationshipModuleMap.containsKey(sourceConceptIdAsLong), "The relationship module ID for '%s' was not collected.", sourceConceptId);
+		final long moduleId = relationshipModuleMap.get(sourceConceptIdAsLong); 
+		return Long.toString(moduleId);
 	}
 
 	@Override
-	public Concept getConcreteDomainModule(String sourceConceptId) {
-		return conceptIdToConcreteDomainModuleMap.get(sourceConceptId);
+	public String getConcreteDomainModuleId(final String referencedConceptId) {
+		final long referencedConceptIdAsLong = Long.parseLong(referencedConceptId);
+		checkArgument(concreteDomainModuleMap.containsKey(referencedConceptIdAsLong), "The concrete domain member module ID for '%s' was not collected.", referencedConceptId);
+		final long moduleId = concreteDomainModuleMap.get(referencedConceptIdAsLong);
+		return Long.toString(moduleId);
 	}
 
 	@Override
-	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
-		Multiset<String> reservedIdsByNamespace = HashMultiset.create();
-		for (Multiset.Entry<String> conceptIdWithCount : conceptIds.entrySet()) {
-			String namespace = SnomedIdentifiers.getNamespace(conceptIdWithCount.getElement());
-			reservedIdsByNamespace.add(namespace, conceptIdWithCount.getCount());
-		}
+	public void collectRelationshipNamespacesAndModules(final Set<String> conceptIds, final BranchContext context) {
+		relationshipModuleMap.clear();
 
-		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
-		for (Multiset.Entry<String> namespaceWithCount : reservedIdsByNamespace.entrySet()) {
-			Collection<String> reservedIds = identifierService.reserve(namespaceWithCount.getElement(), ComponentCategory.RELATIONSHIP, namespaceWithCount.getCount());
-			this.reservedIds.addAll(reservedIds);
-			namespaceToRelationshipIdMap.put(namespaceWithCount.getElement(), reservedIds.iterator());
-		}
-
-		for (String conceptId : conceptIds.elementSet()) {
-			Concept concept = editingContext.lookup(conceptId, Concept.class);
-			conceptIdToRelationshipModuleMap.put(conceptId, concept.getModule());
-		}
+		collectModules(conceptIds, context, c -> {
+			final long conceptId = Long.parseLong(c.getId());
+			final long moduleId = Long.parseLong(c.getModuleId());
+			relationshipModuleMap.put(conceptId, moduleId);
+		});
 	}
 
 	@Override
-	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-		for (String conceptId : conceptIds) {
-			Concept concept = editingContext.lookup(conceptId, Concept.class);
-			conceptIdToConcreteDomainModuleMap.put(conceptId, concept.getModule());
-		}
+	public void collectConcreteDomainModules(final Set<String> conceptIds, final BranchContext context) {
+		concreteDomainModuleMap.clear();
+
+		collectModules(conceptIds, context, c -> {
+			final long conceptId = Long.parseLong(c.getId());
+			final long moduleId = Long.parseLong(c.getModuleId());
+			concreteDomainModuleMap.put(conceptId, moduleId);
+		});		
+	}
+
+	private void collectModules(final Set<String> conceptIds, final BranchContext context, final Consumer<SnomedConcept> consumer) {
+		SnomedRequests.prepareSearchConcept()
+			.setLimit(conceptIds.size())
+			.filterByIds(conceptIds)
+			.setFields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID)
+			.build()
+			.execute(context)
+			.forEach(consumer);
 	}
 	
 	@Override
-	public void registerAllocatedIds() {
-		getServiceForClass(ISnomedIdentifierService.class).register(reservedIds);	
+	public void clear() {
+		relationshipModuleMap.clear();
+		concreteDomainModuleMap.clear();
 	}
 }

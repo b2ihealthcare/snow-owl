@@ -15,16 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.assigner;
 
-import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
-import com.google.common.collect.Multiset;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.preference.ModulePreference;
+import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.Ordering;
 
 /**
  * Simple assigner that allocates the default namespace and module for relationships and concrete domains.
@@ -33,44 +32,63 @@ import com.google.common.collect.Multiset;
  */
 public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceAndModuleAssigner {
 
-	private Set<String> reservedIds;
-	private Iterator<String> relationshipIds;
-	private Concept defaultRelationshipModuleConcept;
-	private Concept defaultConcreteDomainModuleConcept;
+	private String defaultNamespace;
+	private String defaultModule;
 
 	@Override
-	public String getRelationshipId(String sourceConceptId) {
-		return relationshipIds.next();
+	public String getRelationshipNamespace(final String sourceConceptId) {
+		return defaultNamespace;
 	}
 
 	@Override
-	public Concept getRelationshipModule(String sourceConceptId) {
-		return defaultRelationshipModuleConcept;
+	public String getRelationshipModuleId(final String sourceConceptId) {
+		return defaultModule;
 	}
 
 	@Override
-	public Concept getConcreteDomainModule(String sourceConceptId) {
-		return defaultConcreteDomainModuleConcept;
+	public String getConcreteDomainModuleId(final String referencedConceptId) {
+		return defaultModule;
 	}
 
 	@Override
-	public void allocateRelationshipIdsAndModules(Multiset<String> conceptIds, final SnomedEditingContext editingContext) {
-		if (conceptIds.isEmpty()) return;
-		
-		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
-		String defaultNamespace = editingContext.getDefaultNamespace();
-		reservedIds = identifierService.reserve(defaultNamespace, ComponentCategory.RELATIONSHIP, conceptIds.size());
-		relationshipIds = reservedIds.iterator();
-		defaultRelationshipModuleConcept = editingContext.getDefaultModuleConcept();
+	public void collectRelationshipNamespacesAndModules(final Set<String> conceptIds, final BranchContext context) {
+		if (defaultNamespace == null) {
+			final SnomedConfiguration snomedConfiguration = context.service(SnomedConfiguration.class);
+			defaultNamespace = snomedConfiguration.getNamespaces()
+					.getDefaultChildKey();
+		}
+
+		initializeDefaultModule(context);
 	}
 
 	@Override
-	public void allocateConcreteDomainModules(Set<String> conceptIds, final SnomedEditingContext editingContext) {
-		defaultConcreteDomainModuleConcept = editingContext.getDefaultModuleConcept();
+	public void collectConcreteDomainModules(final Set<String> conceptIds, final BranchContext context) {
+		initializeDefaultModule(context);
+	}
+
+	private void initializeDefaultModule(final BranchContext context) {
+		if (defaultModule == null) {
+			final List<String> moduleIds = ModulePreference.getModulePreference();
+			final Ordering<SnomedConcept> ordering = Ordering.explicit(moduleIds)
+					.reverse()
+					.onResultOf(SnomedConcept::getId);
+
+			defaultModule = SnomedRequests.prepareSearchConcept()
+					.setLimit(moduleIds.size())
+					.filterByIds(moduleIds)
+					.build()
+					.execute(context)
+					.stream()
+					.sorted(ordering)
+					.findFirst()
+					.map(SnomedConcept::getId)
+					.get();
+		}
 	}
 	
 	@Override
-	public void registerAllocatedIds() {
-		getServiceForClass(ISnomedIdentifierService.class).register(reservedIds);
+	public void clear() {
+		defaultModule = null;
+		defaultNamespace = null;
 	}
 }

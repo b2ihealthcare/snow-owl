@@ -19,7 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyLong;
 
-import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongList;
 import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="equivalentConceptSet")
+@Doc(type="equivalentconceptset")
 @JsonDeserialize(builder=EquivalentConceptSetDocument.Builder.class)
 public final class EquivalentConceptSetDocument {
 
@@ -62,7 +62,7 @@ public final class EquivalentConceptSetDocument {
 
 		private String classificationId;
 		private boolean unsatisfiable;
-		private LongSet conceptIds;
+		private LongList conceptIds;
 
 		@JsonCreator
 		private Builder() {
@@ -79,7 +79,7 @@ public final class EquivalentConceptSetDocument {
 			return this;
 		}
 
-		public Builder conceptIds(final LongSet conceptIds) {
+		public Builder conceptIds(final LongList conceptIds) {
 			this.conceptIds = conceptIds;
 			return this;
 		}
@@ -93,11 +93,11 @@ public final class EquivalentConceptSetDocument {
 
 	private final String classificationId;
 	private final boolean unsatisfiable;
-	private final LongSet conceptIds;
+	private final LongList conceptIds;
 
 	private EquivalentConceptSetDocument(final String classificationId, 
 			final boolean unsatisfiable, 
-			final LongSet conceptIds) {
+			final LongList conceptIds) {
 		this.classificationId = classificationId;
 		this.unsatisfiable = unsatisfiable;
 		this.conceptIds = conceptIds;
@@ -111,7 +111,7 @@ public final class EquivalentConceptSetDocument {
 		return unsatisfiable;
 	}
 
-	public LongSet getConceptIds() {
+	public LongList getConceptIds() {
 		return conceptIds;
 	}
 

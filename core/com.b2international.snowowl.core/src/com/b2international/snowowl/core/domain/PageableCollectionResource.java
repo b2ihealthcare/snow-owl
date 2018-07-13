@@ -15,11 +15,18 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
+import org.apache.solr.common.util.JavaBinCodec;
+
 import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -54,8 +61,23 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	 * @return
 	 * @see SearchResourceRequestBuilder#setSearchAfter(Object[])
 	 */
+	@JsonIgnore
 	public Object[] getSearchAfter() {
 		return searchAfter;
+	}
+	
+	@JsonProperty("searchAfter")
+	public String getSearchAfterToken() {
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			final JavaBinCodec codec = new JavaBinCodec(baos, null);
+			codec.writeArray(searchAfter);
+			codec.close();
+			
+			final byte[] tokenBytes = baos.toByteArray();
+			return Base64.getUrlEncoder().encodeToString(tokenBytes);
+		} catch (IOException e) {
+			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+		}
 	}
 	
 	/**

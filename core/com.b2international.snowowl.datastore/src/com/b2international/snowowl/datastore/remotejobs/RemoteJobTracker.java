@@ -63,7 +63,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	private static final Logger LOG = LoggerFactory.getLogger("jobs");
 	
 	private static class Holder {
-		private static final Timer CLEANUP_TIMER = new Timer("RemoteJob cleanup", true);
+		private static final Timer CLEANUP_TIMER = new Timer("Remote job cleanup", true);
 	}
 	
 	private final class CleanUpTask extends TimerTask {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,47 +29,57 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 
-public class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerator<ConcreteDomainFragment> {
+/**
+ * @since
+ */
+public final class ConceptConcreteDomainNormalFormGenerator extends NormalFormGenerator<ConcreteDomainFragment> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConceptConcreteDomainNormalFormGenerator.class);
-	
+
 	private final LongKeyMap<Set<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 
-	public ConceptConcreteDomainNormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
-		super(reasonerTaxonomy, reasonerTaxonomyBuilder);
+	public ConceptConcreteDomainNormalFormGenerator(final ReasonerTaxonomy taxonomy) {
+		super(taxonomy);
 	}
 
 	@Override
 	public Collection<ConcreteDomainFragment> getExistingComponents(final long conceptId) {
-		return reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
+		return taxonomy.getInferredConcreteDomainMembers()
+				.get(conceptId);
 	}
-	
+
 	@Override
 	public Collection<ConcreteDomainFragment> getGeneratedComponents(final long conceptId) {
-		
-		final Set<ConcreteDomainFragment> computedItems = newHashSet(reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(conceptId));
-		final LongSet parents = reasonerTaxonomy.getParents(conceptId);
-		
+
+		final Set<ConcreteDomainFragment> computedItems = newHashSet(taxonomy.getStatedConcreteDomainMembers()
+				.get(conceptId));
+		final LongSet parents = taxonomy.getInferredAncestors()
+				.getDestinations(conceptId, true);
+
 		for (final LongIterator itr = parents.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
 			computedItems.addAll(getCachedComponents(parentId));
 		}
-		
+
 		concreteDomainCache.put(conceptId, computedItems);
 		return computedItems;
 	}
 
+	@Override
+	protected void invalidate(final LongSet keysToInvalidate) {
+		concreteDomainCache.keySet().removeAll(keysToInvalidate);
+	}
+
 	private Collection<ConcreteDomainFragment> getCachedComponents(final long conceptId) {
 		final Set<ConcreteDomainFragment> existingSet = concreteDomainCache.get(conceptId);
-		
+
 		if (null != existingSet) {
 			return existingSet;
 		} else {

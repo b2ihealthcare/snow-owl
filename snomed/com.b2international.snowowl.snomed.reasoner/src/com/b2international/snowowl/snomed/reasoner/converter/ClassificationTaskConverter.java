@@ -16,13 +16,18 @@
 package com.b2international.snowowl.snomed.reasoner.converter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
@@ -33,13 +38,18 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.b2international.snowowl.snomed.reasoner.request.RelationshipChangeSearchRequestBuilder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
  * @since 7.0
  */
 public final class ClassificationTaskConverter extends BaseResourceConverter<ClassificationTaskDocument, ClassificationTask, ClassificationTasks> {
+
+	private static final Set<ClassificationStatus> SAVE_STATUSES = ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS, ClassificationStatus.SAVED);
 
 	public ClassificationTaskConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
@@ -75,6 +85,29 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 	@Override
 	protected void expand(final List<ClassificationTask> results) {
+
+		final Multimap<String, ClassificationTask> tasksByBranch = Multimaps.index(results, ClassificationTask::getBranch);
+		final Branches branches = RepositoryRequests.branching()
+				.prepareSearch()
+				.setLimit(tasksByBranch.keySet().size())
+				.filterByIds(tasksByBranch.keySet())
+				.build()
+				.execute(context());
+
+		final Map<String, Long> headTimestamps = branches.stream()
+				.collect(Collectors.toMap(Branch::path, Branch::headTimestamp));
+
+		// Overwrite stored status if the branch has moved forward in the meantime, except if the task is saved
+		for (final ClassificationTask task : results) {
+			if (SAVE_STATUSES.contains(task.getStatus())) {
+				continue;
+			}
+
+			if (task.getTimestamp() < headTimestamps.get(task.getBranch())) {
+				task.setStatus(ClassificationStatus.STALE);
+			}
+		}
+
 		if (expand().isEmpty()) { 
 			return; 
 		}
@@ -118,9 +151,16 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 		}
 
 		final Options expandOptions = expand().get(ClassificationTask.Expand.RELATIONSHIP_CHANGES, Options.class);
-		final RelationshipChanges relationshipChanges = ClassificationRequests.prepareSearchRelationshipChange()
-				.filterByClassificationId(classificationTaskIds)
+		
+		final RelationshipChangeSearchRequestBuilder builder = ClassificationRequests.prepareSearchRelationshipChange()
 				.all()
+				.filterByClassificationId(classificationTaskIds);
+
+		if (expandOptions.containsKey("sourceId")) {
+			builder.filterBySourceId(expandOptions.getCollection("sourceId", String.class));
+		}
+		
+		final RelationshipChanges relationshipChanges = builder
 				.setExpand(expandOptions.get("expand", Options.class))
 				.setLocales(locales())
 				.build()

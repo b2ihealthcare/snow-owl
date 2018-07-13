@@ -15,55 +15,28 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import com.b2international.commons.exceptions.ApiError;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
  * @since 5.7
  */
-public final class ClassificationSaveRequestBuilder extends BaseRequestBuilder<ClassificationSaveRequestBuilder, ServiceProvider, ApiError> {
+public final class ClassificationSaveRequestBuilder 
+		extends BaseRequestBuilder<ClassificationSaveRequestBuilder, RepositoryContext, String> 
+		implements RepositoryRequestBuilder<String> {
 
-	private String classificationId;
-	private ReasonerTaxonomy taxonomy;
-	private String userId;
-	private ReasonerTaxonomyBuilder taxonomyBuilder;
+	private final String classificationId;
+	private final String userId;
 
-	public ClassificationSaveRequestBuilder(String classificationId) {
+	ClassificationSaveRequestBuilder(final String classificationId, final String userId) {
 		this.classificationId = classificationId;
-	}
-	
-	public ClassificationSaveRequestBuilder setTaxonomy(ReasonerTaxonomy taxonomy) {
-		this.taxonomy = taxonomy;
-		return getSelf();
-	}
-
-	public ClassificationSaveRequestBuilder setUserId(String userId) {
 		this.userId = userId;
-		return getSelf();
 	}
 
-	public ClassificationSaveRequestBuilder setTaxonomyBuilder(ReasonerTaxonomyBuilder taxonomyBuilder) {
-		this.taxonomyBuilder = taxonomyBuilder;
-		return getSelf();
-	}
-	
 	@Override
-	protected Request<ServiceProvider, ApiError> doBuild() {
-		return new ClassificationSaveRequest(classificationId, taxonomy, taxonomyBuilder, userId);
+	protected Request<RepositoryContext, String> doBuild() {
+		return new ClassificationSaveRequest(classificationId, userId);
 	}
-
-	public AsyncRequest<String> buildAsync() {
-		return JobRequests.prepareSchedule()
-				.setUser(userId)
-				.setRequest(build())
-				.setDescription(String.format("Persisting ontology changes on %s", taxonomy.getBranchPath()))
-				.buildAsync();
-	}
-
 }

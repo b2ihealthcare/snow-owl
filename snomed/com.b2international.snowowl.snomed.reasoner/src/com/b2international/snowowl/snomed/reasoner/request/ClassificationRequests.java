@@ -35,8 +35,8 @@ public abstract class ClassificationRequests {
 		return new ClassificationSearchRequestBuilder();
 	}
 
-	public static ClassificationSaveRequestBuilder prepareSaveClassification(final String classificationId) {
-		return new ClassificationSaveRequestBuilder(classificationId);
+	public static ClassificationSaveRequestBuilder prepareSaveClassification(final String classificationId, final String userId) {
+		return new ClassificationSaveRequestBuilder(classificationId, userId);
 	}
 
 	public static ClassificationDeleteRequestBuilder prepareDeleteClassification(final String classificationId) {

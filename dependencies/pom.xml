@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>6.6.0-SNAPSHOT</version>
+		<version>7.0.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -24,9 +24,6 @@
 		<module>org.eclipse.net4j</module>
 		<module>org.eclipse.net4j.db.mysql</module>
 		<module>org.eclipse.net4j.util</module>
-		<module>org.protege.common</module>
-		<module>org.protege.core.feature</module>
-		<module>org.protege.editor.core.application</module>
 		<module>org.protege.editor.owl</module>
 		<module>org.supercsv</module>
 	</modules>

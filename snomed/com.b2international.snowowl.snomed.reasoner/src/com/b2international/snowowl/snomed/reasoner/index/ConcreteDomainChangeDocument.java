@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="concreteDomainChange")
+@Doc(type="concretedomainchange")
 @JsonDeserialize(builder=ConcreteDomainChangeDocument.Builder.class)
 public final class ConcreteDomainChangeDocument {
 

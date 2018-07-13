@@ -38,7 +38,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 final class ReasonerExtensionSearchRequest implements Request<ServiceProvider, ReasonerExtensions> {
 
 	private static final String EXTENSION_POINT_ID = "org.protege.editor.owl.inference_reasonerfactory";
-	private static final String NAME_ATTRIBUTE = "name";
+	private static final String NAME_ELEMENT = "name";
 	private static final String VALUE_ATTRIBUTE = "value";
 
 	@Override
@@ -53,7 +53,7 @@ final class ReasonerExtensionSearchRequest implements Request<ServiceProvider, R
 			final IConfigurationElement[] configurationElements = extension.getConfigurationElements();
 			final Optional<String> name = Arrays.asList(configurationElements)
 					.stream()
-					.filter(e -> NAME_ATTRIBUTE.equals(e.getName()))
+					.filter(e -> NAME_ELEMENT.equals(e.getName()))
 					.findFirst()
 					.map(e -> e.getAttribute(VALUE_ATTRIBUTE));
 

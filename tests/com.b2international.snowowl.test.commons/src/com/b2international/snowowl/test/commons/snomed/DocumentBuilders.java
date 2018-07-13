@@ -72,7 +72,7 @@ public abstract class DocumentBuilders {
 	
 	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
 		return SnomedRefSetMemberIndexEntry.builder()
-				.id(referenceSetId)
+				.id(id)
 				.active(true)
 				.referencedComponentId(referencedComponentId)
 				.referencedComponentType(referencedComponentType)

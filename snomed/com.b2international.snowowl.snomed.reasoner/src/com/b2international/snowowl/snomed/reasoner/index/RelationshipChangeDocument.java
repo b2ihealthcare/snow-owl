@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="relationshipChange")
+@Doc(type="relationshipchange")
 @JsonDeserialize(builder=RelationshipChangeDocument.Builder.class)
 public final class RelationshipChangeDocument {
 
@@ -66,6 +66,8 @@ public final class RelationshipChangeDocument {
 		private ChangeNature nature;
 		private String relationshipId;
 		private String sourceId;
+		private String typeId;
+		private String destinationId;
 		private Integer group;
 		private Integer unionGroup;
 
@@ -94,6 +96,16 @@ public final class RelationshipChangeDocument {
 			return this;
 		}
 
+		public Builder typeId(final String typeId) {
+			this.typeId = typeId;
+			return this;
+		}
+
+		public Builder destinationId(final String destinationId) {
+			this.destinationId = destinationId;
+			return this;
+		}
+
 		public Builder group(final Integer group) {
 			this.group = group;
 			return this;
@@ -109,6 +121,8 @@ public final class RelationshipChangeDocument {
 					nature, 
 					relationshipId, 
 					sourceId, 
+					typeId,
+					destinationId,
 					group, 
 					unionGroup);
 		}
@@ -120,8 +134,9 @@ public final class RelationshipChangeDocument {
 	// The origin (stated relationship) SCTID for inferences, or the SCTID of the relationship to remove/inactivate
 	private final String relationshipId; 
 
-	// Values that should be changed on the origin relationship before saving/presenting it as an inference
 	private final String sourceId; 
+	private final String typeId;
+	private final String destinationId; 
 	private final Integer group;
 	private final Integer unionGroup;
 
@@ -129,6 +144,8 @@ public final class RelationshipChangeDocument {
 			final ChangeNature nature, 
 			final String relationshipId,
 			final String sourceId, 
+			final String typeId, 
+			final String destinationId, 
 			final Integer group, 
 			final Integer unionGroup) {
 
@@ -136,6 +153,8 @@ public final class RelationshipChangeDocument {
 		this.nature = nature;
 		this.relationshipId = relationshipId;
 		this.sourceId = sourceId;
+		this.typeId = typeId;
+		this.destinationId = destinationId;
 		this.group = group;
 		this.unionGroup = unionGroup;
 	}
@@ -154,6 +173,14 @@ public final class RelationshipChangeDocument {
 
 	public String getSourceId() {
 		return sourceId;
+	}
+
+	public String getTypeId() {
+		return typeId;
+	}
+
+	public String getDestinationId() {
+		return destinationId;
 	}
 
 	public Integer getGroup() {
@@ -175,6 +202,10 @@ public final class RelationshipChangeDocument {
 		builder.append(relationshipId);
 		builder.append(", sourceId=");
 		builder.append(sourceId);
+		builder.append(", typeId=");
+		builder.append(typeId);
+		builder.append(", destinationId=");
+		builder.append(destinationId);
 		builder.append(", group=");
 		builder.append(group);
 		builder.append(", unionGroup=");

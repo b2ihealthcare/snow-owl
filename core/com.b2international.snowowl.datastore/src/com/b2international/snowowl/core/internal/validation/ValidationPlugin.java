@@ -35,6 +35,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.validation.ValidationRequests;
@@ -60,6 +61,11 @@ public final class ValidationPlugin extends Plugin {
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("validation", ValidationConfiguration.class);
+	}
+	
+	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isEmbedded() || env.isServer()) {
 			final ObjectMapper mapper = env.service(ObjectMapper.class);
@@ -77,9 +83,14 @@ public final class ValidationPlugin extends Plugin {
 			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigDirectory().toPath()));
 			
 			// initialize validation thread pool
-			// TODO make this configurable
-			int numberOfValidationThreads = Math.max(2, Runtime.getRuntime().availableProcessors() / 2);
-			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads));
+			final ValidationConfiguration validationConfig = configuration.getModuleConfig(ValidationConfiguration.class);
+
+			int numberOfValidationThreads = validationConfig.getNumberOfValidationThreads();
+			int maxConcurrentExpensiveJobs = validationConfig.getMaxConcurrentExpensiveJobs();
+			int maxConcurrentNormalJobs = validationConfig.getMaxConcurrentNormalJobs();
+			
+			env.services().registerService(ValidationConfiguration.class, validationConfig);
+			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 
 			
 			final List<File> listOfFiles = Arrays.asList(env.getConfigDirectory().listFiles());

@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.validation.issue.IssueDetail;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableSet;
 
@@ -81,7 +81,7 @@ public interface ValidationRuleEvaluator {
 	 * @return
 	 * @throws Exception
 	 */
-	List<IssueDetail> eval(BranchContext context, ValidationRule rule) throws Exception;
+	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception;
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using

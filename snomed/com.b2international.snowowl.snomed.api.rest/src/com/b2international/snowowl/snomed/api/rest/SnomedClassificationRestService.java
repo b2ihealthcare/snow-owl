@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,22 +37,35 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.ISnomedClassificationService;
+import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
-import com.b2international.snowowl.snomed.api.domain.classification.ClassificationStatus;
-import com.b2international.snowowl.snomed.api.domain.classification.IClassificationRun;
-import com.b2international.snowowl.snomed.api.domain.classification.IEquivalentConceptSet;
-import com.b2international.snowowl.snomed.api.domain.classification.IRelationshipChangeList;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationshipTarget;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationship;
+import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserRelationshipType;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRestInput;
 import com.b2international.snowowl.snomed.api.rest.domain.ClassificationRunRestUpdate;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
+import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -63,11 +77,11 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Api("Classifications")
 @Controller
-@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
+@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 	@Autowired
-	protected ISnomedClassificationService delegate;
+	protected ISnomedBrowserService browserService;
 
 	@ApiOperation(
 			value="Retrieve classification runs from branch", 
@@ -76,15 +90,27 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications", method=RequestMethod.GET)
-	public @ResponseBody CollectionResource<IClassificationRun> getAllClassificationRuns(
+	@RequestMapping(value="/classifications", method=RequestMethod.GET)
+	public @ResponseBody DeferredResult<ClassificationTasks> getAllClassificationRuns(
 			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
+			@RequestParam(value="branch") 
+			final String branch,
+			
+			@ApiParam(value="The classification status")
+			@RequestParam(value="status") 
+			final ClassificationStatus status,
 
-			final Principal principal) {
+			@ApiParam(value="The user identifier")
+			@RequestParam(value="userId") 
+			final String userId) {
 
-		return CollectionResource.of(delegate.getAllClassificationRuns(branchPath, principal.getName()));
+		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
+			.all()
+			.filterByBranch(branch)
+			.filterByUserId(userId)
+			.filterByStatus(status)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(bus));
 	}
 
 	@ApiOperation(
@@ -97,23 +123,25 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
 	@RequestMapping(
-			value="/{path:**}/classifications", 
+			value="/classifications", 
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public ResponseEntity<Void> beginClassification(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-
+	public DeferredResult<ResponseEntity<?>> beginClassification(
 			@ApiParam(value="Classification parameters")
 			@RequestBody 
 			final ClassificationRestInput request,
 
 			final Principal principal) {
+		
 		ApiValidation.checkInput(request);
-		final IClassificationRun classificationRun = delegate.beginClassification(branchPath, request.getReasonerId(), principal.getName());
-		return Responses.created(getClassificationUri(branchPath, classificationRun)).build();
+		
+		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
+				.setReasonerId(request.getReasonerId())
+				.setUserId(principal.getName())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
+				.execute(bus)
+				.then(id -> Responses.created(getClassificationUri(id)).build()));
 	}
 
 	@ApiOperation(
@@ -122,19 +150,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.GET)
-	public @ResponseBody IClassificationRun getClassificationRun(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-			
+	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.GET)
+	public @ResponseBody DeferredResult<ClassificationTask> getClassificationRun(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
-			final String classificationId,
+			final String classificationId) {
 
-			final Principal principal) {
-
-		return delegate.getClassificationRun(branchPath, classificationId, principal.getName());
+		return DeferredResults.wrap(ClassificationRequests.prepareGetClassification(classificationId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus));
 	}
 
 	@ApiOperation(
@@ -145,21 +169,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
-	public @ResponseBody CollectionResource<IEquivalentConceptSet> getEquivalentConceptSets(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-
+	@RequestMapping(value="/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
+	public @ResponseBody DeferredResult<EquivalentConceptSets> getEquivalentConceptSets(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
 			@ApiParam(value="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
-			final String acceptLanguage,
-			
-			final Principal principal) {
+			final String acceptLanguage) {
 
 		final List<ExtendedLocale> extendedLocales;
 		
@@ -171,7 +189,13 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return CollectionResource.of(delegate.getEquivalentConceptSets(branchPath, classificationId, extendedLocales, principal.getName()));
+		return DeferredResults.wrap(ClassificationRequests.prepareSearchEquivalentConceptSet()
+				.all()
+				.filterByClassificationId(classificationId)
+				.setExpand("equivalentConcepts(expand(pt()))")
+				.setLocales(extendedLocales)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus));
 	}
 
 	@ApiOperation(
@@ -182,27 +206,30 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}/relationship-changes", method=RequestMethod.GET, produces={"application/json", "text/csv"})
-	public @ResponseBody IRelationshipChangeList getRelationshipChanges(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-
+	@RequestMapping(
+			value="/classifications/{classificationId}/relationship-changes", 
+			method=RequestMethod.GET, 
+			produces={ MediaType.APPLICATION_JSON_VALUE, "text/csv" })
+	public @ResponseBody DeferredResult<RelationshipChanges> getRelationshipChanges(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 
-			@ApiParam(value="The starting offset in the list")
-			@RequestParam(value="offset", defaultValue="0", required=false) 
-			final int offset,
+			@ApiParam(value="The search key")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit,
-
-			final Principal principal) {
-
-		return delegate.getRelationshipChanges(branchPath, classificationId, principal.getName(), offset, limit);
+			final int limit) {
+		
+		return DeferredResults.wrap(ClassificationRequests.prepareSearchRelationshipChange()
+				.filterByClassificationId(classificationId)
+				.setExpand("relationship()")
+				.setSearchAfter(searchAfter)
+				.setLimit(limit)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(bus));
 	}
 
 	@ApiOperation(
@@ -212,13 +239,9 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK", response = Void.class),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
+	@RequestMapping(value="/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
 	public @ResponseBody
 	ISnomedBrowserConcept getConceptDetails(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path")
-			final String branchPath,
-
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId")
 			final String classificationId,
@@ -229,9 +252,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="Language codes and reference sets, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
-			final String languageSetting,
-
-			final Principal principal) {
+			final String languageSetting) {
 
 		final List<ExtendedLocale> extendedLocales;
 		
@@ -243,7 +264,51 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return delegate.getConceptPreview(branchPath, classificationId, conceptId, extendedLocales, principal.getName());
+		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
+			.setExpand(String.format("relationshipChanges(sourceId:\"%s\",expand(relationship()))", conceptId))
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(bus)
+			.getSync();
+		
+		final String branchPath = classificationTask.getBranch();
+		final SnomedBrowserConcept conceptDetails = (SnomedBrowserConcept) browserService.getConceptDetails(branchPath, conceptId, extendedLocales);
+
+		// Replace ImmutableCollection of relationships
+		final List<ISnomedBrowserRelationship> relationships = new ArrayList<ISnomedBrowserRelationship>(conceptDetails.getRelationships());
+		conceptDetails.setRelationships(relationships);
+
+		for (RelationshipChange relationshipChange : classificationTask.getRelationshipChanges()) {
+			final SnomedRelationship relationship = relationshipChange.getRelationship();
+			
+			switch (relationshipChange.getChangeNature()) {
+				case REDUNDANT:
+					relationships.removeIf(r -> r.getId().equals(relationship.getId()));
+					break;
+					
+				case INFERRED:
+					final SnomedBrowserRelationship inferred = new SnomedBrowserRelationship();
+					inferred.setType(new SnomedBrowserRelationshipType(relationship.getTypeId()));
+					inferred.setSourceId(relationship.getSourceId());
+
+					final SnomedConcept targetConcept = SnomedRequests.prepareGetConcept(relationship.getDestinationId())
+							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+							.execute(bus)
+							.getSync();
+					final ISnomedBrowserRelationshipTarget relationshipTarget = browserService.getSnomedBrowserRelationshipTarget(
+							targetConcept, branchPath, extendedLocales);
+					inferred.setTarget(relationshipTarget);
+
+					inferred.setGroupId(relationship.getGroup());
+					inferred.setModifier(relationship.getModifier());
+					inferred.setActive(relationship.isActive());
+					inferred.setCharacteristicType(relationship.getCharacteristicType());
+
+					relationships.add(inferred);
+					break;
+			}
+		}
+		
+		return conceptDetails;
 	}
 
 	@ApiOperation(
@@ -257,15 +322,11 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@RequestMapping(
-			value="/{path:**}/classifications/{classificationId}", 
+			value="/classifications/{classificationId}", 
 			method=RequestMethod.PUT,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void updateClassificationRun(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
@@ -273,12 +334,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@ApiParam(value="The updated classification parameters")
 			@RequestBody 
 			final ClassificationRunRestUpdate updatedRun,
-
+			
 			final Principal principal) {
 		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
-			delegate.persistChanges(branchPath, classificationId, principal.getName());
+			ClassificationRequests.prepareSaveClassification(classificationId, principal.getName())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.execute(bus)
+					.getSync();
 		}
 	}
 
@@ -289,23 +353,24 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "No content, delete successful"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/classifications/{classificationId}", method=RequestMethod.DELETE)
+	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.DELETE)
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void deleteClassificationRun(
-			@ApiParam(value="The branch path")
-			@PathVariable(value="path") 
-			final String branchPath,
-
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
-			final String classificationId,
-
-			final Principal principal) {
-		delegate.removeClassificationRun(branchPath, classificationId, principal.getName());
+			final String classificationId) {
+		
+		ClassificationRequests.prepareDeleteClassification(classificationId)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.execute(bus)
+			.getSync();
 	}
 
-	private URI getClassificationUri(final String branchPath, final IClassificationRun classificationRun) {
-		return linkTo(SnomedClassificationRestService.class).slash(branchPath).slash("classifications").slash(classificationRun.getId()).toUri();
+	private URI getClassificationUri(final String classificationId) {
+		return linkTo(SnomedClassificationRestService.class)
+				.slash("classifications")
+				.slash(classificationId)
+				.toUri();
 	}
 
 }

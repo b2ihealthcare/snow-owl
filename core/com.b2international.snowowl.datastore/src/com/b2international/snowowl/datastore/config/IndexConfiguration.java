@@ -48,7 +48,7 @@ public class IndexConfiguration {
 	private long fetchTraceThreshold = SlowLogConfig.FETCH_TRACE_THRESHOLD_DEFAULT;
 	
 	@Min(1)
-	private Integer numberOfShards = 5;
+	private Integer numberOfShards = 6;
 	
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
