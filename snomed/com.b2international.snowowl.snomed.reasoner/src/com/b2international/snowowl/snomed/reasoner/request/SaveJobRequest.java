@@ -271,12 +271,12 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private String getRelationshipExpandString(final boolean concreteDomainSupported) {
 		if (concreteDomainSupported) {
-			return String.format("relationship(expand(members(active:true,refSetType:\"%s\",characteristicTypeId:[\"%s\",\"%s\"]))",
+			return String.format("relationship(inferredOnly:true,expand(members(active:true,refSetType:\"%s\",characteristicTypeId:[\"%s\",\"%s\"]))",
 					SnomedRefSetType.CONCRETE_DATA_TYPE,
 					Concepts.STATED_RELATIONSHIP,
 					Concepts.ADDITIONAL_RELATIONSHIP);
 		} else {
-			return "relationship()";
+			return "relationship(inferredOnly:true)";
 		}
 	}
 

@@ -111,6 +111,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		final Options sourceOptions = expandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
 		final Options typeOptions = expandOptions.getOptions(SnomedRelationship.Expand.TYPE);
 		final Options destinationOptions = expandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
+		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
 
 		final boolean needsSource = expandOptions.keySet().remove(SnomedRelationship.Expand.SOURCE);
 		final boolean needsType = expandOptions.keySet().remove(SnomedRelationship.Expand.TYPE);
@@ -124,20 +125,36 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			 *  the reference relationship.
 			 */
 			if (needsSource) {
-				expandConcepts(branch, itemsForCurrentBranch, sourceOptions, m -> m.getSourceId(), (r, c) -> r.setSource(c));
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						sourceOptions,
+						inferredOnly,
+						m -> m.getSourceId(), 
+						(r, c) -> r.setSource(c));
 			}
 
 			if (needsType) {
-				expandConcepts(branch, itemsForCurrentBranch, typeOptions, m -> m.getTypeId(), (r, c) -> r.setType(c));
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						typeOptions, 
+						inferredOnly,
+						m -> m.getTypeId(), 
+						(r, c) -> r.setType(c));
 			}
 
 			if (needsDestination) {
-				expandConcepts(branch, itemsForCurrentBranch, destinationOptions, m -> m.getDestinationId(), (r, c) -> r.setDestination(c));
+				expandConcepts(branch, 
+						itemsForCurrentBranch, 
+						destinationOptions, 
+						inferredOnly,
+						m -> m.getDestinationId(), 
+						(r, c) -> r.setDestination(c));
 			}
 
 			// Then fetch all relationships
 			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
-					.map(c -> c.getRelationship().getId())
+					.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
+					.map(rc -> rc.getRelationship().getId())
 					.collect(Collectors.toSet());
 
 			final Request<BranchContext, SnomedRelationships> relationshipSearchRequest = SnomedRequests.prepareSearchRelationship()
@@ -178,10 +195,12 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 	private void expandConcepts(final String branch, 
 			final Collection<RelationshipChange> relationshipChanges,
 			final Options options,
+			final boolean inferredOnly,
 			final Function<SnomedRelationship, String> conceptIdFunction,
 			final BiConsumer<SnomedRelationship, SnomedConcept> conceptIdConsumer) {
 
 		final List<SnomedRelationship> blankRelationships = relationshipChanges.stream()
+				.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
 				.map(RelationshipChange::getRelationship)
 				.collect(Collectors.toList());
 
@@ -191,16 +210,16 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 
 		final Set<String> conceptIds = relationshipsByConceptId.keySet();
 
-		final Request<BranchContext, SnomedConcepts> sourceConceptSearchRequest = SnomedRequests.prepareSearchConcept()
+		final Request<BranchContext, SnomedConcepts> conceptSearchRequest = SnomedRequests.prepareSearchConcept()
 				.filterByIds(conceptIds)
 				.all()
 				.setExpand(options.get("expand", Options.class))
 				.setLocales(locales())
 				.build();
 
-		final SnomedConcepts sourceConcepts = new BranchRequest<>(branch, sourceConceptSearchRequest).execute(context());
+		final SnomedConcepts concepts = new BranchRequest<>(branch, conceptSearchRequest).execute(context());
 
-		for (final SnomedConcept concept : sourceConcepts) {
+		for (final SnomedConcept concept : concepts) {
 			final String conceptId = concept.getId();
 			final Collection<SnomedRelationship> relationshipsForConcept = relationshipsByConceptId.get(conceptId);
 
