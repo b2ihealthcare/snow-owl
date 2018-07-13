@@ -116,8 +116,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 				} catch (NotFoundException e) {
 					// ignore not found branches
 				}
-				final int parentCdoBranchId = branch.getBase().getBranch().getID();
-				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(parentCdoBranchId);
+				final InternalCDOBasedBranch parent = getParentById(branch);
 				if (parent == null) {
 					throw new SkipBranchException(branch);
 				}
@@ -128,6 +127,10 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 			}
 		}
     }
+
+	public InternalCDOBasedBranch getParentById(final org.eclipse.emf.cdo.common.branch.CDOBranch branch) {
+		return (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
+	}
 
     public final CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
