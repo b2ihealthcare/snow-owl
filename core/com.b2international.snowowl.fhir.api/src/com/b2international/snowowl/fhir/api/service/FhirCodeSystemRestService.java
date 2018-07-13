@@ -43,10 +43,12 @@ import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
@@ -108,10 +110,21 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		int total = 0;
 		
-		for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders()) {
-			Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-			
-			total = total + applySearchParameters(builder, uri, codeSystems, _id, _summary, _elements);
+		//single code system
+		if (_id != null) {
+			CodeSystem codeSystem = getCodeSystemById(_id);
+			applyResponseContentFilter(_summary, _elements, codeSystem);
+			String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
+			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+			builder.addEntry(entry);
+			total = 1;
+		
+		//all code systems
+		} else {
+			for (ICodeSystemApiProvider fhirProvider : ICodeSystemApiProvider.Registry.getProviders()) {
+				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
+				total = total + applySearchParameters(builder, uri, codeSystems, _id, _summary, _elements);
+			}
 		}
 		return builder.total(total).build();
 	}
@@ -138,13 +151,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@RequestParam(required=false) List<String> _elements) {
 		
 		validateRequestParams(_summary, _elements);
-
-		Path codeSystemPath = Paths.get(codeSystemId);
-		CodeSystem codeSystem = ICodeSystemApiProvider.Registry
-			.getCodeSystemProvider(codeSystemPath)
-			.getCodeSystem(codeSystemPath);
-
-		return applyResponseFilter(_summary, _elements, codeSystem);
+		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
+		return applyResponseContentFilter(_summary, _elements, codeSystem);
 	}
 	
 	/**
@@ -343,8 +351,14 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		System.out.println("ServeFhirCodeSystemRestService.ping()");
 		return "Ping!";
 	}
-	/*
-	*/
+	
+	private CodeSystem getCodeSystemById(String codeSystemId) {
+		Path codeSystemPath = Paths.get(codeSystemId);
+		CodeSystem codeSystem = ICodeSystemApiProvider.Registry
+			.getCodeSystemProvider(codeSystemPath)
+			.getCodeSystem(codeSystemPath);
+		return codeSystem;
+	}
 	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.

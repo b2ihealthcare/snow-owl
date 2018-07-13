@@ -53,11 +53,6 @@ public class CodeSystemRestTest extends FhirTest {
 		//ResponseSpecification responseSpec = builder.build();
 	}
 	
-	//@AfterClass
-	public static void foo() throws InterruptedException {
-		Thread.sleep(2000);
-	}
-	
 	//@Test
 	public void pingTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -113,7 +108,8 @@ public class CodeSystemRestTest extends FhirTest {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_id", "issue-type")
-			.when().get("/CodeSystem").then()
+			.when().get("/CodeSystem")
+			.then()
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
@@ -128,11 +124,10 @@ public class CodeSystemRestTest extends FhirTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_id", "whatever")
 			.when().get("/CodeSystem").then()
-			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(0))
-			.body("type", equalTo("searchset"))
-			.body("entry", nullValue())
-			.statusCode(200);
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.statusCode(400);
 	}
 	
 	//Fully detailed SNOMED CT code system

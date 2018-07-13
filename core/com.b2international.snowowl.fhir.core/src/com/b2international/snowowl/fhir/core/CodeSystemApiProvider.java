@@ -111,7 +111,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByCodeSystemShortName(codeSystemEntry.getShortName())
-			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
 			.build(repositoryId)
 			.execute(getBus())
 			.getSync()
@@ -168,9 +168,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/**
 	 * Returns the designated FHIR Uri for the given code system
 	 * @param codeSystemEntry 
+	 * @param codeSystemVersion 
 	 * @return
 	 */
-	protected abstract Uri getFhirUri(CodeSystemEntry codeSystemEntry);
+	protected abstract Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion);
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystemEntry}
@@ -186,15 +187,9 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.build();
 		
 		String id = null;
-		StringBuilder sb = new StringBuilder(getFhirUri(codeSystemEntry).getUriValue());
-		
+		//in theory there should always be at least one version present
 		if (codeSystemVersion != null) {
 			id = codeSystemVersion.getRepositoryUuid() + "://" + codeSystemVersion.getPath();
-			//TODO: edition module should come here
-			//sb.append("/");
-			//sb.append(moduleId);
-			sb.append("/version/");
-			sb.append(codeSystemVersion.getVersionId());
 		} else {
 			id = codeSystemEntry.getRepositoryUuid() + "://" + codeSystemEntry.getBranchPath();
 		}
@@ -209,7 +204,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
-			.url(new Uri(sb.toString()))
+			.url(getFhirUri(codeSystemEntry, codeSystemVersion))
 			.content(CodeSystemContentMode.NOT_PRESENT)
 			.count(getCount());
 		

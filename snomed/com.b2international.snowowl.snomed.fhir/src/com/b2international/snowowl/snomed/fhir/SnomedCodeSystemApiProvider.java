@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
@@ -265,8 +267,20 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry) {
-		return FHIR_URI;
+	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+		
+		StringBuilder sb = new StringBuilder(FHIR_URI.getUriValue());
+		
+		if (codeSystemVersion != null) {
+			//TODO: edition module should come here
+			//sb.append("/");
+			//sb.append(moduleId);
+			sb.append("/version/");
+			Date effectiveDate = new Date(codeSystemVersion.getEffectiveDate());
+			sb.append(EffectiveTimes.format(effectiveDate, DateFormats.SHORT));
+		} 
+		
+		return new Uri(sb.toString());
 	}
 	
 	private String getPreferredTermOrId(SnomedConcept concept) {

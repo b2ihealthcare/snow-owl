@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;

@@ -29,6 +29,7 @@ import org.osgi.framework.wiring.BundleWiring;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -177,6 +178,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.name(fhirCodeSystem.getClass().getSimpleName())
 			.publisher("www.hl7.org")
 			.copyright("© 2011+ HL7")
+			.version(fhirCodeSystem.getVersion())
 			.caseSensitive(true)
 			.status(PublicationStatus.ACTIVE)
 			.url(new Uri(supportedUri))
@@ -184,7 +186,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		//human-readable narrative
 		ResourceNarrative resourceNarrative = fhirCodeSystem.getClass().getAnnotation(ResourceNarrative.class);
-		if (resourceNarrative !=null) {
+		if (resourceNarrative != null) {
 			builder.text(Narrative.builder()
 				.div("<div>" + resourceNarrative.value() + "</div>")
 				.status(NarrativeStatus.GENERATED)
@@ -268,7 +270,7 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry) {
+	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return null;
 	}

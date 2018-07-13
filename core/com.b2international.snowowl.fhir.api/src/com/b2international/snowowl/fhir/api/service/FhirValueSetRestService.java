@@ -90,7 +90,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders()) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
-				applyResponseFilter(_summary, _elements, valueSet);
+				applyResponseContentFilter(_summary, _elements, valueSet);
 				String resourceUrl = String.format("%s/%s", uri, valueSet.getId().getIdValue());
 				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);
@@ -129,7 +129,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 			.getValueSetProvider(valueSetPath) 
 			.getValueSet(valueSetPath);
 
-		return applyResponseFilter(_summary, _elements, valueSet);
+		return applyResponseContentFilter(_summary, _elements, valueSet);
 	}
 	
 	

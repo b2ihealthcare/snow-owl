@@ -56,7 +56,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		return new Parameters.Fhir(Parameters.from(response));
 	}
 	
-	protected MappingJacksonValue applyResponseFilter(String summaryParameter, List<String> elementsParameter, FhirResource filteredFhirResource) {
+	protected MappingJacksonValue applyResponseContentFilter(String summaryParameter, List<String> elementsParameter, FhirResource filteredFhirResource) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
 		
@@ -80,12 +80,8 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		Collection<FhirResource> filteredResources = Sets.newHashSet(fhirResources);
 		int total = 0;
 		
-		if (_id !=null) {
-			filteredResources = fhirResources.stream().filter(cs -> cs.getId().getIdValue().equals(_id)).collect(Collectors.toSet());
-		}
-		
 		for (FhirResource fhirResource : filteredResources) {
-			applyResponseFilter(_summary, _elements, fhirResource);
+			applyResponseContentFilter(_summary, _elements, fhirResource);
 			String resourceUrl = String.format("%s/%s", uri, fhirResource.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
 			builder.addEntry(entry);

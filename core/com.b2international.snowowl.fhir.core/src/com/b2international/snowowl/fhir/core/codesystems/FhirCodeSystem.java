@@ -60,4 +60,11 @@ public interface FhirCodeSystem {
 		return new Uri(String.format("%s/%s", getCodeSystemUri(), getCodeValue()));
 	}
 
+	/**
+	 * @return the version tag of the code system
+	 */
+	default String getVersion() {
+		return "3.0.1";
+	}
+
 }
