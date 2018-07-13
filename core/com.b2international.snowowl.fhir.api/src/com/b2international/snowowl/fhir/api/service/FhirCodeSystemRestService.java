@@ -54,6 +54,8 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
+import com.b2international.snowowl.fhir.core.search.SummaryParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -96,6 +98,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	public Bundle getCodeSystems(@RequestParam(required=false) String _summary,
 			@RequestParam(required=false) List<String> _elements,
 			@RequestParam(required=false) String _id) {
+		
+		
+		SearchRequestParameters requestParameters = SearchRequestParameters.builder()
+				.summary(_summary)
+				.build();
 		
 		validateRequestParams(_summary, _elements);
 		

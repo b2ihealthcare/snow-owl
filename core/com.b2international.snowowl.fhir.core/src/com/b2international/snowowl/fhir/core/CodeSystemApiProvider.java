@@ -136,10 +136,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		//Create a code system for every extension and every version
 		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-				.all()
-				.build(repositoryId)
-				.execute(getBus())
-				.getSync();
+			.all()
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync();
 		
 		//fetch all the versions
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
