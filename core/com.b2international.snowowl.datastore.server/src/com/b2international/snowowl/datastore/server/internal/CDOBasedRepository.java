@@ -366,21 +366,21 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 					// cdo commit is present in the index remove index commit from the treemap
 					indexCommitsByTimestamp.remove(nextIndexCommitTimestamp);
 				} else if (nextIndexCommitTimestamp > nextCdoCommitTimestamp) {
-					// importers can create batch commits using the same UUID in cdo which overrides subsequent index commits and results in a single
-					// index commit at the end
-					final String commitId = CDOCommitInfoUtils.getUuid(nextCdoCommit.getComment());
-
-					boolean foundImporterIndexCommit = false;
 					
-					for (Long followingIndexCommitTimestamp : indexCommitsByTimestamp.navigableKeySet().tailSet(nextIndexCommitTimestamp)) {
-						CommitInfo followingCommit = indexCommitsByTimestamp.get(followingIndexCommitTimestamp);
-						if (Objects.equals(commitId, followingCommit.getId())) {
-							foundImporterIndexCommit = true;
-							break;
+					if (!nextCdoCommit.getBranch().isMainBranch()) {
+						
+						boolean isSkippedCommit = validateSkippedCommit(nextCdoCommit);
+						
+						if (isSkippedCommit) {
+							continue;
 						}
+						
 					}
 					
-					if (!foundImporterIndexCommit) {
+					boolean isImportCommit = validateImportCommit(nextCdoCommit, nextIndexCommitTimestamp,
+							indexCommitsByTimestamp);
+					
+					if (!isImportCommit) {
 						return RESTORE_DIAGNOSIS;
 					}
 					
@@ -403,6 +403,40 @@ public final class CDOBasedRepository extends DelegatingContext implements Inter
 		return null;
 	}
 
+	/**
+	 * Importers can create batch commits using the same UUID in cdo which overrides
+	 * subsequent index commits and results in a single index commit at the end
+	 */
+	private boolean validateImportCommit(CDOCommitInfo nextCdoCommit, Long nextIndexCommitTimestamp,
+			TreeMap<Long, CommitInfo> indexCommitsByTimestamp) {
+		final String commitId = CDOCommitInfoUtils.getUuid(nextCdoCommit.getComment());
+		for (Long followingIndexCommitTimestamp : indexCommitsByTimestamp.navigableKeySet()
+				.tailSet(nextIndexCommitTimestamp)) {
+			CommitInfo followingCommit = indexCommitsByTimestamp.get(followingIndexCommitTimestamp);
+			if (Objects.equals(commitId, followingCommit.getId())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * If the parent branch of the given CDO commit is non-existent in CDO, then we
+	 * skip the whole branch during reindex, hence it is safe to skip such commits
+	 * during repository health check as well
+	 */
+	private boolean validateSkippedCommit(CDOCommitInfo nextCdoCommit) {
+		BranchManager branchManager = provider(BranchManager.class).get();
+		if (branchManager instanceof CDOBranchManagerImpl) {
+			CDOBranchManagerImpl cdoBranchManager = (CDOBranchManagerImpl) branchManager;
+			InternalCDOBasedBranch parent = cdoBranchManager.getParentById(nextCdoCommit.getBranch());
+			if (parent == null) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private List<CDOCommitInfo> getAllCDOCommitInfos() {
 		final CDONet4jSession session = getConnection().getSession();
 		
