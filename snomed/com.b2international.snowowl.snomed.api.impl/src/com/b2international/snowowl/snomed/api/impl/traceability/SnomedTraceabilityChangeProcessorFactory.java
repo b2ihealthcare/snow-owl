@@ -19,11 +19,10 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.ft.FeatureToggles;
+import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.ICDOChangeProcessor;
 import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
-import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedFeatures;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 
 /**
@@ -36,7 +35,7 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 	@Override
 	public ICDOChangeProcessor createChangeProcessor(final IBranchPath branchPath) throws SnowowlServiceException {
 		// SNOMED CT import is in progress
-		if (isImportInProgress(branchPath) || isReindexInProgress() || isClassifyInProgress()) {
+		if (isImportInProgress(branchPath) || isReindexInProgress() || isClassifyInProgress(branchPath)) {
 			return ICDOChangeProcessor.NULL_IMPL;
 		} else {
 			final boolean collectSystemChanges = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).isCollectSystemChanges();
@@ -45,26 +44,21 @@ public class SnomedTraceabilityChangeProcessorFactory implements CDOChangeProces
 	}
 
 	private boolean isImportInProgress(final IBranchPath branchPath) {
-		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = SnomedFeatures.getImportFeatureToggle(branchPath.getPath());
-		
-		return features.exists(feature) && features.check(feature);
+		return getFeatureToggles().isEnabled(Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
 	}
 
 	private boolean isReindexInProgress() {
-		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = ReindexRequest.featureFor(SnomedDatastoreActivator.REPOSITORY_UUID);
-		
-		return features.exists(feature) && features.check(feature);
+		return getFeatureToggles().isEnabled(Features.getReindexFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID));
 	}
 	
-	private boolean isClassifyInProgress() {
-		final FeatureToggles features = ApplicationContext.getServiceForClass(FeatureToggles.class);
-		final String feature = SnomedFeatures.getClassifyFeatureToggle();
-		
-		return features.exists(feature) && features.check(feature);
+	private boolean isClassifyInProgress(final IBranchPath branchPath) {
+		return getFeatureToggles().isEnabled(Features.getClassifyFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()));
 	}
 
+	private FeatureToggles getFeatureToggles() {
+		return ApplicationContext.getServiceForClass(FeatureToggles.class);
+	}
+	
 	@Override
 	public String getFactoryName() {
 		return FACTORY_NAME;

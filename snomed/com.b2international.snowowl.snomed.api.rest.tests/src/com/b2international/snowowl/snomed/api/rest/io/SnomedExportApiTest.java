@@ -1329,17 +1329,19 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.ROOT_CONCEPT,
 				"test axiom");
 
+		String expectedOwlAxiomDeltaFile = "sct2_sRefset_OWLAxiomDelta";
+		String expectedOwlOntologyDeltaFile = "sct2_sRefset_OWLOntologyDelta";
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
-				.put("der2_sRefset_OWLAxiomDelta", true)
-				.put("der2_sRefset_OWLOntologyDelta", true)
+				.put(expectedOwlAxiomDeltaFile, true)
+				.put(expectedOwlOntologyDeltaFile, true)
 				.build();
 			
 		assertArchiveContainsFiles(exportArchive, files);
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
-		fileToLinesMap.put("der2_sRefset_OWLOntologyDelta", Pair.of(true, owlOntologyMemberLine));
-		fileToLinesMap.put("der2_sRefset_OWLAxiomDelta", Pair.of(true, owlAxiomMemberLine));
+		fileToLinesMap.put(expectedOwlOntologyDeltaFile, Pair.of(true, owlOntologyMemberLine));
+		fileToLinesMap.put(expectedOwlAxiomDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}

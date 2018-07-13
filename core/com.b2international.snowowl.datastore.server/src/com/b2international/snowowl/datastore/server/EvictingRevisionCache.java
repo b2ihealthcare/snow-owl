@@ -48,12 +48,14 @@ import com.google.common.cache.RemovalNotification;
  */
 public class EvictingRevisionCache extends Lifecycle implements InternalCDORevisionCache {
 
+	private static final int MAX_NUMBER_OF_ENTRIES = 200_000;
 	private final Map<CDOID, TypeAndRefCounter> typeMap = new HashMap<CDOID, TypeAndRefCounter>();
 	private final Cache<CDOIDAndBranch, RevisionList> revisionLists;
 
 	public EvictingRevisionCache() {
 		revisionLists = CacheBuilder.newBuilder()
-				// TODO configure eviction policy via config file 
+				// TODO configure eviction policy via config file
+				.maximumSize(MAX_NUMBER_OF_ENTRIES)
 				.expireAfterAccess(20, TimeUnit.MINUTES)
 				.removalListener(new RemovalListener<CDOIDAndBranch, RevisionList>() {
 					@Override

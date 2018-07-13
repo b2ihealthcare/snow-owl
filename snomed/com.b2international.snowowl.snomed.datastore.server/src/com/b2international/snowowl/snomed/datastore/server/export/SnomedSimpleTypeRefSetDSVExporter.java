@@ -127,7 +127,18 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		monitor.begin(100);
 		Async async = monitor.forkAsync(80);
 		OMMonitor remainderMonitor = null;
-		File file = new File(exportPath, refSetId + ".csv");
+		
+		SnomedDescription pt = SnomedRequests.prepareGetConcept(refSetId)
+			.setLocales(locales)
+			.setExpand("pt()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getEventBus())
+			.getSync()
+			.getPt();
+			
+		String fileName = pt == null ? refSetId : pt.getTerm();
+	
+		File file = new File(exportPath, fileName + ".csv");
 		try (final DataOutputStream os = new DataOutputStream(new FileOutputStream(file)) ) {
 
 			file.createNewFile();

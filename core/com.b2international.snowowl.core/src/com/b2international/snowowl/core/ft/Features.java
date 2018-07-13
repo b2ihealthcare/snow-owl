@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore;
+package com.b2international.snowowl.core.ft;
 
-public final class SnomedFeatures {
+public final class Features {
+	
+	/**
+	 * Creates a feature toggle key for reindex requests
+	 * 
+	 * @param repositoryId - the id of the repository being reindexed
+	 * @return a unique identifier for the reindex request
+	 */
+	public static String getReindexFeatureToggle(String repositoryId) {
+		return String.format("reindex.%s", repositoryId);
+	}
 	
 	/**
 	 * Creates a feature toggle key for SNOMED CT import
@@ -23,8 +33,8 @@ public final class SnomedFeatures {
 	 * @param branchPath - the branch where the import is executed
 	 * @return a unique identifier for the import feature
 	 */
-	public static String getImportFeatureToggle(String branchPath) {
-		return String.format("%s-%s.import", SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
+	public static String getImportFeatureToggle(String repositoryId, String branchPath) {
+		return String.format("import.%s-%s", repositoryId, branchPath);
 	}
 	
 	/**
@@ -32,9 +42,9 @@ public final class SnomedFeatures {
 	 * 
 	 * @return a unique identifier for the classification feature 
 	 */
-	public static String getClassifyFeatureToggle() {
-		return String.format("classify.%s", SnomedDatastoreActivator.REPOSITORY_UUID);
+	public static String getClassifyFeatureToggle(String repositoryId, String branchPath) {
+		return String.format("classify.%s-%s", repositoryId, branchPath);
 	}
 	
-	private SnomedFeatures() { /* prevent instantiation */ }
+	private Features() { /* prevent instantiation */ }
 }

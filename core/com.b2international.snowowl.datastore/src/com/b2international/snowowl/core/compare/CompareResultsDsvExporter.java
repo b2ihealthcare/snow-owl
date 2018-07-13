@@ -61,6 +61,7 @@ public final class CompareResultsDsvExporter {
 	private final Function<IComponent, String> componentTypeResolver;
 	private final Function<IComponent, String> labelResolver;
 	private final BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent;
+	private final char delimiter;
 	
 	public CompareResultsDsvExporter(
 			String repositoryUuid,
@@ -71,7 +72,8 @@ public final class CompareResultsDsvExporter {
 			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> requestBuilderFunction,
 			Function<IComponent, String> componentTypeResolver,
 			Function<IComponent, String> labelResolver,
-			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent
+			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent,
+			char delimiter
 		) {
 			this.repositoryUuid = repositoryUuid;
 			this.baseBranch = baseBranch;
@@ -82,13 +84,14 @@ public final class CompareResultsDsvExporter {
 			this.componentTypeResolver = componentTypeResolver;
 			this.labelResolver = labelResolver;
 			this.getCompareResultsOfComponent = getCompareResultsOfComponent;
+			this.delimiter = delimiter;
 		}
 	
 	public File export(IProgressMonitor monitor) throws IOException {
 		
 		CsvMapper mapper = new CsvMapper();
 		CsvSchema schema = mapper.schemaFor(CompareData.class)
-			.withColumnSeparator(',')
+			.withColumnSeparator(delimiter)
 			.withHeader()
 			.sortedBy("componentType", "componentId", "componentType", "label", "changeKind", "attribute", "from", "to");
 		

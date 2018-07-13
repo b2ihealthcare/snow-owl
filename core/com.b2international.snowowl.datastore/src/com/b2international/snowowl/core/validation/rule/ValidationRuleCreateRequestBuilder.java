@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.google.common.base.Strings;
 
@@ -35,6 +36,7 @@ public final class ValidationRuleCreateRequestBuilder
 	private String toolingId;
 	private String messageTemplate;
 	private Severity severity;
+	private CheckType checkType = CheckType.FAST;
 	private String type;
 	private String implementation;
 	
@@ -70,6 +72,11 @@ public final class ValidationRuleCreateRequestBuilder
 		return getSelf();
 	}
 	
+	public ValidationRuleCreateRequestBuilder setId(CheckType checkType) {
+		this.checkType = checkType;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
 		ValidationRuleCreateRequest req = new ValidationRuleCreateRequest();
@@ -79,6 +86,7 @@ public final class ValidationRuleCreateRequestBuilder
 		req.setSeverity(severity);
 		req.setType(type);
 		req.setImplementation(implementation);
+		req.setCheckType(checkType);
 		return req;
 	}
 

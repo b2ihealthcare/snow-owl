@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
+import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.cdo.FilteringErrorLoggingStrategy;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
@@ -55,7 +56,6 @@ import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDORepository;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
-import com.b2international.snowowl.datastore.server.reindex.ReindexRequest;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -91,6 +91,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 	public MigrationResult execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
+		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
 		long maxCdoBranchId = -1L;
 		final Branches branches = RepositoryRequests.branching().prepareSearch()
@@ -122,7 +123,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
-			features.enable(ReindexRequest.featureFor(context.id()));
+			features.enable(reindexToggle);
 			MigrationReplicationContext delegate = new MigrationReplicationContext(context, (int) maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
 			final AsyncReplicationContext replicationContext = new AsyncReplicationContext(delegate);
 
@@ -144,7 +145,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 			// close the replicator source repository
 			remoteSession.close();
 			LifecycleUtil.deactivate(remoteRepository);
-			features.disable(ReindexRequest.featureFor(context.id()));
+			features.disable(reindexToggle);
 		}
 	}
 

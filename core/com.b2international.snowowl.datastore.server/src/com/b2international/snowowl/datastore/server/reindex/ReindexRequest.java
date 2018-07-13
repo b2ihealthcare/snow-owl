@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
+import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 
@@ -46,6 +47,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 	public ReindexResult execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
+		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
 		long maxCdoBranchId = -1L;
 		final Branches branches = RepositoryRequests.branching().prepareSearch()
@@ -64,7 +66,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		
 		try {
 			repository.setHealth(Health.YELLOW, "Reindex is in progress...");
-			features.enable(featureFor(context.id()));
+			features.enable(reindexToggle);
 			//set the session on the StoreThreadlocal for later access
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
@@ -75,7 +77,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
 					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 		} finally {
-			features.disable(featureFor(context.id()));
+			features.disable(reindexToggle);
 			StoreThreadLocal.release();
 			session.close();
 			repository.checkHealth();
@@ -86,8 +88,4 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		return new ReindexRequestBuilder();
 	}
 
-	public static String featureFor(String repositoryId) {
-		return String.format("%s.reindex", repositoryId);
-	}
-	
 }

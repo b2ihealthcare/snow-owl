@@ -34,6 +34,13 @@ public enum ValidationIssueDetailExtensionProvider {
 		this.extensions = Extensions.getExtensions(VALIDATION_DETAIL_EXTENSION_ID, ValidationIssueDetailExtension.class);
 	}
 	
+	public ValidationIssueDetailExtension getExtensions(String toolingId) {
+		return extensions.stream()
+			.filter(ext -> toolingId.equals(ext.getToolingId()))
+			.findFirst()
+			.orElseThrow(() -> new UnsupportedOperationException("Unsupported tooling id: " + toolingId));
+	}
+	
 	public Collection<ValidationIssueDetailExtension> getExtensions() {
 		return extensions;
 	}

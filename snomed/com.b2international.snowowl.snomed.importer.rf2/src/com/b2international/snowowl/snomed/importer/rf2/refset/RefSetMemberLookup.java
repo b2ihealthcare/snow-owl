@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.refset;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,19 +41,18 @@ import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.importer.rf2.terminology.ComponentLookup;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 public class RefSetMemberLookup {
 
-	private static final int EXPECTED_MEMBERS_SIZE = 50000;
-
-	private final Map<String, SnomedRefSetMember> newMembers = Maps.newHashMap();
-	private final LongValueMap<String> storageKeysByMemberId = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(EXPECTED_MEMBERS_SIZE);
 	private final CDOEditingContext editingContext;
 	private final RevisionIndex index;
+	
+	private Map<String, SnomedRefSetMember> newMembers;
+	private LongValueMap<String> storageKeysByMemberId;
 	
 	public RefSetMemberLookup(final RevisionIndex index, final SnomedEditingContext editingContext) {
 		this.index = index;
@@ -88,14 +87,14 @@ public class RefSetMemberLookup {
 	}
 
 	public <M> M getNewMember(String memberId) {
-		return (M) newMembers.get(memberId);
+		return newMembers == null ? null : (M) newMembers.get(memberId);
 	}
 
 	public LongSet getComponentStorageKeys(final Collection<String> memberIds) {
 		final LongSet storageKeys = PrimitiveSets.newLongOpenHashSetWithExpectedSize(memberIds.size());
 		final Set<String> missingStorageKeyComponentIds = newHashSet();
 		for (String memberId : memberIds) {
-			if (storageKeysByMemberId.containsKey(memberId)) {
+			if (storageKeysByMemberId != null && storageKeysByMemberId.containsKey(memberId)) {
 				storageKeys.add(storageKeysByMemberId.get(memberId));
 			} else {
 				missingStorageKeyComponentIds.add(memberId);
@@ -139,6 +138,9 @@ public class RefSetMemberLookup {
 	}
 	
 	public void registerMemberStorageKey(final String memberId, final long storageKey) {
+		if (storageKeysByMemberId == null) {
+			storageKeysByMemberId = PrimitiveMaps.newObjectKeyLongOpenHashMapWithExpectedSize(ComponentLookup.EXPECTED_COMPONENT_SIZE);
+		}
 		final long existingKey = storageKeysByMemberId.put(memberId, storageKey);
 		if (existingKey > 0L && existingKey != storageKey) {
 			throw new IllegalStateException(
@@ -149,13 +151,18 @@ public class RefSetMemberLookup {
 
 	public void registerNewMemberStorageKeys() {
 		// Consume each element while it is being registered
-		for (final Iterator<SnomedRefSetMember> itr = Iterators.consumingIterator(newMembers.values().iterator()); itr.hasNext();) {
-			final SnomedRefSetMember newMember = itr.next();
-			registerMemberStorageKey(newMember.getUuid(), CDOIDUtil.getLong(newMember.cdoID()));
+		if (newMembers != null) {
+			for (final SnomedRefSetMember newMember : Iterables.consumingIterable(newMembers.values())) {
+				registerMemberStorageKey(newMember.getUuid(), CDOIDUtil.getLong(newMember.cdoID()));
+			}
+			newMembers = null;
 		}
 	}
 
 	public void addNewMember(final SnomedRefSetMember member) {
+		if (newMembers == null) {
+			newMembers = newHashMap();
+		}
 		newMembers.put(member.getUuid(), member);
 	}
 	
@@ -164,11 +171,11 @@ public class RefSetMemberLookup {
 	 */
 	public void clear() {
 		if (null != newMembers) {
-			newMembers.clear();
+			newMembers = null;
 		}
 		
 		if (null != storageKeysByMemberId) {
-			storageKeysByMemberId.clear();
+			storageKeysByMemberId = null;
 		}
 	}
 	
