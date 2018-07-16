@@ -23,6 +23,11 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
@@ -34,17 +39,23 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderEdge;
+import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder.TaxonomyBuilderNode;
 
 /**
  * @since 4.7
  */
 public final class Taxonomies {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger("repository");
+	
 	private Taxonomies() {
 	}
 	
@@ -78,8 +89,9 @@ public final class Taxonomies {
 			final SnomedTaxonomyBuilder newTaxonomy = new SnomedTaxonomyBuilder(conceptIds, hits.getHits());
 			newTaxonomy.setCheckCycles(checkCycles);
 			oldTaxonomy.build();
-			SnomedTaxonomyUpdateRunnable taxonomyUpdate = new SnomedTaxonomyUpdateRunnable(searcher, staging, newTaxonomy, characteristicTypeId);
-			taxonomyUpdate.run();
+
+			SnomedTaxonomyStatus status = updateTaxonomy(searcher, staging, newTaxonomy, characteristicTypeId);
+			
 			final LongSet newKeys = newTaxonomy.getEdges().keySet();
 			final LongSet oldKeys = oldTaxonomy.getEdges().keySet();
 			
@@ -100,10 +112,127 @@ public final class Taxonomies {
 			// detached edges
 			final LongSet detachedEdges = LongSets.difference(oldKeys, newKeys);
 			
-			return new Taxonomy(newTaxonomy, oldTaxonomy, taxonomyUpdate.getTaxonomyBuilderResult(), newEdges, changedEdges, detachedEdges);
+			return new Taxonomy(newTaxonomy, oldTaxonomy, status, newEdges, changedEdges, detachedEdges);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
+	}
+
+	private static SnomedTaxonomyStatus updateTaxonomy(RevisionSearcher searcher, StagingArea staging, SnomedTaxonomyBuilder taxonomyBuilder, String characteristicTypeId) {
+		LOGGER.trace("Processing changes taxonomic information.");
+		
+		final Iterable<SnomedConceptDocument> newConcepts = staging.getNewObjects(SnomedConceptDocument.class)
+				.collect(Collectors.toList());
+		final Iterable<SnomedConceptDocument> deletedConcepts = staging.getRemovedObjects(SnomedConceptDocument.class)
+				.collect(Collectors.toSet());
+		final Iterable<SnomedRelationshipIndexEntry> newRelationships = staging.getNewObjects(SnomedRelationshipIndexEntry.class)
+				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+				.collect(Collectors.toList());
+		final Iterable<SnomedRelationshipIndexEntry> dirtyRelationships = staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
+				.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
+				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+				.collect(Collectors.toList());
+		
+		final Iterable<SnomedRelationshipIndexEntry> deletedRelationships = staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
+				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+				.collect(Collectors.toList());
+		
+		for (final SnomedRelationshipIndexEntry newRelationship : newRelationships) {
+			taxonomyBuilder.addEdge(createEdge(newRelationship));
+		}
+		
+		for (final SnomedRelationshipIndexEntry dirtyRelationship : dirtyRelationships) {
+			taxonomyBuilder.addEdge(createEdge(dirtyRelationship));
+		}
+		
+		for (final SnomedRelationshipIndexEntry relationship : deletedRelationships) {
+			taxonomyBuilder.removeEdge(createEdge(relationship));
+		}
+		for (final SnomedConceptDocument newConcept : newConcepts) {
+			taxonomyBuilder.addNode(createNode(newConcept));
+		}
+		
+		for (final SnomedConceptDocument concept : deletedConcepts) {
+			taxonomyBuilder.removeNode(createDeletedNode(concept.getId()));
+		}
+		
+		staging.getChangedRevisions(SnomedConceptDocument.class, Collections.singleton(SnomedConceptDocument.Fields.ACTIVE))
+			.forEach(diff -> {
+				final RevisionPropertyDiff propDiff = diff.getRevisionPropertyDiff(SnomedConceptDocument.Fields.ACTIVE);
+				final boolean oldValue = Boolean.parseBoolean(propDiff.getOldValue());
+				final boolean newValue = Boolean.parseBoolean(propDiff.getNewValue());
+				final String conceptId = diff.newRevision.getId();
+				if (oldValue && !newValue) {
+					// inactivation
+					//we do not need this concept. either it was deactivated now or sometime earlier.
+					taxonomyBuilder.removeNode(createNode(conceptId, true));
+				} else if (!oldValue && newValue) {
+					// consider reverting reactivation
+					if (!taxonomyBuilder.containsNode(conceptId)) {
+						taxonomyBuilder.addNode(createNode((SnomedConceptDocument) diff.newRevision));
+					}
+				}
+			});
+		
+		LOGGER.trace("Rebuilding taxonomic information based on the changes.");
+		return taxonomyBuilder.build();
+	}
+	
+	
+	/*creates a taxonomy edge instance based on the given SNOMED CT relationship*/
+	private static TaxonomyBuilderEdge createEdge(final SnomedRelationshipIndexEntry relationship) {
+		return new TaxonomyBuilderEdge() {
+			@Override public boolean isCurrent() {
+				return relationship.isActive();
+			}
+			@Override public String getId() {
+				return relationship.getId();
+			}
+			@Override public boolean isValid() {
+				return Concepts.IS_A.equals(relationship.getTypeId());
+			}
+			@Override public String getSoureId() {
+				return relationship.getSourceId();
+			}
+			@Override public String getDestinationId() {
+				return relationship.getDestinationId();
+			}
+		};
+	}
+	
+	/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
+	private static TaxonomyBuilderNode createNode(final SnomedConceptDocument concept) {
+		return new TaxonomyBuilderNode() {
+			@Override public boolean isCurrent() {
+				return concept.isActive();
+			}
+			@Override public String getId() {
+				return concept.getId();
+			}
+		};
+	}
+
+	/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
+	private static TaxonomyBuilderNode createNode(final String id, final boolean active) {
+		return new TaxonomyBuilderNode() {
+			@Override public boolean isCurrent() {
+				return active;
+			}
+			@Override public String getId() {
+				return id;
+			}
+		};
+	}
+	
+	private static TaxonomyBuilderNode createDeletedNode(final String id) {
+		return new TaxonomyBuilderNode() {
+			@Override public boolean isCurrent() {
+				throw new UnsupportedOperationException("This method should not be called when removing taxonomy nodes.");
+			}
+			@Override public String getId() {
+				return id;
+			}
+		};
 	}
 	
 }

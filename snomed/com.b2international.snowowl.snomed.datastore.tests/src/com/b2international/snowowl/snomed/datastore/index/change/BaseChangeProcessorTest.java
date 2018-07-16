@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,52 +27,35 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.common.revision.CDORevisionFactory;
-import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
-import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
-import org.eclipse.emf.cdo.internal.common.revision.CDORevisionImpl;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDOAddFeatureDeltaImpl;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDORemoveFeatureDeltaImpl;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.spi.cdo.InternalCDOObject;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.datastore.CDOCommitChangeSet;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.datastore.cdo.StorageKeyAuthority;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -83,24 +66,25 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
-	// fixtures
-	private final Map<String, Concept> conceptsById = newHashMap();
-	private final Map<String, SnomedRefSet> refSetsById = newHashMap();
+	protected final long ROOT_CONCEPTL = Long.parseLong(Concepts.ROOT_CONCEPT);
 	
-	private CDOView view = mock(CDOView.class);
-	private Collection<CDOObject> newComponents = newHashSet();
-	private Collection<CDOObject> dirtyComponents = newHashSet();
-	private Map<CDOID, EClass> detachedComponents = newHashMap();
-	private Map<CDOID, CDORevisionDelta> revisionDeltas = newHashMap();
+	private StagingArea staging;
 	
 	@Override
 	protected final Collection<Class<?>> getTypes() {
 		return ImmutableList.<Class<?>>of(
-				SnomedConceptDocument.class,
-				SnomedDescriptionIndexEntry.class,
-				SnomedRelationshipIndexEntry.class,
-				SnomedRefSetMemberIndexEntry.class,
-				SnomedConstraintDocument.class);
+			SnomedConceptDocument.class,
+			SnomedDescriptionIndexEntry.class,
+			SnomedRelationshipIndexEntry.class,
+			SnomedRefSetMemberIndexEntry.class
+//			SnomedConstraintDocument.class
+		);
+	}
+	
+	@Override
+	public void setup() {
+		super.setup();
+		staging = index().prepareCommit(MAIN);
 	}
 	
 	@Override
@@ -110,184 +94,144 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	
-	protected final long nextStorageKey() {
-		return StorageKeyAuthority.nextStorageKey();
+	protected final StagingArea staging() {
+		return staging;
 	}
 	
-	protected final void registerExistingObject(CDOObject object) {
-		when(view.getObject(eq(object.cdoID()))).thenReturn(object);
-		when(view.getObject(eq(object.cdoID()), anyBoolean())).thenReturn(object);
+	protected final void stageNew(Revision revision) {
+		staging.stageNew(revision);
 	}
 	
-	protected final void registerNew(CDOObject object) {
-		newComponents.add(object);
+	protected final void stageChange(Revision oldRevision, Revision newRevision) {
+		staging.stageChange(oldRevision, newRevision);
 	}
 	
-	protected final void registerDirty(CDOObject object) {
-		dirtyComponents.add(object);
+	protected final void stageRemove(Revision revision) {
+		staging.stageRemove(revision);
 	}
 	
-	protected final void registerDetached(CDOID id, EClass type) {
-		detachedComponents.put(id, type);
+	protected final void initRevisions(Revision...revisions) {
+		final StagingArea init = index().prepareCommit(MAIN);
+		Arrays.asList(revisions).forEach(init::stageNew);
+		init.commit(currentTime(), "test", "Test Fixture Initialization");
 	}
 	
-	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
-		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue, oldValue);
-		getRevisionDelta(object).addFeatureDelta(featureDelta);
-	}
+//	protected final void registerSetRevisionDelta(CDOObject object, EStructuralFeature feature, Object oldValue, Object newValue) {
+//		final CDOSetFeatureDeltaImpl featureDelta = new CDOSetFeatureDeltaImpl(feature, 0, newValue, oldValue);
+//		getRevisionDelta(object).addFeatureDelta(featureDelta);
+//	}
+//	
+//	protected final void registerAddRevisionDelta(CDOObject object, EStructuralFeature feature, int index, Object value) {
+//		final CDOAddFeatureDeltaImpl featureDelta = new CDOAddFeatureDeltaImpl(feature, index, value);
+//		getRevisionDelta(object).addFeatureDelta(featureDelta);
+//	}
+//	
+//	protected final void registerRemoveRevisionDelta(CDOObject object, EStructuralFeature feature, int index) {
+//		final CDORemoveFeatureDeltaImpl featureDelta = new CDORemoveFeatureDeltaImpl(feature, index);
+//		getRevisionDelta(object).addFeatureDelta(featureDelta);
+//	}
 	
-	protected final void registerAddRevisionDelta(CDOObject object, EStructuralFeature feature, int index, Object value) {
-		final CDOAddFeatureDeltaImpl featureDelta = new CDOAddFeatureDeltaImpl(feature, index, value);
-		getRevisionDelta(object).addFeatureDelta(featureDelta);
-	}
-	
-	protected final void registerRemoveRevisionDelta(CDOObject object, EStructuralFeature feature, int index) {
-		final CDORemoveFeatureDeltaImpl featureDelta = new CDORemoveFeatureDeltaImpl(feature, index);
-		getRevisionDelta(object).addFeatureDelta(featureDelta);
-	}
-	
-	private final CDORevisionDeltaImpl getRevisionDelta(CDOObject object) {
-		final CDOID storageKey = checkNotNull(object.cdoID());
-		if (!revisionDeltas.containsKey(storageKey)) {
-			final CDORevisionImpl revision = (CDORevisionImpl) CDORevisionFactory.DEFAULT.createRevision(object.eClass());
-//			revision.setBranchPoint(branchPoint);
-			revisionDeltas.put(storageKey, CDORevisionUtil.createDelta(revision));
-		}
-		return (CDORevisionDeltaImpl) revisionDeltas.get(storageKey);
-	}
+//	private final CDORevisionDeltaImpl getRevisionDelta(CDOObject object) {
+//		final CDOID storageKey = checkNotNull(object.cdoID());
+//		if (!revisionDeltas.containsKey(storageKey)) {
+//			final CDORevisionImpl revision = (CDORevisionImpl) CDORevisionFactory.DEFAULT.createRevision(object.eClass());
+////			revision.setBranchPoint(branchPoint);
+//			revisionDeltas.put(storageKey, CDORevisionUtil.createDelta(revision));
+//		}
+//		return (CDORevisionDeltaImpl) revisionDeltas.get(storageKey);
+//	}
 	
 	protected final void process(final ChangeSetProcessor processor) {
 		index().read(RevisionBranch.MAIN_PATH, new RevisionIndexRead<Void>() {
 			@Override
 			public Void execute(RevisionSearcher index) throws IOException {
-				processor.process(createChangeSet(), index);
+				processor.process(staging(), index);
 				return null;
 			}
 		});
 	}
 
-	protected final CDOCommitChangeSet createChangeSet() {
-		return new CDOCommitChangeSet(index(), RevisionBranch.MAIN_PATH, view, "test", "test", newComponents, dirtyComponents, detachedComponents, revisionDeltas, 1L);
+//	protected final SnomedConceptDocument getRefSet(String conceptId, SnomedRefSetType refSetType, short referencedComponentType) {
+//		if (!conceptsById.containsKey(conceptId)) {
+//			final SnomedConceptDocument refSet = SnomedConceptDocument.builder()
+//					.id(conceptId)
+//					.refSetType(refSetType)
+//					.referencedComponentType(referencedComponentType)
+//					.build();
+//			conceptsById.put(conceptId, refSet);
+//		}
+//		return conceptsById.get(conceptId);		
+//	}
+//	
+//	protected final SnomedConceptDocument getConcept(String conceptId) {
+//		if (!conceptsById.containsKey(conceptId)) {
+//			final SnomedConceptDocument concept = SnomedConceptDocument.builder()
+//					.id(conceptId)
+//					.build();
+//			conceptsById.put(conceptId, concept);
+//		}
+//		return conceptsById.get(conceptId);
+//	}
+	
+	protected final String module() {
+		return Concepts.MODULE_SCT_CORE;
 	}
 
-	protected final CDOID nextStorageKeyAsCDOID() {
-		return CDOIDUtil.createLong(nextStorageKey());
-	}
-
-	protected final void withCDOID(CDOObject description, long storageKey) {
-		if (description instanceof InternalCDOObject) {
-			final CDOID id = CDOIDUtil.createLong(storageKey);
-			((InternalCDOObject) description).cdoInternalSetID(id);
-		}
-	}
-
-	protected final SnomedRefSet getMappingRefSet(String id, short referencedComponentType) {
-		if (!refSetsById.containsKey(id)) {
-			final SnomedRefSet refSet = SnomedRefSetFactory.eINSTANCE.createSnomedMappingRefSet();
-			withCDOID(refSet, nextStorageKey());
-			refSet.setIdentifierId(id);
-			refSet.setReferencedComponentType(referencedComponentType);
-			refSetsById.put(id, refSet);
-		}
-		return refSetsById.get(id);		
-	}
-	
-	protected final SnomedRefSet getRegularRefSet(String id, short referencedComponentType) {
-		if (!refSetsById.containsKey(id)) {
-			final SnomedRefSet refSet = SnomedRefSetFactory.eINSTANCE.createSnomedRegularRefSet();
-			withCDOID(refSet, nextStorageKey());
-			refSet.setIdentifierId(id);
-			refSet.setReferencedComponentType(referencedComponentType);
-			refSetsById.put(id, refSet);
-		}
-		return refSetsById.get(id);
-	}
-	
-	protected final SnomedRefSet getStructuralRefSet(String id) {
-		if (!refSetsById.containsKey(id)) {
-			final SnomedRefSet refSet = SnomedRefSetFactory.eINSTANCE.createSnomedStructuralRefSet();
-			withCDOID(refSet, nextStorageKey());
-			refSet.setIdentifierId(id);
-			refSetsById.put(id, refSet);
-		}
-		return refSetsById.get(id);
-	}
-	
-	protected final Concept getConcept(String id) {
-		if (!conceptsById.containsKey(id)) {
-			final Concept concept = SnomedFactory.eINSTANCE.createConcept();
-			withCDOID(concept, nextStorageKey());
-			concept.setId(id);
-			conceptsById.put(id, concept);
-		}
-		return conceptsById.get(id);
-	}
-	
-	protected final Concept module() {
-		return getConcept(Concepts.MODULE_SCT_CORE);
-	}
-
-	protected final Relationship createRandomRelationship() {
+	protected final SnomedRelationshipIndexEntry createRandomRelationship() {
 		return createStatedRelationship(generateConceptId(), Concepts.IS_A, generateConceptId());
 	}
 	
-	protected final Relationship createInferredRelationship(String sourceId, String typeId, String destinationId) {
+	protected final SnomedRelationshipIndexEntry createInferredRelationship(String sourceId, String typeId, String destinationId) {
 		return createRelationship(sourceId, typeId, destinationId, Concepts.INFERRED_RELATIONSHIP);
 	}
 	
-	protected final Relationship createStatedRelationship(String sourceId, String typeId, String destinationId) {
+	protected final SnomedRelationshipIndexEntry createStatedRelationship(String sourceId, String typeId, String destinationId) {
 		return createRelationship(sourceId, typeId, destinationId, Concepts.STATED_RELATIONSHIP);
 	}
 	
-	private final Relationship createRelationship(String sourceId, String typeId, String destinationId, String characteristicType) {
-		final Relationship relationship = SnomedFactory.eINSTANCE.createRelationship();
-		withCDOID(relationship, nextStorageKey());
-		relationship.setId(generateRelationshipId());
-		relationship.setActive(true);
-		relationship.setGroup(0);
-		relationship.setModifier(getConcept(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER));
-		relationship.setModule(module());
-		relationship.setType(getConcept(typeId));
-		relationship.setSource(getConcept(sourceId));
-		relationship.setDestination(getConcept(destinationId));
-		relationship.setCharacteristicType(getConcept(characteristicType));
-		return relationship;
+	private final SnomedRelationshipIndexEntry createRelationship(String sourceId, String typeId, String destinationId, String characteristicTypeId) {
+		return SnomedRelationshipIndexEntry.builder()
+				.id(generateRelationshipId())
+				.active(true)
+				.group(0)
+				.unionGroup(0)
+				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+				.moduleId(module())
+				.typeId(typeId)
+				.sourceId(sourceId)
+				.destinationId(destinationId)
+				.characteristicTypeId(characteristicTypeId)
+				.build();
 	}
 	
-	protected SnomedLanguageRefSetMember createLangMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
-		final SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-		member.setAcceptabilityId(acceptability.getConceptId());
-		final SnomedRefSet refSet = getStructuralRefSet(refSetId);
-		refSet.setType(SnomedRefSetType.LANGUAGE);
-		return createMember(member, descriptionId, refSet);
+	protected final SnomedRefSetMemberIndexEntry createLangMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
+		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder()
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, acceptability.getConceptId());
+		return createMember(member, descriptionId, refSetId);
 	}
 	
-	protected SnomedRefSetMember createSimpleMember(final String referencedComponentId, final String refSetId) {
-		final SnomedRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedRefSetMember();
-		final SnomedRefSet refSet = getRegularRefSet(refSetId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId));
-		refSet.setType(SnomedRefSetType.SIMPLE);
-		return createMember(member, referencedComponentId, refSet);
+	protected final SnomedRefSetMemberIndexEntry createSimpleMember(final String referencedComponentId, final String refSetId) {
+		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder().referenceSetType(SnomedRefSetType.SIMPLE);
+		return createMember(member, referencedComponentId, refSetId);
 	}
 	
-	protected SnomedRefSetMember createSimpleMapMember(final String referencedComponentId, final String mapTarget, final String refSetId) {
-		final SnomedSimpleMapRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
-		member.setMapTargetComponentId(mapTarget);
-		final SnomedRefSet refSet = getMappingRefSet(refSetId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId));
-		refSet.setType(SnomedRefSetType.SIMPLE_MAP);
-		return createMember(member, referencedComponentId, refSet);
+	protected final SnomedRefSetMemberIndexEntry createSimpleMapMember(final String referencedComponentId, final String mapTarget, final String refSetId) {
+		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder().referenceSetType(SnomedRefSetType.SIMPLE_MAP)
+				.field(SnomedRf2Headers.FIELD_MAP_TARGET, mapTarget);
+		return createMember(member, referencedComponentId, refSetId);
 	}
 	
-	private <T extends SnomedRefSetMember> T createMember(final T member, final String referencedComponentId, final SnomedRefSet refSet) {
-		withCDOID(member, nextStorageKey());
-		member.setActive(true);
-		member.setModuleId(Concepts.MODULE_SCT_CORE);
-		member.setReferencedComponentId(referencedComponentId);
-		member.setRefSet(refSet);
-		member.setUuid(UUID.randomUUID().toString());
-		return member;
+	private final SnomedRefSetMemberIndexEntry createMember(final SnomedRefSetMemberIndexEntry.Builder member, final String referencedComponentId, final String refSetId) {
+		return member.active(true)
+				.id(UUID.randomUUID().toString())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referencedComponentId(referencedComponentId)
+				.referenceSetId(refSetId)
+				.build();
 	}
 	
-	protected Description createFsnWithTwoAcceptabilityMembers() {
+	protected final SnomedDescriptionIndexEntry createFsnWithTwoAcceptabilityMembers() {
 		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
 		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
 		final SnomedLanguageRefSetMember preferredMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
@@ -296,23 +240,22 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return description;
 	}
 	
-	protected Description createDescription(String typeId, String term) {
+	protected final SnomedDescriptionIndexEntry createDescription(String typeId, String term) {
 		return createDescription(generateConceptId(), typeId, term);
 	}
 	
-	protected Description createDescription(String conceptId, String typeId, String term) {
-		final Description description = SnomedFactory.eINSTANCE.createDescription();
-		withCDOID(description, nextStorageKey());
-		description.setActive(true);
-		description.setCaseSignificance(getConcept(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
-		description.setConcept(getConcept(conceptId));
-		description.setId(generateDescriptionId());
-		description.setLanguageCode("en");
-		description.setModule(module());
-		description.setReleased(false);
-		description.setTerm("Term");
-		description.setType(getConcept(typeId));
-		return description;
+	protected final SnomedDescriptionIndexEntry createDescription(String conceptId, String typeId, String term) {
+		return SnomedDescriptionIndexEntry.builder()
+				.active(true)
+				.released(false)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_SENSITIVE)
+				.id(generateDescriptionId())
+				.conceptId(conceptId)
+				.term(term)
+				.typeId(typeId)
+				.languageCode("en")
+				.moduleId(module())
+				.build();
 	}
 
 }

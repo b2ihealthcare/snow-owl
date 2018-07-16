@@ -304,7 +304,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		}
 		
 		@JsonIgnore
-		public Builder parents(final long ...parents) {
+		public Builder parents(final long...parents) {
 			return parents(PrimitiveSets.newLongOpenHashSet(parents));
 		}
 
@@ -314,6 +314,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder statedParents(final long...statedParents) {
+			return statedParents(PrimitiveSets.newLongOpenHashSet(statedParents));
+		}
+		
+		@JsonProperty("statedParents")
 		public Builder statedParents(final LongSet statedParents) {
 			this.statedParents = statedParents;
 			return getSelf();
