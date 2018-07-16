@@ -115,8 +115,15 @@ public final class StagingArea {
 		return changedRevisions;
 	}
 	
-	public Stream<RevisionDiff> getChangedRevisions(Class<?> type) {
+	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type) {
 		return changedRevisions.values().stream().filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()));
+	}
+	
+	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type, Set<String> changedPropertyNames) {
+		return changedRevisions.values()
+				.stream()
+				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()))
+				.filter(diff -> changedPropertyNames.stream().filter(diff::hasRevisionPropertyDiff).findFirst().isPresent());
 	}
 	
 	/**
@@ -380,6 +387,10 @@ public final class StagingArea {
 				}
 			}
 			return propertyChanges.get(property);
+		}
+		
+		public boolean hasRevisionPropertyDiff(String property) {
+			return getRevisionPropertyDiff(property) != null;
 		}
 		
 	}
