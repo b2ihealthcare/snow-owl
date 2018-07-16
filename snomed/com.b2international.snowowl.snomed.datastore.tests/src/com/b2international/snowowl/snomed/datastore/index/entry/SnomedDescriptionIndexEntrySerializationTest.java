@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,11 +62,9 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 				.languageCode("en")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
-				.storageKey(1L)
 				.build();
 		indexRevision(RevisionBranch.MAIN_PATH, description);
 		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(description, actual);
 	}
 	
@@ -88,7 +86,6 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 				.languageCode("en")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
-				.storageKey(1L)
 				.build();
 		
 		assertEquals("finding", description.getSemanticTag());
@@ -96,7 +93,6 @@ public class SnomedDescriptionIndexEntrySerializationTest extends BaseRevisionIn
 		indexRevision(RevisionBranch.MAIN_PATH, description);
 		final SnomedDescriptionIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedDescriptionIndexEntry.class, id);
 		
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("finding", actual.getSemanticTag());
 		assertEquals(null, actual.getNamespace());
 		assertDocEquals(description, actual);

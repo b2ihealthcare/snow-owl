@@ -66,12 +66,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 			.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 			.referenceSetType(SnomedRefSetType.ASSOCIATION)
-			.storageKey(1L)
 			.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -90,12 +88,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
 				.field(Fields.MAP_TARGET, "A01")
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -115,12 +111,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
 				.field(Fields.ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
@@ -140,12 +134,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(Fields.DATA_TYPE, DataType.STRING)
 				.field(SnomedRf2Headers.FIELD_VALUE, "TEST")
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("TEST", actual.getValue());
 		assertDocEquals(member, actual);
 		
@@ -177,12 +169,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
 				.field(Fields.MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("parentDomain", actual.getParentDomain());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
@@ -211,12 +201,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
 				.field(Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("domainConstraint", actual.getDomainConstraint());
 		assertEquals("proximalPrimitiveConstraint", actual.getProximalPrimitiveConstraint());
 		assertEquals("domainTemplateForPrecoordination", actual.getDomainTemplateForPrecoordination());
@@ -253,12 +241,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
 				.field(Fields.MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
 				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getDomainId());
 		assertEquals(Boolean.TRUE, actual.isGrouped());
 		assertEquals("attributeCardinality", actual.getAttributeCardinality());
@@ -286,12 +272,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.field(Fields.MRCM_ATTRIBUTE_RULE, "attributeRule")
 				.field(Fields.MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
 				.field(Fields.MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("rangeConstraint", actual.getRangeConstraint());
 		assertEquals("attributeRule", actual.getAttributeRule());
 		assertEquals(Concepts.ROOT_CONCEPT, actual.getRuleStrengthId());
@@ -314,12 +298,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 				.referenceSetId(Concepts.REFSET_MRCM_MODULE_SCOPE)
 				.referenceSetType(SnomedRefSetType.MRCM_MODULE_SCOPE)
 				.field(Fields.MRCM_RULE_REFSET_ID, "mrcmRuleRefsetId")
-				.storageKey(1L)
 				.build();
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals("mrcmRuleRefsetId", actual.getMrcmRuleRefsetId());
 		assertDocEquals(member, actual);
 	}
