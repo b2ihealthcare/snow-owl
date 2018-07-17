@@ -45,7 +45,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SummaryParameter;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
 
@@ -157,7 +157,6 @@ public class FilterTest extends FhirTest {
 		
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 							+ "\"id\":\"repo/shortName\","
-							+ "\"name\":\"Local code system\","
 							+ "\"status\":\"active\","
 							+ "\"content\":\"complete\"}";
 		
@@ -176,7 +175,7 @@ public class FilterTest extends FhirTest {
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
 		System.out.println("Requested fields: " + requestedFields);
-		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
+		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
 
@@ -226,7 +225,7 @@ public class FilterTest extends FhirTest {
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
 		System.out.println("Requested fields: " + requestedFields);
-		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
+		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 
 		setupSummaryFilter(summaryParameter);
@@ -237,7 +236,7 @@ public class FilterTest extends FhirTest {
 				+ "\"url\":\"code system uri\","
 				+ "\"identifier\":"
 				+ "{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
-				+ "\"version\":\"2018.01.01\",\"name\":\"Local code system\","
+				+ "\"version\":\"2018.01.01\","
 				+ "\"title\":\"title\","
 				+ "\"status\":\"active\","
 				+ "\"publisher\":\"B2i\","
@@ -262,7 +261,7 @@ public class FilterTest extends FhirTest {
 
 		List<String> requestedFields = getRequestedFields(elements, "_summary");
 		System.out.println("Requested fields: " + requestedFields);
-		SummaryParameter summaryParameter = SummaryParameter.fromRequestParameter(requestedFields.get(0));
+		SummaryParameterValue summaryParameter = SummaryParameterValue.fromRequestParameter(requestedFields.get(0));
 
 		setupSummaryFilter(summaryParameter);
 
@@ -284,7 +283,7 @@ public class FilterTest extends FhirTest {
 		objectMapper.setFilterProvider(filterProvider);
 	}
 	
-	private void setupSummaryFilter(SummaryParameter summaryParameter) {
+	private void setupSummaryFilter(SummaryParameterValue summaryParameter) {
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredClass);
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);

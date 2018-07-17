@@ -21,11 +21,11 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,6 +40,9 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,12 +59,11 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "ValueSet", description="FHIR ValueSet Resource", tags = { "ValueSet" })
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/ValueSet", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
-public class FhirValueSetRestService extends BaseFhirResourceRestService {
+public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSet> {
 	
 	/**
 	 * ValueSets
-	 * @param _summary
-	 * @param _elements
+	 * @param request parameters
 	 * @return bundle of value sets
 	 */
 	@ApiOperation(
@@ -71,11 +73,11 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 		@ApiResponse(code = 200, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
-	public Bundle getValueSets(
-			@RequestParam(required=false) String _summary,
-			@RequestParam(required=false) List<String> _elements) {
+	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		validateRequestParams(_summary, _elements);
+		Multimap<String, String> multiMap = HashMultimap.create();
+		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -90,7 +92,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 		for (IValueSetApiProvider fhirProvider : IValueSetApiProvider.Registry.getProviders()) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
-				applyResponseContentFilter(_summary, _elements, valueSet);
+				applyResponseContentFilter(valueSet, requestParameters);
 				String resourceUrl = String.format("%s/%s", uri, valueSet.getId().getIdValue());
 				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);
@@ -103,8 +105,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 	/**
 	 * HTTP Get for retrieving a value set by its value set id
 	 * @param valueSetId
-	 * @param _summary
-	 * @param _elements
+	 * @param request parameters
 	 * @return
 	 */
 	@ApiOperation(
@@ -118,18 +119,19 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService {
 	})
 	@RequestMapping(value="/{valueSetId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
-			@RequestParam(required=false) String _summary,
-			@RequestParam(required=false) List<String> _elements) {
+			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		validateRequestParams(_summary, _elements);
-
+		Multimap<String, String> multiMap = HashMultimap.create();
+		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
+		
 		Path valueSetPath = Paths.get(valueSetId);
 		ValueSet valueSet = IValueSetApiProvider.Registry
 			//.getValueSetProvider("http://snomed.info/sct") //hack
 			.getValueSetProvider(valueSetPath) 
 			.getValueSet(valueSetPath);
 
-		return applyResponseContentFilter(_summary, _elements, valueSet);
+		return applyResponseContentFilter(valueSet, requestParameters);
 	}
 	
 	

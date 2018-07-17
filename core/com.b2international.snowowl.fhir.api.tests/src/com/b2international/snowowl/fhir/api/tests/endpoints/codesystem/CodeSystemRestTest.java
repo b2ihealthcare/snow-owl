@@ -78,7 +78,7 @@ public class CodeSystemRestTest extends FhirTest {
 			
 			//SNOMED CT
 			.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
-			.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/2017-07-31'}")
+			.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/20170731'}")
 			.body("property.size()", equalTo(116))
 			
 			//FHIR issue type code system has children

@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.List;
 
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -42,7 +43,7 @@ public class FhirBeanPropertyFilter implements PropertyFilter {
 		return new FhirBeanPropertyFilter(requestedFields);
 	}
 	
-	public static FhirBeanPropertyFilter createFilter(SummaryParameter summaryParameter) {
+	public static FhirBeanPropertyFilter createFilter(SummaryParameterValue summaryParameter) {
 		
 		switch (summaryParameter) {
 		case FALSE:

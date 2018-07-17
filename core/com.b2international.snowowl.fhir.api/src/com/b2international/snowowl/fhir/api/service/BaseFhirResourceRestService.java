@@ -17,21 +17,20 @@ package com.b2international.snowowl.fhir.api.service;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJacksonValue;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SummaryParameter;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;
@@ -56,15 +55,17 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		return new Parameters.Fhir(Parameters.from(response));
 	}
 	
-	protected MappingJacksonValue applyResponseContentFilter(String summaryParameter, List<String> elementsParameter, FhirResource filteredFhirResource) {
+	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, SearchRequestParameters parameters) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
+		SummaryParameterValue summaryParameter = parameters.getSummary();
+		Collection<String> elementsParameters = parameters.getElements();
 		
 		if (summaryParameter !=null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameter.fromRequestParameter(summaryParameter)));
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(summaryParameter));
 			filteredFhirResource.setSubsetted();
-		} else if (elementsParameter != null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameter)));
+		} else if (elementsParameters != null) {
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameters)));
 			filteredFhirResource.setSubsetted();
 		}
 		
@@ -75,13 +76,13 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		return mappingJacksonValue;
 	}
 	
-	protected int applySearchParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, String _id, String _summary, List<String> _elements) {
+	protected int applySearchParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, SearchRequestParameters parameters) {
 		
 		Collection<FhirResource> filteredResources = Sets.newHashSet(fhirResources);
 		int total = 0;
 		
 		for (FhirResource fhirResource : filteredResources) {
-			applyResponseContentFilter(_summary, _elements, fhirResource);
+			applyResponseContentFilter(fhirResource, parameters);
 			String resourceUrl = String.format("%s/%s", uri, fhirResource.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
 			builder.addEntry(entry);
@@ -90,25 +91,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> {
 		return total;
 	}
 	
-	protected void validateRequestParams(String summary, List<String> elements) {
-		
-		if (summary != null && elements !=null) {
-			throw new BadRequestException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.");
-		}
-		
-		if (summary != null) {
-			try {
-				SummaryParameter fromRequestParameter = SummaryParameter.fromRequestParameter(summary);
-				if (fromRequestParameter == SummaryParameter.COUNT) {
-					throw new BadRequestException("'Count' summary parameter is only allowed for search operations.");
-				}
-			} catch (RuntimeException re) {
-				throw new BadRequestException("Unknown '_summary' parameter value '" + summary + "'. Only 'true', 'false', 'text', 'data' are permitted.");
-			}
-		}
-	}
-	
-	protected List<String> getRequestedFields(List<String> elements) {
+	protected List<String> getRequestedFields(Collection<String> elements) {
 		
 		List<String> requestedParameters = Lists.newArrayList();
 		for (String element : elements) {

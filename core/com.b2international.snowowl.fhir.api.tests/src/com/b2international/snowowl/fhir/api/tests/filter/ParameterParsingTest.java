@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.api.tests.filter;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -28,12 +30,32 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+
 
 /**
  * @since 6.4
  */
 public class ParameterParsingTest extends FhirTest {
+	
+	@Test
+	public void convertToGuavaTest() {
+		
+		MultiValueMap<String,String> queryParams = createQueryParams("http://localhost?_summary=1, 2&_elements=id&_summary=3");
+		List<String> requestedFields = getRequestedFields(queryParams, "_summary");
+		assertThat(requestedFields, contains("1", "2", "3"));
+		requestedFields = getRequestedFields(queryParams, "_elements");
+		assertThat(requestedFields, contains("id"));
+		
+		Multimap<String, String> multiMap = HashMultimap.create();
+		queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
+		multiMap.keySet().forEach(k-> System.out.println(k + " : " + multiMap.get(k)));
+		assertThat(multiMap.keySet().size(), equalTo(2));
+		assertThat(multiMap.get("_summary"), hasItems("1, 2", "3")); //note, that this is one string
+		
+	}
 	
 	@Test
 	public void parsingTest() {

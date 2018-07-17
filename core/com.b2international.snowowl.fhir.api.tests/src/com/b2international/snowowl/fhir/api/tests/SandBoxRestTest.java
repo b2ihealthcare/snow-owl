@@ -16,6 +16,9 @@
 package com.b2international.snowowl.fhir.api.tests;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +48,7 @@ public class SandBoxRestTest extends FhirTest {
 	}
 	
 	//Fully detailed SNOMED CT code system
-	@Test
+	//@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
@@ -58,5 +61,26 @@ public class SandBoxRestTest extends FhirTest {
 			.statusCode(200);
 			*/
 	}
+	
+	//All code systems fully detailed
+		@Test
+		public void getFullCodeSystemsTest() {
+			
+			givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+				.when().get("/CodeSystem")
+				.then()
+				.body("resourceType", equalTo("Bundle"))
+				.body("total", notNullValue())
+				
+				//SNOMED CT
+				.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
+				.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/20170731'}")
+				.body("property.size()", equalTo(116))
+				
+				//FHIR issue type code system has children
+				.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
+				.body("concept.size()", equalTo(29))
+				.statusCode(200);
+		}
 
 }

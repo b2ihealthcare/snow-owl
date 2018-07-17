@@ -23,9 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.api.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
@@ -67,9 +65,6 @@ import com.jayway.restassured.path.json.JsonPath;
  * @since 6.3
  */
 public class CodeSystemSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	//Supported property in the code system
 	@Test
