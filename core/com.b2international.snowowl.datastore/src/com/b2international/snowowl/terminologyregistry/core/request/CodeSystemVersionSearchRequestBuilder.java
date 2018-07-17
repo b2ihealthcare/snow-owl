@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
@@ -30,6 +32,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 
 	private String codeSystemShortName;
 	private String versionId;
+	private Date effectiveDate;
 
 	CodeSystemVersionSearchRequestBuilder() {
 		super();
@@ -44,12 +47,18 @@ public final class CodeSystemVersionSearchRequestBuilder
 		this.versionId = versionId;
 		return getSelf();
 	}
+	
+	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(Date effectiveDate) {
+		this.effectiveDate = effectiveDate;
+		return getSelf();
+	}
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
 		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
 		req.setCodeSystemShortName(codeSystemShortName);
 		req.setVersionId(versionId);
+		req.setEffectiveDate(effectiveDate);
 		return req;
 	}
 

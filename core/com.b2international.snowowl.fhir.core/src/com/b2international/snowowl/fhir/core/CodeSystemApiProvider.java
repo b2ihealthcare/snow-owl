@@ -75,6 +75,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		supportedProperties.addAll(getSupportedConceptProperties());
 	}
 	
+	@Override
+	protected String getRepositoryId() {
+		return repositoryId;
+	}
+	
 	/**
 	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
 	 * @param supportedProperties
@@ -84,12 +89,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-	protected final String repositoryId() {
-		return repositoryId;
-	}
-	
 	@Override
-	public final boolean isSupported(String uri) {
+	public boolean isSupported(String uri) {
 		if (Strings.isNullOrEmpty(uri)) return false;
 		return getSupportedURIs().stream()
 			.filter(uri::equalsIgnoreCase)
@@ -99,6 +100,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	@Override
 	public CodeSystem getCodeSystem(Path codeSystemPath) {
+		
 		String repositoryId = codeSystemPath.getParent().toString();
 		String shortName = codeSystemPath.getFileName().toString();
 		
@@ -206,7 +208,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri(codeSystemEntry, codeSystemVersion))
 			.content(CodeSystemContentMode.NOT_PRESENT)
-			.count(getCount());
+			.count(getCount(codeSystemVersion));
 		
 		if (codeSystemVersion !=null) {
 			builder.version(codeSystemVersion.getVersionId());
@@ -243,7 +245,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-	protected abstract int getCount();
+	protected abstract int getCount(CodeSystemVersionEntry codeSystemVersion);
 
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {

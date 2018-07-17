@@ -110,6 +110,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
 		}
 		
+		public static Expression effectiveDate(Date effectiveDate) {
+			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
+		}
+		
 	}
 	
 	public static Builder builder() {
