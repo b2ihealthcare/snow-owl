@@ -249,8 +249,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
 			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version
-			) {
+			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version) {
 		
 		validateSubsumptionRequest(codeA, codeB, system, version);
 		
@@ -261,7 +260,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				.version(version)
 				.build();
 		
-		final SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem());
+		final SubsumptionResult result = codeSystemProvider.subsumes(req);
 		
 		return toResponse(result);
 	}
@@ -284,8 +284,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
 			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version
-			) {
+			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version	) {
 		
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
 		
@@ -296,7 +295,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				.version(version)
 				.build();
 		
-		final SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem()).subsumes(req);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem());
+		final SubsumptionResult result = codeSystemProvider.subsumes(req);
 		
 		return toResponse(result);
 	}
@@ -313,8 +313,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
 			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody
-			Parameters.Fhir in) {
+			@RequestBody Parameters.Fhir in) {
+		
 		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
 		
 		validateSubsumptionRequest(request);
@@ -358,9 +358,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	
 	private CodeSystem getCodeSystemById(String codeSystemId) {
 		Path codeSystemPath = Paths.get(codeSystemId);
-		CodeSystem codeSystem = ICodeSystemApiProvider.Registry
-			.getCodeSystemProvider(codeSystemPath)
-			.getCodeSystem(codeSystemPath);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(codeSystemPath);
+		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemPath);
 		return codeSystem;
 	}
 	
@@ -368,7 +367,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
 	private LookupResult lookup(LookupRequest lookupRequest) {
-		return ICodeSystemApiProvider.Registry.getCodeSystemProvider(lookupRequest.getSystem()).lookup(lookupRequest);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(lookupRequest.getSystem());
+		return codeSystemProvider.lookup(lookupRequest);
 	}
 
 	/*
@@ -396,6 +396,16 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			
 			if (!Objects.equals(coding.getVersion(), lookupRequest.getVersion())) {
 				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
+			}
+		}
+		
+		//SNOMED CT specific, both the URI and version identifies the version
+		if (lookupRequest.getSystem() != null) {
+			if (lookupRequest.getSystem().startsWith("http://snomed.info/sct") 
+					&& lookupRequest.getSystem().contains("version")
+					&& lookupRequest.getVersion() != null) {
+				
+				throw new BadRequestException("Both system URI and version tag identifies a version.", "LookupRequest");
 			}
 		}
 	}
@@ -462,6 +472,14 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			if (!StringUtils.isEmpty(codeA) || !StringUtils.isEmpty(codeA)) {
 				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
 			}
+		}
+		
+		//SNOMED CT specific, both the URI and version identifies the version
+		if (system.startsWith("http://snomed.info/sct") 
+				&& system.contains("version")
+				&& version != null) {
+			
+			throw new BadRequestException("Both system URI and version tag identifies a version.", "SubsumptionRequest");
 		}
 		
 	}

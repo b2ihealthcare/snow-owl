@@ -8,3 +8,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.b2international.snowowl.fhir.core,
  com.b2international.commons,
  com.b2international.snowowl.snomed.datastore
+Export-Package: com.b2international.snowowl.snomed.fhir

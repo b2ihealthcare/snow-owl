@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.service;
+package com.b2international.snowowl.snomed.fhir;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
-import org.springframework.util.StringUtils;
-
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
@@ -80,7 +82,12 @@ public class SnomedUri {
 			throw new IllegalArgumentException(String.format("No version tag is specified after the 'version' parameter."));
 		}
 		versionTag = pathIterator.next().toString();
-		
+		//to validate
+		try {
+			EffectiveTimes.parse(versionTag, DateFormats.SHORT);
+		} catch(RuntimeException re) {
+			throw new IllegalArgumentException(String.format("Could not parse version date [%s].", versionTag), re);
+		}
 	}
 	
 	public String getExtensionModuleId() {

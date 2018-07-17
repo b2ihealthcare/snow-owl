@@ -65,7 +65,8 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
 	}
 	
-	protected final String repositoryId() {
+	@Override
+	protected String getRepositoryId() {
 		return repositoryId;
 	}
 	
@@ -93,7 +94,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		return SnomedRequests.prepareSearchRefSet()
 			.all()
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.build(repositoryId(), getBranchPath(version))
+			.build(getRepositoryId(), getBranchPath(version))
 			.execute(getBus())
 			.then(refsets -> {
 				return refsets.stream()
@@ -116,7 +117,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		return SnomedRequests.prepareSearchRefSet()
 				.filterById(referenceSetId)
 				.filterByType(SnomedRefSetType.SIMPLE)
-				.build(repositoryId(), getBranchPath(version))
+				.build(getRepositoryId(), getBranchPath(version))
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
@@ -141,12 +142,12 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.value(referenceSetId)
 			.build();
 		
-		String id = repositoryId() + "/" + referenceSetId;
+		String id = getRepositoryId() + "/" + referenceSetId;
 		
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-			.build(repositoryId(), IBranchPath.MAIN_BRANCH)
+			.build(getRepositoryId(), IBranchPath.MAIN_BRANCH)
 			.execute(getBus())
 			.getSync();
 		
@@ -160,6 +161,11 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	
 	protected Uri getFhirUri() {
 		return FHIR_URI;
+	}
+
+	@Override
+	protected String getCodeSystemShortName() {
+		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	}
 	
 }

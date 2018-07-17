@@ -276,9 +276,19 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected int getCount() {
+	protected int getCount(CodeSystemVersionEntry codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return 0;
+	}
+
+	@Override
+	protected String getCodeSystemShortName() {
+		return null;
+	}
+
+	@Override
+	protected String getRepositoryId() {
+		return null;
 	}
 
 }

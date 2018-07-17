@@ -206,7 +206,7 @@ public class SearchRequestParameters {
 	
 	/**
 	 * Cross field request parameter key validation
-	 * TODO: this is incorrect, see count paramater validation
+	 * TODO: this is incorrect, see count paramater validation (only allowed for search operations)
 	 */
 	protected void validateRequestParams() {
 		
@@ -215,12 +215,8 @@ public class SearchRequestParameters {
 		}
 		
 		if (summary != null) {
-			try {
-				if (getSummary() == SummaryParameterValue.COUNT) {
-					throw new IllegalArgumentException("'Count' summary parameter is only allowed for search operations.");
-				}
-			} catch (RuntimeException re) {
-				throw new IllegalArgumentException("Unknown '_summary' parameter value '" + summary + "'. Only 'true', 'false', 'text', 'data' are permitted.");
+			if (getSummary() == SummaryParameterValue.COUNT) {
+				throw new IllegalArgumentException("'Count' summary parameter is only allowed for search operations.");
 			}
 		}
 	}

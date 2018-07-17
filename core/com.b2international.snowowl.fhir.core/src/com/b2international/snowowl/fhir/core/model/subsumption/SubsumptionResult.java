@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.core.model.subsumption;
 
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
@@ -24,6 +26,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({"outcome"})
 public class SubsumptionResult {
+	
+	public enum SubsumptionType {
+		EQUIVALENT,
+		SUBSUMES,
+		SUBSUMED_BY,
+		NOT_SUBSUMED;
+		
+		public String getResultString() {
+			return name().toLowerCase().replaceAll("_", "-");
+		}
+		
+		public static SubsumptionType fromRequestParameter(String requestParam) {
+			return valueOf(requestParam.toUpperCase().replaceAll("-", "_"));
+		}
+	}
 
 	/**
 	 * The subsumption relationship between code/Coding "A" and code/Coding "B". 
@@ -31,30 +48,31 @@ public class SubsumptionResult {
 	 * If the server is unable to determine the relationship between the codes/Codings, then it returns an error (i.e. an OperationOutcome)
 	 */
 	@FhirType(FhirDataType.CODE)
-	private final String outcome;
+	private final SubsumptionType outcome;
 	
-	private SubsumptionResult(String outcome) {
-		this.outcome = outcome;
+	@JsonCreator
+	private SubsumptionResult(@JsonProperty("outcome") String outcome) {
+		this.outcome = SubsumptionType.fromRequestParameter(outcome);
 	}
 	
-	public String getOutcome() {
+	public SubsumptionType getOutcome() {
 		return outcome;
 	}
 	
 	public static SubsumptionResult equivalent() {
-		return new SubsumptionResult("equivalent");
+		return new SubsumptionResult(SubsumptionType.EQUIVALENT.getResultString());
 	}
 	
 	public static SubsumptionResult subsumes() {
-		return new SubsumptionResult("subsumes");
+		return new SubsumptionResult(SubsumptionType.SUBSUMES.getResultString());
 	}
 	
 	public static SubsumptionResult subsumedBy() {
-		return new SubsumptionResult("subsumed-by");
+		return new SubsumptionResult(SubsumptionType.SUBSUMED_BY.getResultString());
 	}
 	
 	public static SubsumptionResult notSubsumed() {
-		return new SubsumptionResult("not-subsumed");
+		return new SubsumptionResult(SubsumptionType.NOT_SUBSUMED.getResultString());
 	}
 	
 }

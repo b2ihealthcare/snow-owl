@@ -56,7 +56,7 @@ public class LookupSnomedRestTest extends FhirTest {
 	}
 	
 	//GET SNOMED CT with parameters, default properties
-	//@Test
+	@Test
 	public void lookupDefaultPropertiesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -148,7 +148,7 @@ public class LookupSnomedRestTest extends FhirTest {
 	}
 	
 	//GET SNOMED CT with properties
-	//@Test
+	@Test
 	public void lookupSnomedCodeSystemCodeInvalidProperyTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -156,6 +156,54 @@ public class LookupSnomedRestTest extends FhirTest {
 			.param("code", "263495000")
 			.param("property", "INACTIVE")
 			.param("_format", "json")
+			.when().get("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.body("issue.details.text", hasItem("Bad Syntax in LookupRequest.property"))
+			.statusCode(400);
+	}
+	
+	@Test
+	public void lookupVersionTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
+			.param("code", "263495000")
+			.when().get("/CodeSystem/$lookup")
+			.asString();
+		
+		System.out.println(responseString);
+		LookupResult result = convertToResult(responseString);
+		
+		assertEquals("SNOMED CT", result.getName());
+		assertEquals("20170131", result.getVersion());
+	}
+	
+	@Test
+	public void lookupInvalidVersionTest() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", "http://snomed.info/sct/900000000000207008/version/20170130")
+			.param("code", "263495000")
+			.param("property", "INACTIVE")
+			.when().get("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.body("issue.details.text", hasItem("Bad Syntax in LookupRequest.property"))
+			.statusCode(400);
+	}
+	
+	@Test
+	public void lookupInvalidVersionTest2() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", "http://snomed.info/sct/900000000000207008/version/abcd")
+			.param("code", "263495000")
+			.param("property", "INACTIVE")
 			.when().get("/CodeSystem/$lookup")
 			.then()
 			.body("resourceType", equalTo("OperationOutcome"))

@@ -18,11 +18,22 @@ package com.b2international.snowowl.fhir.api.tests;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -53,34 +64,19 @@ public class SandBoxRestTest extends FhirTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
 			.when().get("/CodeSystem/{id}").prettyPrint();
-			/*
-			.then()
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("content", equalTo("not-present"))
-			.body("status", equalTo("active"))
-			.statusCode(200);
-			*/
 	}
 	
-	//All code systems fully detailed
-		@Test
-		public void getFullCodeSystemsTest() {
-			
-			givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-				.when().get("/CodeSystem")
-				.then()
-				.body("resourceType", equalTo("Bundle"))
-				.body("total", notNullValue())
-				
-				//SNOMED CT
-				.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
-				.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/20170731'}")
-				.body("property.size()", equalTo(116))
-				
-				//FHIR issue type code system has children
-				.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
-				.body("concept.size()", equalTo(29))
-				.statusCode(200);
-		}
-
+	//@Test
+	public void lookupDefaultPropertiesTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", "http://snomed.info/sct")
+			.param("code", "263495000")
+			.param("_format", "json")
+			.when().get("/CodeSystem/$lookup")
+			.asString();
+		
+		System.out.println("Response string: " + responseString);
+		LookupResult result = convertToResult(responseString);
+	}
 }

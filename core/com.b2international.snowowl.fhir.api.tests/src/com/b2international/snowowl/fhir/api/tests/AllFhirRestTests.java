@@ -25,6 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.CodeSystemRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.fhir.LookupFhirCodeSystemRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed.LookupSnomedRestTest;
+import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed.SubsumesSnomedRestTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
@@ -36,7 +37,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	//CodeSystemRestTest.class,
 	//LookupFhirCodeSystemRestTest.class,
-	//LookupSnomedRestTest.class,
+	LookupSnomedRestTest.class,
+	//SubsumesSnomedRestTest.class,
 	SandBoxRestTest.class
 })
 public class AllFhirRestTests {

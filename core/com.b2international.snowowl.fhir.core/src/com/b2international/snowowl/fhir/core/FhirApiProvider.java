@@ -17,17 +17,21 @@ package com.b2international.snowowl.fhir.core;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
-import com.b2international.commons.CompareUtils;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 /**
  * 
  * @since 6.4
  */
-public class FhirApiProvider {
+public abstract class FhirApiProvider {
 	
 	/**
 	 * @return the {@link IEventBus} service to access terminology resources.
@@ -41,8 +45,42 @@ public class FhirApiProvider {
 	 * @return an absolute branch path to use in terminology API requests
 	 */
 	protected final String getBranchPath(String version) {
-		return CompareUtils.isEmpty(version) ? Branch.MAIN_PATH : Branch.get(Branch.MAIN_PATH, version); 
+		
+		if (version!=null) {
+			return Branch.get(Branch.MAIN_PATH, version);
+		} else {
+			
+			//get the last version for now
+			Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByCodeSystemShortName(getCodeSystemShortName())
+				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first();
+			
+			if (latestVersion.isPresent()) {
+				return latestVersion.get().getPath();
+			}
+			
+			//no version supplied, no version found in the repository, we should probably throw an exception, but for now returning MAIN
+			return Branch.MAIN_PATH;
+		}
 	}
+	
+	/**
+	 * Returns the code system short name for the provider
+	 * @return
+	 */
+	protected abstract String getCodeSystemShortName();
+	
+	/**
+	 * Returns the repository id for the provider
+	 * @return
+	 */
+	protected abstract String getRepositoryId();
+		
 	
 	/**
 	 * Returns (attempts) the ISO 639 two letter code based on the language name.
