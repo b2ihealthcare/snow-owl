@@ -18,13 +18,6 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateRelationshipId;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Sets.newHashSet;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,29 +25,24 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EStructuralFeature;
-
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.datastore.cdo.StorageKeyAuthority;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,7 +51,6 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 4.7
  */
-@SuppressWarnings("restriction")
 public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 
 	protected final long ROOT_CONCEPTL = Long.parseLong(Concepts.ROOT_CONCEPT);
@@ -204,15 +191,17 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.build();
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry createLangMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
+	protected final SnomedRefSetMemberIndexEntry langMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
 		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder()
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, acceptability.getConceptId());
 		return createMember(member, descriptionId, refSetId);
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry createSimpleMember(final String referencedComponentId, final String refSetId) {
-		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder().referenceSetType(SnomedRefSetType.SIMPLE);
+		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder()
+				.referenceSetType(SnomedRefSetType.SIMPLE);
 		return createMember(member, referencedComponentId, refSetId);
 	}
 	
@@ -227,24 +216,24 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.id(UUID.randomUUID().toString())
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
+				.referencedComponentType(SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId))
 				.referenceSetId(refSetId)
 				.build();
 	}
 	
-	protected final SnomedDescriptionIndexEntry createFsnWithTwoAcceptabilityMembers() {
-		final Description description = createDescription(Concepts.FULLY_SPECIFIED_NAME, "Example FSN");
-		final SnomedLanguageRefSetMember acceptableMember = createLangMember(description.getId(), Acceptability.ACCEPTABLE, Concepts.REFSET_LANGUAGE_TYPE_US);
-		final SnomedLanguageRefSetMember preferredMember = createLangMember(description.getId(), Acceptability.PREFERRED, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		description.getLanguageRefSetMembers().add(acceptableMember);
-		description.getLanguageRefSetMembers().add(preferredMember);
-		return description;
+	protected final SnomedDescriptionIndexEntry fsn(String conceptId, Map<String, Acceptability> acceptabilityMap) {
+		return description(conceptId, Concepts.FULLY_SPECIFIED_NAME, "Example FSN", acceptabilityMap);
 	}
 	
-	protected final SnomedDescriptionIndexEntry createDescription(String typeId, String term) {
-		return createDescription(generateConceptId(), typeId, term);
+	protected final SnomedDescriptionIndexEntry synonym(String conceptId, Map<String, Acceptability> acceptabilityMap) {
+		return description(conceptId, Concepts.SYNONYM, "Example Synonym", acceptabilityMap);
 	}
 	
-	protected final SnomedDescriptionIndexEntry createDescription(String conceptId, String typeId, String term) {
+	protected final SnomedDescriptionIndexEntry definition(String conceptId, Map<String, Acceptability> acceptabilityMap) {
+		return description(conceptId, Concepts.TEXT_DEFINITION, "Example Text Def", acceptabilityMap);
+	}
+	
+	protected final SnomedDescriptionIndexEntry description(String conceptId, String typeId, String term, Map<String, Acceptability> acceptabilityMap) {
 		return SnomedDescriptionIndexEntry.builder()
 				.active(true)
 				.released(false)
@@ -255,7 +244,31 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.typeId(typeId)
 				.languageCode("en")
 				.moduleId(module())
+				.acceptabilityMap(acceptabilityMap)
 				.build();
+	}
+	
+	protected final SnomedConceptDocument.Builder docWithDefaults(final SnomedConceptDocument concept) {
+		return SnomedConceptDocument.builder(concept)
+				// new concepts without any ISA or Description should get the following derived values as defaults via the change processor
+				.iconId(Concepts.ROOT_CONCEPT)
+				.parents(IComponent.ROOT_IDL)
+				.ancestors(PrimitiveSets.emptyLongSet())
+				.statedParents(IComponent.ROOT_IDL)
+				.statedAncestors(PrimitiveSets.emptyLongSet());
+	}
+
+	protected final SnomedConceptDocument.Builder concept() {
+		return concept(generateConceptId());
+	}
+	
+	protected final SnomedConceptDocument.Builder concept(final String id) {
+		return SnomedConceptDocument.builder()
+				.id(id)
+				.active(true)
+				.primitive(false)
+				.moduleId(module())
+				.exhaustive(false);
 	}
 
 }

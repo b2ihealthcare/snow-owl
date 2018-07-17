@@ -166,7 +166,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.caseSignificanceId(doc.getCaseSignificanceId())
 				.conceptId(doc.getConceptId())
 				.languageCode(doc.getLanguageCode())
-				.effectiveTime(doc.getEffectiveTime());
+				.effectiveTime(doc.getEffectiveTime())
+				.acceptabilityMap(doc.getAcceptabilityMap());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {

@@ -87,6 +87,18 @@ public final class StagingArea {
 		return index.read(branchPath, read);
 	}
 	
+	public boolean isNew(Revision revision) {
+		return newObjects.containsKey(revision.getId());
+	}
+	
+	public boolean isChanged(Revision revision) {
+		return changedObjects.containsKey(revision.getId()) || changedRevisions.containsKey(revision.getId());
+	}
+	
+	public boolean isRemoved(Revision revision) {
+		return removedObjects.containsKey(revision.getId());
+	}
+	
 	public Map<String, Object> getNewObjects() {
 		return newObjects;
 	}
