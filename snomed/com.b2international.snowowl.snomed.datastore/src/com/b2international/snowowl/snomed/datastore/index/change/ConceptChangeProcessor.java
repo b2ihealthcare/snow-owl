@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -165,25 +164,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					final Map<String, SnomedDescriptionFragment> updatedPreferredDescriptions = newHashMap(Maps.uniqueIndex(currentDoc.getPreferredDescriptions(), SnomedDescriptionFragment::getId));
 					
 					// add new/dirty fragments if they are preferred and active terms
-					for (SnomedDescriptionIndexEntry affectedDescription : newArrayList(affectedDescriptions)) {
+					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
 						if (staging.isNew(affectedDescription) || staging.isChanged(affectedDescription)) {
 							updatedPreferredDescriptions.remove(affectedDescription.getId());
 							if (affectedDescription.isActive() && !getPreferredLanguageMembers(affectedDescription).isEmpty()) {
 								updatedPreferredDescriptions.put(affectedDescription.getId(), toDescriptionFragment(affectedDescription));
 							}
-							affectedDescriptions.remove(affectedDescription);
 						}
 					}
 					
 					// remove deleted descriptions
-					for (SnomedDescriptionIndexEntry affectedDescription : newArrayList(affectedDescriptions)) {
+					for (SnomedDescriptionIndexEntry affectedDescription : affectedDescriptions) {
 						if (staging.isRemoved(affectedDescription)) {
 							updatedPreferredDescriptions.remove(affectedDescription.getId());
-							affectedDescriptions.remove(affectedDescription);
 						}
 					}
-					
-					// if we still have affected descriptions at this point then the languague memberships has changed probably
 					
 					doc.preferredDescriptions(updatedPreferredDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
 				} else {
