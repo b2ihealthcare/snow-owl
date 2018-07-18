@@ -22,9 +22,6 @@ import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.google.common.base.Strings;
 
 /**

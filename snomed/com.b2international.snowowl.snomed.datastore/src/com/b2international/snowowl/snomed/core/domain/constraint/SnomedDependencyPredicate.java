@@ -27,12 +27,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
-import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
-import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.google.common.collect.Maps;
 
 /**

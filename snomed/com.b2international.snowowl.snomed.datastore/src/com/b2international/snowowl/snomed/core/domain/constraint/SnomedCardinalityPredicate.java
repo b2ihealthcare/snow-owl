@@ -22,7 +22,6 @@ import java.util.UUID;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 
 /**

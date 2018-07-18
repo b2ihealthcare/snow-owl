@@ -26,12 +26,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
-import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 
 /**
  * The component representation of an MRCM constraint.
