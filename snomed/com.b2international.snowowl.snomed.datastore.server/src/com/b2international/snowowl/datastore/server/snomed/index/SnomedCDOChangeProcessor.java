@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
-import com.b2international.snowowl.snomed.datastore.index.change.RefSetMemberChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -168,12 +167,12 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, staging, statedConceptIds, checkCycles);
-		
+
+		// XXX change processor order is important!!!
 		return ImmutableList.<ChangeSetProcessor>builder()
-				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new DescriptionChangeProcessor())
+				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
-				.add(new RefSetMemberChangeProcessor())
 				.add(new ConstraintChangeProcessor())
 				.build();
 		

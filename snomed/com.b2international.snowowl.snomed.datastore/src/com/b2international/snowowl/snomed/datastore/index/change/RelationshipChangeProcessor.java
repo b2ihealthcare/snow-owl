@@ -96,7 +96,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 			new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 					.update(doc);
 			
-			indexChangedRevision(currentDoc, doc.build());
+			stageChange(currentDoc, doc.build());
 		}
 	}
 	

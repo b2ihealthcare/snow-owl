@@ -73,7 +73,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 		}
 		
 		for (AttributeConstraint newConstraint : newConstraints) {
-			indexNewRevision(SnomedConstraintDocument.builder(newConstraint)
+			stageNew(SnomedConstraintDocument.builder(newConstraint)
 					.storageKey(CDOIDUtil.getLong(newConstraint.cdoID()))
 					.build());
 		}
@@ -85,7 +85,7 @@ public class ConstraintChangeProcessor extends ChangeSetProcessorBase {
 			if (currentRev == null) {
 				throw new IllegalStateException("Current revision cannot be null for constraint: " + changedConstraint.getUuid());
 			}
-			indexChangedRevision(currentRev, SnomedConstraintDocument.builder(changedConstraint)
+			stageChange(currentRev, SnomedConstraintDocument.builder(changedConstraint)
 					.storageKey(CDOIDUtil.getLong(changedConstraint.cdoID()))
 					.build());
 		}

@@ -123,7 +123,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			update(doc, concept, null);
 			// in case of a new concept, all of its descriptions should be part of the staging area as well
 			doc.preferredDescriptions(getDescriptionFragmentsOfNewConcept(staging, id));
-			indexNewRevision(doc.build());
+			stageNew(doc.build());
 		});
 		
 		// collect dirty concepts that require additional properties to be set for index
@@ -185,7 +185,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
 				}
 				
-				indexChangedRevision(currentDoc, doc.build());
+				stageChange(currentDoc, doc.build());
 			}
 		}
 	}

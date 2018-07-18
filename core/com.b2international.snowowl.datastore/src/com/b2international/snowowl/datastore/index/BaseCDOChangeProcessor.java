@@ -23,15 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Hooks;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 
 /**
  * Base {@link Repository} pre-commit hook.    
@@ -83,8 +79,6 @@ public abstract class BaseCDOChangeProcessor implements Hooks.PreCommitHook {
 
 	private final void updateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		LOG.info("Processing changes...");
-		final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet = ImmutableIndexCommitChangeSet.builder();
-		
 //		processNewCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
 //		processDirtyCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
 
@@ -102,31 +96,20 @@ public abstract class BaseCDOChangeProcessor implements Hooks.PreCommitHook {
 			LOG.trace("Collecting {}...", processor.description());
 			processor.process(staging, index);
 			// register additions, deletions from the sub processor
+			
 			for (RevisionDocument revision : processor.getNewMappings().values()) {
-				indexCommitChangeSet.putNewObject(getComponentIdentifier(revision), revision);
+				staging.stageNew(revision);
 			}
 			
 			for (RevisionDocumentChange revisionChange : processor.getChangedMappings().values()) {
-				indexCommitChangeSet.putChangedObject(getComponentIdentifier(revisionChange.getNewRevision()), revisionChange);
+				staging.stageChange(((RevisionDocumentChange) revisionChange).getOldRevision(), ((RevisionDocumentChange) revisionChange).getNewRevision());
 			}
 			
-			final Multimap<Class<? extends Revision>, String> deletions = processor.getDeletions();
-			for (Class<? extends Revision> type : deletions.keySet()) {
-				// TODO remove index.get call here, we already fetched the doc, now we do it again do delete it, see CDOCommitChangeSet
-				for (RevisionDocument revision : Iterables.filter(index.get(type, deletions.get(type)), RevisionDocument.class)) {
-					indexCommitChangeSet.putRemovedComponent(getComponentIdentifier(revision), revision);
-				}
-			}
+			processor.getDeletions().forEach(staging::stageRemove);
 		}
 
-		IndexCommitChangeSet indexChangeSet = indexCommitChangeSet.build();
-		postUpdateDocuments(indexChangeSet);
-		indexChangeSet.apply(staging);
+		postUpdateDocuments(staging);
 		LOG.info("Processing changes successfully finished.");
-	}
-
-	private ComponentIdentifier getComponentIdentifier(RevisionDocument revision) {
-		return ComponentIdentifier.of(getTerminologyComponentId(revision), revision.getId());
 	}
 
 	protected abstract short getTerminologyComponentId(RevisionDocument revision);
@@ -143,9 +126,9 @@ public abstract class BaseCDOChangeProcessor implements Hooks.PreCommitHook {
 	/**
 	 * Subclasses may override this method to execute additional logic after the processing of the changeset, but before committing it.
 	 * 
-	 * @param commitChangeSet - the commit change set about to be committed by this processor
+	 * @param staging - the staging area before committing it to the repository
 	 */
-	protected void postUpdateDocuments(IndexCommitChangeSet commitChangeSet) {
+	protected void postUpdateDocuments(StagingArea staging) {
 	}
 
 //	@SuppressWarnings("restriction")

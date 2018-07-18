@@ -16,13 +16,12 @@
 package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
 import com.b2international.index.revision.StagingArea;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 4.3
@@ -65,6 +64,6 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Multimap<Class<? extends Revision>, String> getDeletions();
+	Collection<RevisionDocument> getDeletions();
 
 }
