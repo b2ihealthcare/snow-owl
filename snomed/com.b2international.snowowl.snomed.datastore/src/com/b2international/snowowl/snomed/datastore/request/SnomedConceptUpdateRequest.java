@@ -131,15 +131,17 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (descriptions != null) {
-			updateComponents(context, concept.getId(), 
-					getComponentIds(concept.getDescriptions()), descriptions, 
-					id -> SnomedRequests.prepareDeleteDescription(id).build());
+			throw new UnsupportedOperationException("TODO implement description updates via concept");
+//			updateComponents(context, concept.getId(), 
+//					getComponentIds(concept.getDescriptions()), descriptions, 
+//					id -> SnomedRequests.prepareDeleteDescription(id).build());
 		}
 		
 		if (relationships != null) {
-			updateComponents(context, concept.getId(), 
-					getComponentIds(concept.getOutboundRelationships()), relationships, 
-					id -> SnomedRequests.prepareDeleteRelationship(id).build());
+			throw new UnsupportedOperationException("TODO implement description updates via concept");
+//			updateComponents(context, concept.getId(), 
+//					getComponentIds(concept.getOutboundRelationships()), relationships, 
+//					id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
 		
 		if (members != null) {
@@ -148,7 +150,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 					id -> SnomedRequests.prepareDeleteMember(id).build());
 		}
 		
-		changed |= processInactivation(context, concept);
+		changed |= processInactivation(context, concept, updatedConcept);
 
 		if (changed) {
 			if (concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
@@ -229,7 +231,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private boolean processInactivation(final TransactionContext context, final Concept concept) {
+	private boolean processInactivation(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
 		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
 			return false;
 		}
@@ -244,9 +246,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			// Active --> Inactive: concept inactivation, update indicator and association targets
 			// (using default values if not given)
 			
-			inactivateConcept(context, concept);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			inactivateConcept(context, concept, updatedConcept);
+			updateInactivationIndicator(context, concept, newIndicator);
+			updateAssociationTargets(context, concept, newAssociationTargets);
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
@@ -262,9 +264,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				throw new BadRequestException("Cannot reactivate concept and retain or change its historical association targets at the same time.");
 			}
 			
-			reactivateConcept(context, concept);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			reactivateConcept(context, concept, updatedConcept);
+			updateInactivationIndicator(context, concept, newIndicator);
+			updateAssociationTargets(context, concept, newAssociationTargets);
 			return true;
 			
 		} else if (currentStatus == newStatus) {
@@ -272,8 +274,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			// Same status, allow indicator and/or association targets to be updated if required
 			// (using original values that can be null)
 			
-			updateInactivationIndicator(context, inactivationIndicator);
-			updateAssociationTargets(context, associationTargets);
+			updateInactivationIndicator(context, concept, inactivationIndicator);
+			updateAssociationTargets(context, concept, associationTargets);
 			return false;
 			
 		} else {
@@ -281,31 +283,32 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private void updateAssociationTargets(final TransactionContext context, Multimap<AssociationType, String> associationTargets) {
+	private void updateAssociationTargets(final TransactionContext context, SnomedConceptDocument concept, Multimap<AssociationType, String> associationTargets) {
 		if (associationTargets == null) {
 			return;
 		}
 		
-		SnomedAssociationTargetUpdateRequest<Concept> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Concept.class);
+		SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(concept.getId(), concept.getModuleId());
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
 
-	private void updateInactivationIndicator(final TransactionContext context, final InactivationIndicator indicator) {
+	private void updateInactivationIndicator(final TransactionContext context, final SnomedConceptDocument concept, final InactivationIndicator indicator) {
 		if (indicator == null) {
 			return;
 		}
 		
-		final SnomedInactivationReasonUpdateRequest<Concept> inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
-				getComponentId(), 
-				Concept.class, 
-				Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR);
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
+			getComponentId(), 
+			Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
+			concept.getModuleId()
+		);
 		
 		inactivationUpdateRequest.setInactivationValueId(indicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
 	}
 
-	private void inactivateConcept(final TransactionContext context, final Concept concept) {
+	private void inactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
 		if (!concept.isActive()) {
 			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
 		}
@@ -316,13 +319,13 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
 		
 		// The inactivation plan places new inactivation reason members on descriptions, even if one is already present. Fix this by running the update on the descriptions again.
-		for (final Description description : concept.getDescriptions()) {
+		for (final SnomedDescription description : concept.getDescriptions()) {
 			// Add "Concept non-current" reason to active descriptions
 			if (description.isActive()) {
-				SnomedInactivationReasonUpdateRequest<Description> descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
+				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
 						description.getId(), 
-						Description.class, 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+						description.getModuleId());
 				
 				// XXX: The only other inactivation reason an active description can have is "Pending move"; not sure what the implications are
 				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId());
@@ -331,20 +334,20 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 	}
 
-	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
-		if (original.isActive()) {
-			throw new ComponentStatusConflictException(original.getId(), original.isActive());
+	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
+		if (concept.isActive()) {
+			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
 		}
 		
-		concept.active(true);
+		updatedConcept.active(true);
 		
-		for (final Description description : concept.getDescriptions()) {
+		for (final SnomedDescription description : concept.getDescriptions()) {
 			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
 			if (description.isActive()) {
-				SnomedInactivationReasonUpdateRequest<Description> descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
+				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
 						description.getId(), 
-						Description.class, 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+						description.getModuleId());
 				
 				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.RETIRED.getConceptId());
 				descriptionUpdateRequest.execute(context);

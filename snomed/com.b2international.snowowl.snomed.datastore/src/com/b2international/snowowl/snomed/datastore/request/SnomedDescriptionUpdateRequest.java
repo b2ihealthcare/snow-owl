@@ -133,20 +133,20 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		return changed;
 	}
 
-	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
+	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
 		final SnomedDescriptionAcceptabilityUpdateRequest acceptabilityUpdate = new SnomedDescriptionAcceptabilityUpdateRequest();
 		acceptabilityUpdate.setAcceptability(acceptability);
 		acceptabilityUpdate.setDescriptionId(description.getId());
 		acceptabilityUpdate.execute(context);
 	}
 
-	private void updateAssociationTargets(TransactionContext context, final Multimap<AssociationType, String> associationTargets) {
-		final SnomedAssociationTargetUpdateRequest<Description> associationUpdateRequest = new SnomedAssociationTargetUpdateRequest<>(getComponentId(), Description.class);
+	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {
+		final SnomedAssociationTargetUpdateRequest associationUpdateRequest = new SnomedAssociationTargetUpdateRequest(description.getId(), description.getModuleId());
 		associationUpdateRequest.setNewAssociationTargets(associationTargets);
 		associationUpdateRequest.execute(context);
 	}
 	
-	private boolean processInactivation(final TransactionContext context, final SnomedDescriptionIndexEntry original, final SnomedDescriptionIndexEntry.Builder description) {
+	private boolean processInactivation(final TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
 		if (null == isActive() && null == inactivationIndicator && null == associationTargets) {
 			return false;
 		}
@@ -161,9 +161,9 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Active --> Inactive: description inactivation, update indicator and association targets
 			// (using default values if not given)
 
-			description.setActive(false);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			updatedDescription.active(false);
+			updateInactivationIndicator(context, description, newIndicator);
+			updateAssociationTargets(context, description, newAssociationTargets);
 			return true;
 			
 		} else if (!currentStatus && newStatus) {
@@ -179,9 +179,9 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 				throw new BadRequestException("Cannot reactivate description and retain or change its historical association target(s) at the same time.");
 			}
 			
-			description.setActive(true);
-			updateInactivationIndicator(context, newIndicator);
-			updateAssociationTargets(context, newAssociationTargets);
+			updatedDescription.active(true);
+			updateInactivationIndicator(context, description, newIndicator);
+			updateAssociationTargets(context, description, newAssociationTargets);
 			return true;
 			
 		} else if (!currentStatus && !newStatus) {
@@ -189,8 +189,8 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 			// Inactive --> Inactive: update indicator and/or association targets if required
 			// (using original values that can be null)
 
-			updateInactivationIndicator(context, inactivationIndicator);
-			updateAssociationTargets(context, associationTargets);
+			updateInactivationIndicator(context, description, inactivationIndicator);
+			updateAssociationTargets(context, description, associationTargets);
 			return false;
 			
 		} else /* if (currentStatus && newStatus) */ {
@@ -198,15 +198,15 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		}
 	}
 
-	private void updateInactivationIndicator(final TransactionContext context, final DescriptionInactivationIndicator inactivationIndicator) {
+	private void updateInactivationIndicator(final TransactionContext context, final SnomedDescriptionIndexEntry description, final DescriptionInactivationIndicator inactivationIndicator) {
 		if (inactivationIndicator == null) {
 			return;
 		}
 		
-		final SnomedInactivationReasonUpdateRequest<Description> inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest<>(
-				getComponentId(), 
-				Description.class, 
-				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+		final SnomedInactivationReasonUpdateRequest inactivationUpdateRequest = new SnomedInactivationReasonUpdateRequest(
+				description.getId(), 
+				Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+				description.getModuleId());
 		
 		inactivationUpdateRequest.setInactivationValueId(inactivationIndicator.getConceptId());
 		inactivationUpdateRequest.execute(context);
