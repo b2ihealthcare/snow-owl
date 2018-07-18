@@ -75,8 +75,10 @@ final class ScheduleJobRequest implements Request<ServiceProvider, String> {
 			} else {
 				RemoteJob job = new RemoteJob(id, description, user, context, request);
 				job.setSystem(true);
+				if (schedulingRule != null) {
+					job.setRule(schedulingRule);
+				}
 				job.schedule();
-				job.setRule(schedulingRule);
 				return id;
 			}
 			
