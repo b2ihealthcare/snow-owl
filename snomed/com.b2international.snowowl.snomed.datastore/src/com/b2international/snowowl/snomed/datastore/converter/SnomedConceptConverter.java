@@ -99,7 +99,6 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 	@Override
 	protected SnomedConcept toResource(final SnomedConceptDocument input) {
 		final SnomedConcept result = new SnomedConcept();
-		result.setStorageKey(input.getStorageKey());
 		result.setActive(input.isActive());
 		result.setDefinitionStatus(toDefinitionStatus(input.isPrimitive()));
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
@@ -134,7 +133,6 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		if (expand().containsKey(SnomedConcept.Expand.PREFERRED_DESCRIPTIONS) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM) || expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME)) {
 			List<SnomedDescription> preferredDescriptions = input.getPreferredDescriptions().stream().map(description -> {
 				SnomedDescription preferredDescription = new SnomedDescription(description.getId());
-				preferredDescription.setStorageKey(description.getStorageKey());
 				preferredDescription.setConceptId(result.getId());
 				preferredDescription.setTerm(description.getTerm());
 				preferredDescription.setTypeId(description.getTypeId());

@@ -207,7 +207,7 @@ public class DescriptionChangeProcessorTest extends BaseChangeProcessorTest {
 		
 		assertThat(processor.getNewMappings()).isEmpty();
 		assertThat(processor.getChangedMappings()).isEmpty();
-		assertThat(processor.getDeletions().asMap()).isEmpty();
+		assertThat(processor.getDeletions()).isEmpty();
 	}
 	
 	@Test

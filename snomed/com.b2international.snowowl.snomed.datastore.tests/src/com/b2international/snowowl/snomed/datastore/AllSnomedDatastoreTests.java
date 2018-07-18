@@ -19,35 +19,49 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestTest;
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclRewriterTest;
+import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
+import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.PreferredDescriptionPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.TaxonomyPreCommitHookTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentTermSortTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberDocumentSerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.internal.id.SnomedIdentifierTest;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.ReservationImplTest;
+import com.b2international.snowowl.snomed.datastore.internal.id.reservations.SnomedIdentifierReservationServiceImplTest;
+import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluatorTest;
 
 /**
  * @since 4.0
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-//	TerminologyTreeTest.class,
-//	ReservationImplTest.class,
-//	SnomedIdentifierTest.class,
-//	SnomedIdentifierReservationServiceImplTest.class,
-//	DefaultSnomedIdentifierServiceTest.class,
-//	DefaultSnomedIdentifierServiceRegressionTest.class,
-//	SnomedConceptIndexEntrySerializationTest.class,
-//	SnomedRelationshipIndexEntrySerializationTest.class,
-//	SnomedDescriptionIndexEntrySerializationTest.class,
+	TerminologyTreeTest.class,
+	ReservationImplTest.class,
+	SnomedIdentifierTest.class,
+	SnomedIdentifierReservationServiceImplTest.class,
+	DefaultSnomedIdentifierServiceTest.class,
+	DefaultSnomedIdentifierServiceRegressionTest.class,
+	SnomedConceptIndexEntrySerializationTest.class,
+	SnomedRelationshipIndexEntrySerializationTest.class,
+	SnomedDescriptionIndexEntrySerializationTest.class,
 //	SnomedConstraintDocumentSerializationTest.class,
-//	SnomedRefSetMemberDocumentSerializationTest.class,
-//	// change proc test cases
+	SnomedRefSetMemberDocumentSerializationTest.class,
+	// change proc test cases
 	DescriptionChangeProcessorTest.class,
 	RelationshipChangeProcessorTest.class,
 //	ConstraintChangeProcessorTest.class,
-//	SnomedEclEvaluationRequestTest.class,
-//	SnomedEclRewriterTest.class,
-//	SnomedQueryValidationRuleEvaluatorTest.class,
-//	SnomedConceptDocumentTermSortTest.class,
+	SnomedEclEvaluationRequestTest.class,
+	SnomedEclRewriterTest.class,
+	SnomedQueryValidationRuleEvaluatorTest.class,
+	SnomedConceptDocumentTermSortTest.class,
 	TaxonomyPreCommitHookTest.class,
 	PreferredDescriptionPreCommitHookTest.class
 })
