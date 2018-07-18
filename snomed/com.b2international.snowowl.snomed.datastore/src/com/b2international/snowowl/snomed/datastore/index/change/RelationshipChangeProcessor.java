@@ -22,19 +22,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Builder;
@@ -57,28 +51,21 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
-		final Multimap<String, RefSetMemberChange> referringRefSets = memberChangeProcessor.process(commitChangeSet, searcher);
+	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
+		final Multimap<String, RefSetMemberChange> referringRefSets = memberChangeProcessor.process(staging, searcher);
 		
-		deleteRevisions(SnomedRelationshipIndexEntry.class, commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.RELATIONSHIP, SnomedRelationshipIndexEntry.class));
+		final Set<String> newRelationshipIds = staging
+				.getNewObjects(SnomedRelationshipIndexEntry.class)
+				.map(SnomedRelationshipIndexEntry::getId)
+				.collect(Collectors.toSet());
 		
-		final Map<String, Relationship> newRelationshipsById = StreamSupport
-				.stream(commitChangeSet.getNewComponents(Relationship.class).spliterator(), false)
-				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
-		
-		for (Relationship relationship : commitChangeSet.getNewComponents(Relationship.class)) {
-			indexNewRevision(SnomedRelationshipIndexEntry.builder(relationship)
-					.storageKey(CDOIDUtil.getLong(relationship.cdoID()))
-					.build());
-		}
-		
-		final Map<String, Relationship> changedRelationshipsById = StreamSupport
-				.stream(commitChangeSet.getDirtyComponents(Relationship.class).spliterator(), false)
+		final Map<String, SnomedRelationshipIndexEntry> changedRelationshipsById = staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
+				.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
 				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
 		
 		final Set<String> changedRelationshipIds = newHashSet(changedRelationshipsById.keySet());
 		final Set<String> referencedRelationshipIds = newHashSet(referringRefSets.keySet());
-		referencedRelationshipIds.removeAll(newRelationshipsById.keySet());
+		referencedRelationshipIds.removeAll(newRelationshipIds);
 		changedRelationshipIds.addAll(referencedRelationshipIds);
 		
 		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
@@ -96,7 +83,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 				throw new IllegalStateException(String.format("Current relationship revision should not be null for %s", id));
 			}
 			
-			final Relationship relationship = changedRelationshipsById.get(id);
+			final SnomedRelationshipIndexEntry relationship = changedRelationshipsById.get(id);
 			final Builder doc;
 			if (relationship != null) {
 				doc = SnomedRelationshipIndexEntry.builder(relationship);
@@ -109,7 +96,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 			new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 					.update(doc);
 			
-			indexChangedRevision(currentDoc, doc.storageKey(currentDoc.getStorageKey()).build());
+			indexChangedRevision(currentDoc, doc.build());
 		}
 	}
 	
