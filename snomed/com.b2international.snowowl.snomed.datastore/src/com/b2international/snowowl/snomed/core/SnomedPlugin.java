@@ -22,6 +22,7 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
@@ -43,7 +44,7 @@ import com.b2international.snowowl.snomed.core.mrcm.io.XMIMrcmImporter;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -117,6 +118,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
 		return new SnomedRepositoryInitializer();
+	}
+	
+	@Override
+	protected PreCommitHook getTerminologyRepositoryPreCommitHook() {
+		return new SnomedRepositoryPreCommitHook();
 	}
 	
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index;
+package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -29,17 +29,13 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
-import com.b2international.snowowl.datastore.index.BaseCDOChangeProcessor;
+import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedIconProvider;
-import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessor;
-import com.b2international.snowowl.snomed.datastore.index.change.ConstraintChangeProcessor;
-import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessor;
-import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessor;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -52,13 +48,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 /**
- * Change processor implementation for SNOMED&nbsp;CT ontology.
- * @see BaseCDOChangeProcessor
+ * Repository precommit hook implementation for SNOMED CT repository.
+ * @see BaseRepositoryPreCommitHook
  */
-public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
+public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommitHook {
 
-	SnomedCDOChangeProcessor() {}
-	
 	/*updates the documents in the indexes based on the dirty, detached and new components.*/
 	
 	@Override
@@ -69,9 +63,9 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 		final Set<String> inferredDestinationIds = Sets.newHashSet();
 		
 		collectIds(statedSourceIds, statedDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
-		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.STATED_RELATIONSHIP);
+		collectIds(statedSourceIds, statedDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.STATED_RELATIONSHIP);
 		collectIds(inferredSourceIds, inferredDestinationIds, staging.getNewObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
-		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedObjects(SnomedRelationshipIndexEntry.class), CharacteristicType.INFERRED_RELATIONSHIP);
+		collectIds(inferredSourceIds, inferredDestinationIds, staging.getChangedRevisions(SnomedRelationshipIndexEntry.class).map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision), CharacteristicType.INFERRED_RELATIONSHIP);
 		
 		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class).forEach(detachedRelationship -> {
 			if (detachedRelationship.getCharacteristicType().equals(CharacteristicType.STATED_RELATIONSHIP)) {
@@ -170,10 +164,14 @@ public final class SnomedCDOChangeProcessor extends BaseCDOChangeProcessor {
 
 		// XXX change processor order is important!!!
 		return ImmutableList.<ChangeSetProcessor>builder()
+				// TODO add referring member deletion pre commit hook to attach member deletions for all deleted non-member components
+				
+				// first execute description change processor to get proper acceptabilityMap values
+				// those values will be used in the ConceptChangeProcessor to properly compute the preferredDescriptions derived field
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())
-				.add(new ConstraintChangeProcessor())
+//				.add(new ConstraintChangeProcessor())
 				.build();
 		
 	}

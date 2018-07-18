@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.IconIdUpdater;
 import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdater;
+import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.ISnomedTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.google.common.collect.HashMultimap;
@@ -61,14 +62,6 @@ import com.google.common.collect.Ordering;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Set<String> ALLOWED_CONCEPT_CHANGE_FEATURES = ImmutableSet.<String>builder()
-			.add(SnomedConceptDocument.Fields.ACTIVE)
-			.add(SnomedConceptDocument.Fields.EFFECTIVE_TIME)
-			.add(SnomedConceptDocument.Fields.RELEASED)
-			.add(SnomedConceptDocument.Fields.MODULE_ID)
-			.add(SnomedConceptDocument.Fields.PRIMITIVE)
-			.add(SnomedConceptDocument.Fields.EXHAUSTIVE)
-			.build();
 	private static final Set<String> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<String>builder()
 			.add(SnomedDescriptionIndexEntry.Fields.ACTIVE)
 			.add(SnomedDescriptionIndexEntry.Fields.TERM)
@@ -142,11 +135,20 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		if (!dirtyConceptIds.isEmpty()) {
 			// fetch all dirty concept documents by their ID
+			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
+					.filter(id -> !staging.getChangedRevisions().containsKey(id))
+					.collect(Collectors.toSet());
+			System.err.println(String.format("all: %s vs. missing: %s", dirtyConceptIds.size(), missingCurrentConceptIds.size()));
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(SnomedConceptDocument.Expressions.ids(dirtyConceptIds))
-					.limit(dirtyConceptIds.size())
+					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
+					.limit(missingCurrentConceptIds.size())
 					.build();
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = Maps.uniqueIndex(searcher.search(query), IComponent::getId);
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
+			dirtyConceptIds.stream()
+				.filter(id -> staging.getChangedRevisions().containsKey(id))
+				.map(id -> staging.getChangedRevisions().get(id))
+				.map(diff -> (SnomedConceptDocument) diff.oldRevision)
+				.forEach(doc -> currentConceptDocumentsById.put(doc.getId(), doc));
 			
 			// update dirty concepts
 			for (final String id : dirtyConceptIds) {
@@ -283,12 +285,13 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				: currentVersion.getMemberOf();
 		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
 				: currentVersion.getActiveMemberOf();
-//		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
-//				.update(doc);
+		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
+				.update(doc);
 	}
 
 	private List<SnomedDescriptionFragment> getDescriptionFragmentsOfNewConcept(StagingArea staging, String conceptId) {
 		return staging.getNewObjects(SnomedDescriptionIndexEntry.class)
+				.filter(description -> conceptId.equals(description.getConceptId()))
 				.filter(SnomedDescriptionIndexEntry::isActive)
 				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
 				.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
@@ -317,10 +320,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	private Set<String> collectDirtyConceptIds(final StagingArea staging) throws IOException {
 		final Set<String> dirtyConceptIds = newHashSet();
 		
-		// collect relevant concept changes
-		staging.getChangedRevisions(SnomedConceptDocument.class, ALLOWED_CONCEPT_CHANGE_FEATURES)
-			.forEach(diff -> dirtyConceptIds.add(diff.newRevision.getId()));
-
 		// collect dirty concepts due to change in memberships
 		dirtyConceptIds.addAll(referringRefSets.keySet());
 		

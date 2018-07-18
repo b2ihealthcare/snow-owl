@@ -88,9 +88,6 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		// initialize the index
 		index.admin().create();
 		checkHealth();
-		if (health == Health.GREEN) {
-			// TODO repository init
-		}
 	}
 
 	@Override

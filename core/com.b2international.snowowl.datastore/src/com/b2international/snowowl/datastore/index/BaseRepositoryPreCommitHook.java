@@ -30,11 +30,12 @@ import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
 import com.b2international.snowowl.core.events.metrics.Timer;
 
 /**
- * Base {@link Repository} pre-commit hook.    
+ * Base {@link Repository} pre-commit hook. It allows terminology plugin developers to attach custom precommit hooks to the underlying
+ * {@link Repository}. These hooks will be executed in order and applied to the current {@link StagingArea}.
  * 
  * @since 5.0
  */
-public abstract class BaseCDOChangeProcessor implements Hooks.PreCommitHook {
+public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook {
 
 	protected static final Logger LOG = LoggerFactory.getLogger("repository");
 

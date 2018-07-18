@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
@@ -27,9 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -317,6 +316,33 @@ public class PreferredDescriptionPreCommitHookTest extends BaseConceptPreCommitH
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
 		assertEquals(0, processor.getNewMappings().size());
+		assertEquals(0, processor.getDeletions().size());
+	}
+	
+	@Test
+	public void addTwoConceptsWithNewDescriptions() throws Exception {
+		final SnomedConceptDocument concept1 = concept().build();
+		final SnomedDescriptionIndexEntry fsnOfConcept1 = fsn(concept1.getId(), Collections.singletonMap(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED));
+		
+		final SnomedConceptDocument concept2 = concept().build();
+		final SnomedDescriptionIndexEntry fsnOfConcept2 = fsn(concept2.getId(), Collections.singletonMap(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED));
+		
+		stageNew(concept1);
+		stageNew(concept2);
+		stageNew(fsnOfConcept1);
+		stageNew(fsnOfConcept2);
+		
+		ConceptChangeProcessor processor = process();
+		
+		assertEquals(2, processor.getNewMappings().size());
+		
+		processor.getNewMappings().values().forEach(newConcept -> {
+			if (newConcept instanceof SnomedConceptDocument) {
+				assertThat(((SnomedConceptDocument) newConcept).getPreferredDescriptions()).hasSize(1);
+			}
+		});
+		
+		assertEquals(0, processor.getChangedMappings().size());
 		assertEquals(0, processor.getDeletions().size());
 	}
 	

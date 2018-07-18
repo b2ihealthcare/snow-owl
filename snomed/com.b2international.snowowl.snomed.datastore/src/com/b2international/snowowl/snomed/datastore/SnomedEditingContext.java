@@ -86,10 +86,9 @@ import com.google.common.collect.Sets;
  * providing retrieval, builder and other utility methods.
  * 
  */
-public class SnomedEditingContext extends BaseSnomedEditingContext {
+public class SnomedEditingContext {
 
 	private SnomedRefSetEditingContext refSetEditingContext;
-	private Concept moduleConcept;
 	private String nameSpace;
 	private boolean uniquenessCheckEnabled = true;
 	private Set<String> newComponentIds = Collections.synchronizedSet(Sets.<String>newHashSet());

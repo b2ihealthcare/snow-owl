@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -27,6 +28,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 
 /**
  * @since 7.0
@@ -42,6 +44,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final Repository repo = repositories.prepareCreate(getRepositoryId(), getToolingId())
 					.withInitializer(getTerminologyRepositoryInitializer())
+					.withPreCommitHook(getTerminologyRepositoryPreCommitHook())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addMappings(getMappings())
 					.build(env);
@@ -68,6 +71,17 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 
 	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
 		return null;
+	}
+	
+	/**
+	 * Subclasses may override and provide a custom precommit hook to be installed on the underlying repository. {@link BaseRepositoryPreCommitHook}
+	 * is a good candidate to extend and use for any particular terminology plugin.
+	 * 
+	 * @return
+	 * @see BaseRepositoryPreCommitHook
+	 */
+	protected Hooks.PreCommitHook getTerminologyRepositoryPreCommitHook() {
+		return staging -> {};
 	}
 
 	/**

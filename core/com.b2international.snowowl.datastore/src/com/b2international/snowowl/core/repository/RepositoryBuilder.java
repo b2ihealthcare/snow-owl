@@ -18,7 +18,10 @@ package com.b2international.snowowl.core.repository;
 import java.util.Collection;
 
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.revision.Hooks;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
@@ -38,6 +41,7 @@ public final class RepositoryBuilder {
 	
 	private int mergeMaxResults;
 	private TerminologyRepositoryInitializer initializer;
+	private Hooks.PreCommitHook hook;
 	private final Mappings mappings = new Mappings(
 		Review.class, 
 		ConceptChanges.class, 
@@ -66,17 +70,25 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder withPreCommitHook(Hooks.PreCommitHook hook) {
+		this.hook = hook;
+		return this;
+	}
+	
 	public Repository build(Environment env) {
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.activate();
+		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);
 		
 		// execute initialization steps
-		new IndexReadRequest<Void>((context) -> {
-			initializer.initialize(context);
-			return null;
-		}).execute(env.service(RepositoryContextProvider.class).get(repositoryId));
+		if (repository.health() == Health.GREEN) {
+			new IndexReadRequest<Void>((context) -> {
+				initializer.initialize(context);
+				return null;
+			}).execute(env.service(RepositoryContextProvider.class).get(repositoryId));
+		}
 		
 		return repository;
 	}

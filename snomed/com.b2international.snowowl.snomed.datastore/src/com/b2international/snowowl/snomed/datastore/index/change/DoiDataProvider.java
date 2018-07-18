@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index;
+package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.DataInputStream;
 import java.io.InputStream;
@@ -24,8 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyFloatMap;
-import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
-import com.b2international.snowowl.snomed.datastore.index.change.DoiData;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -75,7 +74,7 @@ enum DoiDataProvider implements DoiData {
 	private InputStream getResourceStream() throws Exception {
 		final StringBuilder sb = new StringBuilder();
 		sb.append("platform:/plugin/");
-		sb.append(SnomedDatastoreServerActivator.PLUGIN_ID);
+		sb.append(SnomedDatastoreActivator.PLUGIN_ID);
 		sb.append("/");
 		sb.append(USAGE_RESOURCE_FILE);
 		return new URL(sb.toString()).openStream();

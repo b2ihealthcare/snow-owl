@@ -15,20 +15,16 @@
  */
 package com.b2international.snowowl.snomed.api.japi.branches;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +39,6 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.Merge.Status;
-import com.b2international.snowowl.core.repository.TerminologyRepository;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.request.Branching;
 import com.b2international.snowowl.datastore.request.CommitResult;
@@ -59,7 +54,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -76,13 +70,11 @@ public class SnomedBranchRequestTest {
 	public TestMethodNameRule methodName = new TestMethodNameRule(); 
 	
 	private IEventBus bus;
-	private CDOBranchManager cdoBranchManager;
 	private String branchPath;
 	
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
-		cdoBranchManager = getSnomedCdoBranchManager();
 		branchPath = RepositoryRequests.branching().prepareCreate()
 				.setParent(Branch.MAIN_PATH)
 				.setName(methodName.get())
@@ -116,7 +108,6 @@ public class SnomedBranchRequestTest {
 			})
 			.getSync();
 		assertNull(error, error);
-		assertEquals(1, getCdoBranches(branchName).size());
 	}
 	
 	@Test
@@ -275,14 +266,4 @@ public class SnomedBranchRequestTest {
 		assertEquals(firstParentSegments.headSet(firstParentSegments.last()), secondParentSegments.headSet(secondParentSegments.last()));
 	}
 
-	private Set<CDOBranch> getCdoBranches(final String branchName) {
-		return FluentIterable.from(newArrayList(cdoBranchManager.getBranch(branchPath).getBranches()))
-			.filter(input -> input.getName().equals(branchName))
-			.toSet();
-	}
-	
-	private CDOBranchManager getSnomedCdoBranchManager() {
-		final RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
-		return ((TerminologyRepository) repositoryManager.get(REPOSITORY_ID)).getCdoBranchManager();
-	}
 }

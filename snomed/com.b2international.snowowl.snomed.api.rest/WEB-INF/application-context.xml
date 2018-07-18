@@ -20,7 +20,6 @@
 	
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedExportService" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService" />
-	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedClassificationServiceImpl" />
 	<bean class="com.b2international.snowowl.snomed.api.impl.SnomedBrowserService" />
 	
 	<mvc:default-servlet-handler />

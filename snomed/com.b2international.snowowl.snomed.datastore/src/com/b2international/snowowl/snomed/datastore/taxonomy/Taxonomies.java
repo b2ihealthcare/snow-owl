@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,40 +120,25 @@ public final class Taxonomies {
 	private static SnomedTaxonomyStatus updateTaxonomy(RevisionSearcher searcher, StagingArea staging, SnomedTaxonomyBuilder taxonomyBuilder, String characteristicTypeId) {
 		LOGGER.trace("Processing changes taxonomic information.");
 		
-		final Iterable<SnomedConceptDocument> newConcepts = staging.getNewObjects(SnomedConceptDocument.class)
-				.collect(Collectors.toList());
-		final Iterable<SnomedConceptDocument> deletedConcepts = staging.getRemovedObjects(SnomedConceptDocument.class)
-				.collect(Collectors.toSet());
-		final Iterable<SnomedRelationshipIndexEntry> newRelationships = staging.getNewObjects(SnomedRelationshipIndexEntry.class)
-				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-				.collect(Collectors.toList());
-		final Iterable<SnomedRelationshipIndexEntry> dirtyRelationships = staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
-				.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
-				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-				.collect(Collectors.toList());
+		staging.getNewObjects(SnomedRelationshipIndexEntry.class)
+			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+			.forEach(newRelationship -> taxonomyBuilder.addEdge(createEdge(newRelationship)));
 		
-		final Iterable<SnomedRelationshipIndexEntry> deletedRelationships = staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
-				.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
-				.collect(Collectors.toList());
+		staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
+			.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
+			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+			.forEach(dirtyRelationship -> taxonomyBuilder.addEdge(createEdge(dirtyRelationship)));
 		
-		for (final SnomedRelationshipIndexEntry newRelationship : newRelationships) {
-			taxonomyBuilder.addEdge(createEdge(newRelationship));
-		}
+		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
+			.filter(relationship -> characteristicTypeId.equals(relationship.getCharacteristicTypeId()))
+			.forEach(relationship -> taxonomyBuilder.removeEdge(createEdge(relationship)));
 		
-		for (final SnomedRelationshipIndexEntry dirtyRelationship : dirtyRelationships) {
-			taxonomyBuilder.addEdge(createEdge(dirtyRelationship));
-		}
+		staging
+			.getNewObjects(SnomedConceptDocument.class)
+			.forEach(newConcept -> taxonomyBuilder.addNode(createNode(newConcept)));
 		
-		for (final SnomedRelationshipIndexEntry relationship : deletedRelationships) {
-			taxonomyBuilder.removeEdge(createEdge(relationship));
-		}
-		for (final SnomedConceptDocument newConcept : newConcepts) {
-			taxonomyBuilder.addNode(createNode(newConcept));
-		}
-		
-		for (final SnomedConceptDocument concept : deletedConcepts) {
-			taxonomyBuilder.removeNode(createDeletedNode(concept.getId()));
-		}
+		staging.getRemovedObjects(SnomedConceptDocument.class)
+			.forEach(concept -> taxonomyBuilder.removeNode(createDeletedNode(concept.getId())));
 		
 		staging.getChangedRevisions(SnomedConceptDocument.class, Collections.singleton(SnomedConceptDocument.Fields.ACTIVE))
 			.forEach(diff -> {
@@ -202,14 +186,7 @@ public final class Taxonomies {
 	
 	/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/
 	private static TaxonomyBuilderNode createNode(final SnomedConceptDocument concept) {
-		return new TaxonomyBuilderNode() {
-			@Override public boolean isCurrent() {
-				return concept.isActive();
-			}
-			@Override public String getId() {
-				return concept.getId();
-			}
-		};
+		return createNode(concept.getId(), concept.isActive());
 	}
 
 	/*creates and returns with a new taxonomy node instance based on the given SNOMED CT concept*/

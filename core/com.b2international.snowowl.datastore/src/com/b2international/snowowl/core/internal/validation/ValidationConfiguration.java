@@ -18,13 +18,12 @@ package com.b2international.snowowl.core.internal.validation;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 6.6
  */
-public class ValidationConfiguration extends ConnectionPoolConfiguration {
+public class ValidationConfiguration {
 
 	public static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(2, Runtime.getRuntime().availableProcessors() / 2); 
 	private static final int DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS = 1;
