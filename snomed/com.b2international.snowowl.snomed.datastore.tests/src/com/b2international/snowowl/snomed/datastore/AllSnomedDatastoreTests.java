@@ -45,25 +45,29 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 @SuiteClasses({
 	TerminologyTreeTest.class,
 	ReservationImplTest.class,
+	// ID service test cases
 	SnomedIdentifierTest.class,
 	SnomedIdentifierReservationServiceImplTest.class,
 	DefaultSnomedIdentifierServiceTest.class,
 	DefaultSnomedIdentifierServiceRegressionTest.class,
+	// index document test cases 
 	SnomedConceptIndexEntrySerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
 //	SnomedConstraintDocumentSerializationTest.class,
 	SnomedRefSetMemberDocumentSerializationTest.class,
+	SnomedConceptDocumentTermSortTest.class,
 	// change proc test cases
 	DescriptionChangeProcessorTest.class,
 	RelationshipChangeProcessorTest.class,
 //	ConstraintChangeProcessorTest.class,
+	TaxonomyPreCommitHookTest.class,
+	PreferredDescriptionPreCommitHookTest.class,
+	// ECL test cases
 	SnomedEclEvaluationRequestTest.class,
 	SnomedEclRewriterTest.class,
+	// Validation Rule test cases
 	SnomedQueryValidationRuleEvaluatorTest.class,
-	SnomedConceptDocumentTermSortTest.class,
-	TaxonomyPreCommitHookTest.class,
-	PreferredDescriptionPreCommitHookTest.class
 })
 public class AllSnomedDatastoreTests {
 
