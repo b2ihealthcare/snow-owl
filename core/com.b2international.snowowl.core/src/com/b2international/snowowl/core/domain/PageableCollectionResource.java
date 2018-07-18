@@ -68,6 +68,9 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	
 	@JsonProperty("searchAfter")
 	public String getSearchAfterToken() {
+		if (searchAfter == null) {
+			return null;
+		}
 		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			final JavaBinCodec codec = new JavaBinCodec(baos, null);
 			codec.writeArray(searchAfter);
