@@ -23,19 +23,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.api.ComponentUtils;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.IComponent;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -63,24 +57,21 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 	}
 
 	@Override
-	public void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		final Map<String, Multimap<Acceptability, RefSetMemberChange>> acceptabilityChangesByDescription = 
-				new DescriptionAcceptabilityChangeProcessor().process(commitChangeSet, searcher);
+				new DescriptionAcceptabilityChangeProcessor().process(staging, searcher);
 		
 		final Multimap<String, RefSetMemberChange> referringRefSets = HashMultimap
-				.create(memberChangeProcessor.process(commitChangeSet, searcher));
-		
-		// delete detached descriptions
-		deleteRevisions(SnomedDescriptionIndexEntry.class, commitChangeSet.getDetachedComponentIds(SnomedPackage.Literals.DESCRIPTION, SnomedDescriptionIndexEntry.class));
+				.create(memberChangeProcessor.process(staging, searcher));
 		
 		// (re)index new and dirty descriptions
-		final Map<String, Description> newDescriptionsById = StreamSupport
-				.stream(commitChangeSet.getNewComponents(Description.class).spliterator(), false)
+		final Map<String, SnomedDescriptionIndexEntry> newDescriptionsById = staging
+				.getNewObjects(SnomedDescriptionIndexEntry.class)
 				.collect(Collectors.toMap(description -> description.getId(), description -> description));
 		
-		final Map<String, Description> changedDescriptionsById = StreamSupport
-				.stream(commitChangeSet.getDirtyComponents(Description.class).spliterator(), false)
-				.collect(Collectors.toMap(description -> description.getId(), description -> description));
+		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionsById = staging
+				.getChangedRevisions(SnomedDescriptionIndexEntry.class)
+				.collect(Collectors.toMap(diff -> diff.newRevision.getId(), diff -> (SnomedDescriptionIndexEntry) diff.newRevision));
 		
 		final Set<String> changedDescriptionIds = newHashSet(changedDescriptionsById.keySet());
 		final Set<String> referencedDescriptionIds = newHashSet(referringRefSets.keySet());
@@ -94,8 +85,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				.build();
 		
 		final Hits<SnomedDescriptionIndexEntry> changedDescriptionHits = searcher.search(query);
-		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits,
-				IComponent::getId);
+		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits, IComponent::getId);
 		
 		// load missing descriptions with only changed acceptability values
 		final Set<String> descriptionsToBeLoaded = newHashSet();
@@ -109,18 +99,17 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		// process changes
 		for (final String id : Iterables.concat(newDescriptionsById.keySet(), changedDescriptionIds)) {
 			if (newDescriptionsById.containsKey(id)) {
-				final Description description = newDescriptionsById.get(id);
-				final long storageKey = CDOIDUtil.getLong(description.cdoID());
+				final SnomedDescriptionIndexEntry description = newDescriptionsById.get(id);
 				final Builder doc = SnomedDescriptionIndexEntry.builder(description);
 				processChanges(id, doc, null, acceptabilityChangesByDescription.get(id), referringRefSets);
-				indexNewRevision(doc.storageKey(storageKey).build());
+				indexNewRevision(doc.build());
 			} else if (changedDescriptionIds.contains(id)) {
 				final SnomedDescriptionIndexEntry currentDoc = changedDescriptionRevisionsById.get(id);
 				if (currentDoc == null) {
 					throw new IllegalStateException(String.format("Current description revision should not be null for: %s", id));
 				}
 				
-				final Description description = changedDescriptionsById.get(id);
+				final SnomedDescriptionIndexEntry description = changedDescriptionsById.get(id);
 				final Builder doc;
 				if (description != null) {
 					doc = SnomedDescriptionIndexEntry.builder(description);
@@ -129,7 +118,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				processChanges(id, doc, currentDoc, acceptabilityChangesByDescription.get(id), referringRefSets);
-				indexChangedRevision(currentDoc, doc.storageKey(currentDoc.getStorageKey()).build());
+				indexChangedRevision(currentDoc, doc.build());
 			} else {
 				throw new IllegalStateException(String.format("Description %s is missing from new and dirty maps", id));
 			}
@@ -147,7 +136,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 				processChanges(unchangedDescription.getId(), doc, unchangedDescription,
 						acceptabilityChangesByDescription.get(unchangedDescription.getId()),
 						HashMultimap.<String, RefSetMemberChange> create());
-				indexChangedRevision(unchangedDescription, doc.storageKey(unchangedDescription.getStorageKey()).build());
+				indexChangedRevision(unchangedDescription, doc.build());
 			}
 		}
 	}

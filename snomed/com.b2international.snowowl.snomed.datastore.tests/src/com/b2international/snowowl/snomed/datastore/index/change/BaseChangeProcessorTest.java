@@ -199,7 +199,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return createMember(member, descriptionId, refSetId);
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry createSimpleMember(final String referencedComponentId, final String refSetId) {
+	protected final SnomedRefSetMemberIndexEntry simpleMember(final String referencedComponentId, final String refSetId) {
 		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder()
 				.referenceSetType(SnomedRefSetType.SIMPLE);
 		return createMember(member, referencedComponentId, refSetId);

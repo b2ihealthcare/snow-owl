@@ -24,14 +24,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -42,38 +41,49 @@ import com.google.common.collect.Multimap;
 // TODO: The process is very similar to ConceptReferringMemberChangeProcessor, maybe the two can be merged by generalizing
 public class DescriptionAcceptabilityChangeProcessor {
 
-	public Map<String, Multimap<Acceptability, RefSetMemberChange>> process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException {
+	public Map<String, Multimap<Acceptability, RefSetMemberChange>> process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		final Multimap<String, RefSetMemberChange> preferredMemberChanges = HashMultimap.create();
 		final Multimap<String, RefSetMemberChange> acceptableMemberChanges = HashMultimap.create();
 		
 		// add active new and active dirty members
-		final Iterable<SnomedLanguageRefSetMember> newAndDirtyMembers = Iterables.concat(
-				commitChangeSet.getNewComponents(SnomedLanguageRefSetMember.class),
-				commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class));
+		final Iterable<SnomedRefSetMemberIndexEntry> newAndDirtyMembers = Iterables.concat(
+				staging.getNewObjects(SnomedRefSetMemberIndexEntry.class)
+					.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
+					.collect(Collectors.toList()),
+				staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)
+					.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
+					.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
+					.collect(Collectors.toList())
+		);
 
-		for (SnomedLanguageRefSetMember member : newAndDirtyMembers) {
+		for (SnomedRefSetMemberIndexEntry member : newAndDirtyMembers) {
 			if (member.isActive()) {
-				final String uuid = member.getUuid();
-				final String refSetId = member.getRefSetIdentifierId();
+				final String uuid = member.getId();
+				final String refSetId = member.getReferenceSetId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.isActive());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
 		}
 		
 		// remove dirty inactive (and/or changed in acceptability) members
-		final Set<SnomedLanguageRefSetMember> dirtyMembers = commitChangeSet.getDirtyComponents(SnomedLanguageRefSetMember.class);
+		final List<SnomedRefSetMemberIndexEntry> dirtyMembers = staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)
+				.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
+				.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
+				.collect(Collectors.toList());
 		
-		final Set<String> dirtyMemberIds = dirtyMembers.stream().map(SnomedLanguageRefSetMember::getUuid).collect(Collectors.toSet());
-		final List<SnomedRefSetMemberIndexEntry> detachedLanguageMembers = commitChangeSet.getDetachedComponents(SnomedRefSetPackage.Literals.SNOMED_LANGUAGE_REF_SET_MEMBER, SnomedRefSetMemberIndexEntry.class);
+		final Set<String> dirtyMemberIds = dirtyMembers.stream().map(SnomedRefSetMemberIndexEntry::getId).collect(Collectors.toSet());
+		final List<SnomedRefSetMemberIndexEntry> detachedLanguageMembers = staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
+				.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
+				.collect(Collectors.toList());
 		final Map<String, SnomedRefSetMemberIndexEntry> currentRevisionsByMemberId = newHashMap();
 		detachedLanguageMembers.forEach(member -> currentRevisionsByMemberId.put(member.getId(), member));
 		searcher.get(SnomedRefSetMemberIndexEntry.class, dirtyMemberIds).forEach(member -> currentRevisionsByMemberId.put(member.getId(), member));
 		
-		for (SnomedLanguageRefSetMember member : dirtyMembers) {
-			final String uuid = member.getUuid();
-			final String refSetId = member.getRefSetIdentifierId();
+		for (SnomedRefSetMemberIndexEntry member : dirtyMembers) {
+			final String uuid = member.getId();
+			final String refSetId = member.getReferenceSetId();
 			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.isActive());
-			final SnomedRefSetMemberIndexEntry before = currentRevisionsByMemberId.get(member.getUuid());
+			final SnomedRefSetMemberIndexEntry before = currentRevisionsByMemberId.get(member.getId());
 			if (before != null) {
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
 				final boolean beforeActive = before.isActive();
