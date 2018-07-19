@@ -13,49 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.serialization;
+package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import java.io.IOException;
 
-import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
- * Custom serializer for concept properties returned.
- * Example: 
+ * 
+ * Custom serializer for value set expansion parameters
+ * Example:
+ * 
  * <pre>
  * [{
  *   "name": "code",
  *   "valueCode": "sufficientlyDefined"
  *  },
  *  {
- *    "name": "valueBoolean",
+ *    "name": "status",
  *    "valueBoolean": false
  *  }]
- *  
- *  "code": "child",
- *  "valueCode": "ID123"
- *  
  * </pre>
- *   
- *	@since 6.3
+ * 
+ * @since 6.7
  */
-public class ConceptPropertySerializer extends JsonSerializer<ConceptProperty<?>> {
-
-	private static final String VALUE_PREFIX = "value";
-	private static final String CODE = "code";
+public class ExpansionParameterSerializer extends JsonSerializer<Parameter<?>> {
 
 	@Override
-	public void serialize(ConceptProperty<?> property, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
+	public void serialize(Parameter<?> parameter, JsonGenerator jGen, SerializerProvider sp) throws IOException, JsonProcessingException {
 		
-		String typeName = VALUE_PREFIX + StringUtils.capitalizeFirstLetter(property.getPropertyType().getCodeValue());
 		jGen.writeStartObject();
-		jGen.writeStringField(CODE, property.getCodeValue());
-		jGen.writeObjectField(typeName, property.getValue());
+		jGen.writeStringField("name", parameter.getName());
+		jGen.writeObjectField(parameter.getType().getSerializedName(), parameter.getValue());
 		jGen.writeEndObject();
 	}
 

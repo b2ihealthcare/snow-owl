@@ -61,16 +61,16 @@ public class ModelSerializationTest extends FhirTest {
 	public void contactDetailTest() throws Exception {
 		
 		ContactPoint cp = ContactPoint.builder()
-				.period(new Period(null, null))
-				.rank(1)
-				.system("system")
-				.value("value")
-				.build();
+			.period(new Period(null, null))
+			.rank(1)
+			.system("system")
+			.value("value")
+			.build();
 		
 		ContactDetail cd = ContactDetail.builder()
-				.name("name")
-				.addContactPoint(cp)
-				.build();
+			.name("name")
+			.addContactPoint(cp)
+			.build();
 		
 		printPrettyJson(cd);
 		

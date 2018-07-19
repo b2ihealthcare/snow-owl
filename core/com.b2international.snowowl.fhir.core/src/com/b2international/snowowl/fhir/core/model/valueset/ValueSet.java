@@ -20,6 +20,7 @@ import java.util.Date;
 
 import javax.validation.Valid;
 
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
@@ -63,9 +65,14 @@ public class ValueSet extends TerminologyResource {
 	@JsonProperty
 	private final Boolean extensible;
 	
+	//at least one compose or expansion should exist
 	@Valid
 	@JsonProperty("compose")
 	private final Collection<Compose> composeParts;
+	
+	@Valid
+	@JsonProperty
+	private final Expansion expansion;
 	
 	@SuppressWarnings("rawtypes")
 	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
@@ -73,7 +80,7 @@ public class ValueSet extends TerminologyResource {
 			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
 			final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
 			final CodeableConcept jurisdiction, final Boolean immutable, final String purpose, final String copyright,
-			final Boolean extensible, final Collection<Compose> composeParts) {
+			final Boolean extensible, final Collection<Compose> composeParts, final Expansion expansion) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contact,
 				description, usageContexts, jurisdiction, purpose, copyright);
@@ -81,6 +88,7 @@ public class ValueSet extends TerminologyResource {
 		this.immutable = immutable;
 		this.extensible = extensible;
 		this.composeParts = composeParts;
+		this.expansion = expansion;
 	}
 	
 	public static Builder builder(String valueSetId) {
@@ -89,11 +97,10 @@ public class ValueSet extends TerminologyResource {
 
 	public static class Builder extends TerminologyResource.Builder<Builder, ValueSet> {
 
-		private Collection<Compose> composeParts = Lists.newArrayList();
-		
 		private Boolean immutable;
-		
 		private Boolean extensible;
+		private Collection<Compose> composeParts = Lists.newArrayList();
+		private Expansion expansion;
 		
 		public Builder(String valueSetId) {
 			super(valueSetId);
@@ -114,6 +121,11 @@ public class ValueSet extends TerminologyResource {
 			return getSelf();
 		}
 		
+		public Builder extensible(Expansion expansion) {
+			this.expansion = expansion;
+			return getSelf();
+		}
+		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -121,9 +133,15 @@ public class ValueSet extends TerminologyResource {
 		
 		@Override
 		protected ValueSet doBuild() {
+			
+			//cross field validation
+			if (composeParts.isEmpty() && expansion == null) {
+				throw new FhirException("No compose or expansion defined.", "ValueSet");
+			}
+			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
 					title, status, date, publisher, contact, description, usageContexts, jurisdiction, immutable, 
-					purpose, 	copyright, extensible, composeParts);
+					purpose, copyright, extensible, composeParts, expansion);
 		}
 	}
 		

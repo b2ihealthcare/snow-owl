@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.property;
+package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
-import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 
 /**
- * Boolean concept property
- * @since 6.3
+ * Boolean expansion parameter
+ * @since 6.7
  */
-public class BooleanConceptProperty extends ConceptProperty<Boolean> {
+public class BooleanParameter extends Parameter<Boolean> {
 
-	BooleanConceptProperty(Code code, boolean value) {
-		super(code, value);
+	BooleanParameter(String name, boolean value) {
+		super(name, value);
 	}
 	
 	@Override
-	public PropertyType getPropertyType() {
-		return PropertyType.BOOLEAN;
+	public FhirDataType getType() {
+		return FhirDataType.BOOLEAN;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 	
-	public static class Builder extends ConceptProperty.Builder<Builder, BooleanConceptProperty, Boolean> {
+	public static class Builder extends Parameter.Builder<Builder, BooleanParameter, Boolean> {
 		
 		@Override
 		protected Builder getSelf() {
@@ -45,8 +44,8 @@ public class BooleanConceptProperty extends ConceptProperty<Boolean> {
 		}
 
 		@Override
-		protected BooleanConceptProperty doBuild() {
-			return new BooleanConceptProperty(code, value);
+		protected BooleanParameter doBuild() {
+			return new BooleanParameter(name, value);
 		}
 	}
 

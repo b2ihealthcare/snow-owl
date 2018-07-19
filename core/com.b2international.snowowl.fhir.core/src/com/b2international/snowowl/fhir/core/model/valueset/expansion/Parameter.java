@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,75 +13,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.property;
+package com.b2international.snowowl.fhir.core.model.valueset.expansion;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * FHIR Concept return property
- * @since 6.3
+ * Value set expansion parameter
+ * 
+ * @since 6.7
  */
-@JsonSerialize(using=ConceptPropertySerializer.class)
+@JsonSerialize(using=ExpansionParameterSerializer.class)
 @JsonInclude(Include.NON_EMPTY) //covers nulls as well
-public abstract class ConceptProperty<T> {
-	
-	//Identifies the property returned (1..1)
-	@Valid
-	@NotNull
-	protected final Code code;
-	
+public abstract class Parameter<T> {
+
+	// Name as assigned by the server
+	@NotEmpty
+	protected final String name;
+
+	// value of the named parameter
 	@Valid
 	protected final T value;
-	
-	ConceptProperty(final Code code, final T value) {
-		this.code = code;
+
+	Parameter(final String name, final T value) {
+		this.name = name;
 		this.value = value;
 	}
 	
-	public Code getCode() {
-		return code;
+	public String getName() {
+		return name;
 	}
-	
-	public abstract PropertyType getPropertyType();
-	
-	@JsonIgnore
-	public String getCodeValue() {
-		return code.getCodeValue();
-	}
-	
+
 	public T getValue() {
 		return value;
 	}
 	
-	public static abstract class Builder<B extends Builder<B, CP, T>, CP extends ConceptProperty<T>, T> extends ValidatingBuilder<CP> {
-		
-		protected Code code;
+	@JsonIgnore
+	public abstract FhirDataType getType();
+
+	public static abstract class Builder<B extends Builder<B, P, T>, P extends Parameter<T>, T> extends ValidatingBuilder<P> {
+
+		protected String name;
 		protected T value;
 
-		public B code(final String code) {
-			this.code = new Code(code);
+		public B name(final String name) {
+			this.name = name;
 			return getSelf();
 		}
-		
-		public B code(final Code code) {
-			this.code = code;
-			return getSelf();
-		}
-		
+
 		public B value(final T value) {
 			this.value = value;
 			return getSelf();
 		}
-		
+
 		protected abstract B getSelf();
 	}
 

@@ -60,16 +60,16 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	BundleSerializationTest.class,
 	
 	//This tests are pretty meaningless
+	 */
 	ValueSetSerializationTest.class,
+	/*
 	ModelDeserializationTest.class,
 	LookupRequestDeserializationTest.class,
 	ExceptionTest.class,
 
-	 */
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	SearchRequestParametersTest.class,
-	/*
 	UriParsingTest.class,
 	FilterTest.class,
 	SubsumptionRequestTest.class
