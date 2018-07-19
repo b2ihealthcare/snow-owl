@@ -19,10 +19,12 @@ import java.util.Collection;
 import java.util.Date;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR Value set compose backbone element
@@ -38,14 +40,19 @@ public class Compose {
 	private final boolean isInactive;
 	
 	@Valid
-	@NotNull
+	@NotEmpty
 	@JsonProperty("include")
 	private final Collection<Include> includes;
 	
-	Compose(Date lockedDate, boolean isInactive, Collection<Include> includes) {
+	@Valid
+	@JsonProperty("exclude")
+	private final Collection<Include> excludes;
+	
+	Compose(Date lockedDate, boolean isInactive, Collection<Include> includes, Collection<Include> excludes) {
 		this.lockedDate = lockedDate;
 		this.isInactive = isInactive;
 		this.includes = includes;
+		this.excludes = excludes;
 	}
 	
 	public static Builder builder() {
@@ -58,7 +65,9 @@ public class Compose {
 		
 		private boolean isInactive;
 		
-		private Collection<Include> includes;
+		private Collection<Include> includes = Sets.newHashSet();
+
+		private Collection<Include> excludes = Sets.newHashSet();
 		
 		public Builder lockedDate(final Date lockedDate) {
 			this.lockedDate = lockedDate;
@@ -75,9 +84,14 @@ public class Compose {
 			return this;
 		}
 		
+		public Builder addExclude(final Include exclude) {
+			this.excludes.add(exclude);
+			return this;
+		}
+		
 		@Override
 		protected Compose doBuild() {
-			return new Compose(lockedDate, isInactive, includes);
+			return new Compose(lockedDate, isInactive, includes, excludes);
 		}
 	}
 

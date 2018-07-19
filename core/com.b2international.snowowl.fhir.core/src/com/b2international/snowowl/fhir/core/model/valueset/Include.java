@@ -20,15 +20,12 @@ import java.util.Collection;
 import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * 
- * TODO: Rewrite the concept, filter elements
  * FHIR Value Set Include backbone element
  * @since 6.4
  *
@@ -44,7 +41,7 @@ public class Include {
 	private final String version;
 	
 	@JsonProperty("concept")
-	private final Collection<Concept> concepts;
+	private final Collection<ValueSetConcept> concepts;
 	
 	@JsonProperty("filter")
 	private final Collection<Filter> filters;
@@ -52,7 +49,7 @@ public class Include {
 	@JsonProperty("valueSet")
 	private final Collection<Uri> valueSets;
 	
-	Include(Uri system, String version, Collection<Concept> concepts, Collection<Filter> filters, Collection<Uri> valueSets) {
+	Include(Uri system, String version, Collection<ValueSetConcept> concepts, Collection<Filter> filters, Collection<Uri> valueSets) {
 		this.system = system;
 		this.version = version;
 		this.concepts = concepts;
@@ -70,7 +67,7 @@ public class Include {
 		
 		private String version;
 		
-		private Collection<Concept> concepts;
+		private Collection<ValueSetConcept> concepts;
 		
 		private Collection<Filter> filters;
 		
@@ -86,7 +83,7 @@ public class Include {
 			return this;
 		}
 		
-		public Builder addConcept(final Concept concept) {
+		public Builder addConcept(final ValueSetConcept concept) {
 			this.concepts.add(concept);
 			return this;
 		}

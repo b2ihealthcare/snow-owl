@@ -30,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -54,19 +55,31 @@ public class ValueSet extends TerminologyResource {
 	@JsonProperty
 	private final String resourceType = "ValueSet";
 	
+	@Summary
+	@JsonProperty
+	private final Boolean immutable;
+	
+	@Summary
+	@JsonProperty
+	private final Boolean extensible;
+	
 	@Valid
 	@JsonProperty("compose")
 	private final Collection<Compose> composeParts;
 	
 	@SuppressWarnings("rawtypes")
-	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			Narrative text, Uri url, Identifier identifier, String version, String name, 
-			String title, Code status, final Date date, String publisher, final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
-			final CodeableConcept jurisdiction, final String purpose, final String copyright,
-			final Collection<Compose> composeParts) {
+	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
+			
+			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
+			final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
+			final CodeableConcept jurisdiction, final Boolean immutable, final String purpose, final String copyright,
+			final Boolean extensible, final Collection<Compose> composeParts) {
 		
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contact,
 				description, usageContexts, jurisdiction, purpose, copyright);
+		
+		this.immutable = immutable;
+		this.extensible = extensible;
 		this.composeParts = composeParts;
 	}
 	
@@ -78,8 +91,22 @@ public class ValueSet extends TerminologyResource {
 
 		private Collection<Compose> composeParts = Lists.newArrayList();
 		
+		private Boolean immutable;
+		
+		private Boolean extensible;
+		
 		public Builder(String valueSetId) {
 			super(valueSetId);
+		}
+		
+		public Builder immutable(Boolean immutable) {
+			this.immutable = immutable;
+			return getSelf();
+		}
+		
+		public Builder extensible(Boolean extensible) {
+			this.extensible = extensible;
+			return getSelf();
 		}
 		
 		public Builder addCompose(final Compose compose) {
@@ -95,8 +122,8 @@ public class ValueSet extends TerminologyResource {
 		@Override
 		protected ValueSet doBuild() {
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright,
-					composeParts);
+					title, status, date, publisher, contact, description, usageContexts, jurisdiction, immutable, 
+					purpose, 	copyright, extensible, composeParts);
 		}
 	}
 		

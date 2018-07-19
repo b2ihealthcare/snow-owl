@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.codesystem;
+package com.b2international.snowowl.fhir.core.model.valueset;
 
 import java.util.Collection;
 
@@ -23,15 +23,14 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
 /**
- * The concept in the code system
- * @since 6.3
+ * The concept in the value set resource
+ * @since 6.7
  */
-public class Concept {
+public class ValueSetConcept {
 	
 	@Valid
 	@NotNull
@@ -41,47 +40,27 @@ public class Concept {
 	@JsonProperty
 	private final String display;
 	
-	@JsonProperty
-	private final String definition;
-	
 	@Valid
 	@JsonProperty("designation")
 	private final Collection<Designation> designations;
 	
-	@Valid
-	@JsonProperty("property")
-	private final Collection<ConceptProperty<?>> properties;
-	
-	@Valid
-	@JsonProperty("concept")
-	private final Collection<Concept> children;
-	
-	Concept(Code code, String display, String definition, Collection<Designation> designations, Collection<ConceptProperty<?>> properties, Collection<Concept> children) {
+	ValueSetConcept(Code code, String display, Collection<Designation> designations) {
 		this.code = code;
 		this.display = display;
-		this.definition = definition;
 		this.designations = designations;
-		this.properties = properties;
-		this.children = children;
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
 
-	public static class Builder extends ValidatingBuilder<Concept> {
+	public static class Builder extends ValidatingBuilder<ValueSetConcept> {
 		
 		private Code code;
 		
 		private String display;
 		
-		private String definition;
-		
 		private Collection<Designation> designations = Sets.newHashSet();
-		
-		private Collection<ConceptProperty<?>> properties = Sets.newHashSet();
-		
-		private Collection<Concept> children = Sets.newHashSet();
 		
 		public Builder code(final String codeValue) {
 			this.code = new Code(codeValue);
@@ -93,29 +72,14 @@ public class Concept {
 			return this;
 		}
 		
-		public Builder definition(final String definition) {
-			this.definition = definition;
-			return this;
-		}
-		
 		public Builder addDesignation(final Designation designation) {
 			this.designations.add(designation);
 			return this;
 		}
 		
-		public Builder addProperties(final ConceptProperty<?> conceptProperty) {
-			this.properties.add(conceptProperty);
-			return this;
-		}
-		
-		public Builder addChildConcept(final Concept childConcept) {
-			this.children.add(childConcept);
-			return this;
-		}
-
 		@Override
-		protected Concept doBuild() {
-			return new Concept(code, display, definition, designations, properties, children);
+		protected ValueSetConcept doBuild() {
+			return new ValueSetConcept(code, display, designations);
 		}
 	}
 
