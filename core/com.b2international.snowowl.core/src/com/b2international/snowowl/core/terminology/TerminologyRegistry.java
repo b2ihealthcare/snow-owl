@@ -18,8 +18,12 @@ package com.b2international.snowowl.core.terminology;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
 
 /**
@@ -32,11 +36,31 @@ public enum TerminologyRegistry {
 	public static final String UNSPECIFIED = "UNSPECIFIED";
 	public static final int UNSPECIFIED_NUMBER = -1;
 	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
-
+	
 	private final Map<String, Terminology> terminologies = newHashMap();
 	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
 	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
 	private final Map<Class<?>, TerminologyComponent> terminologyComponentsByDocType = newHashMap();
+	
+	private TerminologyRegistry() {
+		registerTerminology(new Terminology() {
+			@Override
+			public Collection<Class<? extends IComponent>> getTerminologyComponents() {
+				return Collections.emptySet();
+			}
+			
+			@Override
+			public String getName() {
+				return UNSPECIFIED;
+			}
+			
+			@Override
+			public String getId() {
+				return UNSPECIFIED;
+			}
+		});
+		register(createUnspecifiedTerminologyComponent());
+	}
 	
 	public void registerTerminology(Terminology terminology) {
 		Terminology prev = terminologies.put(terminology.getId(), terminology);
@@ -45,13 +69,18 @@ public enum TerminologyRegistry {
 		}
 		for (Class<? extends IComponent> terminologyComponent : terminology.getTerminologyComponents()) {
 			checkArgument(terminologyComponent.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponent.getSimpleName());
-			TerminologyComponent tcAnnotation = terminologyComponent.getAnnotation(TerminologyComponent.class);
-			TerminologyComponent prevAnnotation = terminologyComponentsById.put(tcAnnotation.id(), tcAnnotation);
-			terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
+			register(terminologyComponent.getAnnotation(TerminologyComponent.class));
+		}
+	}
+
+	private void register(TerminologyComponent tcAnnotation) {
+		TerminologyComponent prevAnnotation = terminologyComponentsById.put(tcAnnotation.id(), tcAnnotation);
+		if (prevAnnotation != null) {
+			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
+		}
+		terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
+		if (tcAnnotation.docType() != null) {
 			terminologyComponentsByDocType.put(tcAnnotation.docType(), tcAnnotation);
-			if (prevAnnotation != null) {
-				throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
-			}
 		}
 	}
 	
@@ -73,6 +102,51 @@ public enum TerminologyRegistry {
 	public TerminologyComponent getTerminologyComponentByDocType(Class<?> docType) {
 		checkArgument(terminologyComponentsByDocType.containsKey(docType), "Missing terminology component for document type '%s'.", docType);
 		return terminologyComponentsByDocType.get(docType);
+	}
+	
+	private static TerminologyComponent createUnspecifiedTerminologyComponent() {
+		return new TerminologyComponent() {
+			
+			@Override
+			public Class<? extends Annotation> annotationType() {
+				return TerminologyComponent.class;
+			}
+			
+			@Override
+			public String[] supportedRefSetTypes() {
+				return new String[] {};
+			}
+			
+			@Override
+			public String[] supportedMapTargetTypes() {
+				return new String[] {};
+			}
+			
+			@Override
+			public short shortId() {
+				return UNSPECIFIED_NUMBER_SHORT;
+			}
+			
+			@Override
+			public String name() {
+				return UNSPECIFIED;
+			}
+			
+			@Override
+			public String id() {
+				return UNSPECIFIED;
+			}
+			
+			@Override
+			public Class<? extends Revision> docType() {
+				return null;
+			}
+			
+			@Override
+			public ComponentCategory componentCategory() {
+				return ComponentCategory.UNKNOWN;
+			}
+		};
 	}
 	
 }
