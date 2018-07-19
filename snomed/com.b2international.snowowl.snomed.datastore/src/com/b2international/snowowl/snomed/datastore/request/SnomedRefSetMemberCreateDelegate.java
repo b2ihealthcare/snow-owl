@@ -19,9 +19,9 @@ import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -99,7 +99,7 @@ abstract class SnomedRefSetMemberCreateDelegate {
 		SnomedIdentifiers.validate(getReferencedComponentId());
 
 		String expectedReferencedComponentType = refSet.getReferencedComponentType();
-		if (!Strings.isNullOrEmpty(expectedReferencedComponentType) && !CoreTerminologyBroker.UNSPECIFIED.equals(expectedReferencedComponentType)) {
+		if (!Strings.isNullOrEmpty(expectedReferencedComponentType) && !TerminologyRegistry.UNSPECIFIED.equals(expectedReferencedComponentType)) {
 			String actualReferencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(getReferencedComponentId());
 			if (!expectedReferencedComponentType.equals(actualReferencedComponentType)) {
 				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", 

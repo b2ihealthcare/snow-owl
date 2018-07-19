@@ -25,10 +25,10 @@ import com.b2international.index.revision.RevisionCompare;
 import com.b2international.index.revision.RevisionCompareDetail;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -66,7 +66,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 	@Override
 	public CompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
-		final CoreTerminologyBroker terminologyBroker = context.service(CoreTerminologyBroker.class);
+		final TerminologyRegistry registry = context.service(TerminologyRegistry.class);
 		final Branch branchToCompare = RepositoryRequests.branching().prepareGet(compare).build().execute(context);
 		final long compareHeadTimestamp = branchToCompare.headTimestamp();
 		
@@ -92,7 +92,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, CompareRe
 			} else {
 				affectedId = detail.getObject();
 			}
-			final short terminologyComponentId = terminologyBroker.getTerminologyComponentIdShort(DocumentMapping.getClass(affectedId.type()));
+			final short terminologyComponentId = registry.getTerminologyComponentByDocType(DocumentMapping.getClass(affectedId.type())).shortId();
 			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
 			
 			switch (detail.getOp()) {

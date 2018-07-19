@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 
 /**
@@ -31,8 +31,8 @@ public final class SnomedRefSetCreateRequestBuilder extends BaseRequestBuilder<S
 		implements SnomedTransactionalRequestBuilder<String> {
 
 	private SnomedRefSetType type;
-	private String referencedComponentType = CoreTerminologyBroker.UNSPECIFIED;
-	private String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
+	private String referencedComponentType = TerminologyRegistry.UNSPECIFIED;
+	private String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
 	private String identifierId;
 	
 	SnomedRefSetCreateRequestBuilder() {

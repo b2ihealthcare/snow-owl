@@ -29,12 +29,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.repository.RepositoryTransactionContext;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -231,7 +231,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
 						final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(member.getReferencedComponent().getId());
-						String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
+						String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
 						try {
 							mapTargetComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
 						} catch (IllegalArgumentException e) {

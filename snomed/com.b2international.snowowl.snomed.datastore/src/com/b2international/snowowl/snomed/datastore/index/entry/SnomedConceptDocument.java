@@ -20,7 +20,6 @@ import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getValue;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
@@ -38,8 +37,8 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -278,8 +277,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private short referencedComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
-		private int mapTargetComponentType;
+		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
+		private short mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
@@ -346,19 +345,17 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		@JsonIgnore
 		public Builder refSet(final SnomedReferenceSet refSet) {
 			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
-				final int componentType = CoreTerminologyBroker.getInstance()
-						.getTerminologyComponentIdAsInt(refSet.getMapTargetComponentType());
-				mapTargetComponentType(componentType);
+				mapTargetComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getMapTargetComponentType()).shortId());
 			}
 			
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
-				referencedComponentType(getValue(refSet.getReferencedComponentType()));
+				referencedComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getReferencedComponentType()).shortId());
 			}
 			
 			return refSetType(refSet.getType());
 		}
 		
-		public Builder mapTargetComponentType(int mapTargetComponentType) {
+		public Builder mapTargetComponentType(short mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
@@ -432,7 +429,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
-	private final int mapTargetComponentType;
+	private final short mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -453,7 +450,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
 			final short referencedComponentType,
-			final int mapTargetComponentType,
+			final short mapTargetComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
@@ -509,7 +506,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return referencedComponentType;
 	}
 	
-	public int getMapTargetComponentType() {
+	public short getMapTargetComponentType() {
 		return mapTargetComponentType;
 	}
 	

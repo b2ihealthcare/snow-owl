@@ -22,10 +22,10 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -49,7 +49,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	@NotEmpty
 	private final String referencedComponentType;
 	
-	private String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
+	private String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
 	
 	private String identifierId;
 	

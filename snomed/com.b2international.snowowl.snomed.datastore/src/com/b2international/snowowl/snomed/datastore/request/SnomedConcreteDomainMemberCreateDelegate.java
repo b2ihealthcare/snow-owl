@@ -52,7 +52,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_OPERATOR_ID);
 
-		DataType dataType = ((SnomedConcreteDataTypeRefSet) refSet).getDataType();
+		DataType dataType = refSet.getDataType();
 		String value = getProperty(SnomedRf2Headers.FIELD_VALUE);
 
 		try {

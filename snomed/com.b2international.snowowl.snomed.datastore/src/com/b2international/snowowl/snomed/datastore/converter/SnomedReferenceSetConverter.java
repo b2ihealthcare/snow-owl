@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -77,11 +77,11 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 		refset.setModuleId(entry.getModuleId());
 		refset.setIconId(entry.getIconId());
 		refset.setScore(entry.getScore());
-		final int referencedComponentType = entry.getReferencedComponentType();
+		final short referencedComponentType = entry.getReferencedComponentType();
 		if (referencedComponentType > 0) {
 			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
 		}
-		final int mapTargetComponentType = entry.getMapTargetComponentType();
+		final short mapTargetComponentType = entry.getMapTargetComponentType();
 		if (mapTargetComponentType > 0) {
 			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
 		}
@@ -89,7 +89,7 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 		return refset;
 	}
 
-	private String getReferencedComponentType(final int referencedComponentType) {
-		return CoreTerminologyBroker.getInstance().getComponentInformation((short) referencedComponentType).getId();
+	private String getReferencedComponentType(final short referencedComponentType) {
+		return context().service(TerminologyRegistry.class).getTerminologyComponentByShortId((short) referencedComponentType).id();
 	}
 }

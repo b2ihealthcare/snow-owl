@@ -20,25 +20,59 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
+import com.b2international.snowowl.core.domain.IComponent;
+
 /**
  * @since 7.0
  */
 public enum TerminologyRegistry {
 
 	INSTANCE;
+	
+	public static final String UNSPECIFIED = "UNSPECIFIED";
+	public static final int UNSPECIFIED_NUMBER = -1;
+	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
 
 	private final Map<String, Terminology> terminologies = newHashMap();
+	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
+	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
+	private final Map<Class<?>, TerminologyComponent> terminologyComponentsByDocType = newHashMap();
 	
 	public void registerTerminology(Terminology terminology) {
 		Terminology prev = terminologies.put(terminology.getId(), terminology);
 		if (prev != null) {
 			throw new IllegalArgumentException(String.format("A terminology is already registered with id '%s'", terminology.getId()));
 		}
+		for (Class<? extends IComponent> terminologyComponent : terminology.getTerminologyComponents()) {
+			checkArgument(terminologyComponent.isAnnotationPresent(TerminologyComponent.class), "%s domain class must have a @TerminologyComponent annotation.", terminologyComponent.getSimpleName());
+			TerminologyComponent tcAnnotation = terminologyComponent.getAnnotation(TerminologyComponent.class);
+			TerminologyComponent prevAnnotation = terminologyComponentsById.put(tcAnnotation.id(), tcAnnotation);
+			terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
+			terminologyComponentsByDocType.put(tcAnnotation.docType(), tcAnnotation);
+			if (prevAnnotation != null) {
+				throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
+			}
+		}
 	}
 	
 	public Terminology getTerminology(String terminologyId) {
-		checkArgument(terminologies.containsKey(terminologyId), "Missing terminology '%s'", terminologyId);
+		checkArgument(terminologies.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return terminologies.get(terminologyId);
+	}
+
+	public TerminologyComponent getTerminologyComponentByShortId(short shortId) {
+		checkArgument(terminologyComponentsByShortId.containsKey(shortId), "Missing terminology component for short ID '%s'.", shortId);
+		return terminologyComponentsByShortId.get(shortId);
+	}
+	
+	public TerminologyComponent getTerminologyComponentById(String id) {
+		checkArgument(terminologyComponentsById.containsKey(id), "Missing terminology component for ID '%s'.", id);
+		return terminologyComponentsById.get(id);
+	}
+
+	public TerminologyComponent getTerminologyComponentByDocType(Class<?> docType) {
+		checkArgument(terminologyComponentsByDocType.containsKey(docType), "Missing terminology component for document type '%s'.", docType);
+		return terminologyComponentsByDocType.get(docType);
 	}
 	
 }

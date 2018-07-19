@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -32,16 +33,16 @@ public final class ComponentIdentifier implements Serializable {
 
 	private static final long serialVersionUID = -7770154600003784759L;
 
-	private static final ComponentIdentifier UNKOWN = of(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "unknown");
+	private static final ComponentIdentifier UNKOWN = of(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "unknown");
 
 	private final short terminologyComponentId;
 	private final String componentId;
 	
 	/**
 	 * Returns with a component identifier pair where the terminology component identifier is 
-	 * {@link CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT} and the component identifier is {@code empty}.
+	 * {@link TerminologyRegistry#UNSPECIFIED_NUMBER_SHORT} and the component identifier is {@code empty}.
 	 * @return a special component identifier with {@code empty} component identifier.
-	 * @see CoreTerminologyBroker#UNSPECIFIED_NUMBER_SHORT
+	 * @see TerminologyRegistry#UNSPECIFIED_NUMBER_SHORT
 	 */
 	public static final ComponentIdentifier unknown() {
 		return UNKOWN;

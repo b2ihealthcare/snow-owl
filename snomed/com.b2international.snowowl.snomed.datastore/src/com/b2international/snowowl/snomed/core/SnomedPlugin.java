@@ -24,6 +24,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -31,6 +32,10 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -123,6 +128,17 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	public boolean isEffectiveTimeSupported() {
 		return true;
+	}
+	
+	@Override
+	public Collection<Class<? extends IComponent>> getTerminologyComponents() {
+		return ImmutableList.<Class<? extends IComponent>>of(
+			SnomedConcept.class,
+			SnomedDescription.class,
+			SnomedRelationship.class,
+//			SnomedConstraint.class,
+			SnomedReferenceSet.class
+		);
 	}
 	
 	@Override

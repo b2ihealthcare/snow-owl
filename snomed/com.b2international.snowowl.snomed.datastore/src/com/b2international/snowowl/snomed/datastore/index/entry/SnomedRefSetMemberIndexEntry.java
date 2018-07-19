@@ -38,9 +38,9 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -196,7 +196,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		} else if (input.getReferencedComponent() instanceof SnomedRelationship) {
 			builder.referencedComponentType(RELATIONSHIP_NUMBER);
 		} else {
-			builder.referencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+			builder.referencedComponentType(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT);
 		}
 		
 		
@@ -491,7 +491,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
-		private short referencedComponentType = CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT;
+		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
@@ -1043,7 +1043,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		this.referencedComponentId = referencedComponentId;
 		this.referenceSetId = referenceSetId;
 		this.referenceSetType = referenceSetType;
-		checkArgument(referencedComponentType >= CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
+		checkArgument(referencedComponentType >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
 		this.referencedComponentType = referencedComponentType;
 	}
 
@@ -1313,7 +1313,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	 */
 	@JsonIgnore
 	public String getReferencedComponentTypeAsString() {
-		return CoreTerminologyBroker.getInstance().getTerminologyComponentId(referencedComponentType);
+		return TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(referencedComponentType).id();
 	}
 
 	/**

@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.terminology;
 
+import java.util.Collection;
+
+import com.b2international.snowowl.core.domain.IComponent;
+
 /**
  * Represents an available terminology.
  */
@@ -43,5 +47,11 @@ public interface Terminology {
 	default boolean isEffectiveTimeSupported() {
 		return false;
 	}
+	
+	/**
+	 * @return a {@link Collection} of domain classes that represent terminology components. The returned classes must have
+	 *         {@link TerminologyComponent} on them.
+	 */
+	Collection<Class<? extends IComponent>> getTerminologyComponents();
 
 }
