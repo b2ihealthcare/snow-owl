@@ -188,7 +188,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public void update(Revision oldRevision, Revision changedRevision) {
-		staging.stageChange(oldRevision, changedRevision);
+		// check if the oldRevision is present as new object in the staging area and update the new object, otherwise stage an update
+		if (staging.isNew(oldRevision)) {
+			staging.stageNew(changedRevision);
+		} else {
+			staging.stageChange(oldRevision, changedRevision);
+		}
 		resolvedObjectsById.put(createComponentKey(changedRevision.getId(), changedRevision.getClass()), changedRevision);
 	}
 	
