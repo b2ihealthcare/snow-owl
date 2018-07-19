@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -40,7 +40,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
-import com.b2international.snowowl.snomed.core.domain.InactivationReason;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -49,9 +48,8 @@ import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMultimap;
@@ -130,23 +128,32 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (descriptions != null) {
-			throw new UnsupportedOperationException("TODO implement description updates via concept");
-//			updateComponents(context, concept.getId(), 
-//					getComponentIds(concept.getDescriptions()), descriptions, 
-//					id -> SnomedRequests.prepareDeleteDescription(id).build());
+			updateComponents(
+				context, 
+				concept.getId(), 
+				getDescriptionIds(context, concept.getId()),
+				descriptions, 
+				id -> SnomedRequests.prepareDeleteDescription(id).build()
+			);
 		}
 		
 		if (relationships != null) {
-			throw new UnsupportedOperationException("TODO implement description updates via concept");
-//			updateComponents(context, concept.getId(), 
-//					getComponentIds(concept.getOutboundRelationships()), relationships, 
-//					id -> SnomedRequests.prepareDeleteRelationship(id).build());
+			updateComponents(
+				context, 
+				concept.getId(), 
+				getRelationshipIds(context, concept.getId()), 
+				relationships, 
+				id -> SnomedRequests.prepareDeleteRelationship(id).build());
 		}
 		
 		if (members != null) {
-			updateComponents(context, concept.getId(), 
-					getPreviousMemberIds(concept.getId(), context), members, 
-					id -> SnomedRequests.prepareDeleteMember(id).build());
+			updateComponents(
+				context, 
+				concept.getId(), 
+				getPreviousMemberIds(concept.getId(), context), 
+				members, 
+				id -> SnomedRequests.prepareDeleteMember(id).build()
+			);
 		}
 		
 		changed |= processInactivation(context, concept, updatedConcept);
@@ -176,8 +183,30 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		return changed;
 	}
 
-	private Set<String> getComponentIds(Iterable<? extends IComponent> components) {
-		return FluentIterable.from(components).transform(c -> c.getId()).toSet();
+	private Set<String> getDescriptionIds(BranchContext context, String conceptId) {
+		return SnomedRequests.prepareSearchDescription()
+				.all()
+				.filterByConcept(conceptId)
+				.setFields(SnomedDocument.Fields.ID)
+				.build()
+				.execute(context)
+				.getItems()
+				.stream()
+				.map(IComponent::getId)
+				.collect(Collectors.toSet());
+	}
+	
+	private Set<String> getRelationshipIds(BranchContext context, String conceptId) {
+		return SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterBySource(conceptId)
+				.setFields(SnomedDocument.Fields.ID)
+				.build()
+				.execute(context)
+				.getItems()
+				.stream()
+				.map(IComponent::getId)
+				.collect(Collectors.toSet());
 	}
 
 	private Set<String> getPreviousMemberIds(final String conceptId, TransactionContext context) {
@@ -311,6 +340,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (!concept.isActive()) {
 			throw new ComponentStatusConflictException(concept.getId(), concept.isActive());
 		}
+		
+		updatedConcept.active(false);
 		
 		// Run the basic inactivation plan without settings the inactivation reason or a historical association target; those will be handled separately
 //		final SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
