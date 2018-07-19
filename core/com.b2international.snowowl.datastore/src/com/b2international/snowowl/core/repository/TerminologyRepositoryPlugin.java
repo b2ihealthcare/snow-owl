@@ -27,22 +27,29 @@ import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.core.terminology.Terminology;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
 
 /**
  * @since 7.0
  */
-public abstract class TerminologyRepositoryPlugin extends Plugin {
+public abstract class TerminologyRepositoryPlugin extends Plugin implements Terminology {
 
 	private static final Logger LOG = LoggerFactory.getLogger("repository");
 	
 	@Override
 	public final void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		// register terminology and component definitions
+		TerminologyRegistry registry = env.service(TerminologyRegistry.class);
+		registry
+			.registerTerminology(this);
+		
 		if (env.isEmbedded() || env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
-			final Repository repo = repositories.prepareCreate(getRepositoryId(), getToolingId())
+			final Repository repo = repositories.prepareCreate(getRepositoryId(), getId())
 					.withInitializer(getTerminologyRepositoryInitializer())
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
@@ -56,7 +63,6 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 		}
 		afterRun(configuration, env);
 	}
-	
 	
 	protected abstract Collection<Class<?>> getMappings();
 
@@ -88,10 +94,5 @@ public abstract class TerminologyRepositoryPlugin extends Plugin {
 	 * @return the associated unique repository ID to use for the repository.
 	 */
 	protected abstract String getRepositoryId();
-	
-	/**
-	 * @return the unique application specific identifier of the terminology.
-	 */
-	protected abstract String getToolingId();
 	
 }

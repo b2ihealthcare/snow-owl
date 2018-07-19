@@ -111,8 +111,18 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected String getToolingId() {
+	public String getId() {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	}
+	
+	@Override
+	public String getName() {
+		return SnomedTerminologyComponentConstants.SNOMED_NAME;
+	}
+	
+	@Override
+	public boolean isEffectiveTimeSupported() {
+		return true;
 	}
 	
 	@Override

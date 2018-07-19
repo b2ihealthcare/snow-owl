@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -150,7 +151,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
-		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(codeSystem.getTerminologyComponentId())) {
+		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyComponentId()).isEffectiveTimeSupported()) {
 			return;
 		}
 

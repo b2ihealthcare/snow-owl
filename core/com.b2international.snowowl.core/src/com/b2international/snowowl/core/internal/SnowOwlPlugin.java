@@ -20,7 +20,6 @@ import org.osgi.service.prefs.PreferencesService;
 import com.b2international.commons.extension.Component;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.metrics.DefaultMetricsProvider;
 import com.b2international.snowowl.core.events.metrics.Metrics;
@@ -31,6 +30,7 @@ import com.b2international.snowowl.core.login.LoginConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 
 /**
  * @since 3.3
@@ -45,7 +45,7 @@ public final class SnowOwlPlugin extends Plugin {
 		final LoginConfiguration loginConfiguration = new LoginConfiguration(preferences);
 		env.services().registerService(LoginConfiguration.class, loginConfiguration);
 		
-		env.services().registerService(CoreTerminologyBroker.class, CoreTerminologyBroker.getInstance());
+		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		
 		if (configuration.getModuleConfig(MetricsConfiguration.class).isEnabled()) {
 			env.services().registerService(MetricsProvider.class, new DefaultMetricsProvider());
