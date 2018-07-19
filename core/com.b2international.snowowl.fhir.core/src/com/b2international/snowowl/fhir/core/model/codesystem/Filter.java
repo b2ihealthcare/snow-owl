@@ -25,7 +25,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -34,44 +33,6 @@ import com.google.common.collect.Lists;
  * @since 6.4
  */
 public class Filter {
-	
-	/**
-	 * Generic is-a and value set containment filters
-	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">IS_A an IN filter</a>
-	 */
-	@JsonIgnore
-	public static final Filter IS_A_FILTER = Filter.builder()
-		.code("concept")
-		.description("Filter that includes concepts based on their logical definition. e.g. [concept] [is-a] [x] - include all concepts with an is-a relationship to concept x,"
-				+ " or [concept] [in] [x]- include all concepts in the reference set identified by concept x")
-		.addOperator(FilterOperator.IS_A)
-		.addOperator(FilterOperator.IN)
-		.value("code system code")
-		.build();
-	
-	/**
-	 * SNOMED CT filter
-	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT ECL filter</a>
-	 */
-	@JsonIgnore
-	public static final Filter EXPRESSION_FILTER = Filter.builder()
-		.code("expression")
-		.description("Filter result of the given SNOMED CT Expression Constraint")
-		.addOperator(FilterOperator.EQUALS)
-		.value("SNOMED CT ECL Expression (http://snomed.org/ecl")
-		.build();
-	
-	/**
-	 * SNOMED CT filter
-	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT post cordinated expressions filter</a>
-	 */
-	@JsonIgnore
-	public static final Filter EXPRESSIONS_FILTER = Filter.builder()
-		.code("expressions")
-		.description("Whether post-coordinated expressions are included in the value set")
-		.addOperator(FilterOperator.EQUALS)
-		.value("true or false")
-		.build();
 	
 	@Valid
 	@NotNull

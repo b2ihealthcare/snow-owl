@@ -41,6 +41,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.codesystem.Filters;
 import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
@@ -194,7 +195,11 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	
 	@Override
 	protected Collection<Filter> getSupportedFilters() {
-		return ImmutableList.of(Filter.IS_A_FILTER, Filter.EXPRESSION_FILTER, Filter.EXPRESSIONS_FILTER);
+		return ImmutableList.of(
+				Filters.EXPRESSION_FILTER, 
+				Filters.EXPRESSIONS_FILTER,
+				Filters.IS_A_FILTER, 
+				Filters.REFSET_MEMBER_OF);
 	}
 	
 	@Override

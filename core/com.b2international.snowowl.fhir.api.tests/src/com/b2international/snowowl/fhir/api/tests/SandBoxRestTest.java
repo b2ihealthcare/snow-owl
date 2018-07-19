@@ -65,14 +65,16 @@ public class SandBoxRestTest extends FhirTest {
 	}
 	
 	//Fully detailed SNOMED CT code system
-	//@Test
+	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
-			.when().get("/CodeSystem/{id}").prettyPrint();
+		 	.param("_elements", "filter")
+			.when().get("/CodeSystem/{id}")
+			.prettyPrint();
 	}
 	
-	@Test
+	//@Test
 	public void subsumedByWithVersionTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
