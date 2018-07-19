@@ -24,7 +24,7 @@ import com.b2international.snowowl.fhir.core.ResourceNarrative;
  * @since 6.4
  */
 @ResourceNarrative("The type of an extension.")
-public enum ExtensionType {
+public enum ExtensionType implements FhirCodeSystem {
 	
 	CODE("code"),
 	STRING("string"), 
@@ -61,6 +61,8 @@ public enum ExtensionType {
 	SIGNATURE("Signature"),
 	META("Meta");
 	
+	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/extension-value-type"; //not a real FHIR code system for whatever reason
+	
 	private String codeName;
 
 	private ExtensionType(String codeName) {
@@ -69,6 +71,16 @@ public enum ExtensionType {
 	
 	public String getCodeValue() {
 		return codeName;
+	}
+
+	@Override
+	public String getCodeSystemUri() {
+		return CODE_SYSTEM_URI;
+	}
+
+	@Override
+	public String getDisplayName() {
+		return getCodeValue();
 	}
 
 }
