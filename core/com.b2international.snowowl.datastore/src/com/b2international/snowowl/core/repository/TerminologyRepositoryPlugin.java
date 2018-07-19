@@ -54,6 +54,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook())
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addMappings(getMappings())
+					.logger(log())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
@@ -94,5 +95,9 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @return the associated unique repository ID to use for the repository.
 	 */
 	protected abstract String getRepositoryId();
+	
+	protected final Logger log() {
+		return LoggerFactory.getLogger("repository."+getRepositoryId());
+	}
 	
 }

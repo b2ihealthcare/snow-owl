@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.query.Expressions;
@@ -53,7 +55,9 @@ import com.google.common.collect.Sets;
  */
 public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommitHook {
 
-	/*updates the documents in the indexes based on the dirty, detached and new components.*/
+	public SnomedRepositoryPreCommitHook(Logger log) {
+		super(log);
+	}
 	
 	@Override
 	protected Collection<ChangeSetProcessor> getChangeSetProcessors(StagingArea staging, RevisionSearcher index) throws IOException {
@@ -151,7 +155,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			inferredConceptIds.add(longId);
 		});
 
-		LOG.trace("Retrieving taxonomic information from store...");
+		log.trace("Retrieving taxonomic information from store...");
 		
 		final FeatureToggles featureToggles = ApplicationContext.getServiceForClass(FeatureToggles.class);
 		final boolean importRunning = featureToggles.isEnabled(Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, index.branch()));

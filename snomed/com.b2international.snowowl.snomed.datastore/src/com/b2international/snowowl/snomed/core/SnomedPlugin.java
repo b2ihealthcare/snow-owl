@@ -148,7 +148,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	protected PreCommitHook getTerminologyRepositoryPreCommitHook() {
-		return new SnomedRepositoryPreCommitHook();
+		return new SnomedRepositoryPreCommitHook(log());
 	}
-	
+
 }

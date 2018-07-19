@@ -21,7 +21,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.index.DefaultIndex;
 import com.b2international.index.Index;
@@ -63,22 +62,22 @@ public final class TerminologyRepository extends DelegatingContext implements In
 	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	private final int mergeMaxResults;
 	private final Mappings mappings;
-	private final Logger logger;
+	private final Logger log;
 	
 	private Health health = Health.RED;
 	private String diagnosis;
 	
-	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env, Mappings mappings) {
+	TerminologyRepository(String repositoryId, String toolingId, int mergeMaxResults, Environment env, Mappings mappings, Logger log) {
 		super(env);
 		this.toolingId = toolingId;
 		this.repositoryId = repositoryId;
 		this.mergeMaxResults = mergeMaxResults;
 		this.mappings = mappings;
-		this.logger = LoggerFactory.getLogger("repository."+repositoryId);
+		this.log = log;
 	}
 	
 	public void activate() {
-		bind(Logger.class, logger);
+		bind(Logger.class, log);
 		
 		final ObjectMapper mapper = service(ObjectMapper.class);
 		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);

@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionSearcher;
@@ -37,8 +36,12 @@ import com.b2international.snowowl.core.events.metrics.Timer;
  */
 public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook {
 
-	protected static final Logger LOG = LoggerFactory.getLogger("repository");
+	protected final Logger log;
 
+	public BaseRepositoryPreCommitHook(Logger log) {
+		this.log = log;
+	}
+	
 	@Override
 	public void run(StagingArea staging) {
 		final Timer indexTimer = MetricsThreadLocal.get().timer("pre-commit");
@@ -79,7 +82,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 //	}
 
 	private final void updateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
-		LOG.info("Processing changes...");
+		log.info("Processing changes...");
 //		processNewCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
 //		processDirtyCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
 
@@ -94,7 +97,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 //			});
 		
 		for (ChangeSetProcessor processor : getChangeSetProcessors(staging, index)) {
-			LOG.trace("Collecting {}...", processor.description());
+			log.trace("Collecting {}...", processor.description());
 			processor.process(staging, index);
 			// register additions, deletions from the sub processor
 			
@@ -110,7 +113,7 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 		}
 
 		postUpdateDocuments(staging);
-		LOG.info("Processing changes successfully finished.");
+		log.info("Processing changes successfully finished.");
 	}
 
 	protected abstract short getTerminologyComponentId(RevisionDocument revision);

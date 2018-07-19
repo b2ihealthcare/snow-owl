@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
 
+import org.slf4j.Logger;
+
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
@@ -48,6 +50,7 @@ public final class RepositoryBuilder {
 		CodeSystemEntry.class, 
 		CodeSystemVersionEntry.class
 	);
+	private Logger log;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -75,8 +78,13 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder logger(Logger log) {
+		this.log = log;
+		return this;
+	}
+	
 	public Repository build(Environment env) {
-		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings);
+		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
