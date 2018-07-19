@@ -72,7 +72,7 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	 * @param object
 	 * @return
 	 */
-	protected final <T> void bind(Class<T> type, T object) {
+	public final <T> void bind(Class<T> type, T object) {
 		registry.put(type, object);
 	}
 	
@@ -84,7 +84,7 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	 * @param object
 	 * @return
 	 */
-	protected final void bindAll(Map<Class<?>, Object> bindings) {
+	public final void bindAll(Map<Class<?>, Object> bindings) {
 		registry.putAll(bindings);
 	}
 

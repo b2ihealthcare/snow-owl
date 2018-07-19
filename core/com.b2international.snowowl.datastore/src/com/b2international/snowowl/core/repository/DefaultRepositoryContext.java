@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.repository;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.slf4j.Logger;
+
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
@@ -55,6 +57,11 @@ public final class DefaultRepositoryContext implements RepositoryContext, Branch
 	@Override
 	public SnowOwlConfiguration config() {
 		return service(SnowOwlConfiguration.class);
+	}
+	
+	@Override
+	public Logger log() {
+		return service(Logger.class);
 	}
 	
 	@Override

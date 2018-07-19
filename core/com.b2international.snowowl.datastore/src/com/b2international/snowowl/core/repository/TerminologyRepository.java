@@ -59,10 +59,11 @@ public final class TerminologyRepository extends DelegatingContext implements In
 
 	private final String toolingId;
 	private final String repositoryId;
-	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	private final int mergeMaxResults;
 	private final Mappings mappings;
 	private final Logger log;
+	
+	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	
 	private Health health = Health.RED;
 	private String diagnosis;

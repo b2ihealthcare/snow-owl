@@ -30,6 +30,9 @@ import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.datastore.request.TransactionalRequest;
+import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -46,6 +49,7 @@ import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.XMIMrcmImporter;
+import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
@@ -138,6 +142,17 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			SnomedRelationship.class,
 //			SnomedConstraint.class,
 			SnomedReferenceSet.class
+		);
+	}
+	
+	@Override
+	protected VersioningRequestBuilder getVersioningRequestBuilder() {
+		return (config) -> new TransactionalRequest(
+			config.getUser(), 
+			"Create version " + config.getVersionId(), 
+			new SnomedVersioningRequest(config), 
+			0L, 
+			DatastoreLockContextDescriptions.CREATE_VERSION
 		);
 	}
 	

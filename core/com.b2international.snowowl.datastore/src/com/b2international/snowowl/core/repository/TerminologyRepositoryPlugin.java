@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.index.BaseRepositoryPreCommitHook;
+import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 
 /**
  * @since 7.0
@@ -55,6 +56,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addMappings(getMappings())
 					.logger(log())
+					.withVersioningRequestBuilder(getVersioningRequestBuilder())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
@@ -89,6 +91,17 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 */
 	protected Hooks.PreCommitHook getTerminologyRepositoryPreCommitHook() {
 		return staging -> {};
+	}
+	
+	/**
+	 * Subclasses may override this method to provide custom
+	 * {@link VersioningRequestBuilder} instances to customize the versioning
+	 * process in the underlying terminology.
+	 * 
+	 * @return
+	 */
+	protected VersioningRequestBuilder getVersioningRequestBuilder() {
+		return VersioningRequestBuilder.DEFAULT;
 	}
 
 	/**

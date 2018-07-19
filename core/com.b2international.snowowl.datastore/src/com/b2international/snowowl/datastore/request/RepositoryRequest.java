@@ -43,7 +43,7 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public B execute(final ServiceProvider context) {
-		DelegatingContext.Builder<? extends RepositoryContext> repositoryContext = context.service(RepositoryContextProvider.class).get(repositoryId).inject();
+		DelegatingContext.Builder<? extends RepositoryContext> repositoryContext = context.service(RepositoryContextProvider.class).getContext(repositoryId).inject();
 		
 		// by default add a NullProgressMonitor binding to the context
 		// if the previous context is a delegate context, injecting all services can override this safely 

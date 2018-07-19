@@ -25,25 +25,22 @@ import com.google.common.base.MoreObjects;
 /**
  * Configuration for the publication process.
  */
-public final class PublishOperationConfiguration {
+public final class VersioningConfiguration {
 
 	private final String user;
 	private final String codeSystemShortName;
-	private final String parentBranchPath;
 	private final String versionId;
 	private final String description;
 	private final Date effectiveTime;
 	
-	public PublishOperationConfiguration(
+	public VersioningConfiguration(
 			String user,
 			String codeSystemShortName,
-			String parentBranchPath,
 			String versionId, 
 			String description,
 			Date effectiveTime) {
 		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
-		this.parentBranchPath = parentBranchPath;
 		this.versionId = versionId;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
@@ -67,10 +64,6 @@ public final class PublishOperationConfiguration {
 	
 	public String getCodeSystemShortName() {
 		return codeSystemShortName;
-	}
-	
-	public String getParentBranchPath() {
-		return parentBranchPath;
 	}
 	
 	@Override

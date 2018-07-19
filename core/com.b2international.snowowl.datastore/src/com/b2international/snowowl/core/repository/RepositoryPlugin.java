@@ -182,7 +182,9 @@ public final class RepositoryPlugin extends Plugin {
 			// TODO remove single directory manager
 			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
 
-			env.services().registerService(RepositoryManager.class, new DefaultRepositoryManager());
+			final RepositoryManager repositoryManager = new DefaultRepositoryManager();
+			env.services().registerService(RepositoryManager.class, repositoryManager);
+			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			
 			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
 			initializeRequestSupport(env, numberOfWorkers);
@@ -237,8 +239,6 @@ public final class RepositoryPlugin extends Plugin {
 		for (int i = 0; i < numberOfWorkers; i++) {
 			events.registerHandler(Request.ADDRESS, new ApiRequestHandler(env, classLoader));
 		}
-		
-		env.services().registerService(RepositoryContextProvider.class, new DefaultRepositoryContextProvider(env.service(RepositoryManager.class)));
 	}
 
 	private void connectSystemUser(IManagedContainer container) throws SnowowlServiceException {

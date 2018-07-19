@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,6 +48,12 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 	public Repository get(String repositoryId) {
 		checkState(!isDisposed(), "Repository Manager is not available");
 		return repositories.get(repositoryId);
+	}
+	
+	@Override
+	public RepositoryContext getContext(String repositoryId) {
+		final Repository repository = get(repositoryId);
+		return new DefaultRepositoryContext(repository, RepositoryInfo.of(repository));
 	}
 
 	@Override

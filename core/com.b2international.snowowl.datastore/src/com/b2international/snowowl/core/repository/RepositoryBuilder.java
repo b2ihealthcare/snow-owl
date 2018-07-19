@@ -24,13 +24,13 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
+import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 
 /**
  * @since 4.5
@@ -51,6 +51,7 @@ public final class RepositoryBuilder {
 		CodeSystemVersionEntry.class
 	);
 	private Logger log;
+	private VersioningRequestBuilder versioningRequestBuilder;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -83,9 +84,15 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder withVersioningRequestBuilder(VersioningRequestBuilder versioningRequestBuilder) {
+		this.versioningRequestBuilder = versioningRequestBuilder;
+		return this;
+	}
+	
 	public Repository build(Environment env) {
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
 		// TODO support additional service registration and terminology repository configuration via other plugins
+		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);
@@ -95,7 +102,7 @@ public final class RepositoryBuilder {
 			new IndexReadRequest<Void>((context) -> {
 				initializer.initialize(context);
 				return null;
-			}).execute(env.service(RepositoryContextProvider.class).get(repositoryId));
+			}).execute(manager.getContext(repositoryId));
 		}
 		
 		return repository;
