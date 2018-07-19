@@ -37,7 +37,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	//CodeSystemRestTest.class,
 	//LookupFhirCodeSystemRestTest.class,
-	LookupSnomedRestTest.class,
+	//LookupSnomedRestTest.class,
 	//SubsumesSnomedRestTest.class,
 	SandBoxRestTest.class
 })

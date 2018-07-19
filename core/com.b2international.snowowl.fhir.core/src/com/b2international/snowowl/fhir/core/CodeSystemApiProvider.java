@@ -249,7 +249,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
-		final String version = subsumptionRequest.getVersion();
+		
+		final String version = getVersion(subsumptionRequest);
 		final String branchPath = getBranchPath(version);
 		
 		String codeA = null;
@@ -276,6 +277,15 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 	}
 	
+	/**
+	 * Returns the version information from the request
+	 * @param subsumptionRequest 
+	 * @return version string
+	 */
+	protected String getVersion(SubsumptionRequest subsumptionRequest) {
+		return subsumptionRequest.getVersion();
+	}
+
 	/**
 	 * Returns all ancestors up to the terminology's root component (in terms of Snow Owl, this means {@link IComponent#ROOT_ID}).
 	 * 

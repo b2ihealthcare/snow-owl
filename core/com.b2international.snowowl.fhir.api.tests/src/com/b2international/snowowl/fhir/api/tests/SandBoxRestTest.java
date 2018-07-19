@@ -28,12 +28,18 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult.SubsumptionType;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -66,17 +72,24 @@ public class SandBoxRestTest extends FhirTest {
 			.when().get("/CodeSystem/{id}").prettyPrint();
 	}
 	
-	//@Test
-	public void lookupDefaultPropertiesTest() throws Exception {
+	@Test
+	public void subsumedByWithVersionTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("system", "http://snomed.info/sct")
-			.param("code", "263495000")
-			.param("_format", "json")
-			.when().get("/CodeSystem/$lookup")
+			.param("codeA", "413029008") //Monospecific reactions
+			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
+			.param("system", "http://snomed.info/sct/900000000000207008/version/20180131")
+			.when().get("/CodeSystem/$subsumes")
 			.asString();
 		
-		System.out.println("Response string: " + responseString);
-		LookupResult result = convertToResult(responseString);
+		SubsumptionResult result = convertToSubsumptionResult(responseString);
+		Assert.assertEquals(SubsumptionType.SUBSUMED_BY, result.getOutcome());
 	}
+	
+	private SubsumptionResult convertToSubsumptionResult(String responseString) throws Exception {
+		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		return objectMapper.convertValue(json, SubsumptionResult.class);
+	}
+	
 }

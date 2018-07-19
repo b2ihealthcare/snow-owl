@@ -54,22 +54,7 @@ public class SubsumesSnomedRestTest extends FhirTest {
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("codeA", "413029008") //Monospecific reactions
 			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
-			.param("system", "http://snomed.info/sct")
-			.param("version", "2018-01-31")
-			.when().get("/CodeSystem/$subsumes")
-			.asString();
-		
-		SubsumptionResult result = convertToSubsumptionResult(responseString);
-		Assert.assertEquals(SubsumptionType.SUBSUMED_BY, result.getOutcome());
-	}
-	
-	@Test
-	public void subsumedByWithVersion2Test() throws Exception {
-		
-		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "413029008") //Monospecific reactions
-			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
-			.param("system", "http://snomed.info/sct/00000000000207008/version/20180131")
+			.param("system", "http://snomed.info/sct/900000000000207008/version/20180131")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
 		
@@ -84,7 +69,7 @@ public class SubsumesSnomedRestTest extends FhirTest {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("codeA", "413029008") //Monospecific reactions
 			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
-			.param("system", "http://snomed.info/sct/00000000000207008/version/20170131")
+			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
 			.param("version", "2018-01-31")
 			.when().get("/CodeSystem/$subsumes")
 			.then()

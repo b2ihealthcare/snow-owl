@@ -319,7 +319,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		validateSubsumptionRequest(request);
 		
-		SubsumptionResult result = ICodeSystemApiProvider.Registry.getCodeSystemProvider(request.getSystem()).subsumes(request);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(request.getSystem());
+		SubsumptionResult result = codeSystemProvider.subsumes(request);
 		return toResponse(result);
 	}
 	
@@ -473,15 +474,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				throw new BadRequestException("Provide either codes or Codings.", "SubsumptionRequest");
 			}
 		}
-		
-		//SNOMED CT specific, both the URI and version identifies the version
-		if (system.startsWith("http://snomed.info/sct") 
-				&& system.contains("version")
-				&& version != null) {
-			
-			throw new BadRequestException("Both system URI and version tag identifies a version.", "SubsumptionRequest");
-		}
-		
 	}
 	
 }

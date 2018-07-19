@@ -20,7 +20,6 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -36,10 +35,12 @@ public class SnomedUri {
 	public static final String VERSION_PATH_SEGMENT = "version"; //$NON-NLS-N$
 	public static final String SNOMED_BASE_URI = "http://snomed.info/sct"; //$NON-NLS-N$
 
+	private String uriString;
 	private String extensionModuleId;
 	private String versionTag;
 	
 	public SnomedUri(String uriString) {
+		this.uriString = uriString;
 		parseUri(uriString);
 	}
 	
@@ -95,6 +96,14 @@ public class SnomedUri {
 	}
 	public String getVersionTag() {
 		return versionTag;
+	}
+	
+	/**
+	 * Returns the standard URI string for this SNOMED CT URI
+	 * @return
+	 */
+	public String toUri() {
+		return uriString;
 	}
 	
 }
