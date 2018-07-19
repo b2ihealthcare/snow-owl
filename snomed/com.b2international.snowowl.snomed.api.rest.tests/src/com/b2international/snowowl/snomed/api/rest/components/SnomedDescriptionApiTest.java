@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,10 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
@@ -58,30 +61,28 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -445,8 +446,8 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertEquals(2, members.getTotal());
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "pt()")
-		.statusCode(200)
-		.body("pt.id", equalTo(descriptionId));
+			.statusCode(200)
+			.body("pt.id", equalTo(descriptionId));
 	}
 
 	@Test
@@ -524,19 +525,24 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		// Inject inactive language member with different acceptability (API won't allow it) 
 		String memberIdToUpdate = UUID.randomUUID().toString();
-		try (SnomedEditingContext context = new SnomedEditingContext(branchPath)) {
-			SnomedLanguageRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedLanguageRefSetMember();
-			member.setUuid(memberIdToUpdate);
-			member.setActive(false);
-			member.setModuleId(Concepts.MODULE_SCT_CORE);
-			member.setRefSet(context.lookup(Concepts.REFSET_LANGUAGE_TYPE_UK, SnomedRefSet.class));
-			member.setReferencedComponentId(descriptionId);
-			member.setAcceptabilityId(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
-
-			Description description = context.lookup(descriptionId, Description.class);
-			description.getLanguageRefSetMembers().add(member);
-			context.commit("Added duplicate language reference set member to " + descriptionId);
-		}
+		
+		SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
+				.id(memberIdToUpdate)
+				.active(false)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.referenceSetId(Concepts.REFSET_LANGUAGE_TYPE_UK)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.referencedComponentId(descriptionId)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
+				.build();
+		
+		ApplicationContext.getServiceForClass(RepositoryManager.class)
+			.get(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.service(RevisionIndex.class)
+			.prepareCommit(branchPath.getPath())
+			.stageNew(member)
+			.commit(ApplicationContext.getServiceForClass(TimestampProvider.class).getTimestamp(), "test", "Added duplicate language reference set member to " + descriptionId);
 
 		// Check the acceptability map; the description should be acceptable in the UK reference set
 		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
@@ -546,8 +552,8 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertEquals(2, description.getMembers().getTotal());
 
 		String memberIdToDelete = null;
-		for (SnomedReferenceSetMember member : description.getMembers()) {
-			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE.equals(member.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
+		for (SnomedReferenceSetMember descriptionMember : description.getMembers()) {
+			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE.equals(descriptionMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
 				memberIdToDelete = member.getId();
 				break;
 			}
