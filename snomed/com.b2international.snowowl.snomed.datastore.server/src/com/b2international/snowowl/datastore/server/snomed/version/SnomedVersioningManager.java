@@ -25,18 +25,19 @@ import com.b2international.snowowl.datastore.version.VersioningManager;
  */
 public class SnomedVersioningManager extends VersioningManager implements ISnomedVersioningManager {
 	
-	private SnomedPublishManager publishManager;
+//	private SnomedPublishManager publishManager;
 
 	@Override
 	protected IPublishManager getPublishManager() {
-		if (null == publishManager)
-			this.publishManager = new SnomedPublishManager();
-		return publishManager;
+		return null;
+//		if (null == publishManager)
+//			this.publishManager = new SnomedPublishManager();
+//		return publishManager;
 	}
 	
 	@Override
 	public void postCommit() {
-		getPublishManager().postCommit();
+//		getPublishManager().postCommit();
 	}
 	
 }

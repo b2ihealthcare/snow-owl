@@ -26,7 +26,10 @@ public abstract class VersioningManager implements IVersioningManager {
 
 	@Override
 	public void publish(final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
-		getPublishManager().publish(configuration, monitor);
+		IPublishManager manager = getPublishManager();
+		if (manager != null) {
+			manager.publish(configuration, monitor);
+		}
 	}
 	
 	/**Returns with the {@link IPublishManager component publish manager} for the versioning manager.*/
