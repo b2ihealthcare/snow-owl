@@ -138,7 +138,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
 					.filter(id -> !staging.getChangedRevisions().containsKey(id))
 					.collect(Collectors.toSet());
-			System.err.println(String.format("all: %s vs. missing: %s", dirtyConceptIds.size(), missingCurrentConceptIds.size()));
 			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
 					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
 					.limit(missingCurrentConceptIds.size())
