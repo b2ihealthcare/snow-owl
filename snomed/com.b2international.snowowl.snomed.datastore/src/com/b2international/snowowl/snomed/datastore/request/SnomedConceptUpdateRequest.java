@@ -313,9 +313,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		// Run the basic inactivation plan without settings the inactivation reason or a historical association target; those will be handled separately
-		final SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
-		final SnomedInactivationPlan inactivationPlan = editingContext.inactivateConcept(new NullProgressMonitor(), concept.getId());
-		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
+//		final SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
+//		final SnomedInactivationPlan inactivationPlan = editingContext.inactivateConcept(new NullProgressMonitor(), concept.getId());
+//		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
 		
 		// TODO support description concept non current indicator updates
 //		// The inactivation plan places new inactivation reason members on descriptions, even if one is already present. Fix this by running the update on the descriptions again.
