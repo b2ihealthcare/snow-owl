@@ -49,13 +49,13 @@ public final class LockPlugin extends Plugin {
 					((ApplicationSessionManager) newService).addListener(remoteLockTargetListener);
 				}
 			});
-			env.services().registerService(IOperationLockManager.class, lockManager);
+			env.services().registerService(IDatastoreOperationLockManager.class, lockManager);
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
-			session.registerClassLoader(IOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
+			session.registerClassLoader(IDatastoreOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
 		}
 		
 		if (!env.isEmbedded()) {
-			env.services().registerService(IOperationLockManager.class, RpcUtil.createProxy(env.container(), IDatastoreOperationLockManager.class));
+			env.services().registerService(IDatastoreOperationLockManager.class, RpcUtil.createProxy(env.container(), IDatastoreOperationLockManager.class));
 		}
 	}
 	
