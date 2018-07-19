@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -30,14 +29,12 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -49,8 +46,9 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedDescriptionAcceptabilityUpdateRequest.class);
 	
-	private String descriptionId;
-	private Map<String, Acceptability> newAcceptabilityMap;
+	private final String descriptionId;
+	private final String moduleId;
+	private final Map<String, Acceptability> newAcceptabilityMap;
 
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
@@ -58,6 +56,12 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
 		}
 	});
+
+	public SnomedDescriptionAcceptabilityUpdateRequest(final String descriptionId, final String moduleId, final Map<String, Acceptability> newAcceptabilityMap) {
+		this.descriptionId = descriptionId;
+		this.moduleId = moduleId;
+		this.newAcceptabilityMap = newAcceptabilityMap;
+	}
 	
 	@Override
 	public Void execute(TransactionContext context) {
@@ -65,62 +69,52 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 		if (newAcceptabilityMap == null) {
 			return null;
 		} else {
-			final Description description = context.lookup(descriptionId, Description.class);
-			updateAcceptabilityMap(context, description, newAcceptabilityMap);
+			updateAcceptabilityMap(context, descriptionId, newAcceptabilityMap);
 			return null;
 		}
 	}
 
-	public void setDescriptionId(String descriptionId) {
-		this.descriptionId = descriptionId;
-	}
-
-	public void setAcceptability(Map<String, Acceptability> acceptability) {
-		this.newAcceptabilityMap = acceptability;
-	}
-	
-	private void removeOrDeactivate(final TransactionContext context, final SnomedLanguageRefSetMember existingMember) {
+	private void updateAcceptabilityMap(final TransactionContext context, final String descriptionId, Map<String, Acceptability> acceptabilityMap) {
+		final Iterable<SnomedReferenceSetMember> existingMembers = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByReferencedComponent(descriptionId)
+				.filterByRefSetType(Collections.singleton(SnomedRefSetType.LANGUAGE))
+				.build()
+				.execute(context);
 		
-		if (!existingMember.isReleased()) {
-			
-			if (LOG.isDebugEnabled()) { LOG.debug("Removing language member {}.", existingMember.getUuid()); }
-			SnomedModelExtensions.remove(existingMember);
-
-		} else if (existingMember.isActive()) {
-
-			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating language member {}.", existingMember.getUuid()); }
-			existingMember.setActive(false);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
-			
-		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Language member {} already inactive, not updating.", existingMember.getUuid()); }
-		}
-	}
-	
-	private void updateAcceptabilityMap(final TransactionContext context, final Description description, Map<String, Acceptability> acceptabilityMap) {
-		final List<SnomedLanguageRefSetMember> existingMembers = newArrayList(description.getLanguageRefSetMembers());
 		final Map<String, Acceptability> newLanguageMembersToCreate = newHashMap(acceptabilityMap);
 
 		// check if there are existing matches
-		for (SnomedLanguageRefSetMember existingMember : existingMembers) {
-			final Acceptability acceptability = Acceptability.getByConceptId(existingMember.getAcceptabilityId());
-			final String languageReferenceSetId = existingMember.getRefSetIdentifierId();
+		for (SnomedReferenceSetMember existingMember : existingMembers) {
+			final String acceptabilityId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+			final Acceptability acceptability = Acceptability.getByConceptId(acceptabilityId);
+			final String languageReferenceSetId = existingMember.getReferenceSetId();
 			
 			if (null == acceptability) {
 				continue;	
 			}
 			
+			final SnomedRefSetMemberIndexEntry.Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
+			final SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
+			
 			if (acceptability.equals(newLanguageMembersToCreate.get(languageReferenceSetId))) {
-				if (ensureMemberActive(context, existingMember)) { updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember); }
+				if (ensureMemberActive(existingMember, updatedMember)) {
+					if (updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember, updatedMember)) {
+						context.update(oldRevision, updatedMember.build());
+					}
+				}
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
 			} else if (newLanguageMembersToCreate.containsKey(languageReferenceSetId)) {
 				final Acceptability newAcceptability = newLanguageMembersToCreate.get(languageReferenceSetId);
-				ensureMemberActive(context, existingMember);
-				existingMember.setAcceptabilityId(newAcceptability.getConceptId());
-				updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember); // Always check; we know that the acceptabilityId has changed
+				ensureMemberActive(existingMember, updatedMember);
+				updatedMember.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, newAcceptability.getConceptId());
+				updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember, updatedMember); // Always check; we know that the acceptabilityId has changed
+				context.update(oldRevision, updatedMember.build());
 				newLanguageMembersToCreate.remove(languageReferenceSetId);
 			} else {
-				removeOrDeactivate(context, existingMember);
+				if (removeOrDeactivate(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());
+				}
 			}
 			
 		}
@@ -130,9 +124,31 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 				.newLanguageMember()
 				.withAcceptability(languageMemberEntry.getValue())
 				.withRefSet(languageMemberEntry.getKey())
-				.withModule(description.getModule().getId())
-				.withReferencedComponent(description.getId())
+				.withModule(moduleId)
+				.withReferencedComponent(descriptionId)
 				.addTo(context);
+		}
+	}
+	
+	private boolean removeOrDeactivate(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+		if (!existingMember.isReleased()) {
+			
+			if (LOG.isDebugEnabled()) { LOG.debug("Removing language member {}.", existingMember.getId()); }
+			context.delete(updatedMember.build());
+			return false;
+			
+		} else if (existingMember.isActive()) {
+
+			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating language member {}.", existingMember.getId()); }
+			updatedMember.active(false);
+			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember, updatedMember);
+			return true;
+			
+		} else {
+			
+			if (LOG.isDebugEnabled()) { LOG.debug("Language member {} already inactive, not updating.", existingMember.getId()); }
+			return false;
+			
 		}
 	}
 	
@@ -140,57 +156,61 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 		return referenceBranchFunction.apply(context);
 	}
 	
-	private boolean ensureMemberActive(final TransactionContext context, final SnomedLanguageRefSetMember existingMember) {
+	private boolean ensureMemberActive(final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isActive()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating language member {}.", existingMember.getUuid()); }
-			existingMember.setActive(true);
+			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating language member {}.", existingMember.getId()); }
+			updatedMember.active(true);
 			return true;
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Language member {} already active, not updating.", existingMember.getUuid()); }
+			if (LOG.isDebugEnabled()) { LOG.debug("Language member {} already active, not updating.", existingMember.getId()); }
 			return false;
 		}
 	}
 	
-	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedLanguageRefSetMember existingMember) {
+	private boolean updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		
 		if (existingMember.isReleased()) {
 			
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getId())
 					.build(context.id(), referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();
 
+			final String referenceAcceptabilityId = (String) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+			final String existingAcceptabilityId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+			
 			boolean restoreEffectiveTime = true;
 			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
 			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getAcceptabilityId().equals(referenceMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID));
+			restoreEffectiveTime = restoreEffectiveTime && existingAcceptabilityId.equals(referenceAcceptabilityId);
 
 			if (restoreEffectiveTime) {
 
 				if (LOG.isDebugEnabled()) { 
 					LOG.debug("Restoring effective time on language member {} to reference value {}.", 
-							existingMember.getUuid(), 
+							existingMember.getId(), 
 							EffectiveTimes.format(referenceMember.getEffectiveTime(), DateFormats.SHORT));
 				}
 
-				existingMember.setEffectiveTime(referenceMember.getEffectiveTime());
-				
+				updatedMember.effectiveTime(referenceMember.getEffectiveTime().getTime());
+				return true;
 			} else {
-				unsetEffectiveTime(existingMember);
+				return unsetEffectiveTime(existingMember, updatedMember);
 			}
 			
 		} else {
-			unsetEffectiveTime(existingMember);
+			return unsetEffectiveTime(existingMember, updatedMember);
 		}
 	}
 	
-	private void unsetEffectiveTime(SnomedRefSetMember existingMember) {
-		
-		if (existingMember.isSetEffectiveTime()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on language member {}.", existingMember.getUuid()); }
-			existingMember.unsetEffectiveTime();
+	private boolean unsetEffectiveTime(SnomedReferenceSetMember existingMember, SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+		if (existingMember.getEffectiveTime() != null) {
+			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on language member {}.", existingMember.getId()); }
+			updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			return true;
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on language member {} already unset, not updating.", existingMember.getUuid()); }
+			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on language member {} already unset, not updating.", existingMember.getId()); }
+			return false;
 		}
 	}
 }

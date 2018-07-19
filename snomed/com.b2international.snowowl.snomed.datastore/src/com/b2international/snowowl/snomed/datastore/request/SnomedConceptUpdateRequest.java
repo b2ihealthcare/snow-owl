@@ -39,8 +39,8 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.DescriptionInactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
+import com.b2international.snowowl.snomed.core.domain.InactivationReason;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -51,7 +51,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
-import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan.InactivationReason;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -318,20 +317,21 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final SnomedInactivationPlan inactivationPlan = editingContext.inactivateConcept(new NullProgressMonitor(), concept.getId());
 		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
 		
-		// The inactivation plan places new inactivation reason members on descriptions, even if one is already present. Fix this by running the update on the descriptions again.
-		for (final SnomedDescription description : concept.getDescriptions()) {
-			// Add "Concept non-current" reason to active descriptions
-			if (description.isActive()) {
-				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-						description.getId(), 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-						description.getModuleId());
-				
-				// XXX: The only other inactivation reason an active description can have is "Pending move"; not sure what the implications are
-				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId());
-				descriptionUpdateRequest.execute(context);
-			}
-		}
+		// TODO support description concept non current indicator updates
+//		// The inactivation plan places new inactivation reason members on descriptions, even if one is already present. Fix this by running the update on the descriptions again.
+//		for (final SnomedDescription description : concept.getDescriptions()) {
+//			// Add "Concept non-current" reason to active descriptions
+//			if (description.isActive()) {
+//				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
+//						description.getId(), 
+//						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+//						description.getModuleId());
+//				
+//				// XXX: The only other inactivation reason an active description can have is "Pending move"; not sure what the implications are
+//				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId());
+//				descriptionUpdateRequest.execute(context);
+//			}
+//		}
 	}
 
 	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
@@ -341,18 +341,19 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 		updatedConcept.active(true);
 		
-		for (final SnomedDescription description : concept.getDescriptions()) {
-			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
-			if (description.isActive()) {
-				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-						description.getId(), 
-						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-						description.getModuleId());
-				
-				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.RETIRED.getConceptId());
-				descriptionUpdateRequest.execute(context);
-			}
-		}
+		// TODO support description reactivation in concept update
+//		for (final SnomedDescription description : concept.getDescriptions()) {
+//			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
+//			if (description.isActive()) {
+//				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
+//						description.getId(), 
+//						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+//						description.getModuleId());
+//				
+//				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.RETIRED.getConceptId());
+//				descriptionUpdateRequest.execute(context);
+//			}
+//		}
 	}
 	
 	private <T extends EObject, U extends SnomedComponent> boolean updateComponents(final TransactionContext context, 
