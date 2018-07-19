@@ -21,6 +21,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 
 /**
  * FHIR Common concept properties code system
+ * 
  * @since 6.4
  */
 @ResourceNarrative("A set of common concept properties for use on coded systems through out the FHIR eco-system.")
