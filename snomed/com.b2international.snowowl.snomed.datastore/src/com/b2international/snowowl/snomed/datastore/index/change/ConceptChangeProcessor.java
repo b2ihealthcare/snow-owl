@@ -202,7 +202,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		
 		// add dirty descriptions with relevant changes from tx
 		staging
-			.getChangedRevisions(SnomedDescriptionIndexEntry.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES)
+			// XXX accepts only relevant property changes, lang member detection should take care about acceptability changes
+			.getChangedRevisions(SnomedDescriptionIndexEntry.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES) 
 			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
 			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
 			.forEach(description -> descriptions.put(description.getId(), description));
@@ -229,6 +230,13 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.forEach(descriptionsToLoad::add);
 		
 		descriptionsToLoad.removeAll(descriptions.keySet());
+		
+		// add all descriptions that are present in the tx because of acceptabilityId prop change
+		staging.getChangedRevisions(SnomedDescriptionIndexEntry.class) 
+			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
+			.filter(description -> descriptionsToLoad.remove(description.getId())) // XXX removes already dirty description from the toLoad set
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.forEach(description -> descriptions.put(description.getId(), description));
 		
 		if (!descriptionsToLoad.isEmpty()) {
 			searcher.get(SnomedDescriptionIndexEntry.class, descriptionsToLoad)

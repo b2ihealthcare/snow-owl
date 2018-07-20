@@ -155,6 +155,9 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 			collectChanges(acceptabilityChanges.get(Acceptability.ACCEPTABLE), acceptableLanguageRefSets);
 		}
 		
+		// clear acceptability map first then apply new acceptability settings
+		doc.acceptabilityMap(Collections.emptyMap());
+		
 		for (String preferredLanguageRefSet : preferredLanguageRefSets) {
 			doc.acceptability(preferredLanguageRefSet, Acceptability.PREFERRED);
 		}

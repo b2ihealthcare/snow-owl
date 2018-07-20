@@ -21,7 +21,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -304,8 +304,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private Set<String> acceptableIn = newHashSet();
-		private Set<String> preferredIn = newHashSet();
+		private Set<String> acceptableIn = newHashSetWithExpectedSize(2);
+		private Set<String> preferredIn = newHashSetWithExpectedSize(2);
 		private String semanticTag;
 
 		@JsonCreator
@@ -377,6 +377,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
+			this.acceptableIn = newHashSetWithExpectedSize(2);
+			this.preferredIn = newHashSetWithExpectedSize(2);
 			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
 				acceptability(entry.getKey(), entry.getValue());
 			}
