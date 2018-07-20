@@ -20,6 +20,7 @@ import java.io.IOException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
@@ -59,7 +60,7 @@ final class ReferringMemberChangeProcessor {
 		
 		// process detached members
 		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
-			.filter(doc -> referencedComponentType == doc.getReferencedComponentType())
+			.filter(this::byReferencedComponentType)
 			.forEach(doc -> {
 				final String uuid = doc.getId();
 				final String referencedComponentId = doc.getReferencedComponentId();
@@ -71,7 +72,7 @@ final class ReferringMemberChangeProcessor {
 	}
 	
 	private boolean byReferencedComponentType(SnomedRefSetMemberIndexEntry member) {
-		return referencedComponentType == member.getReferencedComponentType();
+		return referencedComponentType == SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(member.getReferencedComponentId());
 	}
 
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMemberIndexEntry member, MemberChangeKind changeKind) {

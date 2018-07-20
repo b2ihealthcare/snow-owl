@@ -195,9 +195,7 @@ final class SnomedAssociationTargetUpdateRequest implements Request<TransactionC
 
 		// With all existing members processed, any remaining entries in the multimap will need to be added as members
 		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
-			
-			final SnomedRefSetMemberIndexEntry member = SnomedComponents
-					.newAssociationMember()
+			SnomedComponents.newAssociationMember()
 					.withRefSet(newAssociationEntry.getKey().getConceptId())
 					.withTargetComponentId(newAssociationEntry.getValue())
 					.withReferencedComponent(componentId)
