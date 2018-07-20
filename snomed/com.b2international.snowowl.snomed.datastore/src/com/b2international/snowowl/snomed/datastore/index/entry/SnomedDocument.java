@@ -105,7 +105,7 @@ public abstract class SnomedDocument extends RevisionDocument {
 		protected String moduleId;
 		protected boolean active;
 		protected boolean released;
-		protected long effectiveTime;
+		protected long effectiveTime = EffectiveTimes.UNSET_EFFECTIVE_TIME;
 
 		public B moduleId(final String moduleId) {
 			this.moduleId = moduleId;
