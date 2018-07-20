@@ -30,10 +30,12 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
@@ -207,8 +209,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@Override
 	public void delete(Object o, boolean force) {
 		RevisionDocument doc = ClassUtils.checkAndCast(o, RevisionDocument.class);
-		staging.stageRemove(doc);
-		// TODO add deletion policy and use force flag to circumvent it
+		
+		if (service(ComponentDeletionPolicy.class).canDelete(doc) || force) {
+			staging.stageRemove(doc);
+		} else {
+			throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
+		}
 	}
 	
 	@Override

@@ -56,6 +56,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addMappings(getMappings())
 					.logger(log())
+					.withComponentDeletionPolicy(getComponentDeletionPolicy())
 					.withVersioningRequestBuilder(getVersioningRequestBuilder())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
@@ -67,6 +68,14 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		afterRun(configuration, env);
 	}
 	
+	/**
+	 * Subclasses may override to provide customized {@link ComponentDeletionPolicy} for the underlying repository.
+	 * @return
+	 */
+	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
+		return ComponentDeletionPolicy.ALLOW;
+	}
+
 	protected abstract Collection<Class<?>> getMappings();
 
 	/**

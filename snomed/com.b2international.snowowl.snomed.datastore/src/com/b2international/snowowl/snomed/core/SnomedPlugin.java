@@ -25,6 +25,7 @@ import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -56,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceA
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
@@ -104,6 +106,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
+	protected ComponentDeletionPolicy getComponentDeletionPolicy() {
+		return doc -> doc instanceof SnomedDocument && !((SnomedDocument) doc).isReleased();
+	}
+	
+	@Override
 	protected Collection<Class<?>> getMappings() {
 		return ImmutableList.<Class<?>>of(
 			SnomedConceptDocument.class,
@@ -149,7 +156,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	protected VersioningRequestBuilder getVersioningRequestBuilder() {
 		return (config) -> new TransactionalRequest(
 			config.getUser(), 
-			"Create version " + config.getVersionId(), 
+			VersioningRequestBuilder.defaultCommitComment(config), 
 			new SnomedVersioningRequest(config), 
 			0L, 
 			DatastoreLockContextDescriptions.CREATE_VERSION
@@ -165,5 +172,5 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	protected PreCommitHook getTerminologyRepositoryPreCommitHook() {
 		return new SnomedRepositoryPreCommitHook(log());
 	}
-
+	
 }

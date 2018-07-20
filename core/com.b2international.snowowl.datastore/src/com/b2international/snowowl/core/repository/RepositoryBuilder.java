@@ -44,14 +44,16 @@ public final class RepositoryBuilder {
 	private int mergeMaxResults;
 	private TerminologyRepositoryInitializer initializer;
 	private Hooks.PreCommitHook hook;
+	private Logger log;
+	private VersioningRequestBuilder versioningRequestBuilder;
+	private ComponentDeletionPolicy deletionPolicy;
+	
 	private final Mappings mappings = new Mappings(
 		Review.class, 
 		ConceptChanges.class, 
 		CodeSystemEntry.class, 
 		CodeSystemVersionEntry.class
 	);
-	private Logger log;
-	private VersioningRequestBuilder versioningRequestBuilder;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -89,10 +91,16 @@ public final class RepositoryBuilder {
 		return this;
 	}
 	
+	public RepositoryBuilder withComponentDeletionPolicy(ComponentDeletionPolicy deletionPolicy) {
+		this.deletionPolicy = deletionPolicy;
+		return this;
+	}
+	
 	public Repository build(Environment env) {
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
+		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);
