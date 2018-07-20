@@ -27,10 +27,12 @@ import com.b2international.snowowl.datastore.request.TransactionalRequest;
 @FunctionalInterface
 public interface VersioningRequestBuilder {
 
+	String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version '%s' for %s.";
+	
 	VersioningRequestBuilder DEFAULT = config -> {
 		return new TransactionalRequest(
 			config.getUser(), 
-			"Create version " + config.getVersionId(), 
+			defaultCommitComment(config), 
 			new VersioningRequest(config), 
 			0L, 
 			DatastoreLockContextDescriptions.CREATE_VERSION
@@ -38,5 +40,9 @@ public interface VersioningRequestBuilder {
 	};
 	
 	Request<BranchContext, CommitResult> build(VersioningConfiguration config);
+
+	static String defaultCommitComment(VersioningConfiguration config) {
+		return String.format(NEW_VERSION_COMMIT_COMMENT_TEMPLATE, config.getVersionId(), config.getCodeSystemShortName());
+	}
 	
 }

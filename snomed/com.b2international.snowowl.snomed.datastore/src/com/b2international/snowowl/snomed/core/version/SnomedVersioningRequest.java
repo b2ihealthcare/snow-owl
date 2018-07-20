@@ -19,8 +19,30 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Set;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.bulk.BulkRequest;
+import com.b2international.snowowl.core.events.bulk.BulkResponse;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
+import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningRequest;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 
@@ -44,79 +66,58 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		super(config);
 	}
 	
-//	@Override
-//	protected LongSet getUnversionedComponentStorageKeys(final String branch) {
-//		return RepositoryRequests.prepareBulkRead()
-//				.setBody(BulkRequest.<BranchContext>create()
-//						.add(SnomedRequests.prepareSearchConcept().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-//						.add(SnomedRequests.prepareSearchDescription().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-//						.add(SnomedRequests.prepareSearchRelationship().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-//						.add(SnomedRequests.prepareSearchMember().all().filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
-//				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-//				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-//				.then(new Function<BulkResponse, LongSet>() {
-//					@Override
-//					public LongSet apply(BulkResponse input) {
-//						// index all unpublished components by its unique ID and storageKey
-//						final LongSet unpublishedStorageKeys = PrimitiveSets.newLongOpenHashSet();
-//						for (CollectionResource<?> hits : input.getResponses(CollectionResource.class)) {
-//							for (Object hit : hits) {
-//								if (hit instanceof SnomedComponent) {
-//									final SnomedComponent component = (SnomedComponent) hit;
-//									final String id = component.getId();
-//									if (component instanceof SnomedCoreComponent) {
-//										// if core component mark ID as publishable
-//										componentIdsToPublish.add(id);
-//									}
-//									unpublishedStorageKeys.add(((SnomedComponent) hit).getStorageKey());
-//								}
-//							}
-//						}
-//						return unpublishedStorageKeys;
-//					}
-//				})
-//				.getSync();
-//	}
-//
-//	@Override
-//	protected EStructuralFeature getEffectiveTimeFeature(final EClass eClass) {
-//		if (isCoreComponent(eClass)) {
-//			return SnomedPackage.eINSTANCE.getComponent_EffectiveTime();
-//		} else if (isRefSetMember(eClass)) {
-//			return SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_EffectiveTime();
-//		}
-//		throw new IllegalArgumentException("Unsupported or unexpected component type: " + eClass);
-//	}
-//
-//	@Override
-//	protected CDOEditingContext createEditingContext(IBranchPath branchPath) {
-//		return new SnomedEditingContext(branchPath);
-//	}
-//	
-//	@Override
-//	protected EStructuralFeature getReleasedFeature(final EClass eClass) {
-//		if (isCoreComponent(eClass)) {
-//			return SnomedPackage.eINSTANCE.getComponent_Released();
-//		} else if (isRefSetMember(eClass)) {
-//			return SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember_Released();
-//		}
-//		throw new IllegalArgumentException("Unsupported or unexpected component type: " + eClass);
-//	}
-//
-//	@Override
-//	protected String getRepositoryUuid() {
-//		return SnomedDatastoreActivator.REPOSITORY_UUID;
-//	}
-//
-//	/**
-//	 * Since effective time and publication cannot be interpreted for SNOMED&nbsp;CT reference sets, we ignore them.
-//	 * <p>{@inheritDoc}}
-//	 */
-//	@Override
-//	protected boolean isIgnoredType(final EClass eClass) {
-//		return SnomedRefSetPackage.eINSTANCE.getSnomedRefSet().isSuperTypeOf(eClass);
-//	}
-//	
+	@Override
+	protected void doVersionComponents(TransactionContext context) {
+		BulkResponse response = RepositoryRequests.prepareBulkRead()
+			.setBody(BulkRequest.<BranchContext>create()
+					.add(SnomedRequests.prepareSearchConcept()
+							.all()
+							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.add(SnomedRequests.prepareSearchDescription()
+							.all()
+							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.add(SnomedRequests.prepareSearchRelationship()
+							.all()
+							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+					.add(SnomedRequests.prepareSearchMember()
+							.all()
+							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
+			.build()
+			.execute(context);
+		
+		for (CollectionResource<?> hits : response.getResponses(CollectionResource.class)) {
+			for (SnomedComponent hit : Iterables.filter(hits, SnomedComponent.class)) {
+				
+				// register IDs for publication
+				if (hit instanceof SnomedCoreComponent) {
+					componentIdsToPublish.add(hit.getId());
+				}
+				
+				// stage update on components based on actual type
+				final SnomedDocument.Builder updatedComponent; 
+				if (hit instanceof SnomedConcept) {
+					updatedComponent = SnomedConceptDocument.builder((SnomedConcept) hit);
+				} else if (hit instanceof SnomedDescription) {
+					updatedComponent = SnomedDescriptionIndexEntry.builder((SnomedDescription) hit);
+				} else if (hit instanceof SnomedRelationship) {
+					updatedComponent = SnomedRelationshipIndexEntry.builder((SnomedRelationship) hit);
+				} else if (hit instanceof SnomedReferenceSetMember) {
+					updatedComponent = SnomedRefSetMemberIndexEntry.builder((SnomedReferenceSetMember) hit);
+				} else {
+					throw new UnsupportedOperationException("Not implemented case for: " + hit);
+				}
+				
+				context.update(
+					updatedComponent.build(), 
+					updatedComponent
+						.effectiveTime(config().getEffectiveTime().getTime())
+						.released(true)
+						.build()
+				);
+			}
+		}
+	}
+	
 //	@Override
 //	protected void preProcess(final LongSet storageKeys, VersioningConfiguration config) {
 //		collectModuleDependencyChanges(getBranchPathForPublication(config), storageKeys);
