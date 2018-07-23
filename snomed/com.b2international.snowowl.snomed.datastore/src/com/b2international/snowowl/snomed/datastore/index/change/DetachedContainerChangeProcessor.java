@@ -92,7 +92,10 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		// deleting core components should delete all referring members as well
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query
 				.select(SnomedRefSetMemberIndexEntry.class)
-				.where(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
+				.where(Expressions.builder()
+						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
+						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(deletedCoreComponentIds))
+						.build())
 				.limit(10_000)
 				.build()))  {
 			for (SnomedRefSetMemberIndexEntry member : hits) {

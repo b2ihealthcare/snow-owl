@@ -65,6 +65,9 @@ public final class SnomedReferenceSet extends SnomedComponent {
 
 	private static final long serialVersionUID = 6190078291559073421L;
 
+	public static final SnomedReferenceSet DELETE = new SnomedReferenceSet();
+	public static final SnomedReferenceSet FORCE_DELETE = new SnomedReferenceSet();
+
 	private SnomedRefSetType type;
 	private String referencedComponentType;
 	private String mapTargetComponentType;

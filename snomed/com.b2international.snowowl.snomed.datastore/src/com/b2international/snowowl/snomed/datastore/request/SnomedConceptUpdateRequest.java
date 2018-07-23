@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ComponentStatusConflictException;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -45,11 +48,13 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMultimap;
@@ -84,6 +89,8 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	private List<SnomedDescription> descriptions;
 	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
+
+	private SnomedReferenceSet refSet;
 	
 	SnomedConceptUpdateRequest(String componentId) {
 		super(componentId);
@@ -115,6 +122,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	void setMembers(List<SnomedReferenceSetMember> members) {
 		this.members = members;
+	}
+	
+	void setRefSet(SnomedReferenceSet refSet) {
+		this.refSet = refSet;
 	}
 	
 	@Override
@@ -177,10 +188,35 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 					}
 				}
 			}
+		}
+		
+		// XXX the following updates won't and shouldn't trigger effective time unset or restoration logic
+		changed |= updateRefSet(context, concept, updatedConcept);
+		
+		if (changed) {
 			context.update(concept, updatedConcept.build());
 		}
 		
 		return changed;
+	}
+
+	private boolean updateRefSet(TransactionContext context, SnomedConceptDocument concept, SnomedConceptDocument.Builder updatedConcept) {
+		final boolean force = refSet == SnomedReferenceSet.FORCE_DELETE;
+		if (refSet == SnomedReferenceSet.DELETE || force) {
+			for (Hits<SnomedRefSetMemberIndexEntry> hits : context.service(RevisionSearcher.class).scroll(Query
+					.select(SnomedRefSetMemberIndexEntry.class)
+					.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(getComponentId()))
+					.limit(10_000)
+					.build()))  {
+				for (SnomedRefSetMemberIndexEntry member : hits) {
+					context.delete(member, force);
+				}
+			}
+			
+			updatedConcept.clearRefSet();
+			return true;
+		}
+		return false;
 	}
 
 	private Set<String> getDescriptionIds(BranchContext context, String conceptId) {
@@ -476,5 +512,5 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		return ids.build();
 	}
-	
+
 }

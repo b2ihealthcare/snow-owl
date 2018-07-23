@@ -242,10 +242,11 @@ public abstract class SnomedRequests {
 	/**
 	 * Returns a SNOMED CT request builder to prepare a request that deletes a reference set.
 	 * @param refSetId - the identifier of the reference set
+	 * @param force 
 	 * @return a {@link DeleteRequestBuilder} that can build a {@link Request} to delete the given reference set
 	 */
-	public static DeleteRequestBuilder prepareDeleteReferenceSet(String refSetId) {
-		return prepareDelete(refSetId, SnomedConceptDocument.class);
+	public static SnomedTransactionalRequestBuilder<Boolean> prepareDeleteReferenceSet(String refSetId, boolean force) {
+		return prepareUpdateConcept(refSetId).clearRefSet(force);
 	}
 	
 	/**

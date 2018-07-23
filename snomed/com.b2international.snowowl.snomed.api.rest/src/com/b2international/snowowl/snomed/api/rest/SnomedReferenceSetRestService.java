@@ -295,8 +295,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 
 			final Principal principal) {
 		
-		SnomedRequests.prepareDeleteReferenceSet(referenceSetId)
-				.force(force)
+		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
 				.build(repositoryId, branchPath, principal.getName(), String.format("Deleted Reference Set '%s' from store.", referenceSetId))
 				.execute(bus)
 				.getSync();
