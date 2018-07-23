@@ -182,6 +182,11 @@ public abstract class TerminologyResource extends DomainResource {
 			return getSelf();
 		}
 		
+		public B url(final String urlString) {
+			this.url = new Uri(urlString);
+			return getSelf();
+		}
+		
 		public B identifier(final Identifier identifer) {
 			this.identifier = identifer;
 			return getSelf();

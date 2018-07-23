@@ -94,8 +94,13 @@ public final class Designation {
 			return this;
 		}
 		
-		public Builder language(final Code language) {
-			this.language = language;
+		public Builder language(final Code languageCode) {
+			this.language = languageCode;
+			return this;
+		}
+		
+		public Builder language(final String language) {
+			this.language = new Code(language);
 			return this;
 		}
 		

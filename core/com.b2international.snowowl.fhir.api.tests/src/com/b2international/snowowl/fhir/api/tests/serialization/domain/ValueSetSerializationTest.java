@@ -15,16 +15,23 @@
  */
 package com.b2international.snowowl.fhir.api.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.ContactDetail;
+import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.StringParameter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
@@ -88,9 +95,9 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		UriParameter uriParameter = UriParameter.builder()
-				.name("uriParamName")
-				.value(new Uri("uriParamValue"))
-				.build();
+			.name("uriParamName")
+			.value(new Uri("uriParamValue"))
+			.build();
 		
 		Expansion expansion = Expansion.builder()
 			.identifier("identifier")
@@ -104,7 +111,110 @@ public class ValueSetSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(expansion);
 		assertThat(jsonPath.getString("identifier"), equalTo("identifier"));
-		assertThat(jsonPath.get("parameter[0].name"), equalTo("paramName"));
+		assertThat(jsonPath.get("parameter.name"), hasItem("uriParamName"));
+		assertThat(jsonPath.get("parameter.name"), hasItem("paramName"));
+	}
+	
+	@Test
+	public void containsTest() throws Exception {
+		
+		Contains contains = Contains.builder()
+			.system("systemUri")
+			.isAbstract(true)
+			.inactive(false)
+			.version("20140131")
+			.code("Code")
+			.display("displayValue")
+			.addDesignation(Designation.builder()
+				.language("en-us")
+				.value("pt")
+				.build())
+			.addContains(Contains.builder().build())
+			.build();
+		
+		printPrettyJson(contains);
+		
+		JsonPath jsonPath = getJsonPath(contains);
+		assertThat(jsonPath.getString("system"), equalTo("systemUri"));
+		assertThat(jsonPath.getBoolean("abstract"), equalTo(true));
+		assertThat(jsonPath.getBoolean("inactive"), equalTo(false));
+		assertThat(jsonPath.getString("version"), equalTo("20140131"));
+		assertThat(jsonPath.getString("code"), equalTo("Code"));
+		assertThat(jsonPath.getString("display"), equalTo("displayValue"));
+		assertThat(jsonPath.getString("designation"), notNullValue());
+		assertThat(jsonPath.getString("contains"), notNullValue());
+	}
+	
+	@Test
+	public void valueSetTest() throws Exception {
+		
+		UriParameter stringParameter = UriParameter.builder()
+			.name("paramName")
+			.value(new Uri("paramValue"))
+			.build();
+			
+		UriParameter uriParameter = UriParameter.builder()
+			.name("uriParamName")
+			.value(new Uri("uriParamValue"))
+			.build();
+	
+		Contains contains = Contains.builder()
+			.system("systemUri")
+			.isAbstract(true)
+			.inactive(false)
+			.version("20140131")
+			.code("Code")
+			.display("displayValue")
+			.addDesignation(Designation.builder()
+					.language("en-us")
+					.value("pt")
+					.build())
+			.addContains(Contains.builder().build())
+			.build();
+
+		Expansion expansion = Expansion.builder()
+			.identifier("identifier")
+			.timestamp(TEST_DATE_STRING)
+			.total(200)
+			.addParameter(stringParameter)
+			.addParameter(uriParameter)
+			.addContains(contains)
+			.build();
+		
+		
+		ValueSet valueSet = ValueSet.builder("-1")
+			.url("http://who.org")
+			.identifier(Identifier.builder()
+					.build())
+			.version("20130131")
+			.name("refsetName")
+			.title("refsetTitle")
+			.status(PublicationStatus.ACTIVE)
+			.date(TEST_DATE_STRING)
+			.publisher("b2i")
+			.contact(ContactDetail.builder()
+					.addContactPoint(ContactPoint.builder()
+						.id("contactPointId")
+						.build())
+					.build())
+			.description("descriptionString")
+			//.addUseContext(usageContext)
+			//.jurisdiction(jurisdiction)
+			.expansion(expansion)
+			
+			.build();
+		
+		printPrettyJson(valueSet);
+		
+		JsonPath jsonPath = getJsonPath(valueSet);
+		assertThat(jsonPath.getString("url"), equalTo("http://who.org"));
+		assertThat(jsonPath.getString("version"), equalTo("20130131"));
+		assertThat(jsonPath.getString("name"), equalTo("refsetName"));
+		assertThat(jsonPath.getString("description"), equalTo("descriptionString"));
+		assertThat(jsonPath.getString("title"), equalTo("refsetTitle"));
+		assertThat(jsonPath.get("expansion.parameter.name"), hasItem("paramName"));
+		assertThat(jsonPath.get("expansion.contains.system"), hasItem("systemUri"));
+		
 	}
 
 }

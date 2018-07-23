@@ -121,7 +121,7 @@ public class ValueSet extends TerminologyResource {
 			return getSelf();
 		}
 		
-		public Builder extensible(Expansion expansion) {
+		public Builder expansion(Expansion expansion) {
 			this.expansion = expansion;
 			return getSelf();
 		}
@@ -136,7 +136,7 @@ public class ValueSet extends TerminologyResource {
 			
 			//cross field validation
 			if (composeParts.isEmpty() && expansion == null) {
-				throw new FhirException("No compose or expansion defined.", "ValueSet");
+				throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
 			}
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
