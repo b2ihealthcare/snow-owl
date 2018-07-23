@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.index;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -64,6 +65,9 @@ public abstract class ChangeSetProcessorBase implements ChangeSetProcessor {
 	}
 	
 	protected final void stageRemove(RevisionDocument revision) {
+		if (deletions == null) {
+			deletions = newHashSet();
+		}
 		deletions.add(revision);
 	}
 	

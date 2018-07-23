@@ -79,7 +79,7 @@ public enum TerminologyRegistry {
 			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
 		}
 		terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
-		if (tcAnnotation.docType() != null) {
+		if (tcAnnotation.docType() != null && !terminologyComponentsByDocType.containsKey(tcAnnotation.docType())) {
 			terminologyComponentsByDocType.put(tcAnnotation.docType(), tcAnnotation);
 		}
 	}

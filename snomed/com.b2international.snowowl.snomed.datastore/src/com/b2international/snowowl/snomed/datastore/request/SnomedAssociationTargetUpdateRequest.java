@@ -147,9 +147,7 @@ final class SnomedAssociationTargetUpdateRequest implements Request<TransactionC
 				// Exact match, just make sure that the member is active and remove it from the working list
 				final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
-				if (removeOrDeactivate(context, existingMember, updatedMember)) {
-					context.update(oldRevision, updatedMember.build());
-				}
+				ensureMemberActive(context, existingMember, updatedMember);
 				memberIterator.remove();
 			}
 		}

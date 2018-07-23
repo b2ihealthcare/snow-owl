@@ -168,10 +168,10 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 
 		// XXX change processor order is important!!!
 		return ImmutableList.<ChangeSetProcessor>builder()
-				// TODO add referring member deletion pre commit hook to attach member deletions for all deleted non-member components
-				
-				// first execute description change processor to get proper acceptabilityMap values
-				// those values will be used in the ConceptChangeProcessor to properly compute the preferredDescriptions derived field
+				.add(new ComponentInactivationChangeProcessor())
+				.add(new DetachedContainerChangeProcessor())
+				// execute description change processor to get proper acceptabilityMap values before executing other change processors
+				// those values will be used in the ConceptChangeProcessor for example to properly compute the preferredDescriptions derived field
 				.add(new DescriptionChangeProcessor())
 				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.getInstance().getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
 				.add(new RelationshipChangeProcessor())

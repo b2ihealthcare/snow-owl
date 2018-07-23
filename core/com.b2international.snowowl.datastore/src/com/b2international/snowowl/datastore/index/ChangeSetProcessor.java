@@ -31,12 +31,12 @@ public interface ChangeSetProcessor {
 	/**
 	 * Processes the changes and writer index changes using the given {@link RevisionWriter}.
 	 * 
-	 * @param commitChangeSet
-	 *            - the set of changes
+	 * @param staging
+	 *            - the current state of the commit staging area
 	 * @param searcher
 	 *            - the revision index searcher to query previous state of the revisions, if required
 	 */
-	void process(StagingArea stagingArea, RevisionSearcher searcher) throws IOException;
+	void process(StagingArea staging, RevisionSearcher searcher) throws IOException;
 
 	/**
 	 * Returns the description of the change set processor.

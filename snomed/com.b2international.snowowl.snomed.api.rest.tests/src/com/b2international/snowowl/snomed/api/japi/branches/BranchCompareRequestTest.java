@@ -123,11 +123,11 @@ public class BranchCompareRequestTest {
 	
 	@Test
 	public void compareBranchWithDeletedComponents() throws Exception {
-		final Set<ComponentIdentifier> deletedIds = prepareBranchWithNewChanges(branchPath);
+		final Set<ComponentIdentifier> componentIdsToDelete = prepareBranchWithNewChanges(branchPath);
 		
 		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
-		final ComponentIdentifier concept = deletedIds.stream()
+		final ComponentIdentifier concept = componentIdsToDelete.stream()
 				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.findFirst()
 				.get();
@@ -141,7 +141,7 @@ public class BranchCompareRequestTest {
 		final CompareResult compare = compare(branchPath, taskBranchPath);
 		assertThat(compare.getNewComponents()).isEmpty();
 		assertThat(compare.getChangedComponents()).isEmpty();
-		assertThat(compare.getDeletedComponents()).containsAll(deletedIds);
+		assertThat(compare.getDeletedComponents()).containsAll(componentIdsToDelete);
 	}
 	
 	@Test
