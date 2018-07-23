@@ -105,8 +105,8 @@ abstract class SnomedRefSetMemberCreateDelegate {
 				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", 
 						refSet.getId(), 
 						getReferencedComponentId(), 
-						expectedReferencedComponentType, 
-						actualReferencedComponentType);
+						actualReferencedComponentType,
+						expectedReferencedComponentType);
 			}
 		}
 	}
