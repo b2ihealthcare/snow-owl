@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -47,7 +49,10 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 	@Override
 	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		// inactivating a concept should inactivate all of its descriptions, relationships, inbound relationships, and members
-		final Set<String> inactivatedConceptIds = staging.getChangedRevisions(SnomedConceptDocument.class)
+		final Set<String> inactivatedComponentIds = newHashSet(); 
+		final Set<String> inactivatedConceptIds = newHashSet();
+		
+		staging.getChangedRevisions(SnomedComponentDocument.class)
 			.filter(diff -> {
 				if (diff.hasRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE)) {
 					Boolean newValue = Boolean.valueOf(diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE).getNewValue());
@@ -56,10 +61,16 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					return false;
 				}
 			})
-			.map(diff -> diff.newRevision.getId())
-			.collect(Collectors.toSet());
+			.forEach(diff -> {
+				if (diff.newRevision instanceof SnomedComponentDocument) {
+					inactivatedComponentIds.add(diff.newRevision.getId());
+					if (diff.newRevision instanceof SnomedConceptDocument) {
+						inactivatedConceptIds.add(diff.newRevision.getId());						
+					}
+				}
+			});
 		
-		if (inactivatedConceptIds.isEmpty()) {
+		if (inactivatedComponentIds.isEmpty() && inactivatedConceptIds.isEmpty()) {
 			return;
 		}
 		
@@ -70,6 +81,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.where(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
 				.limit(10_000)
 				.build())) {
+			// TODO exclude descriptions that are already present in the tx or apply 
 			hits.forEach(description -> {
 				SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
 					.id(UUID.randomUUID().toString())
@@ -95,7 +107,21 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.limit(10_000)
 				.build())) {
 			hits.forEach(relationship -> {
+				inactivatedComponentIds.add(relationship.getId());
 				stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship).active(false).build());
+			});
+		}
+		
+		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
+		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(Expressions.builder()
+						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
+						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
+						.build())
+				.limit(10_000)
+				.build())) {
+			hits.forEach(relationship -> {
+				stageChange(relationship, SnomedRefSetMemberIndexEntry.builder(relationship).active(false).build());
 			});
 		}
 	}
