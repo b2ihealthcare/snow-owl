@@ -170,7 +170,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 								.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 								.execute(context.service(IEventBus.class))
 								.getSync();
-						if (!isDifferentToPreviousRelease(concept, releasedConcept)) {
+						if (!isDifferentToPreviousRelease(updatedConcept.build(), releasedConcept)) {
 							updatedConcept.effectiveTime(releasedConcept.getEffectiveTime().getTime());
 						}
 						LOGGER.trace("Previous version comparison took {}", new Date().getTime() - start);

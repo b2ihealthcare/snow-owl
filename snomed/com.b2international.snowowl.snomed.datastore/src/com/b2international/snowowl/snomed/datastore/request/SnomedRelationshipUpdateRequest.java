@@ -113,7 +113,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 								.execute(context.service(IEventBus.class))
 								.getSync();
 						
-						if (!isDifferentToPreviousRelease(relationship, releasedRelationship)) {
+						if (!isDifferentToPreviousRelease(updatedRelationship.build(), releasedRelationship)) {
 							updatedRelationship.effectiveTime(releasedRelationship.getEffectiveTime().getTime());
 						}
 						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);

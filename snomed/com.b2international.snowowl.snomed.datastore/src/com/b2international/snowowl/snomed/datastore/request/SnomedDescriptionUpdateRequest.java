@@ -120,7 +120,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 								.execute(bus)
 								.getSync();
 						
-						if (!isDifferentToPreviousRelease(description, releasedDescription)) {
+						if (!isDifferentToPreviousRelease(updatedDescription.build(), releasedDescription)) {
 							updatedDescription.effectiveTime(releasedDescription.getEffectiveTime().getTime());
 						}
 						LOGGER.info("Previous version comparison took {}", new Date().getTime() - start);
