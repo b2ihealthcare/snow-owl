@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@ package com.b2international.snowowl.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.MapMaker;
-import com.google.common.reflect.Reflection;
 import com.google.inject.Provider;
 
 /**
@@ -35,9 +35,9 @@ import com.google.inject.Provider;
  * 
  * @since 5.0
  */
-public class DelegatingContext implements ServiceProvider, IDisposableService {
+public class DelegatingContext implements ServiceProvider, Bindable, IDisposableService {
 
-	private final Map<Class<?>, Object> registry = new MapMaker().makeMap();
+	private final Map<Class<?>, Object> bindings = new MapMaker().makeMap();
 	private final ServiceProvider delegate;
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
@@ -54,7 +54,7 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	public final void dispose() {
 		if (disposed.compareAndSet(false, true)) {
 			doDispose();
-			FluentIterable.from(registry.values()).filter(IDisposableService.class).forEach(IDisposableService::dispose);
+			FluentIterable.from(bindings.values()).filter(IDisposableService.class).forEach(IDisposableService::dispose);
 		}
 	}
 
@@ -72,8 +72,9 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	 * @param object
 	 * @return
 	 */
-	protected final <T> void bind(Class<T> type, T object) {
-		registry.put(type, object);
+	@Override
+	public final <T> void bind(Class<T> type, T object) {
+		bindings.put(type, object);
 	}
 	
 	/**
@@ -84,14 +85,20 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	 * @param object
 	 * @return
 	 */
-	protected final void bindAll(Map<Class<?>, Object> bindings) {
-		registry.putAll(bindings);
+	@Override
+	public final void bindAll(Map<Class<?>, Object> bindings) {
+		bindings.putAll(bindings);
+	}
+	
+	@Override
+	public final Map<Class<?>, Object> getBindings() {
+		return bindings;
 	}
 
 	@Override
 	public <T> T service(Class<T> type) {
-		if (registry.containsKey(type)) {
-			return type.cast(registry.get(type));
+		if (bindings.containsKey(type)) {
+			return type.cast(bindings.get(type));
 		} else {
 			return delegate.service(type);
 		}
@@ -99,12 +106,7 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 
 	@Override
 	public <T> Provider<T> provider(final Class<T> type) {
-		return new Provider<T>() {
-			@Override
-			public T get() {
-				return service(type);
-			}
-		};
+		return () -> service(type);
 	}
 
 	protected ServiceProvider getDelegate() {
@@ -112,47 +114,66 @@ public class DelegatingContext implements ServiceProvider, IDisposableService {
 	}
 
 	/**
-	 * A builder to construct {@link DelegatingContext} instances or subclasses by specifying the instance to configure.
+	 * Builds a delegating proxy for any sub-interface of {@link ServiceProvider} that can
+	 * be extended with service registry entries.
 	 * 
+	 * @param <C> the {@link ServiceProvider} (sub-)type to impersonate
 	 * @since 5.0
 	 */
 	public static final class Builder<C extends ServiceProvider> {
 
-		private final DelegatingContext provider;
-		private final Class<C> nextContext;
+		private static final Method INJECT_METHOD;
+		
+		static {
+			try {
+				INJECT_METHOD = ServiceProvider.class.getDeclaredMethod("inject");
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new SnowowlRuntimeException("Couldn't retrieve reference to ServiceProvider.inject()", e);
+			}
+		}
+		
+		private final Class<C> delegateType;
+		private final DelegatingContext bindable;
 
-		public Builder(C delegate, Class<C> nextContext) {
-			this.nextContext = nextContext;
-			this.provider = new DelegatingContext(delegate);
+		public Builder(Class<C> delegateType, C delegate) {
+			this.delegateType = delegateType;
+			this.bindable = new DelegatingContext(delegate);
 		}
 
 		public final <T> Builder<C> bind(Class<T> type, T object) {
-			provider.bind(type, object);
+			bindable.bind(type, object);
 			return this;
 		}
 		
-		public final Builder<C> bindAll(DelegatingContext other) {
-			provider.bindAll(other.registry);
+		public final Builder<C> bindAll(Bindable other) {
+			bindable.bindAll(other.getBindings());
 			return this;
 		}
 		
 		public C build() {
-			return Reflection.newProxy(nextContext, new InvocationHandler() {
-				@Override
-				public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-					try {
-						if (ServiceProvider.class == method.getDeclaringClass()) {
-							return method.invoke(provider, args);
-						} else {
-							return method.invoke(provider.getDelegate(), args);
+			final Object proxyInstance = Proxy.newProxyInstance(
+					delegateType.getClassLoader(), 
+					new Class[] { delegateType, Bindable.class },
+					(proxy, method, args) -> {
+						try {
+							
+							final Class<?> declaringClass = method.getDeclaringClass();
+							
+							// We want to use inject() from the wrapped instance
+							if (ServiceProvider.class == declaringClass && !INJECT_METHOD.equals(method)) {
+								return method.invoke(bindable, args);
+							} else if (Bindable.class == declaringClass) {
+								return method.invoke(bindable, args);
+							} else {
+								return method.invoke(bindable.getDelegate(), args);
+							}
+							
+						} catch (InvocationTargetException e) {
+							throw e.getCause();
 						}
-					} catch (InvocationTargetException e) {
-						throw e.getCause();
-					}
-				}
-			});
+					});
+			
+			return delegateType.cast(proxyInstance);
 		}
-
 	}
-
 }
