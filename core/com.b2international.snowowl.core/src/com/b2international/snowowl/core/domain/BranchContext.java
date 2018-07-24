@@ -44,7 +44,7 @@ public interface BranchContext extends RepositoryContext {
 	
 	@Override
 	default Builder<? extends BranchContext> inject() {
-		return new DelegatingContext.Builder<BranchContext>(this, BranchContext.class);
+		return new DelegatingContext.Builder<BranchContext>(BranchContext.class, this);
 	}
 
 }
