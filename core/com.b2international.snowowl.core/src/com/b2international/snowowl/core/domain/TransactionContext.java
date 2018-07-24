@@ -143,7 +143,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 
 	@Override
 	default Builder<? extends TransactionContext> inject() {
-		return new DelegatingContext.Builder<TransactionContext>(this, TransactionContext.class);
+		return new DelegatingContext.Builder<TransactionContext>(TransactionContext.class, this);
 	}
 	
 }

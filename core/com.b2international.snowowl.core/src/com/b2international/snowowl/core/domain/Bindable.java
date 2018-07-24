@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest;
+package com.b2international.snowowl.core.domain;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Map;
 
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.core.ServiceProvider;
 
 /**
- * Abstract SNOMED CT REST service base class.
+ * Common superinterface for {@link DelegatingContext}s and delegating
+ * {@link ServiceProvider} proxies built via {@link DelegatingContext.Builder}.
  * 
- * @since 1.0
+ * @since 7.0
  */
-public abstract class AbstractSnomedRestService extends AbstractRestService {
-	
-	@Autowired
-	protected IEventBus bus;
+public interface Bindable {
 
+	<T> void bind(Class<T> type, T object);
+
+	void bindAll(Map<Class<?>, Object> bindings);
+
+	Map<Class<?>, Object> getBindings();
 }

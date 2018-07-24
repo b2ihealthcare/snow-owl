@@ -44,7 +44,7 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 	
 	@Override
 	default DelegatingContext.Builder<? extends RepositoryContext> inject() {
-		return new DelegatingContext.Builder<>(this, RepositoryContext.class);
+		return new DelegatingContext.Builder<>(RepositoryContext.class, this);
 	}
 
 }
