@@ -16,20 +16,23 @@
 	</welcome-file-list>
 
 	<context-param>
+		<param-name>contextClass</param-name>
+		<param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+	</context-param>
+	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>
-			/WEB-INF/application-context.xml
-			/WEB-INF/security-context.xml
-		</param-value>
+		<param-value>com.b2international.snowowl.snomed.api.rest.config</param-value>
 	</context-param>
 	
 	<servlet>
 		<servlet-name>restServlet</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<init-param>
-			<param-name>contextConfigLocation</param-name>
-			<param-value>/WEB-INF/servlet-context.xml</param-value>
-		</init-param>
+	        <param-name>contextClass</param-name>
+	        <param-value>
+	            org.springframework.web.context.support.AnnotationConfigWebApplicationContext
+	        </param-value>
+    	</init-param>
     	<load-on-startup>1</load-on-startup>
     	<async-supported>true</async-supported>
 		<multipart-config>
