@@ -33,7 +33,9 @@ public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
 				new HealthCheckingRequest<>(
-					new BranchRequest<>(branch, build()), 
+					new IndexReadRequest<>(
+						new BranchRequest<>(branch, build())
+					), 
 					allowedHealthstates()
 				)
 			)
