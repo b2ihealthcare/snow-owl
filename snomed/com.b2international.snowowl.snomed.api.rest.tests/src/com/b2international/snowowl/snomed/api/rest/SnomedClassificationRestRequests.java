@@ -54,7 +54,7 @@ public abstract class SnomedClassificationRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.post("/classifications", branchPath.getPath())
+				.post("/classifications")
 				.then();
 	}
 
@@ -66,20 +66,20 @@ public abstract class SnomedClassificationRestRequests {
 
 	public static ValidatableResponse getClassification(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/classifications/{id}", branchPath.getPath(), classificationId)
+				.get("/classifications/{id}", classificationId)
 				.then();
 	}
 
 	public static ValidatableResponse getRelationshipChanges(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.queryParam("limit", 2000)
-				.get("/classifications/{id}/relationship-changes", branchPath.getPath(), classificationId)
+				.get("/classifications/{id}/relationship-changes", classificationId)
 				.then();
 	}
 	
 	public static ValidatableResponse getEquivalentConceptSets(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get("/classifications/{id}/equivalent-concepts", branchPath.getPath(), classificationId)
+				.get("/classifications/{id}/equivalent-concepts", classificationId)
 				.then();
 	}
 
@@ -93,7 +93,7 @@ public abstract class SnomedClassificationRestRequests {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("/classifications/{id}", branchPath.getPath(), classificationId)
+				.put("/classifications/{id}", classificationId)
 				.then();
 	}
 
