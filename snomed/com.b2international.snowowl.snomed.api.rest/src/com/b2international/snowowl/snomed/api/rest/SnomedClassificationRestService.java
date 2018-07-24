@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -127,7 +128,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			method=RequestMethod.POST,
 			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 	@ResponseStatus(value=HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<?>> beginClassification(
+	public ResponseEntity<?> beginClassification(
 			@ApiParam(value="Classification parameters")
 			@RequestBody 
 			final ClassificationRestInput request,
@@ -136,12 +137,14 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		
 		ApiValidation.checkInput(request);
 		
-		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
+		final String classificationId = ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
 				.setUserId(principal.getName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(bus)
-				.then(id -> Responses.created(getClassificationUri(id)).build()));
+				.getSync();
+		
+		return Responses.created(getClassificationUri(classificationId)).build();
 	}
 
 	@ApiOperation(
@@ -367,10 +370,8 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 	}
 
 	private URI getClassificationUri(final String classificationId) {
-		return linkTo(SnomedClassificationRestService.class)
-				.slash("classifications")
-				.slash(classificationId)
+		return linkTo(methodOn(SnomedClassificationRestService.class)
+				.getClassificationRun(classificationId))
 				.toUri();
 	}
-
 }
