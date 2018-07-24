@@ -18,8 +18,7 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 import java.util.Date;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -33,11 +32,10 @@ public abstract class SnomedConceptSetDefinition extends SnomedConceptModelCompo
 	 */
 	public abstract String toEcl();
 
-	@Override
-	public abstract ConceptSetDefinition createModel();
-
-	@Override
-	public abstract ConceptSetDefinition applyChangesTo(ConceptModelComponent existingModel);
+	/**
+	 * @return the index model representation of this definition
+	 */
+	public abstract ConceptSetDefinitionFragment createModel();
 
 	@Override
 	public abstract SnomedConceptSetDefinition deepCopy(Date date, String userName);

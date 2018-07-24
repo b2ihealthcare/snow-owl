@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 6.5
@@ -39,8 +39,10 @@ public final class SnomedConstraintUpdateRequest implements Request<TransactionC
 
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final AttributeConstraint existingModel = context.lookup(constraint.getId(), AttributeConstraint.class);
-		constraint.applyChangesTo(existingModel);
+		final SnomedConstraintDocument existingModel = context.lookup(constraint.getId(), SnomedConstraintDocument.class);
+		final SnomedConstraintDocument.Builder updatedModel = SnomedConstraintDocument.builder(existingModel);
+		constraint.applyChangesTo(updatedModel);
+		context.add(updatedModel.build());
 		return true;
 	}
 }

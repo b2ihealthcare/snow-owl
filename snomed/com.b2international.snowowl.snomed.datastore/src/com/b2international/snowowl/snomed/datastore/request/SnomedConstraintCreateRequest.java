@@ -22,7 +22,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 
 /**
  * @since 6.5
@@ -42,14 +42,16 @@ public final class SnomedConstraintCreateRequest implements Request<TransactionC
 	@Override
 	public String execute(TransactionContext context) {
 		try {
-			context.lookup(constraint.getId(), AttributeConstraint.class);
+			context.lookup(constraint.getId(), SnomedConstraintDocument.class);
 			throw new AlreadyExistsException("Attribute constraint", constraint.getId());
 		} catch (NotFoundException e) {
 			// ignore
 		}
 		
-		final AttributeConstraint model = constraint.applyChangesTo(constraint.createModel());
+		final SnomedConstraintDocument.Builder newModel = SnomedConstraintDocument.builder();
+		constraint.applyChangesTo(newModel);
+		SnomedConstraintDocument model = newModel.build();
 		context.add(model);
-		return model.getUuid();
+		return model.getId();
 	}
 }

@@ -20,8 +20,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -58,24 +58,8 @@ public final class SnomedRelationshipDefinition extends SnomedConceptSetDefiniti
 	}
 
 	@Override
-	public RelationshipConceptSetDefinition createModel() {
-		return MrcmFactory.eINSTANCE.createRelationshipConceptSetDefinition();
-	}
-
-	@Override
-	public RelationshipConceptSetDefinition applyChangesTo(final ConceptModelComponent existingModel) {
-		final RelationshipConceptSetDefinition updatedModel = (existingModel instanceof RelationshipConceptSetDefinition)
-				? (RelationshipConceptSetDefinition) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setTypeConceptId(getTypeId());
-		updatedModel.setDestinationConceptId(getDestinationId());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public RelationshipDefinitionFragment createModel() {
+		return new RelationshipDefinitionFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), getTypeId(), getDestinationId());
 	}
 
 	@Override

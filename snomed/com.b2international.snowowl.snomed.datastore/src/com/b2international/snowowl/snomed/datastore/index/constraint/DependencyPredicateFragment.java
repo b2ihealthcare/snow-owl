@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.constraint;
 import java.util.Objects;
 import java.util.Set;
 
-import com.b2international.snowowl.snomed.mrcm.DependencyOperator;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.core.domain.constraint.DependencyOperator;
+import com.b2international.snowowl.snomed.core.domain.constraint.GroupRule;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;

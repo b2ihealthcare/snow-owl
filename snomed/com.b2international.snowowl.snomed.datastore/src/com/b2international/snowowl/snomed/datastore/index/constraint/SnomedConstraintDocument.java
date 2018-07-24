@@ -34,6 +34,9 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStrength;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -51,129 +54,14 @@ import com.google.common.base.Strings;
 public final class SnomedConstraintDocument extends RevisionDocument implements ITerminologyComponentIdProvider {
 	private static final long serialVersionUID = -3084452506109842527L;
 
-	public static Builder builder(final AttributeConstraint constraint) {
-
-		// Examine the inner predicate in case it is wrapped in cardinality restrictions
-		ConceptModelPredicate predicate = constraint.getPredicate();
-		if (predicate instanceof CardinalityPredicate) {
-			predicate = ((CardinalityPredicate) predicate).getPredicate();
-		}
-
-		final SnomedConstraintPredicateType predicateType = SnomedConstraintPredicateType.typeOf(predicate);
-		final ConceptSetDefinitionFragment domainFragment = ConceptSetDefinitionFragment.from(constraint.getDomain());
-		final PredicateFragment predicateFragment = PredicateFragment.from(constraint.getPredicate());
-
-		/* 
-		 * Collect SCT identifiers and keys seen in the constraint's domain part, which will be used when we
-		 * are looking for applicable constraints.
-		 */
-		final Set<String> selfIds = newHashSet();
-		final Set<String> descendantIds = newHashSet();
-		final Set<String> refSetIds = newHashSet();
-		final Set<String> relationshipKeys = newHashSet(); // "typeId=destinationId" format
-		collectIds(constraint.getDomain(), selfIds, descendantIds, refSetIds, relationshipKeys);
-
-		return new Builder()
-				.id(constraint.getUuid())
-				.storageKey(CDOIDUtils.asLong(constraint.cdoID()))
-				.active(constraint.isActive())
-				.effectiveTime(EffectiveTimes.getEffectiveTime(constraint.getEffectiveTime()))
-				.author(constraint.getAuthor())
-				.strength(constraint.getStrength())
-				.validationMessage(constraint.getValidationMessage())
-				.description(constraint.getDescription())
-				.form(constraint.getForm())
-				.domain(domainFragment)
-				.predicate(predicateFragment)
-				.predicateType(predicateType)
-				.selfIds(selfIds)
-				.descendantIds(descendantIds)
-				.refSetIds(refSetIds)
-				.relationshipKeys(relationshipKeys);
+	public static Builder builder() {
+		return new Builder();
 	}
 	
-	/**
-	 * Collects key concept IDs from the specified concept set definition. Results are aggregated in the
-	 * given sets.
-	 * 
-	 * @param definition
-	 *            the definition to parse
-	 * @param selfIds
-	 *            the definition applies to these concepts
-	 * @param descendantIds
-	 *            the definition applies to the descendants of these concepts
-	 * @param refSetIds
-	 *            the definition applies to members of these reference sets
-	 * @param relationshipKeys
-	 *            the definition applies to concepts that include a relationship with these
-	 *            type-destination values
-	 */
-	private static void collectIds(final ConceptSetDefinition definition, 
-			final Set<String> selfIds, 
-			final Set<String> descendantIds, 
-			final Set<String> refSetIds, 
-			final Set<String> relationshipKeys) {
-
-		// XXX: The methods need to return a non-null value so that the switch does not fall "upwards", to the more generic cases.
-		new MrcmSwitch<ConceptSetDefinition>() {
-			
-			@Override
-			public ConceptSetDefinition caseHierarchyConceptSetDefinition(final HierarchyConceptSetDefinition definition) {
-				final String focusConceptId = definition.getFocusConceptId();
-				final HierarchyInclusionType inclusionType = definition.getInclusionType();
-
-				switch (inclusionType) {
-					case SELF:
-						selfIds.add(focusConceptId);
-						break;
-					case DESCENDANT:
-						descendantIds.add(focusConceptId);
-						break;
-					case SELF_OR_DESCENDANT:
-						selfIds.add(focusConceptId);
-						descendantIds.add(focusConceptId);
-						break;
-					default: 
-						throw new IllegalStateException("Unexpected hierarchy inclusion type '" + inclusionType + "'.");
-				}
-
-				return definition;
-			}
-
-			@Override
-			public ConceptSetDefinition caseEnumeratedConceptSetDefinition(final EnumeratedConceptSetDefinition definition) {
-				final List<String> conceptIds = definition.getConceptIds();
-				selfIds.addAll(conceptIds);
-				return definition;
-			}
-
-			@Override
-			public ConceptSetDefinition caseReferenceSetConceptSetDefinition(final ReferenceSetConceptSetDefinition definition) {
-				final String refSetId = definition.getRefSetIdentifierConceptId();
-				refSetIds.add(refSetId);
-				return definition;
-			}
-
-			@Override
-			public ConceptSetDefinition caseCompositeConceptSetDefinition(final CompositeConceptSetDefinition definition) {
-				for (final ConceptSetDefinition childdefinition : definition.getChildren()) {
-					collectIds(childdefinition, selfIds, descendantIds, refSetIds, relationshipKeys);
-				}
-				return definition;
-			}
-
-			@Override
-			public ConceptSetDefinition caseRelationshipConceptSetDefinition(final RelationshipConceptSetDefinition definition) {
-				final String typeId = definition.getTypeConceptId();
-				final String destinationId = definition.getDestinationConceptId();
-				relationshipKeys.add(String.format("%s=%s", typeId, destinationId));
-				return definition;
-			}
-
-		}.doSwitch(definition);
+	public static Builder builder(final SnomedConstraintDocument input) {
+		return builder();
 	}
-
-
+	
 	public static Builder descriptionBuilder() {
 		return new Builder().predicateType(SnomedConstraintPredicateType.DESCRIPTION);
 	}
@@ -493,4 +381,5 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				.add("predicate", getPredicate())
 				.add("type", getPredicateType());
 	}
+
 }
