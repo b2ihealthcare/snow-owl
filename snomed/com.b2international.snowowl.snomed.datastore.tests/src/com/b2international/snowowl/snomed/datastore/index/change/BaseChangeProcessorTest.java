@@ -37,7 +37,6 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessor;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -194,7 +193,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 	protected final SnomedRefSetMemberIndexEntry langMember(final String descriptionId, final Acceptability acceptability, final String refSetId) {
 		final SnomedRefSetMemberIndexEntry.Builder member = SnomedRefSetMemberIndexEntry.builder()
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
-				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, acceptability.getConceptId());
 		return createMember(member, descriptionId, refSetId);
 	}
@@ -216,7 +214,6 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.id(UUID.randomUUID().toString())
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referencedComponentType(SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId))
 				.referenceSetId(refSetId)
 				.build();
 	}

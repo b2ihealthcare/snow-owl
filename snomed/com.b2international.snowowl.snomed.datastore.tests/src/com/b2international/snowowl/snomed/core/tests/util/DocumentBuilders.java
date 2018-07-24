@@ -20,15 +20,12 @@ import java.math.BigDecimal;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -95,16 +92,11 @@ public abstract class DocumentBuilders {
 	}
 
 	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String attributeName, final Object value, final DataType type) {
-		final short referencedComponentType = 
-				SnomedIdentifiers.getComponentCategory(referencedComponentId) == ComponentCategory.CONCEPT 
-					? SnomedTerminologyComponentConstants.CONCEPT_NUMBER 
-					: SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referencedComponentType(referencedComponentType)
 				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)

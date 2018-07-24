@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collections;
@@ -174,7 +175,9 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	}
 
 	private SnomedReferenceSet getRefSet(TransactionContext context) {
-		return SnomedConverters.newRefSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
+		final SnomedReferenceSet refSet = SnomedConverters.newRefSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
+		checkArgument(refSet.getType() != null, "Reference Set Properties are missing from identifier concept document: %s.", refSet.getId());
+		return refSet;
 	}
 
 	private SnomedRefSetMemberCreateDelegate getDelegate(SnomedRefSetType referenceSetType) {

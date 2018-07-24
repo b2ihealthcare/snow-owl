@@ -93,7 +93,6 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		refSet.setType(type);
 		refSet.setReferencedComponentType(referencedComponentType);
 		refSet.setMapTargetComponentType(mapTargetComponentType);
-//		.withDataType(SnomedRefSetUtil.getDataType(identifierId))
 		updatedConcept.refSet(refSet);
 		context.update(concept, updatedConcept.build());
 		return identifierId;

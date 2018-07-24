@@ -29,7 +29,6 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -89,7 +88,6 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 					.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
 					.referencedComponentId(description[0])
-					.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 					.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
 					.moduleId(description[1])
 					.build();

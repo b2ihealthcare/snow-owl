@@ -22,6 +22,8 @@ import java.util.UUID;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
@@ -77,13 +79,16 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 	@OverridingMethodsMustInvokeSuper
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.referencedComponentId(referencedComponent);
 		final SnomedConceptDocument refSet = context.lookup(referenceSetId, SnomedConceptDocument.class);
 		checkState(refSet.getRefSetType() != null, "RefSet properties are missing from identifier concept document %s", referenceSetId);
 		component
+			.referencedComponentId(referencedComponent)
 			.referenceSetId(referenceSetId)
-			.referencedComponentType(refSet.getReferencedComponentType())
 			.referenceSetType(refSet.getRefSetType());
+		
+		if (refSet.getRefSetType() == SnomedRefSetType.CONCRETE_DATA_TYPE) {
+			component.field(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, SnomedRefSetUtil.getDataType(referenceSetId));
+		}
 	}
 	
 }

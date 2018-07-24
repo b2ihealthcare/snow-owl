@@ -38,6 +38,8 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 			component.setType(SnomedRefSetType.OWL_AXIOM);
 		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getReferenceSetId())) {
 			component.setType(SnomedRefSetType.OWL_ONTOLOGY);
+		} else {
+			throw new UnsupportedOperationException("Unrecognized OWL Reference Set " + component.getReferenceSetId());
 		}
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));

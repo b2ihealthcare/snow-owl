@@ -61,6 +61,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -631,13 +632,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
-		public Builder referencedComponentType(final short referencedComponentType) {
-			this.referencedComponentType = referencedComponentType;
+		public Builder targetComponent(String targetComponent) {
+			this.targetComponent = targetComponent;
 			return this;
 		}
 		
-		public Builder targetComponent(String targetComponent) {
-			this.targetComponent = targetComponent;
+		Builder referencedComponentType(final short referencedComponentType) {
+			this.referencedComponentType = referencedComponentType;
 			return this;
 		}
 		
@@ -1044,7 +1045,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		this.referenceSetId = referenceSetId;
 		this.referenceSetType = referenceSetType;
 		checkArgument(referencedComponentType >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
-		this.referencedComponentType = referencedComponentType;
+		if (!Strings.isNullOrEmpty(referencedComponentId)) {
+			this.referencedComponentType = referencedComponentType == TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT ? SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId) : referencedComponentType;
+		} else {
+			this.referencedComponentType = referencedComponentType;
+		}
 	}
 
 	@Override
