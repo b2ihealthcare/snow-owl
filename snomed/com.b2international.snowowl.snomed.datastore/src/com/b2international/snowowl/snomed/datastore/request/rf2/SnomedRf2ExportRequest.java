@@ -97,9 +97,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
@@ -393,29 +391,34 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 	}
 
 	private Map<String, String> computeBranchesToExport(final TreeSet<CodeSystemVersionEntry> versionsToExport) {
-		final ImmutableList.Builder<String> result = ImmutableList.builder();
+		
+		final List<String> branchesToExport = newArrayList();
 		
 		switch (releaseType) {
 		case FULL:
-			result.addAll(versionsToExport.stream()
+			versionsToExport.stream()
 				.map(v -> v.getPath())
-				.collect(Collectors.toList()));
-			result.add(referenceBranch);
+				.filter(v -> !branchesToExport.contains(v))
+				.forEach(branchesToExport::add);
+			if (!branchesToExport.contains(referenceBranch)) {
+				branchesToExport.add(referenceBranch);
+			}
 			break;
 		case DELTA:
 			if (startEffectiveTime != null || endEffectiveTime != null || !includePreReleaseContent) {
-				result.addAll(versionsToExport.stream()
-						.map(v -> v.getPath())
-						.collect(Collectors.toList()));
-				result.add(referenceBranch);
+				versionsToExport.stream()
+					.map(v -> v.getPath())
+					.filter(v -> !branchesToExport.contains(v))
+					.forEach(branchesToExport::add);
+				if (!branchesToExport.contains(referenceBranch)) {
+					branchesToExport.add(referenceBranch);
+				}
 			}
 			break;
 		case SNAPSHOT:
-			result.add(referenceBranch);
+			branchesToExport.add(referenceBranch);
 			break;
 		}
-		
-		List<String> branchesToExport = ImmutableSortedSet.copyOf(result.build()).asList(); // eliminate duplicates
 		
 		Map<String, String> branchesAndRangesToExport = newHashMap();
 		
