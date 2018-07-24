@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkResponse;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningRequest;
@@ -35,7 +34,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -72,7 +70,8 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			.setBody(BulkRequest.<BranchContext>create()
 					.add(SnomedRequests.prepareSearchConcept()
 							.all()
-							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+							.setExpand(SnomedConcept.Expand.REFERENCE_SET + "()"))
 					.add(SnomedRequests.prepareSearchDescription()
 							.all()
 							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -110,7 +109,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				context.update(
 					updatedComponent.build(), 
 					updatedComponent
-						.effectiveTime(config().getEffectiveTime().getTime())
+						.effectiveTime(EffectiveTimes.getEffectiveTime(config().getEffectiveTime()))
 						.released(true)
 						.build()
 				);
