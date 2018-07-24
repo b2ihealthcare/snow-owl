@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.NotNull;
 
@@ -26,6 +27,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
@@ -91,7 +93,8 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.setRequest(runRequest)
 				.setDescription(String.format("Classifying the ontology on %s", branch))
 				.setSchedulingRule(rule)
-				.build()
-				.execute(context);
+				.buildAsync()
+				.execute(context.service(IEventBus.class))
+				.getSync(1L, TimeUnit.MINUTES);
 	}
 }
