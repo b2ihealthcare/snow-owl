@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
 import com.google.common.base.Strings;
@@ -119,6 +121,8 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	static String toRevisionRange(String base, String compare) {
+		checkArgument(!Strings.isNullOrEmpty(base));
+		checkArgument(!Strings.isNullOrEmpty(compare));
 		return String.format("%s%s%s", base, REV_RANGE, compare);
 	}
 	
