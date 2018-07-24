@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,18 @@ package com.b2international.snowowl.snomed.core.mrcm;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
-import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
-import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
-import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCompositeDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSetDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDependencyPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedEnumeratedDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedHierarchyDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedReferenceSetDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipDefinition;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -55,35 +53,33 @@ public class ConceptModelComponentRenderer {
 	 * @param component the component to render
 	 * @return the human-readable rendering of the MRCM component
 	 */
-	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component) {
+	public String getHumanReadableRendering(Object component) {
 		return getHumanReadableRendering(component, DEFAULT_LENGTH_LIMIT);
 	}
 
-	public <T extends ConceptModelComponent> String getHumanReadableRendering(T component, int limit) {
+	public String getHumanReadableRendering(Object component, int limit) {
 		String fullText = "";
 		
-		if (component instanceof ReferenceSetConceptSetDefinition) {
-			fullText = getReferenceSetConceptSetDefinitionRendering((ReferenceSetConceptSetDefinition)component);
-		} else if (component instanceof RelationshipConceptSetDefinition) {
-			fullText = getRelationshipConceptSetDefinitionRendering((RelationshipConceptSetDefinition)component);
-		} else if (component instanceof HierarchyConceptSetDefinition) {
-			fullText = getHierarchyConceptSetDefinitionRendering((HierarchyConceptSetDefinition)component);
-		} else if (component instanceof EnumeratedConceptSetDefinition) {
-			fullText = getEnumeratedConceptSetDefinitionRendering((EnumeratedConceptSetDefinition)component);
-		} else if (component instanceof CompositeConceptSetDefinition) {
-			fullText = getCompositeConceptSetDefinitionRendering((CompositeConceptSetDefinition)component, limit);
-		} else if (component instanceof RelationshipPredicate) {
-			fullText = getRelationshipPredicateRendering((RelationshipPredicate)component, limit);
-		} else if (component instanceof ConcreteDomainElementPredicate) {
-			fullText = getConcreteDomainElementPredicateRendering((ConcreteDomainElementPredicate)component); 
-		} else if (component instanceof CardinalityPredicate) {
-			fullText = getCardinalityPredicateRendering((CardinalityPredicate)component, limit);
-		} else if (component instanceof DependencyPredicate) {
-			fullText = getDependencyPredicateRendering((DependencyPredicate)component, limit);
-		} else if (component instanceof DescriptionPredicate) {
-			fullText = getDescriptionPredicateRendering((DescriptionPredicate)component);
-		} else if (component instanceof AttributeConstraint) {
-			fullText = getAttributeConstraintRendering((AttributeConstraint)component, limit);
+		if (component instanceof SnomedReferenceSetDefinition) {
+			fullText = getReferenceSetConceptSetDefinitionRendering((SnomedReferenceSetDefinition)component);
+		} else if (component instanceof SnomedRelationshipDefinition) {
+			fullText = getRelationshipConceptSetDefinitionRendering((SnomedRelationshipDefinition)component);
+		} else if (component instanceof SnomedHierarchyDefinition) {
+			fullText = getHierarchyConceptSetDefinitionRendering((SnomedHierarchyDefinition)component);
+		} else if (component instanceof SnomedEnumeratedDefinition) {
+			fullText = getEnumeratedConceptSetDefinitionRendering((SnomedEnumeratedDefinition)component);
+		} else if (component instanceof SnomedCompositeDefinition) {
+			fullText = getCompositeConceptSetDefinitionRendering((SnomedCompositeDefinition)component, limit);
+		} else if (component instanceof SnomedRelationshipPredicate) {
+			fullText = getRelationshipPredicateRendering((SnomedRelationshipPredicate)component, limit);
+		} else if (component instanceof SnomedConcreteDomainPredicate) {
+			fullText = getConcreteDomainElementPredicateRendering((SnomedConcreteDomainPredicate)component); 
+		} else if (component instanceof SnomedCardinalityPredicate) {
+			fullText = getCardinalityPredicateRendering((SnomedCardinalityPredicate)component, limit);
+		} else if (component instanceof SnomedDependencyPredicate) {
+			fullText = getDependencyPredicateRendering((SnomedDependencyPredicate)component, limit);
+		} else if (component instanceof SnomedDescriptionPredicate) {
+			fullText = getDescriptionPredicateRendering((SnomedDescriptionPredicate)component);
 		}
 		
 		StringBuilder stringBuilder = new StringBuilder();
@@ -97,19 +93,19 @@ public class ConceptModelComponentRenderer {
 		return stringBuilder.toString();
 	}
 	
-	private String getReferenceSetConceptSetDefinitionRendering(ReferenceSetConceptSetDefinition referenceSetConceptSetDefinition) {
-		return "^" + getLabel(referenceSetConceptSetDefinition.getRefSetIdentifierConceptId());
+	private String getReferenceSetConceptSetDefinitionRendering(SnomedReferenceSetDefinition referenceSetConceptSetDefinition) {
+		return "^" + getLabel(referenceSetConceptSetDefinition.getRefSetId());
 	}
 	
-	private String getRelationshipConceptSetDefinitionRendering(RelationshipConceptSetDefinition relationshipConceptSetDefinition) {
+	private String getRelationshipConceptSetDefinitionRendering(SnomedRelationshipDefinition relationshipConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getLabel(relationshipConceptSetDefinition.getTypeConceptId()));
+		builder.append(getLabel(relationshipConceptSetDefinition.getTypeId()));
 		builder.append(" ");
-		builder.append(getLabel(relationshipConceptSetDefinition.getDestinationConceptId()));
+		builder.append(getLabel(relationshipConceptSetDefinition.getDestinationId()));
 		return builder.toString();
 	}
 	
-	private String getHierarchyConceptSetDefinitionRendering(HierarchyConceptSetDefinition hierarchyConceptSetDefinition) {
+	private String getHierarchyConceptSetDefinitionRendering(SnomedHierarchyDefinition hierarchyConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		switch (hierarchyConceptSetDefinition.getInclusionType()) {
 		case SELF:
@@ -124,11 +120,11 @@ public class ConceptModelComponentRenderer {
 		default:
 			break;
 		}
-		builder.append(getLabel(hierarchyConceptSetDefinition.getFocusConceptId()));
+		builder.append(getLabel(hierarchyConceptSetDefinition.getConceptId()));
 		return builder.toString();
 	}
 	
-	private String getEnumeratedConceptSetDefinitionRendering(EnumeratedConceptSetDefinition enumeratedConceptSetDefinition) {
+	private String getEnumeratedConceptSetDefinitionRendering(SnomedEnumeratedDefinition enumeratedConceptSetDefinition) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<String> iterator = enumeratedConceptSetDefinition.getConceptIds().iterator();
 		while (iterator.hasNext()) {
@@ -140,11 +136,11 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getCompositeConceptSetDefinitionRendering(CompositeConceptSetDefinition compositeConceptSetDefinition, int limit) {
+	private String getCompositeConceptSetDefinitionRendering(SnomedCompositeDefinition compositeConceptSetDefinition, int limit) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<ConceptSetDefinition> iterator = compositeConceptSetDefinition.getChildren().iterator();
+		Iterator<SnomedConceptSetDefinition> iterator = compositeConceptSetDefinition.getChildren().iterator();
 		while (iterator.hasNext()) {
-			ConceptSetDefinition next = iterator.next();
+			SnomedConceptSetDefinition next = iterator.next();
 			builder.append(getHumanReadableRendering(next, limit));
 			if (iterator.hasNext())
 				builder.append(", ");
@@ -152,7 +148,7 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getRelationshipPredicateRendering(RelationshipPredicate relationshipPredicate, int limit) {
+	private String getRelationshipPredicateRendering(SnomedRelationshipPredicate relationshipPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(getHumanReadableRendering(relationshipPredicate.getAttribute(), limit));
 		builder.append(" ");
@@ -160,21 +156,21 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getDescriptionPredicateRendering(DescriptionPredicate descriptionPredicate) {
+	private String getDescriptionPredicateRendering(SnomedDescriptionPredicate descriptionPredicate) {
 		return getLabel(descriptionPredicate.getTypeId());
 	}
 	
-	private String getConcreteDomainElementPredicateRendering(ConcreteDomainElementPredicate concreteDomainElementPredicate) {
+	private String getConcreteDomainElementPredicateRendering(SnomedConcreteDomainPredicate concreteDomainElementPredicate) {
 		StringBuilder builder = new StringBuilder();
 		
 		builder.append(concreteDomainElementPredicate.getName());
 		builder.append(" [");
-		builder.append(concreteDomainElementPredicate.getType());
+		builder.append(concreteDomainElementPredicate.getDataType());
 		builder.append("]");
 		return builder.toString();
 	}
 	
-	private String getCardinalityPredicateRendering(CardinalityPredicate cardinalityPredicate, int limit) {
+	private String getCardinalityPredicateRendering(SnomedCardinalityPredicate cardinalityPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(cardinalityPredicate.getMinCardinality());
 		builder.append("..");
@@ -184,22 +180,16 @@ public class ConceptModelComponentRenderer {
 		return builder.toString();
 	}
 	
-	private String getDependencyPredicateRendering(DependencyPredicate dependencyPredicate, int limit) {
+	private String getDependencyPredicateRendering(SnomedDependencyPredicate dependencyPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<ConceptModelPredicate> iterator = dependencyPredicate.getChildren().iterator();
+		Iterator<SnomedPredicate> iterator = dependencyPredicate.getChildren().iterator();
 		while (iterator.hasNext()) {
-			ConceptModelPredicate next = iterator.next();
+			SnomedPredicate next = iterator.next();
 			builder.append(getHumanReadableRendering(next, limit));
 			if (iterator.hasNext())
 				builder.append(", ");
 		}
 		return builder.toString();
-	}
-	
-	private String getAttributeConstraintRendering(AttributeConstraint attributeConstraint, int limit) {
-		return String.format("%s %s", 
-				getHumanReadableRendering(attributeConstraint.getDomain(), limit), 
-				getHumanReadableRendering(attributeConstraint.getPredicate(), limit));
 	}
 	
 	private String getLabel(String conceptId) {

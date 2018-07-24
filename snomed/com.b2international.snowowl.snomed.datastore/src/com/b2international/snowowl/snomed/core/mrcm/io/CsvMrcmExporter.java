@@ -23,12 +23,15 @@ import java.io.PrintWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.LogUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelComponentRenderer;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 
@@ -44,36 +47,34 @@ public class CsvMrcmExporter {
 	private static final Joiner TAB_JOINER = Joiner.on('\t').useForNull("");
 
 	public void doExport(String user, OutputStream stream) {
-		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch.getPath());
+		final String branch = Branch.MAIN_PATH;
+		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch);
 
-		try (SnomedEditingContext context = new SnomedEditingContext(branch)) {
-			LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules to CSV...");
+		final SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
+			.all()
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 
-			try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, Charsets.UTF_8)))) {
-				writer.println(
-						TAB_JOINER.join("uuid", "effectiveTime", "author", "strength", "description", "validationMessage", "form", "domain", "predicate"));
-
-				for (ConstraintBase constraint : context.getConstraints()) {
-					writer.print(TAB_JOINER.join(constraint.getUuid(), constraint.getEffectiveTime(), constraint.getAuthor(), constraint.getStrength(),
-							constraint.getDescription(), constraint.getValidationMessage()));
-
-					if (constraint instanceof AttributeConstraint) {
-						final AttributeConstraint attributeConstraint = (AttributeConstraint) constraint;
-
-						writer.print(TAB_JOINER.join(attributeConstraint.getForm(),
-								renderer.getHumanReadableRendering(attributeConstraint.getDomain(), Integer.MAX_VALUE),
-								renderer.getHumanReadableRendering(attributeConstraint.getPredicate(), Integer.MAX_VALUE)));
-					}
-
-					writer.println();
-				}
+		LogUtils.logExportActivity(LOG, user, branch, "Exporting MRCM rules to CSV...");
+		
+		try (PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, Charsets.UTF_8)))) {
+			writer.println(
+					TAB_JOINER.join("uuid", "effectiveTime", "author", "strength", "description", "validationMessage", "form", "domain", "predicate"));
+			
+			for (SnomedConstraint constraint : constraints) {
+				writer.print(TAB_JOINER.join(constraint.getId(), constraint.getEffectiveTime(), constraint.getAuthor(), constraint.getStrength(),
+						constraint.getDescription(), constraint.getValidationMessage()));
+				
+				writer.print(TAB_JOINER.join(constraint.getForm(),
+						renderer.getHumanReadableRendering(constraint.getDomain(), Integer.MAX_VALUE),
+						renderer.getHumanReadableRendering(constraint.getPredicate(), Integer.MAX_VALUE)));
+				
+				writer.println();
 			}
-
-			LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export to CSV successfully finished.");
-		} catch (final Throwable t) {
-			LogUtils.logExportActivity(LOG, user, branch, "Failed to export MRCM rules.");
-			throw new SnowowlRuntimeException("Failed to export MRCM rules.", t);
 		}
+		
+		LogUtils.logExportActivity(LOG, user, branch, "MRCM rule export to CSV successfully finished.");
 	}
+
 }
