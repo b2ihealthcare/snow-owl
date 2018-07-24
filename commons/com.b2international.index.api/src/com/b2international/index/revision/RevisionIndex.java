@@ -15,10 +15,6 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.Arrays;
-
 import com.b2international.index.admin.Administrable;
 import com.b2international.index.admin.IndexAdmin;
 import com.google.common.base.Strings;
@@ -132,13 +128,14 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 * @throws IllegalArgumentException - if the given path cannot be parsed as a revision range path expression
 	 */
-	static String[] getRevisionRangePaths(String revisionRangePath) {
-		final String[] branches = revisionRangePath.split("\\.\\.\\.");
-		checkArgument(branches.length == 2 && !Strings.isNullOrEmpty(branches[0]) && !Strings.isNullOrEmpty(branches[1]), 
-				"Diff notation ('%s') requires two full branch paths. Got %s.", RevisionIndex.REV_RANGE, Arrays.toString(branches));
-		return branches;
+	static String[] getRevisionRangePaths(final String revisionRangePath) {
+		if (!isRevRangePath(revisionRangePath)) {
+			throw new IllegalArgumentException(
+					String.format("Diff notation ('%s') requires two full branch paths. Got %s.", RevisionIndex.REV_RANGE, revisionRangePath));
+		}
+		return revisionRangePath.split("\\.\\.\\.");
 	}
-
+	
 	/**
 	 * Returns <code>true</code> if the given branch path can evaluate to its base segments.
 	 * @param branchPath
@@ -154,7 +151,11 @@ public interface RevisionIndex extends Administrable<IndexAdmin> {
 	 * @return
 	 */
 	static boolean isRevRangePath(String revisionRangePath) {
-		return revisionRangePath.contains(REV_RANGE);
+		if (revisionRangePath.contains(REV_RANGE)) {
+			String[] branches = revisionRangePath.split("\\.\\.\\.");
+			return branches.length == 2 && !Strings.isNullOrEmpty(branches[0]) && !Strings.isNullOrEmpty(branches[1]);
+		}
+		return false;
 	}
 
 }
