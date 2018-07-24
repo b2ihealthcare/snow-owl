@@ -552,7 +552,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String memberIdToDelete = null;
 		for (SnomedReferenceSetMember descriptionMember : description.getMembers()) {
 			if (Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE.equals(descriptionMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID))) {
-				memberIdToDelete = member.getId();
+				memberIdToDelete = descriptionMember.getId();
 				break;
 			}
 		}
