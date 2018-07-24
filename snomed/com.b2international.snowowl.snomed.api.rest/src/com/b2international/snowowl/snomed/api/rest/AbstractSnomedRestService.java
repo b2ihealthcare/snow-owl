@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -26,10 +25,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
  * @since 1.0
  */
 public abstract class AbstractSnomedRestService extends AbstractRestService {
-
-	@Autowired
-	@Value("${repositoryId}")
-	protected String repositoryId;
 	
 	@Autowired
 	protected IEventBus bus;
