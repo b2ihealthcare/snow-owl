@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Date;
+import java.util.Objects;
+
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -36,17 +39,19 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 		boolean changed = false;
 
 		if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
-			long newSourceEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT).getTime();
-			if (newSourceEffectiveTime != original.getSourceEffectiveTime()) {
-				member.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, newSourceEffectiveTime);
+			Date newSourceEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT);
+			Date currentSourceEffectiveTime = EffectiveTimes.toDate(original.getSourceEffectiveTime());
+			if (!Objects.equals(newSourceEffectiveTime, currentSourceEffectiveTime)) {
+				member.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(newSourceEffectiveTime));
 				changed |= true;
 			}
 		}
 
 		if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
-			long newTargetEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT).getTime();
-			if (newTargetEffectiveTime != original.getTargetEffectiveTime()) {
-				member.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, newTargetEffectiveTime);
+			Date newTargetEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT);
+			Date currentTargetEffectiveTime = EffectiveTimes.toDate(original.getTargetEffectiveTime());
+			if (!Objects.equals(newTargetEffectiveTime, currentTargetEffectiveTime)) {
+				member.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(newTargetEffectiveTime));
 				changed |= true;
 			}
 		}
