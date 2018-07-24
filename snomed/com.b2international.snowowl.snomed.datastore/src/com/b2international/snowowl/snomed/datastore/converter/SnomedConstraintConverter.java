@@ -77,7 +77,6 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 		constraint.setId(document.getId());
 		constraint.setPredicate(toResource(document.getPredicate()));
 		constraint.setReleased(false);
-		constraint.setStorageKey(document.getStorageKey());
 		constraint.setStrength(document.getStrength());
 		constraint.setValidationMessage(document.getValidationMessage());
 		
