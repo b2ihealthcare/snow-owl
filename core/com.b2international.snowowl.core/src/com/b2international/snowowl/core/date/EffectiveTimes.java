@@ -114,7 +114,7 @@ public abstract class EffectiveTimes {
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @param datePattern
 	 *            - the pattern to use, cannot be <code>null</code>
-	 * @return - the parsed date, never <code>null</code>.
+	 * @return - the parsed date or <code>null</code> if the given effectiveTime value equals with the value {@link #UNSET_EFFECTIVE_TIME_LABEL}.
 	 * @throws SnowowlRuntimeException
 	 *             - if a {@link ParseException} is throw during execution
 	 * @throws NullPointerException

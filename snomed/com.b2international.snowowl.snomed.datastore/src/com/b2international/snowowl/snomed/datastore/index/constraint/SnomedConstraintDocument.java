@@ -29,22 +29,11 @@ import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
-import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
-import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.util.MrcmSwitch;
+import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
+import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStrength;
+import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -300,7 +289,6 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 		public SnomedConstraintDocument build() {
 			return new SnomedConstraintDocument(id,
-					storageKey,
 					active, 
 					effectiveTime, 
 					author, 
@@ -383,7 +371,6 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 	private SnomedConstraintDocument(
 			String uuid, 
-			long storageKey,
 			boolean active,
 			long effectiveTime,
 			String author,
@@ -399,7 +386,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			Collection<String> refSetIds, 
 			Collection<String> relationshipKeys) {
 
-		super(uuid, Strings.nullToEmpty(description), null, storageKey);
+		super(uuid, Strings.nullToEmpty(description), null);
 
 		this.active = active;
 		this.effectiveTime = effectiveTime;

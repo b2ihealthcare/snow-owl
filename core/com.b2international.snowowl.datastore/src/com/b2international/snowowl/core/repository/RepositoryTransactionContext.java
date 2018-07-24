@@ -87,6 +87,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		this.commitComment = commitComment;
 		this.parentContextDescription = parentContextDescription;
 		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath());
+		bind(StagingArea.class, this.staging);
 	}
 	
 	public <T> T getResolvedObjectById(String componentId, Class<T> type) {

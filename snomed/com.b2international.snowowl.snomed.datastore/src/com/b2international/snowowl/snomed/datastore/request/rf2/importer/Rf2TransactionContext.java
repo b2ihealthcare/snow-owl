@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -203,6 +204,8 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				existingRefSets = Collections.emptyMap();
 			}
 
+			final Set<String> newRefSetIds = newHashSet();
+			
 			// seed missing component before applying row changes
 			// and check for existing components with the same or greater effective time and skip them
 			final Collection<SnomedComponent> componentsToImport = newArrayList();
@@ -226,7 +229,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					// seed the refset if missing
 					final String refSetId = member.getReferenceSetId();
 					SnomedConceptDocument conceptDocToUpdate = existingRefSets.get(refSetId);
-					if (conceptDocToUpdate == null) {
+					if (conceptDocToUpdate == null || newComponents.containsKey(refSetId)) {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
@@ -242,11 +245,11 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 						refSet.setType(member.type());
 						refSet.setReferencedComponentType(referencedComponentType);
 						refSet.setMapTargetComponentType(mapTargetComponentType);
-//						.withDataType(SnomedRefSetUtil.getDataType(identifierId))
 						
 						final SnomedConceptDocument updatedConcept = SnomedConceptDocument.builder(conceptDocToUpdate).refSet(refSet).build();
 						if (newComponents.containsKey(refSetId)) {
 							newComponents.put(refSetId, updatedConcept);
+							newRefSetIds.add(refSetId);
 						} else {
 							update(conceptDocToUpdate, updatedConcept);
 						}
@@ -259,11 +262,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				final String id = rf2Component.getId();
 				SnomedDocument existingRevision = null;
 				SnomedDocument.Builder<?, ?> newRevision;
-				if (existingComponents.containsKey(id)) {
+				if (newComponents.containsKey(id)) {
+					newRevision = createDocBuilder(id, type, newComponents.get(id));
+				} else if (existingComponents.containsKey(id)) {
 					existingRevision = existingComponents.get(id);
 					newRevision = createDocBuilder(id, type, existingRevision);
 				} else {
-					newRevision = createDocBuilder(id, type, newComponents.get(id));
+					throw new IllegalStateException(String.format("Current revision is null for %s", id));
 				}
 				final SnomedComponentBuilder builder;
 				if (rf2Component instanceof SnomedCoreComponent) {
@@ -279,6 +284,22 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					add(newRevision.build());
 				} else {
 					update(existingRevision, newRevision.build());
+				}
+			}
+			
+			// make sure we always attach refset properties to identifier concepts
+			final StagingArea staging = service(StagingArea.class);
+			for (String newRefSetId : newRefSetIds) {
+				SnomedConceptDocument newRefSet = (SnomedConceptDocument) newComponents.get(newRefSetId);
+				SnomedConceptDocument stagedNewRefSet = (SnomedConceptDocument) staging.getNewObjects().get(newRefSetId);
+				if (newRefSet != null && stagedNewRefSet != null) {
+					if (stagedNewRefSet.getRefSetType() == null) {
+						add(SnomedConceptDocument.builder(stagedNewRefSet)
+								.refSetType(newRefSet.getRefSetType())
+								.referencedComponentType(newRefSet.getReferencedComponentType())
+								.mapTargetComponentType(newRefSet.getMapTargetComponentType())
+								.build());
+					}
 				}
 			}
 		}

@@ -67,7 +67,6 @@ import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -531,7 +530,6 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.active(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referenceSetId(Concepts.REFSET_LANGUAGE_TYPE_UK)
-				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
 				.referencedComponentId(descriptionId)
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
