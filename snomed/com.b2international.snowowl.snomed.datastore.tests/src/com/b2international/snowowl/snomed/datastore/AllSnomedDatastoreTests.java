@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.RelationshipCha
 import com.b2international.snowowl.snomed.datastore.index.change.TaxonomyPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentTermSortTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConstraintDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntrySerializationTest;
@@ -54,13 +55,12 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedConceptIndexEntrySerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
-//	SnomedConstraintDocumentSerializationTest.class,
+	SnomedConstraintDocumentSerializationTest.class,
 	SnomedRefSetMemberDocumentSerializationTest.class,
 	SnomedConceptDocumentTermSortTest.class,
 	// change proc test cases
 	DescriptionChangeProcessorTest.class,
 	RelationshipChangeProcessorTest.class,
-//	ConstraintChangeProcessorTest.class,
 	TaxonomyPreCommitHookTest.class,
 	PreferredDescriptionPreCommitHookTest.class,
 	// ECL test cases
