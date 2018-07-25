@@ -33,7 +33,17 @@ public class LogicalId {
 	
 	String componentId; //optional
 	
-	public LogicalId(String idString) {
+	public LogicalId(String repositoryId, String branchPath, String componentId) {
+		this.repositoryId = repositoryId;
+		this.branchPath = branchPath;
+		this.componentId = componentId;
+	}
+	
+	public LogicalId(String repositoryId, String branchPath) {
+		this(repositoryId, branchPath, null);
+	}
+	
+	public static LogicalId fromIdString(String idString) {
 		
 		if (StringUtils.isEmpty(idString)) {
 			throw new IllegalArgumentException("Logical ID input string is null or empty");
@@ -53,12 +63,15 @@ public class LogicalId {
 			throw new IllegalArgumentException(String.format("Invalid logical ID [%s], too many segments. The format should be repoId:branchPath:{componentId}.", idString));
 		}
 		
-		repositoryId = splitIdString[0];
-		branchPath = splitIdString[1];
+		String repositoryId = splitIdString[0];
+		String branchPath = splitIdString[1];
 		
 		if (splitIdString.length == 3) {
-			componentId = splitIdString[2];
+			return new LogicalId(repositoryId, branchPath, splitIdString[2]);
+		} else {
+			return new LogicalId(repositoryId, branchPath);
 		}
+		
 	}
 	
 	public String getRepositoryId() {
@@ -74,7 +87,17 @@ public class LogicalId {
 	}
 	
 	public String toString() {
-		return repositoryId + ":" + branchPath;
+		StringBuilder sb = new StringBuilder(repositoryId);
+		sb.append(":");
+		sb.append(branchPath);
+		
+		if (componentId ==null) {
+			return sb.toString();
+		} else {
+			sb.append(":");
+			sb.append(componentId);
+			return sb.toString();
+		}
 	}
 
 }

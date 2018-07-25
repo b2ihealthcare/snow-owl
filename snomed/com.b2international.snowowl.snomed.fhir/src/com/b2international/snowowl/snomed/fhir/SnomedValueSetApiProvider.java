@@ -18,17 +18,19 @@ package com.b2international.snowowl.snomed.fhir;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -42,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -111,11 +114,11 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			return SnomedRequests.prepareSearchRefSet()
 				.all()
 				.filterByType(SnomedRefSetType.SIMPLE)
-				.build(getRepositoryId(), csve.getPath())
+				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
-						.map(r -> createValueSetBuilder(r, displayLanguage))
+						.map(r -> createValueSetBuilder(r, csve, displayLanguage))
 						.map(ValueSet.Builder::build)
 						.collect(Collectors.toList());
 				})
@@ -130,20 +133,28 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	@Override
 	public ValueSet getValueSet(LogicalId logicalId) {
 		
+		
+		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByBranchPath(logicalId.getBranchPath())
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync()
+			.first();
+		
+		CodeSystemVersionEntry codeSystemVersion = codeSystemOptional.orElseThrow(() -> new FhirException("Could not find corresponding version for value set id [%s].", "ValueSet.id", logicalId));
+		
 		//TODO: what to do with the language? Where do i get the locale from the request? 
 		String displayLanguage = "en-us";
-		String version = null; //what should be the version?
-		
-		String referenceSetId = logicalId.getBranchPath(); //TODO: this should be getCode
 		
 		return SnomedRequests.prepareSearchRefSet()
-			.filterById(referenceSetId)
+			.filterById(logicalId.getComponentId())
 			.filterByType(SnomedRefSetType.SIMPLE)
-			.build(getRepositoryId(), getBranchPath(version))
+			.build(repositoryId, logicalId.getBranchPath())
 			.execute(getBus())
 			.then(refsets -> {
 				return refsets.stream()
-					.map(r -> createValueSetBuilder(r, displayLanguage))
+					.map(r -> createValueSetBuilder(r, codeSystemVersion, displayLanguage))
 					.map(ValueSet.Builder::build)
 					.collect(Collectors.toList());
 			})
@@ -154,30 +165,37 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 	}
 	
-	private ValueSet.Builder createValueSetBuilder(final SnomedReferenceSet referenceSet, final String displayLanguage) {
+	private ValueSet.Builder createValueSetBuilder(final SnomedReferenceSet referenceSet, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
 		
 		String referenceSetId = referenceSet.getId();
+
+		//TODO: module needs to be added as well
+		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
-			.system(getFhirUri())
+			.system(uri.toUriString())
 			.value(referenceSetId)
 			.build();
 		
-		String id = getRepositoryId() + "/" + referenceSetId;
+		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSetId);
 		
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-			.build(getRepositoryId(), IBranchPath.MAIN_BRANCH)
+			.build(getRepositoryId(), codeSystemVersion.getPath())
 			.execute(getBus())
 			.getSync();
 		
-		return ValueSet.builder(id)
+		
+		return ValueSet.builder(logicalId.toString())
 			.identifier(identifier)
+			.version(codeSystemVersion.getVersionId())
 			.language(displayLanguage)
-			.url(getFhirUri())
+			.url(uri.toUri())
 			.status(referenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
+			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.name(refsetConcept.getPt().getTerm())
 			.title(refsetConcept.getPt().getTerm());
 	}
 	

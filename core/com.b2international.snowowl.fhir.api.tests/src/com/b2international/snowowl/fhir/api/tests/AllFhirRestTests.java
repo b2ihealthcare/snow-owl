@@ -36,12 +36,12 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	CodeSystemRestTest.class,
+	//CodeSystemRestTest.class,
 	ValueSetRestTest.class,
-	LookupFhirCodeSystemRestTest.class,
-	LookupSnomedRestTest.class,
-	SubsumesSnomedRestTest.class,
-	SandBoxRestTest.class
+	//LookupFhirCodeSystemRestTest.class,
+	//LookupSnomedRestTest.class,
+	//SubsumesSnomedRestTest.class,
+	//SandBoxRestTest.class
 })
 public class AllFhirRestTests {
 	

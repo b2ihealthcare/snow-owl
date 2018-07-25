@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.fhir;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Iterator;
 
 import com.b2international.commons.StringUtils;
@@ -36,17 +37,54 @@ public class SnomedUri {
 	public static final String VERSION_PATH_SEGMENT = "version"; //$NON-NLS-N$
 	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
-
-	private String uriString;
-	private String extensionModuleId;
-	private String versionTag;
 	
-	public SnomedUri(String uriString) {
-		this.uriString = uriString;
-		parseUri(uriString);
+	private final String extensionModuleId;
+	private final String versionTag;
+	
+	SnomedUri(String extensionModuleId, String version) {
+		this.extensionModuleId = extensionModuleId;
+		this.versionTag = version;
 	}
 	
-	private void parseUri(String uriString) {
+	public static Builder builder() {
+		return new Builder();
+	}
+
+	public static class Builder {
+		
+		private String extensionModuleId;
+		private String version;
+		
+		public Builder extensionModuleId(final String extensionModuleId) {
+			this.extensionModuleId = extensionModuleId;
+			return this;
+		}
+
+		public Builder version(final String version) {
+			this.version = version;
+			return this;
+		}
+		
+		public Builder version(final long versionMs) {
+			Date date = EffectiveTimes.toDate(versionMs);
+			this.version = EffectiveTimes.format(date, DateFormats.SHORT);
+			return this;
+		}
+		
+		protected SnomedUri build() {
+			return new SnomedUri(extensionModuleId, version);
+		}
+		
+	}
+	
+	/**
+	 * Factory method to create a new SNOMED CT URI from a valid URI String.
+	 * @param uriString
+	 * @return new SNOMED CT URI instance
+	 */
+	public static SnomedUri fromUriString(String uriString) {
+		
+		Builder builder = builder();
 		
 		Path uriPath = Paths.get(uriString);
 		
@@ -59,22 +97,22 @@ public class SnomedUri {
 		Iterator<Path> pathIterator = relativeUri.iterator();
 	
 		//this should not happen
-		if (!pathIterator.hasNext()) return;
+		if (!pathIterator.hasNext()) return builder.build();
 		
 		//extension
 		String pathSegment = pathIterator.next().toString();
 			
 		//No extension or version definition provided - SNOMED CT INT Edition
-		if (StringUtils.isEmpty(pathSegment)) return;
+		if (StringUtils.isEmpty(pathSegment)) return builder.build();
 		
 		if (!SnomedIdentifiers.isValid(pathSegment.toString())) {
 			throw new IllegalArgumentException(String.format("Invalid extension module ID [%s] defined.", pathSegment));
 		} else {
-			extensionModuleId = pathSegment;
+			builder.extensionModuleId(pathSegment);
 		}
 		
 		//version parameter
-		if (!pathIterator.hasNext()) return;
+		if (!pathIterator.hasNext()) return builder.build();
 		String versionParameterKeySegment = pathIterator.next().toString();
 		if (!VERSION_PATH_SEGMENT.equals(versionParameterKeySegment)) {
 			throw new IllegalArgumentException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment));
@@ -84,18 +122,20 @@ public class SnomedUri {
 		if (!pathIterator.hasNext()) {
 			throw new IllegalArgumentException(String.format("No version tag is specified after the 'version' parameter."));
 		}
-		versionTag = pathIterator.next().toString();
+		String versionTag = pathIterator.next().toString();
 		//to validate
 		try {
 			EffectiveTimes.parse(versionTag, DateFormats.SHORT);
 		} catch(RuntimeException re) {
 			throw new IllegalArgumentException(String.format("Could not parse version date [%s].", versionTag), re);
 		}
+		return builder.version(versionTag).build();
 	}
 	
 	public String getExtensionModuleId() {
 		return extensionModuleId;
 	}
+	
 	public String getVersionTag() {
 		return versionTag;
 	}
@@ -105,7 +145,16 @@ public class SnomedUri {
 	 * @return
 	 */
 	public String toUriString() {
-		return uriString;
+		StringBuilder sb = new StringBuilder(SNOMED_BASE_URI_STRING);
+		if (extensionModuleId !=null) {
+			sb.append("/");
+			sb.append(extensionModuleId);
+		}
+		if (versionTag !=null) {
+			sb.append("/version/");
+			sb.append(versionTag);
+		}
+		return sb.toString();
 	}
 	
 	/**

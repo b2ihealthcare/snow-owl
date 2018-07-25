@@ -92,7 +92,9 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters);
+				
 				String resourceUrl = String.format("%s/%s", uri, valueSet.getId().getIdValue());
+				
 				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);
 				total++;
@@ -124,9 +126,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
 		
-		LogicalId logicalId = new LogicalId(valueSetId);
+		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		ValueSet valueSet = IValueSetApiProvider.Registry
-			//.getValueSetProvider("http://snomed.info/sct") //hack
 			.getValueSetProvider(logicalId) 
 			.getValueSet(logicalId);
 

@@ -68,7 +68,7 @@ public class CodeSystemRestTest extends FhirTest {
 	
 	//All code systems fully detailed
 	@Test
-	public void getFullCodeSystemsTest() {
+	public void getAllFullCodeSystemsTest() {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get("/CodeSystem")

@@ -16,12 +16,8 @@
 package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,25 +42,74 @@ public class ValueSetRestTest extends FhirTest {
 	}
 	
 	@Test
-	public void test() throws Exception {
+	public void printValueSets() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		.when().get("/ValueSet")
 		.prettyPrint();
-		//.then()
-		//.body("resourceType", equalTo("Bundle"))
-		//.body("total", notNullValue())
-		
-//		//SNOMED CT
-//		.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
-//		.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/20170731'}")
-//		.body("property.size()", equalTo(116))
-//		
-//		//FHIR issue type code system has children
-//		.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
-//		.body("concept.size()", equalTo(29))
-		//.statusCode(200);
-		
 	}
+	
+	@Test
+	public void valueSetsTest() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		.when().get("/ValueSet")
+		.then()
+		.body("resourceType", equalTo("Bundle"))
+		.body("type", equalTo("searchset"))
+		.body("total", notNullValue())
+		
+		//SNOMED CT
+		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-01-31:723264001'}")
+		.body("resource.resourceType", equalTo("ValueSet"))
+		.body("resource.id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
+		.body("resource.url", equalTo("http://snomed.info/sct/version/20180131"))
+		.body("resource.version", equalTo("2018-01-31"))
+		.body("resource.title", equalTo("Lateralizable body structure reference set"))
+		.body("resource.name", equalTo("Lateralizable body structure reference set"))
+		.body("resource.status", equalTo("active"))
+		.statusCode(200);
+	}
+	
+	@Test
+	public void valueSetsSummaryTest() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		.param("_summary", true)
+		.when().get("/ValueSet")
+		.then()
+		.body("resourceType", equalTo("Bundle"))
+		.body("type", equalTo("searchset"))
+		.body("total", notNullValue())
+		
+		//SNOMED CT
+		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-01-31:723264001'}")
+		.body("resource.resourceType", equalTo("ValueSet"))
+		.body("resource.id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
+		.body("resource.url", equalTo("http://snomed.info/sct/version/20180131"))
+		.body("resource.version", equalTo("2018-01-31"))
+		.body("resource.title", equalTo("Lateralizable body structure reference set"))
+		.body("resource.name", equalTo("Lateralizable body structure reference set"))
+		.body("resource.status", equalTo("active"))
+		
+		//subsetted
+		.body("resource.meta.tag[0].code", equalTo("SUBSETTED"))
+		
+		.statusCode(200);
+	}
+	
+	@Test
+	public void getSingleSnomedValueSetTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") 
+			.when().get("/ValueSet/{id}")
+			.prettyPrint();
+			//.then()
+			//.body("resourceType", equalTo("ValueSet"))
+			//.body("content", equalTo("not-present"))
+			//.body("status", equalTo("active"))
+			//.statusCode(200);
+	}
+	
 	
 }

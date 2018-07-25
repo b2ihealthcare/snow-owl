@@ -357,7 +357,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	}
 	
 	private CodeSystem getCodeSystemById(String codeSystemId) {
-		LogicalId logicalId = new LogicalId(codeSystemId);
+		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
 		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(logicalId);
 		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
 		return codeSystem;

@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.fhir;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,6 +58,7 @@ import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.fhir.SnomedUri.Builder;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
@@ -92,7 +92,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	public LookupResult lookup(LookupRequest lookup) {
 		
-		SnomedUri snomedUri = new SnomedUri(lookup.getSystem());
+		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem());
 		
 		validateVersion(snomedUri, lookup.getVersion());
 		
@@ -217,18 +217,13 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
 		
-		StringBuilder sb = new StringBuilder(SnomedUri.SNOMED_BASE_URI_STRING);
+		//TODO: edition module should come here
+		Builder builder = SnomedUri.builder();
 		
 		if (codeSystemVersion != null) {
-			//TODO: edition module should come here
-			//sb.append("/");
-			//sb.append(moduleId);
-			sb.append("/version/");
-			Date effectiveDate = new Date(codeSystemVersion.getEffectiveDate());
-			sb.append(EffectiveTimes.format(effectiveDate, DateFormats.SHORT));
+			builder.version(codeSystemVersion.getEffectiveDate());
 		} 
-		
-		return new Uri(sb.toString());
+		return builder.build().toUri();
 	}
 	
 	/**
@@ -237,7 +232,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		SnomedUri snomedUri = new SnomedUri(subsumptionRequest.getSystem());
+		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem());
 		validateVersion(snomedUri, subsumptionRequest.getVersion());
 		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersionId();
 	}
