@@ -336,9 +336,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		if (version != null) {
 			if (snomedUri.getVersionTag() == null) {
-				throw new FhirException("Version is not specified in the URI [%s], while it is set in the request [%s]", "LookupRequest.version", snomedUri.toUriString(), version);
+				throw new FhirException("Version is not specified in the URI [%s], while it is set in the request [%s]", "LookupRequest.version", snomedUri.toString(), version);
 			} else if (!snomedUri.getVersionTag().equals(version)) {
-				throw new FhirException("Version specified in the URI [%s] does not match the version set in the request [%s]", "LookupRequest.version", snomedUri.toUriString(), version);
+				throw new FhirException("Version specified in the URI [%s] does not match the version set in the request [%s]", "LookupRequest.version", snomedUri.toString(), version);
 			}
 		}
 	}

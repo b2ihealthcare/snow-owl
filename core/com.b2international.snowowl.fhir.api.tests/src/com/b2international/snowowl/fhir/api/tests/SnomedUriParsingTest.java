@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.fhir.SnomedUri;
  * 
  * @since 6.7
  */
-public class UriParsingTest extends FhirTest {
+public class SnomedUriParsingTest extends FhirTest {
 	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
@@ -112,5 +112,50 @@ public class UriParsingTest extends FhirTest {
 		assertEquals(Concepts.MODULE_SCT_CORE, snomedUri.getExtensionModuleId());
 		assertEquals("20170131", snomedUri.getVersionTag());
 	}
-
+	
+	@Test
+	public void testToUri() {
+		
+		SnomedUri baseUri = SnomedUri.builder().build();
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING, baseUri.toString());
+		
+		SnomedUri uri = SnomedUri.builder().version("20180131").build();
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "/version/20180131", uri.toString());
+		
+		uri = SnomedUri.builder()
+				.extensionModuleId(Concepts.MODULE_SCT_CORE)
+				.version("20180131").build();
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE + "/version/20180131", uri.toString());
+	}
+	
+	@Test
+	public void testToUriWithQueryPart() {
+		
+		SnomedUri uri = SnomedUri.builder().conceptMapQuery(Concepts.ROOT_CONCEPT).build();
+		
+		System.out.println("URI: " + uri);
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_cm=" + Concepts.ROOT_CONCEPT, uri.toString());
+		
+		uri = SnomedUri.builder().valueSetsQuery().build();
+		
+		System.out.println("URI: " + uri);
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs", uri.toString());
+		
+		uri = SnomedUri.builder().isAQuery(Concepts.ROOT_CONCEPT).build();
+		
+		System.out.println("URI: " + uri);
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=isa/" + Concepts.ROOT_CONCEPT, uri.toString());
+		
+		uri = SnomedUri.builder().refsetsQuery().build();
+		
+		System.out.println("URI: " + uri);
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=refset", uri.toString());
+		
+		uri = SnomedUri.builder().refsetQuery(Concepts.ROOT_CONCEPT).build();
+		
+		System.out.println("URI: " + uri);
+		assertEquals(SnomedUri.SNOMED_BASE_URI_STRING + "?fhir_vs=refset/" + Concepts.ROOT_CONCEPT, uri.toString());
+		
+	}
+	
 }

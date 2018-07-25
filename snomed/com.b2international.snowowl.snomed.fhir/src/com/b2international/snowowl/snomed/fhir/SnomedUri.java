@@ -38,12 +38,87 @@ public class SnomedUri {
 	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
 	
+	public enum QueryPartDefinition {
+		
+		NONE(""),
+		ISA("isa/"),
+		REFSETS("refset"),
+		REFSET("refset/");
+		
+		private String urlString;
+
+		private QueryPartDefinition(String urlString) {
+			this.urlString = urlString;
+		}
+		
+		public String getUrlString() {
+			return urlString;
+		}
+		
+	}
+	
+	/**
+	 * 	?fhir_vs - all Concept IDs in the edition/version. If the base URI is http://snomed.info/sct, this means all possible SNOMED CT concepts
+	 *	?fhir_vs=isa/[sctid] - all concept IDs that are subsumed by the specified Concept.
+	 *	?fhir_vs=refset - all concept ids that correspond to real references sets defined in the specified SNOMED CT edition
+	 *	?fhir_vs=refset/[sctid] - all concept IDs in the specified reference set
+	 *	
+	 *	?fhir_cm=[sctid] - where [sctid] is a value from the table above
+	 *
+	 */
+	public static class QueryPart {
+		
+		private static final String PREFIX_VS = "fhir_vs";
+		private static final String PREFIX_CM = "fhir_cm";
+		
+		private String queryParameter;
+		private QueryPartDefinition queryPartDefinition = QueryPartDefinition.NONE;
+		private String queryValue;
+		
+		public QueryPart(String queryParameter, QueryPartDefinition queryPartDefinition, String conceptId) {
+			this.queryParameter = queryParameter;
+			this.queryPartDefinition = queryPartDefinition;
+			this.queryValue = conceptId;
+		}
+
+		
+		public QueryPart(String queryParameter, QueryPartDefinition queryPartDefinition) {
+			this(queryParameter, queryPartDefinition, null);
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			if (queryParameter != null) {
+				sb.append(queryParameter);
+				if (queryParameter.equals(PREFIX_CM)) {
+					sb.append("=");
+				}
+			}
+			
+			if (queryPartDefinition != QueryPartDefinition.NONE) {
+				sb.append("=");
+				sb.append(queryPartDefinition.getUrlString());
+			}
+
+			if (queryValue!=null) {
+				sb.append(queryValue);
+			}
+			
+			return sb.toString();
+		}
+
+	}
+	
 	private final String extensionModuleId;
 	private final String versionTag;
 	
-	SnomedUri(String extensionModuleId, String version) {
+	private QueryPart queryPart;
+	
+	SnomedUri(String extensionModuleId, String version, QueryPart queryPart) {
 		this.extensionModuleId = extensionModuleId;
 		this.versionTag = version;
+		this.queryPart = queryPart;
 	}
 	
 	public static Builder builder() {
@@ -54,6 +129,7 @@ public class SnomedUri {
 		
 		private String extensionModuleId;
 		private String version;
+		private QueryPart queryPart;
 		
 		public Builder extensionModuleId(final String extensionModuleId) {
 			this.extensionModuleId = extensionModuleId;
@@ -71,10 +147,34 @@ public class SnomedUri {
 			return this;
 		}
 		
-		protected SnomedUri build() {
-			return new SnomedUri(extensionModuleId, version);
+		public Builder conceptMapQuery(String conceptId) {
+			this.queryPart = new QueryPart(QueryPart.PREFIX_CM, QueryPartDefinition.NONE, conceptId);
+			return this;
 		}
 		
+		public Builder valueSetsQuery() {
+			this.queryPart = new QueryPart(QueryPart.PREFIX_VS, QueryPartDefinition.NONE);
+			return this;
+		}
+		
+		public Builder refsetsQuery() {
+			this.queryPart = new QueryPart(QueryPart.PREFIX_VS, QueryPartDefinition.REFSETS);
+			return this;
+		}
+		
+		public Builder isAQuery(String conceptId) {
+			this.queryPart = new QueryPart(QueryPart.PREFIX_VS, QueryPartDefinition.ISA, conceptId);
+			return this;
+		}
+		
+		public Builder refsetQuery(String conceptId) {
+			this.queryPart = new QueryPart(QueryPart.PREFIX_VS, QueryPartDefinition.REFSET, conceptId);
+			return this;
+		}
+
+		public SnomedUri build() {
+			return new SnomedUri(extensionModuleId, version, queryPart);
+		}
 	}
 	
 	/**
@@ -144,7 +244,7 @@ public class SnomedUri {
 	 * Returns the standard URI string for this SNOMED CT URI
 	 * @return
 	 */
-	public String toUriString() {
+	public String toString() {
 		StringBuilder sb = new StringBuilder(SNOMED_BASE_URI_STRING);
 		if (extensionModuleId !=null) {
 			sb.append("/");
@@ -154,6 +254,11 @@ public class SnomedUri {
 			sb.append("/version/");
 			sb.append(versionTag);
 		}
+		
+		if (queryPart != null) {
+			sb.append("?");
+			sb.append(queryPart.toString());
+		}
 		return sb.toString();
 	}
 	
@@ -162,7 +267,7 @@ public class SnomedUri {
 	 * @return
 	 */
 	public Uri toUri() {
-		return new Uri(toUriString());
+		return new Uri(toString());
 	}
 	
 }

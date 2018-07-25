@@ -174,7 +174,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
-			.system(uri.toUriString())
+			.system(uri.toString())
 			.value(referenceSetId)
 			.build();
 		
