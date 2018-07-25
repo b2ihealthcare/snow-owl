@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.common;
 
+import com.google.common.collect.ImmutableSet;
+
 /**
  * Collects all release file field names and headers for SNOMED&nbsp;CT RF2.
  *
@@ -133,6 +135,22 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_MRCM_ATTRIBUTE_RULE = "attributeRule";
 	
 	public static final String FIELD_MRCM_RULE_REFSET_ID = "mrcmRuleRefsetId";
+	
+	public static final ImmutableSet<String> MEMBER_FIELDS_WITH_COMPONENT_ID = ImmutableSet.of(
+		FIELD_ACCEPTABILITY_ID,
+		FIELD_CHARACTERISTIC_TYPE_ID,
+		FIELD_CORRELATION_ID,
+		FIELD_DESCRIPTION_FORMAT,
+		FIELD_MAP_CATEGORY_ID,
+		FIELD_OPERATOR_ID,
+		FIELD_TARGET_COMPONENT,
+		FIELD_UNIT_ID,
+		FIELD_VALUE_ID,
+		FIELD_MRCM_CONTENT_TYPE_ID,
+		FIELD_MRCM_RULE_REFSET_ID,
+		FIELD_MRCM_RULE_STRENGTH_ID,
+		FIELD_MRCM_DOMAIN_ID
+	);
 	
 	public static final String[] CONCEPT_HEADER = new String[] { 
 		FIELD_ID, 

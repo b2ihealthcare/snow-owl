@@ -15,10 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.version;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+import org.slf4j.Logger;
+
+import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -28,18 +40,25 @@ import com.b2international.snowowl.core.events.bulk.BulkResponse;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.version.VersioningConfiguration;
 import com.b2international.snowowl.datastore.version.VersioningRequest;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
@@ -55,10 +74,13 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedVersioningRequest extends VersioningRequest {
 
-	private Set<String> componentIdsToPublish = newHashSet();
+	private static final List<Class<? extends SnomedComponentDocument>> CORE_COMPONENT_TYPES = ImmutableList.of(
+		SnomedConceptDocument.class,
+		SnomedDescriptionIndexEntry.class, 
+		SnomedRelationshipIndexEntry.class
+	);
 	
-	// sourceModuleId to targetModuleId map
-	private Multimap<String, String> moduleDependencies;
+	private Set<String> componentIdsToPublish = newHashSet();
 	
 	public SnomedVersioningRequest(VersioningConfiguration config) {
 		super(config);
@@ -66,6 +88,9 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 	
 	@Override
 	protected void doVersionComponents(TransactionContext context) {
+		final Logger log = context.service(Logger.class);
+		
+		log.info("Collecting unpublished components...");
 		BulkResponse response = RepositoryRequests.prepareBulkRead()
 			.setBody(BulkRequest.<BranchContext>create()
 					.add(SnomedRequests.prepareSearchConcept()
@@ -83,7 +108,11 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 							.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)))
 			.build()
 			.execute(context);
+
+		// sourceModuleId to targetModuleId map
+		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
+		log.info("Publishing components...");
 		for (CollectionResource<?> hits : response.getResponses(CollectionResource.class)) {
 			for (SnomedComponent hit : Iterables.filter(hits, SnomedComponent.class)) {
 				
@@ -95,13 +124,34 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				// stage update on components based on actual type
 				final SnomedDocument.Builder updatedComponent; 
 				if (hit instanceof SnomedConcept) {
-					updatedComponent = SnomedConceptDocument.builder((SnomedConcept) hit);
+					final SnomedConcept concept = (SnomedConcept) hit;
+					componentIdsByReferringModule.put(concept.getModuleId(), concept.getDefinitionStatus().getConceptId());
+					updatedComponent = SnomedConceptDocument.builder(concept);
 				} else if (hit instanceof SnomedDescription) {
-					updatedComponent = SnomedDescriptionIndexEntry.builder((SnomedDescription) hit);
+					final SnomedDescription description = (SnomedDescription) hit;
+					componentIdsByReferringModule.put(description.getModuleId(), description.getConceptId());
+					componentIdsByReferringModule.put(description.getModuleId(), description.getTypeId());
+					componentIdsByReferringModule.put(description.getModuleId(), description.getCaseSignificance().getConceptId());
+					updatedComponent = SnomedDescriptionIndexEntry.builder(description);
 				} else if (hit instanceof SnomedRelationship) {
-					updatedComponent = SnomedRelationshipIndexEntry.builder((SnomedRelationship) hit);
+					final SnomedRelationship relationship = (SnomedRelationship) hit;
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifier().getConceptId());
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicType().getConceptId());
+					updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
 				} else if (hit instanceof SnomedReferenceSetMember) {
-					updatedComponent = SnomedRefSetMemberIndexEntry.builder((SnomedReferenceSetMember) hit);
+					final SnomedReferenceSetMember member = (SnomedReferenceSetMember) hit;
+					componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
+
+					registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponent().getId());
+					
+					SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(field -> {
+						registerIfConcept(componentIdsByReferringModule, member.getModuleId(), (String) member.getProperties().get(field));
+					});
+					
+					updatedComponent = SnomedRefSetMemberIndexEntry.builder(member);
 				} else {
 					throw new UnsupportedOperationException("Not implemented case for: " + hit);
 				}
@@ -115,22 +165,109 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				);
 			}
 		}
+		
+		// iterate over each module and get modules of all components registered to componentsByReferringModule
+		log.info("Collecting module dependencies of changed components...");
+		final Multimap<String, String> moduleDependencies = HashMultimap.create();
+		final Map<String, Long> moduleToLatestEffectiveTime = newHashMap();
+		for (String module : ImmutableSet.copyOf(componentIdsByReferringModule.keySet())) {
+			final Collection<String> dependencies = componentIdsByReferringModule.removeAll(module);
+			for (Class<? extends SnomedComponentDocument> type : CORE_COMPONENT_TYPES) {
+				Query<String[]> dependencyQuery = Query.select(String[].class)
+						.from(type)
+						.fields(SnomedComponentDocument.Fields.ID, SnomedComponentDocument.Fields.MODULE_ID, SnomedComponentDocument.Fields.EFFECTIVE_TIME)
+						.where(SnomedComponentDocument.Expressions.ids(dependencies))
+						.limit(10000)
+						.build();
+				for (Hits<String[]> dependencyHits : context.service(RevisionSearcher.class).scroll(dependencyQuery)) {
+					for (String[] dependency : dependencyHits) {
+						String targetModule = dependency[1];
+						if (!module.equals(targetModule)) {
+							moduleDependencies.put(module, targetModule);
+						}
+						moduleToLatestEffectiveTime.merge(targetModule, Long.parseLong(dependency[2]), (oldEffectiveTime, newEffectiveTime) -> {
+							if (oldEffectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME || newEffectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+								return EffectiveTimes.UNSET_EFFECTIVE_TIME;
+							} else {
+								return Math.max(oldEffectiveTime, newEffectiveTime);
+							}
+						});
+					}
+				}
+			}
+		}
+		log.info("Collecting module dependencies of changed components successfully finished.");
+		
+		log.info("Adjusting effective time changes on module dependency...");
+		adjustDependencyRefSetMembers(context, moduleDependencies, moduleToLatestEffectiveTime, config().getEffectiveTime());
+		log.info("Effective time adjustment successfully finished on module dependency.");
+		
 	}
 	
-//	@Override
-//	protected void preProcess(final LongSet storageKeys, VersioningConfiguration config) {
-//		collectModuleDependencyChanges(getBranchPathForPublication(config), storageKeys);
-//	}
-//
-//	private void collectModuleDependencyChanges(final String branch, final LongSet storageKeys) {
-//		LOGGER.info("Collecting module dependencies of changed components...");
-//		moduleDependencies = ApplicationContext.getServiceForClass(RepositoryManager.class)
-//			.get(getRepositoryUuid())
-//			.service(RevisionIndex.class)
-//			.read(branch, searcher -> new ModuleDependencyCollector(searcher).getModuleDependencies(LongSets.toSet(storageKeys)));
-//		LOGGER.info("Collecting module dependencies of changed components successfully finished.");
-//	}
-//	
+	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, Date effectiveTime) {
+		// Update existing, add new members to moduleDependencyRefSet
+		if (!CompareUtils.isEmpty(moduleDependencies)) {
+			moduleDependencies.entries().forEach((entry) -> {
+				final String source = entry.getKey();
+				final String target = entry.getValue();
+				
+				final SnomedReferenceSetMember existingLatestMember = SnomedRequests.prepareSearchMember()
+						.all()
+						.filterByModule(source)
+						.filterByReferencedComponent(target)
+						.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+						.build()
+						.execute(context)
+						.stream()
+						.sorted((o1, o2) -> {
+							if (null == o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
+								return 0;
+							} else if (null == o1.getEffectiveTime() && null != o2.getEffectiveTime()) {
+								return 1;
+							} else if (null != o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
+								return -1;
+							}
+							return o1.getEffectiveTime().compareTo(o2.getEffectiveTime());
+						})
+						.reduce((first, second) -> second)
+						.orElse(null);
+				
+				final SnomedRefSetMemberIndexEntry.Builder updatedMember;
+				if (existingLatestMember == null) {
+					updatedMember = SnomedRefSetMemberIndexEntry.builder()
+							.id(UUID.randomUUID().toString())
+							.active(true)
+							.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+							.moduleId(source)
+							.referencedComponentId(target);
+				} else {
+					updatedMember = SnomedRefSetMemberIndexEntry.builder(existingLatestMember);
+				}
+
+				final long targetEffectiveTime = moduleToLatestEffectiveTime.get(target) == EffectiveTimes.UNSET_EFFECTIVE_TIME ? effectiveTime.getTime() : moduleToLatestEffectiveTime.get(target);
+				
+				updatedMember
+					.released(true)
+					.effectiveTime(effectiveTime.getTime())
+					.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, effectiveTime.getTime())
+					.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime);
+				
+				if (existingLatestMember == null) {
+					context.add(updatedMember.build());
+				} else {
+					context.update(SnomedRefSetMemberIndexEntry.builder(existingLatestMember).build(), updatedMember.build());
+				}
+				
+			});
+		}
+	}
+
+	private void registerIfConcept(Multimap<String, String> componentIdsByReferringModule, String moduleId, String dependency) {
+		if (SnomedIdentifiers.isValid(dependency)) {
+			componentIdsByReferringModule.put(moduleId, dependency);
+		}
+	}
+	
 //	@Override
 //	protected void createCodeSystemVersion(final CDOEditingContext editingContext, VersioningConfiguration config) {
 //		if (Branch.MAIN_PATH.equals(editingContext.getBranch())) {
@@ -148,13 +285,6 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 //	}
 //	
 //	@Override
-//	protected void postProcess(CDOEditingContext editingContext, VersioningConfiguration config) {
-//		LOGGER.info("Adjusting effective time changes on module dependency...");
-//		adjustDependencyRefSetMembers(editingContext, config.getEffectiveTime());
-//		LOGGER.info("Effective time adjustment successfully finished on module dependency.");
-//	}
-//	
-//	@Override
 //	public void postCommit() {
 //		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
 //			try {
@@ -169,102 +299,6 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 //			}
 //		}
 //		super.postCommit();
-//	}
-//	
-//	/**Returns {@code true} if the given {@link EClass} represents a SNOMED&nbsp;CT reference set member. Otherwise {@code false}.*/
-//	private boolean isRefSetMember(final EClass eClass) {
-//		return SnomedRefSetPackage.eINSTANCE.getSnomedRefSetMember().isSuperTypeOf(eClass);
-//	}
-//
-//	/**Returns {@code true} if the given {@link EClass} represents a SNOMED&nbsp;CT core component.*/
-//	private boolean isCoreComponent(final EClass eClass) {
-//		return SnomedPackage.eINSTANCE.getComponent().isSuperTypeOf(eClass);
-//	}
-//
-//	/**Updates all new module dependency reference set members.
-//	 * @param date */
-//	private void adjustDependencyRefSetMembers(CDOEditingContext editingContext, Date effectiveTime) {
-//		// Update existing, add new members to moduleDependencyRefSet
-//		if (!CompareUtils.isEmpty(moduleDependencies)) {
-//			final SnomedRegularRefSet moduleDependencyRefSet = editingContext.lookup(REFSET_MODULE_DEPENDENCY_TYPE, SnomedRegularRefSet.class);
-//			moduleDependencies.entries().forEach((entry) -> {
-//				final String source = entry.getKey();
-//				final String target = entry.getValue();
-//				final SnomedRefSetMember lastMember = moduleDependencyRefSet.getMembers()
-//					.stream()
-//					.filter(member -> source.equals(member.getModuleId()))
-//					.filter(member -> target.equals(member.getReferencedComponentId()))
-//					.sorted((o1, o2) -> {
-//						if (null == o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
-//							return 0;
-//						} else if (null == o1.getEffectiveTime() && null != o2.getEffectiveTime()) {
-//							return 1;
-//						} else if (null != o1.getEffectiveTime() && null == o2.getEffectiveTime()) {
-//							return -1;
-//						}
-//						return o1.getEffectiveTime().compareTo(o2.getEffectiveTime());
-//					})
-//					.reduce((first, second) -> second)
-//					.orElse(null);
-//					
-//				if (lastMember instanceof SnomedModuleDependencyRefSetMember) {
-//					
-//					SnomedModuleDependencyRefSetMember dependencyRefSetMember = (SnomedModuleDependencyRefSetMember) lastMember;
-//					adjustReleased(dependencyRefSetMember);
-//					adjustEffectiveTime(dependencyRefSetMember, effectiveTime);
-//					
-//				} else {
-//					
-//					final SnomedModuleDependencyRefSetMember memberToAdd = SnomedRefSetFactory.eINSTANCE.createSnomedModuleDependencyRefSetMember();
-//					memberToAdd.setUuid(UUID.randomUUID().toString());
-//					memberToAdd.setActive(true);
-//					memberToAdd.setRefSet(moduleDependencyRefSet);
-//					memberToAdd.setModuleId(source);
-//					memberToAdd.setReferencedComponentId(target);
-//
-//					adjustReleased(memberToAdd);
-//					adjustEffectiveTime(memberToAdd, effectiveTime);
-//					moduleDependencyRefSet.getMembers().add(memberToAdd);
-//
-//				}
-//			});
-//		}
-//	}
-//		
-//	/**Adjust all required and supported effective time changes on the given module dependency reference set member.
-//	 * @param effectiveTime */
-//	private void adjustEffectiveTime(final SnomedModuleDependencyRefSetMember member, Date effectiveTime) {
-//		if (!effectiveTime.equals(member.getEffectiveTime())) {
-//			member.setEffectiveTime(effectiveTime);
-//		}
-//		adjustModuleSourceEffectiveTime(member, effectiveTime);
-//		adjustModuleTargetEffectiveTime(member, effectiveTime);
-//	}
-//
-//	/**Adjusts the module target effective time.*/
-//	private void adjustModuleTargetEffectiveTime(final SnomedModuleDependencyRefSetMember member, final Date effectiveTime) {
-//		if (canSetModuleTargetEffectiveTime(member)) {
-//			member.setTargetEffectiveTime(effectiveTime);
-//		}
-//	}
-//
-//	/**Returns {@code true} if the module target effective time can be adjusted for the given module dependency reference set member.*/
-//	private boolean canSetModuleTargetEffectiveTime(final SnomedModuleDependencyRefSetMember member) {
-//		return null == member.getTargetEffectiveTime();
-//	}
-//
-//	/**Adjusts the module source effective time for the given member.*/
-//	private void adjustModuleSourceEffectiveTime(final SnomedModuleDependencyRefSetMember member, final Date effectiveTime) {
-//		if (!effectiveTime.equals(member.getSourceEffectiveTime())) {
-//			member.setSourceEffectiveTime(effectiveTime);
-//		}
-//	}
-//
-//	/**Sets the released flag on the given reference set member.*/
-//	private void adjustReleased(final SnomedModuleDependencyRefSetMember member) {
-//		if (!member.isReleased()) {
-//			member.setReleased(true);
-//		}
 //	}
 	
 }
