@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 import java.util.Collection;
 import java.util.Set;
@@ -50,6 +51,10 @@ import com.jayway.restassured.config.RestAssuredConfig;
  */
 public class SandBoxRestTest extends FhirTest {
 	
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
+	
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
+	
 	@BeforeClass
 	public static void setupSpec() {
 		
@@ -64,12 +69,50 @@ public class SandBoxRestTest extends FhirTest {
 		//ResponseSpecification responseSpec = builder.build();
 	}
 	
+	/*
+    "resourceType": "CodeSystem",
+    "id": "snomedStore://MAIN/2018-01-31",
+    "meta": {
+        "lastUpdated": "1969-12-31T23:59:59.999Z"
+    },
+    "language": "en",
+    "text": {
+        "status": "additional",
+        "div": "<div>SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care.</div>"
+    },
+    "url": "http://snomed.info/sct/version/20180131",
+    "identifier": {
+        "use": "official",
+        "system": "http://www.snomed.org",
+        "value": "2.16.840.1.113883.6.96"
+    },
+    "version": "2018-01-31",
+    "name": "SNOMEDCT",
+    "title": "SNOMED CT",
+    "status": "active",
+    "publisher": "http://www.snomed.org",
+    "description": "SNOMED CT contributes to the improvement of patient care by underpinning the development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. This provides effective access to information required for decision support and consistent reporting and analysis. Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, leading to improvements in the quality of care.",
+    "hierarchyMeaning": "is-a",
+    "content": "not-present",
+    "count": 448216,
+	*/
+	
 	//Fully detailed SNOMED CT code system
-	@Test
+	//@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore/SNOMEDCT") 
-		 	.param("_elements", "filter")
+		 	//.param("_elements", "filter")
+			.when().get("/CodeSystem/{id}")
+			.prettyPrint();
+	}
+	
+	//Fully detailed SNOMED CT code system
+	//@Test
+	public void getSnomedCodeSystemVersionTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.pathParam("id", "snomedStore:MAIN/2018-01-31") 
+		 	//.param("_elements", "filter")
 			.when().get("/CodeSystem/{id}")
 			.prettyPrint();
 	}

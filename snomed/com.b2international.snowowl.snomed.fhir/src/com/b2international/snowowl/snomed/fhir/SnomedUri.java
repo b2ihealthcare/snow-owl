@@ -22,6 +22,7 @@ import java.util.Iterator;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
@@ -33,7 +34,8 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 public class SnomedUri {
 	
 	public static final String VERSION_PATH_SEGMENT = "version"; //$NON-NLS-N$
-	public static final String SNOMED_BASE_URI = "http://snomed.info/sct"; //$NON-NLS-N$
+	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
+	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
 
 	private String uriString;
 	private String extensionModuleId;
@@ -48,11 +50,11 @@ public class SnomedUri {
 		
 		Path uriPath = Paths.get(uriString);
 		
-		if (!uriPath.startsWith(SNOMED_BASE_URI)) {
-			throw new IllegalArgumentException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI));
+		if (!uriPath.startsWith(SNOMED_BASE_URI_STRING)) {
+			throw new IllegalArgumentException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI_STRING));
 		}
 		
-		Path relativeUri = Paths.get(SNOMED_BASE_URI).relativize(uriPath);
+		Path relativeUri = Paths.get(SNOMED_BASE_URI_STRING).relativize(uriPath);
 		
 		Iterator<Path> pathIterator = relativeUri.iterator();
 	
@@ -102,8 +104,16 @@ public class SnomedUri {
 	 * Returns the standard URI string for this SNOMED CT URI
 	 * @return
 	 */
-	public String toUri() {
+	public String toUriString() {
 		return uriString;
+	}
+	
+	/**
+	 * Returns the standard FHIR URI for this SNOMED CT URI
+	 * @return
+	 */
+	public Uri toUri() {
+		return new Uri(toUriString());
 	}
 	
 }

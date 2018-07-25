@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.fhir;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -35,8 +33,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.CodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Designation;
@@ -50,6 +47,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
+import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -76,14 +75,14 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	private static final String URI_BASE = "http://snomed.info";
 	
-	private static final Uri FHIR_URI = new Uri(URI_BASE + "/sct");
+	//private static final Uri SNOMED_CT_URI = new Uri(URI_BASE + "/sct");
 	
-	private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	//private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
 		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-		FHIR_URI.getUriValue()
+		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
 	public SnomedCodeSystemApiProvider() {
@@ -159,23 +158,26 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	
 	
 	@Override
-	public boolean isSupported(Path path) {
-		return SNOMED_INT_PATH.equals(path);
+	public boolean isSupported(LogicalId logicalId) {
+		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 	@Override
 	public final boolean isSupported(String uri) {
 		if (Strings.isNullOrEmpty(uri)) return false;
 		
+		//supported URI perfect match
 		boolean foundInList = getSupportedURIs().stream()
 			.filter(uri::equalsIgnoreCase)
 			.findAny()
 			.isPresent();
 		
 		//extension and version is part of the URI
-		boolean extensionUri = uri.startsWith(FHIR_URI.getUriValue());
+		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
 		
-		return foundInList || extensionUri;
+		boolean logicalId = uri.startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+		
+		return foundInList || extensionUri || logicalId;
 	}
 	
 	@Override
@@ -215,7 +217,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
 		
-		StringBuilder sb = new StringBuilder(FHIR_URI.getUriValue());
+		StringBuilder sb = new StringBuilder(SnomedUri.SNOMED_BASE_URI_STRING);
 		
 		if (codeSystemVersion != null) {
 			//TODO: edition module should come here
@@ -253,7 +255,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				for (SnomedDescription description : concept.getDescriptions()) {
 						
 					Coding coding = Coding.builder()
-						.system(FHIR_URI.getUriValue())
+						.system(SnomedUri.SNOMED_BASE_URI_STRING)
 						.code(description.getTypeId())
 						.display(description.getType().getPt().getTerm())
 						.build();
@@ -339,9 +341,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		if (version != null) {
 			if (snomedUri.getVersionTag() == null) {
-				throw new FhirException("Version is not specified in the URI [%s], while it is set in the request [%s]", "LookupRequest.version", snomedUri.toUri(), version);
+				throw new FhirException("Version is not specified in the URI [%s], while it is set in the request [%s]", "LookupRequest.version", snomedUri.toUriString(), version);
 			} else if (!snomedUri.getVersionTag().equals(version)) {
-				throw new FhirException("Version specified in the URI [%s] does not match the version set in the request [%s]", "LookupRequest.version", snomedUri.toUri(), version);
+				throw new FhirException("Version specified in the URI [%s] does not match the version set in the request [%s]", "LookupRequest.version", snomedUri.toUriString(), version);
 			}
 		}
 	}

@@ -37,7 +37,7 @@ import com.jayway.restassured.config.RestAssuredConfig;
  */
 public class CodeSystemRestTest extends FhirTest {
 	
-	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "issue-type";
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
 	
 	@BeforeClass
 	public static void setupSpec() {
@@ -107,7 +107,7 @@ public class CodeSystemRestTest extends FhirTest {
 	public void getCodeSystemsIdParamTest() {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", "issue-type")
+			.param("_id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
 			.when().get("/CodeSystem")
 			.then()
 			.body("resourceType", equalTo("Bundle"))
@@ -134,7 +134,7 @@ public class CodeSystemRestTest extends FhirTest {
 	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore/SNOMEDCT") 
+		 	.pathParam("id", "snomedStore:MAIN/2018-01-31") 
 			.when().get("/CodeSystem/{id}")
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))

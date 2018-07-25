@@ -7,7 +7,7 @@
  <extension
          point="com.b2international.snowowl.fhir.core.codeSystemProvider">
       <codeSystemApiProvider
-            class="com.b2international.snowowl.fhir.core.FhirCodeSystemApiProvider">
+            class="com.b2international.snowowl.fhir.core.provider.FhirCodeSystemApiProvider">
       </codeSystemApiProvider>
    </extension>
 </plugin>

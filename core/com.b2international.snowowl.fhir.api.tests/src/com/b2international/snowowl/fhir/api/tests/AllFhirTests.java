@@ -60,8 +60,8 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	BundleSerializationTest.class,
 	
 	//This tests are pretty meaningless
-	 */
 	ValueSetSerializationTest.class,
+	 */
 	/*
 	ModelDeserializationTest.class,
 	LookupRequestDeserializationTest.class,
@@ -72,8 +72,8 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	SearchRequestParametersTest.class,
 	UriParsingTest.class,
 	FilterTest.class,
-	SubsumptionRequestTest.class
 	 */
+	SubsumptionRequestTest.class
 })
 public class AllFhirTests {
 }

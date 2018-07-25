@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core;
+package com.b2international.snowowl.fhir.core.provider;
 
-import java.nio.file.Path;
 import java.util.Collection;
 
 import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.google.common.collect.ImmutableList;
@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
  * @see 'com.b2international.snowowl.fhir.core.valueSetProvider' for the extension point definition
  * @since 6.4
  */
-public interface IValueSetApiProvider {
+public interface IValueSetApiProvider extends IFhirApiProvider {
 	
 	/**
 	 * Registry that reads and instantiates FHIR API supporting services registered by the actual terminology plug-ins.
@@ -53,16 +53,16 @@ public interface IValueSetApiProvider {
 		}
 		
 		/**
-		 * Returns the matching {@link IValueSetApiProvider} for the given path (repository/shortName).
-		 * @param logical code system path (e.g. icd10Store/ICD-10)
+		 * Returns the matching {@link IValueSetApiProvider} for the given path (repository:branchPath).
+		 * @param logical code system path (e.g.icd10Store:20140101)
 		 * @return FHIR value set provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static IValueSetApiProvider getValueSetProvider(Path path) {
+		public static IValueSetApiProvider getValueSetProvider(LogicalId logicalId) {
 			return getProviders().stream()
-				.filter(provider -> provider.isSupported(path))
+				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing value set: " + path, OperationOutcomeCode.MSG_NO_MODULE, "system=" + path));
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing value set: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
 		}
 		
 		/**
@@ -79,18 +79,6 @@ public interface IValueSetApiProvider {
 	}
 	
 	/**
-	 * @param uri
-	 * @return true if the code system represented by the URI is supported
-	 */
-	boolean isSupported(String uri);
-	
-	/**
-	 * @param logical code system path (repositoryId/shortName)
-	 * @return true if this provider supports the code system represented by the path
-	 */
-	boolean isSupported(Path path);
-	
-	/**
 	 * Returns the value sets supported by this provider.
 	 * TODO: move this to a different extension. (probably an extension definition per resource)
 	 * @return collection of value sets supported
@@ -98,11 +86,11 @@ public interface IValueSetApiProvider {
 	Collection<ValueSet> getValueSets();
 
 	/**
-	 * Returns the value set for the passed in logical path (repositoryId/valueSetId)
-	 * @param valueSetPath
+	 * Returns the value set for the passed in logical id (repositoryId:branchPath/valueSetId)
+	 * @param logicalId
 	 * @return {@link ValueSet}
 	 * @throws BadRequestException if the value set is not supported by this provider
 	 */
-	ValueSet getValueSet(Path valueSetPath);
+	ValueSet getValueSet(LogicalId logicalId);
 
 }

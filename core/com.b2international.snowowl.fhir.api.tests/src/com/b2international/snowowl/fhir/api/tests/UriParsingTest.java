@@ -48,7 +48,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testInvalidModule() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI + "/a";
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/a";
 		
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Invalid extension module ID [a] defined.");
@@ -59,7 +59,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testInvalidVersionTag() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI + "/900000000000207008/invalidTag";
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/900000000000207008/invalidTag";
 		
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("Invalid path segment [invalidTag], 'version' expected.");
@@ -70,7 +70,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testMissingVersionTag() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI + "/900000000000207008/version";
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/900000000000207008/version";
 		
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("No version tag is specified after the 'version' parameter.");
@@ -82,7 +82,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testIntEditionUri() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI;
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING;
 		
 		SnomedUri snomedUri = new SnomedUri(uriString);
 		
@@ -94,7 +94,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testIntEditionWithModuleUri() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI + "/" + Concepts.MODULE_SCT_CORE;
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE;
 		
 		SnomedUri snomedUri = new SnomedUri(uriString);
 		
@@ -105,7 +105,7 @@ public class UriParsingTest extends FhirTest {
 	@Test
 	public void testIntEditionWithVersionUri() {
 		
-		String uriString = SnomedUri.SNOMED_BASE_URI + "/" + Concepts.MODULE_SCT_CORE + "/version/20170131";
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE + "/version/20170131";
 		
 		SnomedUri snomedUri = new SnomedUri(uriString);
 		

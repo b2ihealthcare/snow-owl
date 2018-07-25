@@ -19,8 +19,6 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Objects;
@@ -39,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -54,6 +52,7 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -358,9 +357,9 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	}
 	
 	private CodeSystem getCodeSystemById(String codeSystemId) {
-		Path codeSystemPath = Paths.get(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(codeSystemPath);
-		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemPath);
+		LogicalId logicalId = new LogicalId(codeSystemId);
+		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(logicalId);
+		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(logicalId);
 		return codeSystem;
 	}
 	

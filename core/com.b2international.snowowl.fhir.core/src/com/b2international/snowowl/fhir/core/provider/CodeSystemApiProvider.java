@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core;
+package com.b2international.snowowl.fhir.core.provider;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -32,12 +32,14 @@ import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
@@ -99,27 +101,30 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 	
 	@Override
-	public CodeSystem getCodeSystem(Path codeSystemPath) {
+	public CodeSystem getCodeSystem(LogicalId codeSystemLogicalId) {
 		
-		String repositoryId = codeSystemPath.getParent().toString();
-		String shortName = codeSystemPath.getFileName().toString();
+		String branchPath = codeSystemLogicalId.getBranchPath();
 		
-		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(shortName)
+		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
+			throw new FhirException("No code system version found for code system %s", "CodeSystem", codeSystemLogicalId);
+		} else {
+			Optional<CodeSystemVersionEntry> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByBranchPath(branchPath)
 				.build(repositoryId)
 				.execute(getBus())
-				.getSync();
-		
-		//get the last version for now
-		Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.one()
-			.filterByCodeSystemShortName(codeSystemEntry.getShortName())
-			.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
-			.build(repositoryId)
-			.execute(getBus())
-			.getSync()
-			.first();
-		
-		return createCodeSystemBuilder(codeSystemEntry, latestVersion.get()).build();
+				.getSync()
+				.first();
+			
+			CodeSystemVersionEntry codeSystemVersionEntry = csve.get();
+
+			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())
+					.build(repositoryId)
+					.execute(getBus())
+					.getSync();
+
+			return createCodeSystemBuilder(codeSystemEntry, codeSystemVersionEntry).build();
+		}
 	}
 	
 	@Override
@@ -188,13 +193,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.value(codeSystemEntry.getOid())
 			.build();
 		
-		String id = null;
-		//in theory there should always be at least one version present
-		if (codeSystemVersion != null) {
-			id = codeSystemVersion.getRepositoryUuid() + "://" + codeSystemVersion.getPath();
-		} else {
-			id = codeSystemEntry.getRepositoryUuid() + "://" + codeSystemEntry.getBranchPath();
-		}
+		String id = getId(codeSystemEntry, codeSystemVersion);
 		
 		final Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
@@ -241,6 +240,18 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return builder;
 	}
 	
+	/*
+	 * Returns the logical ID of the code system resource
+	 */
+	private String getId(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+		//in theory there should always be at least one version present
+		if (codeSystemVersion != null) {
+			return codeSystemVersion.getRepositoryUuid() + ":" + codeSystemVersion.getPath();
+		} else {
+			return codeSystemEntry.getRepositoryUuid() + ":" + codeSystemEntry.getBranchPath();
+		}
+	}
+
 	protected Collection<Concept> getConcepts(CodeSystemEntry codeSystemEntry) {
 		return Collections.emptySet();
 	}

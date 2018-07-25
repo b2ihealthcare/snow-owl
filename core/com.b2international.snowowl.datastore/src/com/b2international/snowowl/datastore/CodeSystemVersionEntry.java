@@ -45,6 +45,8 @@ import com.google.common.primitives.Longs;
 @JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
 public final class CodeSystemVersionEntry implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Unique terminology component identifier for versions.
 	 */
@@ -98,6 +100,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 		public static final String STORAGE_KEY = "storageKey";
 		public static final String REPOSITORY_UUID = "repositoryUuid";
 		public static final String CODE_SYSTEM_SHORT_NAME = "codeSystemShortName";
+		public static final String PARENT_BRANCH_PATH = "parentBranchPath";
 	}
 
 	public static class Expressions {
@@ -112,6 +115,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 		
 		public static Expression effectiveDate(Date effectiveDate) {
 			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
+		}
+
+		public static Expression parentBranchPath(String parentBranchPath) {
+			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
 		}
 		
 	}
@@ -220,6 +227,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	private CodeSystemVersionEntry(final long importDate, final long effectiveDate, final long latestUpdateDate,
 			final String description, final String versionId, final String parentBranchPath, final boolean patched, final long storageKey, final String repositoryUuid, 
 			final String codeSystemShortName) {
+		
 		this.importDate = importDate;
 		this.effectiveDate = effectiveDate;
 		this.latestUpdateDate = latestUpdateDate;

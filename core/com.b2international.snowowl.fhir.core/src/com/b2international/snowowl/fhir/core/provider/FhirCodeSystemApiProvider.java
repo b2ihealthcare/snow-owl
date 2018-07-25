@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core;
+package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -30,6 +30,9 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.fhir.core.FhirCoreActivator;
+import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
@@ -75,23 +78,22 @@ public class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	public boolean isSupported(Path path) {
+	public boolean isSupported(LogicalId logicalId) {
 		
 		Optional<String> supportedPath = getSupportedURIs().stream()
 			.map(u -> u.substring(u.lastIndexOf("/") + 1))
-			.filter(p -> p.equals(path.toString()))
+			.filter(p -> p.equals(logicalId.getBranchPath()))
 			.findFirst();
-			
 		return supportedPath.isPresent();
 	}
 	
 	@Override
-	public CodeSystem getCodeSystem(Path codeSystemPath) {
+	public CodeSystem getCodeSystem(LogicalId logicalId) {
 		
 		return getCodeSystemClasses().stream().map(cl-> { 
 			Object enumObject = createCodeSystemEnum(cl);
 			return (FhirCodeSystem) enumObject;
-		}).filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemPath.toString()))
+		}).filter(fcs -> fcs.getCodeSystemUri().endsWith(logicalId.getBranchPath()))
 		.map(this::buildCodeSystem)
 		.findFirst()
 		.get();

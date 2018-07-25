@@ -18,8 +18,6 @@ package com.b2international.snowowl.fhir.api.service;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -32,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.fhir.core.IValueSetApiProvider;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
@@ -40,6 +38,7 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -125,11 +124,11 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
 		
-		Path valueSetPath = Paths.get(valueSetId);
+		LogicalId logicalId = new LogicalId(valueSetId);
 		ValueSet valueSet = IValueSetApiProvider.Registry
 			//.getValueSetProvider("http://snomed.info/sct") //hack
-			.getValueSetProvider(valueSetPath) 
-			.getValueSet(valueSetPath);
+			.getValueSetProvider(logicalId) 
+			.getValueSet(logicalId);
 
 		return applyResponseContentFilter(valueSet, requestParameters);
 	}

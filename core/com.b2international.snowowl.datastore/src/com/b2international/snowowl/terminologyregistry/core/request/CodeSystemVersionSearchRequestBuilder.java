@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.terminologyregistry.core.request;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -33,6 +35,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 	private Date effectiveDate;
+	private String parentBranchPath;
 
 	CodeSystemVersionSearchRequestBuilder() {
 		super();
@@ -52,6 +55,32 @@ public final class CodeSystemVersionSearchRequestBuilder
 		this.effectiveDate = effectiveDate;
 		return getSelf();
 	}
+	
+	/**
+	 * Returns the code system versions that have matching branch paths
+	 * @param branch path to filter by
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByBranchPath(String branchPath) {
+		
+		Path path = Paths.get(branchPath);
+		if (path.getNameCount() == 0) {
+			throw new IllegalArgumentException("Invalid branch path, only root element exists" + branchPath);
+		}
+		
+		parentBranchPath = path.subpath(0, path.getNameCount() - 1).toString();
+		versionId = path.getFileName().toString();
+		return getSelf();
+	}
+	
+	/**
+	 * Returns the code system versions that have matching parent branch paths
+	 * @param parent branch path to filter by
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByParentBranchPath(String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+		return getSelf();
+		
+	}
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
@@ -59,6 +88,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 		req.setCodeSystemShortName(codeSystemShortName);
 		req.setVersionId(versionId);
 		req.setEffectiveDate(effectiveDate);
+		req.setParentBranchPath(parentBranchPath);
 		return req;
 	}
 

@@ -13,25 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core;
+package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersions;
+import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
+import com.google.common.collect.Lists;
 
 /**
  * 
  * @since 6.4
  */
 public abstract class FhirApiProvider {
+	
+	//TODO: should this be grabbed from the server preferences or from the request?
+	protected String displayLanguage = "en-us";
 	
 	/**
 	 * @return the {@link IEventBus} service to access terminology resources.
@@ -67,6 +75,35 @@ public abstract class FhirApiProvider {
 			//no version supplied, no version found in the repository, we should probably throw an exception, but for now returning MAIN
 			return Branch.MAIN_PATH;
 		}
+	}
+	
+	protected List<CodeSystemVersionEntry> collectCodeSystemVersions(String repositoryId) {
+		
+		List<CodeSystemVersionEntry> codeSystemVersionList = Lists.newArrayList();
+		
+		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+			.all()
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync();
+		
+		//fetch all the versions
+		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.all()
+			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync();
+		
+		codeSystems.forEach(cse -> { 
+			
+			List<CodeSystemVersionEntry> versions = codeSystemVersions.stream()
+			.filter(csv -> csv.getCodeSystemShortName().equals(cse.getShortName()))
+			.collect(Collectors.toList());
+			codeSystemVersionList.addAll(versions);
+		});
+		
+		return codeSystemVersionList;
 	}
 	
 	/**

@@ -135,9 +135,9 @@ public class ValueSet extends TerminologyResource {
 		protected ValueSet doBuild() {
 			
 			//cross field validation
-			if (composeParts.isEmpty() && expansion == null) {
-				throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
-			}
+			//if (composeParts.isEmpty() && expansion == null) {
+			//	throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
+			//}
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
 					title, status, date, publisher, contact, description, usageContexts, jurisdiction, immutable, 

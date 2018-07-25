@@ -38,6 +38,8 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	private String codeSystemShortName;
 	private String versionId;
 	private Date effectiveDate;
+	private String parentBranchPath;
+
 	
 	CodeSystemVersionSearchRequest() {
 	}
@@ -54,6 +56,10 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		this.effectiveDate = effectiveDate;
 	}
 	
+	void setParentBranchPath(String parentBranchPath) {
+		this.parentBranchPath = parentBranchPath;
+	}
+	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
@@ -68,6 +74,10 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 		
 		if (effectiveDate != null) {
 			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(effectiveDate));
+		}
+		
+		if (!StringUtils.isEmpty(parentBranchPath)) {
+			query.filter(CodeSystemVersionEntry.Expressions.parentBranchPath(parentBranchPath));
 		}
 		
 		return query.build();
@@ -87,5 +97,6 @@ final class CodeSystemVersionSearchRequest extends SearchIndexResourceRequest<Re
 	protected CodeSystemVersions createEmptyResult(int limit) {
 		return new CodeSystemVersions(Collections.emptyList(), null, null, limit, 0);
 	}
+	
 
 }

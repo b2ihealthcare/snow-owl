@@ -16,22 +16,26 @@
 package com.b2international.snowowl.snomed.fhir;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.fhir.core.CodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.FhirApiProvider;
-import com.b2international.snowowl.fhir.core.ICodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.IValueSetApiProvider;
+import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
+import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -50,13 +54,14 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedValueSetApiProvider extends FhirApiProvider implements IValueSetApiProvider {
 
-	private static final String URI_BASE = "http://snomed.info";
-	private static final Uri FHIR_URI = new Uri(URI_BASE + "/sct");
-	//private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	//private static final String URI_BASE = "http://snomed.info";
+	//private static final Uri SNOMED_CT_URI = new Uri(URI_BASE + "/sct");
+	private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
 		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-		FHIR_URI.getUriValue()
+		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
 	private String repositoryId;
@@ -71,28 +76,68 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	}
 	
 	@Override
-	public boolean isSupported(Path path) {
-		return path.startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+	public boolean isSupported(LogicalId logicalId) {
+		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+	}
+	
+	@Override
+	public Collection<String> getSupportedURIs() {
+		return SUPPORTED_URIS;
 	}
 	
 	@Override
 	public final boolean isSupported(String uri) {
 		if (Strings.isNullOrEmpty(uri)) return false;
-		return SUPPORTED_URIS.stream()
-			.filter(uri::equalsIgnoreCase)
-			.findAny()
-			.isPresent();
+		
+		boolean foundInList = getSupportedURIs().stream()
+				.filter(uri::equalsIgnoreCase)
+				.findAny()
+				.isPresent();
+			
+		//extension and version is part of the URI
+		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
+		
+		return foundInList || extensionUri;
 	}
 
 	@Override
 	public Collection<ValueSet> getValueSets() {
 		
+		//Collect every version on every extension
+		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
+		
+		List<ValueSet> valueSets = codeSystemVersionList.stream().map(csve -> {
+			
+			return SnomedRequests.prepareSearchRefSet()
+				.all()
+				.filterByType(SnomedRefSetType.SIMPLE)
+				.build(getRepositoryId(), csve.getPath())
+				.execute(getBus())
+				.then(refsets -> {
+					return refsets.stream()
+						.map(r -> createValueSetBuilder(r, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync();
+				
+		}).collect(Collectors.toList())
+		.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+		
+		return valueSets;
+	}
+	
+	@Override
+	public ValueSet getValueSet(LogicalId logicalId) {
+		
 		//TODO: what to do with the language? Where do i get the locale from the request? 
 		String displayLanguage = "en-us";
-		String version = null; //what should be the version??
+		String version = null; //what should be the version?
+		
+		String referenceSetId = logicalId.getBranchPath(); //TODO: this should be getCode
 		
 		return SnomedRequests.prepareSearchRefSet()
-			.all()
+			.filterById(referenceSetId)
 			.filterByType(SnomedRefSetType.SIMPLE)
 			.build(getRepositoryId(), getBranchPath(version))
 			.execute(getBus())
@@ -102,33 +147,10 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 					.map(ValueSet.Builder::build)
 					.collect(Collectors.toList());
 			})
-			.getSync();
-	}
-	
-	@Override
-	public ValueSet getValueSet(Path valueSetPath) {
-		
-		//TODO: what to do with the language? Where do i get the locale from the request? 
-		String displayLanguage = "en-us";
-		String version = null; //what should be the version?
-		
-		String referenceSetId = valueSetPath.getFileName().toString();
-		
-		return SnomedRequests.prepareSearchRefSet()
-				.filterById(referenceSetId)
-				.filterByType(SnomedRefSetType.SIMPLE)
-				.build(getRepositoryId(), getBranchPath(version))
-				.execute(getBus())
-				.then(refsets -> {
-					return refsets.stream()
-						.map(r -> createValueSetBuilder(r, displayLanguage))
-						.map(ValueSet.Builder::build)
-						.collect(Collectors.toList());
-				})
-				.getSync()
-				.stream()
-				.findFirst()
-				.orElseThrow(() -> new NotFoundException("Active value set", valueSetPath.toString()));
+			.getSync()
+			.stream()
+			.findFirst()
+			.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
 		
 	}
 	
@@ -160,7 +182,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	}
 	
 	protected Uri getFhirUri() {
-		return FHIR_URI;
+		return SnomedUri.SNOMED_BASE_URI;
 	}
 
 	@Override

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core;
+package com.b2international.snowowl.fhir.core.provider;
 
-import java.nio.file.Path;
 import java.util.Collection;
 
 import com.b2international.commons.platform.Extensions;
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -32,12 +32,10 @@ import com.google.common.collect.ImmutableList;
  * Extension point interface for code system specific FHIR API support. 
  * 
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
- *
- * 
  * @see 'com.b2international.snowowl.fhir.core.codeSystemProvider' for the extension point definition
  * @since 6.4
  */
-public interface ICodeSystemApiProvider {
+public interface ICodeSystemApiProvider extends IFhirApiProvider {
 
 	/**
 	 * Registry that reads and instantiates FHIR API supporting services registered by the actual terminology plug-ins.
@@ -60,16 +58,16 @@ public interface ICodeSystemApiProvider {
 		}
 		
 		/**
-		 * Returns the matching {@link ICodeSystemApiProvider} for the given path (repository/shortName).
-		 * @param logical code system path (e.g. icd10Store/ICD-10)
+		 * Returns the matching {@link ICodeSystemApiProvider} for the given logical id (repository:branchPath).
+		 * @param logical id (e.g. icd10Store:20140101)
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(Path path) {
+		public static ICodeSystemApiProvider getCodeSystemProvider(LogicalId logicalId) {
 			return getProviders().stream()
-				.filter(provider -> provider.isSupported(path))
+				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + path, OperationOutcomeCode.MSG_NO_MODULE, "system=" + path));
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
 		}
 		
 		/**
@@ -86,18 +84,6 @@ public interface ICodeSystemApiProvider {
 		
 	}
 	
-	/**
-	 * @param uri
-	 * @return true if the code system represented by the URI is supported
-	 */
-	boolean isSupported(String uri);
-	
-	/**
-	 * @param logical code system path (repositoryId/shortName)
-	 * @return true if this provider supports the code system represented by the path
-	 */
-	boolean isSupported(Path path);
-
 	/**
 	 * Performs the lookup operation based on the parameter-based lookup request.
 	 * 
@@ -122,12 +108,6 @@ public interface ICodeSystemApiProvider {
 	SubsumptionResult subsumes(SubsumptionRequest subsumption);
 
 	/**
-	 * Returns the code system URIs supported.
-	 * @return collection of URIs representing the supported code systems
-	 */
-	Collection<String> getSupportedURIs();
-
-	/**
 	 * Returns the code systems supported by this provider
 	 * @return collection of code systems supported
 	 */
@@ -142,11 +122,11 @@ public interface ICodeSystemApiProvider {
 	CodeSystem getCodeSystem(String codeSystemUri);
 
 	/**
-	 * Returns the code system for the passed in logical path (repositoryId/shortName)
-	 * @param codeSystemPath
+	 * Returns the code system for the passed in logical id @see {@link LogicalId}
+	 * @param codeSystemId
 	 * @return {@link CodeSystem}
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
-	CodeSystem getCodeSystem(Path codeSystemPath);
+	CodeSystem getCodeSystem(LogicalId codeSystemId);
 
 }
