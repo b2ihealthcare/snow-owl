@@ -56,11 +56,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	private final ObjectMapper mapper;
 	private final List<Hooks.Hook> hooks = newArrayList();
 
-	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching, ObjectMapper mapper) {
+	public DefaultRevisionIndex(Index index, TimestampProvider timestampProvider, ObjectMapper mapper) {
 		this.index = index;
-		this.branching = branching;
 		this.mapper = mapper;
 		this.admin = new RevisionIndexAdmin(this, index.admin());
+		this.branching = new DefaultRevisionBranching(this, timestampProvider, mapper);
 	}
 	
 	@Override
@@ -71,6 +71,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	@Override
 	public String name() {
 		return index.name();
+	}
+	
+	@Override
+	public Index index() {
+		return index;
 	}
 	
 	@Override
@@ -149,7 +154,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit);
 	}
 	
-	private RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
+	@Override
+	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
 		return index.read(searcher -> {
 			
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);

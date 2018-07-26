@@ -150,9 +150,13 @@ public final class RevisionCompareDetail {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");
 		if (isComponentChange()) {
 			// other is a revert of this detail return null 
-			if ((op == Operation.ADD && other.op == Operation.REMOVE) || 
-					(op == Operation.REMOVE && other.op == Operation.ADD)) {
+			if ((isAdd() && other.isRemove()) || 
+					(isRemove() && other.isAdd())) {
 				return null;
+			} else if (isAdd() && other.isChange()) {
+				return this;
+			} else if (isChange() && other.isAdd()) {
+				return other;
 			} else {
 				throw new UnsupportedOperationException("Unknown case for _component change: " + this + " vs. " + other);
 			}

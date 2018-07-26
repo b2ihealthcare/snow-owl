@@ -29,7 +29,6 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
-import com.b2international.index.revision.DefaultRevisionBranching;
 import com.b2international.index.revision.DefaultRevisionIndex;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
@@ -81,8 +80,8 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		bind(Logger.class, log);
 		
 		final ObjectMapper mapper = service(ObjectMapper.class);
-		BaseRevisionBranching branching = initializeBranchingSupport(mergeMaxResults);
-		RevisionIndex index = initIndex(mapper, branching, mappings);
+		initializeServices(mergeMaxResults);
+		RevisionIndex index = initIndex(mapper, mappings);
 		bind(Repository.class, this);
 		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
 		// initialize the index
@@ -117,31 +116,26 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		}
 	}
 	
-	private BaseRevisionBranching initializeBranchingSupport(int mergeMaxResults) {
-		final BaseRevisionBranching branchManager = new DefaultRevisionBranching(provider(Index.class), service(TimestampProvider.class), service(ObjectMapper.class));
-		bind(BaseRevisionBranching.class, branchManager);
-//		bind(BranchReplicator.class, branchManager);
-		
+	private void initializeServices(int mergeMaxResults) {
 		final ReviewConfiguration reviewConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
 		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
 		bind(ReviewManager.class, reviewManager);
 
 		final MergeServiceImpl mergeService = new MergeServiceImpl(this, mergeMaxResults);
 		bind(MergeService.class, mergeService);
-		
-		return branchManager;
 	}
 
-	private RevisionIndex initIndex(final ObjectMapper mapper, BaseRevisionBranching branching, Mappings mappings) {
+	private RevisionIndex initIndex(final ObjectMapper mapper, Mappings mappings) {
 		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
 		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
-		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, branching, mapper);
+		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, service(TimestampProvider.class), mapper);
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
+		bind(BaseRevisionBranching.class, revisionIndex.branching());
 		return revisionIndex;
 	}
 

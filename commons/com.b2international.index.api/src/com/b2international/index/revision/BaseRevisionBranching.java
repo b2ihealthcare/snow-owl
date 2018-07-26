@@ -46,14 +46,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.inject.Provider;
 
 /**
  * @since 6.5
  */
 public abstract class BaseRevisionBranching {
 
-	private final Provider<Index> index;
+	private final RevisionIndex index;
 	private final ObjectMapper mapper;
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
@@ -65,7 +64,7 @@ public abstract class BaseRevisionBranching {
 				}
 			});
 
-	public BaseRevisionBranching(Provider<Index> index, ObjectMapper mapper) {
+	public BaseRevisionBranching(RevisionIndex index, ObjectMapper mapper) {
 		this.index = index;
 		this.mapper = mapper;
 	}
@@ -139,7 +138,21 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	protected RevisionBranch get(String branchPath) {
-		return index.get().read(searcher -> searcher.get(RevisionBranch.class, branchPath));
+		return index().read(searcher -> searcher.get(RevisionBranch.class, branchPath));
+	}
+
+	/**
+	 * @return the raw index to access raw documents
+	 */
+	protected final Index index() {
+		return index.index();
+	}
+	
+	/**
+	 * @return the revision index to access revision controlled documents
+	 */
+	protected final InternalRevisionIndex revisionIndex() {
+		return (InternalRevisionIndex) index;
 	}
 	
 	/**
@@ -148,11 +161,11 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	public Hits<RevisionBranch> search(Query<RevisionBranch> query) {
-		return index.get().read(searcher -> searcher.search(query));
+		return index().read(searcher -> searcher.search(query));
 	}
 	
 	public <T> T commit(IndexWrite<T> changes) {
-		return index.get().write(writer -> {
+		return index().write(writer -> {
 			T result = changes.execute(writer);
 			writer.commit();
 			return result;
@@ -342,7 +355,7 @@ public abstract class BaseRevisionBranching {
 	 */
 	public final List<RevisionBranch> getChildren(String parentPath) {
 		return ImmutableList.copyOf(search(Query.select(RevisionBranch.class)
-				.where(Expressions.prefixMatch("path", parentPath + RevisionBranch.SEPARATOR))
+				.where(Expressions.prefixMatch(RevisionBranch.Fields.PATH, parentPath + RevisionBranch.SEPARATOR))
 				.limit(Integer.MAX_VALUE)
 				.build()));
 	}

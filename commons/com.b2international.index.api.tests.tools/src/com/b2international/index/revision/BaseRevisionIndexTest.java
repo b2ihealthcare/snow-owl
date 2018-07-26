@@ -41,7 +41,6 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.util.Providers;
 
 /**
  * @since 4.7
@@ -72,12 +71,8 @@ public abstract class BaseRevisionIndexTest {
 		mappings = new Mappings(getTypes());
 		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
 		timestampProvider = new TimestampProvider.Default();
-		index = new DefaultRevisionIndex(rawIndex, createBranchingSupport(rawIndex, timestampProvider, mapper), mapper);
+		index = new DefaultRevisionIndex(rawIndex, timestampProvider, mapper);
 		index.admin().create();
-	}
-
-	protected BaseRevisionBranching createBranchingSupport(Index rawIndex, TimestampProvider timestampProvider, ObjectMapper mapper) {
-		return new DefaultRevisionBranching(Providers.of(rawIndex), timestampProvider, mapper);
 	}
 
 	@After

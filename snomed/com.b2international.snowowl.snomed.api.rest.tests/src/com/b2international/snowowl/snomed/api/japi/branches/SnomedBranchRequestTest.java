@@ -185,12 +185,13 @@ public class SnomedBranchRequestTest {
 		final String conceptId = info.getResultAs(String.class);
 		
 		final String firstParentPath = BranchPathUtils.createPath(first).getParentPath();
-		Promise<Merge> merge = merges.prepareCreate()
+		Merge merge = merges.prepareCreate()
 				.setSource(first)
 				.setTarget(firstParentPath)
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
-				.execute(bus);
+				.execute(bus)
+				.getSync();
 		
 		final long endTime = System.currentTimeMillis() + POLL_TIMEOUT;
 		while (System.currentTimeMillis() < endTime && mergeNotCompleted(merge)) {
@@ -201,32 +202,26 @@ public class SnomedBranchRequestTest {
 				fail(e.toString());
 			}
 
-			merge = merges.prepareGet(merge.getSync().getId())
+			merge = merges.prepareGet(merge.getId())
 					.build(REPOSITORY_ID)
-					.execute(bus);
+					.execute(bus)
+					.getSync();
 		}
 		
-		final Promise<String> second = branches.prepareCreate()
+		assertEquals(Status.COMPLETED, merge.getStatus());
+		
+		String second = branches.prepareCreate()
 				.setParent(firstParentPath)
 				.setName(branchB)
 				.build(REPOSITORY_ID)
-				.execute(bus);
+				.execute(bus)
+				.getSync();
+
+		final Branch sourceBranch = branches.prepareGet(merge.getSource()).build(REPOSITORY_ID).execute(bus).getSync();
+		final Branch secondBranch = branches.prepareGet(second).build(REPOSITORY_ID).execute(bus).getSync();
 		
-		Promise.all(merge, second).then(new Function<List<Object>, Void>() {
-			@Override
-			public Void apply(final List<Object> input) {
-				final Merge merge = (Merge) input.get(0);
-				assertEquals(Status.COMPLETED, merge.getStatus());
-				
-				final Branch first = branches.prepareGet(merge.getSource()).build(REPOSITORY_ID).execute(bus).getSync();
-				final Branch second = branches.prepareGet((String) input.get(1)).build(REPOSITORY_ID).execute(bus).getSync();
-				
-				assertBranchesCreated(branchA, branchB, first, second);
-				assertBranchSegmentsValid(merge.getTarget(), first.path(), second.path());
-				return null;
-			}
-		})
-		.getSync();
+		assertBranchesCreated(branchA, branchB, sourceBranch, secondBranch);
+		assertBranchSegmentsValid(merge.getTarget(), sourceBranch.path(), secondBranch.path());
 		
 		// Check that the concept is visible on parent
 		SnomedRequests.prepareGetConcept(conceptId)
@@ -235,9 +230,8 @@ public class SnomedBranchRequestTest {
 				.getSync();
 	}
 
-	private boolean mergeNotCompleted(Promise<Merge> merge) {
-		final Merge mergeData = merge.getSync();
-		final Status mergeStatus = mergeData.getStatus();
+	private boolean mergeNotCompleted(Merge merge) {
+		final Status mergeStatus = merge.getStatus();
 		return Status.IN_PROGRESS.equals(mergeStatus) || Status.SCHEDULED.equals(mergeStatus) || Status.CANCEL_REQUESTED.equals(mergeStatus);
 	}
 
