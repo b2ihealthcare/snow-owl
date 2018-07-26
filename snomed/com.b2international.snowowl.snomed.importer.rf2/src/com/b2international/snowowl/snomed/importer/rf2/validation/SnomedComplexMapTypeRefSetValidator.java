@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
  */
 public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 	
-	private final Set<String> correlationConceptNotExist = newHashSet();
+	private Set<String> correlationConceptNotExist = newHashSet();
 
 	public SnomedComplexMapTypeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.COMPLEX_MAP_TYPE_REFSET, context, SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER);
@@ -51,7 +51,6 @@ public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.COMPLEX_MAP_REFERENCED_INVALID_CONCEPT, correlationConceptNotExist);
-		correlationConceptNotExist.clear();
 	}
 	
 	@Override
@@ -68,4 +67,10 @@ public class SnomedComplexMapTypeRefSetValidator extends SnomedRefSetValidator {
 		}
 	}
 
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		correlationConceptNotExist = newHashSet();
+	}
+	
 }

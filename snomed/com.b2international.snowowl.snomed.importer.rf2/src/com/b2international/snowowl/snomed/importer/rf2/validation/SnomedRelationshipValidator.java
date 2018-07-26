@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -30,8 +33,6 @@ import com.b2international.snowowl.snomed.importer.net4j.DefectType;
 import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the relationship release file.
@@ -39,9 +40,9 @@ import com.google.common.collect.Sets;
  */
 public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 	
-	private final Map<String, List<String>> relationshipIdsWithEffectivetimeStatus = Maps.newHashMap();
-	private Collection<String> relationshipIdNotUnique = Sets.newHashSet();
-	private Collection<String> relationshipSourceAndDestinationAreEqual = Sets.newHashSet();
+	private Map<String, List<String>> relationshipIdsWithEffectivetimeStatus = newHashMap();
+	private Collection<String> relationshipIdNotUnique = newHashSet();
+	private Collection<String> relationshipSourceAndDestinationAreEqual = newHashSet();
 	
 	public SnomedRelationshipValidator(final ImportConfiguration configuration, final SnomedValidationContext context, final File relationshipsFile) throws IOException {
 		super(configuration, configuration.toURL(relationshipsFile), ComponentImportType.RELATIONSHIP, context, SnomedRf2Headers.RELATIONSHIP_HEADER);
@@ -85,10 +86,15 @@ public class SnomedRelationshipValidator extends AbstractSnomedValidator {
 		
 		addDefect(DefectType.NOT_UNIQUE_RELATIONSHIP_ID, relationshipIdNotUnique);
 		addDefect(DefectType.RELATIONSHIP_SOURCE_DESTINATION_EQUALS, relationshipSourceAndDestinationAreEqual);
+	}
+	
+	@Override
+	protected void clearCaches() {
 		
-		relationshipIdsWithEffectivetimeStatus.clear();
-		relationshipIdNotUnique.clear();
-		relationshipSourceAndDestinationAreEqual.clear();
+		relationshipIdsWithEffectivetimeStatus = newHashMap();
+		relationshipIdNotUnique = newHashSet();
+		relationshipSourceAndDestinationAreEqual = newHashSet();
+		
 	}
 	
 }

@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
  */
 public class SnomedOWLExpressionRefSetValidator extends SnomedRefSetValidator {
 
-	private final List<String> defects = newArrayList();
+	private List<String> defects = newArrayList();
 
 	public SnomedOWLExpressionRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.OWL_EXPRESSION_REFSET, context, SnomedRf2Headers.OWL_EXPRESSION_HEADER);
@@ -50,7 +50,6 @@ public class SnomedOWLExpressionRefSetValidator extends SnomedRefSetValidator {
 		if (!defects.isEmpty()) {
 			addDefect(DefectType.EMPTY_REFSET_MEMBER_FIELD, defects);
 		}
-		defects.clear();
 	}
 
 	@Override
@@ -60,5 +59,11 @@ public class SnomedOWLExpressionRefSetValidator extends SnomedRefSetValidator {
 
 	private void validateRow(final List<String> row) {
 		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_OWL_EXPRESSION, row, defects);
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		defects = newArrayList();
 	}
 }

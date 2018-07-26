@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
  */
 public class SnomedMRCMAttributeRangeRefSetValidator extends SnomedRefSetValidator {
 
-	private final List<String> defects = newArrayList();
+	private List<String> defects = newArrayList();
 
 	public SnomedMRCMAttributeRangeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.MRCM_ATTRIBUTE_RANGE_REFSET, context, SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER);
@@ -57,7 +57,6 @@ public class SnomedMRCMAttributeRangeRefSetValidator extends SnomedRefSetValidat
 		if (!defects.isEmpty()) {
 			addDefect(DefectType.EMPTY_REFSET_MEMBER_FIELD, defects);
 		}
-		defects.clear();
 	}
 
 	@Override
@@ -78,6 +77,12 @@ public class SnomedMRCMAttributeRangeRefSetValidator extends SnomedRefSetValidat
 
 		// content type id
 		validateNotEmptyFieldValue(row.get(9), SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, row, defects);
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		defects = newArrayList();
 	}
 
 }

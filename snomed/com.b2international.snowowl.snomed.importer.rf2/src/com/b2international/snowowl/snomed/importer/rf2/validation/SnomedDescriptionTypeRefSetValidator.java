@@ -55,8 +55,6 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_FORMAT_NOT_EXIST, descriptionFormatNotExist);
 		addDefect(DefectType.DESCRIPTION_TYPE_DESCRIPTION_LENGTH_IS_EMPTY, descriptionLengthIsEmpty);
-		descriptionFormatNotExist.clear();
-		descriptionLengthIsEmpty.clear();
 	}
 	
 	@Override
@@ -80,6 +78,13 @@ public class SnomedDescriptionTypeRefSetValidator extends SnomedRefSetValidator 
 		if (length.isEmpty()) {
 			descriptionLengthIsEmpty.add(String.format("Reference set member '%s' description length property is empty in effective time '%s'", uuid, effectiveTime));
 		}
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		descriptionFormatNotExist = newHashSet();
+		descriptionLengthIsEmpty = newHashSet();
 	}
 
 }

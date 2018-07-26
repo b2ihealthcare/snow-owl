@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.importer.net4j.SnomedValidationDefect;
 import com.b2international.snowowl.snomed.importer.rf2.RepositoryState;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
@@ -111,6 +112,9 @@ public final class SnomedValidationContext {
 	private void doValidate(final SubMonitor monitor) {
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, effectiveTimes.size());
 		for (String effectiveTime : Ordering.natural().immutableSortedCopy(effectiveTimes)) {
+			logger.info("Validating components {}{}...", 
+					Strings.isNullOrEmpty(effectiveTime) ? "without effectivetime" : "in effective time ",
+					Strings.isNullOrEmpty(effectiveTime) ? "" : effectiveTime);
 			if (!AbstractSnomedValidator.SPECIAL_EFFECTIVE_TIME_KEY.equals(effectiveTime)) {
 				runValidators(effectiveTime, subMonitor);
 			}
@@ -125,12 +129,14 @@ public final class SnomedValidationContext {
 	private void runValidators(String effectiveTime, SubMonitor subMonitor) {
 		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
 			releaseFileValidator.doValidate(effectiveTime, subMonitor.newChild(1));
+			releaseFileValidator.clearCaches();
 		}		
 	}
 
 	private void postValidate(final SubMonitor monitor) {
 		for (final AbstractSnomedValidator releaseFileValidator : releaseFileValidators) {
 			releaseFileValidator.postValidate(monitor);
+			releaseFileValidator.clearCaches();
 		}
 	}
 	

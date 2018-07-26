@@ -65,9 +65,6 @@ public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator
 		addDefect(DefectType.CONCRETE_DOMAIN_UNIT_CONCEPT_NOT_EXIST, unitConceptNotExist);
 		addDefect(DefectType.CONCRETE_DOMAIN_OPERATOR_CONCEPT_NOT_EXIST, operatorConceptNotExist);
 		addDefect(DefectType.CONCRETE_DOMAIN_VALUE_IS_EMPTY, valueIsEmpty);
-		unitConceptNotExist.clear();
-		operatorConceptNotExist.clear();
-		valueIsEmpty.clear();
 	}
 
 	@Override
@@ -103,5 +100,13 @@ public class SnomedConcreteDataTypeRefSetValidator extends SnomedRefSetValidator
 			valueIsEmpty.add(String.format("Reference set member '%s''s value property is empty in effective time '%s'", uuid, effectiveTime));
 		}
 	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		unitConceptNotExist = newHashSet();
+		operatorConceptNotExist = newHashSet();
+		valueIsEmpty = newHashSet();
+	};
 
 }

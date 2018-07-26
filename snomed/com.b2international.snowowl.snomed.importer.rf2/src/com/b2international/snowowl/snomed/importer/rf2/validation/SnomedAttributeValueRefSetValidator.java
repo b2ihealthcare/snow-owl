@@ -51,7 +51,6 @@ public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.ATTRIBUTE_REFSET_VALUE_CONCEPT_NOT_EXIST, refsetMemberValueNotExist);
-		refsetMemberValueNotExist.clear();
 	}
 	
 	@Override
@@ -68,4 +67,9 @@ public class SnomedAttributeValueRefSetValidator extends SnomedRefSetValidator {
 		}
 	}
 	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		refsetMemberValueNotExist = newHashSet();
+	}
 }
