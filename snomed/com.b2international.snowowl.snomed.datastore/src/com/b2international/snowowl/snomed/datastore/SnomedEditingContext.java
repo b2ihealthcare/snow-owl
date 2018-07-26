@@ -160,6 +160,12 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	}
 	
 	@Override
+	public void clearCache() {
+		super.clearCache();
+		getRefSetEditingContext().clearCache();
+	}
+	
+	@Override
 	protected <T extends CDOObject> Iterable<? extends IComponent> fetchComponents(Collection<String> componentIds, Class<T> type) {
 		if (type.isAssignableFrom(Concept.class)) {
 			return SnomedRequests.prepareSearchConcept()
