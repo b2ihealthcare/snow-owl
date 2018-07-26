@@ -24,9 +24,19 @@ import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
  */
 public class Filters {
 	
-	private static final String CONCEPT_PROPERTY_NAME = "concept";
-
 	private static final String SNOMED_CT_CONCEPT_ID = "SNOMED CT concept ID";
+	
+	public enum FilterPropertyCode {
+		DESCENDANT,
+		ANCESTOR,
+		CONCEPT,
+		EXPRESSION,
+		EXPRESSIONS;
+		
+		public String getDisplayName() {
+			return name().toLowerCase();
+		}
+	}
 	
 	/*
 	 * Filters for common concept properties
@@ -73,7 +83,7 @@ public class Filters {
 	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">IS_A an IN filter</a>
 	 */
 	public static final Filter IS_A_FILTER = Filter.builder()
-		.code(CONCEPT_PROPERTY_NAME)
+		.code(FilterPropertyCode.CONCEPT.getDisplayName())
 		.description("Filter to include concepts that subsume the given concept (have a transitive inferred isA relationship to the concept given).")
 		.addOperator(FilterOperator.IS_A)
 		.value(SNOMED_CT_CONCEPT_ID)
@@ -84,7 +94,7 @@ public class Filters {
 	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">IS_A an IN filter</a>
 	 */
 	public static final Filter REFSET_MEMBER_OF = Filter.builder()
-		.code(CONCEPT_PROPERTY_NAME)
+		.code(FilterPropertyCode.CONCEPT.getDisplayName())
 		.description("Filter to include concepts that are active members of the reference set given.")
 		.addOperator(FilterOperator.IN)
 		.value(SNOMED_CT_CONCEPT_ID)
@@ -95,7 +105,7 @@ public class Filters {
 	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT ECL filter</a>
 	 */
 	public static final Filter EXPRESSION_FILTER = Filter.builder()
-		.code("expression")
+		.code(FilterPropertyCode.EXPRESSION.getDisplayName())
 		.description("Filter result of the given SNOMED CT Expression Constraint")
 		.addOperator(FilterOperator.EQUALS)
 		.value("SNOMED CT ECL Expression (http://snomed.org/ecl")
@@ -106,7 +116,7 @@ public class Filters {
 	 * @see <a href="https://www.hl7.org/fhir/codesystem-snomedct.json.html">SNOMED CT post cordinated expressions filter</a>
 	 */
 	public static final Filter EXPRESSIONS_FILTER = Filter.builder()
-		.code("expressions")
+		.code(FilterPropertyCode.EXPRESSIONS.getDisplayName())
 		.description("Whether post-coordinated expressions are included in the value set")
 		.addOperator(FilterOperator.EQUALS)
 		.value("true or false")

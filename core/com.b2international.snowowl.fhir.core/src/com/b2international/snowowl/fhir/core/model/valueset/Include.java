@@ -20,15 +20,15 @@ import java.util.Collection;
 import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR Value Set Include backbone element
+ * 
  * @since 6.4
- *
  */
 public class Include {
 	
@@ -44,12 +44,12 @@ public class Include {
 	private final Collection<ValueSetConcept> concepts;
 	
 	@JsonProperty("filter")
-	private final Collection<Filter> filters;
+	private final Collection<ValueSetFilter> filters;
 	
 	@JsonProperty("valueSet")
 	private final Collection<Uri> valueSets;
 	
-	Include(Uri system, String version, Collection<ValueSetConcept> concepts, Collection<Filter> filters, Collection<Uri> valueSets) {
+	Include(Uri system, String version, Collection<ValueSetConcept> concepts, Collection<ValueSetFilter> filters, Collection<Uri> valueSets) {
 		this.system = system;
 		this.version = version;
 		this.concepts = concepts;
@@ -67,11 +67,11 @@ public class Include {
 		
 		private String version;
 		
-		private Collection<ValueSetConcept> concepts;
+		private Collection<ValueSetConcept> concepts = Sets.newHashSet();
 		
-		private Collection<Filter> filters;
+		private Collection<ValueSetFilter> filters = Sets.newHashSet();
 		
-		private Collection<Uri> valueSets;
+		private Collection<Uri> valueSets = Sets.newHashSet();
 		
 		public Builder system(final String uriValue) {
 			this.system = new Uri(uriValue);
@@ -88,7 +88,7 @@ public class Include {
 			return this;
 		}
 		
-		public Builder addFilters(final Filter filter) {
+		public Builder addFilters(final ValueSetFilter filter) {
 			this.filters.add(filter);
 			return this;
 		}
@@ -105,9 +105,5 @@ public class Include {
 		}
 		
 	}
-
-	
-	
-	
 
 }

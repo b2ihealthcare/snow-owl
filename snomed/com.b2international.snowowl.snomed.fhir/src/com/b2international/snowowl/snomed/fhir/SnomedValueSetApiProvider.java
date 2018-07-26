@@ -33,7 +33,10 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.valueset.Compose;
+import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
 import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
@@ -59,7 +62,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 
 	//private static final String URI_BASE = "http://snomed.info";
 	//private static final Uri SNOMED_CT_URI = new Uri(URI_BASE + "/sct");
-	private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	//private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
@@ -149,7 +152,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		return SnomedRequests.prepareSearchRefSet()
 			.filterById(logicalId.getComponentId())
-			.filterByType(SnomedRefSetType.SIMPLE)
+			.filterByType(SnomedRefSetType.SIMPLE) //TODO: add support for query type refset as well?
 			.build(repositoryId, logicalId.getBranchPath())
 			.execute(getBus())
 			.then(refsets -> {
@@ -187,6 +190,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.execute(getBus())
 			.getSync();
 		
+		Compose compose = createCompose(referenceSet);
 		
 		return ValueSet.builder(logicalId.toString())
 			.identifier(identifier)
@@ -196,9 +200,30 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.status(referenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
 			.name(refsetConcept.getPt().getTerm())
-			.title(refsetConcept.getPt().getTerm());
+			.title(refsetConcept.getPt().getTerm())
+			.addCompose(compose);
 	}
 	
+	/**
+	 * @param referenceSet
+	 * @return
+	 */
+	private Compose createCompose(SnomedReferenceSet referenceSet) {
+		
+		Include include = Include.builder()
+				.system(SnomedUri.SNOMED_BASE_URI_STRING)
+				.addFilters(ValueSetFilter.builder()
+					.refsetExpression(referenceSet.getId())
+					.build())
+			.build();
+		
+		Compose compose = Compose.builder()
+				.addInclude(include)
+				.build();
+		
+		return compose;
+	}
+
 	protected Uri getFhirUri() {
 		return SnomedUri.SNOMED_BASE_URI;
 	}

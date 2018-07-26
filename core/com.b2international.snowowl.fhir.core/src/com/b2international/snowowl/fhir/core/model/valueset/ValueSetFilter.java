@@ -18,9 +18,9 @@ package com.b2international.snowowl.fhir.core.model.valueset;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.snowowl.fhir.core.codesystems.FilterOperator;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.codesystem.Filters.FilterPropertyCode;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -33,20 +33,20 @@ public class ValueSetFilter {
 	@Valid
 	@NotNull
 	@JsonProperty
-	private final Code code;
+	private final Code property;
 	
 	@Valid
-	@NotEmpty
+	@NotNull
 	@JsonProperty("op")
 	private final Code operator;
 	
 	@Valid
-	@NotEmpty
+	@NotNull
 	@JsonProperty 
 	private final Code value;
 	
-	ValueSetFilter(Code code, Code operator, Code value) {
-		this.code = code;
+	ValueSetFilter(Code property, Code operator, Code value) {
+		this.property = property;
 		this.operator = operator;
 		this.value = value;
 	}
@@ -57,17 +57,17 @@ public class ValueSetFilter {
 
 	public static class Builder extends ValidatingBuilder<ValueSetFilter> {
 		
-		private Code code;
+		private Code property;
 		private Code operator;
 		private Code value;
 		
-		public Builder code(final String codeValue) {
-			this.code = new Code(codeValue);
+		public Builder property(final String property) {
+			this.property = new Code(property);
 			return this;
 		}
 		
-		public Builder operator(final String operator) {
-			this.operator = new Code(operator);
+		public Builder operator(final FilterOperator operator) {
+			this.operator = operator.getCode();
 			return this;
 		}
 		
@@ -75,12 +75,24 @@ public class ValueSetFilter {
 			this.value = new Code(value);
 			return this;
 		}
+		
+		/**
+		 * Creates a reference set expression filter (expression = ^ + refsetConceptId) 
+		 * @param id
+		 * @return
+		 */
+		public Builder refsetExpression(String id) {
+			property = new Code(FilterPropertyCode.EXPRESSION.getDisplayName());
+			operator = FilterOperator.EQUALS.getCode();
+			value = new Code("^"+ id);
+			return this;
+		}
 
 		@Override
 		protected ValueSetFilter doBuild() {
-			return new ValueSetFilter(code, operator, value);
+			return new ValueSetFilter(property, operator, value);
 		}
-		
+
 	}
 
 }

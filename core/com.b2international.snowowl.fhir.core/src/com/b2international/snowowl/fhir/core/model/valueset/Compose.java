@@ -37,7 +37,7 @@ public class Compose {
 	private final Date lockedDate;
 	
 	@JsonProperty("inactive")
-	private final boolean isInactive;
+	private final Boolean isInactive;
 	
 	@Valid
 	@NotEmpty
@@ -48,7 +48,7 @@ public class Compose {
 	@JsonProperty("exclude")
 	private final Collection<Include> excludes;
 	
-	Compose(Date lockedDate, boolean isInactive, Collection<Include> includes, Collection<Include> excludes) {
+	Compose(Date lockedDate, Boolean isInactive, Collection<Include> includes, Collection<Include> excludes) {
 		this.lockedDate = lockedDate;
 		this.isInactive = isInactive;
 		this.includes = includes;
@@ -63,7 +63,7 @@ public class Compose {
 		
 		private Date lockedDate;
 		
-		private boolean isInactive;
+		private Boolean isInactive;
 		
 		private Collection<Include> includes = Sets.newHashSet();
 

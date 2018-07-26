@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
- * SnomedUri
+ * Snomed CT URI representation
  * 
  * @see <a href="https://confluence.ihtsdotools.org/display/DOCURI">SNOMED CT URI specification</a>
  * @since 6.7
@@ -58,11 +58,13 @@ public class SnomedUri {
 	}
 	
 	/**
+	 * VS
 	 * 	?fhir_vs - all Concept IDs in the edition/version. If the base URI is http://snomed.info/sct, this means all possible SNOMED CT concepts
 	 *	?fhir_vs=isa/[sctid] - all concept IDs that are subsumed by the specified Concept.
 	 *	?fhir_vs=refset - all concept ids that correspond to real references sets defined in the specified SNOMED CT edition
 	 *	?fhir_vs=refset/[sctid] - all concept IDs in the specified reference set
 	 *	
+	 * CM
 	 *	?fhir_cm=[sctid] - where [sctid] is a value from the table above
 	 *
 	 */
