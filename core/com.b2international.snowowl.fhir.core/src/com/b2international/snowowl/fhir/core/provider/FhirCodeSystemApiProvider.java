@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;

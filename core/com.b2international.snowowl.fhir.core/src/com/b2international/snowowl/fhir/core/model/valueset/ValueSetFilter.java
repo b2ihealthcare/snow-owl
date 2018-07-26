@@ -87,11 +87,24 @@ public class ValueSetFilter {
 			value = new Code("^"+ id);
 			return this;
 		}
+		
+		/**
+		 * Creates an ECL expression filter (expression = eclExpression) 
+		 * @param id
+		 * @return
+		 */
+		public Builder eclExpression(String eclExpression) {
+			property = new Code(FilterPropertyCode.EXPRESSION.getDisplayName());
+			operator = FilterOperator.EQUALS.getCode();
+			value = new Code(eclExpression);
+			return this;
+		}
 
 		@Override
 		protected ValueSetFilter doBuild() {
 			return new ValueSetFilter(property, operator, value);
 		}
+
 
 	}
 

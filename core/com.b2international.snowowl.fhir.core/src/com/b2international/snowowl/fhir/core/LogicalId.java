@@ -20,29 +20,45 @@ import com.b2international.commons.StringUtils;
 /**
  * Snow Owl's logical id for the FHIR API
  * <br>
- * The logical Id follows the scheme: repository:{branchPath}
+ * The logical Id follows the scheme: <i>repository:{branchPath}:{code}|{member}</i>
+ * <br>
  * for example, snomedStore:MAIN/201101031/DK/20140203:59524001 //blood bank procedure
+ * for reference set members, snomedStore:MAIN/201101031/DK/20140203|98403008:84f56f72-9f8b-423d-98b8-25961811393c //reference set member
  *  
  * @since 6.7
  */
 public class LogicalId {
 	
-	String repositoryId;
+	private final String repositoryId;
 	
-	String branchPath;
+	private final String branchPath;
 	
-	String componentId; //optional
+	private final String componentId; //optional
 	
-	public LogicalId(String repositoryId, String branchPath, String componentId) {
+	private final String memberId; //optional
+	
+	/**
+	 * Logical ID for reference set members
+	 * @param repositoryId
+	 * @param path
+	 * @param componentId
+	 * @param memberId
+	 */
+	public LogicalId(String repositoryId, String branchPath, String componentId, String memberId) {
 		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 		this.componentId = componentId;
+		this.memberId = memberId;
+	}
+	
+	public LogicalId(String repositoryId, String branchPath, String componentId) {
+		this(repositoryId, branchPath, componentId, null);
 	}
 	
 	public LogicalId(String repositoryId, String branchPath) {
-		this(repositoryId, branchPath, null);
+		this(repositoryId, branchPath, null, null);
 	}
-	
+
 	public static LogicalId fromIdString(String idString) {
 		
 		if (StringUtils.isEmpty(idString)) {
@@ -67,11 +83,27 @@ public class LogicalId {
 		String branchPath = splitIdString[1];
 		
 		if (splitIdString.length == 3) {
-			return new LogicalId(repositoryId, branchPath, splitIdString[2]);
+			
+			String componentId = splitIdString[2];
+			String[] splitComponent = componentId.split("\\|");
+			
+			if (splitComponent.length > 2) {
+				throw new IllegalArgumentException(String.format("Invalid component ID segment [%s], too many segments. The format should be componentId|{memberId}.", componentId));
+			}
+			
+			if (splitComponent.length == 2) {
+				return new LogicalId(repositoryId, branchPath, splitComponent[0], splitComponent[1]);
+			}
+			
+			return new LogicalId(repositoryId, branchPath, componentId);
 		} else {
 			return new LogicalId(repositoryId, branchPath);
 		}
 		
+	}
+	
+	public boolean isMemberId() {
+		return memberId !=null;
 	}
 	
 	public String getRepositoryId() {
@@ -86,18 +118,27 @@ public class LogicalId {
 		return componentId;
 	}
 	
+	public String getMemberId() {
+		 return memberId;
+	}
+	
 	public String toString() {
 		StringBuilder sb = new StringBuilder(repositoryId);
 		sb.append(":");
 		sb.append(branchPath);
 		
-		if (componentId ==null) {
-			return sb.toString();
-		} else {
+		if (componentId !=null) {
 			sb.append(":");
 			sb.append(componentId);
-			return sb.toString();
 		}
+		
+		if (memberId !=null) {
+			sb.append("|");
+			sb.append(memberId);
+		}
+		
+		return sb.toString();
+		
 	}
 
 }

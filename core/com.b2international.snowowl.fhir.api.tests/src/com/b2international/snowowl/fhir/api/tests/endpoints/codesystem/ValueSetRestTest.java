@@ -78,7 +78,7 @@ public class ValueSetRestTest extends FhirTest {
 		.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void valueSetsSummaryTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -105,17 +105,21 @@ public class ValueSetRestTest extends FhirTest {
 		.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void getSingleSnomedValueSetTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") 
 			.when().get("/ValueSet/{id}")
 			.prettyPrint();
-			//.then()
-			//.body("resourceType", equalTo("ValueSet"))
-			//.body("content", equalTo("not-present"))
-			//.body("status", equalTo("active"))
-			//.statusCode(200);
+	}
+	
+	//'Virtual' value set
+	@Test
+	public void getSingleQueryTypeValueSetTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.pathParam("id", "snomedStore:MAIN/FHIR_TEST_VERSION:98403008|84f56f72-9f8b-423d-98b8-25961811393c") 
+			.when().get("/ValueSet/{id}")
+			.prettyPrint();
 	}
 	
 	

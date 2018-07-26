@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -29,21 +27,26 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
 import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -51,6 +54,7 @@ import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRe
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -70,10 +74,238 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
+	private String displayLanguage = "en-us"; //what should we do with this, probably grab it from the request and fall back to a default language
+	
 	private String repositoryId;
 	
 	public SnomedValueSetApiProvider() {
 		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
+	}
+	
+	@Override
+	public Collection<ValueSet> getValueSets() {
+		
+		//might be nicer to maintain the order by version
+		Collection<ValueSet> valueSets = Lists.newArrayList();
+		
+		//Collect every version on every extension
+		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
+		
+		List<ValueSet> simpleTypevalueSets = collectSimpleTypeRefsets(codeSystemVersionList);
+		valueSets.addAll(simpleTypevalueSets);
+		
+		List<ValueSet> queryTypeVirtualRefsets = collectQueryTypeVirtualRefsets(codeSystemVersionList);
+		valueSets.addAll(queryTypeVirtualRefsets);
+		
+		return valueSets;
+	}
+	
+	@Override
+	public ValueSet getValueSet(LogicalId logicalId) {
+		
+		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByBranchPath(logicalId.getBranchPath())
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync()
+			.first();
+		
+		CodeSystemVersionEntry codeSystemVersion = codeSystemOptional.orElseThrow(() -> new FhirException("Could not find corresponding version [%s] for value set id [%s].", "ValueSet.id", logicalId.getBranchPath(), logicalId));
+		
+		if (!logicalId.isMemberId()) {
+		
+			return SnomedRequests.prepareSearchRefSet()
+				.filterById(logicalId.getComponentId())
+				.filterByType(SnomedRefSetType.SIMPLE)
+				.build(repositoryId, logicalId.getBranchPath())
+				.execute(getBus())
+				.then(refsets -> {
+					return refsets.stream()
+						.map(r -> buildSimpleTypeValueSet(r, codeSystemVersion, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync()
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
+		} else {
+			
+			return SnomedRequests.prepareSearchMember()
+				.one()
+				.filterById(logicalId.getMemberId())
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("referencedComponent(expand(pt()))")
+				.build(repositoryId, logicalId.getBranchPath())
+				.execute(getBus())
+				.then(members -> {
+					return members.stream()
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync()
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
+		}
+		
+	}
+	
+	//Collect every version on every extension
+	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersionEntry> codeSystemVersionList) {
+		
+		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
+			
+			return SnomedRequests.prepareSearchRefSet()
+				.all()
+				.filterByType(SnomedRefSetType.SIMPLE)
+				.build(repositoryId, csve.getPath())
+				.execute(getBus())
+				.then(refsets -> {
+					return refsets.stream()
+						.map(r -> buildSimpleTypeValueSet(r, csve, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+				})
+				.getSync();
+				
+		}).collect(Collectors.toList())
+		.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+		
+		return simpleTypevalueSets;
+	}
+	
+	/*
+	 * In SNOMED CT for each member of a Query Type Reference set 'creates' a Simple Type Reference Set,
+	 * hence we create a FHIR value set for each member - even if these are not persisted within Snow Owl.
+	 * We assign their member id as part of the logical id
+	 * Collect every version on every extension
+	 */
+	private List<ValueSet> collectQueryTypeVirtualRefsets(List<CodeSystemVersionEntry> codeSystemVersionList) {
+		
+		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
+		
+			return SnomedRequests.prepareSearchMember()
+				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.QUERY))
+				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+				.filterByActive(true)
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("referencedComponent(expand(pt()))")
+				.all()
+				.build(repositoryId, csve.getPath())
+				.execute(getBus())
+				.then(members -> {
+					return members.stream()
+						.map(member -> buildQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), csve, displayLanguage))
+						.map(ValueSet.Builder::build)
+						.collect(Collectors.toList());
+					
+				})
+			.getSync();
+		
+		}).collect(Collectors.toList())
+				.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+				
+				return simpleTypevalueSets;
+	}
+	
+	/**
+	 * @param snomedComponent 
+	 * @param codeSystemVersion 
+	 * @return
+	 */
+	private Builder createValueSetBuilder(LogicalId logicalId, SnomedComponent snomedComponent, CodeSystemVersionEntry codeSystemVersion) {
+		
+		String referenceSetId = snomedComponent.getId();
+		
+		Builder builder = ValueSet.builder(logicalId.toString());
+		
+		//TODO: module needs to be added as well
+		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
+				
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(uri.toString())
+			.value(referenceSetId)
+			.build();
+		
+		builder
+			.status(snomedComponent.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
+			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.language(displayLanguage)
+			.version(codeSystemVersion.getVersionId())
+			.identifier(identifier)
+			.url(uri.toUri());
+		
+		return builder;
+	}
+
+
+	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+	
+		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
+		
+		Builder builder = createValueSetBuilder(logicalId, refsetMember, codeSystemVersion);
+
+		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getReferenceSetId());
+		
+		builder.text(Narrative.builder()
+			.status(NarrativeStatus.GENERATED)
+			.div(narrativeText)
+			.build());
+		
+		String eclExpression = (String) refsetMember.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
+		
+		Include include = Include.builder()
+			.system(SnomedUri.SNOMED_BASE_URI_STRING)
+			.addFilters(ValueSetFilter.builder()
+				.eclExpression(eclExpression)
+				.build())
+			.build();
+			
+		Compose compose = Compose.builder()
+			.addInclude(include)
+			.build();
+		
+		return builder
+			.name(referencedComponent.getPt().getTerm())
+			.title(referencedComponent.getPt().getTerm())
+			.addCompose(compose);
+		
+	}
+	
+	
+	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
+		
+		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedComponent.getId());
+		
+		Builder builder = createValueSetBuilder(logicalId, snomedComponent, codeSystemVersion);
+		String referenceSetId = snomedComponent.getId();
+
+		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
+			.setExpand("pt()")
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.build(getRepositoryId(), codeSystemVersion.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		Include include = Include.builder()
+			.system(SnomedUri.SNOMED_BASE_URI_STRING)
+			.addFilters(ValueSetFilter.builder()
+				.refsetExpression(referenceSetId)
+				.build())
+			.build();
+		
+		Compose compose = Compose.builder()
+			.addInclude(include)
+			.build();
+		
+		return builder
+			.name(refsetConcept.getPt().getTerm())
+			.title(refsetConcept.getPt().getTerm())
+			.addCompose(compose);
 	}
 	
 	@Override
@@ -104,124 +336,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
 		
 		return foundInList || extensionUri;
-	}
-
-	@Override
-	public Collection<ValueSet> getValueSets() {
-		
-		//Collect every version on every extension
-		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
-		
-		List<ValueSet> valueSets = codeSystemVersionList.stream().map(csve -> {
-			
-			return SnomedRequests.prepareSearchRefSet()
-				.all()
-				.filterByType(SnomedRefSetType.SIMPLE)
-				.build(repositoryId, csve.getPath())
-				.execute(getBus())
-				.then(refsets -> {
-					return refsets.stream()
-						.map(r -> createValueSetBuilder(r, csve, displayLanguage))
-						.map(ValueSet.Builder::build)
-						.collect(Collectors.toList());
-				})
-				.getSync();
-				
-		}).collect(Collectors.toList())
-		.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
-		
-		return valueSets;
-	}
-	
-	@Override
-	public ValueSet getValueSet(LogicalId logicalId) {
-		
-		
-		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
-			.build(repositoryId)
-			.execute(getBus())
-			.getSync()
-			.first();
-		
-		CodeSystemVersionEntry codeSystemVersion = codeSystemOptional.orElseThrow(() -> new FhirException("Could not find corresponding version for value set id [%s].", "ValueSet.id", logicalId));
-		
-		//TODO: what to do with the language? Where do i get the locale from the request? 
-		String displayLanguage = "en-us";
-		
-		return SnomedRequests.prepareSearchRefSet()
-			.filterById(logicalId.getComponentId())
-			.filterByType(SnomedRefSetType.SIMPLE) //TODO: add support for query type refset as well?
-			.build(repositoryId, logicalId.getBranchPath())
-			.execute(getBus())
-			.then(refsets -> {
-				return refsets.stream()
-					.map(r -> createValueSetBuilder(r, codeSystemVersion, displayLanguage))
-					.map(ValueSet.Builder::build)
-					.collect(Collectors.toList());
-			})
-			.getSync()
-			.stream()
-			.findFirst()
-			.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
-		
-	}
-	
-	private ValueSet.Builder createValueSetBuilder(final SnomedReferenceSet referenceSet, final CodeSystemVersionEntry codeSystemVersion, final String displayLanguage) {
-		
-		String referenceSetId = referenceSet.getId();
-
-		//TODO: module needs to be added as well
-		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
-		
-		Identifier identifier = Identifier.builder()
-			.use(IdentifierUse.OFFICIAL)
-			.system(uri.toString())
-			.value(referenceSetId)
-			.build();
-		
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSetId);
-		
-		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
-			.setExpand("pt()")
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-			.build(getRepositoryId(), codeSystemVersion.getPath())
-			.execute(getBus())
-			.getSync();
-		
-		Compose compose = createCompose(referenceSet);
-		
-		return ValueSet.builder(logicalId.toString())
-			.identifier(identifier)
-			.version(codeSystemVersion.getVersionId())
-			.language(displayLanguage)
-			.url(uri.toUri())
-			.status(referenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
-			.name(refsetConcept.getPt().getTerm())
-			.title(refsetConcept.getPt().getTerm())
-			.addCompose(compose);
-	}
-	
-	/**
-	 * @param referenceSet
-	 * @return
-	 */
-	private Compose createCompose(SnomedReferenceSet referenceSet) {
-		
-		Include include = Include.builder()
-				.system(SnomedUri.SNOMED_BASE_URI_STRING)
-				.addFilters(ValueSetFilter.builder()
-					.refsetExpression(referenceSet.getId())
-					.build())
-			.build();
-		
-		Compose compose = Compose.builder()
-				.addInclude(include)
-				.build();
-		
-		return compose;
 	}
 
 	protected Uri getFhirUri() {
