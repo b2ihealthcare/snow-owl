@@ -57,13 +57,13 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
@@ -281,7 +281,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		conceptDetails.setRelationships(relationships);
 
 		for (RelationshipChange relationshipChange : classificationTask.getRelationshipChanges()) {
-			final SnomedRelationship relationship = relationshipChange.getRelationship();
+			final ReasonerRelationship relationship = relationshipChange.getRelationship();
 			
 			switch (relationshipChange.getChangeNature()) {
 				case REDUNDANT:
@@ -303,7 +303,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 					inferred.setGroupId(relationship.getGroup());
 					inferred.setModifier(relationship.getModifier());
-					inferred.setActive(relationship.isActive());
+					inferred.setActive(true);
 					inferred.setCharacteristicType(relationship.getCharacteristicType());
 
 					relationships.add(inferred);

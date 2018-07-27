@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -46,10 +47,10 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,7 +93,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		Collection<RelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
 				.asInputStream(), RelationshipChanges.class)
-				.getItems();
+				.stream()
+				.filter(c -> c.getRelationship().getSourceId() != null)
+				.collect(Collectors.toList());
 
 		Multimap<String, RelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getRelationship().getSourceId());
 		Collection<RelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
@@ -200,7 +203,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		boolean redundantFound = false;
 
 		for (RelationshipChange relationshipChange : changes.getItems()) {
-			SnomedRelationship relationship = relationshipChange.getRelationship();
+			ReasonerRelationship relationship = relationshipChange.getRelationship();
 			assertEquals(Concepts.PART_OF, relationship.getTypeId());
 			assertEquals(Concepts.NAMESPACE_ROOT, relationship.getDestinationId());
 
@@ -265,7 +268,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	private static void assertInferredIsAExists(FluentIterable<RelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
 		assertTrue("Inferred IS A between " + childConceptId + " and " + parentConceptId + " not found.", 
 				changesIterable.anyMatch(relationshipChange -> {
-					final SnomedRelationship relationship = relationshipChange.getRelationship();
+					final ReasonerRelationship relationship = relationshipChange.getRelationship();
 					return Concepts.IS_A.equals(relationship.getTypeId())
 							&& childConceptId.equals(relationship.getSourceId())
 							&& parentConceptId.equals(relationship.getDestinationId())

@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -34,7 +33,7 @@ public final class RelationshipChange implements Serializable {
 
 	private String classificationId;
 	private ChangeNature changeNature;
-	private SnomedRelationship relationship;
+	private ReasonerRelationship relationship;
 
 	@JsonIgnore
 	public String getClassificationId() {
@@ -53,11 +52,11 @@ public final class RelationshipChange implements Serializable {
 		this.changeNature = changeNature;
 	}
 
-	public SnomedRelationship getRelationship() {
+	public ReasonerRelationship getRelationship() {
 		return relationship;
 	}
 
-	public void setRelationship(final SnomedRelationship relationship) {
+	public void setRelationship(final ReasonerRelationship relationship) {
 		this.relationship = relationship;
 	}
 

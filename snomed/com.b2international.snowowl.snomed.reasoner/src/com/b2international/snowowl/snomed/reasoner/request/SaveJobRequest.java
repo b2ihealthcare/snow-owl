@@ -48,7 +48,6 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -60,6 +59,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
@@ -250,13 +250,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 			final Set<String> conceptIds = nextChanges.stream()
 					.map(RelationshipChange::getRelationship)
-					.map(SnomedRelationship::getSourceId)
+					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
 
 			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
 			for (final RelationshipChange change : nextChanges) {
-				final SnomedRelationship relationship = change.getRelationship();
+				final ReasonerRelationship relationship = change.getRelationship();
 
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
@@ -282,7 +282,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
-			final SnomedRelationship relationship) {
+			final ReasonerRelationship relationship) {
 
 		final String sourceId = relationship.getSourceId();
 		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
@@ -291,7 +291,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final SnomedRelationshipCreateRequestBuilder createRequest = SnomedRequests.prepareNewRelationship()
 				.setIdFromNamespace(namespace)
 				.setTypeId(relationship.getTypeId())
-				.setActive(relationship.isActive())
+				.setActive(true)
 				.setCharacteristicType(relationship.getCharacteristicType())
 				.setSourceId(relationship.getSourceId())
 				.setDestinationId(relationship.getDestinationId())
@@ -313,7 +313,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		bulkRequestBuilder.add(createRequest);
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, final SnomedRelationship relationship) {
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, final ReasonerRelationship relationship) {
 		final Request<TransactionContext, Boolean> request;
 
 		if (relationship.isReleased()) {
