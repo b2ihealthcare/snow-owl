@@ -53,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -198,12 +199,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		applyChanges(subMonitor, context, bulkRequestBuilder);
 		fixEquivalences(context, bulkRequestBuilder);
 
-		final CommitResult commitResult = SnomedRequests.prepareCommit()
+		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
 			.setBody(bulkRequestBuilder)
 			.setCommitComment("Classified ontology.")
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
 			.setUserId(userId)
-			.build()
+			.build();
+
+		final CommitResult commitResult = new IdRequest<>(commitRequest)  
 			.execute(context);
 
 		classificationTracker.classificationSaved(classificationId, commitResult.getCommitTimestamp());
@@ -306,9 +309,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		 * changed by the relationship creation request to the new relationship ID,
 		 * which is not known at this point (just the namespace).
 		 */
-		relationship.getMembers()
-		.stream()
-		.forEach(createRequest::addMember);
+		if (relationship.getMembers() != null) {
+			relationship.getMembers()
+				.stream()
+				.forEach(createRequest::addMember);
+		}
 
 		bulkRequestBuilder.add(createRequest);
 	}
