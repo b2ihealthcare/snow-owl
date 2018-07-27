@@ -40,7 +40,7 @@ public final class DelegateOntologyFactory implements OWLOntologyFactory {
 
 	@Override
 	public boolean canCreateFromDocumentIRI(final IRI documentIRI) {
-		return DelegateOntology.NAMESPACE_SCTM.equals(documentIRI.getNamespace());
+		return documentIRI.getNamespace().startsWith(DelegateOntology.NAMESPACE_SCTM);
 	}
 
 	@Override
