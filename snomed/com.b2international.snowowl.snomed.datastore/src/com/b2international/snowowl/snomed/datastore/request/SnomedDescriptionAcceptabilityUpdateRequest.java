@@ -49,6 +49,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 	private final String descriptionId;
 	private final String moduleId;
 	private final Map<String, Acceptability> newAcceptabilityMap;
+	private final boolean create;
 
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
@@ -57,10 +58,12 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 		}
 	});
 
-	public SnomedDescriptionAcceptabilityUpdateRequest(final String descriptionId, final String moduleId, final Map<String, Acceptability> newAcceptabilityMap) {
+
+	public SnomedDescriptionAcceptabilityUpdateRequest(final String descriptionId, final String moduleId, final Map<String, Acceptability> newAcceptabilityMap, final boolean create) {
 		this.descriptionId = descriptionId;
 		this.moduleId = moduleId;
 		this.newAcceptabilityMap = newAcceptabilityMap;
+		this.create = create;
 	}
 	
 	@Override
@@ -75,7 +78,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 	}
 
 	private void updateAcceptabilityMap(final TransactionContext context, final String descriptionId, Map<String, Acceptability> acceptabilityMap) {
-		final Iterable<SnomedReferenceSetMember> existingMembers = SnomedRequests.prepareSearchMember()
+		final Iterable<SnomedReferenceSetMember> existingMembers = create ? Collections.emptySet() : SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(descriptionId)
 				.filterByRefSetType(Collections.singleton(SnomedRefSetType.LANGUAGE))

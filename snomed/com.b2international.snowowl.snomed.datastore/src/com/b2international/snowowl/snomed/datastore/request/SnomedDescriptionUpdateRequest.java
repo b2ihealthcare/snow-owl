@@ -134,7 +134,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	}
 
 	private void updateAcceptability(TransactionContext context, final SnomedDescriptionIndexEntry description, final SnomedDescriptionIndexEntry.Builder updatedDescription) {
-		new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability).execute(context);
+		new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability, false).execute(context);
 	}
 
 	private void updateAssociationTargets(TransactionContext context, final SnomedDescriptionIndexEntry description, final Multimap<AssociationType, String> associationTargets) {

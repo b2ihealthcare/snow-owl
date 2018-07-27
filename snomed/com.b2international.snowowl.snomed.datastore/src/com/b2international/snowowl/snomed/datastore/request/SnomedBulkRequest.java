@@ -70,7 +70,7 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 				});
 		
 		try {
-				for (final Entry<Class<? extends SnomedDocument>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
+			for (final Entry<Class<? extends SnomedDocument>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
 				context.lookup(idsForType.getValue(), idsForType.getKey());	
 			}
 		} catch (final ComponentNotFoundException e) {

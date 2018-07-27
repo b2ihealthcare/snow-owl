@@ -140,7 +140,7 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 				.withConcept(getConceptId())
 				.build(context);
 			
-			new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability)
+			new SnomedDescriptionAcceptabilityUpdateRequest(description.getId(), description.getModuleId(), acceptability, true)
 				.execute(context);
 			
 			// FIXME: Acceptability updates and member create requests can overlap
