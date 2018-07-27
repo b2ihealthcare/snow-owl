@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public final class Query<T> {
 		 * @param sortValues - the last sort values in sort order 
 		 * @return
 		 */
-		AfterWhereBuilder<T> searchAfter(Object[] sortValues);
+		AfterWhereBuilder<T> searchAfter(String sortValues);
 		
 		/**
 		 * The maximum number of hits to return.
@@ -110,7 +110,7 @@ public final class Query<T> {
 	}
 
 	private String scrollKeepAlive;
-	private Object[] searchAfter;
+	private String searchAfter;
 	private int limit;
 	private Class<T> select;
 	private Class<?> from;
@@ -194,11 +194,11 @@ public final class Query<T> {
 		this.scrollKeepAlive = scrollKeepAlive;
 	}
 	
-	public Object[] getSearchAfter() {
+	public String getSearchAfter() {
 		return searchAfter;
 	}
 	
-	void setSearchAfter(Object[] searchAfter) {
+	void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
 	}
 	
@@ -232,5 +232,4 @@ public final class Query<T> {
 	public static <T> QueryBuilder<T> select(Class<T> select) {
 		return new DefaultQueryBuilder<>(select);
 	}
-	
 }
