@@ -18,13 +18,16 @@ package com.b2international.index;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.solr.common.util.JavaBinCodec;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -43,6 +46,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.collections.PrimitiveCollection;
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -274,7 +278,20 @@ public class EsDocumentSearcher implements DocSearcher {
 				searchAfterSortValues = hit.getSortValues();
 			}
 		}
-		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
+		return new Hits<T>(result.build(), scrollId, toSearchAfterToken(searchAfterSortValues), limit, totalHits);
+	}
+	
+	private String toSearchAfterToken(final Object[] searchAfter) {
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			final JavaBinCodec codec = new JavaBinCodec(baos, null);
+			codec.writeArray(searchAfter);
+			codec.close();
+			
+			final byte[] tokenBytes = baos.toByteArray();
+			return Base64.getUrlEncoder().encodeToString(tokenBytes);
+		} catch (IOException e) {
+			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+		}
 	}
 
 	private void addSort(DocumentMapping mapping, SearchRequestBuilder req, SortBy sortBy) {
