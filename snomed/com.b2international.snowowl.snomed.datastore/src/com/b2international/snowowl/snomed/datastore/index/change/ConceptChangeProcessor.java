@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -109,13 +108,24 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// collect member changes
 		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(staging, searcher));
 
+		final Multimap<String, SnomedDescriptionFragment> newDescriptionFragmentsByConcept = HashMultimap.create();
+		
+		staging.getNewObjects(SnomedDescriptionIndexEntry.class)
+			.filter(SnomedDescriptionIndexEntry::isActive)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
+			.forEach(description -> newDescriptionFragmentsByConcept.put(description.getConceptId(), toDescriptionFragment(description)));
+		
 		// index new concepts
 		staging.getNewObjects(SnomedConceptDocument.class).forEach(concept -> {
 			final String id = concept.getId();
 			final Builder doc = SnomedConceptDocument.builder().id(id);
 			update(doc, concept, null);
 			// in case of a new concept, all of its descriptions should be part of the staging area as well
-			doc.preferredDescriptions(getDescriptionFragmentsOfNewConcept(staging, id));
+			doc.preferredDescriptions(newDescriptionFragmentsByConcept.removeAll(id)
+					.stream()
+					.sorted(DESCRIPTION_FRAGMENT_ORDER)
+					.collect(Collectors.toList()));
 			stageNew(doc.build());
 		});
 		
@@ -296,17 +306,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				.update(doc);
 	}
 
-	private List<SnomedDescriptionFragment> getDescriptionFragmentsOfNewConcept(StagingArea staging, String conceptId) {
-		return staging.getNewObjects(SnomedDescriptionIndexEntry.class)
-				.filter(description -> conceptId.equals(description.getConceptId()))
-				.filter(SnomedDescriptionIndexEntry::isActive)
-				.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
-				.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
-				.map(this::toDescriptionFragment)
-				.sorted(DESCRIPTION_FRAGMENT_ORDER)
-				.collect(Collectors.toList());
-	}
-	
 	private Set<String> getPreferredLanguageMembers(SnomedDescriptionIndexEntry description) {
 		return description.getAcceptabilityMap().entrySet()
 			.stream()
