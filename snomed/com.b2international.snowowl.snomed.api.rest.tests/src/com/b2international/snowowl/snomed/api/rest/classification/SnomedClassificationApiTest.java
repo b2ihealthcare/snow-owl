@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -93,9 +92,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		Collection<RelationshipChange> changes = MAPPER.readValue(getRelationshipChanges(branchPath, classificationId).statusCode(200)
 				.extract()
 				.asInputStream(), RelationshipChanges.class)
-				.stream()
-				.filter(c -> c.getRelationship().getSourceId() != null)
-				.collect(Collectors.toList());
+				.getItems();
 
 		Multimap<String, RelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getRelationship().getSourceId());
 		Collection<RelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
