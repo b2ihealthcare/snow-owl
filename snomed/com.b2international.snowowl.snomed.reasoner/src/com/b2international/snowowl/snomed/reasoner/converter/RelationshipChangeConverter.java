@@ -77,6 +77,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		resource.setChangeNature(entry.getNature());
 
 		final ReasonerRelationship relationship = new ReasonerRelationship(entry.getRelationshipId());
+		relationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
 
 		if (ChangeNature.INFERRED.equals(entry.getNature())) {
 			relationship.setSourceId(entry.getSourceId());
@@ -177,24 +178,27 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 
 			final Map<String, SnomedRelationship> relationshipsById = Maps.uniqueIndex(relationships, SnomedRelationship::getId);
 
-			// Finally, set the relationship on the change item, but preserve the "adjusted" source concept that holds the inferred component target's ID
 			for (final RelationshipChange item : itemsForCurrentBranch) {
 				final ReasonerRelationship blankRelationship = item.getRelationship();
 				final String relationshipId = blankRelationship.getId();
 				
 				// Add default values if the relationship did not exist earlier 
 				if (!relationshipsById.containsKey(relationshipId)) {
-					blankRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
 					blankRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
 				} else {
 					final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
 
-					blankRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
 					blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
 					blankRelationship.setMembers(expandedRelationship.getMembers());
 					blankRelationship.setModifier(expandedRelationship.getModifier());
 					blankRelationship.setModuleId(expandedRelationship.getModuleId());
 					blankRelationship.setReleased(expandedRelationship.isReleased());
+					
+					if (blankRelationship.getSource() == null) { blankRelationship.setSource(expandedRelationship.getSource()); }
+					if (blankRelationship.getType() == null) { blankRelationship.setType(expandedRelationship.getType()); }
+					if (blankRelationship.getDestination() == null) { blankRelationship.setDestination(expandedRelationship.getDestination()); }
+					if (blankRelationship.getGroup() == null) { blankRelationship.setGroup(expandedRelationship.getGroup()); }
+					if (blankRelationship.getUnionGroup() == null) { blankRelationship.setUnionGroup(expandedRelationship.getUnionGroup()); }
 				}
 			}
 		}

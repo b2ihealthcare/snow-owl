@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -116,7 +117,10 @@ public final class EquivalentConceptSetConverter
 					.setLocales(locales())
 					.build();
 
-			final SnomedConcepts concepts = new BranchRequest<>(branch, conceptSearchRequest).execute(context());
+			final SnomedConcepts concepts = new BranchRequest<>(branch, 
+					new RevisionIndexReadRequest<>(conceptSearchRequest))
+					.execute(context());
+
 			final Map<String, SnomedConcept> conceptsById = Maps.uniqueIndex(concepts, SnomedConcept::getId);
 
 			for (final EquivalentConceptSet item : itemsForCurrentBranch) {
