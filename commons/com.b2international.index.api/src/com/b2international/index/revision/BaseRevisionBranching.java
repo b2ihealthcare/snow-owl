@@ -380,7 +380,7 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	public final void handleCommit(final String branchPath, final long timestamp) {
-		commit(update(branchPath, RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
+		commit(update(branchPath, RevisionBranch.Scripts.COMMIT, ImmutableMap.of("headTimestamp", timestamp)));
 		sendChangeEvent(branchPath); // Explicit notification (commit)
 	}
 	

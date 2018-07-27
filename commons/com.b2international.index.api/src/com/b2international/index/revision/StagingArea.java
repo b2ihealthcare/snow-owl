@@ -20,8 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +38,7 @@ import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.Pair;
+import com.b2international.index.BulkUpdate;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Hooks.Hook;
 import com.b2international.index.revision.Hooks.PostCommitHook;
@@ -46,8 +49,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -70,6 +75,8 @@ public final class StagingArea {
 	private Map<String, Object> changedObjects;
 	private Map<String, RevisionDiff> changedRevisions;
 	private Map<String, Object> removedObjects;
+
+	private RevisionBranchPoint mergeSource;
 	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
@@ -302,6 +309,28 @@ public final class StagingArea {
 				.details(details)
 				.build();
 		writer.put(commitDoc.getId(), commitDoc);
+		
+		// update branch doc
+		Map<String, Object> branchUpdateParams;
+		if (mergeSource != null) {
+			branchUpdateParams = ImmutableMap.of(
+				"headTimestamp", timestamp,
+				"mergeSource", mergeSource.toIpAddress()
+			);
+		} else {
+			branchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 
+		}
+		
+		writer.bulkUpdate(
+			new BulkUpdate<>(
+				RevisionBranch.class, 
+				DocumentMapping.matchId(branchPath), 
+				DocumentMapping._ID, 
+				RevisionBranch.Scripts.COMMIT,
+				branchUpdateParams
+			)
+		);
+		
 		writer.commit();
 		return commitDoc;
 	}
@@ -431,6 +460,64 @@ public final class StagingArea {
 			return newValue;
 		}
 		
+	}
+
+	public void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, List<RevisionCompareDetail> diff) {
+		this.mergeSource = new RevisionBranchPoint(fromRef.branchId(), fromRef.segments().last().end());
+		final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
+		
+		diff.forEach(detail -> {
+			// add all objects to the tx
+			if (detail.isAdd()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					newRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+				}
+			} else if (detail.isChange()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
+				}
+			} else if (detail.isRemove()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					removedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+				}
+			} else {
+				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());
+			}
+		});
+		
+		// apply new objects
+		for (Class<? extends Revision> type : newHashSet(newRevisionIdsByType.keySet())) {
+			final Collection<String> newRevisionIds = newRevisionIdsByType.removeAll(type);
+			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
+		}
+		
+		// apply changed objects
+		for (Class<? extends Revision> type : newHashSet(changedRevisionIdsByType.keySet())) {
+			final Collection<String> changedRevisionIds = changedRevisionIdsByType.removeAll(type);
+			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String,? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+			
+			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
+			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
+			for (String updatedId : updatedRevisionsById.keySet()) {
+				if (oldRevisionsById.containsKey(updatedId)) {
+					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
+				} else {
+					stageNew(updatedRevisionsById.get(updatedId));
+				}
+			}
+		}
+		
+		// apply deleted objects
+		for (Class<? extends Revision> type : newHashSet(removedRevisionIdsByType.keySet())) {
+			final Collection<String> removedRevisionIds = removedRevisionIdsByType.removeAll(type);
+			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
+		}
 	}
 
 }

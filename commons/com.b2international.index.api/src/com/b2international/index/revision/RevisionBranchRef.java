@@ -31,6 +31,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
+ * Reference to a set of revision branch segments to query the contents visible from the branch at a given time.
+ * 
  * @since 6.5
  */
 final class RevisionBranchRef {

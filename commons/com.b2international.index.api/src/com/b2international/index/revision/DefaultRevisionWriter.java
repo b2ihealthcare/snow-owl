@@ -134,15 +134,6 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	public void commit() throws IOException {
 		// before commit, mark all previous revisions as replaced
 		removeAll(revisionUpdates);
-		index.bulkUpdate(
-			new BulkUpdate<>(
-				RevisionBranch.class, 
-				DocumentMapping.matchId(branch()), 
-				DocumentMapping._ID, 
-				RevisionBranch.Scripts.WITH_HEADTIMESTAMP, 
-				ImmutableMap.of("headTimestamp", created.getTimestamp())
-			)
-		);
 		index.commit();
 		branching.sendChangeEvent(branch());
 	}

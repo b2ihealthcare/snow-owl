@@ -17,10 +17,12 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
@@ -37,7 +39,21 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 @Doc(type="branch")
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
-@Script(name=RevisionBranch.Scripts.WITH_HEADTIMESTAMP, script=""
+@Script(name=RevisionBranch.Scripts.COMMIT, script=""
+		+ "if (params.mergeSource != null) {"
+		+ "		int idxToReplace = -1;"
+		+ "		for (mergeSource in ctx._source.mergeSources) {"
+		+ "			if (mergeSource.substring(0, 19).equals(params.mergeSource.substring(0, 19))) {"
+		+ "				idxToReplace = ctx._source.mergeSources.indexOf(mergeSource);"
+		+ "				break;"
+		+ "			}"
+		+ "		}"
+		+ "		if (idxToReplace == -1) {"
+		+ "			ctx._source.mergeSources.add(params.mergeSource);"
+		+ "		} else {"
+		+ "			ctx._source.mergeSources.set(idxToReplace, params.mergeSource);"
+		+ "		}"
+		+ "}"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
 		+ "        segment.end = params.headTimestamp;"
@@ -151,7 +167,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		/**
 		 * @param headTimestamp - the new headTimestamp value of this branch
 		 */
-		public static final String WITH_HEADTIMESTAMP = "withHeadTimestamp";
+		public static final String COMMIT = "commit";
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
 		public static final String REPLACE = "replace";
@@ -170,6 +186,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		private boolean deleted;
 		private Metadata metadata;
 		private SortedSet<RevisionSegment> segments;
+		private List<RevisionBranchPoint> mergeSources;
 		
 		Builder() {}
 		
@@ -203,6 +220,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			return this;
 		}
 		
+		public Builder mergeSources(List<RevisionBranchPoint> mergeSources) {
+			this.mergeSources = mergeSources;
+			return this;
+		}
+		
 		Builder path(String path) {
 			return this;
 		}
@@ -214,7 +236,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
 					name, 
 					deleted, 
 					metadata, 
-					segments);
+					segments,
+					mergeSources);
 		}
 		
 	}
@@ -225,6 +248,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     private final String path;
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
+	private final List<RevisionBranchPoint> mergeSources;
 
     private RevisionBranch(
     		long id,
@@ -232,7 +256,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		String name, 
     		boolean deleted, 
     		Metadata metadata,
-    		SortedSet<RevisionSegment> segments) {
+    		SortedSet<RevisionSegment> segments, 
+    		List<RevisionBranchPoint> mergeSources) {
     	super(metadata);
     	BranchNameValidator.DEFAULT.checkName(name);
     	checkArgument(!CompareUtils.isEmpty(segments), "At least one segment is required to created a revision branch.");
@@ -242,6 +267,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		this.path = CompareUtils.isEmpty(parentPath) ? name : String.format("%s%s%s", parentPath, SEPARATOR, name);
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
+		this.mergeSources = Collections3.toImmutableList(mergeSources);
 	}
     
     /**
@@ -319,6 +345,16 @@ public final class RevisionBranch extends MetadataHolderImpl {
     public SortedSet<RevisionSegment> getSegments() {
     	return segments;
     }
+    
+    /**
+	 * Represents a {@link List} of {@link RevisionBranchPoint}s where content has been merged into this branch. Subsequent merges from a
+	 * branch should skip the revisions before the stored time.
+	 * 
+	 * @return
+	 */
+    public List<RevisionBranchPoint> getMergeSources() {
+		return mergeSources;
+	}
     
     /**
      * Returns the segments common with the parent branch.
