@@ -38,7 +38,7 @@ import com.b2international.commons.collect.LongSets;
 public final class InternalIdEdges {
 
 	public static final Builder builder(final InternalIdMap internalIdMap) {
-		return builder(internalIdMap);
+		return new Builder(internalIdMap);
 	}
 
 	public static final class Builder {
@@ -124,7 +124,7 @@ public final class InternalIdEdges {
 
 		final LongSet sctIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(destinations.length); 
 		for (int i = 0; i < destinations.length; i++) {
-			sctIds.add(destinations[i]);
+			sctIds.add(internalIdMap.getSctId(destinations[i]));
 		}
 
 		return sctIds;
@@ -146,7 +146,7 @@ public final class InternalIdEdges {
 	private LongSet toSctIds(final BitSet destinations) {
 		final LongSet sctIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(destinations.cardinality()); 
 		for (int i = destinations.nextSetBit(0); i >= 0; i = destinations.nextSetBit(i + 1)) {
-			sctIds.add(i);
+			sctIds.add(internalIdMap.getSctId(i));
 
 			// Prevent integer overflow
 			if (i == Integer.MAX_VALUE) {
