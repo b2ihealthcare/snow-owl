@@ -61,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -89,8 +90,8 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalIdMultimap.Builder<StatementFragment> statedNonIsARelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
-	private InternalIdMultimap.Builder<ConcreteDomainFragment> statedConcreteDomainMembers;
-	private InternalIdMultimap.Builder<ConcreteDomainFragment> inferredConcreteDomainMembers;
+	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> statedConcreteDomainMembers;
+	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private InternalIdMap builtConceptMap;
 
@@ -151,8 +152,11 @@ public final class ReasonerTaxonomyBuilder {
 		this.exhaustiveConcepts = InternalSctIdSet.builder(builtConceptMap);
 		this.statedNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
+		
+		// Concrete domain member builders are not backed by the internal map
+		this.statedConcreteDomainMembers = ImmutableMultimap.builder();
+		this.inferredConcreteDomainMembers = ImmutableMultimap.builder();
 
-		// Concrete domain builders are only initialized once relationships are handled
 		return this;
 	}
 
@@ -464,7 +468,7 @@ public final class ReasonerTaxonomyBuilder {
 			fragments.clear();
 		}
 	}
-
+	
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
 

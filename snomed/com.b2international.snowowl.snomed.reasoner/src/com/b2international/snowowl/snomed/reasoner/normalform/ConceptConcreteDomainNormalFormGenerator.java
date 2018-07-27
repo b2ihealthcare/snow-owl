@@ -52,14 +52,14 @@ public final class ConceptConcreteDomainNormalFormGenerator extends NormalFormGe
 	@Override
 	public Collection<ConcreteDomainFragment> getExistingComponents(final long conceptId) {
 		return taxonomy.getInferredConcreteDomainMembers()
-				.get(conceptId);
+				.get(Long.toString(conceptId));
 	}
 
 	@Override
 	public Collection<ConcreteDomainFragment> getGeneratedComponents(final long conceptId) {
 
 		final Set<ConcreteDomainFragment> computedItems = newHashSet(taxonomy.getStatedConcreteDomainMembers()
-				.get(conceptId));
+				.get(Long.toString(conceptId)));
 		final LongSet parents = taxonomy.getInferredAncestors()
 				.getDestinations(conceptId, true);
 

@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.b2international.collections.longs.LongList;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.google.common.collect.Multimap;
 
 /**
  * Represents a snapshot of the ontology for reasoner input and normal form generation.
@@ -39,8 +40,8 @@ public final class ReasonerTaxonomy {
 
 	private final InternalIdMultimap<StatementFragment> statedNonIsARelationships;
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
-	private final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers;
-	private final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers;
+	private final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers;
+	private final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private final InternalIdEdges inferredAncestors;
 	private final InternalSctIdSet unsatisfiableConcepts;
@@ -54,8 +55,8 @@ public final class ReasonerTaxonomy {
 			final InternalSctIdSet exhaustiveConcepts, 
 			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
-			final InternalIdMultimap<ConcreteDomainFragment> statedConcreteDomainMembers,
-			final InternalIdMultimap<ConcreteDomainFragment> inferredConcreteDomainMembers,
+			final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers,
+			final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers,
 			final InternalIdEdges inferredAncestors,
 			final InternalSctIdSet unsatisfiableConcepts,
 			final InternalSctIdMultimap equivalentConcepts, 
@@ -116,11 +117,11 @@ public final class ReasonerTaxonomy {
 		return existingInferredRelationships;
 	}
 
-	public InternalIdMultimap<ConcreteDomainFragment> getStatedConcreteDomainMembers() {
+	public Multimap<String, ConcreteDomainFragment> getStatedConcreteDomainMembers() {
 		return statedConcreteDomainMembers;
 	}
 
-	public InternalIdMultimap<ConcreteDomainFragment> getInferredConcreteDomainMembers() {
+	public Multimap<String, ConcreteDomainFragment> getInferredConcreteDomainMembers() {
 		return inferredConcreteDomainMembers;
 	}
 	
