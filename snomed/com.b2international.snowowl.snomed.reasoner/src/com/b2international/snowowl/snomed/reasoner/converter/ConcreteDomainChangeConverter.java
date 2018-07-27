@@ -61,7 +61,7 @@ public final class ConcreteDomainChangeConverter
 	@Override
 	protected ConcreteDomainChanges createCollectionResource(final List<ConcreteDomainChange> results, 
 			final String scrollId, 
-			final Object[] searchAfter, 
+			final String searchAfter, 
 			final int limit, 
 			final int total) {
 

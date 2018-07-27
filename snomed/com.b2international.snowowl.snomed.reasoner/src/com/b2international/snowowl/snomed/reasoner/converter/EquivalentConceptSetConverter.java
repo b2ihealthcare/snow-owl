@@ -56,7 +56,7 @@ public final class EquivalentConceptSetConverter
 	@Override
 	protected EquivalentConceptSets createCollectionResource(final List<EquivalentConceptSet> results, 
 			final String scrollId, 
-			final Object[] searchAfter, 
+			final String searchAfter, 
 			final int limit, 
 			final int total) {
 

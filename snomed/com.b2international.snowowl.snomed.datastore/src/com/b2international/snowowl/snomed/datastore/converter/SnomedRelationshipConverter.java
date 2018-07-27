@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	}
 
 	@Override
-	protected SnomedRelationships createCollectionResource(List<SnomedRelationship> results, String scrollId, Object[] searchAfter, int limit, int total) {
+	protected SnomedRelationships createCollectionResource(List<SnomedRelationship> results, String scrollId, String searchAfter, int limit, int total) {
 		return new SnomedRelationships(results, scrollId, searchAfter, limit, total);
 	}
 	
@@ -167,5 +167,4 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	private RelationshipModifier toRelationshipModifier(final boolean universal) {
 		return universal ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL;
 	}
-
 }
