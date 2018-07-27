@@ -31,6 +31,7 @@ import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -79,10 +80,13 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 
 		if (ChangeNature.INFERRED.equals(entry.getNature())) {
 			relationship.setSourceId(entry.getSourceId());
-			relationship.setTypeId(entry.getTypeId());
-			relationship.setDestinationId(entry.getDestinationId());
 			relationship.setGroup(entry.getGroup());
 			relationship.setUnionGroup(entry.getUnionGroup());
+			
+			if (entry.getRelationshipId() == null) {
+				relationship.setTypeId(entry.getTypeId());
+				relationship.setDestinationId(entry.getDestinationId());
+			}
 		}
 
 		resource.setRelationship(relationship);
@@ -178,27 +182,20 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 				final ReasonerRelationship blankRelationship = item.getRelationship();
 				final String relationshipId = blankRelationship.getId();
 				
-				// Skip expansion if the relationship did not exist earlier 
+				// Add default values if the relationship did not exist earlier 
 				if (!relationshipsById.containsKey(relationshipId)) {
-					continue;
+					blankRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
+					blankRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+				} else {
+					final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
+
+					blankRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+					blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+					blankRelationship.setMembers(expandedRelationship.getMembers());
+					blankRelationship.setModifier(expandedRelationship.getModifier());
+					blankRelationship.setModuleId(expandedRelationship.getModuleId());
+					blankRelationship.setReleased(expandedRelationship.isReleased());
 				}
-				
-				final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
-
-				final SnomedConcept adjustedType = blankRelationship.getType();
-				final SnomedConcept adjustedDestination = blankRelationship.getDestination();
-
-				blankRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
-				blankRelationship.setDestination(adjustedDestination == null ? expandedRelationship.getDestination() : adjustedDestination);
-				blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
-				blankRelationship.setGroup(blankRelationship.getGroup());
-				blankRelationship.setMembers(expandedRelationship.getMembers());
-				blankRelationship.setModifier(expandedRelationship.getModifier());
-				blankRelationship.setModuleId(expandedRelationship.getModuleId());
-				blankRelationship.setReleased(expandedRelationship.isReleased());
-				// blankRelationship.setSource(...) is already set
-				blankRelationship.setType(adjustedType == null ? expandedRelationship.getType() : adjustedType);
-				blankRelationship.setUnionGroup(blankRelationship.getUnionGroup());
 			}
 		}
 	}

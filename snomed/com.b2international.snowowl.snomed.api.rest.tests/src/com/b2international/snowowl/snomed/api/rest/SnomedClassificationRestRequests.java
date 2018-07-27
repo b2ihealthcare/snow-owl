@@ -73,6 +73,7 @@ public abstract class SnomedClassificationRestRequests {
 	public static ValidatableResponse getRelationshipChanges(IBranchPath branchPath, String classificationId) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.queryParam("limit", 2000)
+				.queryParam("expand", "relationship()")
 				.get("/classifications/{id}/relationship-changes", classificationId)
 				.then();
 	}
