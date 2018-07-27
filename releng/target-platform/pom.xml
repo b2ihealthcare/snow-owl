@@ -25,6 +25,14 @@
 						<configuration>
 							<baseDefinition>${project.artifactId}.target</baseDefinition>
 							<outputFile>${project.artifactId}-local.target</outputFile>
+							<excludeArtifactIds>
+								org.apache.felix.framework,
+								org.apache.felix.main,
+								org.eclipse.core.jobs,
+								org.eclipse.equinox.common,
+								org.eclipse.equinox.registry,
+								org.eclipse.osgi
+							</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>
