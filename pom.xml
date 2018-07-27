@@ -21,6 +21,9 @@
 		<guava.version>18.0</guava.version>
 		<xtext.version>[2.11.0,2.13.0)</xtext.version>
 		<kotlin.version>1.1.51</kotlin.version>
+		<protege.version>5.0.0-beta-21</protege.version>
+		<owlapi.version>4.1.3</owlapi.version>
+		<elk.version>0.4.3</elk.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.0.0</tycho.version>
 		<tycho-extras.version>1.0.0</tycho-extras.version>
@@ -230,12 +233,6 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>net.sourceforge.owlapi</groupId>
-    			<artifactId>owlapi-osgidistribution</artifactId>
-    			<version>4.2.8</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
 				<groupId>commons-collections</groupId>
 				<artifactId>commons-collections</artifactId>
 				<version>3.2.2</version>
@@ -317,6 +314,36 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-common</artifactId>
+				<version>${protege.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-editor-core</artifactId>
+				<version>${protege.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.b2international.snowowl</groupId>
+				<artifactId>protege-editor-owl</artifactId>
+				<version>${protege.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.owlapi</groupId>
+    			<artifactId>owlapi-osgidistribution</artifactId>
+    			<version>${owlapi.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.semanticweb.elk</groupId>
+				<artifactId>elk-protege</artifactId>
+				<version>${elk.version}</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>		
@@ -448,10 +475,6 @@
 			<artifactId>mockito-all</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
-    		<artifactId>owlapi-osgidistribution</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 		</dependency>
@@ -506,6 +529,26 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+    		<artifactId>protege-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+    		<artifactId>protege-editor-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.b2international.snowowl</groupId>
+    		<artifactId>protege-editor-owl</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.owlapi</groupId>
+    		<artifactId>owlapi-osgidistribution</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.semanticweb.elk</groupId>
+			<artifactId>elk-protege</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -932,5 +975,15 @@
 		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
 		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
 	</scm>
+	
+	<repositories>
+		<repository>
+	        <id>protege-mvn-repo</id>
+	        <url>https://b2ihealthcare.github.io/protege/</url>
+	        <releases>
+	           <enabled>true</enabled>
+	        </releases>
+	     </repository>
+	</repositories>
 
 </project>
