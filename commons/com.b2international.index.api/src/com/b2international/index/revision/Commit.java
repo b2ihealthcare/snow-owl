@@ -83,6 +83,7 @@ public final class Commit implements WithScore {
 		private long timestamp;
 		private List<CommitDetail> details;
 		private String groupId;
+		private RevisionBranchPoint mergeSource;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -119,8 +120,13 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
+		public Builder mergeSource(final RevisionBranchPoint mergeSource) {
+			this.mergeSource = mergeSource;
+			return this;
+		}
+		
 		public Commit build() {
-			return new Commit(id, branch, author, comment, timestamp, groupId, details);
+			return new Commit(id, branch, author, comment, timestamp, groupId, details, mergeSource);
 		}
 
 	}
@@ -200,6 +206,7 @@ public final class Commit implements WithScore {
 	private final long timestamp;
 	private final String groupId;
 	private final List<CommitDetail> details;
+	private final RevisionBranchPoint mergeSource;
 	
 	private float score = 0.0f;
 	
@@ -213,13 +220,15 @@ public final class Commit implements WithScore {
 			final String comment,
 			final long timestamp,
 			final String groupId,
-			final List<CommitDetail> details) {
+			final List<CommitDetail> details, 
+			final RevisionBranchPoint mergeSource) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
 		this.comment = comment;
 		this.timestamp = timestamp;
 		this.groupId = groupId;
+		this.mergeSource = mergeSource;
 		this.details = Collections3.toImmutableList(details);
 	}
 
@@ -261,6 +270,14 @@ public final class Commit implements WithScore {
 	public List<CommitDetail> getDetails() {
 		return details;
 	}
+	
+	public RevisionBranchPoint getMergeSource() {
+		return mergeSource;
+	}
+	
+	public boolean isMergeCommit() {
+		return mergeSource != null;
+	}
 
 	public Collection<CommitDetail> getDetailsByObject(String objectId) {
 		if (detailsByObject == null) {
@@ -276,8 +293,4 @@ public final class Commit implements WithScore {
 		return detailsByObject.get(objectId);
 	}
 
-	public Commit apply(Commit commit) {
-		throw new UnsupportedOperationException("TODO implement me");
-	}
-	
 }

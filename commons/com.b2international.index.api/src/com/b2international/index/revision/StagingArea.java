@@ -307,6 +307,7 @@ public final class StagingArea {
 				.comment(commitComment)
 				.timestamp(timestamp)
 				.details(details)
+				.mergeSource(mergeSource)
 				.build();
 		writer.put(commitDoc.getId(), commitDoc);
 		
