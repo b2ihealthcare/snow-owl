@@ -18,7 +18,9 @@ package com.b2international.index;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Collections;
@@ -150,7 +152,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			req.setScroll(query.getScrollKeepAlive());
 		} else if (isLiveScrolled) {
 			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
-			req.searchAfter(query.getSearchAfter());
+			req.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
 		// disable explain explicitly, just in case
@@ -282,6 +284,10 @@ public class EsDocumentSearcher implements DocSearcher {
 	}
 	
 	private String toSearchAfterToken(final Object[] searchAfter) {
+		if (searchAfter == null) {
+			return null;
+		}
+		
 		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			final JavaBinCodec codec = new JavaBinCodec(baos, null);
 			codec.writeArray(searchAfter);
@@ -291,6 +297,25 @@ public class EsDocumentSearcher implements DocSearcher {
 			return Base64.getUrlEncoder().encodeToString(tokenBytes);
 		} catch (IOException e) {
 			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+		}
+	}
+
+	private Object[] fromSearchAfterToken(final String searchAfterToken) {
+		if (Strings.isNullOrEmpty(searchAfterToken)) {
+			return null;
+		}
+		
+		final byte[] decodedToken = Base64
+				.getUrlDecoder()
+				.decode(searchAfterToken);
+		
+		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
+			final Object[] values = new JavaBinCodec()
+					.readArray(dis)
+					.toArray();
+			return values;
+		} catch (final IOException e) {
+			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
 		}
 	}
 
