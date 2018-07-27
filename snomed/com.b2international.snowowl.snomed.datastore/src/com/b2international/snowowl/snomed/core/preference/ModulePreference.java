@@ -47,9 +47,13 @@ public class ModulePreference {
 		final List<String> preference = newArrayList();
 		final String selectedModuleId = checkNotNull(getSnomedConfiguration().getModuleIds().getDefaultChildKey(), "No default module configured.");
 		preference.add(selectedModuleId);
+		
 		// add fall back module ID
 		// FIXME do we need hard-coded fallback or can we delegate this to a user preference???
-		preference.add(Concepts.MODULE_SCT_CORE);
+		if (!preference.contains(Concepts.MODULE_SCT_CORE)) {
+			preference.add(Concepts.MODULE_SCT_CORE);
+		}
+		
 		return preference;
 	}
 
