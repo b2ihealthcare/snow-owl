@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
-@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.headTimestamp = params.headTimestamp")
+@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.timestamp = params.timestamp")
 @Script(name=ClassificationTaskDocument.Scripts.COMPLETED, script="ctx._source.status = 'COMPLETED'; "
 		+ "ctx._source.completionDate = params.completionDate; "
 		+ "ctx._source.hasInferredChanges = params.hasInferredChanges; "

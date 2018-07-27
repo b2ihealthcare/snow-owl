@@ -203,14 +203,14 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	public void classificationRunning(final String classificationId, final long headTimestamp) {
+	public void classificationRunning(final String classificationId, final long timestamp) {
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.RUNNING, 
-					ImmutableMap.of("headTimestamp", headTimestamp)));
+					ImmutableMap.of("timestamp", timestamp)));
 			writer.commit();
 			return null;
 		});
