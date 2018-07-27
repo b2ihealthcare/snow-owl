@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	}
 
 	@Override
-	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, String scrollId, Object[] searchAfter, int limit, int total) {
+	protected SnomedReferenceSetMembers createCollectionResource(List<SnomedReferenceSetMember> results, String scrollId, String searchAfter, int limit, int total) {
 		return new SnomedReferenceSetMembers(results, scrollId, searchAfter, limit, total);
 	}
 	
