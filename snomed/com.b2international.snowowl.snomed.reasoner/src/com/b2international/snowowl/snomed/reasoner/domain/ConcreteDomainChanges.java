@@ -51,7 +51,7 @@ public final class ConcreteDomainChanges extends PageableCollectionResource<Conc
 	public ConcreteDomainChanges(
 			@JsonProperty("items") final List<ConcreteDomainChange> items, 
 			@JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final Object[] searchAfter,
+			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);

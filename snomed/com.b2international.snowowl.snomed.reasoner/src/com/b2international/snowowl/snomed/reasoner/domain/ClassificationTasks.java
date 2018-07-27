@@ -51,7 +51,7 @@ public final class ClassificationTasks extends PageableCollectionResource<Classi
 	public ClassificationTasks(
 			@JsonProperty("items") final List<ClassificationTask> items, 
 			@JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final Object[] searchAfter,
+			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);

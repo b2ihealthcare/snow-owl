@@ -51,7 +51,7 @@ public final class EquivalentConceptSets extends PageableCollectionResource<Equi
 	public EquivalentConceptSets(
 			@JsonProperty("items") final List<EquivalentConceptSet> items, 
 			@JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final Object[] searchAfter,
+			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);
