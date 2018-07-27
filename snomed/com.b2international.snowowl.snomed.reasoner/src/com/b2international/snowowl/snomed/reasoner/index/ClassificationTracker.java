@@ -293,13 +293,15 @@ public final class ClassificationTracker implements IDisposableService {
 			final String classificationId, 
 			final InternalSctIdSet unsatisfiableConcepts) {
 
-		final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
-				.classificationId(classificationId)
-				.conceptIds(unsatisfiableConcepts.toLongList())
-				.unsatisfiable(true)
-				.build();
-
-		writer.put(UUID.randomUUID().toString(), equivalentDoc);
+		if (!unsatisfiableConcepts.isEmpty()) {
+			final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
+					.classificationId(classificationId)
+					.conceptIds(unsatisfiableConcepts.toLongList())
+					.unsatisfiable(true)
+					.build();
+	
+			writer.put(UUID.randomUUID().toString(), equivalentDoc);
+		}
 	}
 
 	private void indexEquivalentConcepts(final DocWriter writer, 
