@@ -469,7 +469,7 @@ public final class StagingArea {
 		
 	}
 
-	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef) {
+	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeSources = fromRef.difference(toRef)
 				.segments()
@@ -485,7 +485,7 @@ public final class StagingArea {
 		
 		// in case of nothing to merge, then just commit
 		if (fromChangeDetails.isEmpty()) {
-			return;
+			return fromChanges.getCompare().segments().last().end();
 		}
 		
 		final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
@@ -542,6 +542,8 @@ public final class StagingArea {
 			final Collection<String> removedRevisionIds = removedRevisionIdsByType.removeAll(type);
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
 		}
+		
+		return -1L;
 	}
 
 }

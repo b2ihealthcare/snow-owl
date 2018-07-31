@@ -122,12 +122,13 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		final String path = createBranch(MAIN, "a");
 		commit(MAIN, Collections.emptySet());
 		commit(path, Collections.emptySet());
+		
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.DIVERGED);
 	}
 	
 	@Test(expected = BadRequestException.class)
 	public void rebaseMain() throws Exception {
-		branching().rebase(MAIN, MAIN, "Message", () -> {});
+		branching().merge(MAIN, MAIN, "Message");
 	}
 	
 	@Test(expected = BadRequestException.class)
@@ -204,10 +205,12 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		assertTrue(getBranch("MAIN/a/1/2").isDeleted());
 	}
 	
-	@Test(expected = BranchMergeException.class)
+	@Test
 	public void mergeUpToDate() throws Exception {
 		String a = createBranch(MAIN, "a");
+		assertState(a, BranchState.UP_TO_DATE);
 		branching().merge(a, MAIN, "Merge A to MAIN");
+		assertState(a, BranchState.UP_TO_DATE);
 	}
 	
 	@Test
@@ -218,22 +221,28 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().merge(a, MAIN, "Merge A to MAIN");
 		RevisionBranch mainA = getMainBranch();
 		assertTrue(mainA.getHeadTimestamp() > originalMain.getHeadTimestamp());
-		assertState(a, BranchState.DIVERGED);
+		assertState(a, BranchState.UP_TO_DATE);
 	}
 	
-	@Test(expected = BranchMergeException.class)
+	@Test
 	public void mergeBehind() throws Exception {
 		String a = createBranch(MAIN, "a");
+		assertState(a, BranchState.UP_TO_DATE);
 		branching().handleCommit(MAIN, currentTime());
+		assertState(a, BranchState.BEHIND);
 		branching().merge(a, MAIN, "Merge A to MAIN");
+		assertState(a, BranchState.BEHIND);
 	}
 	
-	@Test(expected = BranchMergeException.class)
+	@Test
 	public void mergeDiverged() throws Exception {
 		String a = createBranch(MAIN, "a");
+		assertState(a, BranchState.UP_TO_DATE);
 		branching().handleCommit(MAIN, currentTime());
 		branching().handleCommit(a, currentTime());
+		assertState(a, BranchState.DIVERGED);
 		branching().merge(a, MAIN, "Merge A to MAIN");
+		assertState(a, BranchState.UP_TO_DATE);
 	}
 	
 	@Test
@@ -271,7 +280,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().handleCommit(a, currentTime());
 		assertState(a, BranchState.DIVERGED);
 		branching().merge(MAIN, a, "Rebase A");
-		assertState(a, BranchState.FORWARD);
+		assertState(a, BranchState.UP_TO_DATE);
 	}
 
 	@Test
@@ -287,7 +296,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		
 		branching().merge(MAIN, a, "Rebase A");
 		
-		assertState(a, BranchState.FORWARD);
+		assertState(a, BranchState.UP_TO_DATE);
 		assertState(b, BranchState.BEHIND);
 	}
 	
@@ -305,7 +314,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().merge(MAIN, a, "Rebase A");
 		
 		assertState(a, BranchState.UP_TO_DATE);
-		assertState(b, BranchState.STALE);
+		assertState(b, BranchState.DIVERGED);
 	}
 	
 	@Test
@@ -320,9 +329,9 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		
 		branching().merge(MAIN, a, "Rebase A");
 		
-		assertState(a, BranchState.FORWARD);
-		assertState(b, BranchState.BEHIND);
-		assertState(c, BranchState.BEHIND);
+		assertState(a, BranchState.UP_TO_DATE);
+		assertState(b, BranchState.UP_TO_DATE);
+		assertState(c, BranchState.UP_TO_DATE);
 	}
 	
 	@Test

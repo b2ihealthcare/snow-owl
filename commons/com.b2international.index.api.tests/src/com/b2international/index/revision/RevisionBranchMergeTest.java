@@ -15,7 +15,8 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 
@@ -50,7 +51,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// create a revision on MAIN branch
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		
-		branching().rebase(child, MAIN, "Rebase", () -> {});
+		branching().merge(MAIN, child, "Rebase");
 		// after rebase revision should be visible from child branch
 		assertNotNull(getRevision(child, RevisionData.class, STORAGE_KEY1));
 	}
@@ -77,7 +78,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// create a revision on child branch
 		RevisionData updated = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		indexChange(MAIN, first, updated);
-		branching().rebase(child, MAIN, "Rebase", () -> {});
+		branching().merge(MAIN, child, "Rebase");
 		// after merge revision should be visible from MAIN branch
 		RevisionData afterRebase = getRevision(child, RevisionData.class, STORAGE_KEY1);
 		assertDocEquals(updated, afterRebase);
@@ -104,7 +105,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		String child = createBranch(MAIN, "a");
 		indexRemove(MAIN, first);
 		
-		branching().rebase(child, MAIN, "Rebase", () -> {});
+		branching().merge(MAIN, child, "Rebase");
 		
 		assertNull(getRevision(child, RevisionData.class, STORAGE_KEY1));
 	}

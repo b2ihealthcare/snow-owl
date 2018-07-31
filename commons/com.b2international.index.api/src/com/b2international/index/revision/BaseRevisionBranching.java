@@ -53,6 +53,7 @@ import com.google.common.collect.Iterables;
 public abstract class BaseRevisionBranching {
 
 	private final RevisionIndex index;
+	private final TimestampProvider timestampProvider;
 	private final ObjectMapper mapper;
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
@@ -64,9 +65,14 @@ public abstract class BaseRevisionBranching {
 				}
 			});
 
-	public BaseRevisionBranching(RevisionIndex index, ObjectMapper mapper) {
+	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
 		this.index = index;
+		this.timestampProvider = timestampProvider;
 		this.mapper = mapper;
+	}
+	
+	public long currentTime() {
+		return timestampProvider.getTimestamp();
 	}
 	
 	/**
@@ -256,69 +262,29 @@ public abstract class BaseRevisionBranching {
 	 * @param toPath - the branch to push the changes to
 	 * @param commitMessage
 	 *            - the commit message
-	 * @return
-	 * @throws BranchMergeException
-	 *             - if the branch cannot be merged for some reason
+	 * @return the commit object representing the merge commit or <code>null</code> if there is nothing to merge
 	 */
-	public String merge(String fromPath, String toPath, String commitMessage) {
+	public Commit merge(String fromPath, String toPath, String commitMessage) {
 		if (toPath.equals(fromPath)) {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
 		}
 		RevisionBranch to = getBranch(toPath);
 		RevisionBranch from = getBranch(fromPath);
-		BranchState changesFromState = from.isMain() ? BranchState.FORWARD : from.state(getBranch(from.getParentPath()));
 		
-		if (changesFromState == BranchState.FORWARD) {
-			return applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
-		} else {
-			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", fromPath, toPath, changesFromState);
+		BranchState changesFromState = from.state(to);
+		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
+		if (changesFromState == BranchState.UP_TO_DATE || changesFromState == BranchState.BEHIND) {
+			return null;
 		}
+		
+		final InternalRevisionIndex index = revisionIndex();
+		StagingArea staging = index.prepareCommit(to.getPath());
+		
+		// TODO add conflict processing
+		long commitTimestamp = staging.merge(from.ref(), to.ref());
+		return staging.commit(commitTimestamp != -1L ? commitTimestamp : currentTime(), "TODO", commitMessage);
 	}
 	
-	/**
-	 * Rebases the branch associated with the given path on top of the branch specified with the onTopOfPath argument.
-	 * <p>
-	 * Commits available on the target branch will be available on the resulting branch after successful rebase.
-	 * 
-	 * @param branchPath - the branch to rebase
-	 * @param onTopOf 
-	 *            - the branch on top of which this branch should be lifted
-	 * @param commitMessage
-	 *            - the commit message
-	 * @param postReopen - any additional code to run after postReopen phase
-	 * 
-	 * @return
-	 */
-	public final String rebase(final String branchPath, final String onTopOfPath, final String commitMessage, final Runnable postReopen) {
-		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
-			throw new BadRequestException("MAIN cannot be rebased");
-		}
-		final RevisionBranch revisionBranch = getBranch(branchPath);
-		final BranchState state = revisionBranch.state(getBranch(revisionBranch.getParentPath()));
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
-			final RevisionBranch branch = getBranch(branchPath);
-			final RevisionBranch onTopOf = getBranch(onTopOfPath);
-			return doRebase(branch, onTopOf, commitMessage, postReopen);
-		} else {
-			return branchPath;
-		}
-	}
-
-	protected String doRebase(final RevisionBranch branch, final RevisionBranch onTopOf, final String commitMessage, final Runnable postReopen) {
-		applyChangeSet(branch, onTopOf, true, true, commitMessage);
-		final RevisionBranch rebasedBranch = reopen(onTopOf, branch.getName(), branch.metadata());
-		postReopen.run();
-		
-		if (branch.getHeadTimestamp() > branch.getBaseTimestamp()) {
-			return applyChangeSet(branch, rebasedBranch, false, true, commitMessage); // Implicit notification (reopen & commit)
-		} else {
-			sendChangeEvent(rebasedBranch.getPath()); // Explicit notification (reopen)
-			return rebasedBranch.getPath();
-		}
-	}
-
-	protected abstract String applyChangeSet(RevisionBranch from, RevisionBranch to, boolean dryRun, boolean isRebase, String commitMessage);
-
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return index -> {
 			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));

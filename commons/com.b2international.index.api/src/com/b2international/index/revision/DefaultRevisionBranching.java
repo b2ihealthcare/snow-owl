@@ -33,20 +33,14 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	private final AtomicInteger branchIds = new AtomicInteger(0);
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
-	private final TimestampProvider timestampProvider;
 	private final long mainBranchId;
 
 	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
-		super(index, mapper);
-		this.timestampProvider = timestampProvider;
+		super(index, timestampProvider, mapper);
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
 		this.mainBranchId = nextBranchId();
 	}
 	
-	public long currentTime() {
-		return timestampProvider.getTimestamp();
-	}
-
 	public long nextBranchId() {
 		return branchIds.getAndIncrement();
 	}
@@ -97,19 +91,6 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	@Override
 	protected long getMainBranchId() {
 		return mainBranchId;
-	}
-
-	@Override
-	protected String applyChangeSet(RevisionBranch from, RevisionBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
-		if (!dryRun) {
-			final InternalRevisionIndex index = revisionIndex();
-			StagingArea staging = index.prepareCommit(to.getPath());
-			
-			// TODO add conflict processing
-			staging.merge(from.ref(), to.ref());
-			staging.commit(currentTime(), "TODO", commitMessage);
-		}
-		return to.getPath();
 	}
 
 }

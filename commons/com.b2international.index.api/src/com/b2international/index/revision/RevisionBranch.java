@@ -60,7 +60,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * @since 6.5
 	 */
 	public static enum BranchState {
-		UP_TO_DATE, FORWARD, BEHIND, DIVERGED, STALE
+		UP_TO_DATE, FORWARD, BEHIND, DIVERGED
 	}
 	
 	/**
@@ -395,16 +395,18 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	}
     	
     	long headTimestamp = getHeadTimestamp();
-    	if (mergeTarget != null && mergeTarget.getTimestamp() > headTimestamp) {
-    		headTimestamp = mergeTarget.getTimestamp();
+    	if (mergeTarget != null) {
+    		if (mergeTarget.getTimestamp() > baseTimestamp) {
+    			baseTimestamp = mergeTarget.getTimestamp();
+    		}
+    		if (mergeTarget.getTimestamp() > headTimestamp) {
+    			headTimestamp = mergeTarget.getTimestamp();
+    		}
     	}
     	
     	final long targetHeadTimestamp = target.getHeadTimestamp();
-    	final long targetBaseTimestamp = target.getBaseTimestamp();
     	
-		if (baseTimestamp < targetBaseTimestamp) {
-        	return BranchState.STALE;
-        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
+        if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
         	return BranchState.FORWARD;
         } else if (headTimestamp == baseTimestamp && targetHeadTimestamp > baseTimestamp) {
         	return BranchState.BEHIND;
