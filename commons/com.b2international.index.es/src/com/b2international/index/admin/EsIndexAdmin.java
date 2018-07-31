@@ -21,6 +21,7 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
@@ -42,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Analyzers;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
@@ -52,7 +54,6 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Resources;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -133,8 +134,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
+		InputStream analysisStream = getClass().getResourceAsStream("analysis.json");
+		Settings analysisSettings = Settings.builder()
+				.loadFromStream("analysis.json", analysisStream, true)
+				.build();
+		
+		// FIXME: Is XContent a good alternative to a Map? getAsStructureMap is now private
+		Map<String, Object> analysisMap = ReflectionUtils.callMethod(Settings.class, analysisSettings, "getAsStructuredMap");
+		
 		return ImmutableMap.<String, Object>builder()
-				.put("analysis", Settings.builder().loadFromStream("analysis.json", Resources.getResource(getClass(), "analysis.json").openStream()).build().getAsStructuredMap())
+				.put("analysis", analysisMap)
 				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
 				.put("number_of_replicas", "0")
 				// disable es refresh, we will do it manually on each commit
