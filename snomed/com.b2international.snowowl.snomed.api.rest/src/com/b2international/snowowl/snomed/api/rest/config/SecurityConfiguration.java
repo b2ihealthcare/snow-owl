@@ -15,27 +15,36 @@
  */
 package com.b2international.snowowl.snomed.api.rest.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
-import com.b2international.snowowl.snomed.api.rest.SnowOwlAuthenticationProvider;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 /**
  * @since 7.0
  */
 @Configuration
-@EnableGlobalMethodSecurity(securedEnabled=true, proxyTargetClass=true)
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+	@Autowired
+	private AuthenticationProvider authenticationProvider;
+	
+	@Bean
+	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+	    StrictHttpFirewall firewall = new StrictHttpFirewall();
+	    firewall.setAllowUrlEncodedSlash(true);
+	    return firewall;
+	}
+	
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
 		// REST should have no state, each request is re-authenticated
@@ -57,17 +66,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
-		auth.authenticationProvider(snowOwlAuthenticationProvider());
+		auth.authenticationProvider(authenticationProvider);
 	}
 
-	@Bean
 	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
+	public void configure(WebSecurity web) throws Exception {
+		super.configure(web);
+		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
 	}
 	
-	@Bean
-	public AuthenticationProvider snowOwlAuthenticationProvider() {
-		return new SnowOwlAuthenticationProvider();
-	}
 }

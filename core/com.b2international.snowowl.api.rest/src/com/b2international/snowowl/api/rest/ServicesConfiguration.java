@@ -17,8 +17,6 @@ package com.b2international.snowowl.api.rest;
 
 import static springfox.documentation.builders.PathSelectors.regex;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +44,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.admin.IMessagingService;
 import com.b2international.snowowl.api.admin.IRepositoryService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
@@ -66,9 +63,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.io.Files;
 
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;

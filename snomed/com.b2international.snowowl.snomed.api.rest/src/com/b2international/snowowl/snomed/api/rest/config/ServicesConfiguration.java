@@ -15,23 +15,42 @@
  */
 package com.b2international.snowowl.snomed.api.rest.config;
 
+import static springfox.documentation.builders.PathSelectors.regex;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 
-import javax.servlet.ServletContext;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.commons.options.Metadata;
+import com.b2international.commons.options.MetadataHolder;
+import com.b2international.commons.options.MetadataHolderMixin;
+import com.b2international.commons.options.MetadataMixin;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.api.IAuthenticationService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
@@ -41,114 +60,141 @@ import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.review.BranchState;
+import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
+import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.impl.SnomedBrowserService;
 import com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedExportService;
 import com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService;
+import com.b2international.snowowl.snomed.api.rest.AntPathWildcardMatcher;
+import com.b2international.snowowl.snomed.api.rest.SnowOwlAuthenticationProvider;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.CollectionResourceMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
+import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
+import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.fasterxml.classmate.TypeResolver;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
-import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
-import com.mangofactory.swagger.paths.RelativeSwaggerPathProvider;
-import com.mangofactory.swagger.plugin.EnableSwagger;
-import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
-import com.wordnik.swagger.model.ApiInfo;
+
+import springfox.documentation.schema.AlternateTypeRule;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
  *
  * @since 1.0
  */
+@EnableWebMvc
+@EnableSwagger2
 @Configuration
-@EnableSwagger
+@ComponentScan
+@Import({ SecurityConfiguration.class })
 @PropertySource("classpath:com/b2international/snowowl/snomed/api/rest/config/service_configuration.properties")
-@ComponentScan("com.b2international.snowowl.snomed.api.rest")
-public class ServicesConfiguration {
+public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 
-	private SpringSwaggerConfig springSwaggerConfig;
-	private ServletContext servletContext;
-
+	@Value("${api.version}")
 	private String apiVersion;
 
+	@Value("${api.title}")
 	private String apiTitle;
+	
+	@Value("${api.termsOfServiceUrl}")
 	private String apiTermsOfServiceUrl;
+	
+	@Value("${api.contact}")
 	private String apiContact;
+	
+	@Value("${api.license}")
 	private String apiLicense;
+	
+	@Value("${api.licenseUrl}")
 	private String apiLicenseUrl;
 	
-	@Autowired
-	public void setServletContext(final ServletContext servletContext) {
-		this.servletContext = servletContext;
+	@Override
+	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
+		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+		stringConverter.setWriteAcceptCharset(false);
+		converters.add(stringConverter);
+
+		converters.add(new ByteArrayHttpMessageConverter());
+		converters.add(new ResourceHttpMessageConverter());
+		converters.add(new CsvMessageConverter());
+
+		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		jacksonConverter.setObjectMapper(objectMapper());
+		converters.add(jacksonConverter);
 	}
 
-	@Autowired
-	public void setSpringSwaggerConfig(final SpringSwaggerConfig springSwaggerConfig) {
-		this.springSwaggerConfig = springSwaggerConfig;
+	@Override
+	public void configurePathMatch(final PathMatchConfigurer configurer) {
+		configurer.setUseRegisteredSuffixPatternMatch(true);
+		configurer.setPathMatcher(new AntPathWildcardMatcher());
 	}
 
-	@Autowired
-	@Value("${api.version}")
-	public void setApiVersion(final String apiVersion) {
-		this.apiVersion = apiVersion;
+	@Override
+	public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
+		configurer.enable();
 	}
-
-	@Autowired
-	@Value("${api.title}")
-	public void setApiTitle(final String apiTitle) {
-		this.apiTitle = apiTitle;
+	
+	@Bean
+	public ObjectMapper objectMapper() {
+		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new GuavaModule());
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
+		final ISO8601DateFormat df = new ISO8601DateFormat();
+		df.setTimeZone(TimeZone.getTimeZone("UTC"));
+		objectMapper.setDateFormat(df);
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		objectMapper.addMixIn(CollectionResource.class, CollectionResourceMixin.class);
+		objectMapper.addMixIn(SnomedComponent.class, ISnomedComponentMixin.class);
+		objectMapper.addMixIn(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
+		objectMapper.addMixIn(Branch.class, BranchMixin.class);
+		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
+		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
+		objectMapper.addMixIn(Review.class, ReviewMixin.class);
+		objectMapper.addMixIn(BranchState.class, BranchStateMixin.class);
+		return objectMapper;
 	}
-
-	@Autowired
-	@Value("${api.termsOfServiceUrl}")
-	public void setApiTermsOfServiceUrl(final String apiTermsOfServiceUrl) {
-		this.apiTermsOfServiceUrl = apiTermsOfServiceUrl;
-	}
-
-	@Autowired
-	@Value("${api.contact}")
-	public void setApiContact(final String apiContact) {
-		this.apiContact = apiContact;
-	}
-
-	@Autowired
-	@Value("${api.license}")
-	public void setApiLicense(final String apiLicense) {
-		this.apiLicense = apiLicense;
-	}
-
-	@Autowired
-	@Value("${api.licenseUrl}")
-	public void setApiLicenseUrl(final String apiLicenseUrl) {
-		this.apiLicenseUrl = apiLicenseUrl;
+	
+	@Bean
+	public MultipartResolver multipartResolver() {
+		return new StandardServletMultipartResolver();
 	}
 
 	@Bean
-	public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
-		final SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(springSwaggerConfig);
-		swaggerSpringMvcPlugin.apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
-		swaggerSpringMvcPlugin.apiVersion(apiVersion);
-		swaggerSpringMvcPlugin.pathProvider(new RelativeSwaggerPathProvider(servletContext));
-		swaggerSpringMvcPlugin.useDefaultResponseMessages(false);
-		swaggerSpringMvcPlugin.ignoredParameterTypes(Principal.class, Void.class);
+	public Docket customDocket() {
 		final TypeResolver resolver = new TypeResolver();
-		swaggerSpringMvcPlugin.genericModelSubstitutes(ResponseEntity.class);
-		swaggerSpringMvcPlugin.genericModelSubstitutes(DeferredResult.class);
-		swaggerSpringMvcPlugin.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)));
-		swaggerSpringMvcPlugin.directModelSubstitute(Branch.class, BranchMixin.class);
-
-		return swaggerSpringMvcPlugin;
+		return new Docket(DocumentationType.SWAGGER_2)
+            .select().paths(regex("/.*")).build()
+            .useDefaultResponseMessages(false)
+            .ignoredParameterTypes(Principal.class)
+            .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
+            .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
+            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 
 	private String readApiDescription() {
@@ -158,6 +204,11 @@ public class ServicesConfiguration {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read api-description.html file", e);
 		}
+	}
+	
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
+		return new SnowOwlAuthenticationProvider();
 	}
 	
 	@Bean
