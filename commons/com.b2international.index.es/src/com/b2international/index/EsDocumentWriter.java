@@ -214,10 +214,7 @@ public class EsDocumentWriter implements Writer {
 						_source = mapper.writeValueAsBytes(obj);
 					}
 					
-					processor.add(new IndexRequest()
-							.index(admin.getTypeIndex(mapping))
-							.type(mapping.typeAsString())
-							.id(id)
+					processor.add(new IndexRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), id)
 							.opType(OpType.INDEX)
 							.source(_source, XContentType.JSON));
 				}
@@ -228,10 +225,7 @@ public class EsDocumentWriter implements Writer {
 				mappingsToRefresh.add(mapping);
 				final String typeString = mapping.typeAsString();
 				for (String id : deleteOperations.get(type)) {
-					processor.add(new DeleteRequest()
-							.index(admin.getTypeIndex(mapping))
-							.type(typeString)
-							.id(id));
+					processor.add(new DeleteRequest(admin.getTypeIndex(mapping), typeString, id));
 				}
 			}
 			
@@ -241,6 +235,7 @@ public class EsDocumentWriter implements Writer {
 				throw new IndexException("Interrupted bulk processing part of the commit", e);
 			}
 		}
+
 		// refresh the index if there were only updates
 		admin.refresh(mappingsToRefresh);
 	}

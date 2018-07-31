@@ -63,7 +63,6 @@ import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
@@ -96,17 +95,13 @@ public class EsDocumentSearcher implements DocSearcher {
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		final GetRequest getRequest = new GetRequest()
-				.index(admin.getTypeIndex(mapping))
-				.type(mapping.typeAsString())
-				.id(key)
+		final GetRequest getRequest = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
-		
-		final GetResponse response = admin.client()
+		final GetResponse getResponse = admin.client()
 				.get(getRequest);
 		
-		if (response.isExists()) {
-			final byte[] bytes = response.getSourceAsBytes();
+		if (getResponse.isExists()) {
+			final byte[] bytes = getResponse.getSourceAsBytes();
 			return mapper.readValue(bytes, 0, bytes.length, type);
 		} else {
 			return null;
@@ -125,8 +120,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequest req = new SearchRequest()
-				.indices(admin.getTypeIndex(mapping))
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
 				.types(mapping.typeAsString());
 		
 		final SearchSourceBuilder reqSource = req.source()
@@ -183,12 +177,11 @@ public class EsDocumentSearcher implements DocSearcher {
 		final int totalHits = (int) response.getHits().getTotalHits();
 		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
 		
-		final Builder<SearchHit> allHits = ImmutableList.builder();
+		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.add(response.getHits().getHits());
 
 		while (isLocalScroll && numDocsToFetch > 0) {
-			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest()
-					.scrollId(response.getScrollId())
+			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
 					.scroll(scrollTime);
 			
 			response = client.searchScroll(searchScrollRequest);
@@ -254,8 +247,7 @@ public class EsDocumentSearcher implements DocSearcher {
 
 	@Override
 	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest()
-				.scrollId(scroll.getScrollId())
+		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
 				.scroll(scroll.getKeepAlive());
 		final SearchResponse response = admin.client()
 				.searchScroll(searchScrollRequest);
@@ -381,8 +373,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
-		final SearchRequest req = new SearchRequest()
-				.indices(admin.getTypeIndex(mapping))
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
 				.types(mapping.typeAsString());
 		
 		final SearchSourceBuilder reqSource = req.source()
