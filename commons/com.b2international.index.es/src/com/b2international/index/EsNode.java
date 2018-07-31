@@ -104,12 +104,18 @@ public final class EsNode extends Node {
 		return esSettings.build();
 	}
 	
-	private static void putSettingIfAbsent(Settings.Builder settings, String key, Object value) {
-		if (!settings.internalMap().containsKey(key)) {
+	private static void putSettingIfAbsent(Settings.Builder settings, String key, String value) {
+		if (!settings.keys().contains(key)) {
 			settings.put(key, value);
 		}
 	}
 
+	private static void putSettingIfAbsent(Settings.Builder settings, String key, boolean value) {
+		if (!settings.keys().contains(key)) {
+			settings.put(key, value);
+		}
+	}
+	
 	protected EsNode(Settings settings) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
 				.add(Netty4Plugin.class)
