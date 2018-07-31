@@ -6,35 +6,33 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/aopalliance-1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/classmate-1.1.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-lang-2.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-logging-1.1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/joda-convert-1.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/joda-time-2.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-ast_2.10-3.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-core_2.10-3.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-ext_2.10-3.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-jackson_2.10-3.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/json4s-native_2.10-3.2.9.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/jsr311-api-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/objenesis-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-aop-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-beans-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-context-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-core-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-expression-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-hateoas-0.11.0.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-oxm-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-config-3.2.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-core-3.2.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-web-3.2.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-web-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-webmvc-4.0.5.RELEASE.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-annotations-1.3.11.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-core_2.10-1.3.11.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-models-0.9.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-springmvc-0.9.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-annotations-1.5.14.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/byte-buddy-1.7.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/classmate-1.3.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/commons-logging-1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/javassist-3.21.0-GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/mapstruct-1.2.0.Final.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/reflections-0.9.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-aop-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-beans-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-context-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-core-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-expression-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-hateoas-0.24.0.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-plugin-core-1.2.0.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-plugin-metadata-1.2.0.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-config-4.2.4.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-core-4.2.4.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-security-web-4.2.4.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-web-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/spring-webmvc-4.3.10.RELEASE.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-core-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-schema-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-spi-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-spring-web-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-swagger-common-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/springfox-swagger2-2.8.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="WEB-INF/lib/swagger-models-1.5.14.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.admin.IMessagingService;
-import com.mangofactory.swagger.annotations.ApiIgnore;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Spring controller for exposing {@link IMessagingService} functionality.
- * 
+ * since 7.0 
  */
 @RestController
 @RequestMapping(value={"/messages"}, consumes={ MediaType.TEXT_PLAIN_VALUE }, produces={ MediaType.TEXT_PLAIN_VALUE })
@@ -43,7 +44,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 public class MessagingRestService extends AbstractAdminRestService {
 
 	@Autowired
-	protected IMessagingService delegate;
+	protected IMessagingService messagingService;
 
 	@RequestMapping(value="send", method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -59,6 +60,6 @@ public class MessagingRestService extends AbstractAdminRestService {
 			@ApiParam(value="the message to send")
 			final String message) {
 
-		delegate.sendMessage(message);
+		messagingService.sendMessage(message);
 	}
 }

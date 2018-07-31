@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,47 @@
  */
 package com.b2international.snowowl.api.rest;
 
+import static springfox.documentation.builders.PathSelectors.regex;
+
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import javax.servlet.ServletContext;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.api.admin.IMessagingService;
+import com.b2international.snowowl.api.admin.IRepositoryService;
+import com.b2international.snowowl.api.codesystem.ICodeSystemService;
+import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
+import com.b2international.snowowl.api.impl.admin.MessagingServiceImpl;
+import com.b2international.snowowl.api.impl.admin.RepositoryServiceImpl;
+import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
+import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.classmate.TypeResolver;
@@ -48,108 +66,96 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.mangofactory.swagger.configuration.SpringSwaggerConfig;
-import com.mangofactory.swagger.models.alternates.AlternateTypeRule;
-import com.mangofactory.swagger.paths.RelativeSwaggerPathProvider;
-import com.mangofactory.swagger.plugin.EnableSwagger;
-import com.mangofactory.swagger.plugin.SwaggerSpringMvcPlugin;
-import com.wordnik.swagger.model.ApiInfo;
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
+
+import springfox.documentation.schema.AlternateTypeRule;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
- * The Spring configuration class for Snow Owl's internal REST services module.
- *
- * @since 1.0
+ * @since 7.0
  */
-@Configuration
-@EnableSwagger
 @EnableWebMvc
+@EnableSwagger2
+@Configuration
+@ComponentScan
+@Import({ SecurityConfiguration.class })
+@PropertySource(value="classpath:com/b2international/snowowl/api/rest/service_configuration.properties")
 public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 
-	private SpringSwaggerConfig springSwaggerConfig;
-	private ServletContext servletContext;
-
+	@Value("${api.version}")
 	private String apiVersion;
-
+	
+	@Value("${api.title}")
 	private String apiTitle;
+	
+	@Value("${api.description}")
 	private String apiDescription;
+	
+	@Value("${api.termsOfServiceUrl}")
 	private String apiTermsOfServiceUrl;
+	
+	@Value("${api.contact}")
 	private String apiContact;
+	
+	@Value("${api.license}")
 	private String apiLicense;
+	
+	@Value("${api.licenseUrl}")
 	private String apiLicenseUrl;
 	
-	@Autowired
-	public void setServletContext(final ServletContext servletContext) {
-		this.servletContext = servletContext;
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
+		return new SnowOwlAuthenticationProvider();
 	}
-
-	@Autowired
-	public void setSpringSwaggerConfig(final SpringSwaggerConfig springSwaggerConfig) {
-		this.springSwaggerConfig = springSwaggerConfig;
+	
+	@Bean
+	public IMessagingService messagingService() {
+		return new MessagingServiceImpl();
 	}
-
-	@Autowired
-	@Value("${api.version}")
-	public void setApiVersion(final String apiVersion) {
-		this.apiVersion = apiVersion;
+	
+	@Bean
+	public ICodeSystemVersionService codeSystemVersionService() {
+		return new CodeSystemVersionServiceImpl();
 	}
-
-	@Autowired
-	@Value("${api.title}")
-	public void setApiTitle(final String apiTitle) {
-		this.apiTitle = apiTitle;
+	
+	@Bean
+	public ICodeSystemService codeSystemService() {
+		return new CodeSystemServiceImpl();
 	}
-
-	@Autowired
-	@Value("${api.description}")
-	public void setApiDescription(final String apiDescription) {
-		this.apiDescription = apiDescription;
+	
+	@Bean
+	public MultipartResolver multipartResolver() {
+		return new StandardServletMultipartResolver();
 	}
-
-	@Autowired
-	@Value("${api.termsOfServiceUrl}")
-	public void setApiTermsOfServiceUrl(final String apiTermsOfServiceUrl) {
-		this.apiTermsOfServiceUrl = apiTermsOfServiceUrl;
-	}
-
-	@Autowired
-	@Value("${api.contact}")
-	public void setApiContact(final String apiContact) {
-		this.apiContact = apiContact;
-	}
-
-	@Autowired
-	@Value("${api.license}")
-	public void setApiLicense(final String apiLicense) {
-		this.apiLicense = apiLicense;
-	}
-
-	@Autowired
-	@Value("${api.licenseUrl}")
-	public void setApiLicenseUrl(final String apiLicenseUrl) {
-		this.apiLicenseUrl = apiLicenseUrl;
+	
+	@Bean
+	public IRepositoryService repositoryService() {
+		return new RepositoryServiceImpl();
 	}
 	
 	@Bean
 	public IEventBus eventBus() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
 	}
-
+	
 	@Bean
-	public SwaggerSpringMvcPlugin swaggerSpringMvcPlugin() {
-		final SwaggerSpringMvcPlugin swaggerSpringMvcPlugin = new SwaggerSpringMvcPlugin(springSwaggerConfig);
-		swaggerSpringMvcPlugin.apiInfo(new ApiInfo(apiTitle, apiDescription, apiTermsOfServiceUrl, apiContact, apiLicense, apiLicenseUrl));
-		swaggerSpringMvcPlugin.apiVersion(apiVersion);
-		swaggerSpringMvcPlugin.pathProvider(new RelativeSwaggerPathProvider(servletContext));
-		swaggerSpringMvcPlugin.useDefaultResponseMessages(false);
-		swaggerSpringMvcPlugin.ignoredParameterTypes(Principal.class, Void.class);
+	public Docket customDocket() {
 		final TypeResolver resolver = new TypeResolver();
-		swaggerSpringMvcPlugin.genericModelSubstitutes(ResponseEntity.class);
-		swaggerSpringMvcPlugin.genericModelSubstitutes(DeferredResult.class);
-		swaggerSpringMvcPlugin.alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)));
-		
-		return swaggerSpringMvcPlugin;
+		return new Docket(DocumentationType.SWAGGER_2)
+            .select().paths(regex("/.*")).build()
+            .useDefaultResponseMessages(false)
+            .ignoredParameterTypes(Principal.class)
+            .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
+            .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
+            .apiInfo(new ApiInfo(apiTitle, "Info", apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
-
+	
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
@@ -163,6 +169,11 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
 		return objectMapper;
 	}
+	
+	@Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }
 
 	@Override
 	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
@@ -183,4 +194,5 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 		configurer.setUseRegisteredSuffixPatternMatch(true);
 		configurer.setPathMatcher(new AntPathWildcardMatcher());
 	}
+	
 }

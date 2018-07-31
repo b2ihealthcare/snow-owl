@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,24 +39,25 @@ import com.b2international.snowowl.api.rest.codesystem.domain.VersionInput;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Code Systems")
+@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
 @RequestMapping(
 		value = "/codesystems/{shortName}/versions",
 		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class CodeSystemVersionRestService extends AbstractRestService {
-
+	
 	@Autowired
-	protected ICodeSystemVersionService delegate;
+	protected ICodeSystemVersionService codeSystemVersionService;
 
 	@ApiOperation(
 			value="Retrieve all code system versions",
@@ -70,7 +71,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") final String shortName) {
 
-		return CollectionResource.of(delegate.getCodeSystemVersions(shortName));
+		return CollectionResource.of(codeSystemVersionService.getCodeSystemVersions(shortName));
 	}
 
 	@ApiOperation(
@@ -90,7 +91,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@PathVariable(value="version") 
 			final String version) {
 
-		return delegate.getCodeSystemVersionById(shortName, version);
+		return codeSystemVersionService.getCodeSystemVersionById(shortName, version);
 	}
 	
 	@ApiOperation(
@@ -113,7 +114,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@ApiParam(value="Version parameters")
 			@RequestBody final VersionInput input) {
 		ApiValidation.checkInput(input);
-		final ICodeSystemVersion version = delegate.createVersion(shortName, input);
+		final ICodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
 		return Responses.created(getVersionURI(shortName, version.getVersion())).build();
 	}
 
