@@ -23,7 +23,6 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,13 +50,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * A p into your next commit.
@@ -479,71 +478,128 @@ public final class StagingArea {
 				.collect(Collectors.toCollection(TreeSet::new));
 		
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
-		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
 		
 		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
 		
-		// in case of nothing to merge, then just commit
+		final long fastForwardCommitTimestamp = fromChanges.getCompare().segments().last().end();
+		// in case of nothing to merge, then just commit the headtimestamp change, similar to fast forward in Git
 		if (fromChangeDetails.isEmpty()) {
-			return fromChanges.getCompare().segments().last().end();
+			return fastForwardCommitTimestamp;
 		}
 		
-		final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
+		
+		// check conflicts and commit only the resolved conflicts
+		final List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE).getDetails();
+		
+		// if nothing happend on toBranch, then just return the last from segment timestamp just like in the prev if statement to fast forward branch head
+		if (toChangeDetails.isEmpty()) {
+			return fastForwardCommitTimestamp; 
+		}
+		
+		// process and categorize from changes
+		final Multimap<Class<? extends Revision>, String> newRevisionIdsToMergeByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToMergeByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToMergeByType = HashMultimap.create();
 		
 		fromChangeDetails.forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
-					newRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+//					newRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 				}
 			} else if (detail.isChange()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
 				if (Revision.class.isAssignableFrom(revType)) {
-					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
+					changedRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getObject().id());
 				}
 			} else if (detail.isRemove()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
-					removedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					removedRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 				}
 			} else {
 				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());
 			}
 		});
 		
-		// apply new objects
-		for (Class<? extends Revision> type : newHashSet(newRevisionIdsByType.keySet())) {
-			final Collection<String> newRevisionIds = newRevisionIdsByType.removeAll(type);
-			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
-		}
+		// process and categorize toChanges
+		final Multimap<Class<? extends Revision>, String> newRevisionIdsToCheckByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToCheckByType = HashMultimap.create();
+		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToCheckByType = HashMultimap.create();
 		
-		// apply changed objects
-		for (Class<? extends Revision> type : newHashSet(changedRevisionIdsByType.keySet())) {
-			final Collection<String> changedRevisionIds = changedRevisionIdsByType.removeAll(type);
-			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
-			final Map<String,? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
-			
-			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
-			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
-			for (String updatedId : updatedRevisionsById.keySet()) {
-				if (oldRevisionsById.containsKey(updatedId)) {
-					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
-				} else {
-					stageNew(updatedRevisionsById.get(updatedId));
+		toChangeDetails.forEach(detail -> {
+			// add all objects to the tx
+			if (detail.isAdd()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					newRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 				}
+			} else if (detail.isChange()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					changedRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getObject().id());
+				}
+			} else if (detail.isRemove()) {
+				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				if (Revision.class.isAssignableFrom(revType)) {
+					removedRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+				}
+			} else {
+				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());
 			}
+		});
+
+		boolean stagedChanges = false;
+		
+		Set<String> newRevisionIdsToMerge = newHashSet(newRevisionIdsToMergeByType.values());
+		Set<String> newRevisionIdsToCheck = newHashSet(newRevisionIdsToCheckByType.values());
+		if (!Sets.intersection(newRevisionIdsToMerge, newRevisionIdsToCheck).isEmpty()) {
+			throw new UnsupportedOperationException("TODO conflict detection and resolution");
 		}
 		
-		// apply deleted objects
-		for (Class<? extends Revision> type : newHashSet(removedRevisionIdsByType.keySet())) {
-			final Collection<String> removedRevisionIds = removedRevisionIdsByType.removeAll(type);
-			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
+		Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.values());
+		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
+		if (!Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck).isEmpty()) {
+			throw new UnsupportedOperationException("TODO conflict detection and resolution");
 		}
 		
-		return -1L;
+		Set<String> removedRevisionIdsToMerge = newHashSet(removedRevisionIdsToMergeByType.values());
+		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
+		if (!Sets.intersection(removedRevisionIdsToMerge, removedRevisionIdsToCheck).isEmpty()) {
+			throw new UnsupportedOperationException("TODO conflict detection and resolution");
+		}
+		
+//		// apply new objects
+//		for (Class<? extends Revision> type : newHashSet(newRevisionIdsToMergeByType.keySet())) {
+//			final Collection<String> newRevisionIds = newRevisionIdsToMergeByType.removeAll(type);
+//			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
+//		}
+//		
+//		// apply changed objects
+//		for (Class<? extends Revision> type : newHashSet(changedRevisionIdsToMergeByType.keySet())) {
+//			final Collection<String> changedRevisionIds = changedRevisionIdsToMergeByType.removeAll(type);
+//			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
+//			final Map<String,? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+//			
+//			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
+//			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
+//			for (String updatedId : updatedRevisionsById.keySet()) {
+//				if (oldRevisionsById.containsKey(updatedId)) {
+//					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId));
+//				} else {
+//					stageNew(updatedRevisionsById.get(updatedId));
+//				}
+//			}
+//		}
+//		
+//		// apply deleted objects
+//		for (Class<? extends Revision> type : newHashSet(removedRevisionIdsToMergeByType.keySet())) {
+//			final Collection<String> removedRevisionIds = removedRevisionIdsToMergeByType.removeAll(type);
+//			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
+//		}
+		
+		return stagedChanges ? -1L : fastForwardCommitTimestamp;
 	}
 
 }

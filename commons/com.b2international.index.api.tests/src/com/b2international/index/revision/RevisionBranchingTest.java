@@ -111,29 +111,12 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void behindStateAfterParentCommit() throws Exception {
-		final String path = createBranch(MAIN, "a");
-		commit(MAIN, Collections.emptySet());
-		assertState(path, BranchState.BEHIND);
-	}
-	
-	@Test
 	public void divergedStateAfterParentAndBranchCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
 		commit(MAIN, Collections.emptySet());
 		commit(path, Collections.emptySet());
 		
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.DIVERGED);
-	}
-	
-	@Test(expected = BadRequestException.class)
-	public void rebaseMain() throws Exception {
-		branching().merge(MAIN, MAIN, "Message");
-	}
-	
-	@Test(expected = BadRequestException.class)
-	public void mergeMain() throws Exception {
-		branching().merge(MAIN, MAIN, "Message");
 	}
 	
 	@Test(expected = NotFoundException.class)
@@ -203,46 +186,6 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		branching().delete(a);
 		assertTrue(getBranch("MAIN/a/1").isDeleted());
 		assertTrue(getBranch("MAIN/a/1/2").isDeleted());
-	}
-	
-	@Test
-	public void mergeUpToDate() throws Exception {
-		String a = createBranch(MAIN, "a");
-		assertState(a, BranchState.UP_TO_DATE);
-		branching().merge(a, MAIN, "Merge A to MAIN");
-		assertState(a, BranchState.UP_TO_DATE);
-	}
-	
-	@Test
-	public void mergeForward() throws Exception {
-		RevisionBranch originalMain = getMainBranch();
-		String a = createBranch(MAIN, "a");
-		branching().handleCommit(a, currentTime());
-		branching().merge(a, MAIN, "Merge A to MAIN");
-		RevisionBranch mainA = getMainBranch();
-		assertTrue(mainA.getHeadTimestamp() > originalMain.getHeadTimestamp());
-		assertState(a, BranchState.UP_TO_DATE);
-	}
-	
-	@Test
-	public void mergeBehind() throws Exception {
-		String a = createBranch(MAIN, "a");
-		assertState(a, BranchState.UP_TO_DATE);
-		branching().handleCommit(MAIN, currentTime());
-		assertState(a, BranchState.BEHIND);
-		branching().merge(a, MAIN, "Merge A to MAIN");
-		assertState(a, BranchState.BEHIND);
-	}
-	
-	@Test
-	public void mergeDiverged() throws Exception {
-		String a = createBranch(MAIN, "a");
-		assertState(a, BranchState.UP_TO_DATE);
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		assertState(a, BranchState.DIVERGED);
-		branching().merge(a, MAIN, "Merge A to MAIN");
-		assertState(a, BranchState.UP_TO_DATE);
 	}
 	
 	@Test

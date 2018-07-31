@@ -247,6 +247,10 @@ public abstract class BaseRevisionBranching {
 		return getBranchState(getBranch(branchPath));
 	}
 	
+	public BranchState getBranchState(String branchPath, String compareWith) {
+		return getBranch(branchPath).state(getBranch(compareWith));
+	}
+	
 	public BranchState getBranchState(RevisionBranch branch) {
 		if (RevisionBranch.MAIN_PATH.equals(branch.getPath())) {
 			return BranchState.UP_TO_DATE;
@@ -336,11 +340,6 @@ public abstract class BaseRevisionBranching {
 	 */
 	public final void updateMetadata(String branchPath, Metadata metadata) {
 		commit(update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
-	}
-	
-	public final void handleCommit(final String branchPath, final long timestamp) {
-		commit(update(branchPath, RevisionBranch.Scripts.COMMIT, ImmutableMap.of("headTimestamp", timestamp)));
-		sendChangeEvent(branchPath); // Explicit notification (commit)
 	}
 	
 }

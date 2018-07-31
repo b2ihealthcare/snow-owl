@@ -16,10 +16,14 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -361,12 +365,41 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
-		return new RevisionBranchRef(getId(), getPath(), getSegments());
+    	final Map<Long, RevisionBranchPoint> latestMergeSources = getLatestMergeSources();
+    	// extend segments with the latest merge timestamp to access all revisions
+    	final SortedSet<RevisionSegment> visibleSegments = getSegments().stream()
+    			.map(segment -> {
+    				RevisionBranchPoint latestMergeSource = latestMergeSources.remove(segment.branchId());
+    				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
+    					return segment.withEnd(latestMergeSource.getTimestamp());
+    				} else {
+    					return segment;
+    				}
+    			})
+    			.collect(Collectors.toCollection(TreeSet::new));
+    	
+    	// add all remaining merge sources to the visible segment list
+    	latestMergeSources.values().forEach(latestMergeSource -> {
+    		// TODO start timestamp???
+    		visibleSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
+    	});
+    	
+		return new RevisionBranchRef(getId(), getPath(), visibleSegments);
 	}
 
     @JsonIgnore
 	public RevisionBranchRef baseRef() {
-		return new RevisionBranchRef(getParentSegments().last().branchId(), getParentPath(), getParentSegments());
+		final SortedSet<RevisionSegment> parentSegments = getParentSegments().stream()
+    			.map(segment -> {
+    				RevisionBranchPoint latestMergeSource = getLatestMergeSource(segment.branchId());
+    				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
+    					return segment.withEnd(latestMergeSource.getTimestamp());
+    				} else {
+    					return segment;
+    				}
+    			})
+    			.collect(Collectors.toCollection(TreeSet::new));
+		return new RevisionBranchRef(parentSegments.last().branchId(), getParentPath(), parentSegments);
 	}
     
     /**
@@ -386,8 +419,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
     @JsonIgnore
 	public BranchState state(RevisionBranch target) {
-    	final RevisionBranchPoint mergeSource = this.getMergeSource(target);
-    	final RevisionBranchPoint mergeTarget = target.getMergeSource(this);
+    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId());
+    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId());
     	
     	long baseTimestamp = getBaseTimestamp();
     	if (mergeSource != null) {
@@ -417,14 +450,22 @@ public final class RevisionBranch extends MetadataHolderImpl {
         }
     }
 
-	private RevisionBranchPoint getMergeSource(RevisionBranch branchToFind) {
-		return getMergeSources().values()
-    			.stream()
-    			.flatMap(SortedSet::stream)
-    			.filter(ms -> ms.getBranchId() == branchToFind.getId())
-    			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
-    			.findFirst()
-    			.orElse(null);
+	private RevisionBranchPoint getLatestMergeSource(long branchToFind) {
+		return getLatestMergeSources().get(branchToFind);
+	}
+
+	private Map<Long, RevisionBranchPoint> getLatestMergeSources() {
+		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
+		getMergeSources().values()
+			.stream()
+			.flatMap(SortedSet::stream)
+			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
+			.forEach(branchPoint -> {
+				if (!latestMergeSources.containsKey(branchPoint.getBranchId())) {
+					latestMergeSources.put(branchPoint.getBranchId(), branchPoint);
+				}
+			});
+		return latestMergeSources;
 	}
 
 }
