@@ -64,6 +64,11 @@ public interface IndexClientFactory {
 	String COMMIT_CONCURRENCY_LEVEL = "concurrencyLevel";
 
 	/**
+	 * Configuration key to specify the URL of the Elasticsearch instance to connect to
+	 */
+	String CLIENT_URL = "clientUrl";
+	
+	/**
 	 * The default translog sync interval is 5 seconds.
 	 */
 	String DEFAULT_TRANSLOG_SYNC_INTERVAL = "5s";
@@ -78,6 +83,11 @@ public interface IndexClientFactory {
 	 * Elasticsearch module only configuration key.
 	 */
 	int DEFAULT_COMMIT_CONCURRENCY_LEVEL = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+	
+	/**
+	 * The default connection URL points to the embedded ES instance
+	 */
+	String DEFAULT_CLIENT_URL = "http://127.0.0.1:9200";
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
