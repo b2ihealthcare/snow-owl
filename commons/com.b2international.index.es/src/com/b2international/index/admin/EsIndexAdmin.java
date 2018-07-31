@@ -18,7 +18,6 @@ package com.b2international.index.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,14 +27,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.apache.http.client.methods.HttpGet;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.RestStatus;
@@ -52,6 +54,8 @@ import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Primitives;
@@ -61,17 +65,21 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
+	private final RestHighLevelClient client;
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
+	private final ObjectMapper mapper;
+	
 	private final Logger log;
-	private final Client client;
 
-	public EsIndexAdmin(Client client, String name, Mappings mappings, Map<String, Object> settings) {
+	public EsIndexAdmin(RestHighLevelClient client, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
+		this.mapper = mapper;
+		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
@@ -85,11 +93,25 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		return client().admin().indices().prepareExists(getAllIndexes().toArray(new String[]{})).get().isExists();
+		final String[] indices = getAllIndexes();
+		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(indices);
+
+		try {
+			return client().indices().exists(getIndexRequest);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't check the existence of all ES indices.", e);
+		}
 	}
 
 	private boolean exists(DocumentMapping mapping) {
-		return client().admin().indices().prepareExists(getTypeIndex(mapping)).get().isExists();
+		final String index = getTypeIndex(mapping);
+		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(index);
+
+		try {
+			return client().indices().exists(getIndexRequest);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't check the existence of ES index '" + index + "'.", e);
+		}
 	}
 
 	@Override
@@ -101,36 +123,50 @@ public final class EsIndexAdmin implements IndexAdmin {
 	 			if (exists(mapping)) {
 	 				continue;
 	 			}
-	 			final String indexName = getTypeIndex(mapping);
-				final CreateIndexRequestBuilder req = client().admin().indices().prepareCreate(indexName);
+	 			
+	 			final String index = getTypeIndex(mapping);
 				final String type = mapping.typeAsString();
-				Map<String, Object> typeMapping = ImmutableMap.of(type,
+				final Map<String, Object> typeMapping = ImmutableMap.of(type,
 					ImmutableMap.builder()
 						.put("date_detection", "false")
 						.put("numeric_detection", "false")
 						.putAll(toProperties(mapping))
-						.build()
-				);
-				req.addMapping(type, typeMapping);
+						.build());
+				
+				final Map<String, Object> indexSettings;
 				try {
-					final Map<String, Object> indexSettings = createIndexSettings();
-					log.info("Configuring '{}' index with settings: {}", indexName, indexSettings);
-					req.setSettings(indexSettings);
+					indexSettings = createIndexSettings();
+					log.info("Configuring '{}' index with settings: {}", index, indexSettings);
 				} catch (IOException e) {
-					throw new IndexException("Couldn't prepare settings for index " + indexName, e);
+					throw new IndexException("Couldn't prepare settings for index " + index, e);
 				}
-				CreateIndexResponse response = req.get();
-				checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+				
+				final CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
+				createIndexRequest.mapping(type, typeMapping);
+				createIndexRequest.settings(indexSettings);
+				
+				try {
+					final CreateIndexResponse response = client.indices()
+							.create(createIndexRequest);
+					checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
+				} catch (IOException e) {
+					throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
+				}
+				
 	 		}
 		}
 		
  		// wait until the cluster processes each index create request
-		waitForYellowHealth(getAllIndexes().toArray(new String[]{}));
+		waitForYellowHealth(getAllIndexes());
 		log.info("'{}' indexes are ready.", name);
 	}
 
-	private Set<String> getAllIndexes() {
-		return mappings.getMappings().stream().map(this::getTypeIndex).collect(Collectors.toSet());
+	private String[] getAllIndexes() {
+		return mappings.getMappings()
+				.stream()
+				.map(this::getTypeIndex)
+				.distinct()
+				.toArray(String[]::new);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
@@ -154,15 +190,40 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.build();
 	}
 	
-	private void waitForYellowHealth(String...indices) {
+	private void waitForYellowHealth(String... indices) {
 		if (!CompareUtils.isEmpty(indices)) {
-			ClusterHealthResponse clusterHealthResponse = client().admin().cluster()
-				.prepareHealth(indices)
-				.setWaitForYellowStatus()
-				.setTimeout("3m") // wait 3 minutes for yellow status
-				.get();
-			if (clusterHealthResponse.isTimedOut()) {
-				throw new IndexException("Failed to wait for yellow health status of index " + name, null);
+			/*
+			 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html 
+			 * for the low-level structure of the cluster health request.
+			 */
+			
+			// GET /_cluster/health/test1,test2
+			final StringBuilder endpoint = new StringBuilder("_cluster/health");
+			for (int i = 0; i < indices.length; i++) {
+				endpoint.append(i == 0 ? "/" : ",");
+				endpoint.append(indices[i]);
+			}
+			
+			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
+			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
+					.put("wait_for_status", "yellow")
+					.put("timeout", "3m") // wait 3 minutes for yellow status
+					.build(); 
+			
+			try {
+				
+				final Response clusterHealthResponse = client().getLowLevelClient()
+						.performRequest(HttpGet.METHOD_NAME, endpoint.toString(), parameters);
+				final InputStream responseStream = clusterHealthResponse.getEntity()
+						.getContent();
+				final JsonNode responseNode = mapper.readTree(responseStream);
+				
+				if (responseNode.get("timed_out").asBoolean()) {
+					throw new IndexException("Request timed out waiting for yellow health status of index " + name, null);
+				}
+				
+			} catch (IOException e) {
+				throw new IndexException("Couldn't retrieve cluster health for index " + name, e);
 			}
 		}
 	}
@@ -298,8 +359,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void delete() {
 		if (exists()) {
-			DeleteIndexResponse response = client().admin().indices().prepareDelete(name+"*").get();
-			checkState(response.isAcknowledged(), "Failed to delete index %s", name);
+			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
+			try {
+				final DeleteIndexResponse deleteIndexResponse = client()
+						.indices()
+						.delete(deleteIndexRequest);
+				checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
+			} catch (IOException e) {
+				throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
+			}
 		}
 	}
 
@@ -342,21 +410,33 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
-	public Client client() {
+	public RestHighLevelClient client() {
 		return client;
 	}
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
-			String[] indicesToRefresh = typesToRefresh.stream().map(this::getTypeIndex).collect(toSet()).toArray(new String[0]);
+			final String[] indicesToRefresh = typesToRefresh.stream()
+					.map(this::getTypeIndex)
+					.distinct()
+					.toArray(String[]::new);
+			
 			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
-			RefreshResponse response = client().admin()
-			        .indices()
-			        .prepareRefresh(indicesToRefresh)
-			        .get();
-			if (RestStatus.OK != response.getStatus()) {
-				log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), response.getStatus());
+			
+			try {
+				
+				final RefreshRequest refreshRequest = new RefreshRequest(indicesToRefresh);
+				final RefreshResponse refreshResponse = client()
+						.indices()
+						.refresh(refreshRequest);
+				if (RestStatus.OK != refreshResponse.getStatus()) {
+					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
+				}
+				
+			} catch (IOException e) {
+				throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indicesToRefresh)), e);
 			}
+			
 			waitForYellowHealth(indicesToRefresh);
 		}
 	}

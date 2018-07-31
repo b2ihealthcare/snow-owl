@@ -51,6 +51,6 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		}
 		
 		final RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(host));
-		return new EsIndexClient(new EsIndexAdmin(client, name, mappings, settings), mapper);
+		return new EsIndexClient(new EsIndexAdmin(client, name, mappings, settings, mapper), mapper);
 	}
 }
