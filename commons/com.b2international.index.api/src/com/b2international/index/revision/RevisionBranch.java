@@ -17,12 +17,11 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
@@ -32,7 +31,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Longs;
 
 /**
  * @since 6.0
@@ -40,19 +41,8 @@ import com.google.common.collect.ImmutableSortedSet;
 @Doc(type="branch")
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
 @Script(name=RevisionBranch.Scripts.COMMIT, script=""
-		+ "if (params.mergeSource != null) {"
-		+ "		int idxToReplace = -1;"
-		+ "		for (mergeSource in ctx._source.mergeSources) {"
-		+ "			if (mergeSource.substring(0, 19).equals(params.mergeSource.substring(0, 19))) {"
-		+ "				idxToReplace = ctx._source.mergeSources.indexOf(mergeSource);"
-		+ "				break;"
-		+ "			}"
-		+ "		}"
-		+ "		if (idxToReplace == -1) {"
-		+ "			ctx._source.mergeSources.add(params.mergeSource);"
-		+ "		} else {"
-		+ "			ctx._source.mergeSources.set(idxToReplace, params.mergeSource);"
-		+ "		}"
+		+ "if (params.mergeSources != null) {"
+		+ "    ctx._source.mergeSources.put(Long.toString(params.headTimestamp), params.mergeSources);"
 		+ "}"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
@@ -170,6 +160,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		public static final String COMMIT = "commit";
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
+		public static final String WITH_MERGE_SOURCE = "withMergeSource";
 		public static final String REPLACE = "replace";
 	}
 	
@@ -186,7 +177,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		private boolean deleted;
 		private Metadata metadata;
 		private SortedSet<RevisionSegment> segments;
-		private List<RevisionBranchPoint> mergeSources;
+		private SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources;
 		
 		Builder() {}
 		
@@ -220,7 +211,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			return this;
 		}
 		
-		public Builder mergeSources(List<RevisionBranchPoint> mergeSources) {
+		public Builder mergeSources(SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources) {
 			this.mergeSources = mergeSources;
 			return this;
 		}
@@ -248,7 +239,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     private final String path;
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
-	private final List<RevisionBranchPoint> mergeSources;
+	private final SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources;
 
     private RevisionBranch(
     		long id,
@@ -257,7 +248,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		boolean deleted, 
     		Metadata metadata,
     		SortedSet<RevisionSegment> segments, 
-    		List<RevisionBranchPoint> mergeSources) {
+    		SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources) {
     	super(metadata);
     	BranchNameValidator.DEFAULT.checkName(name);
     	checkArgument(!CompareUtils.isEmpty(segments), "At least one segment is required to created a revision branch.");
@@ -267,7 +258,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		this.path = CompareUtils.isEmpty(parentPath) ? name : String.format("%s%s%s", parentPath, SEPARATOR, name);
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
-		this.mergeSources = Collections3.toImmutableList(mergeSources);
+		this.mergeSources = mergeSources == null ? ImmutableSortedMap.of() : mergeSources;
 	}
     
     /**
@@ -347,12 +338,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
     }
     
     /**
-	 * Represents a {@link List} of {@link RevisionBranchPoint}s where content has been merged into this branch. Subsequent merges from a
-	 * branch should skip the revisions before the stored time.
+     * Returns the current merge sources mapped by the merge commit time for easier access. A merge source represents a set of new {@link RevisionBranchPoint}s introduced by a merge commit on this branch. 
 	 * 
 	 * @return
 	 */
-    public List<RevisionBranchPoint> getMergeSources() {
+    public SortedMap<Long, SortedSet<RevisionBranchPoint>> getMergeSources() {
 		return mergeSources;
 	}
     
@@ -396,16 +386,25 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
     @JsonIgnore
 	public BranchState state(RevisionBranch target) {
-    	if (MAIN_PATH.equals(getPath())) {
-    		throw new UnsupportedOperationException(getPath() + " cannot compute state compared to target " + target.getPath());
+    	final RevisionBranchPoint mergeSource = this.getMergeSource(target);
+    	final RevisionBranchPoint mergeTarget = target.getMergeSource(this);
+    	
+    	long baseTimestamp = getBaseTimestamp();
+    	if (mergeSource != null) {
+    		baseTimestamp = mergeSource.getTimestamp();
     	}
-    	final long baseTimestamp = getBaseTimestamp();
-    	final long headTimestamp = getHeadTimestamp();
-    	final long targetBaseTimestamp = target.getBaseTimestamp();
+    	
+    	long headTimestamp = getHeadTimestamp();
+    	if (mergeTarget != null && mergeTarget.getTimestamp() > headTimestamp) {
+    		headTimestamp = mergeTarget.getTimestamp();
+    	}
+    	
     	final long targetHeadTimestamp = target.getHeadTimestamp();
+    	final long targetBaseTimestamp = target.getBaseTimestamp();
+    	
 		if (baseTimestamp < targetBaseTimestamp) {
         	return BranchState.STALE;
-        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp < baseTimestamp) {
+        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
         	return BranchState.FORWARD;
         } else if (headTimestamp == baseTimestamp && targetHeadTimestamp > baseTimestamp) {
         	return BranchState.BEHIND;
@@ -415,5 +414,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	    return BranchState.UP_TO_DATE;
         }
     }
+
+	private RevisionBranchPoint getMergeSource(RevisionBranch branchToFind) {
+		return getMergeSources().values()
+    			.stream()
+    			.flatMap(SortedSet::stream)
+    			.filter(ms -> ms.getBranchId() == branchToFind.getId())
+    			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
+    			.findFirst()
+    			.orElse(null);
+	}
 
 }

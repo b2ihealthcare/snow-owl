@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -58,7 +60,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 /**
- * A place that stores information about what will go into your next commit.
+ * A p into your next commit.
  * 
  * @since 7.0
  * @see RevisionIndex#prepareCommit()
@@ -76,7 +78,7 @@ public final class StagingArea {
 	private Map<String, RevisionDiff> changedRevisions;
 	private Map<String, Object> removedObjects;
 
-	private RevisionBranchPoint mergeSource;
+	private SortedSet<RevisionBranchPoint> mergeSources;
 	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
@@ -307,19 +309,19 @@ public final class StagingArea {
 				.comment(commitComment)
 				.timestamp(timestamp)
 				.details(details)
-				.mergeSource(mergeSource)
+				.mergeSource(mergeSources != null && !mergeSources.isEmpty() ? mergeSources.last() : null)
 				.build();
 		writer.put(commitDoc.getId(), commitDoc);
 		
-		// update branch doc
-		Map<String, Object> branchUpdateParams;
-		if (mergeSource != null) {
-			branchUpdateParams = ImmutableMap.of(
+		// update branch document(s)
+		Map<String, Object> toBranchUpdateParams;
+		if (mergeSources != null && !mergeSources.isEmpty()) {
+			toBranchUpdateParams = ImmutableMap.of(
 				"headTimestamp", timestamp,
-				"mergeSource", mergeSource.toIpAddress()
+				"mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toCollection(TreeSet::new))
 			);
 		} else {
-			branchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 
+			toBranchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 
 		}
 		
 		writer.bulkUpdate(
@@ -328,11 +330,15 @@ public final class StagingArea {
 				DocumentMapping.matchId(branchPath), 
 				DocumentMapping._ID, 
 				RevisionBranch.Scripts.COMMIT,
-				branchUpdateParams
+				toBranchUpdateParams
 			)
 		);
 		
 		writer.commit();
+
+		// clear remaining state
+		mergeSources = null;
+		
 		return commitDoc;
 	}
 
@@ -463,13 +469,30 @@ public final class StagingArea {
 		
 	}
 
-	public void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, List<RevisionCompareDetail> diff) {
-		this.mergeSource = new RevisionBranchPoint(fromRef.branchId(), fromRef.segments().last().end());
+	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef) {
+		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
+		this.mergeSources = fromRef.difference(toRef)
+				.segments()
+				.stream()
+				.filter(segment -> segment.branchId() != toRef.branchId())
+				.map(RevisionSegment::getEndPoint)
+				.collect(Collectors.toCollection(TreeSet::new));
+		
+		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
+		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
+		
+		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
+		
+		// in case of nothing to merge, then just commit
+		if (fromChangeDetails.isEmpty()) {
+			return;
+		}
+		
 		final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
 		
-		diff.forEach(detail -> {
+		fromChangeDetails.forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());

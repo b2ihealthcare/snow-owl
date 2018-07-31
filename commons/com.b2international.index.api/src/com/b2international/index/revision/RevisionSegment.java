@@ -131,6 +131,16 @@ public final class RevisionSegment implements Comparable<RevisionSegment> {
 				&& Objects.equals(end, other.end);
 	}
 	
+	@JsonIgnore
+	public RevisionBranchPoint getStartPoint() {
+		return new RevisionBranchPoint(branchId, start);
+	}
+	
+	@JsonIgnore
+	public RevisionBranchPoint getEndPoint() {
+		return new RevisionBranchPoint(branchId, end);
+	}
+	
 	public Expression toRangeExpression(String field) {
 		return toRangeExpression(field, true);
 	}

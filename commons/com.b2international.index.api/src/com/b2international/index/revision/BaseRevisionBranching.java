@@ -266,17 +266,10 @@ public abstract class BaseRevisionBranching {
 		}
 		RevisionBranch to = getBranch(toPath);
 		RevisionBranch from = getBranch(fromPath);
-		BranchState changesFromState = from.state(getBranch(from.getParentPath()));
+		BranchState changesFromState = from.isMain() ? BranchState.FORWARD : from.state(getBranch(from.getParentPath()));
 		
 		if (changesFromState == BranchState.FORWARD) {
-			final String mergedToPath = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
-			// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
-			if (from.getParentPath().equals(mergedToPath)) {
-				final RevisionBranch reopenedFrom = reopen(getBranch(mergedToPath), from.getName(), from.metadata());
-				sendChangeEvent(reopenedFrom.getPath()); // Explicit notification (reopen)
-				return reopenedFrom.getPath();
-			}
-			return mergedToPath;
+			return applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
 		} else {
 			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", fromPath, toPath, changesFromState);
 		}

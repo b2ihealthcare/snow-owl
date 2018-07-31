@@ -275,6 +275,7 @@ public final class Commit implements WithScore {
 		return mergeSource;
 	}
 	
+	@JsonIgnore
 	public boolean isMergeCommit() {
 		return mergeSource != null;
 	}
