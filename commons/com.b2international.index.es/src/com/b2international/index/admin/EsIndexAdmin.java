@@ -393,7 +393,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public void close() {
-		// nothing to do, ES will close itself on shutdown hook
+		try {
+			client().close();
+		} catch (IOException e) {
+			log.error("Caught exception while closing high-level REST client.", e);
+		}
 	}
 
 	@Override
