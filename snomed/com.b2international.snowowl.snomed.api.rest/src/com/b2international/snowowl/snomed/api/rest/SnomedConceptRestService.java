@@ -64,7 +64,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Concepts")
+@Api(value = "Concepts", description="Concepts", tags = { "concepts" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedConceptRestService extends AbstractSnomedRestService {

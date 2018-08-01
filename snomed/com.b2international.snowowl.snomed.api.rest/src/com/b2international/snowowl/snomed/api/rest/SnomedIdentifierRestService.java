@@ -40,7 +40,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Identifiers")
+@Api(value = "Identifiers", description="Identifiers", tags = { "identifiers" })
 @RestController
 @RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedIdentifierRestService extends AbstractRestService {

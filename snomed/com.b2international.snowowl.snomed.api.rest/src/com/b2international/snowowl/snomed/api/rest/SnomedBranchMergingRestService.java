@@ -50,10 +50,10 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.1
  */
-@Api("Branches")
+@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchMergingController extends AbstractRestService {
+public class SnomedBranchMergingRestService extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -81,7 +81,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			.execute(bus)
 			.getSync();
 		
-		final URI linkUri = linkTo(SnomedBranchMergingController.class).slash(merge.getId()).toUri();
+		final URI linkUri = linkTo(SnomedBranchMergingRestService.class).slash(merge.getId()).toUri();
 		return Responses.accepted(linkUri).build();
 	}
 	

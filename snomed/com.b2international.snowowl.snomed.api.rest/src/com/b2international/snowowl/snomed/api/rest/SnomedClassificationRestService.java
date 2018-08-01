@@ -77,7 +77,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Classifications")
+@Api(value = "Classifications", description="Classifications", tags = { "classifications" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {

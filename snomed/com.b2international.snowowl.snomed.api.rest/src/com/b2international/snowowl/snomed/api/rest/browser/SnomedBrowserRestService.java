@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.AcceptHeader;
@@ -52,8 +52,8 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("IHTSDO SNOMED CT Browser")
-@Controller
+@Api(value = "IHTSDO SNOMED CT Browser", description="IHTSDO SNOMED CT Browser", tags = { "ihtsdo snomed ct browser" })
+@RestController
 @RequestMapping(
 		value="/browser/{path:**}",
 		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })

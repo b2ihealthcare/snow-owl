@@ -71,7 +71,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.5
  */
-@Api("Reference Set Members")
+@Api(value = "Reference Set Members", description="Reference Set Members", tags = { "reference set members" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {

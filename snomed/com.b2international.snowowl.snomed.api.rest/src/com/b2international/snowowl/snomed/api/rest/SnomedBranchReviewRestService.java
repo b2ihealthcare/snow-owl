@@ -53,10 +53,10 @@ import io.swagger.annotations.ApiResponses;
  * 
  * @since 4.2
  */
-@Api("Branches")
+@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/reviews", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchReviewController extends AbstractRestService {
+public class SnomedBranchReviewRestService extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -73,7 +73,7 @@ public class SnomedBranchReviewController extends AbstractRestService {
 	public DeferredResult<ResponseEntity<Void>> createReview(@RequestBody final CreateReviewRequest request) {
 		ApiValidation.checkInput(request);
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewController.class);
+		final ControllerLinkBuilder linkTo = linkTo(SnomedBranchReviewRestService.class);
 		RepositoryRequests
 			.reviews()
 			.prepareCreate()

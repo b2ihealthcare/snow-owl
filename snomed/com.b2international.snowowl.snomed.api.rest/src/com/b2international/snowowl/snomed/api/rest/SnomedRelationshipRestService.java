@@ -60,7 +60,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Relationships")
+@Api(value = "Relationships", description="Relationships", tags = { "relationships" })
 @RestController
 @RequestMapping(
 		produces={ AbstractRestService.SO_MEDIA_TYPE })

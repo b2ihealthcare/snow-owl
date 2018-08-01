@@ -40,7 +40,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 7.0
  */
-@Api("Commits")
+@Api(value = "Commits", description="Commits", tags = { "commits" })
 @RestController
 @RequestMapping(value="/commits", produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedCommitInfoRestService extends AbstractSnomedRestService {

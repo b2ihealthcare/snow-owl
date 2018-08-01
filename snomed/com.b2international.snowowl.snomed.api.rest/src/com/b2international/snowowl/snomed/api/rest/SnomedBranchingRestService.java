@@ -54,10 +54,10 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 4.1
  */
-@Api("Branches")
+@Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
 @RequestMapping(value="/branches", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchingController extends AbstractRestService {
+public class SnomedBranchingRestService extends AbstractRestService {
 
 	@Autowired 
 	private IEventBus bus;
@@ -200,7 +200,7 @@ public class SnomedBranchingController extends AbstractRestService {
 	}
 	
 	private URI getBranchLocationHeader(String branchPath) {
-		return linkTo(SnomedBranchingController.class).slash(branchPath).toUri();
+		return linkTo(SnomedBranchingRestService.class).slash(branchPath).toUri();
 	}
 	
 }

@@ -53,7 +53,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api("Imports")
+@Api(value = "Imports", description="Imports", tags = { "imports" })
 @RestController
 @RequestMapping(
 		value="/imports",
