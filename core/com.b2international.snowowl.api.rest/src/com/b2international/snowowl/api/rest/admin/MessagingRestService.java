@@ -37,9 +37,9 @@ import springfox.documentation.annotations.ApiIgnore;
  * Spring controller for exposing {@link IMessagingService} functionality.
  * since 7.0 
  */
+@Api(value = "Administration", description="Administration", tags = { "administration" })
 @RestController
 @RequestMapping(value={"/messages"}, consumes={ MediaType.TEXT_PLAIN_VALUE }, produces={ MediaType.TEXT_PLAIN_VALUE })
-@Api("Administration")
 @ApiIgnore
 public class MessagingRestService extends AbstractAdminRestService {
 

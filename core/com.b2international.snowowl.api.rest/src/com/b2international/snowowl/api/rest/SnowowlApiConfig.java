@@ -78,9 +78,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @Configuration
 @ComponentScan
-@Import({ SecurityConfiguration.class })
+@Import({ SnowowlSecurityConfig.class })
 @PropertySource(value="classpath:com/b2international/snowowl/api/rest/service_configuration.properties")
-public class ServicesConfiguration extends WebMvcConfigurerAdapter {
+public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.version}")
 	private String apiVersion;

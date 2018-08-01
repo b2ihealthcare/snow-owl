@@ -108,19 +108,23 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  *
  * @since 1.0
  */
+@SuppressWarnings("deprecation")
 @EnableWebMvc
 @EnableSwagger2
 @Configuration
-@ComponentScan
-@Import({ SecurityConfiguration.class })
+@ComponentScan("com.b2international.snowowl.snomed.api.rest")
+@Import({ SnomedSecurityConfig.class })
 @PropertySource("classpath:com/b2international/snowowl/snomed/api/rest/config/service_configuration.properties")
-public class ServicesConfiguration extends WebMvcConfigurerAdapter {
+public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.version}")
 	private String apiVersion;
 
 	@Value("${api.title}")
 	private String apiTitle;
+	
+	@Value("${api.description}")
+	private String apiDescription;
 	
 	@Value("${api.termsOfServiceUrl}")
 	private String apiTermsOfServiceUrl;
@@ -133,41 +137,15 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	
 	@Value("${api.licenseUrl}")
 	private String apiLicenseUrl;
-	
-	@Override
-	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
-		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
-		stringConverter.setWriteAcceptCharset(false);
-		converters.add(stringConverter);
 
-		converters.add(new ByteArrayHttpMessageConverter());
-		converters.add(new ResourceHttpMessageConverter());
-		converters.add(new CsvMessageConverter());
-
-		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
-		converters.add(jacksonConverter);
-	}
-
-	@Override
-	public void configurePathMatch(final PathMatchConfigurer configurer) {
-		configurer.setUseRegisteredSuffixPatternMatch(true);
-		configurer.setPathMatcher(new AntPathWildcardMatcher());
-	}
-
-	@Override
-	public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
-		configurer.enable();
-	}
-	
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new GuavaModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
-		final ISO8601DateFormat df = new ISO8601DateFormat();
-		df.setTimeZone(TimeZone.getTimeZone("UTC"));
-		objectMapper.setDateFormat(df);
+		final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		objectMapper.setDateFormat(dateFormat);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixIn(CollectionResource.class, CollectionResourceMixin.class);
 		objectMapper.addMixIn(SnomedComponent.class, ISnomedComponentMixin.class);
@@ -194,12 +172,12 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
             .ignoredParameterTypes(Principal.class)
             .genericModelSubstitutes(ResponseEntity.class, DeferredResult.class)
             .alternateTypeRules(new AlternateTypeRule(resolver.resolve(UUID.class), resolver.resolve(String.class)))
-            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+            .apiInfo(new ApiInfo(apiTitle, readApiDescription(), apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare1", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
 
 	private String readApiDescription() {
 		try {
-			final File apiDesc = new File(PlatformUtil.toAbsolutePath(ServicesConfiguration.class, "api-description.html"));
+			final File apiDesc = new File(PlatformUtil.toAbsolutePath(SnomedApiConfig.class, "api-description.mkd"));
 			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read api-description.html file", e);
@@ -270,7 +248,34 @@ public class ServicesConfiguration extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public static PropertySourcesPlaceholderConfigurer ppc() throws IOException {
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
+	
+	@Override
+	public void configureDefaultServletHandling(final DefaultServletHandlerConfigurer configurer) {
+		configurer.enable();
+	}
+	
+	@Override
+	public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
+		final StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
+		stringConverter.setWriteAcceptCharset(false);
+		converters.add(stringConverter);
+
+		converters.add(new ByteArrayHttpMessageConverter());
+		converters.add(new ResourceHttpMessageConverter());
+		converters.add(new CsvMessageConverter());
+
+		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		jacksonConverter.setObjectMapper(objectMapper());
+		converters.add(jacksonConverter);
+	}
+	
+	@Override
+	public void configurePathMatch(final PathMatchConfigurer configurer) {
+		configurer.setUseRegisteredSuffixPatternMatch(true);
+		configurer.setPathMatcher(new AntPathWildcardMatcher());
+	}
+	
 }

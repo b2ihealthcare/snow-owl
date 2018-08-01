@@ -18,8 +18,6 @@ package com.b2international.snowowl.api.rest.admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
@@ -50,8 +49,7 @@ import io.swagger.annotations.ApiResponses;
  * @since 7.0
  */
 @Api(value = "Repositories", description="Repositories", tags = { "repositories" })
-@Controller
-@Repository
+@RestController
 @RequestMapping(value="/repositories", produces={ MediaType.APPLICATION_JSON_VALUE })
 public class RepositoryRestService extends AbstractAdminRestService {
 	

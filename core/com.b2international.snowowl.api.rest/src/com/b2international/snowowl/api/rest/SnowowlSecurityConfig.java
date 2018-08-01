@@ -32,7 +32,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SnowowlSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AuthenticationProvider authenticationProvider;
@@ -66,7 +66,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
 		auth.authenticationProvider(authenticationProvider);
 	}
-	
-	
 	
 }

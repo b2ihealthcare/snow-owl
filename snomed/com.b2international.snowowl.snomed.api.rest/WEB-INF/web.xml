@@ -5,10 +5,10 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	id="WebApp_ID" version="3.0">
 
-	<display-name>com.b2international.snowowl.snomed.api.rest</display-name>
+	<display-name>com.b2international.snowowl.snomed.api.rest.config</display-name>
 
 	<welcome-file-list>
-		<welcome-file>static/index.html</welcome-file>
+		<welcome-file>/static/index.html</welcome-file>
 	</welcome-file-list>
 
 	<servlet>
@@ -22,7 +22,7 @@
 
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>com.b2international.snowowl.snomed.api.rest.config.ServicesConfiguration</param-value>
+			<param-value>com.b2international.snowowl.snomed.api.rest.config.SnomedApiConfig</param-value>
 		</init-param>
 		
     	<load-on-startup>1</load-on-startup>

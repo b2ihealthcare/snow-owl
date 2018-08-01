@@ -8,7 +8,7 @@
 	<display-name>com.b2international.snowowl.api.rest</display-name>
 
 	<welcome-file-list>
-		<welcome-file>static/index.html</welcome-file>
+		<welcome-file>/static/index.html</welcome-file>
 	</welcome-file-list>
 
 	<servlet>
@@ -22,7 +22,7 @@
 
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
-			<param-value>com.b2international.snowowl.api.rest.ServicesConfiguration</param-value>
+			<param-value>com.b2international.snowowl.api.rest.SnowowlApiConfig</param-value>
 		</init-param>
 
 		<load-on-startup>1</load-on-startup>
