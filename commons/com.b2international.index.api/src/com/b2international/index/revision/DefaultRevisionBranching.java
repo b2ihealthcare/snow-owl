@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Metadata;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 
 /**
@@ -68,9 +68,8 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 						.add(new RevisionSegment(newBranchId, currentTime, currentTime))
 						.build())
 				.mergeSources(
-					ImmutableSortedMap.of(
-						currentTime,
-						initialMergeSources
+					ImmutableList.of(
+						new RevisionBranchMergeSource(currentTime, initialMergeSources)
 					)
 				)
 				.metadata(metadata)

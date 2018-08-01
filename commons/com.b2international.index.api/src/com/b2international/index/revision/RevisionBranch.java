@@ -18,14 +18,15 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
@@ -35,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.primitives.Longs;
 
@@ -46,7 +46,7 @@ import com.google.common.primitives.Longs;
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
 @Script(name=RevisionBranch.Scripts.COMMIT, script=""
 		+ "if (params.mergeSources != null) {"
-		+ "    ctx._source.mergeSources.put(Long.toString(params.headTimestamp), params.mergeSources);"
+		+ "    ctx._source.mergeSources.add(['timestamp': params.headTimestamp, 'branchPoints': params.mergeSources]);"
 		+ "}"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
@@ -181,7 +181,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		private boolean deleted;
 		private Metadata metadata;
 		private SortedSet<RevisionSegment> segments;
-		private SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources;
+		private List<RevisionBranchMergeSource> mergeSources;
 		
 		Builder() {}
 		
@@ -215,7 +215,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			return this;
 		}
 		
-		public Builder mergeSources(SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources) {
+		public Builder mergeSources(List<RevisionBranchMergeSource> mergeSources) {
 			this.mergeSources = mergeSources;
 			return this;
 		}
@@ -243,7 +243,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     private final String path;
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
-	private final SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources;
+	private final List<RevisionBranchMergeSource> mergeSources;
 
     private RevisionBranch(
     		long id,
@@ -252,7 +252,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		boolean deleted, 
     		Metadata metadata,
     		SortedSet<RevisionSegment> segments, 
-    		SortedMap<Long, SortedSet<RevisionBranchPoint>> mergeSources) {
+    		List<RevisionBranchMergeSource> mergeSources) {
     	super(metadata);
     	BranchNameValidator.DEFAULT.checkName(name);
     	checkArgument(!CompareUtils.isEmpty(segments), "At least one segment is required to created a revision branch.");
@@ -262,7 +262,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		this.path = CompareUtils.isEmpty(parentPath) ? name : String.format("%s%s%s", parentPath, SEPARATOR, name);
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
-		this.mergeSources = mergeSources == null ? ImmutableSortedMap.of() : mergeSources;
+		this.mergeSources = Collections3.toImmutableList(mergeSources);
 	}
     
     /**
@@ -342,11 +342,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
     }
     
     /**
-     * Returns the current merge sources mapped by the merge commit time for easier access. A merge source represents a set of new {@link RevisionBranchPoint}s introduced by a merge commit on this branch. 
+     * Returns the current merge sources. A merge source represents a set of new {@link RevisionBranchPoint}s introduced by a merge commit on this branch.
 	 * 
 	 * @return
 	 */
-    public SortedMap<Long, SortedSet<RevisionBranchPoint>> getMergeSources() {
+    public List<RevisionBranchMergeSource> getMergeSources() {
 		return mergeSources;
 	}
     
@@ -456,9 +456,9 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
 	private Map<Long, RevisionBranchPoint> getLatestMergeSources() {
 		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
-		getMergeSources().values()
+		getMergeSources()
 			.stream()
-			.flatMap(SortedSet::stream)
+			.flatMap(ms -> ms.getBranchPoints().stream())
 			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
 			.forEach(branchPoint -> {
 				if (!latestMergeSources.containsKey(branchPoint.getBranchId())) {
