@@ -114,19 +114,29 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		final String oldRevised = revised.toIpAddress();
 		final String newRevised = created.toIpAddress();
 		for (Class<?> type : keysByType.keySet()) {
-			final Set<String> keysToUpdate = keysByType.get(type);
-			if (Revision.class.isAssignableFrom(type)) {
-				if (!keysToUpdate.isEmpty()) {
-					final Expression filter = Expressions.builder()
-							.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
-							.filter(branch.toRevisionFilter())
-							.build();
-					final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
-					index.bulkUpdate(update);
-				}
-			} else {
-				index.remove(type, keysToUpdate);
+			setRevised(type, keysByType.get(type), oldRevised, newRevised, branch);
+		}
+	}
+
+	@Override
+	public void setRevised(Class<?> type, Set<String> keysToUpdate, RevisionBranchRef branchToUpdate) {
+		final String oldRevised = new RevisionBranchPoint(branch.branchId(), Long.MAX_VALUE).toIpAddress();
+		final String newRevised = created.toIpAddress();
+		setRevised(type, keysToUpdate, oldRevised, newRevised, branchToUpdate);
+	}
+	
+	private void setRevised(Class<?> type, Set<String> keysToUpdate, final String oldRevised, final String newRevised, RevisionBranchRef branchToUpdate) {
+		if (Revision.class.isAssignableFrom(type)) {
+			if (!keysToUpdate.isEmpty()) {
+				final Expression filter = Expressions.builder()
+						.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
+						.filter(branchToUpdate.toRevisionFilter())
+						.build();
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
+				index.bulkUpdate(update);
 			}
+		} else {
+			index.remove(type, keysToUpdate);
 		}
 	}
 

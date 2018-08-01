@@ -259,6 +259,10 @@ public abstract class BaseRevisionBranching {
 		}
 	}
 
+	public Commit merge(String fromPath, String toPath, String commitMessage) {
+		return merge(fromPath, toPath, commitMessage, false);
+	}
+	
 	/**
 	 * Merges changes to the toPath branch by squashing the change set of the specified fromPath into a single commit.
 	 * 
@@ -266,9 +270,10 @@ public abstract class BaseRevisionBranching {
 	 * @param toPath - the branch to push the changes to
 	 * @param commitMessage
 	 *            - the commit message
+	 * @param squash 
 	 * @return the commit object representing the merge commit or <code>null</code> if there is nothing to merge
 	 */
-	public Commit merge(String fromPath, String toPath, String commitMessage) {
+	public Commit merge(String fromPath, String toPath, String commitMessage, boolean squash) {
 		if (toPath.equals(fromPath)) {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
 		}
@@ -276,17 +281,23 @@ public abstract class BaseRevisionBranching {
 		RevisionBranch from = getBranch(fromPath);
 		
 		BranchState changesFromState = from.state(to);
+
 		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
 		if (changesFromState == BranchState.UP_TO_DATE || changesFromState == BranchState.BEHIND) {
 			return null;
 		}
 		
 		final InternalRevisionIndex index = revisionIndex();
-		StagingArea staging = index.prepareCommit(to.getPath());
+		final StagingArea staging = index.prepareCommit(to.getPath());
 		
 		// TODO add conflict processing
-		long commitTimestamp = staging.merge(from.ref(), to.ref());
-		return staging.commit(commitTimestamp != -1L ? commitTimestamp : currentTime(), "TODO", commitMessage);
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), squash);
+		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
+		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
+			fastForwardCommitTimestamp = -1L;
+		}
+		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !squash;
+		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), "TODO", commitMessage);
 	}
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {

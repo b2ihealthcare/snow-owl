@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Set;
+
 import com.b2international.index.Writer;
 
 /**
@@ -28,5 +30,18 @@ public interface RevisionWriter extends Writer {
 
 	@Override
 	RevisionSearcher searcher();
+
+	/**
+	 * Set the revised time on the given set of document IDs on the given branch revised when searching it from the current set {@link #branch()}. The
+	 * given branch won't be affected.
+	 * 
+	 * @param type
+	 *            - the doc type to update
+	 * @param keysToUpdate
+	 *            - the document IDs to update
+	 * @param branch
+	 *            - branch where the documents were created by another transaction
+	 */
+	void setRevised(Class<?> type, Set<String> keysToUpdate, RevisionBranchRef branch);
 
 }

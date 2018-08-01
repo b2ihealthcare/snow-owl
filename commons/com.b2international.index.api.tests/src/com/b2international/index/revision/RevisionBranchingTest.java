@@ -189,102 +189,6 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseUpToDateState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final long expected = getBranch(a).getBaseTimestamp();
-		branching().merge(MAIN, a, "Rebase A");
-		final long actual = getBranch(a).getBaseTimestamp();
-		assertEquals("Rebasing UP_TO_DATE branch should do nothing", expected, actual);
-	}
-	
-	@Test
-	public void rebaseForwardState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final long expected = getBranch(a).getBaseTimestamp();
-		branching().handleCommit(a, currentTime());
-		branching().merge(MAIN, a, "Rebase A");
-		final long actual = getBranch(a).getBaseTimestamp();
-		assertEquals("Rebasing FORWARD branch should do nothing", expected, actual);
-	}
-	
-	@Test
-	public void rebaseBehindState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		assertState(a, BranchState.BEHIND);
-		branching().merge(MAIN, a, "Rebase A");
-		assertState(a, BranchState.UP_TO_DATE);
-	}
-
-	@Test
-	public void rebaseDivergedState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		assertState(a, BranchState.DIVERGED);
-		branching().merge(MAIN, a, "Rebase A");
-		assertState(a, BranchState.UP_TO_DATE);
-	}
-
-	@Test
-	public void rebaseDivergedWithBehindChild() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final String b = createBranch(a, "b");
-		
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		
-		assertState(a, BranchState.DIVERGED);
-		assertState(b, BranchState.BEHIND);
-		
-		branching().merge(MAIN, a, "Rebase A");
-		
-		assertState(a, BranchState.UP_TO_DATE);
-		assertState(b, BranchState.BEHIND);
-	}
-	
-	@Test
-	public void rebaseBehindWithForwardChild() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final String b = createBranch(a, "b");
-		
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(b, currentTime());
-		
-		assertState(a, BranchState.BEHIND);
-		assertState(b, BranchState.FORWARD);
-		
-		branching().merge(MAIN, a, "Rebase A");
-		
-		assertState(a, BranchState.UP_TO_DATE);
-		assertState(b, BranchState.DIVERGED);
-	}
-	
-	@Test
-	public void rebaseDivergedWithTwoChildren() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		
-		final String b = createBranch(a, "b");
-		branching().handleCommit(a, currentTime());
-		
-		final String c = createBranch(a, "c");
-		
-		branching().merge(MAIN, a, "Rebase A");
-		
-		assertState(a, BranchState.UP_TO_DATE);
-		assertState(b, BranchState.UP_TO_DATE);
-		assertState(c, BranchState.UP_TO_DATE);
-	}
-	
-	@Test
-	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
-		rebaseDivergedWithBehindChild();
-		branching().merge("MAIN/a", "MAIN/a/b", "Rebase A/B");
-		assertState("MAIN/a/b", BranchState.UP_TO_DATE);
-	}
-	
-	@Test
 	public void updateMetadata() throws Exception {
 		final BaseRevisionBranching branching = branching();
 		final String branchA = branching.createBranch(MAIN, "a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
@@ -318,10 +222,6 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		final RevisionBranch branch = getBranch("MAIN/a");
 		assertEquals(branch.getHeadTimestamp(), commitTimestamp);
 		assertEquals(branch.metadata(), ImmutableMap.<String, Object>of("test", 1));
-	}
-	
-	private void assertState(String branchPath, BranchState expectedState) {
-		assertEquals(expectedState, branching().getBranchState(branchPath));
 	}
 	
 }

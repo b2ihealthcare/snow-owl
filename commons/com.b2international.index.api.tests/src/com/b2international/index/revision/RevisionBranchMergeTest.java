@@ -64,6 +64,14 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void rebaseUpToDateEmptyBranch() throws Exception {
+		final String a = createBranch(MAIN, "a");
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
+		branching().merge(MAIN, a, "Rebase A");
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
+	}
+	
+	@Test
 	public void mergeBehindBranch() throws Exception {
 		String a = createBranch(MAIN, "a");
 		assertState(a, MAIN, BranchState.UP_TO_DATE);
@@ -74,10 +82,13 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void mergeBranchWithNewRevisionToParent() throws Exception {
+	public void fastForwardMergeBranchWithNewRevisionToParent() throws Exception {
 		String child = createBranch(MAIN, "a");
 		// create a revision on child branch
 		indexRevision(child, NEW_DATA);
+		// after commit child branch becomes FORWARD
+		assertState(child, MAIN, BranchState.FORWARD);
+		// do the merge
 		branching().merge(child, MAIN, "Merge");
 		// after fast-forward merge
 		// 1. MAIN should be in UP_TO_DATE state compared to the child
@@ -89,36 +100,51 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void mergeBranchWithNewToParentWithNewNoConflict() throws Exception {
+	public void fastForwardBranchInForwardState() throws Exception {
+		String a = createBranch(MAIN, "a");
+		// create a revision on child branch
+		indexRevision(a, NEW_DATA);
+		// after commit child branch becomes FORWARD
+		assertState(a, MAIN, BranchState.FORWARD);
+		branching().merge(MAIN, a, "Rebase A");
+		assertState(a, MAIN, BranchState.FORWARD);
+	}
+	
+	@Test
+	public void squashMergeBranchWithNewToParentWithNewNoConflict() throws Exception {
 		String a = createBranch(MAIN, "a");
 		indexRevision(MAIN, NEW_DATA);
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		indexRevision(a, NEW_DATA2);
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
 		assertState(a, MAIN, BranchState.DIVERGED);
-		branching().merge(a, MAIN, "Merge A to MAIN");
+		branching().merge(a, MAIN, "Merge A to MAIN", true);
 		// after merge both revisions are visible from MAIN
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
 		// Child state should be BEHIND since it lacks one commit from MAIN
 		assertState(a, MAIN, BranchState.BEHIND);
 		// MAIN state should be FORWARD, since it has one extra revision and commit
-		assertState(MAIN, a, BranchState.UP_TO_DATE);
+		assertState(MAIN, a, BranchState.FORWARD);
 	}
 	
 	@Test
 	public void rebaseBranchOnParentWithNewRevision() throws Exception {
-		String child = createBranch(MAIN, "a");
+		String a = createBranch(MAIN, "a");
 		// create a revision on MAIN branch
 		indexRevision(MAIN, NEW_DATA);
-		
-		branching().merge(MAIN, child, "Rebase");
+		// after commit on parent child state becomes BEHIND
+		assertState(a, MAIN, BranchState.BEHIND);
+		// do merge
+		branching().merge(MAIN, a, "Rebase");
 		// after rebase revision should be visible from child branch
-		assertNotNull(getRevision(child, RevisionData.class, STORAGE_KEY1));
+		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
+		// and state should be UP_TO_DATE
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
 	}
 	
 	@Test
-	public void mergeBranchWithChangedRevisionToParent() throws Exception {
+	public void fastForwardMergeBranchWithChangedRevisionToParent() throws Exception {
 		indexRevision(MAIN, NEW_DATA);
 		String child = createBranch(MAIN, "a");
 		// create a revision on child branch
@@ -163,6 +189,82 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		branching().merge(MAIN, child, "Rebase");
 		
 		assertNull(getRevision(child, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void rebaseDivergedBranch() throws Exception {
+		final String a = createBranch(MAIN, "a");
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(a, NEW_DATA2);
+		assertState(a, MAIN, BranchState.DIVERGED);
+		assertState(MAIN, a, BranchState.DIVERGED);
+		// do the rebase
+		branching().merge(MAIN, a, "Rebase A");
+		// both revisions are visible
+		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
+		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
+		// task becomes up to date
+		assertState(a, MAIN, BranchState.FORWARD);
+		// MAIN becomes behind compared to the A branch
+		assertState(MAIN, a, BranchState.BEHIND);
+	}
+	
+	@Test
+	public void rebaseDivergedWithBehindChild() throws Exception {
+		final String a = createBranch(MAIN, "a");
+		final String b = createBranch(a, "b");
+		
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(a, NEW_DATA2);
+		
+		assertState(a, MAIN, BranchState.DIVERGED);
+		assertState(b, a, BranchState.BEHIND);
+		
+		branching().merge(MAIN, a, "Rebase A");
+		
+		assertState(a, MAIN, BranchState.FORWARD);
+		assertState(b, a, BranchState.BEHIND);
+	}
+	
+	@Test
+	public void rebaseBehindWithForwardChild() throws Exception {
+		final String a = createBranch(MAIN, "a");
+		final String b = createBranch(a, "b");
+		
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(b, NEW_DATA2);
+		
+		assertState(a, MAIN, BranchState.BEHIND);
+		assertState(b, a, BranchState.FORWARD);
+		
+		branching().merge(MAIN, a, "Rebase A");
+		
+		assertState(a, MAIN, BranchState.UP_TO_DATE);
+		assertState(b, a, BranchState.DIVERGED);
+	}
+	
+	@Test
+	public void rebaseDivergedWithTwoChildren() throws Exception {
+		final String a = createBranch(MAIN, "a");
+		indexRevision(MAIN, NEW_DATA);
+		
+		final String b = createBranch(a, "b");
+		indexRevision(a, NEW_DATA2);
+		
+		final String c = createBranch(a, "c");
+		
+		branching().merge(MAIN, a, "Rebase A");
+		
+		assertState(a, MAIN, BranchState.FORWARD);
+		assertState(b, a, BranchState.BEHIND);
+		assertState(c, a, BranchState.BEHIND);
+	}
+	
+	@Test
+	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
+		rebaseDivergedWithBehindChild();
+		branching().merge("MAIN/a", "MAIN/a/b", "Rebase A/B");
+		assertState("MAIN/a/b", "MAIN/a", BranchState.UP_TO_DATE);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
