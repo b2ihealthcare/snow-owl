@@ -31,7 +31,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -122,9 +121,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.title}")
 	private String apiTitle;
-	
-	@Value("${api.description}")
-	private String apiDescription;
 	
 	@Value("${api.termsOfServiceUrl}")
 	private String apiTermsOfServiceUrl;
@@ -245,11 +241,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public ISnomedBrowserService browserService() {
 		return new SnomedBrowserService();
-	}
-	
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() throws IOException {
-		return new PropertySourcesPlaceholderConfigurer();
 	}
 	
 	@Override
