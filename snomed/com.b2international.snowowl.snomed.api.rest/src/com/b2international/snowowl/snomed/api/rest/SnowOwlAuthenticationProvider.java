@@ -24,7 +24,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import com.b2international.snowowl.api.IAuthenticationService;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.datastore.session.IApplicationSessionManager;
 import com.google.common.collect.ImmutableList;

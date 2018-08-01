@@ -51,10 +51,8 @@ import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
 import com.b2international.commons.options.MetadataMixin;
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.api.IAuthenticationService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.impl.AuthenticationServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -201,11 +199,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 				.getServiceChecked(SnowOwlConfiguration.class)
 				.getModuleConfig(SnomedCoreConfiguration.class)
 				.getMaxReasonerRuns();
-	}
-	
-	@Bean
-	public IAuthenticationService authenticationService() {
-		return new AuthenticationServiceImpl();
 	}
 	
 	@Bean
