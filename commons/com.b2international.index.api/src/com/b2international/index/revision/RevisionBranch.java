@@ -46,7 +46,7 @@ import com.google.common.primitives.Longs;
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
 @Script(name=RevisionBranch.Scripts.COMMIT, script=""
 		+ "if (params.mergeSources != null) {"
-		+ "    ctx._source.mergeSources.add(['timestamp': params.headTimestamp, 'branchPoints': params.mergeSources]);"
+		+ "    ctx._source.mergeSources.add(['timestamp': params.headTimestamp, 'branchPoints': params.mergeSources, 'squash': params.squash]);"
 		+ "}"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
@@ -458,6 +458,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
 		getMergeSources()
 			.stream()
+			.filter(ms -> !ms.isSquash()) // skip squash merge sources
 			.flatMap(ms -> ms.getBranchPoints().stream())
 			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
 			.forEach(branchPoint -> {

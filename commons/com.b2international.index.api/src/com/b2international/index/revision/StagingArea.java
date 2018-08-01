@@ -335,9 +335,10 @@ public final class StagingArea {
 		// update branch document(s)
 		Map<String, Object> toBranchUpdateParams;
 		if (mergeSources != null && !mergeSources.isEmpty()) {
-			toBranchUpdateParams = ImmutableMap.of(
+			toBranchUpdateParams = ImmutableMap.<String, Object>of(
 				"headTimestamp", timestamp,
-				"mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toCollection(TreeSet::new))
+				"mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toCollection(TreeSet::new)),
+				"squash", squashMerge
 			);
 		} else {
 			toBranchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 

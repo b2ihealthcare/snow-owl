@@ -69,7 +69,7 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 						.build())
 				.mergeSources(
 					ImmutableList.of(
-						new RevisionBranchMergeSource(currentTime, initialMergeSources)
+						new RevisionBranchMergeSource(currentTime, initialMergeSources, false)
 					)
 				)
 				.metadata(metadata)

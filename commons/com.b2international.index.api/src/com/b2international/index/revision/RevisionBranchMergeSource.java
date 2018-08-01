@@ -27,13 +27,20 @@ public final class RevisionBranchMergeSource {
 	
 	private final long timestamp; 
 	private final SortedSet<RevisionBranchPoint> branchPoints;
+	private final boolean squash;
 
 	@JsonCreator
 	public RevisionBranchMergeSource(
 			@JsonProperty("timestamp") long timestamp, 
-			@JsonProperty("branchPoints") SortedSet<RevisionBranchPoint> branchPoints) {
+			@JsonProperty("branchPoints") SortedSet<RevisionBranchPoint> branchPoints,
+			@JsonProperty("squash") boolean squash) {
 		this.timestamp = timestamp;
 		this.branchPoints = branchPoints;
+		this.squash = squash;
+	}
+	
+	public boolean isSquash() {
+		return squash;
 	}
 	
 	public long getTimestamp() {
