@@ -420,10 +420,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	public void refresh(Set<DocumentMapping> typesToRefresh) {
 		if (!CompareUtils.isEmpty(typesToRefresh)) {
-			final String[] indicesToRefresh = typesToRefresh.stream()
-					.map(this::getTypeIndex)
-					.distinct()
-					.toArray(String[]::new);
+			final String[] indicesToRefresh;
+			
+			synchronized (typesToRefresh) {
+				indicesToRefresh = typesToRefresh.stream()
+						.map(this::getTypeIndex)
+						.distinct()
+						.toArray(String[]::new);
+			}
 			
 			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
 			
