@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.datastore.internal.merge;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -41,8 +38,6 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 
 	private static class SyncRebaseRequest extends AbstractBranchChangeRequest<Boolean> {
 
-		private static final Logger LOG = LoggerFactory.getLogger(SyncRebaseRequest.class);
-		
 		SyncRebaseRequest(final Merge merge, final String commitMessage, String reviewId) {
 			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
 		}
@@ -54,17 +49,8 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 				throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 			}
 
-			try (Locks locks = new Locks(context, source, target)) {
-				context.service(BaseRevisionBranching.class).rebase(target.path(), source.path(), commitMessage, new Runnable() {
-					@Override
-					public void run() {
-						try {
-							locks.unlock(source.path());
-						} catch (OperationLockException e) {
-							LOG.warn("Failed to unlock source branch in SyncRebaseRequest; continuing.", e);
-						}
-					}
-				});
+			try (Locks locks = new Locks(context, target)) {
+				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage);
 				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);

@@ -44,7 +44,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		@Override
 		protected Boolean execute(RepositoryContext context, Branch source, Branch target) {
 			try (Locks locks = new Locks(context, source, target)) {
-				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage);
+				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, true);
 				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
