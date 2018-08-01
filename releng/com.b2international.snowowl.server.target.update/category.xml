@@ -131,13 +131,13 @@
    <bundle id="javax.xml" version="1.3.4.v201005080400"/>
    <bundle id="javax.xml.stream" version="1.0.1.v201004272200" />
    <bundle id="org.semanticweb.owl.owlapi" version="3.4.4" />
-   <bundle id="io.netty.buffer" version="4.1.13.Final" />
-   <bundle id="io.netty.codec" version="4.1.13.Final" />
-   <bundle id="io.netty.codec-http" version="4.1.13.Final" />
-   <bundle id="io.netty.common" version="4.1.13.Final" />
-   <bundle id="io.netty.handler" version="4.1.13.Final" />
-   <bundle id="io.netty.resolver" version="4.1.13.Final" />
-   <bundle id="io.netty.transport" version="4.1.13.Final" />
+   <bundle id="io.netty.buffer" version="4.1.16.Final" />
+   <bundle id="io.netty.codec" version="4.1.16.Final" />
+   <bundle id="io.netty.codec-http" version="4.1.16.Final" />
+   <bundle id="io.netty.common" version="4.1.16.Final" />
+   <bundle id="io.netty.handler" version="4.1.16.Final" />
+   <bundle id="io.netty.resolver" version="4.1.16.Final" />
+   <bundle id="io.netty.transport" version="4.1.16.Final" />
    <bundle id="org.jetbrains.kotlin.osgi-bundle" version="1.1.51" />
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
