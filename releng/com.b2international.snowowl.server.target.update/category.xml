@@ -27,13 +27,13 @@
    <feature url="features/org.eclipse.net4j.db_4.1.0.v20120609-0625.jar" id="org.eclipse.net4j.db" version="4.1.0.v20120609-0625">
       <category name="CDO"/>
    </feature>
-   <feature url="features/org.codehaus.groovy24.feature_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy24.feature" version="2.9.2.xx-201712112151-e43j8">
+   <feature url="features/org.codehaus.groovy24.feature_2.9.2.xx-201801060157-e43j8-RELEASE.jar" id="org.codehaus.groovy24.feature" version="2.9.2.xx-201801060157-e43j8-RELEASE">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.2.xx-201712112151-e43j8" patch="true">
+   <feature url="features/org.codehaus.groovy.jdt.patch_2.9.2.xx-201801060157-e43j8-RELEASE.jar" id="org.codehaus.groovy.jdt.patch" version="2.9.2.xx-201801060157-e43j8-RELEASE" patch="true">
       <category name="IDE Tools"/>
    </feature>
-   <feature url="features/org.codehaus.groovy.headless.feature_2.9.2.xx-201712112151-e43j8.jar" id="org.codehaus.groovy.headless.feature" version="2.9.2.xx-201712112151-e43j8">
+   <feature url="features/org.codehaus.groovy.headless.feature_2.9.2.xx-201801060157-e43j8-RELEASE.jar" id="org.codehaus.groovy.headless.feature" version="2.9.2.xx-201801060157-e43j8-RELEASE">
       <category name="IDE Tools"/>
    </feature>
    <feature url="features/org.eclipse.jdt_3.9.2.v20140221-1700.jar" id="org.eclipse.jdt" version="3.9.2.v20140221-1700">
