@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.admin.EsIndexAdmin;
@@ -44,12 +43,12 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
 		
 		final HttpHost host;
-		if (settings.containsKey(CLIENT_URL)) {
-			host = HttpHost.create((String) settings.get(CLIENT_URL));
+		if (settings.containsKey(CLUSTER_URL)) {
+			host = HttpHost.create((String) settings.get(CLUSTER_URL));
 		} else {
 			// Start an embedded ES node only if a client URL is not set
 			EsNode.getInstance(configDirectory, dataDirectory, persistent);
-			host = HttpHost.create(DEFAULT_CLIENT_URL);
+			host = HttpHost.create(DEFAULT_CLUSTER_URL);
 		}
 		
 		final RestHighLevelClient client = EsClient.create(host);

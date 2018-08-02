@@ -51,7 +51,7 @@ public class IndexConfiguration {
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	
-	private String clientUrl; 
+	private String clusterUrl; 
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -164,12 +164,12 @@ public class IndexConfiguration {
 	}
 
 	@JsonProperty
-	public String getClientUrl() {
-		return clientUrl;
+	public String getClusterUrl() {
+		return clusterUrl;
 	}
 	
 	@JsonProperty
-	public void setClientUrl(String clientUrl) {
-		this.clientUrl = clientUrl;
+	public void setClusterUrl(String clusterUrl) {
+		this.clusterUrl = clusterUrl;
 	}
 }
