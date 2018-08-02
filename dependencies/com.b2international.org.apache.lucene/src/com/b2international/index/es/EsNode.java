@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.es;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
-import com.b2international.index.admin.AwaitPendingTasks;
+import com.b2international.org.apache.lucene.Activator;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -43,42 +43,56 @@ public final class EsNode extends Node {
 	private static final String CLUSTER_NAME = "elastic-snowowl";
 	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
 	
-	private static Node INSTANCE;
+	private static EsNode INSTANCE;
+
+	private final File directory;
+	private final boolean persistent;
 	
-	static Node getInstance(Path configPath, File directory, boolean persistent) {
+	public static Node getInstance(Path configPath, File directory, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
 					try {
-						System.setProperty("es.logs.base_path", configPath.toString());
-						final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
-						final Node node = new EsNode(esSettings);
-						node.start();
-						AwaitPendingTasks.await(node.client(), LOG);
-						INSTANCE = node;
-						Runtime.getRuntime().addShutdownHook(new Thread() {
-							@Override
-							public void run() {
-								try {
-									AwaitPendingTasks.await(INSTANCE.client(), LOG);
-									INSTANCE.client().close();
-									INSTANCE.close();
-									if (!persistent) {
-										FileUtils.deleteDirectory(directory);
-									}
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-						});
-						LOG.info("Embedded elasticsearch is up and running.");
+
+						// XXX: Temporarily set the thread context classloader to this bundle while ES is initializing 
+						final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+						try {
+							Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
+							System.setProperty("es.logs.base_path", configPath.toString());
+							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
+							final EsNode node = new EsNode(esSettings, directory, persistent);
+							node.start();
+							AwaitPendingTasks.await(node.client(), LOG);
+							INSTANCE = node;
+							LOG.info("Embedded elasticsearch is up and running.");
+						} finally {
+							Thread.currentThread().setContextClassLoader(contextClassLoader);
+						}
+						
 					} catch (Exception e) {
-						throw new IndexException("Couldn't start embedded elasticsearch", e);
+						throw new RuntimeException("Couldn't start embedded elasticsearch", e);
 					}
 				}
 			}
 		}
 		return INSTANCE;
+	}
+	
+	public static void stop() {
+		if (INSTANCE == null) {
+			return;
+		}
+		
+		try {
+			AwaitPendingTasks.await(INSTANCE.client(), LOG);
+			INSTANCE.client().close();
+			INSTANCE.close();
+			if (!INSTANCE.persistent) {
+				FileUtils.deleteDirectory(INSTANCE.directory);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static Settings configureSettings(Path configPath, File directory) throws IOException {
@@ -116,13 +130,15 @@ public final class EsNode extends Node {
 		}
 	}
 	
-	protected EsNode(Settings settings) {
+	protected EsNode(Settings settings, File directory, boolean persistent) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
 				.add(Netty4Plugin.class)
 				.add(ReindexPlugin.class)
 				.add(PainlessPlugin.class)
 				.add(CommonAnalysisPlugin.class)
 				.build());
+
+		this.directory = directory;
+		this.persistent = persistent;
 	}
-	
 }

@@ -19,6 +19,8 @@ import org.apache.lucene.codecs.Codec;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import com.b2international.index.es.EsNode;
+
 public class Activator implements BundleActivator {
 
 	public void start(BundleContext context) throws Exception {
@@ -30,7 +32,6 @@ public class Activator implements BundleActivator {
 	}
 
 	public void stop(BundleContext context) throws Exception {
-
+		EsNode.stop();
 	}
-
 }
