@@ -15,6 +15,7 @@
  */
 package com.b2international.org.apache.lucene;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.codecs.Codec;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -29,9 +30,22 @@ public class Activator implements BundleActivator {
 		 * This way we prevent that the class loading will be performed by a thread started from the Lucene's core bundle.
 		 */
 		Codec.getDefault();
+		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
+		System.setProperty("log4j.shutdownHookEnabled", "false");
 	}
 
 	public void stop(BundleContext context) throws Exception {
 		EsNode.stop();
+		withTccl(LogManager::shutdown);
+	}
+	
+	public static void withTccl(Runnable runnable) {
+		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
+			runnable.run();
+		} finally {
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
+		}
 	}
 }

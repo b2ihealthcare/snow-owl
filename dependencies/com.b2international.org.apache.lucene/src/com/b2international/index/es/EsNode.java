@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.apache.logging.log4j.LogManager;
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.ReindexPlugin;
@@ -53,17 +52,10 @@ public final class EsNode extends Node {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
-					try {
-
-						// XXX: Temporarily set the thread context classloader to this bundle while ES is initializing 
-						final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+					// XXX: Temporarily set the thread context classloader to this bundle while ES is initializing
+					Activator.withTccl(() -> {
 						try {
-							Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
-
-							// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
-							System.setProperty("log4j.shutdownHookEnabled", "false");
 							System.setProperty("es.logs.base_path", configPath.toString());
-
 							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
 							final EsNode node = new EsNode(esSettings, directory, persistent);
 							node.start();
@@ -71,13 +63,10 @@ public final class EsNode extends Node {
 							AwaitPendingTasks.await(node.client(), LOG);
 							INSTANCE = node;
 							LOG.info("Embedded elasticsearch is up and running.");
-						} finally {
-							Thread.currentThread().setContextClassLoader(contextClassLoader);
+						} catch (Exception e) {
+							throw new RuntimeException("Couldn't start embedded elasticsearch", e);
 						}
-						
-					} catch (Exception e) {
-						throw new RuntimeException("Couldn't start embedded elasticsearch", e);
-					}
+					});
 				}
 			}
 		}
@@ -89,24 +78,22 @@ public final class EsNode extends Node {
 			return;
 		}
 
-		// XXX: Temporarily set the thread context classloader to this bundle while ES is closing 
-		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		try {
-			
-			Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
-			AwaitPendingTasks.await(INSTANCE.client(), LOG);
-			INSTANCE.close();
-			
-			if (!INSTANCE.persistent) {
-				FileUtils.deleteDirectory(INSTANCE.directory);
+		// XXX: Temporarily set the thread context classloader to this bundle while ES is closing
+		Activator.withTccl(() -> {
+			try {
+				
+				Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
+				AwaitPendingTasks.await(INSTANCE.client(), LOG);
+				INSTANCE.close();
+				
+				if (!INSTANCE.persistent) {
+					FileUtils.deleteDirectory(INSTANCE.directory);
+				}
+				
+			} catch (Exception e) {
+				LOG.error("Failed to stop embedded Elasticsearch instance.", e);
 			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			LogManager.shutdown();
-			Thread.currentThread().setContextClassLoader(contextClassLoader);
-		}
+		});
 	}
 	
 	private static Settings configureSettings(Path configPath, File directory) throws IOException {
