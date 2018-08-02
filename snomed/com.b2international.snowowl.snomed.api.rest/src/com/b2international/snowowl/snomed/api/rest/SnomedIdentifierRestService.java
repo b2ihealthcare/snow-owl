@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,17 @@ import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierReques
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierResponse;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 
 /**
  * @since 1.0
  */
-@Api("Identifiers")
+@Api(value = "Identifiers", description="Identifiers", tags = { "identifiers" })
 @RestController
 @RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
 public class SnomedIdentifierRestService extends AbstractRestService {

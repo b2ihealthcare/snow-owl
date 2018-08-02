@@ -26,13 +26,14 @@ import com.b2international.snowowl.api.rest.admin.AbstractAdminRestService;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.core.ServerInfo;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * @since 5.8
  */
-@Api("Server Info")
+@Api(value = "Server info", description="Info", tags = { "info" })
 @Controller
 public class ServerInfoRestApi extends AbstractAdminRestService {
 
