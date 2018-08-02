@@ -25,6 +25,7 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.es.EsClient;
 import com.b2international.index.es.EsNode;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +52,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			host = HttpHost.create(DEFAULT_CLIENT_URL);
 		}
 		
-		final RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(host));
+		final RestHighLevelClient client = EsClient.create(host);
 		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
 	}
 }
