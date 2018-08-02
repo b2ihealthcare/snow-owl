@@ -30,8 +30,10 @@ public class Activator implements BundleActivator {
 		 * This way we prevent that the class loading will be performed by a thread started from the Lucene's core bundle.
 		 */
 		Codec.getDefault();
+		
 		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
 		System.setProperty("log4j.shutdownHookEnabled", "false");
+		withTccl(LogManager::getContext);
 	}
 
 	public void stop(BundleContext context) throws Exception {
