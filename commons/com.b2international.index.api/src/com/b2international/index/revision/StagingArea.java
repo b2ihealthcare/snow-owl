@@ -509,16 +509,17 @@ public final class StagingArea {
 		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
 		
 		final long fastForwardCommitTimestamp = fromChanges.getCompare().segments().last().end();
+		
 		// in case of nothing to merge, then just commit the headtimestamp change, similar to fast forward in Git
-		if (fromChangeDetails.isEmpty() || !squash) {
-			return fastForwardCommitTimestamp;
+		if (fromChangeDetails.isEmpty()) {
+			return squash ? -1L : fastForwardCommitTimestamp;
 		}
 		
 		// check conflicts and commit only the resolved conflicts
 		final List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE).getDetails();
 		
-		// if nothing happened on toBranch, then just return the last from segment timestamp just like in the prev if statement to fast forward branch head
-		if (toChangeDetails.isEmpty()) {
+		// in case of fast-forward merge only check conflicts when there are changes on the to branch
+		if (toChangeDetails.isEmpty() && !squash) {
 			return fastForwardCommitTimestamp;
 		}
 		
@@ -577,13 +578,15 @@ public final class StagingArea {
 		});
 
 		boolean stagedChanges = false;
-		
+
+		// add vs. add
 		Set<String> newRevisionIdsToMerge = newHashSet(newRevisionIdsToMergeByType.values());
 		Set<String> newRevisionIdsToCheck = newHashSet(newRevisionIdsToCheckByType.values());
 		if (!Sets.intersection(newRevisionIdsToMerge, newRevisionIdsToCheck).isEmpty()) {
 			throw new UnsupportedOperationException("TODO conflict detection and resolution");
 		}
 		
+		// changed vs. changed
 		Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.values());
 		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
 		if (!Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck).isEmpty()) {
@@ -592,7 +595,13 @@ public final class StagingArea {
 		
 		Set<String> removedRevisionIdsToMerge = newHashSet(removedRevisionIdsToMergeByType.values());
 		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
-		if (!Sets.intersection(removedRevisionIdsToMerge, removedRevisionIdsToCheck).isEmpty()) {
+		// changed vs. removed
+		if (!Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck).isEmpty()) {
+			throw new UnsupportedOperationException("TODO conflict detection and resolution");
+		}
+		
+		// removed vs. changed
+		if (!Sets.intersection(removedRevisionIdsToMerge, changedRevisionIdsToCheck).isEmpty()) {
 			throw new UnsupportedOperationException("TODO conflict detection and resolution");
 		}
 		

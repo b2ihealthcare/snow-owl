@@ -365,7 +365,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
-    	final Map<Long, RevisionBranchPoint> latestMergeSources = getLatestMergeSources();
+    	final Map<Long, RevisionBranchPoint> latestMergeSources = getLatestMergeSources(false);
     	// extend segments with the latest merge timestamp to access all revisions
     	final SortedSet<RevisionSegment> visibleSegments = getSegments().stream()
     			.map(segment -> {
@@ -391,7 +391,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	public RevisionBranchRef baseRef() {
 		final SortedSet<RevisionSegment> parentSegments = getParentSegments().stream()
     			.map(segment -> {
-    				RevisionBranchPoint latestMergeSource = getLatestMergeSource(segment.branchId());
+    				RevisionBranchPoint latestMergeSource = getLatestMergeSource(segment.branchId(), false);
     				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
     					return segment.withEnd(latestMergeSource.getTimestamp());
     				} else {
@@ -419,8 +419,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
     @JsonIgnore
 	public BranchState state(RevisionBranch target) {
-    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId());
-    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId());
+    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId(), true);
+    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId(), true);
     	
     	long baseTimestamp = getBaseTimestamp();
     	if (mergeSource != null) {
@@ -450,15 +450,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
         }
     }
 
-	private RevisionBranchPoint getLatestMergeSource(long branchToFind) {
-		return getLatestMergeSources().get(branchToFind);
+	private RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+		return getLatestMergeSources(withSquashMerges).get(branchToFind);
 	}
 
-	private Map<Long, RevisionBranchPoint> getLatestMergeSources() {
+	private Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
 		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
 		getMergeSources()
 			.stream()
-			.filter(ms -> !ms.isSquash()) // skip squash merge sources
+			.filter(ms -> withSquashMerges || !ms.isSquash()) // skip squash merge sources when not required
 			.flatMap(ms -> ms.getBranchPoints().stream())
 			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
 			.forEach(branchPoint -> {
