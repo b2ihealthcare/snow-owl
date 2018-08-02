@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.apache.logging.log4j.LogManager;
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.reindex.ReindexPlugin;
@@ -58,10 +59,15 @@ public final class EsNode extends Node {
 						final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 						try {
 							Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
+
+							// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
+							System.setProperty("log4j.shutdownHookEnabled", "false");
 							System.setProperty("es.logs.base_path", configPath.toString());
+
 							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
 							final EsNode node = new EsNode(esSettings, directory, persistent);
 							node.start();
+							
 							AwaitPendingTasks.await(node.client(), LOG);
 							INSTANCE = node;
 							LOG.info("Embedded elasticsearch is up and running.");
@@ -82,16 +88,24 @@ public final class EsNode extends Node {
 		if (INSTANCE == null) {
 			return;
 		}
-		
+
+		// XXX: Temporarily set the thread context classloader to this bundle while ES is closing 
+		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
+			
+			Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
 			AwaitPendingTasks.await(INSTANCE.client(), LOG);
-			INSTANCE.client().close();
 			INSTANCE.close();
+			
 			if (!INSTANCE.persistent) {
 				FileUtils.deleteDirectory(INSTANCE.directory);
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			LogManager.shutdown();
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
 		}
 	}
 	
