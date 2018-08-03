@@ -51,7 +51,7 @@ public class SnomedCompareRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value = "Compare two branches", 
-		notes = "Compare two branches from SnowOwl")
+		notes = "Returns the new, changed and deleted components of two branches within SnowOwl")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)

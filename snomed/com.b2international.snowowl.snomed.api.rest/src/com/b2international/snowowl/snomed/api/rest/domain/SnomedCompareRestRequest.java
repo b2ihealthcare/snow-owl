@@ -45,12 +45,24 @@ public class SnomedCompareRestRequest {
 		return base;
 	}
 	
+	public void setBase(String base) {
+		this.base = base;
+	}
+	
 	public String getCompareBranch() {
 		return compareBranch;
 	}
 	
+	public void setCompareBranch(String compareBranch) {
+		this.compareBranch = compareBranch;
+	}
+	
 	public int getLimit() {
 		return limit;
+	}
+	
+	public void setLimit(int limit) {
+		this.limit = limit;
 	}
 
 }
