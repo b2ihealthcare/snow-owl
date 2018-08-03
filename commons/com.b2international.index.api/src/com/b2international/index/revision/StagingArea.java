@@ -627,12 +627,12 @@ public final class StagingArea {
 					}
 				}
 			}
-			
-			// apply deleted objects
-			for (Class<? extends Revision> type : newHashSet(removedRevisionIdsToMergeByType.keySet())) {
-				final Collection<String> removedRevisionIds = removedRevisionIdsToMergeByType.removeAll(type);
-				index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
-			}
+		}
+		
+		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
+		for (Class<? extends Revision> type : newHashSet(removedRevisionIdsToMergeByType.keySet())) {
+			final Collection<String> removedRevisionIds = removedRevisionIdsToMergeByType.removeAll(type);
+			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
 		}
 		
 		return stagedChanges ? -1L : fastForwardCommitTimestamp;
