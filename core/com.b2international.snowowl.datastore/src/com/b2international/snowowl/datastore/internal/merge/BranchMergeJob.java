@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore.internal.merge;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
+import com.b2international.index.revision.RevisionConflictProcessor;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -44,7 +45,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		@Override
 		protected Boolean execute(RepositoryContext context, Branch source, Branch target) {
 			try (Locks locks = new Locks(context, source, target)) {
-				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, true);
+				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, RevisionConflictProcessor.DEFAULT, true);
 				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);

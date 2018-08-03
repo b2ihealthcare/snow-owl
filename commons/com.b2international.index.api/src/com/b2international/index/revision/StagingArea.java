@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.Pair;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Hooks.Hook;
@@ -51,6 +52,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -492,7 +494,7 @@ public final class StagingArea {
 		
 	}
 
-	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash) {
+	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeSources = fromRef.difference(toRef)
 				.segments()
@@ -578,29 +580,50 @@ public final class StagingArea {
 
 		boolean stagedChanges = false;
 
-		// add vs. add
-		Set<String> newRevisionIdsToMerge = newHashSet(newRevisionIdsToMergeByType.values());
-		Set<String> newRevisionIdsToCheck = newHashSet(newRevisionIdsToCheckByType.values());
-		if (!Sets.intersection(newRevisionIdsToMerge, newRevisionIdsToCheck).isEmpty()) {
-			throw new UnsupportedOperationException("TODO conflict detection and resolution");
-		}
-		
-		// changed vs. changed
-		Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.values());
 		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
-		if (!Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck).isEmpty()) {
-			throw new UnsupportedOperationException("TODO conflict detection and resolution");
-		}
-		
 		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
-		// changed vs. removed
-		// TODO check released flags in semantic conflict processing
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(changedRevisionIdsToMergeByType.keySet())) {
-			Set<String> changedRevisionIds = ImmutableSet.copyOf(changedRevisionIdsToMergeByType.get(type));
-			Set<String> changedInSourceDetachedInTarget = Sets.intersection(changedRevisionIds, removedRevisionIdsToCheck);
+			Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.get(type));
+			// first handle changed vs. removed
+			Set<String> changedInSourceDetachedInTarget = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
 			if (!changedInSourceDetachedInTarget.isEmpty()) {
+				// TODO check released flags in semantic conflict processing
 				revisionToReviseOnMergeSource.putAll(type, changedInSourceDetachedInTarget);
 				changedInSourceDetachedInTarget.forEach(id -> changedRevisionIdsToMergeByType.remove(type, id));
+				changedRevisionIdsToMerge.removeAll(changedInSourceDetachedInTarget);
+			}
+			// then handle changed vs. changed with the conflict processor
+			Set<String> changedInSourceAndTargetIds = Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck);
+			if (!changedInSourceAndTargetIds.isEmpty()) {
+//				final Iterable<? extends Revision> revisionsToMerge = index.read(fromRef, searcher -> searcher.get(type, changedInSourceAndTargetIds));
+//				final Iterable<? extends Revision> revisionsToCheck = index.read(toRef, searcher -> searcher.get(type, changedInSourceAndTargetIds));
+//				final Map<String, ? extends Revision> revisionsToCheckById = FluentIterable.from(revisionsToCheck).uniqueIndex(Revision::getId);
+//				final Map<String, ? extends Revision> revisionsToMergeById = FluentIterable.from(revisionsToMerge).uniqueIndex(Revision::getId);
+				
+				for (String changedInSourceAndTargetId : changedInSourceAndTargetIds) {
+//					final Revision changedInSource = revisionsToMergeById.get(changedInSourceAndTargetId);
+//					final Revision changedInTarget = revisionsToCheckById.get(changedInSourceAndTargetId);
+					List<RevisionCompareDetail> sourceChanges = fromChangeDetails.stream().filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId)).collect(Collectors.toList());
+					List<RevisionCompareDetail> targetChanges = toChangeDetails.stream().filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId)).collect(Collectors.toList());
+					for (RevisionCompareDetail sourceChange : sourceChanges) {
+						if (!Strings.isNullOrEmpty(sourceChange.getProperty())) {
+							for (RevisionCompareDetail targetChange : targetChanges) {
+								if (Objects.equals(sourceChange.getProperty(), targetChange.getProperty()) && !Objects.equals(sourceChange.getValue(), targetChange.getValue())) {
+									Object conflict = conflictProcessor.handleChangedInSourceAndTarget(
+										changedInSourceAndTargetId, 
+										new RevisionPropertyDiff(sourceChange.getProperty(), sourceChange.getFromValue(), sourceChange.getValue()),
+										new RevisionPropertyDiff(targetChange.getProperty(), targetChange.getFromValue(), targetChange.getValue())
+									);
+									if (conflict == null) {
+										throw new ConflictException("Found property conflict");
+									} else {
+										// TODO apply resolution
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		
@@ -615,7 +638,7 @@ public final class StagingArea {
 			for (Class<? extends Revision> type : newHashSet(changedRevisionIdsToMergeByType.keySet())) {
 				final Collection<String> changedRevisionIds = changedRevisionIdsToMergeByType.removeAll(type);
 				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
-				final Map<String,? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 				
 				final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
 				final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);

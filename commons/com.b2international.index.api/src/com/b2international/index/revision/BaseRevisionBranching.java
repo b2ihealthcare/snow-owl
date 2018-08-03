@@ -260,7 +260,11 @@ public abstract class BaseRevisionBranching {
 	}
 
 	public Commit merge(String fromPath, String toPath, String commitMessage) {
-		return merge(fromPath, toPath, commitMessage, false);
+		return merge(fromPath, toPath, commitMessage, RevisionConflictProcessor.DEFAULT);
+	}
+	
+	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor) {
+		return merge(fromPath, toPath, commitMessage, conflictProcessor, false);
 	}
 	
 	/**
@@ -273,7 +277,7 @@ public abstract class BaseRevisionBranching {
 	 * @param squash 
 	 * @return the commit object representing the merge commit or <code>null</code> if there is nothing to merge
 	 */
-	public Commit merge(String fromPath, String toPath, String commitMessage, boolean squash) {
+	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor, boolean squash) {
 		if (toPath.equals(fromPath)) {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
 		}
@@ -291,7 +295,7 @@ public abstract class BaseRevisionBranching {
 		final StagingArea staging = index.prepareCommit(to.getPath());
 		
 		// TODO add conflict processing
-		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), squash);
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), squash, conflictProcessor);
 		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
 		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
 			fastForwardCommitTimestamp = -1L;
