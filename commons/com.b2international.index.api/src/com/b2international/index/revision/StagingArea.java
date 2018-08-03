@@ -82,6 +82,7 @@ public final class StagingArea {
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
 	private boolean squashMerge;
+	private Multimap<Class<?>, String> revisionToReviseOnMergeSource = HashMultimap.create();
 	
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
@@ -207,8 +208,6 @@ public final class StagingArea {
 			}
 		});
 
-		final Multimap<Class<?>, String> revisionToReviseOnMergeSource = HashMultimap.create();
-		
 		// apply removals first
 		for (Class<?> type : deletedIdsByType.keySet()) {
 			final Set<String> deletedDocIds = ImmutableSet.copyOf(deletedIdsByType.get(type));
@@ -593,16 +592,16 @@ public final class StagingArea {
 			throw new UnsupportedOperationException("TODO conflict detection and resolution");
 		}
 		
-		Set<String> removedRevisionIdsToMerge = newHashSet(removedRevisionIdsToMergeByType.values());
 		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
 		// changed vs. removed
-		if (!Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck).isEmpty()) {
-			throw new UnsupportedOperationException("TODO conflict detection and resolution");
-		}
-		
-		// removed vs. changed
-		if (!Sets.intersection(removedRevisionIdsToMerge, changedRevisionIdsToCheck).isEmpty()) {
-			throw new UnsupportedOperationException("TODO conflict detection and resolution");
+		// TODO check released flags in semantic conflict processing
+		for (Class<? extends Revision> type : ImmutableSet.copyOf(changedRevisionIdsToMergeByType.keySet())) {
+			Set<String> changedRevisionIds = ImmutableSet.copyOf(changedRevisionIdsToMergeByType.get(type));
+			Set<String> changedInSourceDetachedInTarget = Sets.intersection(changedRevisionIds, removedRevisionIdsToCheck);
+			if (!changedInSourceDetachedInTarget.isEmpty()) {
+				revisionToReviseOnMergeSource.putAll(type, changedInSourceDetachedInTarget);
+				changedInSourceDetachedInTarget.forEach(id -> changedRevisionIdsToMergeByType.remove(type, id));
+			}
 		}
 		
 		if (squash) {
