@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.elasticsearch.node.Node;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.es.EsClient;
+import com.b2international.index.es.EsNode;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,10 +41,17 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final Object configDir = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : Paths.get("target");
 		final File dataDirectory = dir instanceof File ? (File) dir : new File((String) dir);
 		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
-		final Node node = EsNode.getInstance(configDirectory, dataDirectory, persistent);
-		return new EsIndexClient(new EsIndexAdmin(node.client(), name, mappings, settings), mapper);
+		
+		final HttpHost host;
+		if (settings.containsKey(CLUSTER_URL)) {
+			host = HttpHost.create((String) settings.get(CLUSTER_URL));
+		} else {
+			// Start an embedded ES node only if a client URL is not set
+			EsNode.getInstance(configDirectory, dataDirectory, persistent);
+			host = HttpHost.create(DEFAULT_CLUSTER_URL);
+		}
+		
+		final RestHighLevelClient client = EsClient.create(host);
+		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
 	}
-
-	
-	
 }

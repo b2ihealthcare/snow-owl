@@ -25,10 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.ClearScrollRequest;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -38,6 +41,8 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHitsAggregationBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -58,7 +63,6 @@ import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
@@ -91,12 +95,13 @@ public class EsDocumentSearcher implements DocSearcher {
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		final GetResponse response = admin.client()
-				.prepareGet(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
-				.setFetchSource(true)
-				.get();
-		if (response.isExists()) {
-			final byte[] bytes = response.getSourceAsBytes();
+		final GetRequest getRequest = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
+				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
+		final GetResponse getResponse = admin.client()
+				.get(getRequest);
+		
+		if (getResponse.isExists()) {
+			final byte[] bytes = getResponse.getSourceAsBytes();
 			return mapper.readValue(bytes, 0, bytes.length, type);
 		} else {
 			return null;
@@ -105,7 +110,7 @@ public class EsDocumentSearcher implements DocSearcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		final Client client = admin.client();
+		final RestHighLevelClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
 		
 		// Restrict variables to the theoretical maximum
@@ -115,26 +120,28 @@ public class EsDocumentSearcher implements DocSearcher {
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequestBuilder req = client.prepareSearch(admin.getTypeIndex(mapping))
-			.setTypes(mapping.typeAsString())
-			.setSize(toRead)
-			.setQuery(esQuery)
-			.setTrackScores(esQueryBuilder.needsScoring());
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
+				.types(mapping.typeAsString());
+		
+		final SearchSourceBuilder reqSource = req.source()
+			.size(toRead)
+			.query(esQuery)
+			.trackScores(esQueryBuilder.needsScoring());
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(query.getFields(), query.isDocIdOnly(), mapping, req);
+		final boolean fetchSource = applySourceFiltering(query.getFields(), query.isDocIdOnly(), mapping, reqSource);
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source
 		// ES internals require loading the _id field when we require the _source
 		if (fetchSource	|| query.isDocIdOnly()) {
-			req.storedFields("_id");
+			reqSource.storedField("_id");
 		} else {
-			req.storedFields("_none_");
+			reqSource.storedField("_none_");
 		}
 		
 		// sorting
-		addSort(mapping, req, query.getSortBy());
+		addSort(mapping, reqSource, query.getSortBy());
 		
 		// scrolling
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
@@ -144,24 +151,24 @@ public class EsDocumentSearcher implements DocSearcher {
 		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
 			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
-			req.setScroll(scrollTime);
+			req.scroll(scrollTime);
 		} else if (isScrolled) {
 			checkArgument(!isLiveScrolled, "Cannot scroll and live scroll at the same time");
-			req.setScroll(query.getScrollKeepAlive());
+			req.scroll(query.getScrollKeepAlive());
 		} else if (isLiveScrolled) {
 			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
-			req.searchAfter(query.getSearchAfter());
+			reqSource.searchAfter(query.getSearchAfter());
 		}
 		
 		// disable explain explicitly, just in case
-		req.setExplain(false);
+		reqSource.explain(false);
 		// disable version field explicitly, just in case
-		req.setVersion(false);
+		reqSource.version(false);
 		
 		// fetch phase
 		SearchResponse response = null; 
 		try {
-			response = req.get();
+			response = client.search(req);
 		} catch (Exception e) {
 			admin.log().error("Couldn't execute query", e);
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
@@ -170,11 +177,14 @@ public class EsDocumentSearcher implements DocSearcher {
 		final int totalHits = (int) response.getHits().getTotalHits();
 		int numDocsToFetch = Math.min(limit, totalHits) - response.getHits().getHits().length;
 		
-		final Builder<SearchHit> allHits = ImmutableList.builder();
+		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
 		allHits.add(response.getHits().getHits());
 
 		while (isLocalScroll && numDocsToFetch > 0) {
-			response = client.prepareSearchScroll(response.getScrollId()).setScroll(scrollTime).get();
+			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
+					.scroll(scrollTime);
+			
+			response = client.searchScroll(searchScrollRequest);
 			int fetchedDocs = response.getHits().getHits().length;
 			if (fetchedDocs == 0) {
 				break;
@@ -185,7 +195,9 @@ public class EsDocumentSearcher implements DocSearcher {
 		
 		// clear the custom local scroll
 		if (isLocalScroll) {
-			client.prepareClearScroll().addScrollId(response.getScrollId()).get();
+			final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+			clearScrollRequest.addScrollId(response.getScrollId());
+			client.clearScroll(clearScrollRequest);
 		}
 		
 		final Class<T> select = query.getSelect();
@@ -194,28 +206,28 @@ public class EsDocumentSearcher implements DocSearcher {
 		return toHits(select, from, query.getFields(), fetchSource, limit, totalHits, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
 
-	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchRequestBuilder req) {
+	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
 		// No specific fields requested? Use _source to retrieve all of them
 		if (fields.isEmpty()) {
-			req.setFetchSource(null, EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
 			return true;
 		}
 		
 		// Only IDs required? _source is not needed at all
 		if (isDocIdOnly) {
-			req.setFetchSource(false);
+			reqSource.fetchSource(false);
 			return false;
 		}
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
 		if (requiresDocumentSourceField(mapping, fields)) {
-			req.setFetchSource(Iterables.toArray(fields, String.class), EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource(Iterables.toArray(fields, String.class), EXCLUDED_SOURCE_FIELDS);
 			return true;
 		}
 		
 		// Use docValues otherwise for field retrieval
-		fields.stream().forEach(req::addDocValueField);
-		req.setFetchSource(false);
+		fields.stream().forEach(reqSource::docValueField);
+		reqSource.fetchSource(false);
 		return false;
 	}
 
@@ -235,10 +247,10 @@ public class EsDocumentSearcher implements DocSearcher {
 
 	@Override
 	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
+		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
+				.scroll(scroll.getKeepAlive());
 		final SearchResponse response = admin.client()
-				.prepareSearchScroll(scroll.getScrollId())
-				.setScroll(scroll.getKeepAlive())
-				.get();
+				.searchScroll(searchScrollRequest);
 		
 		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
 		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
@@ -247,7 +259,14 @@ public class EsDocumentSearcher implements DocSearcher {
 	
 	@Override
 	public void cancelScroll(String scrollId) {
-		admin.client().prepareClearScroll().addScrollId(scrollId).get();
+		final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+		clearScrollRequest.addScrollId(scrollId);
+		
+		try {
+			admin.client().clearScroll(clearScrollRequest);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Couldn't clear scroll state for scrollId '%s'.", scrollId), e);
+		}
 	}
 	
 	private <T> Hits<T> toHits(
@@ -281,7 +300,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
 	}
 
-	private void addSort(DocumentMapping mapping, SearchRequestBuilder req, SortBy sortBy) {
+	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy) {
 		for (final SortBy item : getSortFields(sortBy)) {
 			if (item instanceof SortByField) {
 				SortByField sortByField = (SortByField) item;
@@ -292,12 +311,12 @@ public class EsDocumentSearcher implements DocSearcher {
 				switch (field) {
 				case SortBy.FIELD_SCORE:
 					// XXX: default order for scores is *descending*
-					req.addSort(SortBuilders.scoreSort().order(sortOrder)); 
+					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
 					break;
 				case DocumentMapping._ID: //$FALL-THROUGH$
 					field = DocumentMapping._ID;
 				default:
-					req.addSort(SortBuilders.fieldSort(field).order(sortOrder));
+					reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
 				}
 			} else if (item instanceof SortByScript) {
 				SortByScript sortByScript = (SortByScript) item;
@@ -312,7 +331,7 @@ public class EsDocumentSearcher implements DocSearcher {
 				
 				Map<String, Object> arguments = sortByScript.getArguments();
 				
-				req.addSort(SortBuilders.scriptSort(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", script, arguments), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", script, arguments), ScriptSortType.STRING)
 						.order(sortOrder));
 				
 			} else {
@@ -348,25 +367,27 @@ public class EsDocumentSearcher implements DocSearcher {
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 		final String aggregationName = aggregation.getName();
-		final Client client = admin.client();
+		final RestHighLevelClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
 		
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
-		final SearchRequestBuilder req = client.prepareSearch(admin.getTypeIndex(mapping))
-			.setTypes(mapping.typeAsString())
-			.setQuery(esQuery)
-			.setSize(0)
-			.setTrackScores(false);
+		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping))
+				.types(mapping.typeAsString());
+		
+		final SearchSourceBuilder reqSource = req.source()
+			.query(esQuery)
+			.size(0)
+			.trackScores(false);
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), false, mapping, req);
-		req.addAggregation(toEsAggregation(mapping, aggregation, fetchSource));
+		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), false, mapping, reqSource);
+		reqSource.aggregation(toEsAggregation(mapping, aggregation, fetchSource));
 		
 		SearchResponse response = null; 
 		try {
-			response = req.get();
+			response = client.search(req);
 		} catch (Exception e) {
 			admin.log().error("Couldn't execute aggregation", e);
 			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
