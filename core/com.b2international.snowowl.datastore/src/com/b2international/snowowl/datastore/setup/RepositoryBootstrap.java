@@ -54,6 +54,10 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
 				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
 		
+		if (config.getClusterUrl() != null) {
+			builder.put(IndexClientFactory.CLUSTER_URL, config.getClusterUrl());
+		}
+		
 		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getCommitInterval());
 		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, config.getCommitConcurrencyLevel());
 		

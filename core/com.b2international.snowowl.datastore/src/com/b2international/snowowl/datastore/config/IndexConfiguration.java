@@ -46,12 +46,12 @@ public class IndexConfiguration {
 	private long fetchDebugThreshold = SlowLogConfig.FETCH_DEBUG_THRESHOLD_DEFAULT;
 	@Min(10)
 	private long fetchTraceThreshold = SlowLogConfig.FETCH_TRACE_THRESHOLD_DEFAULT;
-	
 	@Min(1)
 	private Integer numberOfShards = 6;
-	
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+	
+	private String clusterUrl; 
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -163,4 +163,13 @@ public class IndexConfiguration {
 		this.commitConcurrencyLevel = commitConcurrencyLevel;
 	}
 
+	@JsonProperty
+	public String getClusterUrl() {
+		return clusterUrl;
+	}
+	
+	@JsonProperty
+	public void setClusterUrl(String clusterUrl) {
+		this.clusterUrl = clusterUrl;
+	}
 }
