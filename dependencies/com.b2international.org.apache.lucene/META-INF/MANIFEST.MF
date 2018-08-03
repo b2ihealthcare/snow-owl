@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Lucene and Elasticsearch
-Bundle-SymbolicName: com.b2international.org.apache.lucene
+Bundle-SymbolicName: com.b2international.org.apache.lucene;singleton:=true
 Bundle-Version: 7.3.1.b2i
 Bundle-ClassPath: .,
  lib/aggs-matrix-stats-client-6.3.2.jar,
@@ -547,7 +547,8 @@ Export-Package: com.b2international.index.compat,
  org.elasticsearch.watcher,
  org.tartarus.snowball,
  org.tartarus.snowball.ext
-Require-Bundle: com.google.guava;bundle-version="[18.0.0,19.0.0)",
+Require-Bundle: org.eclipse.osgi,
+ com.google.guava;bundle-version="[18.0.0,19.0.0)",
  com.b2international.commons,
  com.b2international.collections.api,
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.8.10",

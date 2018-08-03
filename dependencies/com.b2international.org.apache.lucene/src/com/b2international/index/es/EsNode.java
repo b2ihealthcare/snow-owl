@@ -52,7 +52,7 @@ public final class EsNode extends Node {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
-					// XXX: Temporarily set the thread context classloader to this bundle while ES is initializing
+					// XXX: Adjust the thread context classloader while ES is initializing
 					Activator.withTccl(() -> {
 						try {
 							System.setProperty("es.logs.base_path", configPath.toString());
@@ -78,11 +78,10 @@ public final class EsNode extends Node {
 			return;
 		}
 
-		// XXX: Temporarily set the thread context classloader to this bundle while ES is closing
+		// XXX: Adjust the thread context classloader while ES is closing
 		Activator.withTccl(() -> {
 			try {
 				
-				Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
 				AwaitPendingTasks.await(INSTANCE.client(), LOG);
 				INSTANCE.close();
 				

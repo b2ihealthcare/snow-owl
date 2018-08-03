@@ -15,6 +15,8 @@
  */
 package com.b2international.index.es;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -27,14 +29,11 @@ import com.b2international.org.apache.lucene.Activator;
 public final class EsClient {
 
 	public static final RestHighLevelClient create(final HttpHost host) {
-		
-		// XXX: Temporarily set the thread context classloader to this bundle while ES client is initializing 
-		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(Activator.class.getClassLoader());
-			return new RestHighLevelClient(RestClient.builder(host));
-		} finally {
-			Thread.currentThread().setContextClassLoader(contextClassLoader);
-		}
+		// XXX: Adjust the thread context classloader while ES client is initializing 
+		return Activator.withTccl(() -> {
+			final RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(host));
+			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
+			return client;
+		}); 
 	}
 }
