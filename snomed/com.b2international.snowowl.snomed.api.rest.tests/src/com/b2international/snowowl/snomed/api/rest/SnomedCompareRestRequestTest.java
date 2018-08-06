@@ -82,21 +82,13 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void testCompareOfSameBranch() throws IOException {
-		final ImmutableMap<String, Object> compareRequest = createCompareRequest(branchPath, branchPath);
+		final CompareResult compareResult = getCompareResult(branchPath.getPath(), parentBranch.getPath());
 		
-		final InputStream responseInputStream = givenAuthenticatedRequest(SCT_API)
-			.contentType(ContentType.JSON)
-			.accept(ContentType.JSON)
-			.body(compareRequest)
-			.post("/compare")
-			.asInputStream();
-		final ObjectMapper mapper = new ObjectMapper();
-		final CompareResult responseCompareResult = mapper.readValue(responseInputStream, CompareResult.class);
-		assertThat(responseCompareResult.getBaseBranch().equals(branchPath.toString()));
-		assertThat(responseCompareResult.getCompareBranch().equals(branchPath.toString()));
-		assertThat(responseCompareResult.getChangedComponents().isEmpty());
-		assertThat(responseCompareResult.getDeletedComponents().isEmpty());
-		assertThat(responseCompareResult.getNewComponents().isEmpty());
+		assertThat(compareResult.getBaseBranch().equals(branchPath.toString()));
+		assertThat(compareResult.getCompareBranch().equals(branchPath.toString()));
+		assertThat(compareResult.getChangedComponents().isEmpty());
+		assertThat(compareResult.getDeletedComponents().isEmpty());
+		assertThat(compareResult.getNewComponents().isEmpty());
 	}
 	
 	@Test
@@ -110,25 +102,15 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 				.post("/compare")
 				.thenReturn();
 		
-		 final int statusCode = compareResponse.statusCode();
-		 assertEquals(404, statusCode);
+		final int statusCode = compareResponse.statusCode();
+		assertEquals(404, statusCode);
 	}
 	
 	@Test
 	public void testCompareWithChangedNewComponents() throws IOException {
 		final String newConceptId = createNewConcept(branchPath);
-		final ImmutableMap<String, Object> compareRequest = createCompareRequest(parentBranch, branchPath);
 		
-		final InputStream responseInputStream = givenAuthenticatedRequest(SCT_API)
-				.contentType(ContentType.JSON)
-				.accept(ContentType.JSON)
-				.body(compareRequest)
-				.post("/compare")
-				.asInputStream();
-		
-		final ObjectMapper mapper = new ObjectMapper();
-		final CompareResult compareResult = mapper.readValue(responseInputStream, CompareResult.class);
-		
+		final CompareResult compareResult = getCompareResult(parentBranch.getPath(), branchPath.getPath());
 		final Set<ComponentIdentifier> newIds = prepareNewChanges(newConceptId, branchPath);
 		assertThat(compareResult.getNewComponents()).containsAll(newIds);
 		assertThat(compareResult.getChangedComponents()).doesNotContainAnyElementsOf(newIds);
@@ -149,18 +131,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 			.execute(bus)
 			.getSync();
 		
-		final ImmutableMap<String, Object> compareRequest = createCompareRequest(parentBranchPath, childBranchPath);
-		
-		final InputStream responseInputStream = givenAuthenticatedRequest(SCT_API)
-				.contentType(ContentType.JSON)
-				.accept(ContentType.JSON)
-				.body(compareRequest)
-				.post("/compare")
-				.asInputStream();
-		
-		final ObjectMapper mapper = new ObjectMapper();
-		final CompareResult compareResult = mapper.readValue(responseInputStream, CompareResult.class);
-		
+		final CompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
 		// compare child branch with it's parent
 		assertThat(compareResult.getNewComponents()).isEmpty();
 		assertThat(compareResult.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
@@ -184,6 +155,15 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 			.execute(bus)
 			.getSync();
 		
+		final CompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
+		
+		// compare task branch and its parent
+		assertThat(compareResult.getNewComponents()).isEmpty();
+		assertThat(compareResult.getChangedComponents()).isEmpty();
+		assertThat(compareResult.getDeletedComponents()).containsAll(newIds);
+	}
+
+	private CompareResult getCompareResult(final String parentBranchPath, final String childBranchPath) throws IOException {
 		final ImmutableMap<String, Object> compareRequest = createCompareRequest(parentBranchPath, childBranchPath);
 		final InputStream responseInputStream = givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
@@ -194,11 +174,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		
 		final ObjectMapper mapper = new ObjectMapper();
 		final CompareResult compareResult = mapper.readValue(responseInputStream, CompareResult.class);
-		
-		// compare task branch and its parent
-		assertThat(compareResult.getNewComponents()).isEmpty();
-		assertThat(compareResult.getChangedComponents()).isEmpty();
-		assertThat(compareResult.getDeletedComponents()).containsAll(newIds);
+		return compareResult;
 	}
 	
 	private String createBranch(String parent, String name) {
