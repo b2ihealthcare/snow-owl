@@ -72,7 +72,6 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-		super.configure(web);
 		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
 	}
 	
