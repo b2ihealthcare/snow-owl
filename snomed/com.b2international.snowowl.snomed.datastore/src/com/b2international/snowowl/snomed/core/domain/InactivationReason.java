@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
 
 /**
  * Enumeration representing the reason of the SNOMED&nbsp;CT concept inactivation.
@@ -35,10 +34,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedInactivationPlan;
  * </p>
  * <p>
  * Note that "Pending move" is present for completeness, however the process requires the concept to stay active, and so can not be handled by
- * {@code SnomedInactivationPlan} correctly at this time.
+ * component inactivation correctly at this time.
  * </p>
- * 
- * @see SnomedInactivationPlan
  */
 public enum InactivationReason {
 

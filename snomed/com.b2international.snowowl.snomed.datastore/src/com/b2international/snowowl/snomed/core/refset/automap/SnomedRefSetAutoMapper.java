@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -52,8 +51,10 @@ public class SnomedRefSetAutoMapper {
 	private final String topLevelConceptId;
 	private final RefSetAutoMapperModel model;
 	private final String branch;
+	private final String userId;
 	
-	public SnomedRefSetAutoMapper(final String branch, final String topLevelConceptId, final RefSetAutoMapperModel model) {
+	public SnomedRefSetAutoMapper(final String userId, final String branch, final String topLevelConceptId, final RefSetAutoMapperModel model) {
+		this.userId = userId;
 		this.branch = branch;
 		this.model = model;
 		this.topLevelConceptId = topLevelConceptId;
@@ -66,7 +67,6 @@ public class SnomedRefSetAutoMapper {
 		
 		final List<ExtendedLocale> locales = ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();
 		final IEventBus eventBus = ApplicationContext.getServiceForClass(IEventBus.class);
-		final String userId = ApplicationContext.getServiceForClass(ICDOConnectionManager.class).getUserId();
 		
 		for (final Entry<Integer, String> entry : values.entrySet()) {
 			

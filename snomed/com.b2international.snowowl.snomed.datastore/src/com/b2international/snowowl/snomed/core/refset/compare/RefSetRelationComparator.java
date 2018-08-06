@@ -30,7 +30,6 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.concurrent.ConcurrentCollectionUtils;
 import com.b2international.snowowl.snomed.core.refset.compare.ReferencedComponentDelta.DeltaKind;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
