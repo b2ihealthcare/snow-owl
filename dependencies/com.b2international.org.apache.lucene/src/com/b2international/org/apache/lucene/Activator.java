@@ -15,10 +15,14 @@
  */
 package com.b2international.org.apache.lucene;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.codecs.Codec;
+import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
+import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -30,6 +34,8 @@ import com.google.common.base.Throwables;
 
 public class Activator implements BundleActivator {
 
+	private static final int LARGE_BUFFER_LIMIT = 1024 * 1024 * 1024;
+	
 	private static ClassLoader bundleClassLoader;
 
 	public void start(BundleContext context) throws Exception {
@@ -46,8 +52,27 @@ public class Activator implements BundleActivator {
 		
 		// Prevent Log4j2 from registering a shutdown hook; we will manage the logging system's lifecycle manually.
 		System.setProperty("log4j.shutdownHookEnabled", "false");
+		
 		withTccl(() -> {
+			// Initialize Log4j2
 			LogManager.getContext();
+			
+			/* 
+			 * FIXME: Set the default response consumer factory via reflection to allow processing greater than 
+			 * 100 MB of data as its input. Reflection is a really bad (but also the only) way of doing this at
+			 * the moment!
+			 */
+			final HttpAsyncResponseConsumerFactory consumerFactory = new HeapBufferedResponseConsumerFactory(LARGE_BUFFER_LIMIT);
+	        final Field defaultField = HttpAsyncResponseConsumerFactory.class.getDeclaredField("DEFAULT");
+	        defaultField.setAccessible(true);
+	        
+	        final Field modifiers = Field.class.getDeclaredField("modifiers");
+	        modifiers.setAccessible(true);
+	        modifiers.setInt(defaultField, defaultField.getModifiers() & ~Modifier.FINAL);
+	        
+	        defaultField.set(null, consumerFactory);
+
+	        // Initialize Elasticsearch's XContent extensibility mechanism 
 			return JsonXContent.contentBuilder();
 		});
 	}
