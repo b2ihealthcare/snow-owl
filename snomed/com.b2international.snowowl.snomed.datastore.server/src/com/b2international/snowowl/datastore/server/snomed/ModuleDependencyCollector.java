@@ -116,16 +116,44 @@ public final class ModuleDependencyCollector {
 	private void collectMemberModuleDependencies(Iterable<Long> storageKeys, Multimap<String, String> componentIdsByReferringModule) throws IOException {
 		for (SnomedRefSetMemberIndexEntry doc : searcher.get(SnomedRefSetMemberIndexEntry.class, storageKeys)) {
 			componentIdsByReferringModule.put(doc.getModuleId(), doc.getReferenceSetId());
+
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getReferencedComponentId());
+			
+			// simple map, simple map w description
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getMapTarget());
+			
+			// language
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getAcceptabilityId());
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCharacteristicTypeId());
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCorrelationId());
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getDescriptionFormat());
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getOperatorId());
+			
+			// attribute value
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getValueId());
+			
+			// complex map, extended map
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCorrelationId());
+			
+			// description type
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getDescriptionFormat());
+			
+			// concrete domain
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getOperatorId());
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getUnitId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCharacteristicTypeId());
+			
+			// association
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getTargetComponent());
+			
+			// extended map
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getMapCategoryId());
+			
+			// MRCM attribute domain
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getDomainId());
+			
+			// MRCM attribute domain and MRCM attribute range
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getRuleStrengthId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getContentTypeId());
+			
+			// MRCM module scope
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getMrcmRuleRefsetId());
 		}
 	}
 
