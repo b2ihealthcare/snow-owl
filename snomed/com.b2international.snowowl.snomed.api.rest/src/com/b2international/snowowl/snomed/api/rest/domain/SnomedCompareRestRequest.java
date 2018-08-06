@@ -17,36 +17,31 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 /**
  * @since 7.0
  */
 @ApiModel
-public class SnomedCompareRestRequest {
+public final class SnomedCompareRestRequest {
 	
 	@ApiModelProperty(required = true)
-	@JsonProperty
 	@NotEmpty
-	private String base;
+	private String baseBranch;
 	
 	@ApiModelProperty(required = true)
-	@JsonProperty
 	@NotEmpty
 	private String compareBranch;
 	
 	@ApiModelProperty(required = false)
-	@JsonProperty
 	private int limit = 50;
 	
-	public String getBase() {
-		return base;
+	public String getBaseBranch() {
+		return baseBranch;
 	}
 	
-	public void setBase(String base) {
-		this.base = base;
+	public void setBaseBranch(String baseBranch) {
+		this.baseBranch = baseBranch;
 	}
 	
 	public String getCompareBranch() {

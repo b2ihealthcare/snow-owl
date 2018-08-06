@@ -51,7 +51,7 @@ public class SnomedCompareRestService extends AbstractRestService {
 	
 	@ApiOperation(
 		value = "Compare two branches", 
-		notes = "Returns the new, changed and deleted components of two branches within SnowOwl")
+		notes = "Returns the new, changed and deleted components of two branches")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
@@ -61,7 +61,7 @@ public class SnomedCompareRestService extends AbstractRestService {
 	public DeferredResult<CompareResult> compareBranches(@RequestBody SnomedCompareRestRequest request) {
 		ApiValidation.checkInput(request);
 		return DeferredResults.wrap(RepositoryRequests.branching().prepareCompare()
-			.setBase(request.getBase())
+			.setBase(request.getBaseBranch())
 			.setCompare(request.getCompareBranch())
 			.setLimit(request.getLimit())
 			.build(repositoryId)
