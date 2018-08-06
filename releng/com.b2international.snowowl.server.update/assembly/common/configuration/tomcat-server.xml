@@ -68,8 +68,9 @@
         <Valve className="org.apache.catalina.valves.ErrorReportValve" showReport="false" showServerInfo="false"/>
         
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="serviceability/logs/access"
-               prefix="localhost_access" suffix=".log" 
-               pattern="%t %h %u %H %m %U %s %D %b"/>
+               prefix="localhost_access_log" suffix=".txt" 
+               pattern="%t %h %u %H %m %U %s %D %b"
+               resolveHosts="false"/>
 
         <Valve className="org.eclipse.virgo.web.tomcat.support.ApplicationNameTrackingValve"/>
       </Host>
