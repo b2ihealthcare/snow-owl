@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.b2international.commons.reflect.Reflections;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.serialization.FhirSerializedName;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -234,7 +236,7 @@ public final class Parameters {
 				
 				List<Parameter> deserializedParameters = newArrayList();
 				if (!node.has(PARAMETER_NODE_NAME)) {
-					throw new IllegalArgumentException("Top-level node 'parameter' is missing from node: " + node);
+					throw FhirException.createFhirError("Top-level node 'parameter' is missing from node: " + node, OperationOutcomeCode.MSG_PARAM_INVALID);
 				}
 				Iterator<JsonNode> parameters = node.get(PARAMETER_NODE_NAME).iterator();
 				while (parameters.hasNext()) {

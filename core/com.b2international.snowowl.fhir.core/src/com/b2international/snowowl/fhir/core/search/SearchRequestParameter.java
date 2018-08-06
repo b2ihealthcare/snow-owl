@@ -21,6 +21,8 @@ import java.util.Optional;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.google.common.collect.Sets;
 
@@ -224,7 +226,7 @@ public class SearchRequestParameter {
 		String[] keyParts = key.split(":");
 		
 		if (keyParts.length > 2) {
-			throw new IllegalArgumentException("Invalid key: " + key);
+			throw FhirException.createFhirError("Invalid key: " + key, OperationOutcomeCode.MSG_PARAM_INVALID);
 		}
 		if (keyParts.length == 2) {
 			builder.modifier(keyParts[1]);
@@ -311,16 +313,16 @@ public class SearchRequestParameter {
 			if (modifier !=null) {
 				if (type == SearchRequestParameterType.NUMBER) {
 					if (modifier != SearchRequestParameterModifier.missing) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for number type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for number type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 					
 				} else if (type == SearchRequestParameterType.DATE || type == SearchRequestParameterType.DATETIME) {
 					if (modifier != SearchRequestParameterModifier.missing) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for date/datetime type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for date/datetime type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.STRING) {
 					if (modifier != SearchRequestParameterModifier.missing && modifier != SearchRequestParameterModifier.exact && modifier != SearchRequestParameterModifier.contains) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for string type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for string type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.TOKEN) {
 					if (modifier != SearchRequestParameterModifier.missing 
@@ -329,26 +331,26 @@ public class SearchRequestParameter {
 							&& modifier != SearchRequestParameterModifier.below 
 							&& modifier != SearchRequestParameterModifier.above 
 							&& modifier != SearchRequestParameterModifier.not_in) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for token type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for token type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.REFERENCE) {
 					if (modifier != SearchRequestParameterModifier.missing 
 							&& modifier != SearchRequestParameterModifier.type) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for reference type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for reference type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.COMPOSITE) {
 					if (modifier != SearchRequestParameterModifier.missing) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for composite type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for composite type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.QUANTITY) {
 					if (modifier != SearchRequestParameterModifier.missing) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for quantity type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for quantity type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				} else if (type == SearchRequestParameterType.URI) {
 					if (modifier != SearchRequestParameterModifier.missing 
 							&& modifier != SearchRequestParameterModifier.below 
 							&& modifier != SearchRequestParameterModifier.above) {
-						throw new IllegalArgumentException(String.format("Invalid modifier [%s] for URI type parameter [%s].", modifier, name));
+						throw FhirException.createFhirError(String.format("Invalid modifier [%s] for URI type parameter [%s].", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
 					}
 				}
 			}

@@ -23,6 +23,8 @@ import java.util.Iterator;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
@@ -208,7 +210,7 @@ public class SnomedUri {
 		if (StringUtils.isEmpty(pathSegment)) return builder.build();
 		
 		if (!SnomedIdentifiers.isValid(pathSegment.toString())) {
-			throw new IllegalArgumentException(String.format("Invalid extension module ID [%s] defined.", pathSegment));
+			throw new BadRequestException(String.format("Invalid extension module ID [%s] defined.", pathSegment));
 		} else {
 			builder.extensionModuleId(pathSegment);
 		}
@@ -217,19 +219,19 @@ public class SnomedUri {
 		if (!pathIterator.hasNext()) return builder.build();
 		String versionParameterKeySegment = pathIterator.next().toString();
 		if (!VERSION_PATH_SEGMENT.equals(versionParameterKeySegment)) {
-			throw new IllegalArgumentException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment));
+			throw new BadRequestException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment));
 		}
 		
 		//Version tag
 		if (!pathIterator.hasNext()) {
-			throw new IllegalArgumentException(String.format("No version tag is specified after the 'version' parameter."));
+			throw new BadRequestException(String.format("No version tag is specified after the 'version' parameter."));
 		}
 		String versionTag = pathIterator.next().toString();
 		//to validate
 		try {
 			EffectiveTimes.parse(versionTag, DateFormats.SHORT);
 		} catch(RuntimeException re) {
-			throw new IllegalArgumentException(String.format("Could not parse version date [%s].", versionTag), re);
+			throw new BadRequestException(String.format("Could not parse version date [%s].", versionTag));
 		}
 		return builder.version(versionTag).build();
 	}

@@ -25,6 +25,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterKey;
@@ -96,7 +97,7 @@ public class SearchRequestParametersTest extends FhirTest {
 	@Test
 	public void testInvalidModifier() {
 		
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid modifier [type] for date/datetime type parameter [_lastUpdated].");
 		getSearchRequestParameters("http://localhost?_lastUpdated:type");
 	}
@@ -118,7 +119,7 @@ public class SearchRequestParametersTest extends FhirTest {
 	
 	@Test
 	public void testInvalidCrossField() {
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(FhirException.class);
 		getSearchRequestParameters("http://localhost?_summary=true&_elements=1");
 	}
 	

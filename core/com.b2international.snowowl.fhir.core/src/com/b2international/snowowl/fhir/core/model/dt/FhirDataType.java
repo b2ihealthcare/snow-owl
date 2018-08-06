@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+
 /**
  * FHIR Data Types.
  * 
@@ -57,6 +60,6 @@ public enum FhirDataType {
 				return fhirType;
 			}
 		}
-		throw new IllegalArgumentException("Could not find FHIR data type for serialized representation '" + serializedName + "'");
+		throw FhirException.createFhirError("Could not find FHIR data type for serialized representation '" + serializedName + "'", OperationOutcomeCode.MSG_PARAM_INVALID);
 	}
 }

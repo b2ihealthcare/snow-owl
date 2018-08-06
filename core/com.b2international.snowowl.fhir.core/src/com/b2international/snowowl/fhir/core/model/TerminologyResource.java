@@ -25,7 +25,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -222,7 +224,7 @@ public abstract class TerminologyResource extends DomainResource {
 			try {
 				this.date = df.parse(dateString);
 			} catch (ParseException e) {
-				throw new IllegalArgumentException(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, e);
+				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
 			}
 			return getSelf();
 		}

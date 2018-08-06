@@ -16,6 +16,8 @@
 package com.b2international.snowowl.fhir.core;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 
 /**
  * Snow Owl's logical id for the FHIR API
@@ -62,21 +64,21 @@ public class LogicalId {
 	public static LogicalId fromIdString(String idString) {
 		
 		if (StringUtils.isEmpty(idString)) {
-			throw new IllegalArgumentException("Logical ID input string is null or empty");
+			throw FhirException.createFhirError("Logical ID input string is null or empty", OperationOutcomeCode.MSG_RESOURCE_ID_FAIL);
 		}
 		
 		if (!idString.contains(":")) {
-			throw new IllegalArgumentException(String.format("Invalid logical ID [%s], the format should be repoId:branchPath:{componentId}.", idString));
+			throw FhirException.createFhirError(String.format("Invalid logical ID [%s], the format should be repoId:branchPath:{componentId}.", idString), OperationOutcomeCode.MSG_RESOURCE_ID_FAIL);
 		}
 		
 		if (idString.endsWith(":")) {
-			throw new IllegalArgumentException(String.format("Invalid logical ID [%s], it should not end with a ':'. The format should be repoId:branchPath:{componentId}.", idString));
+			throw FhirException.createFhirError(String.format("Invalid logical ID [%s], it should not end with a ':'. The format should be repoId:branchPath:{componentId}.", idString), OperationOutcomeCode.MSG_RESOURCE_ID_FAIL);
 		}
 		
 		String[] splitIdString = idString.split(":");
 
 		if (splitIdString.length > 3) {
-			throw new IllegalArgumentException(String.format("Invalid logical ID [%s], too many segments. The format should be repoId:branchPath:{componentId}.", idString));
+			throw FhirException.createFhirError(String.format("Invalid logical ID [%s], too many segments. The format should be repoId:branchPath:{componentId}.", idString), OperationOutcomeCode.MSG_RESOURCE_ID_FAIL);
 		}
 		
 		String repositoryId = splitIdString[0];
@@ -88,7 +90,7 @@ public class LogicalId {
 			String[] splitComponent = componentId.split("\\|");
 			
 			if (splitComponent.length > 2) {
-				throw new IllegalArgumentException(String.format("Invalid component ID segment [%s], too many segments. The format should be componentId|{memberId}.", componentId));
+				throw FhirException.createFhirError(String.format("Invalid component ID segment [%s], too many segments. The format should be componentId|{memberId}.", componentId), OperationOutcomeCode.MSG_RESOURCE_ID_FAIL);
 			}
 			
 			if (splitComponent.length == 2) {

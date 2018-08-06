@@ -26,6 +26,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -102,7 +104,7 @@ public class Expansion {
 			try {
 				this.timestamp = df.parse(dateString);
 			} catch (ParseException e) {
-				throw new IllegalArgumentException(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, e);
+				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
 			}
 			return this;
 		}

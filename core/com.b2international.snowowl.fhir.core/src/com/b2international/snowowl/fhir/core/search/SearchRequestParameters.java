@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterKey;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterType;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
@@ -211,12 +213,12 @@ public class SearchRequestParameters {
 	protected void validateRequestParams() {
 		
 		if (summary != null && elements !=null) {
-			throw new IllegalArgumentException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.");
+			throw FhirException.createFhirError("Both '_summary' and '_elements' search parameters cannot be specified at the same time.", OperationOutcomeCode.MSG_PARAM_INVALID);
 		}
 		
 		if (summary != null) {
 			if (getSummary() == SummaryParameterValue.COUNT) {
-				throw new IllegalArgumentException("'Count' summary parameter is only allowed for search operations.");
+				throw FhirException.createFhirError("'Count' summary parameter is only allowed for search operations.", OperationOutcomeCode.MSG_PARAM_INVALID);
 			}
 		}
 	}

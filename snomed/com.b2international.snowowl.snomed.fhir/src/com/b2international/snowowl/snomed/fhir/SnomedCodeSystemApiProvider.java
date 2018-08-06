@@ -357,7 +357,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.execute(getBus())
 				.getSync()
 				.first()
-				.orElseThrow(() -> new IllegalArgumentException("Could not find any versions for SNOMED CT " + versionEffectiveDate));
+				.orElseThrow(() -> new BadRequestException("Could not find any versions for SNOMED CT " + versionEffectiveDate));
 		} else {
 			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
@@ -367,7 +367,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.execute(getBus())
 				.getSync()
 				.first()
-				.orElseThrow(() -> new IllegalArgumentException("Could not find code system for SNOMED CT version " + versionEffectiveDate));
+				.orElseThrow(() -> new BadRequestException("Could not find code system for SNOMED CT version " + versionEffectiveDate));
 		}
 	}
 	

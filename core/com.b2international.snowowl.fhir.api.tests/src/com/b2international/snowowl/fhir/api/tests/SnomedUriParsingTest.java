@@ -22,6 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
@@ -50,7 +51,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/a";
 		
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid extension module ID [a] defined.");
 
 		SnomedUri.fromUriString(uriString);
@@ -61,7 +62,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/900000000000207008/invalidTag";
 		
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid path segment [invalidTag], 'version' expected.");
 
 		SnomedUri.fromUriString(uriString);
@@ -72,7 +73,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/900000000000207008/version";
 		
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(FhirException.class);
 		exception.expectMessage("No version tag is specified after the 'version' parameter.");
 
 		SnomedUri.fromUriString(uriString);
