@@ -177,8 +177,28 @@ then
 		# Ensure that the tmp directory exists
 		mkdir -p "$TMP_DIR"
 		
-        JAVA_OPTS="-Xmx1024m \
-                    -XX:MaxPermSize=512m $JAVA_OPTS"
+		#Added awt.headless - http://mail-archives.apache.org/mod_mbox/poi-user/200705.mbox/%3C15719338671.20070504144714@dinom.ru%3E
+        JAVA_OPTS="	$JAVA_OPTS \
+        			-Xms12g \
+       		        -Xmx12g \
+                    -XX:+AlwaysPreTouch \
+                    -Xss1m \
+                    -Xloggc:$KERNEL_HOME/`date +%F_%H%M-%S`-gc.log \
+                    -XX:+PrintGCDetails \
+					-XX:+PrintGCDateStamps \
+					-XX:+PrintGCApplicationStoppedTime \
+					-XX:+PrintGCApplicationConcurrentTime \
+					-XX:+PrintTenuringDistribution \
+					-XX:+PrintGCCause \
+					-XX:+UseGCLogFileRotation \
+					-XX:NumberOfGCLogFiles=10 \
+					-XX:GCLogFileSize=2M \
+                    -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl \
+                    -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl \
+                    -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
+                    -Djava.awt.headless=true \
+                    -XX:+AlwaysLockClassLoader \
+                    -Dosgi.classloader.type=nonparallel" 
 
 		cd "$KERNEL_HOME"; exec $JAVA_EXECUTABLE \
 			$JAVA_OPTS \
