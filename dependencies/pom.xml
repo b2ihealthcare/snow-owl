@@ -24,7 +24,6 @@
 		<module>org.eclipse.net4j</module>
 		<module>org.eclipse.net4j.db.mysql</module>
 		<module>org.eclipse.net4j.util</module>
-		<module>org.protege.editor.owl</module>
 		<module>org.supercsv</module>
 	</modules>
 	

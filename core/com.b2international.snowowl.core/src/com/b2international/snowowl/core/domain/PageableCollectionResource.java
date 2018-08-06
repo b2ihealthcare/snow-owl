@@ -40,7 +40,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 
 	private final String scrollId;
 	
-	private final Object[] searchAfter;
+	private final String searchAfter;
 	
 //	@ApiModelProperty("The number of requested maximum items")
 	private final int limit;
@@ -48,7 +48,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 //	@ApiModelProperty("Total number of results available")
 	private final int total;
 
-	protected PageableCollectionResource(List<T> items, String scrollId, Object[] searchAfter, int limit, int total) {
+	protected PageableCollectionResource(List<T> items, String scrollId, String searchAfter, int limit, int total) {
 		super(items);
 		this.scrollId = scrollId;
 		this.searchAfter = searchAfter;
@@ -59,28 +59,10 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	/**
 	 * Returns the sort values array that can be used to get the next page based on these values.
 	 * @return
-	 * @see SearchResourceRequestBuilder#setSearchAfter(Object[])
+	 * @see SearchResourceRequestBuilder#setSearchAfter(String)
 	 */
-	@JsonIgnore
-	public Object[] getSearchAfter() {
+	public String getSearchAfter() {
 		return searchAfter;
-	}
-	
-	@JsonProperty("searchAfter")
-	public String getSearchAfterToken() {
-		if (searchAfter == null) {
-			return null;
-		}
-		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			final JavaBinCodec codec = new JavaBinCodec(baos, null);
-			codec.writeArray(searchAfter);
-			codec.close();
-			
-			final byte[] tokenBytes = baos.toByteArray();
-			return Base64.getUrlEncoder().encodeToString(tokenBytes);
-		} catch (IOException e) {
-			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
-		}
 	}
 	
 	/**

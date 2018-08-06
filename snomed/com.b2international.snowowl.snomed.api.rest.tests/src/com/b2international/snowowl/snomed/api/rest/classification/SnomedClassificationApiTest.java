@@ -46,10 +46,10 @@ import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -200,7 +200,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		boolean redundantFound = false;
 
 		for (RelationshipChange relationshipChange : changes.getItems()) {
-			SnomedRelationship relationship = relationshipChange.getRelationship();
+			ReasonerRelationship relationship = relationshipChange.getRelationship();
 			assertEquals(Concepts.PART_OF, relationship.getTypeId());
 			assertEquals(Concepts.NAMESPACE_ROOT, relationship.getDestinationId());
 
@@ -265,7 +265,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	private static void assertInferredIsAExists(FluentIterable<RelationshipChange> changesIterable, String childConceptId, String parentConceptId) {
 		assertTrue("Inferred IS A between " + childConceptId + " and " + parentConceptId + " not found.", 
 				changesIterable.anyMatch(relationshipChange -> {
-					final SnomedRelationship relationship = relationshipChange.getRelationship();
+					final ReasonerRelationship relationship = relationshipChange.getRelationship();
 					return Concepts.IS_A.equals(relationship.getTypeId())
 							&& childConceptId.equals(relationship.getSourceId())
 							&& parentConceptId.equals(relationship.getDestinationId())

@@ -86,8 +86,8 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	 * @return
 	 */
 	@Override
-	public final void bindAll(Map<Class<?>, Object> bindings) {
-		bindings.putAll(bindings);
+	public final void bindAll(Map<Class<?>, Object> source) {
+		bindings.putAll(source);
 	}
 	
 	@Override
@@ -122,21 +122,20 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	 */
 	public static final class Builder<C extends ServiceProvider> {
 
-		private static final Method INJECT_METHOD;
-		
-		static {
-			try {
-				INJECT_METHOD = ServiceProvider.class.getDeclaredMethod("inject");
-			} catch (NoSuchMethodException | SecurityException e) {
-				throw new SnowowlRuntimeException("Couldn't retrieve reference to ServiceProvider.inject()", e);
-			}
-		}
 		
 		private final Class<C> delegateType;
+		private final Method injectMethod;
 		private final DelegatingContext bindable;
 
 		public Builder(Class<C> delegateType, C delegate) {
 			this.delegateType = delegateType;
+			
+			try {
+				this.injectMethod = delegateType.getMethod("inject"); // may or may not be a declared method
+			} catch (NoSuchMethodException | SecurityException e) {
+				throw new SnowowlRuntimeException("Couldn't retrieve reference to inject() method.", e);
+			}
+
 			this.bindable = new DelegatingContext(delegate);
 		}
 
@@ -159,8 +158,9 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 							
 							final Class<?> declaringClass = method.getDeclaringClass();
 							
-							// We want to use inject() from the wrapped instance
-							if (ServiceProvider.class == declaringClass && !INJECT_METHOD.equals(method)) {
+							if (injectMethod.equals(method)) {
+								return new Builder<C>(delegateType, (C) proxy);
+							} else if (ServiceProvider.class == declaringClass) {
 								return method.invoke(bindable, args);
 							} else if (Bindable.class == declaringClass) {
 								return method.invoke(bindable, args);

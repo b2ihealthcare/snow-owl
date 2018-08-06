@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
@@ -41,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveLists;
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.ints.IntDeque;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
@@ -71,7 +72,6 @@ public final class ReasonerTaxonomyInferrer {
 	
 	private static final int EXPECTED_SIZE = 600_000;
 	private static final NodeSet<OWLClass> EMPTY_NODE_SET = new OWLClassNodeSet();
-	private static final int INITIAL_DEPTH = 1;
 
 	private static final String EXTENSION_POINT_ID = "org.protege.editor.owl.inference_reasonerfactory";
 	private static final String CLASS_ELEMENT = "class";
@@ -137,16 +137,12 @@ public final class ReasonerTaxonomyInferrer {
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		
 		final Deque<Node<OWLClass>> nodesToProcess = new LinkedList<Node<OWLClass>>();
+		final Set<Node<OWLClass>> deferredNodes = newHashSet();
+		
 		final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
 		final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
 		nodesToProcess.addAll(initialNodes);
 		
-		// The initial depth for all starting nodes is 1
-		final IntDeque nodeDepths = PrimitiveLists.newIntArrayDeque();
-		for (int i = 0; i < initialNodes.size(); i++) {
-			nodeDepths.addLast(INITIAL_DEPTH);
-		}
-
 		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
 		iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
 
@@ -155,27 +151,19 @@ public final class ReasonerTaxonomyInferrer {
 		unsatisfiableConcepts = InternalSctIdSet.builder(conceptMap);
 		equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
 
-		int lastDepth = 1;
-		
 		// Breadth-first walk through the class hierarchy
 		while (!nodesToProcess.isEmpty()) {
 			final Node<OWLClass> current = nodesToProcess.removeFirst();
-			final int currentDepth = nodeDepths.removeInt(0);
-			
+			deferredNodes.remove(current);
+			final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
+
 			// Indicate that the previous set of caches can be emptied
-			if (currentDepth != lastDepth) {
+			if (nodesToProcess.isEmpty() && deferredNodes.isEmpty()) {
 				iterationOrder.add(DEPTH_CHANGE);
-				lastDepth = currentDepth;
 			}
-			
-			final NodeSet<OWLClass> nextNodeSet = processNode(current);
+
 			final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
 			nodesToProcess.addAll(nextNodes);
-
-			// The depth increases by 1 for each set of added nodes
-			for (int i = 0; i < nextNodes.size(); i++) {
-				nodeDepths.addLast(currentDepth + 1);
-			}
 		}
 
 		processedConceptIds = null;
@@ -188,7 +176,7 @@ public final class ReasonerTaxonomyInferrer {
 				iterationOrder);
 	}
 
-	private NodeSet<OWLClass> processNode(final Node<OWLClass> node) {
+	private NodeSet<OWLClass> processNode(final Node<OWLClass> node, Set<Node<OWLClass>> deferredNodes) {
 
 		// Stop the walk if the node has already been visited
 		if (isNodeProcessed(node)) {
@@ -211,6 +199,7 @@ public final class ReasonerTaxonomyInferrer {
 
 		for (final Node<OWLClass> parentNode : parentNodeSet) {
 			if (!isNodeProcessed(parentNode)) {
+				deferredNodes.add(node);
 				return EMPTY_NODE_SET;
 			}
 		}

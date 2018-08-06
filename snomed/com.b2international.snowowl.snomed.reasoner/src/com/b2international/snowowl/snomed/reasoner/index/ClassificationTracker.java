@@ -203,14 +203,14 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	public void classificationRunning(final String classificationId, final long headTimestamp) {
+	public void classificationRunning(final String classificationId, final long timestamp) {
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.RUNNING, 
-					ImmutableMap.of("headTimestamp", headTimestamp)));
+					ImmutableMap.of("timestamp", timestamp)));
 			writer.commit();
 			return null;
 		});
@@ -293,13 +293,15 @@ public final class ClassificationTracker implements IDisposableService {
 			final String classificationId, 
 			final InternalSctIdSet unsatisfiableConcepts) {
 
-		final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
-				.classificationId(classificationId)
-				.conceptIds(unsatisfiableConcepts.toLongList())
-				.unsatisfiable(true)
-				.build();
-
-		writer.put(UUID.randomUUID().toString(), equivalentDoc);
+		if (!unsatisfiableConcepts.isEmpty()) {
+			final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
+					.classificationId(classificationId)
+					.conceptIds(unsatisfiableConcepts.toLongList())
+					.unsatisfiable(true)
+					.build();
+	
+			writer.put(UUID.randomUUID().toString(), equivalentDoc);
+		}
 	}
 
 	private void indexEquivalentConcepts(final Writer writer, 

@@ -61,6 +61,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -89,8 +90,8 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalIdMultimap.Builder<StatementFragment> statedNonIsARelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
-	private InternalIdMultimap.Builder<ConcreteDomainFragment> statedConcreteDomainMembers;
-	private InternalIdMultimap.Builder<ConcreteDomainFragment> inferredConcreteDomainMembers;
+	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> statedConcreteDomainMembers;
+	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private InternalIdMap builtConceptMap;
 
@@ -151,8 +152,11 @@ public final class ReasonerTaxonomyBuilder {
 		this.exhaustiveConcepts = InternalSctIdSet.builder(builtConceptMap);
 		this.statedNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
+		
+		// Concrete domain member builders are not backed by the internal map
+		this.statedConcreteDomainMembers = ImmutableMultimap.builder();
+		this.inferredConcreteDomainMembers = ImmutableMultimap.builder();
 
-		// Concrete domain builders are only initialized once relationships are handled
 		return this;
 	}
 
@@ -280,7 +284,70 @@ public final class ReasonerTaxonomyBuilder {
 				.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 				.build();
 		
-		addRelationships(searcher, activeStatedNonIsAExpression, statedNonIsARelationships::putAll);
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID, // 0
+						SnomedRelationshipIndexEntry.Fields.SOURCE_ID, // 1
+						SnomedRelationshipIndexEntry.Fields.TYPE_ID, // 2
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, // 3 
+						SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 4
+						SnomedRelationshipIndexEntry.Fields.GROUP, // 5
+						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 6
+						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID) // 7
+				.where(activeStatedNonIsAExpression)
+				.sortBy(SortBy.builder()
+						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.TYPE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
+						.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		String lastSourceId = "";
+		
+		for (final Hits<String[]> hits : scrolledHits) {
+			for (final String[] relationship : hits) {
+				
+				final String sourceId = relationship[1];
+		
+				if (lastSourceId.isEmpty()) {
+					lastSourceId = sourceId;
+				} else if (!lastSourceId.equals(sourceId)) {
+					statedNonIsARelationships.putAll(lastSourceId, fragments);
+					fragments.clear();
+					lastSourceId = sourceId;
+				}
+		
+				final long statementId = Long.parseLong(relationship[0]);
+				final long typeId1 = Long.parseLong(relationship[2]);
+				final long destinationId = Long.parseLong(relationship[3]);
+				final boolean destinationNegated = Boolean.parseBoolean(relationship[4]);
+				final int group = Integer.parseInt(relationship[5]);
+				final int unionGroup = Integer.parseInt(relationship[6]);
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[7]);
+				
+				final StatementFragment statement = new StatementFragment(
+						typeId1,
+						destinationId,
+						destinationNegated,
+						group,
+						unionGroup,
+						universal,
+						statementId,
+						false); // Stated relationships have no stated pair
+		
+				fragments.add(statement);
+			}
+		}
+		
+		if (!lastSourceId.isEmpty()) {
+			statedNonIsARelationships.putAll(lastSourceId, fragments);
+			fragments.clear();
+		}
 
 		leaving("Registering active stated non-IS A relationships using revision searcher");
 		return this;
@@ -294,16 +361,6 @@ public final class ReasonerTaxonomyBuilder {
 				.filter(characteristicTypeIds(CHARACTERISTIC_TYPE_IDS))
 				.mustNot(modules(Concepts.UK_MODULES_NOCLASSIFY))
 				.build();
-				
-		addRelationships(searcher, activeInferredExpression, existingInferredRelationships::putAll);
-				
-		leaving("Registering active inferred relationships using revision searcher");
-		return this;
-	}
-
-	private void addRelationships(final RevisionSearcher searcher, 
-			final Expression expression,
-			final BiConsumer<String, List<StatementFragment>> consumer) {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
@@ -316,7 +373,7 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 6
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
 						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 8
-				.where(expression)
+				.where(activeInferredExpression)
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.TYPE_ID, Order.ASC)
@@ -327,12 +384,12 @@ public final class ReasonerTaxonomyBuilder {
 						.build())
 				.limit(SCROLL_LIMIT)
 				.build();
-
+		
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastSourceId = "";
 		String[] lastStatedRelationship = null;
-
+		
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
 				
@@ -342,15 +399,15 @@ public final class ReasonerTaxonomyBuilder {
 				}
 				
 				final String sourceId = relationship[1];
-
+		
 				if (lastSourceId.isEmpty()) {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
-					consumer.accept(lastSourceId, fragments);
+					existingInferredRelationships.putAll(lastSourceId, fragments);
 					fragments.clear();
 					lastSourceId = sourceId;
 				}
-
+		
 				final long statementId = Long.parseLong(relationship[0]);
 				final long typeId = Long.parseLong(relationship[2]);
 				final long destinationId = Long.parseLong(relationship[3]);
@@ -374,15 +431,18 @@ public final class ReasonerTaxonomyBuilder {
 						universal,
 						statementId,
 						hasStatedPair);
-
+		
 				fragments.add(statement);
 			}
 		}
-
+		
 		if (!lastSourceId.isEmpty()) {
-			consumer.accept(lastSourceId, fragments);
+			existingInferredRelationships.putAll(lastSourceId, fragments);
 			fragments.clear();
 		}
+				
+		leaving("Registering active inferred relationships using revision searcher");
+		return this;
 	}
 
 	public ReasonerTaxonomyBuilder addActiveStatedNonIsARelationships(final Stream<SnomedRelationship> sortedRelationships) {
@@ -393,7 +453,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !Concepts.UK_MODULES_NOCLASSIFY.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships, predicate, (BiConsumer<String, List<StatementFragment>>) statedNonIsARelationships::putAll);
+		addRelationships(sortedRelationships, predicate, statedNonIsARelationships::putAll);
 
 		leaving("Registering active stated non-IS A relationships using relationship stream");
 		return this;
@@ -406,7 +466,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
 				&& !Concepts.UK_MODULES_NOCLASSIFY.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships, predicate, (BiConsumer<String, List<StatementFragment>>) statedNonIsARelationships::putAll);
+		addRelationships(sortedRelationships, predicate, statedNonIsARelationships::putAll);
 		
 		leaving("Registering active inferred relationships using relationship stream");
 		return this;
@@ -464,7 +524,7 @@ public final class ReasonerTaxonomyBuilder {
 			fragments.clear();
 		}
 	}
-
+	
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,24 +45,24 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Code Systems")
+@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
-@RequestMapping(
-		value = "/codesystems",
-		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(value = "/codesystems", produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired
-	private ICodeSystemService delegate;
+	private ICodeSystemService codeSystemService;
+	
 	@Resource
 	private IEventBus bus;
 
@@ -74,7 +74,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public CollectionResource<ICodeSystem> getCodeSystems() {
-		return CollectionResource.of(delegate.getCodeSystems());
+		return CollectionResource.of(codeSystemService.getCodeSystems());
 	}
 
 	@ApiOperation(
@@ -88,7 +88,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	public ICodeSystem getCodeSystemByShortNameOrOid(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
-		return delegate.getCodeSystemById(shortNameOrOId);
+		return codeSystemService.getCodeSystemById(shortNameOrOId);
 	}
 	
 	@ApiOperation(

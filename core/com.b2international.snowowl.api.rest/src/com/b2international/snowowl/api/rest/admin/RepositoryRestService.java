@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.api.rest.admin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
@@ -37,22 +37,24 @@ import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Spring controller for exposing repository related administration functionalities.
+ * @since 7.0
  */
-@Api("Repositories")
-@Controller
+@Api(value = "Repositories", description="Repositories", tags = { "repositories" })
+@RestController
 @RequestMapping(value="/repositories", produces={ MediaType.APPLICATION_JSON_VALUE })
 public class RepositoryRestService extends AbstractAdminRestService {
-
+	
 	@Autowired
-	protected IRepositoryService delegate;
+	protected IRepositoryService repositoryService;
 
 	@ExceptionHandler(LockException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -108,7 +110,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
 
-		delegate.lockGlobal(timeoutMillis);
+		repositoryService.lockGlobal(timeoutMillis);
 	}
 
 	@ApiOperation(
@@ -121,7 +123,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@RequestMapping(value="unlock", method=RequestMethod.POST)
 	public void unlockGlobal() {
-		delegate.unlockGlobal();
+		repositoryService.unlockGlobal();
 	}
 
 	@ApiOperation(
@@ -146,7 +148,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 			@ApiParam(value="lock timeout in milliseconds")
 			final int timeoutMillis) {
 
-		delegate.lockRepository(id, timeoutMillis);
+		repositoryService.lockRepository(id, timeoutMillis);
 	}
 
 	@ApiOperation(
@@ -164,7 +166,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 			@PathVariable(value="id") 
 			final String repositoryUuid) {
 
-		delegate.unlockRepository(repositoryUuid);
+		repositoryService.unlockRepository(repositoryUuid);
 	}
 
 }

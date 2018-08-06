@@ -57,26 +57,27 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
 import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
  */
-@Api("Classifications")
+@Api(value = "Classifications", description="Classifications", tags = { "classifications" })
 @Controller
 @RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedClassificationRestService extends AbstractSnomedRestService {
@@ -281,7 +282,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		conceptDetails.setRelationships(relationships);
 
 		for (RelationshipChange relationshipChange : classificationTask.getRelationshipChanges()) {
-			final SnomedRelationship relationship = relationshipChange.getRelationship();
+			final ReasonerRelationship relationship = relationshipChange.getRelationship();
 			
 			switch (relationshipChange.getChangeNature()) {
 				case REDUNDANT:
@@ -303,7 +304,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 
 					inferred.setGroupId(relationship.getGroup());
 					inferred.setModifier(relationship.getModifier());
-					inferred.setActive(relationship.isActive());
+					inferred.setActive(true);
 					inferred.setCharacteristicType(relationship.getCharacteristicType());
 
 					relationships.add(inferred);

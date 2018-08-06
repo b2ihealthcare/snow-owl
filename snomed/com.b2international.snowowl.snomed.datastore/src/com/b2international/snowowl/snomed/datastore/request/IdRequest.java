@@ -59,7 +59,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 4.5
  */
-final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
+public final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
 
 	/** 
 	 * The maximum number of identifier service reservation calls (after which a namespace is known to be completely full). 
@@ -82,7 +82,7 @@ final class IdRequest<C extends BranchContext, R> extends DelegatingRequest<C, C
 		return CATEGORY_TO_DOCUMENT_CLASS_MAP.get(category);
 	}
 
-	protected IdRequest(final Request<C, R> next) {
+	public IdRequest(final Request<C, R> next) {
 		super(next);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	}
 
 	@Override
-	protected SnomedDescriptions createCollectionResource(List<SnomedDescription> results, String scrollId, Object[] searchAfter, int limit, int total) {
+	protected SnomedDescriptions createCollectionResource(List<SnomedDescription> results, String scrollId, String searchAfter, int limit, int total) {
 		return new SnomedDescriptions(results, scrollId, searchAfter, limit, total);
 	}
 	

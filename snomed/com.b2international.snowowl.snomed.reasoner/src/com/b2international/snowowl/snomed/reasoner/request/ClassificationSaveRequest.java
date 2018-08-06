@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -55,14 +56,20 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 
 	@Override
 	public String execute(final RepositoryContext context) {
-		final ClassificationTask classification = ClassificationRequests.prepareGetClassification(classificationId)
-				.build()
+		final Request<RepositoryContext, ClassificationTask> classificationRequest = ClassificationRequests
+				.prepareGetClassification(classificationId)
+				.build();
+		
+		final ClassificationTask classification = new IndexReadRequest<>(classificationRequest)
 				.execute(context);
 
 		final String branchPath = classification.getBranch();
-		final Branch branch = RepositoryRequests.branching()
+		
+		final Request<RepositoryContext, Branch> branchRequest = RepositoryRequests.branching()
 				.prepareGet(branchPath)
-				.build()
+				.build();
+		
+		final Branch branch = new IndexReadRequest<>(branchRequest)
 				.execute(context);
 
 		if (!SAVEABLE_STATUSES.contains(classification.getStatus())) {

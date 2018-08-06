@@ -58,7 +58,7 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 	@Override
 	protected ClassificationTasks createCollectionResource(final List<ClassificationTask> results, 
 			final String scrollId, 
-			final Object[] searchAfter, 
+			final String searchAfter, 
 			final int limit, 
 			final int total) {
 

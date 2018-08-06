@@ -51,7 +51,7 @@ public class RelationshipChanges extends PageableCollectionResource<Relationship
 	public RelationshipChanges(
 			@JsonProperty("items") final List<RelationshipChange> items, 
 			@JsonProperty("scrollId") final String scrollId,
-			@JsonProperty("searchAfter") final Object[] searchAfter,
+			@JsonProperty("searchAfter") final String searchAfter,
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
 		super(items, scrollId, searchAfter, limit, total);

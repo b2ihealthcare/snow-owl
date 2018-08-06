@@ -70,26 +70,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final void accept(final OWLNamedObjectVisitor visitor) {
-		unsupportedOntology.accept(visitor);
-	}
-
-	@Override
-	public final <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
-		return unsupportedOntology.accept(visitor);
-	}
-
-	@Override
-	public final void accept(final OWLObjectVisitor visitor) {
-		unsupportedOntology.accept(visitor);
-	}
-
-	@Override
-	public final <O> O accept(final OWLObjectVisitorEx<O> visitor) {
-		return unsupportedOntology.accept(visitor);
-	}
-
-	@Override
 	public final boolean contains(final OWLAxiomSearchFilter filter, final Object key, final Imports includeImportsClosure) {
 		return unsupportedOntology.contains(filter, key, includeImportsClosure);
 	}
@@ -195,11 +175,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final boolean containsEntityInSignature(final OWLEntity owlEntity) {
-		return unsupportedOntology.containsEntityInSignature(owlEntity);
-	}
-
-	@Override
 	public final boolean containsEntityInSignature(final OWLEntity owlEntity, final boolean includeImportsClosure) {
 		return unsupportedOntology.containsEntityInSignature(owlEntity, includeImportsClosure);
 	}
@@ -270,11 +245,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature() {
-		return unsupportedOntology.getAnnotationPropertiesInSignature();
-	}
-
-	@Override
 	public final Set<OWLAnnotationProperty> getAnnotationPropertiesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getAnnotationPropertiesInSignature(includeImportsClosure);
 	}
@@ -297,11 +267,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLAnnotation> getAnnotations() {
 		return unsupportedOntology.getAnnotations();
-	}
-
-	@Override
-	public final Set<OWLAnonymousIndividual> getAnonymousIndividuals() {
-		return unsupportedOntology.getAnonymousIndividuals();
 	}
 
 	@Override
@@ -485,11 +450,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLClass> getClassesInSignature() {
-		return unsupportedOntology.getClassesInSignature();
-	}
-
-	@Override
 	public final Set<OWLClass> getClassesInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getClassesInSignature(includeImportsClosure);
 	}
@@ -497,11 +457,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLClass> getClassesInSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getClassesInSignature(includeImportsClosure);
-	}
-
-	@Override
-	public final Set<OWLDataProperty> getDataPropertiesInSignature() {
-		return unsupportedOntology.getDataPropertiesInSignature();
 	}
 
 	@Override
@@ -542,11 +497,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLDatatypeDefinitionAxiom> getDatatypeDefinitions(final OWLDatatype datatype) {
 		return unsupportedOntology.getDatatypeDefinitions(datatype);
-	}
-
-	@Override
-	public final Set<OWLDatatype> getDatatypesInSignature() {
-		return unsupportedOntology.getDatatypesInSignature();
 	}
 
 	@Override
@@ -660,11 +610,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLNamedIndividual> getIndividualsInSignature() {
-		return unsupportedOntology.getIndividualsInSignature();
-	}
-
-	@Override
 	public final Set<OWLNamedIndividual> getIndividualsInSignature(final boolean includeImportsClosure) {
 		return unsupportedOntology.getIndividualsInSignature(includeImportsClosure);
 	}
@@ -727,16 +672,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final Set<OWLNegativeObjectPropertyAssertionAxiom> getNegativeObjectPropertyAssertionAxioms(final OWLIndividual individual) {
 		return unsupportedOntology.getNegativeObjectPropertyAssertionAxioms(individual);
-	}
-
-	@Override
-	public final Set<OWLClassExpression> getNestedClassExpressions() {
-		return unsupportedOntology.getNestedClassExpressions();
-	}
-
-	@Override
-	public final Set<OWLObjectProperty> getObjectPropertiesInSignature() {
-		return unsupportedOntology.getObjectPropertiesInSignature();
 	}
 
 	@Override
@@ -820,11 +755,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final Set<OWLEntity> getSignature() {
-		return unsupportedOntology.getSignature();
-	}
-
-	@Override
 	public final Set<OWLEntity> getSignature(final Imports includeImportsClosure) {
 		return unsupportedOntology.getSignature(includeImportsClosure);
 	}
@@ -860,11 +790,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	}
 
 	@Override
-	public final boolean isBottomEntity() {
-		return unsupportedOntology.isBottomEntity();
-	}
-
-	@Override
 	public final boolean isDeclared(final OWLEntity owlEntity) {
 		return unsupportedOntology.isDeclared(owlEntity);
 	}
@@ -877,11 +802,6 @@ public abstract class DelegateOntologyStub extends OWLObjectImplWithEntityAndAno
 	@Override
 	public final boolean isEmpty() {
 		return unsupportedOntology.isEmpty();
-	}
-
-	@Override
-	public final boolean isTopEntity() {
-		return unsupportedOntology.isTopEntity();
 	}
 
 	@Override

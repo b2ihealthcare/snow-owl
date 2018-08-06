@@ -29,7 +29,9 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
@@ -60,7 +63,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 	@Override
 	protected RelationshipChanges createCollectionResource(final List<RelationshipChange> results, 
 			final String scrollId, 
-			final Object[] searchAfter, 
+			final String searchAfter, 
 			final int limit, 
 			final int total) {
 
@@ -73,14 +76,18 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		resource.setClassificationId(entry.getClassificationId());
 		resource.setChangeNature(entry.getNature());
 
-		final SnomedRelationship relationship = new SnomedRelationship(entry.getRelationshipId());
+		final ReasonerRelationship relationship = new ReasonerRelationship(entry.getRelationshipId());
+		relationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
 
 		if (ChangeNature.INFERRED.equals(entry.getNature())) {
 			relationship.setSourceId(entry.getSourceId());
-			relationship.setTypeId(entry.getTypeId());
-			relationship.setDestinationId(entry.getDestinationId());
 			relationship.setGroup(entry.getGroup());
 			relationship.setUnionGroup(entry.getUnionGroup());
+			
+			if (entry.getRelationshipId() == null) {
+				relationship.setTypeId(entry.getTypeId());
+				relationship.setDestinationId(entry.getDestinationId());
+			}
 		}
 
 		resource.setRelationship(relationship);
@@ -155,6 +162,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
 					.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
 					.map(rc -> rc.getRelationship().getId())
+					.filter(id -> id != null)
 					.collect(Collectors.toSet());
 
 			final Request<BranchContext, SnomedRelationships> relationshipSearchRequest = SnomedRequests.prepareSearchRelationship()
@@ -164,30 +172,34 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 					.setLocales(locales())
 					.build();
 
-			final SnomedRelationships relationships = new BranchRequest<>(branch, relationshipSearchRequest).execute(context());
+			final SnomedRelationships relationships = new BranchRequest<>(branch, 
+					new RevisionIndexReadRequest<>(relationshipSearchRequest))
+					.execute(context());
+
 			final Map<String, SnomedRelationship> relationshipsById = Maps.uniqueIndex(relationships, SnomedRelationship::getId);
 
-			// Finally, set the relationship on the change item, but preserve the "adjusted" source concept that holds the inferred component target's ID
 			for (final RelationshipChange item : itemsForCurrentBranch) {
-				final SnomedRelationship blankRelationship = item.getRelationship();
+				final ReasonerRelationship blankRelationship = item.getRelationship();
 				final String relationshipId = blankRelationship.getId();
-				final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
+				
+				// Add default values if the relationship did not exist earlier 
+				if (!relationshipsById.containsKey(relationshipId)) {
+					blankRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+				} else {
+					final SnomedRelationship expandedRelationship = relationshipsById.get(relationshipId);
 
-				final SnomedConcept adjustedSource = blankRelationship.getSource();
-				final SnomedConcept adjustedType = blankRelationship.getType();
-				final SnomedConcept adjustedDestination = blankRelationship.getDestination();
-
-				expandedRelationship.setSource(adjustedSource);
-
-				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
-					expandedRelationship.setType(adjustedType == null ? expandedRelationship.getType() : adjustedType);
-					expandedRelationship.setDestination(adjustedDestination == null ? expandedRelationship.getDestination() : adjustedDestination);
-					expandedRelationship.setGroup(blankRelationship.getGroup());
-					expandedRelationship.setUnionGroup(blankRelationship.getUnionGroup());
-					expandedRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
+					blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+					blankRelationship.setMembers(expandedRelationship.getMembers());
+					blankRelationship.setModifier(expandedRelationship.getModifier());
+					blankRelationship.setModuleId(expandedRelationship.getModuleId());
+					blankRelationship.setReleased(expandedRelationship.isReleased());
+					
+					if (blankRelationship.getSource() == null) { blankRelationship.setSource(expandedRelationship.getSource()); }
+					if (blankRelationship.getType() == null) { blankRelationship.setType(expandedRelationship.getType()); }
+					if (blankRelationship.getDestination() == null) { blankRelationship.setDestination(expandedRelationship.getDestination()); }
+					if (blankRelationship.getGroup() == null) { blankRelationship.setGroup(expandedRelationship.getGroup()); }
+					if (blankRelationship.getUnionGroup() == null) { blankRelationship.setUnionGroup(expandedRelationship.getUnionGroup()); }
 				}
-
-				item.setRelationship(expandedRelationship);
 			}
 		}
 	}
@@ -196,15 +208,15 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			final Collection<RelationshipChange> relationshipChanges,
 			final Options options,
 			final boolean inferredOnly,
-			final Function<SnomedRelationship, String> conceptIdFunction,
-			final BiConsumer<SnomedRelationship, SnomedConcept> conceptIdConsumer) {
+			final Function<ReasonerRelationship, String> conceptIdFunction,
+			final BiConsumer<ReasonerRelationship, SnomedConcept> conceptIdConsumer) {
 
-		final List<SnomedRelationship> blankRelationships = relationshipChanges.stream()
+		final List<ReasonerRelationship> blankRelationships = relationshipChanges.stream()
 				.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
 				.map(RelationshipChange::getRelationship)
 				.collect(Collectors.toList());
 
-		final Multimap<String, SnomedRelationship> relationshipsByConceptId = FluentIterable.from(blankRelationships)
+		final Multimap<String, ReasonerRelationship> relationshipsByConceptId = FluentIterable.from(blankRelationships)
 				.filter(r -> conceptIdFunction.apply(r) != null)
 				.index(conceptIdFunction);
 
@@ -221,9 +233,9 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 
 		for (final SnomedConcept concept : concepts) {
 			final String conceptId = concept.getId();
-			final Collection<SnomedRelationship> relationshipsForConcept = relationshipsByConceptId.get(conceptId);
+			final Collection<ReasonerRelationship> relationshipsForConcept = relationshipsByConceptId.get(conceptId);
 
-			for (final SnomedRelationship relationship : relationshipsForConcept) {
+			for (final ReasonerRelationship relationship : relationshipsForConcept) {
 				conceptIdConsumer.accept(relationship, concept);
 			}
 		}

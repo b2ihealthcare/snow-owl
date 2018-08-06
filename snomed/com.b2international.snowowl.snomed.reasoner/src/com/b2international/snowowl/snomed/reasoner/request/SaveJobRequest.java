@@ -54,12 +54,14 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
@@ -197,12 +199,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		applyChanges(subMonitor, context, bulkRequestBuilder);
 		fixEquivalences(context, bulkRequestBuilder);
 
-		final CommitResult commitResult = SnomedRequests.prepareCommit()
+		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
 			.setBody(bulkRequestBuilder)
 			.setCommitComment("Classified ontology.")
 			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
 			.setUserId(userId)
-			.build()
+			.build();
+
+		final CommitResult commitResult = new IdRequest<>(commitRequest)  
 			.execute(context);
 
 		classificationTracker.classificationSaved(classificationId, commitResult.getCommitTimestamp());
@@ -249,13 +253,13 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 			final Set<String> conceptIds = nextChanges.stream()
 					.map(RelationshipChange::getRelationship)
-					.map(SnomedRelationship::getSourceId)
+					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
 
 			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
 			for (final RelationshipChange change : nextChanges) {
-				final SnomedRelationship relationship = change.getRelationship();
+				final ReasonerRelationship relationship = change.getRelationship();
 
 				if (ChangeNature.INFERRED.equals(change.getChangeNature())) {
 					addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, relationship);
@@ -281,7 +285,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
-			final SnomedRelationship relationship) {
+			final ReasonerRelationship relationship) {
 
 		final String sourceId = relationship.getSourceId();
 		final String moduleId = namespaceAndModuleAssigner.getRelationshipModuleId(sourceId);
@@ -290,7 +294,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final SnomedRelationshipCreateRequestBuilder createRequest = SnomedRequests.prepareNewRelationship()
 				.setIdFromNamespace(namespace)
 				.setTypeId(relationship.getTypeId())
-				.setActive(relationship.isActive())
+				.setActive(true)
 				.setCharacteristicType(relationship.getCharacteristicType())
 				.setSourceId(relationship.getSourceId())
 				.setDestinationId(relationship.getDestinationId())
@@ -305,14 +309,16 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		 * changed by the relationship creation request to the new relationship ID,
 		 * which is not known at this point (just the namespace).
 		 */
-		relationship.getMembers()
-		.stream()
-		.forEach(createRequest::addMember);
+		if (relationship.getMembers() != null) {
+			relationship.getMembers()
+				.stream()
+				.forEach(createRequest::addMember);
+		}
 
 		bulkRequestBuilder.add(createRequest);
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, final SnomedRelationship relationship) {
+	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, final ReasonerRelationship relationship) {
 		final Request<TransactionContext, Boolean> request;
 
 		if (relationship.isReleased()) {

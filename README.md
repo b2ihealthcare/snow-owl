@@ -87,7 +87,7 @@ Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic
 
 ## License
 
-This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licencing notes and uses of third-party components.
+This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licensing notes and uses of third-party components.
 
 ## Acknowledgements
 

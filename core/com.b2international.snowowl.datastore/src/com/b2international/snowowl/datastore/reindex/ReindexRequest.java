@@ -47,17 +47,19 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		
-		long maxCdoBranchId = -1L;
-		final Branches branches = RepositoryRequests.branching().prepareSearch()
-				.all()
-				.build()
-				.execute(context);
-		
-		for (final Branch branch : branches) {
-			if (branch.branchId() > maxCdoBranchId) {
-				maxCdoBranchId = branch.branchId();
-			}
-		}
+		// XXX: We are deliberately side-stepping health checks here
+		final Index index = repository.service(Index.class);
+		final Hits<Long> maxBranchIdHits = index.read(searcher -> {
+			return searcher.search(Query.select(Long.class)
+					.from(RevisionBranch.class)
+					.fields(RevisionBranch.Fields.ID)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(RevisionBranch.Fields.ID, Order.DESC))
+					.limit(1)
+					.build());
+		});
+			
+		final long maxBranchId = maxBranchIdHits.isEmpty() ? -1L : Iterables.getOnlyElement(maxBranchIdHits);
 		
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
