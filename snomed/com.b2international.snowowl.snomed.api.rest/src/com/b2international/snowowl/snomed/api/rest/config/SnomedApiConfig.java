@@ -55,23 +55,19 @@ import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
-import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.impl.SnomedBrowserService;
-import com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedExportService;
-import com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.rest.AntPathWildcardMatcher;
 import com.b2international.snowowl.snomed.api.rest.SnowOwlAuthenticationProvider;
@@ -209,16 +205,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public ICodeSystemVersionService codeSystemVersionService() {
 		return new CodeSystemVersionServiceImpl();
-	}
-	
-	@Bean
-	public ISnomedConceptHistoryService conceptHistoryService() {
-		return new SnomedConceptHistoryServiceImpl();
-	}
-	
-	@Bean
-	public ISnomedReferenceSetHistoryService referenceSetHistoryService() {
-		return new SnomedReferenceSetHistoryServiceImpl();
 	}
 	
 	@Bean

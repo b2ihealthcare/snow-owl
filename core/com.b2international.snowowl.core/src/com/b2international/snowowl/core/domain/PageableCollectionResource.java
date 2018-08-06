@@ -117,7 +117,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	@JsonCreator
 	public static <T> PageableCollectionResource<T> of(@JsonProperty("items") List<T> items, 
 			@JsonProperty("scrollId") String scrollId, 
-			@JsonProperty("searchAfter") Object[] searchAfter,
+			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
 		
