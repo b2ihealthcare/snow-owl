@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.DocSearcher;
+import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexRead;
 import com.b2international.index.IndexWrite;
@@ -269,6 +270,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 				return index.search(query).stream().map(BranchDocument::toBranch).collect(Collectors.toList());
 			}
 		}));
+	}
+	
+	protected <T> Hits<T> searchStore(final Query<T> query) {
+		return branchStore.read(searcher -> searcher.search(query));
 	}
 	
 	private InternalBranch get(final String path) {

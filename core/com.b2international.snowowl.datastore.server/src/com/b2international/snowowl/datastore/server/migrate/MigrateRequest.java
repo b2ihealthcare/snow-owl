@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.datastore.server.migrate;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -40,10 +39,14 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -54,17 +57,20 @@ import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
 import com.b2international.snowowl.datastore.server.CDORepository;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.11
  */
 @SuppressWarnings("restriction")
 public final class MigrateRequest implements Request<RepositoryContext, MigrationResult> {
+
+	private static final String CDO_BRANCH_ID = "cdoBranchId";
 
 	@NotEmpty
 	@JsonProperty
@@ -94,17 +100,19 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
-		int maxCdoBranchId = -1;
-		final BranchManager branchManager = context.service(BranchManager.class);
-		final Collection<? extends Branch> branches = branchManager.getBranches();
-		
-		for (final Branch branch : branches) {
-			final InternalCDOBasedBranch cdoBranch = (InternalCDOBasedBranch) branch;
-			if (cdoBranch.cdoBranchId() > maxCdoBranchId) {
-				maxCdoBranchId = cdoBranch.cdoBranchId();
-			}
-		}
-		
+		// XXX: We are deliberately side-stepping health checks here
+		final Index index = repository.getIndex();
+		final Hits<Integer> maxCdoBranchIdHits = index.read(searcher -> {
+			return searcher.search(Query.select(Integer.class)
+					.from(BranchDocument.class)
+					.fields(CDO_BRANCH_ID)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(CDO_BRANCH_ID, Order.DESC))
+					.limit(1)
+					.build());
+		});
+			
+		final int maxCdoBranchId = maxCdoBranchIdHits.isEmpty() ? -1 : Iterables.getOnlyElement(maxCdoBranchIdHits);
 		final org.eclipse.emf.cdo.internal.server.Repository localRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		
 		// initialize a new repository to the location
