@@ -17,8 +17,8 @@ package com.b2international.snowowl.datastore.server.snomed.merge;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
-import com.b2international.snowowl.datastore.cdo.IMergeConflictRuleProvider;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
+import com.b2international.snowowl.core.merge.IMergeConflictRuleProvider;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedInvalidRelationshipMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedLanguageRefsetMembersMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedRefsetMemberReferencingDetachedComponentRule;

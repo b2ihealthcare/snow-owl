@@ -22,13 +22,39 @@ import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
  */
 public interface RevisionConflictProcessor {
 	
-	RevisionConflictProcessor DEFAULT = new RevisionConflictProcessor() {
+	/**
+	 * Checks if the specified {@link RevisionPropertyDiff} from the source change set conflicts with the corresponding {@code RevisionPropertyDiff} on the target.
+	 * @param revisionId - the affected revision identifier
+	 * @param sourceChange - the single-value change on the source
+	 * @param targetChange - the single-value change on the target
+	 * @return <ul>
+	 * <li>{@code null} if a conflict should be reported;
+	 * <li>a {@link RevisionPropertyDiff} containing the "winning" change otherwise.
+	 * </ul>
+	 */
+	RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange);
+	
+	/**
+	 * Post-processes the resulting staging area before committing.
+	 * 
+	 * @param staging - the final state of the {@link StagingArea} before committing to the repository
+	 */
+	void postProcess(StagingArea staging);
+	
+	/**
+	 * @since 7.0
+	 */
+	class Default implements RevisionConflictProcessor {
+		
 		@Override
-		public Object handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
-			return null; // by default report every feature conflicting
+		public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
+			return null;
 		}
-	};
-
-	Object handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange);
+		
+		@Override
+		public void postProcess(StagingArea staging) {
+		}
+		
+	}
 
 }

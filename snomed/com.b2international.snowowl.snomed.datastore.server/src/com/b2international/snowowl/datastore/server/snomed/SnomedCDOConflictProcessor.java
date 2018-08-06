@@ -26,40 +26,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
-import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta.Type;
-import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
-import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.spi.cdo.DefaultCDOMerger.Conflict;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.datastore.cdo.AbstractCDOConflictProcessor;
 import com.b2international.snowowl.datastore.cdo.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.snowowl.datastore.cdo.AddedInSourceAndTargetConflict;
 import com.b2international.snowowl.datastore.cdo.AddedInTargetAndDetachedInSourceConflict;
-import com.b2international.snowowl.datastore.cdo.ICDOConflictProcessor;
-import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
 import com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictMapper;
 import com.b2international.snowowl.datastore.server.snomed.merge.rules.SnomedDonatedComponentResolverRule;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.SnomedPackage;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
@@ -73,7 +58,7 @@ import com.google.common.collect.Sets;
 /**
  * An {@link ICDOConflictProcessor} implementation handling conflicts specific to the SNOMED CT terminology model.
  */
-public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor implements ICDOConflictProcessor {
+public class SnomedCDOConflictProcessor {
 
 	private static final Set<EClass> COMPONENT_CLASSES = ImmutableSet.of(
 			SnomedPackage.Literals.CONCEPT, 

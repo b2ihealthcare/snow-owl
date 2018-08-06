@@ -40,7 +40,6 @@ import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.Pair;
-import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Hooks.Hook;
@@ -491,6 +490,10 @@ public final class StagingArea {
 		public String getNewValue() {
 			return newValue;
 		}
+
+		public String toValueChangeString() {
+			return String.format("%s -> %s", getOldValue(), getNewValue());
+		}
 		
 	}
 
@@ -579,6 +582,8 @@ public final class StagingArea {
 		});
 
 		boolean stagedChanges = false;
+		
+		List<Conflict> conflicts = newArrayList();
 
 		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
 		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
@@ -609,13 +614,15 @@ public final class StagingArea {
 						if (!Strings.isNullOrEmpty(sourceChange.getProperty())) {
 							for (RevisionCompareDetail targetChange : targetChanges) {
 								if (Objects.equals(sourceChange.getProperty(), targetChange.getProperty()) && !Objects.equals(sourceChange.getValue(), targetChange.getValue())) {
-									Object conflict = conflictProcessor.handleChangedInSourceAndTarget(
+									RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(sourceChange.getProperty(), sourceChange.getFromValue(), sourceChange.getValue());
+									RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetChange.getProperty(), targetChange.getFromValue(), targetChange.getValue());
+									RevisionPropertyDiff conflict = conflictProcessor.handleChangedInSourceAndTarget(
 										changedInSourceAndTargetId, 
-										new RevisionPropertyDiff(sourceChange.getProperty(), sourceChange.getFromValue(), sourceChange.getValue()),
-										new RevisionPropertyDiff(targetChange.getProperty(), targetChange.getFromValue(), targetChange.getValue())
+										sourceChangeDiff,
+										targetChangeDiff
 									);
 									if (conflict == null) {
-										throw new ConflictException("Found property conflict");
+										conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getObject().id(), targetChange.getObject().id(), sourceChangeDiff, targetChangeDiff));
 									} else {
 										// TODO apply resolution
 									}
@@ -625,6 +632,10 @@ public final class StagingArea {
 					}
 				}
 			}
+		}
+		
+		if (!conflicts.isEmpty()) {
+			throw new UnsupportedOperationException("Conflicts!!!");
 		}
 		
 		if (squash) {

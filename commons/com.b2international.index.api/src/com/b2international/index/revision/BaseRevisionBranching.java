@@ -260,7 +260,7 @@ public abstract class BaseRevisionBranching {
 	}
 
 	public Commit merge(String fromPath, String toPath, String commitMessage) {
-		return merge(fromPath, toPath, commitMessage, RevisionConflictProcessor.DEFAULT);
+		return merge(fromPath, toPath, commitMessage, new RevisionConflictProcessor.Default());
 	}
 	
 	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor) {

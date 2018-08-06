@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.cdo;
+package com.b2international.snowowl.core.merge;
 
 import java.util.Collection;
 
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
@@ -31,9 +30,9 @@ public interface IMergeConflictRule {
 	/**
 	 * Executes the given conflict rule and returns a collection of {@link MergeConflict} if there was any.
 	 * 
-	 * @param transaction
+	 * @param staging
 	 * @return
 	 */
-	Collection<MergeConflict> validate(CDOTransaction transaction);
+	Collection<MergeConflict> validate(StagingArea staging);
 	
 }

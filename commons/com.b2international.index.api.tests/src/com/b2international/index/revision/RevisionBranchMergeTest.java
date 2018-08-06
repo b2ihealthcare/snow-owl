@@ -118,7 +118,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		indexRevision(a, NEW_DATA2);
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
 		assertState(a, MAIN, BranchState.DIVERGED);
-		branching().merge(a, MAIN, "Merge A to MAIN", RevisionConflictProcessor.DEFAULT, true);
+		branching().merge(a, MAIN, "Merge A to MAIN", new RevisionConflictProcessor.Default(), true);
 		// after merge both revisions are visible from MAIN
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));

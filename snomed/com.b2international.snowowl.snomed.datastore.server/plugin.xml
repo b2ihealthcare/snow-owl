@@ -2,30 +2,10 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.b2international.snowowl.datastore.conflictProcessor">
-      <processor
-            class="com.b2international.snowowl.datastore.server.snomed.SnomedCDOConflictProcessor">
-      </processor>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.versioningManager">
-      <manager
-            class="com.b2international.snowowl.datastore.server.snomed.version.SnomedVersioningManager"
-            interface="com.b2international.snowowl.datastore.server.snomed.ISnomedVersioningManager"
-            terminologyId="com.b2international.snowowl.terminology.snomed">
-      </manager>
-   </extension>
-   <extension
          point="com.b2international.snowowl.snomed.datastore.snomedImportPostProcessor">
       <postProcessor
             class="com.b2international.snowowl.datastore.server.snomed.SnomedConcreteDomainImportPostProcessor">
       </postProcessor>
-   </extension>
-   <extension
-         point="com.b2international.snowowl.datastore.mergeConflictRuleProvider">
-      <ruleprovider
-            class="com.b2international.snowowl.datastore.server.snomed.merge.SnomedMergeConflictRuleProvider">
-      </ruleprovider>
    </extension>
    <extension
          point="com.b2international.snowowl.datastore.serverProtocolFactory">

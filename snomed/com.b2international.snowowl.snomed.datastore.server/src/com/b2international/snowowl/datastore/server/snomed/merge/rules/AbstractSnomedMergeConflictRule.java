@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,14 @@
 package com.b2international.snowowl.datastore.server.snomed.merge.rules;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.cdo.IMergeConflictRule;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.google.common.base.Function;
 
 /**
  * @since 4.7
  */
 public abstract class AbstractSnomedMergeConflictRule implements IMergeConflictRule {
 
-	protected static final Function<Component, String> COMPONENT_TO_ID_FUNCTION = new Function<Component, String>() {
-		@Override public String apply(Component input) {
-			return input.getId();
-		}
-	};
-	
-	protected static final Function<SnomedRefSetMember, String> MEMBER_TO_ID_FUNCTION = new Function<SnomedRefSetMember, String>() {
-		@Override public String apply(SnomedRefSetMember input) {
-			return input.getUuid();
-		}
-	};
-	
 	protected IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}

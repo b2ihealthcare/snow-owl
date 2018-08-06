@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,8 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -111,6 +114,16 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 */
 	protected VersioningRequestBuilder getVersioningRequestBuilder() {
 		return VersioningRequestBuilder.DEFAULT;
+	}
+	
+	/**
+	 * Subclasses may override this method to provide custom conflict processor implementation along with additional {@link IMergeConflictRule}s. By
+	 * default the repository will use a {@link ComponentRevisionConflictProcessor} without any {@link IMergeConflictRule}s.
+	 * 
+	 * @return
+	 */
+	protected ComponentRevisionConflictProcessor getComponentRevisionConflictProcessor() {
+		return new ComponentRevisionConflictProcessor(Collections.emptyList());
 	}
 
 	/**
