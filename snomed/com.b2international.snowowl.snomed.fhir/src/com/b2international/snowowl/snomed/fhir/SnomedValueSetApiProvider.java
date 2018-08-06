@@ -29,7 +29,7 @@ import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -111,7 +111,8 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.getSync()
 			.first();
 		
-		CodeSystemVersionEntry codeSystemVersion = codeSystemOptional.orElseThrow(() -> new FhirException("Could not find corresponding version [%s] for value set id [%s].", "ValueSet.id", logicalId.getBranchPath(), logicalId));
+		CodeSystemVersionEntry codeSystemVersion = codeSystemOptional.orElseThrow(() -> 
+			new BadRequestException(String.format("Could not find corresponding version [%s] for value set id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
 		
 		if (!logicalId.isMemberId()) {
 		

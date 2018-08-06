@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 
@@ -27,25 +28,26 @@ public class BadRequestException extends FhirException {
 
 	private static final long serialVersionUID = 1L;
 	
-	public BadRequestException(final String message, final Object...args) {
-		super(message, args);
+	public BadRequestException(final String message, final OperationOutcomeCode operationOutcomeCode, String location) {
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, operationOutcomeCode, location);
 	}
 	
-	public BadRequestException(final String message, OperationOutcomeCode operationOutcomeCode, final Object...args) {
-		super(message, operationOutcomeCode, args);
+	/**
+	 * Error, Invalid, Invalid param parameters
+	 * @param message
+	 * @param location
+	 */
+	public BadRequestException(final String message, String location) {
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSG_PARAM_INVALID, location);
 	}
 	
-	public BadRequestException(final String message, OperationOutcomeCode operationOutcomeCode, String location, final Object...args) {
-		super(message, operationOutcomeCode, location, args);
+	/**
+	 * Error, Invalid, Invalid param parameters
+	 * @param message
+	 */
+	public BadRequestException(final String message) {
+		super(IssueSeverity.ERROR, IssueType.INVALID, message, OperationOutcomeCode.MSG_PARAM_INVALID);
 	}
 	
-	public BadRequestException(final String message, String location, final Object...args) {
-		super(message, location, args);
-	}
-	
-	@Override
-	public IssueType getIssueType() {
-		return IssueType.INVALID;
-	}
 	
 }

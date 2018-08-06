@@ -133,11 +133,11 @@ public class SearchRequestParameters {
 	private void validateSingleValue(Collection<String> values, String parameterName) {
 		
 		if (values.isEmpty()) {
-			throw new BadRequestException("No %s parameter is submitted.", "SearchRequestParameter", parameterName);
+			throw new BadRequestException(String.format("No %s parameter is submitted.", parameterName), "SearchRequestParameter");
 		}
 		
 		if (values.size() != 1) {
-			throw new BadRequestException("Too many %s parameter values are submitted.", "SearchRequestParameter", parameterName);
+			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), "SearchRequestParameter");
 		}
 	}
 

@@ -37,6 +37,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
@@ -106,7 +107,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		String branchPath = codeSystemLogicalId.getBranchPath();
 		
 		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
-			throw new FhirException("No code system version found for code system %s", "CodeSystem", codeSystemLogicalId);
+			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 		} else {
 			Optional<CodeSystemVersionEntry> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
@@ -130,7 +131,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	@Override
 	public final CodeSystem getCodeSystem(String codeSystemUri) {
 		if (!isSupported(codeSystemUri)) {
-			throw new BadRequestException("Code system with URI %s is not supported by this provider %s.", codeSystemUri, this.getClass().getSimpleName());
+			throw new BadRequestException(String.format("Code system with URI %s is not supported by this provider %s.", codeSystemUri, this.getClass().getSimpleName()));
 		}
 		return getCodeSystems()
 				.stream()
@@ -339,9 +340,9 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		if (!supportedCodes.containsAll(properties)) {
 			if (properties.size() == 1) {
-				throw new BadRequestException("Unrecognized property %s. Supported properties are: %s.", "LookupRequest.property", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()));
+				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()), "LookupRequest.property"));
 			} else {
-				throw new BadRequestException("Unrecognized properties %s. Supported properties are: %s.", "LookupRequest.property", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()));
+				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()), "LookupRequest.property"));
 			}
 		}
 	}

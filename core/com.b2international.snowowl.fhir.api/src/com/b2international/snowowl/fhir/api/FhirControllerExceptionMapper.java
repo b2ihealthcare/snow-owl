@@ -52,7 +52,8 @@ public class FhirControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	public @ResponseBody OperationOutcome handle(final Exception ex) {
 		LOG.error("Exception during processing of a request", ex);
-		FhirException fhirException = new FhirException(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage());
+		
+		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 		return fhirException.toOperationOutcome();
 	}
 	
@@ -73,7 +74,8 @@ public class FhirControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody OperationOutcome handle(HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
-		FhirException fhirException = new FhirException("Invalid JSON representation" + " Exception: " + ex.getMessage());
+		
+		FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_CANT_PARSE_CONTENT);
 		return fhirException.toOperationOutcome();
 	}
 
@@ -87,7 +89,7 @@ public class FhirControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public @ResponseBody OperationOutcome handle(final NotFoundException ex) {
-		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_NO_EXIST, ex.getKey());
+		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_NO_EXIST, ex.getKey());
 		return fhirException.toOperationOutcome();
 	}
 
@@ -100,7 +102,7 @@ public class FhirControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
 	public @ResponseBody OperationOutcome handle(NotImplementedException ex) {
-		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_UNKNOWN_OPERATION);
+		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_UNKNOWN_OPERATION);
 		return fhirException.toOperationOutcome();
 	}
 
@@ -113,7 +115,7 @@ public class FhirControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.CONFLICT)
 	public @ResponseBody OperationOutcome handle(final ConflictException ex) {
-		FhirException fhirException = new FhirException(ex.getMessage(), OperationOutcomeCode.MSG_LOCAL_FAIL);
+		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_LOCAL_FAIL);
 		return fhirException.toOperationOutcome();
 	}
 	

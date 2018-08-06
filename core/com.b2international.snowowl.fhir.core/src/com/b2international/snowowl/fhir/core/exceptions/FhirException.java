@@ -15,60 +15,69 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
-import com.b2international.commons.exceptions.FormattedRuntimeException;
+import java.util.Collection;
+
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 
 /**
  * @since 6.3
  */
-public class FhirException extends FormattedRuntimeException {
+public class FhirException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 	
-	private String location;
-	
 	//default outcome code
 	private OperationOutcomeCode operationOutcomeCode = OperationOutcomeCode.MSG_BAD_SYNTAX;
-			
-	/**
-	 * @param template
-	 * @param args
-	 */
-	public FhirException(String template, Object... args) {
-		super(template, args);
+	
+	private OperationOutcome.Builder operationOutcomeBuilder = OperationOutcome.builder();
+		
+	public FhirException(Issue issue) {
+		operationOutcomeBuilder.addIssue(issue);
 	}
 	
-	/**
-	 * @param template
-	 * @param args
-	 */
-	public FhirException(String template, OperationOutcomeCode operationOutcomeCode, Object... args) {
-		super(template, args);
-		this.operationOutcomeCode = operationOutcomeCode;
+	public FhirException(Collection<Issue> issues) {
+		operationOutcomeBuilder.addIssues(issues);
 	}
 	
-	/**
-	 * @param template
-	 * @param args
-	 */
-	public FhirException(String template, OperationOutcomeCode operationOutcomeCode, String location, Object... args) {
-		super(template, args);
-		this.location = location;
-		this.operationOutcomeCode = operationOutcomeCode;
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode, String location) {
+		
+		super(message);
+		
+		Issue issue = Issue.builder()
+			.severity(issueSeverity)
+			.code(issueType)
+			.codeableConceptWithDisplayArgs(operationOutcomeCode, location)
+			.diagnostics(message)
+			.addLocation(location)
+			.build();
+		
+		operationOutcomeBuilder.addIssue(issue);
 	}
 	
-	/**
-	 * @param template
-	 * @param args
-	 */
-	public FhirException(String template, String location, Object... args) {
-		super(template, args);
-		this.location = location;
+	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode) {
+		
+		super(message);
+		
+		Issue issue = Issue.builder()
+			.severity(issueSeverity)
+			.code(issueType)
+			.codeableConcept(operationOutcomeCode)
+			.diagnostics(message)
+			.build();
+		
+		operationOutcomeBuilder.addIssue(issue);
+	}
+	
+	public static FhirException createFhirError(String message, OperationOutcomeCode operationOutcomeCode, String location) {
+		return new FhirException(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode, location);
+	}
+	
+	public static FhirException createFhirError(String message, OperationOutcomeCode operationOutcomeCode) {
+		return new FhirException(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode);
 	}
 	
 	/**
@@ -96,18 +105,7 @@ public class FhirException extends FormattedRuntimeException {
 	 * @return {@link OperationOutcome} representation of this {@link FhirException}, never <code>null</code>.
 	 */
 	public OperationOutcome toOperationOutcome() {
-		
-		Builder builder = Issue.builder()
-			.severity(IssueSeverity.ERROR)
-			.code(getIssueType())
-			.codeableConceptWithDisplayArgs(getOperationOutcomeCode(), location)
-			.diagnostics(getMessage());
-		
-		if (location != null) {
-			builder.addLocation(location);
-		}
-		
-		return OperationOutcome.builder().addIssue(builder.build()).build();
+		return operationOutcomeBuilder.build();
 	}
 
 

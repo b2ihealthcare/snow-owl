@@ -437,7 +437,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(codeSystemId)) {
 			if (!codeSystemId.equals(system)) {
-				throw new BadRequestException("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", "SubsumptionRequest.system", system, codeSystemId);
+				throw new BadRequestException(String.format("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", system, codeSystemId), "SubsumptionRequest.system");
 			}
 		}
 		

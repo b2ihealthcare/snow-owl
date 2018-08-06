@@ -34,6 +34,7 @@ import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
@@ -336,9 +337,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		if (version != null) {
 			if (snomedUri.getVersionTag() == null) {
-				throw new FhirException("Version is not specified in the URI [%s], while it is set in the request [%s]", "LookupRequest.version", snomedUri.toString(), version);
+				throw new BadRequestException(String.format("Version is not specified in the URI [%s], while it is set in the request [%s]", snomedUri.toString(), version), "LookupRequest.version");
 			} else if (!snomedUri.getVersionTag().equals(version)) {
-				throw new FhirException("Version specified in the URI [%s] does not match the version set in the request [%s]", "LookupRequest.version", snomedUri.toString(), version);
+				throw new BadRequestException(String.format("Version specified in the URI [%s] does not match the version set in the request [%s]", snomedUri.toString(), version), "LookupRequest.version");
 			}
 		}
 	}

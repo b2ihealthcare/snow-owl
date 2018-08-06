@@ -45,8 +45,8 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 @RunWith(Suite.class)
 @SuiteClasses({ 
 
-	
 	/*
+	 */
 	PrimitiveDataTypeSerializationTest.class,
 	ComplexDataTypeSerializationTest.class,
 	ParameterDeserializationTest.class,
@@ -61,8 +61,6 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	
 	//This tests are pretty meaningless
 	ValueSetSerializationTest.class,
-	 */
-	/*
 	ModelDeserializationTest.class,
 	LookupRequestDeserializationTest.class,
 	ExceptionTest.class,
@@ -70,10 +68,11 @@ import com.b2international.snowowl.fhir.api.tests.serialization.parameterized.Su
 	//tests related to parameter parsing and filtering
 	ParameterParsingTest.class,
 	SearchRequestParametersTest.class,
-	UriParsingTest.class,
+	SnomedUriParsingTest.class,
 	FilterTest.class,
-	 */
 	SubsumptionRequestTest.class
+	/*
+	 */
 })
 public class AllFhirTests {
 }

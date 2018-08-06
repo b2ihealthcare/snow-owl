@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,10 @@ public final class ValidationException extends BadRequestException {
 	private Collection<? extends ConstraintViolation<?>> violations;
 
 	public ValidationException(Collection<? extends ConstraintViolation<?>> violations) {
-		super("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s");
+		
+		super(String.format("%s validation error%s", violations.size(), violations.size() == 1 ? "" : "s"),
+				OperationOutcomeCode.MSG_PARAM_INVALID, null);
+		
 		this.violations = violations;
 	}
 
@@ -97,12 +100,12 @@ public final class ValidationException extends BadRequestException {
 		
 		return outcomeBuilder.build();
 	}
-
+	
 	@Override
 	public OperationOutcomeCode getOperationOutcomeCode() {
 		return OperationOutcomeCode.MSG_PARAM_INVALID;
 	}
-	
+
 	/**
 	 * @return the violations
 	 */

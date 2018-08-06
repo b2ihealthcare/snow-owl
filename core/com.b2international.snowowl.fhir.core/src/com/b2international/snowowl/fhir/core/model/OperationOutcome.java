@@ -78,10 +78,15 @@ public class OperationOutcome {
 			return this;
 		}
 		
+		public void addIssues(Collection<Issue> outComeIssues) {
+			issues.addAll(outComeIssues);
+		}
+
 		@Override
 		protected OperationOutcome doBuild() {
 			return new OperationOutcome(issues);
 		}
+
 
 	}
 	

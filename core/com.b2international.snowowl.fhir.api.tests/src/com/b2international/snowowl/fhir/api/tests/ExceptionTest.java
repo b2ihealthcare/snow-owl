@@ -44,8 +44,9 @@ public class ExceptionTest extends FhirTest {
 	@Test
 	public void testException() throws Exception {
 
-		Issue expectedIssue = builder.addLocation("LookupRequest.system")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_BAD_SYNTAX, "Bad Syntax in LookupRequest.system")
+		Issue expectedIssue = builder
+				.addLocation("LookupRequest.system")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
 				.build();
 		
 		BadRequestException bre = new BadRequestException("No system specified", "LookupRequest.system");
@@ -65,10 +66,10 @@ public class ExceptionTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("No system specified [null]")
 				.addLocation("LookupRequest.system")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_BAD_SYNTAX, "Bad Syntax in LookupRequest.system")
+				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'LookupRequest.system' content is invalid")
 				.build();
 		
-		BadRequestException bre = new BadRequestException("No system specified %s", "LookupRequest.system", "[null]");
+		BadRequestException bre = new BadRequestException("No system specified [null]", "LookupRequest.system");
 		
 		exception.expect(FhirException.class);
 		exception.expectMessage("No system specified [null]");
