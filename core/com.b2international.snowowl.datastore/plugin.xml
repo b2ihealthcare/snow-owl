@@ -2,12 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="protocolFactory" name="Net4j Client Protocol Factory" schema="schema/protocolFactory.exsd"/>
-   <extension-point id="versioningManager" name="versioningManager" schema="schema/versioningManager.exsd"/>
    <extension-point id="contentAvailabilityInfoProvider" name="Content Availability Info Provider" schema="schema/contentAvailabilityInfoProvider.exsd"/>
    <extension-point id="validationIssueDetailExtension" name="validationIssueDetailExtension" schema="schema/validationDetailExtension.exsd"/>
    <extension-point id="serverProtocolFactory" name="Net4j Protocol Factory" schema="schema/serverProtocolFactory.exsd"/>
-   <extension-point id="conflictProcessor" name="conflictProcessor" schema="schema/conflictProcessor.exsd"/>
-   <extension-point id="mergeConflictRuleProvider" name="mergeConflictRuleProvider" schema="schema/mergeConflictRuleProvider.exsd"/>
    <extension
          point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester

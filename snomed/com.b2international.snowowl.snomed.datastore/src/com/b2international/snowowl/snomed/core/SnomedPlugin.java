@@ -25,6 +25,8 @@ import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
@@ -47,6 +49,9 @@ import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
+import com.b2international.snowowl.snomed.core.merge.SnomedInvalidRelationshipMergeConflictRule;
+import com.b2international.snowowl.snomed.core.merge.SnomedLanguageRefsetMembersMergeConflictRule;
+import com.b2international.snowowl.snomed.core.merge.SnomedRefsetMemberReferencingDetachedComponentRule;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
@@ -173,6 +178,15 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected PreCommitHook getTerminologyRepositoryPreCommitHook() {
 		return new SnomedRepositoryPreCommitHook(log());
+	}
+	
+	@Override
+	protected ComponentRevisionConflictProcessor getComponentRevisionConflictProcessor() {
+		return new ComponentRevisionConflictProcessor(ImmutableList.<IMergeConflictRule>builder()
+				.add(new SnomedRefsetMemberReferencingDetachedComponentRule())
+				.add(new SnomedLanguageRefsetMembersMergeConflictRule())
+				.add(new SnomedInvalidRelationshipMergeConflictRule())
+				.build());
 	}
 	
 }
