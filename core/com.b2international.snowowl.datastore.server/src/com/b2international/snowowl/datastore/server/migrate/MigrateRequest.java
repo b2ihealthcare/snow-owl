@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,15 @@ import org.eclipse.net4j.util.om.monitor.Monitor;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -53,11 +58,11 @@ import com.b2international.snowowl.datastore.config.DatabaseConfiguration;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.CDORepository;
 import com.b2international.snowowl.datastore.server.CDOServerUtils;
 import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.11
@@ -93,18 +98,19 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
-		long maxCdoBranchId = -1L;
-		final Branches branches = RepositoryRequests.branching().prepareSearch()
-				.all()
-				.build()
-				.execute(context);
-		
-		for (final Branch branch : branches) {
-			if (branch.branchId() > maxCdoBranchId) {
-				maxCdoBranchId = branch.branchId();
-			}
-		}
-		
+		// XXX: We are deliberately side-stepping health checks here
+		final Index index = repository.service(Index.class);
+		final Hits<Long> maxBranchIdHits = index.read(searcher -> {
+			return searcher.search(Query.select(Long.class)
+					.from(RevisionBranch.class)
+					.fields(RevisionBranch.Fields.ID)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(RevisionBranch.Fields.ID, Order.DESC))
+					.limit(1)
+					.build());
+		});
+			
+		final long maxBranchId = maxBranchIdHits.isEmpty() ? -1L : Iterables.getOnlyElement(maxBranchIdHits);
 		final org.eclipse.emf.cdo.internal.server.Repository localRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		
 		// initialize a new repository to the location
@@ -124,7 +130,7 @@ public final class MigrateRequest implements Request<RepositoryContext, Migratio
 		try {
 			repository.setHealth(Health.YELLOW, "Migration is in progress...");
 			features.enable(reindexToggle);
-			MigrationReplicationContext delegate = new MigrationReplicationContext(context, (int) maxCdoBranchId, commitTimestamp - 1, session, scriptLocation);
+			MigrationReplicationContext delegate = new MigrationReplicationContext(context, (int) maxBranchId, commitTimestamp - 1, session, scriptLocation);
 			final AsyncReplicationContext replicationContext = new AsyncReplicationContext(delegate);
 
 			remoteSession.setSignalTimeout(context.config().getModuleConfig(RepositoryConnectionConfiguration.class).getSignalTimeout());

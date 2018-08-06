@@ -18,16 +18,21 @@ package com.b2international.snowowl.datastore.server.reindex;
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -49,18 +54,19 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
-		long maxCdoBranchId = -1L;
-		final Branches branches = RepositoryRequests.branching().prepareSearch()
-				.all()
-				.build()
-				.execute(context);
-		
-		for (final Branch branch : branches) {
-			if (branch.branchId() > maxCdoBranchId) {
-				maxCdoBranchId = branch.branchId();
-			}
-		}
-		
+		// XXX: We are deliberately side-stepping health checks here
+		final Index index = repository.service(Index.class);
+		final Hits<Long> maxBranchIdHits = index.read(searcher -> {
+			return searcher.search(Query.select(Long.class)
+					.from(RevisionBranch.class)
+					.fields(RevisionBranch.Fields.ID)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(RevisionBranch.Fields.ID, Order.DESC))
+					.limit(1)
+					.build());
+		});
+			
+		final long maxBranchId = maxBranchIdHits.isEmpty() ? -1L : Iterables.getOnlyElement(maxBranchIdHits);
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
 		
@@ -71,7 +77,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
 			//right now index is fully recreated
-			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, (int) maxCdoBranchId, failedCommitTimestamp - 1, session);
+			final IndexMigrationReplicationContext replicationContext = new IndexMigrationReplicationContext(context, (int) maxBranchId, failedCommitTimestamp - 1, session);
 			cdoRepository.replicate(replicationContext);
 			// update repository state after the re-indexing
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
