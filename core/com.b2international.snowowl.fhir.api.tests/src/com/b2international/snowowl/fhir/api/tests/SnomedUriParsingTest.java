@@ -43,7 +43,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		exception.expect(IllegalArgumentException.class);
 		exception.expectMessage("URI 'invalid uri' is not a valid SNOMED CT URI. It should start as 'http://snomed.info/sct'");
 
-		SnomedUri.fromUriString(uriString);
+		SnomedUri.fromUriString(uriString, "uri");
 	}
 	
 	@Test
@@ -54,7 +54,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid extension module ID [a] defined.");
 
-		SnomedUri.fromUriString(uriString);
+		SnomedUri.fromUriString(uriString, "uri");
 	}
 	
 	@Test
@@ -65,7 +65,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid path segment [invalidTag], 'version' expected.");
 
-		SnomedUri.fromUriString(uriString);
+		SnomedUri.fromUriString(uriString, "uri");
 	}
 	
 	@Test
@@ -76,7 +76,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		exception.expect(FhirException.class);
 		exception.expectMessage("No version tag is specified after the 'version' parameter.");
 
-		SnomedUri.fromUriString(uriString);
+		SnomedUri.fromUriString(uriString, "uri");
 	}
 
 	//correct paths
@@ -85,7 +85,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING;
 		
-		SnomedUri snomedUri = SnomedUri.fromUriString(uriString);
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "uri");
 		
 		assertNull(snomedUri.getExtensionModuleId());
 		assertNull(snomedUri.getVersionTag());
@@ -97,7 +97,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE;
 		
-		SnomedUri snomedUri = SnomedUri.fromUriString(uriString);
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "uri");
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, snomedUri.getExtensionModuleId());
 		assertNull(snomedUri.getVersionTag());
@@ -108,7 +108,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE + "/version/20170131";
 		
-		SnomedUri snomedUri = SnomedUri.fromUriString(uriString);
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "uri");
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, snomedUri.getExtensionModuleId());
 		assertEquals("20170131", snomedUri.getVersionTag());

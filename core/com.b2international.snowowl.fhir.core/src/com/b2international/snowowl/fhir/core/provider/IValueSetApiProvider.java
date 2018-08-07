@@ -86,11 +86,19 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	Collection<ValueSet> getValueSets();
 
 	/**
-	 * Returns the value set for the passed in logical id (repositoryId:branchPath/valueSetId)
+	 * Returns the value set for the passed in logical id (repositoryId:branchPath/valueSetId[|memberId])
 	 * @param logicalId
 	 * @return {@link ValueSet}
 	 * @throws BadRequestException if the value set is not supported by this provider
 	 */
 	ValueSet getValueSet(LogicalId logicalId);
+	
+	/**
+	 * Returns the expanded form of the value set specified by its logical id
+	 * @param logicalId
+	 * @return {@link ValueSet}
+	 * @throws BadRequestException if the value set is not supported by this provider
+	 */
+	ValueSet expandValueSet(LogicalId logicalId);
 
 }

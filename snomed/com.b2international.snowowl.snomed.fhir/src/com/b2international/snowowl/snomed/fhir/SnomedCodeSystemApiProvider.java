@@ -35,7 +35,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
 import com.b2international.snowowl.fhir.core.model.codesystem.Filters;
@@ -93,7 +92,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	public LookupResult lookup(LookupRequest lookup) {
 		
-		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem());
+		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
 		
 		validateVersion(snomedUri, lookup.getVersion());
 		
@@ -233,7 +232,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem());
+		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
 		validateVersion(snomedUri, subsumptionRequest.getVersion());
 		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersionId();
 	}
@@ -357,7 +356,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.execute(getBus())
 				.getSync()
 				.first()
-				.orElseThrow(() -> new BadRequestException("Could not find any versions for SNOMED CT " + versionEffectiveDate));
+				.orElseThrow(() -> new BadRequestException("Could not find any versions for SNOMED CT " + versionEffectiveDate, "CodeSystem.system"));
 		} else {
 			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
@@ -367,7 +366,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.execute(getBus())
 				.getSync()
 				.first()
-				.orElseThrow(() -> new BadRequestException("Could not find code system for SNOMED CT version " + versionEffectiveDate));
+				.orElseThrow(() -> new BadRequestException("Could not find code system for SNOMED CT version " + versionEffectiveDate, "CodeSystem.system"));
 		}
 	}
 	

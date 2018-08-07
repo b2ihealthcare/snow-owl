@@ -324,7 +324,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	}
 	
 	/*
-	 * Subsumes POST method without codeSystemId and body
+	 * Subsumes POST method with code system as path parameter
 	 */
 	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
 	@ApiResponses({
@@ -335,9 +335,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
-			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody
-			Parameters.Fhir in) {
+			@ApiParam(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
 		
 		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
 		

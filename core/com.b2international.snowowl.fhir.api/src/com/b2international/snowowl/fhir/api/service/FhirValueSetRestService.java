@@ -45,6 +45,7 @@ import com.google.common.collect.Multimap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -132,6 +133,31 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.getValueSet(logicalId);
 
 		return applyResponseContentFilter(valueSet, requestParameters);
+	}
+	
+	/**
+	 * HTTP Get request to expand the value set to return its members.
+	 * @param valueSetId
+	 * @return expanded {@link ValueSet}
+	 */
+	@ApiOperation(
+			response=ValueSet.class,
+			value="Expand a value set",
+			notes="Expand a value set specified by its logical id.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
+	public ValueSet expand(
+			@ApiParam(value="The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
+		
+		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
+		
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
+		ValueSet valueSet = valueSetProvider.expandValueSet(logicalId);
+		return valueSet;
 	}
 	
 	

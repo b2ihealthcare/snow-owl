@@ -32,9 +32,14 @@ import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
@@ -161,7 +166,7 @@ public class LookupSnomedRestTest extends FhirTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.details.text", hasItem("Bad Syntax in LookupRequest.property"))
+			.body("issue.details.text", hasItem("Parameter 'LookupRequest.property' content is invalid"))
 			.statusCode(400);
 	}
 	
@@ -182,6 +187,36 @@ public class LookupSnomedRestTest extends FhirTest {
 	}
 	
 	@Test
+	public void lookupVersionPostTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+				.system("http://snomed.info/sct/900000000000207008/version/20170131")
+				.code("263495000")
+				.build();
+
+		LookupRequest request = LookupRequest.builder()
+				.coding(coding)
+				.build();
+		
+		Fhir fhirParameters = new Parameters.Fhir(request);
+		
+		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+		printPrettyJson(fhirParameters);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+			.body(jsonBody)
+			.when().post("/CodeSystem/$lookup")
+			.then()
+		.body("resourceType", equalTo("Parameters"))
+		.body("parameter[0].name", equalTo("name"))
+		.body("parameter[0].valueString", equalTo("SNOMED CT"))
+		.body("parameter[1].name", equalTo("version"))
+		.body("parameter[1].valueString", equalTo("20170131"))
+		.statusCode(200);
+	}
+	
+	@Test
 	public void lookupInvalidVersionTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -193,7 +228,7 @@ public class LookupSnomedRestTest extends FhirTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.details.text", hasItem("Bad Syntax in LookupRequest.property"))
+			.body("issue.details.text", hasItem("Parameter 'CodeSystem.system' content is invalid"))
 			.statusCode(400);
 	}
 	
@@ -209,7 +244,7 @@ public class LookupSnomedRestTest extends FhirTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.details.text", hasItem("Bad Syntax in LookupRequest.property"))
+			.body("issue.details.text", hasItem("Parameter 'CodeSystem$lookup.system' content is invalid"))
 			.statusCode(400);
 	}
 

@@ -24,7 +24,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
@@ -184,16 +183,17 @@ public class SnomedUri {
 	/**
 	 * Factory method to create a new SNOMED CT URI from a valid URI String.
 	 * @param uriString
+	 * @param parameterName for reporting purposes
 	 * @return new SNOMED CT URI instance
 	 */
-	public static SnomedUri fromUriString(String uriString) {
+	public static SnomedUri fromUriString(String uriString, String parameterName) {
 		
 		Builder builder = builder();
 		
 		Path uriPath = Paths.get(uriString);
 		
 		if (!uriPath.startsWith(SNOMED_BASE_URI_STRING)) {
-			throw new IllegalArgumentException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI_STRING));
+			throw new BadRequestException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI_STRING), parameterName);
 		}
 		
 		Path relativeUri = Paths.get(SNOMED_BASE_URI_STRING).relativize(uriPath);
@@ -210,7 +210,7 @@ public class SnomedUri {
 		if (StringUtils.isEmpty(pathSegment)) return builder.build();
 		
 		if (!SnomedIdentifiers.isValid(pathSegment.toString())) {
-			throw new BadRequestException(String.format("Invalid extension module ID [%s] defined.", pathSegment));
+			throw new BadRequestException(String.format("Invalid extension module ID [%s] defined.", pathSegment), parameterName);
 		} else {
 			builder.extensionModuleId(pathSegment);
 		}
@@ -219,19 +219,19 @@ public class SnomedUri {
 		if (!pathIterator.hasNext()) return builder.build();
 		String versionParameterKeySegment = pathIterator.next().toString();
 		if (!VERSION_PATH_SEGMENT.equals(versionParameterKeySegment)) {
-			throw new BadRequestException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment));
+			throw new BadRequestException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment), parameterName);
 		}
 		
 		//Version tag
 		if (!pathIterator.hasNext()) {
-			throw new BadRequestException(String.format("No version tag is specified after the 'version' parameter."));
+			throw new BadRequestException(String.format("No version tag is specified after the 'version' parameter."), parameterName);
 		}
 		String versionTag = pathIterator.next().toString();
 		//to validate
 		try {
 			EffectiveTimes.parse(versionTag, DateFormats.SHORT);
 		} catch(RuntimeException re) {
-			throw new BadRequestException(String.format("Could not parse version date [%s].", versionTag));
+			throw new BadRequestException(String.format("Could not parse version date [%s].", versionTag), parameterName);
 		}
 		return builder.version(versionTag).build();
 	}

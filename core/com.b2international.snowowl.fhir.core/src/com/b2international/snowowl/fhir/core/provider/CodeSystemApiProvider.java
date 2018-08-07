@@ -340,9 +340,9 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		if (!supportedCodes.containsAll(properties)) {
 			if (properties.size() == 1) {
-				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()), "LookupRequest.property"));
+				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
 			} else {
-				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray()), "LookupRequest.property"));
+				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
 			}
 		}
 	}
