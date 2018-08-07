@@ -59,20 +59,15 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	}
 	
 	/**
-	 * @param <B> - the builder type
 	 * @since 4.7
 	 */
-	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> {
+	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> extends Revision.Builder<B, T> {
 		
 		protected String id;
 		protected String label;
 		protected String iconId;
 		protected float score = 0.0f;
 		
-		// XXX only for JSON deserialization
-		protected RevisionBranchPoint created;
-		protected List<RevisionBranchPoint> revised = Collections.emptyList();
-
 		public B id(final String id) {
 			this.id = id;
 			return getSelf();
@@ -95,20 +90,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			this.score = score;
 			return getSelf();
 		}
-		
-		B revised(final List<RevisionBranchPoint> revised) {
-			this.revised = revised;
-			return getSelf();
-		}
-		
-		B created(final RevisionBranchPoint created) {
-			this.created = created;
-			return getSelf();
-		}
-		
-		protected abstract B getSelf();
-		
-		public abstract T build();
 		
 	}
 	

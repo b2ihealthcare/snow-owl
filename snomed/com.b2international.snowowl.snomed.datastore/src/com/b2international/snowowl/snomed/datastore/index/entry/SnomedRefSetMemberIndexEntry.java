@@ -38,6 +38,7 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -1050,6 +1051,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		} else {
 			this.referencedComponentType = referencedComponentType;
 		}
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 
 	@Override

@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Objects;
+
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 
 /**
@@ -48,7 +50,12 @@ public interface RevisionConflictProcessor {
 		
 		@Override
 		public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
-			return null;
+			// apply source change if the new value is the same, otherwise report conflict
+			if (Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
+				return sourceChange;
+			} else {
+				return null; 
+			}
 		}
 		
 		@Override

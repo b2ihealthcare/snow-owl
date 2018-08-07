@@ -24,6 +24,7 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -54,6 +55,7 @@ public final class RepositoryBuilder {
 		CodeSystemEntry.class, 
 		CodeSystemVersionEntry.class
 	);
+	private ComponentRevisionConflictProcessor componentRevisionConflictProcessor;
 
 	RepositoryBuilder(DefaultRepositoryManager defaultRepositoryManager, String repositoryId, String toolingId) {
 		this.manager = defaultRepositoryManager;
@@ -95,12 +97,18 @@ public final class RepositoryBuilder {
 		this.deletionPolicy = deletionPolicy;
 		return this;
 	}
+
+	public RepositoryBuilder withComponentRevisionConflictProcessor(ComponentRevisionConflictProcessor componentRevisionConflictProcessor) {
+		this.componentRevisionConflictProcessor = componentRevisionConflictProcessor;
+		return this;
+	}
 	
 	public Repository build(Environment env) {
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
 		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
+		repository.bind(ComponentRevisionConflictProcessor.class, componentRevisionConflictProcessor);
 		repository.activate();
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);

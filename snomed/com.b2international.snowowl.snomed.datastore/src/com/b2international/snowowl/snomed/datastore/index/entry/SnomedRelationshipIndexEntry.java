@@ -29,6 +29,7 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -348,6 +349,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.destinationNegated = destinationNegated;
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 
 	@Override

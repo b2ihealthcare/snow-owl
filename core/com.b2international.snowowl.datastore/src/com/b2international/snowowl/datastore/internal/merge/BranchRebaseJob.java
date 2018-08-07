@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.request.AbstractBranchChangeRequest;
@@ -50,7 +51,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 			}
 
 			try (Locks locks = new Locks(context, target)) {
-				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage);
+				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class));
 				return true;
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot rebase target '%s' on source '%s'." : e.getMessage(), target.path(), source.path(), e);

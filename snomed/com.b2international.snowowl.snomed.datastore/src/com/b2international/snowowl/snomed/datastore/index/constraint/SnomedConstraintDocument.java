@@ -17,26 +17,20 @@ package com.b2international.snowowl.snomed.datastore.index.constraint;
 
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyEnum;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.ITerminologyComponentIdProvider;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStrength;
-import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -290,6 +284,11 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		this.descendantIds = Collections3.toImmutableSet(descendantIds);
 		this.refSetIds = Collections3.toImmutableSet(refSetIds);
 		this.relationshipKeys = Collections3.toImmutableSet(relationshipKeys);
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 
 	public boolean isActive() {

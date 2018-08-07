@@ -155,4 +155,22 @@ public abstract class EffectiveTimes {
 		return UNSET_EFFECTIVE_TIME == effectiveTime ? null : new Date(effectiveTime);
 	}
 
+	/**
+	 * Returns <code>true</code> if the given Object is an unset representation of an effective time value.
+	 * @param effectiveTimeValue
+	 * @return
+	 */
+	public static boolean isUnset(Object effectiveTimeValue) {
+		if (effectiveTimeValue == null) {
+			return true;
+		} else if (UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTimeValue)) {
+			return true;
+		} else if (effectiveTimeValue instanceof Long && UNSET_EFFECTIVE_TIME == (long) effectiveTimeValue) {
+			return true;
+		} else if (effectiveTimeValue instanceof String && UNSET_EFFECTIVE_TIME == Long.parseLong((String) effectiveTimeValue)) {
+			return true;
+		}
+		return false;
+	}
+
 }

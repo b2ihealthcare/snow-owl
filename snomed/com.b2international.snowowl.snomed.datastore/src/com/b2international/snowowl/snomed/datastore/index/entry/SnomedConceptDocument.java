@@ -37,6 +37,7 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -462,6 +463,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
 		this.preferredDescriptions = preferredDescriptions;
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 	
 	public float getDoi() {

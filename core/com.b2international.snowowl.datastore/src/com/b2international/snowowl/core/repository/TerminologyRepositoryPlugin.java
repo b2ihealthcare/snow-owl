@@ -61,6 +61,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.logger(log())
 					.withComponentDeletionPolicy(getComponentDeletionPolicy())
 					.withVersioningRequestBuilder(getVersioningRequestBuilder())
+					.withComponentRevisionConflictProcessor(getComponentRevisionConflictProcessor())
 					.build(env);
 			if (repo.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), repo.health());
