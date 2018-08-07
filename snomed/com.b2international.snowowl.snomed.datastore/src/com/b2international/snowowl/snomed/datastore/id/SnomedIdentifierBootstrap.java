@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public final class SnomedIdentifierBootstrap extends Plugin {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("snomedids");
 	private static final String SNOMED_IDS_INDEX = "snomedids";
 	private static final String STORE_RESERVATIONS = "store_reservations";
 
