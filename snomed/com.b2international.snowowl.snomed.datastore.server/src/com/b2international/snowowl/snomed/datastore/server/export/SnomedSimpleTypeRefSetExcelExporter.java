@@ -37,7 +37,6 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.CDOEditingContext;
 import com.b2international.snowowl.datastore.importer.AbstractTerminologyExporter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -53,7 +52,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.label.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 
@@ -68,7 +66,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	private final static String FONT_STYLE = "Sarif";
 
 	private final SnomedReferenceSet refSet;
-	private final SnomedEditingContext context;
 	private final Workbook workbook;
 	
 	private final CellStyle DEFAULT_STYLE;
@@ -78,7 +75,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		super(userId, branchPath);
 		
 		this.refSet = SnomedRequests.prepareGetReferenceSet(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getBus()).getSync();
-		this.context = new SnomedEditingContext(branchPath);
 		this.workbook = new XSSFWorkbook();
 		
 		final Font headerFont = workbook.createFont();
@@ -113,10 +109,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 
-	protected CDOEditingContext getEditingContext() {
-		return context;
-	}
-
 	@Override
 	protected File exportTerminology(final String exportFilePath, OMMonitor monitor) throws IOException {
 		
@@ -135,10 +127,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		} catch (IOException e) {
 			throw e;
 		} finally {
-			if (null != getEditingContext()) {
-				getEditingContext().close();
-			}
-			
 			if (null != outputStream) {
 				outputStream.close();
 			}
@@ -200,7 +188,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 				.filterByRefSet(refSet.getId())
 				.setExpand(getExpand(refSet))
 				.setLocales(getLocales())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, context.getBranch())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())
 				.execute(getBus())
 				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedCoreComponent>>() {
 					@Override
