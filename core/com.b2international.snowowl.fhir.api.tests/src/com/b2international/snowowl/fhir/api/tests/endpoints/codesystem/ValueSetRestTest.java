@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
+import org.hamcrest.core.StringStartsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -92,7 +93,7 @@ public class ValueSetRestTest extends FhirTest {
 		.prettyPrint();
 	}
 	
-	//@Test
+	@Test
 	public void valueSetsTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -120,7 +121,7 @@ public class ValueSetRestTest extends FhirTest {
 		.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void valueSetsSummaryTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -147,15 +148,6 @@ public class ValueSetRestTest extends FhirTest {
 		.statusCode(200);
 	}
 	
-	//This is junk as the ID is hard-coded
-	//@Test
-	public void getSingleSnomedValueSetTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") 
-			.when().get("/ValueSet/{id}")
-			.prettyPrint();
-	}
-	
 	//'Virtual' value set
 	@Test
 	public void getSingleQueryTypeValueSetTest() {
@@ -165,6 +157,26 @@ public class ValueSetRestTest extends FhirTest {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + refsetLogicalId) 
+			.when().get("/ValueSet/{id}")
+			.then()
+			.body("resourceType", equalTo("ValueSet"))
+			.body("id", StringStartsWith.startsWith("snomedStore:MAIN/FHIR_QUERY_TYPE_REFSET_VERSION"))
+			.body("version", equalTo("FHIR_QUERY_TYPE_REFSET_VERSION"))
+			.body("name", equalTo("FHIR Automated Test Simple Type Refset"))
+			.body("status", equalTo("active"))
+			.root("compose[0].include[0]")
+			.body("system", equalTo("http://snomed.info/sct"))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("<<49111001"))
+			.body("filter[0].op", equalTo("="))
+			.statusCode(200);
+	}
+	
+	//This is junk as the ID is hard-coded
+	//@Test
+	public void getSingleSnomedValueSetTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") 
 			.when().get("/ValueSet/{id}")
 			.prettyPrint();
 	}
