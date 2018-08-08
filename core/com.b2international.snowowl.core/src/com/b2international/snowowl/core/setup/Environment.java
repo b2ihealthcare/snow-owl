@@ -42,7 +42,6 @@ public final class Environment implements ServiceProvider {
 	
 	private File configDirectory;
 	private File resourcesDirectory;
-	private File defaultsDirectory;
 
 	public Environment(final Plugins plugins, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
 		this.plugins = plugins;
@@ -62,12 +61,10 @@ public final class Environment implements ServiceProvider {
 		// TODO check if the configuration uses an absolute path
 		this.configDirectory = createDirectory(homeDirectory, configuration.getConfigurationDirectory());
 		this.resourcesDirectory = createDirectory(homeDirectory, configuration.getResourceDirectory());
-		this.defaultsDirectory = createDirectory(homeDirectory, configuration.getDefaultsDirectory());
 		// set resolved directory paths to configuration
 		configuration.setInstallationDirectory(this.homeDirectory.getAbsolutePath());
 		configuration.setConfigurationDirectory(this.configDirectory.getAbsolutePath());
 		configuration.setResourceDirectory(this.resourcesDirectory.getAbsolutePath());
-		configuration.setDefaultsDirectory(this.defaultsDirectory.getAbsolutePath());
 	}
 
 	/**
@@ -131,15 +128,6 @@ public final class Environment implements ServiceProvider {
 	 */
 	public File getDataDirectory() {
 		return resourcesDirectory;
-	}
-
-	/**
-	 * Returns the defaults directory location.
-	 * 
-	 * @return
-	 */
-	public File getDefaultsDirectory() {
-		return defaultsDirectory;
 	}
 
 	/**
