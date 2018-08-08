@@ -101,4 +101,12 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	 */
 	ValueSet expandValueSet(LogicalId logicalId);
 
+	/**
+	 * Returns the expanded value set for the passed in value set URI
+	 * @param valueSetUri
+	 * @return {@link ValueSet}
+	 * @throws BadRequestException if the value set is not supported by this provider
+	 */
+	ValueSet expandValueSet(String url);
+
 }

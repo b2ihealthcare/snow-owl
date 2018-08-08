@@ -23,12 +23,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -60,7 +58,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequ
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.Builder;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -343,33 +340,6 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 	}
 
-	//versionId is the versionEffectiveDate
-	private CodeSystemVersionEntry getCodeSystemVersion(String versionEffectiveDate) {
-		
-		if (versionEffectiveDate == null) {
-			//get the last version
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException("Could not find any versions for SNOMED CT " + versionEffectiveDate, "CodeSystem.system"));
-		} else {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException("Could not find code system for SNOMED CT version " + versionEffectiveDate, "CodeSystem.system"));
-		}
-	}
-	
 	private String getPreferredTermOrId(SnomedConcept concept) {
 		return concept.getPt() == null ? concept.getId() : concept.getPt().getTerm();
 	}

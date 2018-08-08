@@ -84,9 +84,20 @@ public class SnomedUri {
 			this.queryValue = conceptId;
 		}
 
-		
 		public QueryPart(String queryParameter, QueryPartDefinition queryPartDefinition) {
 			this(queryParameter, queryPartDefinition, null);
+		}
+		
+		public String getQueryParameter() {
+			return queryParameter;
+		}
+		
+		public QueryPartDefinition getQueryPartDefinition() {
+			return queryPartDefinition;
+		}
+		
+		public String getQueryValue() {
+			return queryValue;
 		}
 
 		@Override
@@ -192,7 +203,7 @@ public class SnomedUri {
 		
 		Path uriPath = Paths.get(uriString);
 		
-		if (!uriPath.startsWith(SNOMED_BASE_URI_STRING)) {
+		if (!uriString.startsWith(SNOMED_BASE_URI_STRING)) {
 			throw new BadRequestException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI_STRING), parameterName);
 		}
 		
@@ -242,6 +253,13 @@ public class SnomedUri {
 	
 	public String getVersionTag() {
 		return versionTag;
+	}
+	
+	/**
+	 * @return the queryPart
+	 */
+	public QueryPart getQueryPart() {
+		return queryPart;
 	}
 	
 	/**

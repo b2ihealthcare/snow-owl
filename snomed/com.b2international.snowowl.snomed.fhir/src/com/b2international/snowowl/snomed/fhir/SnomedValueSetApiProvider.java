@@ -23,6 +23,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
@@ -191,6 +193,25 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.findFirst()
 				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
 		}
+	}
+	
+	//url=http://snomed.info/sct?fhir_vs=isa/SCT_ID for SNOMED CT
+	@Override
+	public ValueSet expandValueSet(String uriString) {
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "$expand.url");
+		
+		System.out.println("Query part: " + snomedUri.getQueryPart());
+		//validateVersion(snomedUri, lookup.getVersion());
+		
+		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		String branchPath = codeSystemVersion.getPath();
+		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
+		
+		
+		
+		return null; //TODO
+		
 	}
 	
 	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {

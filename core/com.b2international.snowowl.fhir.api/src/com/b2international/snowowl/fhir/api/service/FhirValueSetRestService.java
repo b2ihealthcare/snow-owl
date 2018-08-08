@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.api.service;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -147,7 +148,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
 	public ValueSet expand(
@@ -157,6 +158,28 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
 		ValueSet valueSet = valueSetProvider.expandValueSet(logicalId);
+		return valueSet;
+	}
+	
+	/**
+	 * HTTP Get request to expand a value set specified by its URL
+	 * @param url
+	 * @return expanded {@link ValueSet}
+	 */
+	@ApiOperation(
+			value="Expand a value set",
+			notes="Expand a value set specified by its url.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$expand", method=RequestMethod.GET)
+	public ValueSet expandByURL(
+			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url) {
+		
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
+		ValueSet valueSet = valueSetProvider.expandValueSet(url);
 		return valueSet;
 	}
 	

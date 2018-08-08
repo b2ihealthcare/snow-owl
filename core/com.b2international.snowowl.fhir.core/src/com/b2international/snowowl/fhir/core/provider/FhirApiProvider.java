@@ -24,11 +24,14 @@ import java.util.stream.Collectors;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Lists;
 
@@ -74,6 +77,37 @@ public abstract class FhirApiProvider {
 			
 			//no version supplied, no version found in the repository, we should probably throw an exception, but for now returning MAIN
 			return Branch.MAIN_PATH;
+		}
+	}
+	
+	/**
+	 * Returns a code system version that matches the provided effective date
+	 * @param versionEffectiveDate
+	 * @return code system version with the effective date
+	 */
+	protected CodeSystemVersionEntry getCodeSystemVersion(String versionEffectiveDate) {
+		
+		if (versionEffectiveDate == null) {
+			//get the last version
+			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByCodeSystemShortName(getCodeSystemShortName())
+				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first()
+				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'",getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
+		} else {
+			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
+				.filterByCodeSystemShortName(getCodeSystemShortName())
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first()
+				.orElseThrow(() -> new BadRequestException(String.format("Could not find code system for %s version '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
 		}
 	}
 	
@@ -138,7 +172,5 @@ public abstract class FhirApiProvider {
 	    		.findFirst()
 	    		.orElse(null);
 	}
-	
-	
 
 }

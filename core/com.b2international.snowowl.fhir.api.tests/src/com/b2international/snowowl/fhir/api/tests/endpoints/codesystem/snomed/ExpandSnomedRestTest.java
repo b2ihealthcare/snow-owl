@@ -48,8 +48,25 @@ public class ExpandSnomedRestTest extends FhirTest {
 		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
-	//expand simple type reference set
 	@Test
+	public void implicitSnomedTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		.param("url", "http://snomed.info/sct?fhir_vs=isa/50697003") 
+		.when().get("/ValueSet/$expand")
+		.then()
+		.body("resourceType", equalTo("ValueSet"))
+		.body("id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
+		.body("language", equalTo("en-us"))
+		.body("version", equalTo("2018-01-31"))
+		.body("status", equalTo("active"))
+		.body("expansion.total", notNullValue())
+		.body("expansion.timestamp", notNullValue())
+		.body("expansion.contains.code", hasItem("362460007"))
+		.statusCode(200);
+	}
+	
+	//expand simple type reference set
+	//@Test
 	public void simpleTypeRefsetTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -68,7 +85,7 @@ public class ExpandSnomedRestTest extends FhirTest {
 	}
 	
 	//Expand Query type reference set member into a 'virtual' code system
-	@Test
+	//@Test
 	public void queryTypeRefsetTest() throws Exception {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
