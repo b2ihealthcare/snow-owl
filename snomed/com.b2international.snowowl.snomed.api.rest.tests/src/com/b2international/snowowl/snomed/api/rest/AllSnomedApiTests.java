@@ -72,6 +72,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Branch API tests
 	SnomedBranchRequestTest.class,
 	BranchCompareRequestTest.class,
+	SnomedCompareRestRequestTest.class,
 	SnomedBranchingApiTest.class,
 	// Component API test cases
 	SnomedIdentifierApiTest.class,
