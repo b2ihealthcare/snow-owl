@@ -52,16 +52,16 @@ public class SnowowlSecurityConfig extends WebSecurityConfigurerAdapter {
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
+			.csrf().disable()
 			.authorizeRequests()
-				.antMatchers("/api-docs/**").authenticated()
-				.antMatchers("/static/**").authenticated()
-				.antMatchers("/").authenticated()
-				.antMatchers("/**").hasAuthority("ROLE_USER")
+				.antMatchers("/", "/static/**", "/api-docs")
+				.permitAll()
 			.and()
-			.httpBasic()
+			.authorizeRequests()
+				.antMatchers("/**")
+				.hasAuthority("ROLE_USER")
 			.and()
-			.csrf()
-				.disable();
+				.httpBasic();
 	}
 	
 	@Override
