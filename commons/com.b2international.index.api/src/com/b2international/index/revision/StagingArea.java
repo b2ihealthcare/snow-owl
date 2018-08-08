@@ -661,6 +661,7 @@ public final class StagingArea {
 				for (Revision objectToUpdate : objectsToUpdate) {
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
 					stagedChanges = true;
+					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
 		}
