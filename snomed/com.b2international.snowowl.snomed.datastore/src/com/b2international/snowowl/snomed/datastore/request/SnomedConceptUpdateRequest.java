@@ -378,27 +378,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		}
 		
 		updatedConcept.active(false);
-		
-		// Run the basic inactivation plan without settings the inactivation reason or a historical association target; those will be handled separately
-//		final SnomedEditingContext editingContext = context.service(SnomedEditingContext.class);
-//		final SnomedInactivationPlan inactivationPlan = editingContext.inactivateConcept(new NullProgressMonitor(), concept.getId());
-//		inactivationPlan.performInactivation(InactivationReason.RETIRED, null);
-		
-		// TODO support description concept non current indicator updates
-//		// The inactivation plan places new inactivation reason members on descriptions, even if one is already present. Fix this by running the update on the descriptions again.
-//		for (final SnomedDescription description : concept.getDescriptions()) {
-//			// Add "Concept non-current" reason to active descriptions
-//			if (description.isActive()) {
-//				SnomedInactivationReasonUpdateRequest descriptionUpdateRequest = new SnomedInactivationReasonUpdateRequest(
-//						description.getId(), 
-//						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
-//						description.getModuleId());
-//				
-//				// XXX: The only other inactivation reason an active description can have is "Pending move"; not sure what the implications are
-//				descriptionUpdateRequest.setInactivationValueId(DescriptionInactivationIndicator.CONCEPT_NON_CURRENT.getConceptId());
-//				descriptionUpdateRequest.execute(context);
-//			}
-//		}
 	}
 
 	private void reactivateConcept(final TransactionContext context, final SnomedConceptDocument concept, final SnomedConceptDocument.Builder updatedConcept) {
@@ -408,7 +387,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 		updatedConcept.active(true);
 		
-		// TODO support description reactivation in concept update
 //		for (final SnomedDescription description : concept.getDescriptions()) {
 //			// Remove "Concept non-current" reason from active descriptions by changing to "no reason given"
 //			if (description.isActive()) {

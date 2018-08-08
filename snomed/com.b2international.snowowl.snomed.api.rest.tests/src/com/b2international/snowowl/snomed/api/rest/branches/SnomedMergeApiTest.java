@@ -282,6 +282,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.body("active", equalTo(true))
 		.body("descriptions.items[0].active", equalTo(true))
 		.body("descriptions.items[1].active", equalTo(true))
+		// TODO check removal of CONCEPT_NON_CURRENT
 		.body("relationships.items[0].active", equalTo(true));
 	}
 

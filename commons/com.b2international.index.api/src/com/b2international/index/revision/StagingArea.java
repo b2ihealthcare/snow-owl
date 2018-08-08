@@ -280,7 +280,12 @@ public final class StagingArea {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from = change.get("fromValue").asText();
 			final String to = change.get("value").asText();
-			details.add(CommitDetail.changedProperty(prop, from, to, objects.iterator().next().type(), objects.stream().map(ObjectId::id).collect(Collectors.toSet())));
+			Multimap<String, String> objectIdsByType = HashMultimap.create();
+			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
+			// split by object type
+			objectIdsByType.keySet().forEach(type -> {
+				details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
+			});
 		});
 
 		final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
