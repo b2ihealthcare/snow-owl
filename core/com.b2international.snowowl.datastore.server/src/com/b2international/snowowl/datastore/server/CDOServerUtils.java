@@ -213,7 +213,6 @@ public abstract class CDOServerUtils {
 				
 				session = CDOUtils.openSession(commitInfo.getUserID(), repositoryUuid);
 				
-//				final CDOCommitInfo delegateCommitInfo = CDOCommitInfoUtils.removeUuidFromComment(commitInfo);
 				repository.sendCommitNotification(session, commitInfo);
 				
 			} finally {
@@ -457,22 +456,18 @@ public abstract class CDOServerUtils {
 		
 		try {
 			
-			IDBStoreAccessor accessor = ACCESSOR_CACHE.get(uuid);
-			
-			synchronized (accessor) {
-				Connection connection = accessor.getConnection();
-				connection.rollback();
+			IDBStoreAccessor accessor = getActiveAccessor(uuid, branch.getName());
 		
-				try (PreparedStatement statement = connection.prepareStatement("SELECT MAX(COMMIT_TIME) FROM CDO_COMMIT_INFOS WHERE BRANCH_ID=?")) {
-					statement.setInt(1, branch.getID());
-					ResultSet resultSet = statement.executeQuery();
-					final long lastCommitTime = resultSet.next() ? resultSet.getLong(1) : Long.MIN_VALUE;
-					return getDbStoreByUuid(uuid).getCreationTime() > lastCommitTime ? Long.MIN_VALUE : lastCommitTime;
-				}
+			Connection connection = accessor.getConnection();
+			connection.rollback();
+	
+			try (PreparedStatement statement = connection.prepareStatement("SELECT MAX(COMMIT_TIME) FROM CDO_COMMIT_INFOS WHERE BRANCH_ID=?")) {
+				statement.setInt(1, branch.getID());
+				ResultSet resultSet = statement.executeQuery();
+				final long lastCommitTime = resultSet.next() ? resultSet.getLong(1) : Long.MIN_VALUE;
+				return getDbStoreByUuid(uuid).getCreationTime() > lastCommitTime ? Long.MIN_VALUE : lastCommitTime;
 			}
 			
-		} catch (final ExecutionException e) {
-			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
 		} catch (final SQLException e) {
 			throw new RuntimeException("Failed to get last commit time for branch: " + branch, e);
 		}
@@ -562,6 +557,22 @@ public abstract class CDOServerUtils {
 	/*returns true if the given list of revisions is null, empty or the only element is null. otherwise, false*/
 	private static boolean emptyOrNullRevision(final List<CDORevision> revisions) {
 		return CompareUtils.isEmpty(revisions) || null == Iterables.getOnlyElement(revisions, null);
+	}
+	
+	/*returns an IDBStoreAccessor that has a non null connection*/
+	private static IDBStoreAccessor getActiveAccessor(String uuid, String branchName) {
+		IDBStoreAccessor accessor = null;
+		synchronized (ACCESSOR_CACHE) {
+			do {
+				accessor = ACCESSOR_CACHE.getUnchecked(uuid);
+				Connection connection = accessor.getConnection();
+				if (null == connection) {
+					ACCESSOR_CACHE.invalidate(uuid);
+					accessor = null;
+				}
+			} while (accessor == null);
+		}
+		return accessor;
 	}
 	
 	private CDOServerUtils() {
