@@ -60,15 +60,12 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	private String repositoryUuid;
 	
 	private ImmutableMap<String, Object> createCompareRequest(IBranchPath base, IBranchPath compareBranch) {
-		return ImmutableMap.<String, Object>builder()
-				.put("base", base.toString())
-				.put("compareBranch", compareBranch.toString())
-				.build();
+		return createCompareRequest(base.toString(), compareBranch.toString());
 	}
 	
 	private ImmutableMap<String, Object> createCompareRequest(String base, String compareBranch) {
 		return ImmutableMap.<String, Object>builder()
-				.put("base", base)
+				.put("baseBranch", base)
 				.put("compareBranch", compareBranch)
 				.build();
 	}
