@@ -27,7 +27,7 @@
   <Listener className="org.apache.catalina.security.SecurityListener" />
 
   <Service name="Catalina">
-    <Connector address="127.0.0.1" port="8080" 
+    <Connector address="0.0.0.0" port="8080" 
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                asyncTimeout="60000"
                connectionTimeout="20000" enableLookups="false" redirectPort="8443" />
