@@ -25,7 +25,7 @@ import com.b2international.snowowl.fhir.core.exceptions.FhirException;
  * The logical Id follows the scheme: <i>repository:{branchPath}:{code}|{member}</i>
  * <br>
  * for example, snomedStore:MAIN/201101031/DK/20140203:59524001 //blood bank procedure
- * for reference set members, snomedStore:MAIN/201101031/DK/20140203|98403008:84f56f72-9f8b-423d-98b8-25961811393c //reference set member
+ * for reference set members, snomedStore:MAIN/201101031/DK/20140203:98403008|84f56f72-9f8b-423d-98b8-25961811393c //reference set member
  *  
  * @since 6.7
  */
