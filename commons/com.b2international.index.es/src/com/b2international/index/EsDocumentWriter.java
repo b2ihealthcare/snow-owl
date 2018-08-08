@@ -44,6 +44,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
@@ -301,8 +302,12 @@ public class EsDocumentWriter implements DocWriter {
 
 				final HttpEntity requestBody = new StringEntity(mapper.writeValueAsString(ubqr), ContentType.APPLICATION_JSON);
 				
-				final Response response = client.getLowLevelClient()
-					.performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
+				Response response;
+				try {
+					response = client.getLowLevelClient().performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
+				} catch (ResponseException e) {
+					response = e.getResponse();
+				}
 				
 				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#docs-update-by-query-response-body
 				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-delete-by-query.html#_response_body
@@ -339,7 +344,7 @@ public class EsDocumentWriter implements DocWriter {
 					boolean versionConflictsOnly = true;
 					
 					for (JsonNode failure : failures) {
-						final String failureMessage = failure.get("message").asText();
+						final String failureMessage = failure.get("cause").get("reason").asText();
 						final int failureStatus = failure.get("status").asInt();
 						
 						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
