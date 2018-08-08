@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.MultiRule;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
@@ -83,6 +84,7 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		} catch (ApiException e) {
 			merge.getAndUpdate(m -> m.failed(e.toApiError()));
 		} catch (RuntimeException e) {
+			repository.service(Logger.class).error(e.getMessage(), e);
 			merge.getAndUpdate(m -> m.failed(ApiError.Builder.of(e.getMessage()).build()));
 		}
 		
