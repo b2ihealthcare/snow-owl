@@ -15,30 +15,35 @@
  */
 package com.b2international.snowowl.snomed.reasoner;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
-import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
+import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
+import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.0
  */
-public final class SnomedReasonerBootstrap extends Plugin {
+@Component
+public final class SnomedReasonerBootstrap extends Plugin implements TerminologyRepositoryConfigurer {
 
 	@Override
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
-
-			final RepositoryManager repositoryManager = env.service(RepositoryManager.class);
-			final Repository repository = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID);
-			final Index repositoryIndex = repository.service(Index.class);
+			final Index repositoryIndex = env.service(RepositoryManager.class).get(getRepositoryId()).service(Index.class);
 			
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
@@ -48,4 +53,20 @@ public final class SnomedReasonerBootstrap extends Plugin {
 			env.services().registerService(ClassificationTracker.class, classificationTracker);
 		}
 	}
+	
+	@Override
+	public Collection<Class<?>> getAdditionalMappings() {
+		return ImmutableList.<Class<?>>of(
+			ClassificationTaskDocument.class,
+			EquivalentConceptSetDocument.class,
+			RelationshipChangeDocument.class,
+			ConcreteDomainChangeDocument.class
+		);
+	}
+	
+	@Override
+	public String getRepositoryId() {
+		return SnomedDatastoreActivator.REPOSITORY_UUID;
+	}
+	
 }

@@ -16,9 +16,12 @@
 package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
+import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
@@ -104,8 +107,18 @@ public final class RepositoryBuilder {
 	}
 	
 	public Repository build(Environment env) {
+		// get all repository configuration plugins and apply them to customize the repository
+		List<TerminologyRepositoryConfigurer> repositoryConfigurers = ClassPathScanner.INSTANCE.getComponentsByInterface(TerminologyRepositoryConfigurer.class)
+			.stream()
+			.filter(configurer -> repositoryId.equals(configurer.getRepositoryId()))
+			.collect(Collectors.toList());
+		
+		repositoryConfigurers
+			.forEach(configurer -> {
+				configurer.getAdditionalMappings().forEach(mappings::putMapping);
+			});
+		
 		final TerminologyRepository repository = new TerminologyRepository(repositoryId, toolingId, mergeMaxResults, env, mappings, log);
-		// TODO support additional service registration and terminology repository configuration via other plugins
 		repository.bind(VersioningRequestBuilder.class, versioningRequestBuilder);
 		repository.bind(ComponentDeletionPolicy.class, deletionPolicy);
 		repository.bind(ComponentRevisionConflictProcessor.class, componentRevisionConflictProcessor);

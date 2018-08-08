@@ -19,13 +19,10 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects.ToStringHelper;
@@ -54,7 +51,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	 * @since 4.7
 	 */
 	public static class Fields extends Revision.Fields {
-		public static final String STORAGE_KEY = "storageKey";
 		public static final String ICON_ID = "iconId";
 	}
 	
