@@ -72,6 +72,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setUserId("info@b2international.com")
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
+			.setCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
 			.execute(getBus())
 			.getSync();

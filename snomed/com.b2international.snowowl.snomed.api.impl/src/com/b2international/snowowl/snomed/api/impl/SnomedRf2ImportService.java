@@ -155,6 +155,7 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setRf2ArchiveId(importId)
 			.setCreateVersions(configuration.shouldCreateVersion())
 			.setReleaseType(releaseType)
+			.setCodeSystemShortName(configuration.getCodeSystemShortName())
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(getEventBus())
