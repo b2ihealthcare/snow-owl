@@ -2,7 +2,7 @@
 	<!-- Virgo archive base content -->
 	<fileSets>
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.0.M03
+			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.2.RELEASE
 			</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
@@ -21,7 +21,7 @@
 				<exclude>**/org.eclipse.virgo.web.properties</exclude>
 				<exclude>**/tomcat-server.xml</exclude>
 				<!-- Remove splash app -->
-				<exclude>**/org.eclipse.virgo.apps.splash_3.7.0.M03.jar
+				<exclude>**/org.eclipse.virgo.apps.splash_3.7.2.RELEASE.jar
 				</exclude>
 				<exclude>repository/ext/osgi.console.properties</exclude>
 			</excludes>
@@ -39,7 +39,7 @@
 		</fileSet>
 		<!-- Copy *.sh files from Virgo default folder, except dmk.sh and startup.sh -->
 		<fileSet>
-			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.0.M03
+			<directory>${project.basedir}/target/virgo-tomcat-server-3.7.2.RELEASE
 			</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
