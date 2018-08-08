@@ -398,13 +398,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public void close() {
-		try {
-			client().close();
-		} catch (IOException e) {
-			log.error("Caught exception while closing high-level REST client.", e);
-		}
-	}
+	public void close() {}
 
 	@Override
 	public void optimize(int maxSegments) {
