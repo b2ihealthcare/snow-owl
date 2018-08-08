@@ -160,12 +160,14 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		if (!logicalId.isMemberId()) {
 			
+			int all = Integer.MAX_VALUE;
+			
 			return SnomedRequests.prepareSearchRefSet()
 				.filterById(logicalId.getComponentId())
 				.filterByActive(true)
 				.filterByType(SnomedRefSetType.SIMPLE)
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-				.setExpand("members(expand(referencedComponent(expand(pt()))))")
+				.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
 				.build(repositoryId, logicalId.getBranchPath())
 				.execute(getBus())
 				.then(refsets -> {
@@ -180,7 +182,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
 		} 
 		else {
-			
+			//Query type reference set member
 			return SnomedRequests.prepareSearchMember()
 				.one()
 				.filterById(logicalId.getMemberId())
@@ -299,20 +301,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.expansion(expansionBuilder.build());
 	}
 
-	private CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
-		
-		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
-			.build(repositoryId)
-			.execute(getBus())
-			.getSync()
-			.first();
-			
-		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for value set id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
-	}
-	
 	//Collect every version on every extension
 	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersionEntry> codeSystemVersionList) {
 		
@@ -348,12 +336,12 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
 		
 			return SnomedRequests.prepareSearchMember()
+				.all()
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.QUERY))
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 				.setExpand("referencedComponent(expand(pt()))")
-				.all()
 				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(members -> {
@@ -466,6 +454,20 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.name(refsetConcept.getPt().getTerm())
 			.title(refsetConcept.getPt().getTerm())
 			.addCompose(compose);
+	}
+	
+	private CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
+		
+		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByBranchPath(logicalId.getBranchPath())
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync()
+			.first();
+			
+		return codeSystemOptional.orElseThrow(() -> 
+			new BadRequestException(String.format("Could not find corresponding version [%s] for value set id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
 	}
 	
 	@Override
