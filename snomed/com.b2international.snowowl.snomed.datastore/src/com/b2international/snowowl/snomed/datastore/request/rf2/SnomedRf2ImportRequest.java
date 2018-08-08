@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
@@ -56,6 +57,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Cont
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -63,6 +65,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -77,6 +80,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	
 	@NotNull
 	private Rf2ReleaseType type;
+	
+	@NotEmpty
+	private String codeSystemShortName;
 
 	@NotEmpty
 	private String userId;
@@ -89,6 +95,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	
 	void setReleaseType(Rf2ReleaseType type) {
 		this.type = type;
+	}
+	
+	void setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
 	}
 	
 	void setCreateVersions(boolean createVersions) {
@@ -106,10 +116,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
 		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
-
+		final Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(userId, createVersions, rf2Archive, codeSystemShortName, type);
 		try {
 			features.enable(feature);
-			doImport(userId, context, rf2Archive);
+			doImport(importConfig, context);
 			return Boolean.TRUE;
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
@@ -118,12 +128,11 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 	}
 
-	void doImport(final String userId, final BranchContext context, final File rf2Archive) throws Exception {
+	void doImport(final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
 		try (final DB db = createDb()) {
 			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
 			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
 			
-			// TODO in case of FULL or SNAPSHOT import load all component storage key pairs into the above Maps, so we can avoid loading them during tx commit
 			if (!isLoadOnDemandEnabled()) {
 				Stopwatch w = Stopwatch.createStarted();
 				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
@@ -162,12 +171,12 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(rf2Archive, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
+			read(importconfig.getRf2Archive(), effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
 			System.err.println("Preparing RF2 import took: " + w);
 			w.reset().start();
 
 			for (Rf2EffectiveTimeSlice slice : effectiveTimeSlices.consumeInOrder()) {
-				slice.doImport(userId, context, createVersions);
+				slice.doImport(importconfig, context);
 			}
 		}
 	}
@@ -175,7 +184,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	private boolean isLoadOnDemandEnabled() {
 		return Rf2ReleaseType.DELTA == type;
 	}
-
+	
 	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
@@ -228,7 +237,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				
 				header = false;
 			} else {
-				resolver.register(line, effectiveTimeSlices.getOrCreate(/*effectiveTime*/ line[1]));
+				final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
+				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime));
 			}
 
 		}

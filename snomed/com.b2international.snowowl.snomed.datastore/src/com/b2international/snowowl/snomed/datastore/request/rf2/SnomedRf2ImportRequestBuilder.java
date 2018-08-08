@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public final class SnomedRf2ImportRequestBuilder
 	private String userId;
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType;
+	private String codeSystemShortName;
 	private boolean createVersions;
 	
 	SnomedRf2ImportRequestBuilder() {
@@ -53,6 +54,11 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+		return getSelf();
+	}
+	
 	public SnomedRf2ImportRequestBuilder setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
 		return getSelf();
@@ -64,6 +70,7 @@ public final class SnomedRf2ImportRequestBuilder
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
 		req.setUserId(userId);
+		req.setCodeSystemShortName(codeSystemShortName);
 		return req;
 	}
 

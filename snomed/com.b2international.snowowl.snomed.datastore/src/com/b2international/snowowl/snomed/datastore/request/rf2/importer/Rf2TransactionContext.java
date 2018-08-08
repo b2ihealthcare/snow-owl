@@ -312,13 +312,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				} else if (existingObject instanceof Component && rf2Component instanceof SnomedCoreComponent) {
 					final SnomedCoreComponent rf2Row = (SnomedCoreComponent) rf2Component;
 					final Component existingRow = (Component) existingObject;
-					if (rf2Row.getEffectiveTime().after(existingRow.getEffectiveTime())) {
+					if (rf2Row.getEffectiveTime() == null || rf2Row.getEffectiveTime().after(existingRow.getEffectiveTime())) {
 						componentsToImport.add(rf2Component);
 					}
 				} else if (existingObject instanceof SnomedRefSetMember && rf2Component instanceof SnomedReferenceSetMember) {
 					final SnomedReferenceSetMember rf2Row = (SnomedReferenceSetMember) rf2Component;
 					final SnomedRefSetMember existingRow = (SnomedRefSetMember) existingObject;
-					if (rf2Row.getEffectiveTime().after(existingRow.getEffectiveTime())) {
+					if (rf2Row.getEffectiveTime() == null || rf2Row.getEffectiveTime().after(existingRow.getEffectiveTime())) {
 						componentsToImport.add(rf2Component);
 					}
 				}
@@ -339,8 +339,9 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 					throw new UnsupportedOperationException("Unsupported component: " + rf2Component);
 				}
 				builder.init(existingObject, this);
-				if (builder instanceof SnomedMemberBuilder) {
-					((SnomedMemberBuilder) builder).addTo(this);
+				if (newComponents.containsKey(rf2Component.getId()) && builder instanceof SnomedMemberBuilder) {
+					final SnomedRefSetMember existingMember = (SnomedRefSetMember) existingObject;
+					((SnomedMemberBuilder) builder).addTo(existingMember, this);
 				}
 			}
 		}

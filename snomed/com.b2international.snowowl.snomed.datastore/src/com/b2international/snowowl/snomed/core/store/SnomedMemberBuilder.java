@@ -62,9 +62,13 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	
 	public final T addTo(TransactionContext context) {
 		final T component = build(context);
+		return addTo(component, context);
+	}
+	
+	public final T addTo(T existingObject, TransactionContext context) {
 		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
-		addToList(context, refSet, component);
-		return component;
+		addToList(context, refSet, existingObject);
+		return existingObject;
 	}
 	
 	protected void addToList(TransactionContext context, SnomedRefSet refSet, T component) {

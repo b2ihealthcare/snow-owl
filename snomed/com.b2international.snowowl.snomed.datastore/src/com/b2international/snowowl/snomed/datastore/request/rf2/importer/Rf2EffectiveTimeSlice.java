@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.cdo.CDOObject;
+import org.eclipse.emf.cdo.util.CommitException;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
@@ -38,20 +39,23 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
+import com.b2international.snowowl.datastore.BranchPathUtils;
+import com.b2international.snowowl.datastore.cdo.CDOServerCommitBuilder;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
@@ -83,8 +87,14 @@ public final class Rf2EffectiveTimeSlice {
 	private final boolean loadOnDemand;
 	
 	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, boolean loadOnDemand) {
-		this.effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
-		this.effectiveTime = EffectiveTimes.format(effectiveDate, DateFormats.DEFAULT);
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime)) {
+			this.effectiveDate = null;
+			this.effectiveTime = effectiveTime;
+		} else {
+			this.effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
+			this.effectiveTime = EffectiveTimes.format(effectiveDate, DateFormats.DEFAULT);
+		}
+		
 		this.storageKeysByComponent = storageKeysByComponent;
 		this.storageKeysByRefSet = storageKeysByRefSet;
 		this.componentsById = db.hashMap(effectiveTime, Serializer.STRING, Serializer.ELSA).create();
@@ -156,10 +166,15 @@ public final class Rf2EffectiveTimeSlice {
 	private List<LongSet> getImportPlan() {
 		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
-
-	public void doImport(String userId, BranchContext context, boolean createVersions) throws Exception {
-		Stopwatch w = Stopwatch.createStarted();
-		System.err.println("Importing components from " + effectiveTime);
+	
+	public void doImport(Rf2ImportConfiguration importConfig, BranchContext context) throws Exception {
+		final Stopwatch w = Stopwatch.createStarted();
+		final String logMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", effectiveTime);
+		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
+		final boolean createVersions = importConfig.isCreateVersions();
+		final String userId = importConfig.getUserId();
+		
+		System.err.println(logMessage);
 		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
@@ -187,7 +202,7 @@ public final class Rf2EffectiveTimeSlice {
 				
 				tx.add(componentsToImport, getDependencies(componentsToImport));
 				
-				if (createVersions && !importPlan.hasNext()) {
+				if (!isUnpublishedSlice() && createVersions && !importPlan.hasNext()) {
 					final CodeSystemVersion version = new CodeSystemVersionBuilder()
 							.withDescription("")
 							.withEffectiveDate(effectiveDate)
@@ -195,15 +210,16 @@ public final class Rf2EffectiveTimeSlice {
 							.withParentBranchPath(context.branch().path())
 							.withVersionId(effectiveTime)
 							.build();
-					tx.lookup(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, CodeSystem.class).getCodeSystemVersions().add(version);
+					createNewVersion(version, importConfig.getCodeSystemShortName(), context, userId);
+					
 				}
 				
 				// TODO consider moving preCommit into commit method
 				tx.preCommit();
-				tx.commit(userId, "Imported components from " + effectiveTime, DatastoreLockContextDescriptions.ROOT);
+				tx.commit(userId, commitMessage, DatastoreLockContextDescriptions.ROOT);
 			}
 			
-			if (createVersions) {
+			if (!isUnpublishedSlice() && createVersions) {
 				// purge index
 //				PurgeRequest.builder()
 //					.setBranchPath(context.branch().path())
@@ -221,7 +237,30 @@ public final class Rf2EffectiveTimeSlice {
 					.execute(context);
 			}
 		}
-		System.err.println("Imported components from " + effectiveTime + " in " + w);
+		System.err.println(commitMessage + " in " + w);
+	}
+	
+	private void createNewVersion(CodeSystemVersion versionToCreate, String codeSystemShortName, BranchContext context, String userId) {
+		final String parentBranch = context.branch().path();
+		final String commitMessage = String.format("Created SNOMED CT version %s for branch '%s'", effectiveTime, parentBranch);
+		
+		try (final SnomedEditingContext codeSystemEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
+			codeSystemEditingContext.lookup(codeSystemShortName, CodeSystem.class).getCodeSystemVersions().add(versionToCreate);
+			if (codeSystemEditingContext.isDirty()) {
+				System.err.println(commitMessage);
+
+				new CDOServerCommitBuilder(userId, commitMessage, codeSystemEditingContext.getTransaction())
+						.sendCommitNotification(false)
+						.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
+						.commit();
+			}
+		} catch (CommitException e) {
+			throw new SnowowlRuntimeException(String.format("Unable to commit SNOMED CT version %s for branch '%s'", effectiveTime, versionToCreate));
+		}
+	}
+	
+	private boolean isUnpublishedSlice() {
+		return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime);
 	}
 
 	private Multimap<Class<? extends CDOObject>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {

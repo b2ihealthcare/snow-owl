@@ -22,6 +22,7 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.google.common.base.Strings;
 
 /**
  * @param <T>
@@ -40,10 +41,17 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 
 	default T resolve(String[] values) {
 		final T component = create();
-		component.setId(values[0]);
-		component.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
-		component.setActive(BooleanUtils.valueOf(values[2]));
-		component.setModuleId(values[3]);
+		final String componentId = values[0];
+		final String effectiveTime = values[1];
+		final boolean isActive = BooleanUtils.valueOf(values[2]);
+		final String moduleId = values[3];
+		
+		component.setId(componentId);
+		if (!Strings.isNullOrEmpty(effectiveTime)) {
+			component.setEffectiveTime(EffectiveTimes.parse(values[1], DateFormats.SHORT));
+		}
+		component.setActive(isActive);
+		component.setModuleId(moduleId);
 		resolve(component, values);
 		return component;
 	}
