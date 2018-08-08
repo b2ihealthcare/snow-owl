@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.api.rest.branches;
 
 import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
-import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.getBranchChildren;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
@@ -36,9 +35,6 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.ina
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -47,10 +43,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
 import org.junit.Test;
 
-import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -63,8 +57,8 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
@@ -76,11 +70,6 @@ import com.google.common.collect.Iterables;
  * @since 4.7
  */
 public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
-
-	@After
-	public void noTempBranchVisibleAfter() {
-		getBranchChildren(branchPath).statusCode(200).body("items.name", not(hasItem(startsWith(RevisionBranch.TEMP_PREFIX))));
-	}
 
 	@Test
 	public void changedInSourceAndTargetMergeConflict() {
