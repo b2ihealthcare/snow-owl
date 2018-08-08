@@ -20,20 +20,37 @@ import static com.google.common.base.Preconditions.checkState;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.org.apache.lucene.Activator;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * @since 6.6
  */
 public final class EsClient {
 
+	private static final Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
+	
+	private static final LoadingCache<HttpHost, RestHighLevelClient> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
+			.build(new CacheLoader<HttpHost, RestHighLevelClient>() {
+				@Override
+				public RestHighLevelClient load(HttpHost host) throws Exception {
+					return Activator.withTccl(() -> {
+						final RestHighLevelClient esClient = new RestHighLevelClient(RestClient.builder(host));
+						checkState(esClient.ping(), "The cluster at '%s' is not available.", host.toURI());
+						LOG.info("ES REST client is connecting to '{}'.", host.toURI());
+						return esClient;
+					});
+				}
+				
+			});
+	
 	public static final RestHighLevelClient create(final HttpHost host) {
-		// XXX: Adjust the thread context classloader while ES client is initializing 
-		return Activator.withTccl(() -> {
-			final RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(host));
-			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
-			return client;
-		}); 
+		return CLIENTS_BY_HOST.getUnchecked(host);
 	}
+	
 }
