@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
-import org.eclipse.osgi.framework.console.CommandProvider;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.console.Command;
+import com.b2international.snowowl.core.console.CommandLineAuthenticator;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.PermissionIdConstant;
@@ -39,11 +40,11 @@ import com.b2international.snowowl.identity.request.UserRequests;
 import com.google.common.collect.Sets;
 
 /**
- * OSGi command provider for MRCM import and export.
+ * @since 
  */
-public class MrcmCommandProvider implements CommandProvider {
+public final class MrcmCommand extends Command {
 
-	private String exportFormatsString = StringUtils.toString(Sets.newHashSet(MrcmExportFormat.values()));
+private String exportFormatsString = StringUtils.toString(Sets.newHashSet(MrcmExportFormat.values()));
 	
 	public void _mrcm(final CommandInterpreter interpreter) {
 		
@@ -166,12 +167,24 @@ public class MrcmCommandProvider implements CommandProvider {
 	}
 
 	@Override
-	public String getHelp() {
-		return new StringBuilder("--- MRCM commands ---\n")
-		.append("\tmrcm import [importFileAbsolutePath] - Imports the MRCM rules from the given XMI source file.\n")
-		.append("\tmrcm export ")
-		.append(exportFormatsString)
-		.append(" [destinationDirectoryPath] - Exports the MRCM rules in the given format to the destination folder.\n").toString();
+	public void run(CommandInterpreter interpreter) {
+		
 	}
 
+	@Override
+	public String getCommand() {
+		return "mrcm [import|export] <path>";
+	}
+
+	@Override
+	public String getDescription() {
+		return "";
+//		.append("\tmrcm import [importFileAbsolutePath] - Imports the MRCM rules from the given XMI source file.\n")
+//		.append("\tmrcm export ")
+//		.append(exportFormatsString)
+//		.append(" [destinationDirectoryPath] - Exports the MRCM rules in the given format to the destination folder.\n").toString()
+	}
+
+	
+	
 }

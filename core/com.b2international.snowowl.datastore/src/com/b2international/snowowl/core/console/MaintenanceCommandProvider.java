@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.server.console;
+package com.b2international.snowowl.core.console;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Lists.newArrayList;
@@ -70,13 +70,11 @@ public class MaintenanceCommandProvider implements CommandProvider {
 	private static final String DEFAULT_INDENT = "   ";
 	private static final String LISTBRANCHES_COMMAND = "listbranches";
 	private static final String REPOSITORIES_COMMAND = "repositories";
-	private static final String VERSION_COMMAND = "--version";
 	
 	@Override
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl commands---\n");
-		buffer.append("\tsnowowl --version - returns the current version\n");
 		buffer.append("\tsnowowl listrepositories - prints all the repositories in the system. \n");
 		buffer.append("\tsnowowl listbranches [repository] [branchPath] - prints all the child branches of the specified branch path in the system for a repository. Branch path is MAIN by default and has to be full path (e.g. MAIN/PROJECT/TASK)\n");
 		buffer.append("\tsnowowl reindex [repositoryId] [failedCommitTimestamp] - reindexes the content for the given repository ID from the given failed commit timestamp (optional, default timestamp is 1 which means no failed commit).\n");
@@ -89,62 +87,62 @@ public class MaintenanceCommandProvider implements CommandProvider {
 		return buffer.toString();
 	}
 
-	/**
-	 * Reflective template method declaratively registered. Needs to start with
-	 * "_".
-	 * 
-	 * @param interpreter
-	 * @throws InterruptedException
-	 */
-	public void _snowowl(CommandInterpreter interpreter) throws InterruptedException {
-		String cmd = interpreter.nextArgument();
-		try {
-			if (LISTBRANCHES_COMMAND.equals(cmd)) {
-				listBranches(interpreter);
-				return;
-			}
-			
-			if (REPOSITORIES_COMMAND.equals(cmd)) {
-				repositories(interpreter);
-				return;
-			}
-			
-			if (VERSION_COMMAND.equals(cmd)) {
-				String version = RepositoryRequests.prepareGetServerInfo().buildAsync().execute(getBus()).getSync().version();
-				interpreter.println(version);
-				return;
-			}
-
-			if ("reindex".equals(cmd)) {
-				reindex(interpreter);
-				return;
-			}
-			
-			if ("optimize".equals(cmd)) {
-				optimize(interpreter);
-				return; 
-			}
-			
-			if ("purge".equals(cmd)) {
-				purge(interpreter);
-				return;
-			}
-			
-			if ("migrate".equals(cmd)) {
-				migrate(interpreter);
-				return;
-			}
-			
-			interpreter.println(getHelp());
-		} catch (Exception ex) {
-			LoggerFactory.getLogger("console").error("Failed to execute command", ex);
-			if (Strings.isNullOrEmpty(ex.getMessage())) {
-				interpreter.println("Something went wrong during the processing of your request.");
-			} else {
-				interpreter.println(ex.getMessage());
-			}
-		}
-	}
+//	/**
+//	 * Reflective template method declaratively registered. Needs to start with
+//	 * "_".
+//	 * 
+//	 * @param interpreter
+//	 * @throws InterruptedException
+//	 */
+//	public void _snowowl(CommandInterpreter interpreter) throws InterruptedException {
+//		String cmd = interpreter.nextArgument();
+//		try {
+//			if (LISTBRANCHES_COMMAND.equals(cmd)) {
+//				listBranches(interpreter);
+//				return;
+//			}
+//			
+//			if (REPOSITORIES_COMMAND.equals(cmd)) {
+//				repositories(interpreter);
+//				return;
+//			}
+//			
+//			if (VERSION_COMMAND.equals(cmd)) {
+//				String version = RepositoryRequests.prepareGetServerInfo().buildAsync().execute(getBus()).getSync().version();
+//				interpreter.println(version);
+//				return;
+//			}
+//
+//			if ("reindex".equals(cmd)) {
+//				reindex(interpreter);
+//				return;
+//			}
+//			
+//			if ("optimize".equals(cmd)) {
+//				optimize(interpreter);
+//				return; 
+//			}
+//			
+//			if ("purge".equals(cmd)) {
+//				purge(interpreter);
+//				return;
+//			}
+//			
+//			if ("migrate".equals(cmd)) {
+//				migrate(interpreter);
+//				return;
+//			}
+//			
+//			interpreter.println(getHelp());
+//		} catch (Exception ex) {
+//			LoggerFactory.getLogger("console").error("Failed to execute command", ex);
+//			if (Strings.isNullOrEmpty(ex.getMessage())) {
+//				interpreter.println("Something went wrong during the processing of your request.");
+//			} else {
+//				interpreter.println(ex.getMessage());
+//			}
+//		}
+//	}
 
 	private static final String COLUMN_FORMAT = "|%-16s|%-16s|%-16s|";
 	
