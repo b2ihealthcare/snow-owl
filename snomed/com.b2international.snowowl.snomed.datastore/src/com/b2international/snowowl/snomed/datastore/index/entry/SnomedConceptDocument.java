@@ -104,7 +104,8 @@ import com.google.common.collect.ImmutableMap;
 @RevisionHash({ 
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.MODULE_ID,
+	SnomedDocument.Fields.RELEASED,
 	SnomedConceptDocument.Fields.PRIMITIVE,
 	SnomedConceptDocument.Fields.EXHAUSTIVE
 })

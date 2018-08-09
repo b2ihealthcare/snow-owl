@@ -75,6 +75,7 @@ import com.google.common.collect.ImmutableMap;
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
 	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.RELEASED,
 	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
 	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
 	SnomedRefSetMemberIndexEntry.Fields.ATTRIBUTE_NAME,

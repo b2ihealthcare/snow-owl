@@ -72,6 +72,7 @@ import com.google.common.collect.Maps;
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
 	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.RELEASED,
 	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
 	SnomedDescriptionIndexEntry.Fields.TERM,
 	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
