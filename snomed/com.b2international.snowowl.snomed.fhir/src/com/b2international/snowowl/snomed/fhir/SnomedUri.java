@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -31,6 +29,10 @@ import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
  * Snomed CT URI representation
  * 
  * @see <a href="https://confluence.ihtsdotools.org/display/DOCURI">SNOMED CT URI specification</a>
+ * 
+ * <br>The URI can also contain a query part as described:
+ * @see <a href="https://www.hl7.org/fhir/snomedct.html">Using SNOMED CT with FHIR</a> 
+ * 
  * @since 6.7
  */
 public class SnomedUri {
@@ -201,43 +203,49 @@ public class SnomedUri {
 		
 		Builder builder = builder();
 		
-		Path uriPath = Paths.get(uriString);
-		
 		if (!uriString.startsWith(SNOMED_BASE_URI_STRING)) {
 			throw new BadRequestException(String.format("URI '%s' is not a valid SNOMED CT URI. It should start as '%s'.", uriString, SNOMED_BASE_URI_STRING), parameterName);
 		}
 		
-		Path relativeUri = Paths.get(SNOMED_BASE_URI_STRING).relativize(uriPath);
+		String extensionString = uriString.replaceFirst(SNOMED_BASE_URI_STRING, "");
 		
-		Iterator<Path> pathIterator = relativeUri.iterator();
-	
+		//remove the query part if any
+		if (extensionString.contains("?")) {
+			String queryPartString = extensionString.substring(extensionString.indexOf("?"), extensionString.length());
+			
+			parseQueryPart(builder, queryPartString, parameterName);
+			extensionString = extensionString.replace(queryPartString, "");
+			
+		}
+		StringTokenizer tokenizer = new StringTokenizer(extensionString, "/");
+		
 		//this should not happen
-		if (!pathIterator.hasNext()) return builder.build();
+		if (!tokenizer.hasMoreTokens()) return builder.build();
 		
 		//extension
-		String pathSegment = pathIterator.next().toString();
+		String pathSegment = tokenizer.nextToken();
 			
 		//No extension or version definition provided - SNOMED CT INT Edition
 		if (StringUtils.isEmpty(pathSegment)) return builder.build();
 		
-		if (!SnomedIdentifiers.isValid(pathSegment.toString())) {
+		if (!SnomedIdentifiers.isValid(pathSegment)) {
 			throw new BadRequestException(String.format("Invalid extension module ID [%s] defined.", pathSegment), parameterName);
 		} else {
 			builder.extensionModuleId(pathSegment);
 		}
 		
 		//version parameter
-		if (!pathIterator.hasNext()) return builder.build();
-		String versionParameterKeySegment = pathIterator.next().toString();
+		if (!tokenizer.hasMoreTokens()) return builder.build();
+		String versionParameterKeySegment = tokenizer.nextToken();
 		if (!VERSION_PATH_SEGMENT.equals(versionParameterKeySegment)) {
 			throw new BadRequestException(String.format("Invalid path segment [%s], 'version' expected.", versionParameterKeySegment), parameterName);
 		}
 		
 		//Version tag
-		if (!pathIterator.hasNext()) {
+		if (!tokenizer.hasMoreTokens()) {
 			throw new BadRequestException(String.format("No version tag is specified after the 'version' parameter."), parameterName);
 		}
-		String versionTag = pathIterator.next().toString();
+		String versionTag = tokenizer.nextToken();
 		//to validate
 		try {
 			EffectiveTimes.parse(versionTag, DateFormats.SHORT);
@@ -247,6 +255,55 @@ public class SnomedUri {
 		return builder.version(versionTag).build();
 	}
 	
+	private static void parseQueryPart(Builder builder, String queryPartString, String parameterName) {
+		System.out.println("qp: " + queryPartString);
+		queryPartString = queryPartString.substring(1, queryPartString.length());
+		
+		//parse VS
+		if (queryPartString.startsWith(QueryPart.PREFIX_VS)) {
+			String[] queryParts = queryPartString.split("=");
+			
+			if (queryParts.length == 1) {
+				builder.valueSetsQuery();
+			} else if (queryParts.length == 2) {
+				String parameter = queryParts[1];
+				
+				if (parameter.startsWith(QueryPartDefinition.ISA.getUrlString())) {
+					String[] split = parameter.split("/");
+					if (split.length == 2) {
+						builder.isAQuery(split[1]);
+					} else {
+						throw new BadRequestException(String.format("Invalid 'fhir_vs=isa/conceptId' query part.", queryPartString), parameterName);
+					}
+				} else if (parameter.startsWith(QueryPartDefinition.REFSET.getUrlString())) {
+					String[] split = parameter.split("/");
+					if (split.length == 2) {
+						builder.refsetQuery(split[1]);
+					} else {
+						throw new BadRequestException(String.format("Invalid 'fhir_vs=refset/conceptId' query part.", queryPartString), parameterName);
+					}
+				} else if (parameter.startsWith(QueryPartDefinition.REFSETS.getUrlString())) {
+					builder.refsetsQuery();
+				}
+			}
+			else {
+				throw new BadRequestException(String.format("Invalid 'fhir_vs' query part [%s].", queryPartString), parameterName); 
+			}
+			
+		} else if (queryPartString.startsWith(QueryPart.PREFIX_CM)) {
+			String[] split = queryPartString.split("=");
+			
+			if (split.length == 2) {
+				builder.conceptMapQuery(split[1]);
+			} else {
+				throw new BadRequestException(String.format("Invalid 'fhir_cm' query part [%s], the format is '?fhir_cm=conceptId'.", queryPartString), parameterName);
+			}
+			
+		} else {
+			throw new BadRequestException(String.format("Invalid query part [%s], it should be either '?fhir_vs' or '?fhir_cm'.", queryPartString), parameterName);
+		}
+	}
+
 	public String getExtensionModuleId() {
 		return extensionModuleId;
 	}

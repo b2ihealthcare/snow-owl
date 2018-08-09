@@ -22,9 +22,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
+import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
+import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 
 /**
  * 
@@ -40,7 +43,7 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		String uriString = "invalid uri";
 		
-		exception.expect(IllegalArgumentException.class);
+		exception.expect(BadRequestException.class);
 		exception.expectMessage("URI 'invalid uri' is not a valid SNOMED CT URI. It should start as 'http://snomed.info/sct'");
 
 		SnomedUri.fromUriString(uriString, "uri");
@@ -112,6 +115,69 @@ public class SnomedUriParsingTest extends FhirTest {
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, snomedUri.getExtensionModuleId());
 		assertEquals("20170131", snomedUri.getVersionTag());
+	}
+	
+	@Test
+	public void testUriWithQuery() {
+		
+		String uriString = "http://snomed.info/sct?fhir_vs";
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(null, snomedUri.getExtensionModuleId());
+		assertEquals(null, snomedUri.getVersionTag());
+		assertEquals("fhir_vs", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.NONE, snomedUri.getQueryPart().getQueryPartDefinition());
+		assertEquals(null, snomedUri.getQueryPart().getQueryValue());
+		
+		uriString = "http://snomed.info/sct?fhir_vs=isa/50697003";
+		snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(null, snomedUri.getExtensionModuleId());
+		assertEquals(null, snomedUri.getVersionTag());
+		assertEquals("fhir_vs", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.ISA, snomedUri.getQueryPart().getQueryPartDefinition());
+		assertEquals("50697003", snomedUri.getQueryPart().getQueryValue());
+		
+		uriString = "http://snomed.info/sct?fhir_vs=refset";
+		snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(null, snomedUri.getExtensionModuleId());
+		assertEquals(null, snomedUri.getVersionTag());
+		assertEquals("fhir_vs", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.REFSETS, snomedUri.getQueryPart().getQueryPartDefinition());
+		
+		uriString = "http://snomed.info/sct?fhir_vs=refset/50697003";
+		snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(null, snomedUri.getExtensionModuleId());
+		assertEquals(null, snomedUri.getVersionTag());
+		assertEquals("fhir_vs", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.REFSET, snomedUri.getQueryPart().getQueryPartDefinition());
+		assertEquals("50697003", snomedUri.getQueryPart().getQueryValue());
+		
+		uriString = "http://snomed.info/sct?fhir_cm=50697003";
+		snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(null, snomedUri.getExtensionModuleId());
+		assertEquals(null, snomedUri.getVersionTag());
+		assertEquals("fhir_cm", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.NONE, snomedUri.getQueryPart().getQueryPartDefinition());
+		assertEquals("50697003", snomedUri.getQueryPart().getQueryValue());
+		
+	}
+	
+	@Test
+	public void testComplexUriWithQueryPart() {
+		
+		String uriString = SnomedUri.SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE + "/version/20170131?fhir_vs=isa/50697003";
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, "uri");
+		
+		assertEquals(Concepts.MODULE_SCT_CORE, snomedUri.getExtensionModuleId());
+		assertEquals("20170131", snomedUri.getVersionTag());
+		assertEquals("fhir_vs", snomedUri.getQueryPart().getQueryParameter());
+		assertEquals(QueryPartDefinition.ISA, snomedUri.getQueryPart().getQueryPartDefinition());
+		assertEquals("50697003", snomedUri.getQueryPart().getQueryValue());
 	}
 	
 	@Test
