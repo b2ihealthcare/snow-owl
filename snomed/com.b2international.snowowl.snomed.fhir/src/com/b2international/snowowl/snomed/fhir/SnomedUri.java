@@ -90,6 +90,14 @@ public class SnomedUri {
 			this(queryParameter, queryPartDefinition, null);
 		}
 		
+		public boolean isValueSetQuery() {
+			return PREFIX_VS.equals(queryParameter);
+		}
+		
+		public boolean isConceptMapQuery() {
+			return PREFIX_CM.equals(queryParameter);
+		}
+		
 		public String getQueryParameter() {
 			return queryParameter;
 		}
@@ -309,6 +317,10 @@ public class SnomedUri {
 	
 	public String getVersionTag() {
 		return versionTag;
+	}
+	
+	public boolean hasQueryPart() {
+		return queryPart !=null;
 	}
 	
 	/**
