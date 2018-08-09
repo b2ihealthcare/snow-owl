@@ -40,7 +40,6 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	public SnomedComponentRevisionConflictProcessor() {
 		super(ImmutableList.<IMergeConflictRule>builder()
 //				.add(new SnomedRefsetMemberReferencingDetachedComponentRule())
-//				.add(new SnomedLanguageRefsetMembersMergeConflictRule())
 //				.add(new SnomedInvalidRelationshipMergeConflictRule())
 				.build());
 	}
