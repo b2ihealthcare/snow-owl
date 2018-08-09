@@ -214,8 +214,8 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		//validateVersion(snomedUri, lookup.getVersion());
 		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
-		String branchPath = codeSystemVersion.getPath();
-		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
+		//String branchPath = codeSystemVersion.getPath();
+		//String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
 		
 		if (snomedUri.hasQueryPart()) {
 			QueryPart queryPart = snomedUri.getQueryPart();
@@ -227,25 +227,23 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				
 				case NONE:
 					//Entire SNOMED CT, makes no real sense
-					
-					break;
+					return null; //TODO
 				case REFSET:
 					return buildSimpleTypeRefsetValueSet(queryPart.getQueryValue(), codeSystemVersion);
 				case REFSETS:
 					//All simple type refsets??
-					break;
+					return null;
 				case ISA:
-					
-					break;
+					return null; //TODO
 				default:
-					break;
+					//should not happen
+					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
 				}
 			}
 		} else {
 			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
 		}
 		
-		return null; //TODO
 		
 	}
 	
