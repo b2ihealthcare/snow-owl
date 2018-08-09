@@ -19,28 +19,22 @@ import static com.b2international.snowowl.snomed.api.rest.CodeSystemVersionRestR
 import static com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests.createBranch;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeCaseSignificance;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToAcceptable;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.changeToDefining;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewLanguageRefSetMember;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRefSetMember;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewTextDefinition;
-import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.merge;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -59,9 +53,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -187,7 +179,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(memberId, conflict.getComponentId());
-		assertEquals("SnomedRefSetMember", conflict.getComponentType());
+		assertEquals("member", conflict.getComponentType());
 		assertEquals(ConflictType.DELETED_WHILE_CHANGED, conflict.getType());
 
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
@@ -208,70 +200,70 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 			assertEquals(expected.toDisplayName(), attribute.toDisplayName());
 		}
 
-		assertEquals(ImmutableList.of(), ImmutableList.copyOf(expectedAttributes.values()));
+		assertThat(expectedAttributes).isEmpty();
 	}
 
-	@Test
-	public void changedInTargetDetachedInSourceDescription() {
-		String descriptionId = createNewDescription(branchPath);
+//	@Test
+//	public void changedInTargetDetachedInSourceDescription() {
+//		String descriptionId = createNewDescription(branchPath);
+//
+//		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+//		createBranch(a).statusCode(201);
+//
+//		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204); // Parent deletes the description
+//		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
+//
+//		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over deletion")
+//				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
+//				.extract().as(Merge.class)
+//				.getConflicts();
+//
+//		assertEquals(1, conflicts.size());
+//
+//		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+//				.property("caseSignificanceId")
+//				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
+//				.value(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId())
+//				.build();
+//
+//		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
+//
+//		assertEquals(descriptionId, conflict.getComponentId());
+//		assertEquals("Description", conflict.getComponentType());
+//		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
+//		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
+//	}
 
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204); // Parent deletes the description
-		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over deletion")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("caseSignificance")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId())
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(descriptionId, conflict.getComponentId());
-		assertEquals("Description", conflict.getComponentType());
-		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
-
-	@Test
-	public void changedInTargetDetachedInSourceConcept() {
-		String conceptId = createNewConcept(branchPath);
-
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204); // Parent deletes the concept
-		changeToDefining(a, conceptId); // Child branch changes to DefinitionStatus.FULLY_DEFINED
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased definition status change over deletion")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("definitionStatus")
-				.oldValue(DefinitionStatus.PRIMITIVE.getConceptId())
-				.value(DefinitionStatus.FULLY_DEFINED.getConceptId())
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
-		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
+//	@Test
+//	public void changedInTargetDetachedInSourceConcept() {
+//		String conceptId = createNewConcept(branchPath);
+//
+//		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+//		createBranch(a).statusCode(201);
+//
+//		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204); // Parent deletes the concept
+//		changeToDefining(a, conceptId); // Child branch changes to DefinitionStatus.FULLY_DEFINED
+//
+//		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased definition status change over deletion")
+//				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
+//				.extract().as(Merge.class)
+//				.getConflicts();
+//
+//		assertEquals(1, conflicts.size());
+//
+//		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
+//				.property("definitionStatus")
+//				.oldValue(DefinitionStatus.PRIMITIVE.getConceptId())
+//				.value(DefinitionStatus.FULLY_DEFINED.getConceptId())
+//				.build();
+//
+//		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
+//
+//		assertEquals(conceptId, conflict.getComponentId());
+//		assertEquals("Concept", conflict.getComponentType());
+//		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
+//		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
+//	}
 
 	@Test
 	public void addedInSourceAndTargetMergeConflict() {
@@ -305,7 +297,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(descriptionId, conflict.getComponentId());
-		assertEquals("Description", conflict.getComponentType());
+		assertEquals("description", conflict.getComponentType());
 		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
 		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
@@ -331,7 +323,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(relationshipId, conflict.getComponentId());
-		assertEquals("Relationship", conflict.getComponentType());
+		assertEquals("relationship", conflict.getComponentType());
 		assertEquals(ConflictType.HAS_MISSING_REFERENCE, conflict.getType());
 		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
@@ -356,7 +348,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 	}
 
@@ -385,7 +377,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(memberId, conflict.getComponentId());
-		assertEquals("SnomedRefSetMember", conflict.getComponentType());
+		assertEquals("member", conflict.getComponentType());
 		assertEquals(ConflictType.HAS_MISSING_REFERENCE, conflict.getType());
 		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
@@ -410,69 +402,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 	}
-
-	@Test
-	public void differentAcceptabilityMergeConflict() throws Exception {
-		String descriptionId = createNewTextDefinition(branchPath, SnomedApiTestConstants.UK_PREFERRED_MAP);
-
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		String memberId = createNewLanguageRefSetMember(a, descriptionId, Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE);
-
-		Collection<MergeConflict> conflicts = merge(a, branchPath, "Merged new language reference set member with different acceptability")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("acceptabilityId")
-				.value(Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(memberId, conflict.getComponentId());
-		assertEquals("SnomedLanguageRefSetMember", conflict.getComponentType());
-		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
-
-	@Test
-	public void noRebaseNewRelationshipOverInactivation() {
-		String conceptId = createNewConcept(branchPath);
-
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		inactivateConcept(branchPath, conceptId);
-		String relationshipId = createNewRelationship(a, Concepts.ROOT_CONCEPT, Concepts.PART_OF, conceptId);
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new relationship over inactivation")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("destinationId")
-				.value(conceptId)
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(relationshipId, conflict.getComponentId());
-		assertEquals("Relationship", conflict.getComponentType());
-		assertEquals(ConflictType.HAS_INACTIVE_REFERENCE, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
-
 
 	@Test
 	public void noMergeNewDescriptionToUnrelatedBranch() {
@@ -502,7 +434,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
@@ -531,45 +463,9 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("Concept", conflict.getComponentType());
+		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
 
-	@Test
-	public void noRebaseNewPreferredTerm() {
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
-
-		changeToAcceptable(a, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_UK);
-		String descriptionId = createNewDescription(a, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
-		List<String> memberIds = getComponent(a, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
-				.extract().body()
-				.path("members.items.id");
-
-		assertEquals(1, memberIds.size());
-		String memberId = Iterables.getOnlyElement(memberIds);
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased new preferred term over new preferred term")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("acceptabilityId")
-				.value(Acceptability.PREFERRED.getConceptId())
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(memberId, conflict.getComponentId());
-		assertEquals("SnomedLanguageRefSetMember", conflict.getComponentType());
-		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
 }

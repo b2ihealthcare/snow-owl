@@ -541,6 +541,7 @@ public final class StagingArea {
 		final Multimap<Class<? extends Revision>, String> newRevisionIdsToMergeByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToMergeByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToMergeByType = HashMultimap.create();
+		final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedSourceRevisions = newHashMap();
 		
 		fromChangeDetails.forEach(detail -> {
 			// add all objects to the tx
@@ -548,6 +549,9 @@ public final class StagingArea {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					newRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					if (!detail.getObject().isRoot()) {
+						containersRequiredForNewAndChangedSourceRevisions.put(detail.getComponent(), detail.getObject());
+					}
 				}
 			} else if (detail.isChange()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
@@ -568,6 +572,7 @@ public final class StagingArea {
 		final Multimap<Class<? extends Revision>, String> newRevisionIdsToCheckByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToCheckByType = HashMultimap.create();
 		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToCheckByType = HashMultimap.create();
+		final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedTargetRevisions = newHashMap();
 		
 		toChangeDetails.forEach(detail -> {
 			// add all objects to the tx
@@ -575,6 +580,9 @@ public final class StagingArea {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					newRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					if (!detail.getObject().isRoot()) {
+						containersRequiredForNewAndChangedTargetRevisions.put(detail.getComponent(), detail.getObject());
+					}
 				}
 			} else if (detail.isChange()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
@@ -594,19 +602,37 @@ public final class StagingArea {
 		
 		List<Conflict> conflicts = newArrayList();
 		
-		// check for added in both source and target conflicts
-		for (Class<? extends Revision> type : newRevisionIdsToMergeByType.keySet()) {
+		for (Class<? extends Revision> type : Iterables.concat(newRevisionIdsToMergeByType.keySet(), newRevisionIdsToCheckByType.keySet())) {
 			final String docType = DocumentMapping.getType(type);
 			final Set<String> newRevisionIdsOnSource = ImmutableSet.copyOf(newRevisionIdsToMergeByType.get(type));
 			final Set<String> newRevisionIdsOnTarget = ImmutableSet.copyOf(newRevisionIdsToCheckByType.get(type));
 			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
+			// check for added in both source and target conflicts
 			if (!addedInSourceAndTarget.isEmpty()) {
 				addedInSourceAndTarget.forEach(revisionId -> {
 					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(docType, revisionId)));
 				});
 			}
+			// check deleted containers on target and report them as conflicts
+			newRevisionIdsOnSource.forEach(newRevisionOnSource -> {
+				ObjectId newRevisionOnSourceId = ObjectId.of(docType, newRevisionOnSource);
+				ObjectId requiredContainer = containersRequiredForNewAndChangedSourceRevisions.get(newRevisionOnSourceId);
+				if (requiredContainer != null && removedRevisionIdsToCheckByType.containsEntry(DocumentMapping.getClass(requiredContainer.type()), requiredContainer.id())) {
+					conflicts.add(new AddedInSourceAndDetachedInTargetConflict(newRevisionOnSourceId, requiredContainer));
+				}
+			});
+			
+			// check deleted containers on source and report them as conflicts
+			newRevisionIdsOnTarget.forEach(newRevisionOnTarget -> {
+				ObjectId newRevisionOnTargetId = ObjectId.of(docType, newRevisionOnTarget);
+				ObjectId requiredContainer = containersRequiredForNewAndChangedTargetRevisions.get(newRevisionOnTargetId);
+				if (requiredContainer != null && removedRevisionIdsToMergeByType.containsEntry(DocumentMapping.getClass(requiredContainer.type()), requiredContainer.id())) {
+					conflicts.add(new AddedInTargetAndDetachedInSourceConflict(newRevisionOnTargetId, requiredContainer));
+				}
+			});
 		}
-
+		
+		// check property conflicts
 		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> propertyUpdatesToApply = newHashMap();
 		
 		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());

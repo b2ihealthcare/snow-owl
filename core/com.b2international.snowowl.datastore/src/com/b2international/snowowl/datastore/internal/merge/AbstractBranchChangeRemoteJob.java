@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
+import com.b2international.index.revision.AddedInSourceAndDetachedInTargetConflict;
 import com.b2international.index.revision.AddedInSourceAndTargetConflict;
+import com.b2international.index.revision.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.index.revision.BranchMergeConflictException;
 import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
 import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
@@ -144,7 +146,8 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		if (!conflictingAttributes.isEmpty()) {
 			 return conflict.conflictingAttributes(conflictingAttributes).build();
 		} else {
-			Conflict c = Iterables.getOnlyElement(conflicts);
+			// XXX multiple conflicts are not expected here for a single object
+			Conflict c = Iterables.getFirst(conflicts, null);
 			if (c instanceof AddedInSourceAndTargetConflict) {
 				return conflict
 						.message(c.getMessage())
@@ -161,8 +164,18 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 								.collect(Collectors.toList())
 						)
 						.build();
+			} else if (c instanceof AddedInSourceAndDetachedInTargetConflict) {
+				return conflict.message(c.getMessage())
+						.type(ConflictType.CAUSES_MISSING_REFERENCE)
+						.componentId(((AddedInSourceAndDetachedInTargetConflict) c).getDetachedOnTarget().id())
+						.componentType(((AddedInSourceAndDetachedInTargetConflict) c).getDetachedOnTarget().type())
+						.build();
+			} else if (c instanceof AddedInTargetAndDetachedInSourceConflict) {
+				return conflict.message(c.getMessage())
+						.type(ConflictType.HAS_MISSING_REFERENCE)
+						.build();
 			} else {
-				throw new UnsupportedOperationException("TODO implement");
+				return conflict.message("Not implemented conflict mapping").build();
 			}
 		}
 	}
