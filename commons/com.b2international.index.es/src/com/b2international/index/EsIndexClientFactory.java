@@ -21,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.es.EsClient;
@@ -51,7 +50,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			host = HttpHost.create(DEFAULT_CLUSTER_URL);
 		}
 		
-		final RestHighLevelClient client = EsClient.create(host);
+		final EsClient client = EsClient.create(host);
 		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
 	}
 }

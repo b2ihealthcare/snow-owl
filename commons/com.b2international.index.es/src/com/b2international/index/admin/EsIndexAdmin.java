@@ -51,6 +51,7 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
 import com.b2international.index.Text;
+import com.b2international.index.es.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
@@ -65,7 +66,7 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private final RestHighLevelClient client;
+	private final EsClient client;
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
@@ -73,7 +74,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	private final Logger log;
 
-	public EsIndexAdmin(RestHighLevelClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
+	public EsIndexAdmin(EsClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
@@ -408,7 +409,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
-	public RestHighLevelClient client() {
+	public EsClient client() {
 		return client;
 	}
 	

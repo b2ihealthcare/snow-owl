@@ -114,6 +114,7 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "http.type", "netty4");
 		putSettingIfAbsent(esSettings, "http.cors.enabled", true);
 		putSettingIfAbsent(esSettings, "http.cors.allow-origin", "/https?:\\/\\/localhost(:[0-9]+)?/");
+		putSettingIfAbsent(esSettings, "rest.action.multi.allow_explicit_index", false);
 		
 		return esSettings.build();
 	}
