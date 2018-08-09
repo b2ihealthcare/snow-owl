@@ -89,7 +89,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(1, conflicts.size());
 
 		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("caseSignificance")
+				.property("caseSignificanceId")
 				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
 				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
 				.build();
@@ -97,7 +97,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(descriptionId, conflict.getComponentId());
-		assertEquals("Description", conflict.getComponentType());
+		assertEquals("description", conflict.getComponentType());
 		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
 		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
@@ -134,18 +134,18 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
 
 		assertEquals(descriptionId, conflict.getComponentId());
-		assertEquals("Description", conflict.getComponentType());
+		assertEquals("description", conflict.getComponentType());
 		assertEquals(ConflictType.CONFLICTING_CHANGE, conflict.getType());
 
 		Map<String, ConflictingAttribute> expectedAttributes = newHashMap();
-		expectedAttributes.put("caseSignificance", ConflictingAttributeImpl.builder()
-				.property("caseSignificance")
+		expectedAttributes.put("caseSignificanceId", ConflictingAttributeImpl.builder()
+				.property("caseSignificanceId")
 				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
 				.value(CaseSignificance.CASE_INSENSITIVE.getConceptId())
 				.build());
 
-		expectedAttributes.put("module", ConflictingAttributeImpl.builder()
-				.property("module")
+		expectedAttributes.put("moduleId", ConflictingAttributeImpl.builder()
+				.property("moduleId")
 				.oldValue(Concepts.MODULE_SCT_CORE)
 				.value(Concepts.MODULE_ROOT)
 				.build());

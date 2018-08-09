@@ -56,7 +56,11 @@ public final class Promise<T> extends AbstractFuture<T> {
 			if (cause instanceof ApiException) {
 				throw (ApiException) cause;
 			}
-			throw new SnowowlRuntimeException(cause);
+			if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			} else {
+				throw new SnowowlRuntimeException(cause);
+			} 
 		}
 	}
 	

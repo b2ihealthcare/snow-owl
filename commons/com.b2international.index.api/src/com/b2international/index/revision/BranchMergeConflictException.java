@@ -15,30 +15,24 @@
  */
 package com.b2international.index.revision;
 
+import java.util.List;
+
+import com.b2international.commons.collections.Collections3;
+
 /**
  * @since 7.0
  */
-public abstract class Conflict {
+public final class BranchMergeConflictException extends RuntimeException {
 
-	private final ObjectId objectId;
-	private final String message;
+	private final List<Conflict> conflicts;
 
-	public Conflict(ObjectId objectId, String message) {
-		this.objectId = objectId;
-		this.message = message;
+	public BranchMergeConflictException(List<Conflict> conflicts) {
+		super("Conflicting");
+		this.conflicts = Collections3.toImmutableList(conflicts);
 	}
 	
-	public ObjectId getObjectId() {
-		return objectId;
-	}
-	
-	public String getMessage() {
-		return message;
-	}
-	
-	@Override
-	public String toString() {
-		return getMessage();
+	public List<Conflict> getConflicts() {
+		return conflicts;
 	}
 	
 }

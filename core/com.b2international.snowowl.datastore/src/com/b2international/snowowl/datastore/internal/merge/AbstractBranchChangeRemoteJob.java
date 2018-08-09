@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.datastore.internal.merge;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,13 +29,23 @@ import org.slf4j.Logger;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
+import com.b2international.index.revision.BranchMergeConflictException;
+import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
+import com.b2international.index.revision.Conflict;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.exceptions.MergeConflictException;
+import com.b2international.snowowl.core.merge.ConflictingAttribute;
+import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeConflict;
+import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.BranchExclusiveRule;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 4.6
@@ -79,8 +92,8 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		try {
 			applyChanges();
 			merge.getAndUpdate(m -> m.completed());
-		} catch (MergeConflictException e) {
-			merge.getAndUpdate(m -> m.failedWithConflicts(e.getConflicts(), e.toApiError()));
+		} catch (BranchMergeConflictException e) {
+			merge.getAndUpdate(m -> m.failedWithConflicts(toMergeConflicts(e.getConflicts())));
 		} catch (ApiException e) {
 			merge.getAndUpdate(m -> m.failed(e.toApiError()));
 		} catch (RuntimeException e) {
@@ -102,4 +115,34 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 	public Merge getMerge() {
 		return merge.get();
 	}
+	
+	private Collection<MergeConflict> toMergeConflicts(List<Conflict> conflicts) {
+		final Multimap<ObjectId, Conflict> conflictsByObjectId = Multimaps.index(conflicts, Conflict::getObjectId);
+		
+		return conflictsByObjectId.keySet().stream().map(objectId -> toMergeConflict(objectId, conflictsByObjectId.get(objectId))).collect(Collectors.toList());
+	}
+	
+	private MergeConflict toMergeConflict(ObjectId objectId, Collection<Conflict> conflicts) {
+		
+		final MergeConflictImpl.Builder conflict = MergeConflictImpl.builder()
+			.componentId(objectId.id())
+			.componentType(objectId.type());
+		
+		final List<ConflictingAttribute> conflictingAttributes = conflicts.stream()
+			.filter(ChangedInSourceAndTargetConflict.class::isInstance)
+			.map(ChangedInSourceAndTargetConflict.class::cast)
+			.map(changedInSourceAndTargetConflict -> ConflictingAttributeImpl.builder()
+					.property(changedInSourceAndTargetConflict.getSourceChange().getProperty())
+					.oldValue(changedInSourceAndTargetConflict.getSourceChange().getOldValue())
+					.value(changedInSourceAndTargetConflict.getSourceChange().getNewValue())
+					.build())
+			.collect(Collectors.toList());
+		
+		if (!conflictingAttributes.isEmpty()) {
+			 return conflict.type(ConflictType.CONFLICTING_CHANGE).conflictingAttributes(conflictingAttributes).build();
+		} else {
+			throw new UnsupportedOperationException("TODO implement");
+		}
+	}
+	
 }

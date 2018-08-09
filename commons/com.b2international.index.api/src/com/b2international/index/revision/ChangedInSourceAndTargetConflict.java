@@ -25,8 +25,8 @@ public final class ChangedInSourceAndTargetConflict extends Conflict {
 	private final RevisionPropertyDiff sourceChange;
 	private final RevisionPropertyDiff targetChange;
 
-	public ChangedInSourceAndTargetConflict(String sourceId, String targetId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
-		super(sourceId, targetId, String.format("ChangedInSourceAndTarget[id=%s, property=%s, sourceChange=%s, targetChange=%s]", sourceId, sourceChange.getProperty(), sourceChange.toValueChangeString()));
+	public ChangedInSourceAndTargetConflict(ObjectId objectId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
+		super(objectId, String.format("ChangedInSourceAndTarget[id=%s, property=%s, sourceChange=%s, targetChange=%s]", objectId, sourceChange.getProperty(), sourceChange.toValueChangeString(), targetChange.toValueChangeString()));
 		this.sourceChange = sourceChange;
 		this.targetChange = targetChange;
 	}

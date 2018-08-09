@@ -66,7 +66,7 @@ public interface Merge {
 
 	Merge failed(ApiError newApiError);
 
-	Merge failedWithConflicts(Collection<MergeConflict> newConflicts, ApiError newApiError);
+	Merge failedWithConflicts(Collection<MergeConflict> newConflicts);
 
 	Merge cancelRequested();
 

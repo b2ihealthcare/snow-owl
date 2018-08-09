@@ -636,7 +636,7 @@ public final class StagingArea {
 								targetChangeDiff
 							);
 							if (resolution == null) {
-								conflicts.add(new ChangedInSourceAndTargetConflict(changedInSourceAndTargetId, changedInSourceAndTargetId, sourceChangeDiff, targetChangeDiff));
+								conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff, targetChangeDiff));
 							} else {
 								if (!propertyUpdatesToApply.containsKey(type)) {
 									propertyUpdatesToApply.put(type, HashMultimap.create());
@@ -651,7 +651,7 @@ public final class StagingArea {
 		}
 		
 		if (!conflicts.isEmpty()) {
-			throw new UnsupportedOperationException("Conflicts!!!");
+			throw new BranchMergeConflictException(conflicts);
 		}
 		
 		boolean stagedChanges = false;
