@@ -473,7 +473,7 @@ public final class StagingArea {
 		
 	}
 	
-	public final class RevisionPropertyDiff {
+	public static final class RevisionPropertyDiff {
 		
 		private final String property;
 		private final String oldValue;
@@ -499,6 +499,10 @@ public final class StagingArea {
 
 		public String toValueChangeString() {
 			return String.format("%s -> %s", getOldValue(), getNewValue());
+		}
+		
+		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
+			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
 		}
 		
 	}
@@ -608,14 +612,27 @@ public final class StagingArea {
 		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
 		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(changedRevisionIdsToMergeByType.keySet())) {
+			final String docType = DocumentMapping.getType(type);
 			Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.get(type));
 			// first handle changed vs. removed
-			Set<String> changedInSourceDetachedInTarget = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
-			if (!changedInSourceDetachedInTarget.isEmpty()) {
-				// TODO check released flags in semantic conflict processing
-				revisionsToReviseOnMergeSource.putAll(type, changedInSourceDetachedInTarget);
-				changedInSourceDetachedInTarget.forEach(id -> changedRevisionIdsToMergeByType.remove(type, id));
-				changedRevisionIdsToMerge.removeAll(changedInSourceDetachedInTarget);
+			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
+			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
+				// report any conflicts
+				changedInSourceDetachedInTargetIds.forEach(changedInSourceDetachedInTargetId -> {
+					List<RevisionPropertyDiff> sourceChanges = fromChangeDetails.stream()
+							.filter(detail -> detail.getObject().id().equals(changedInSourceDetachedInTargetId))
+							.filter(detail -> !detail.isComponentChange())
+							.map(change -> new RevisionPropertyDiff(change.getProperty(), change.getFromValue(), change.getValue()))
+							.collect(Collectors.toList());
+					Conflict conflict = conflictProcessor.handleChangedInSourceDetachedInTarget(ObjectId.of(docType, changedInSourceDetachedInTargetId), sourceChanges);
+					if (conflict != null) {
+						conflicts.add(conflict);
+					}
+				});
+				// register them as revised on source from the target branch point of view
+				revisionsToReviseOnMergeSource.putAll(type, changedInSourceDetachedInTargetIds);
+				changedInSourceDetachedInTargetIds.forEach(id -> changedRevisionIdsToMergeByType.remove(type, id));
+				changedRevisionIdsToMerge.removeAll(changedInSourceDetachedInTargetIds);
 			}
 			// then handle changed vs. changed with the conflict processor
 			Set<String> changedInSourceAndTargetIds = Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck);
@@ -649,7 +666,7 @@ public final class StagingArea {
 								targetChangeDiff
 							);
 							if (resolution == null) {
-								conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff, targetChangeDiff));
+								conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
 							} else {
 								if (!propertyUpdatesToApply.containsKey(type)) {
 									propertyUpdatesToApply.put(type, HashMultimap.create());

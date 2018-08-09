@@ -31,10 +31,12 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
 import com.b2international.index.revision.AddedInSourceAndTargetConflict;
 import com.b2international.index.revision.BranchMergeConflictException;
+import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
 import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
 import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
@@ -135,11 +137,8 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		final List<ConflictingAttribute> conflictingAttributes = conflicts.stream()
 			.filter(ChangedInSourceAndTargetConflict.class::isInstance)
 			.map(ChangedInSourceAndTargetConflict.class::cast)
-			.map(changedInSourceAndTargetConflict -> ConflictingAttributeImpl.builder()
-					.property(changedInSourceAndTargetConflict.getSourceChange().getProperty())
-					.oldValue(changedInSourceAndTargetConflict.getSourceChange().getOldValue())
-					.value(changedInSourceAndTargetConflict.getSourceChange().getNewValue())
-					.build())
+			.map(ChangedInSourceAndTargetConflict::getSourceChange)
+			.map(this::toConflictingAttribute)
 			.collect(Collectors.toList());
 		
 		if (!conflictingAttributes.isEmpty()) {
@@ -151,10 +150,29 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 						.message(c.getMessage())
 						.conflictingAttribute(ConflictingAttributeImpl.builder().property(Revision.Fields.ID).build())
 						.build();
+			} else if (c instanceof ChangedInSourceAndDetachedInTargetConflict) {
+				return conflict
+						.message(c.getMessage())
+						.type(ConflictType.DELETED_WHILE_CHANGED)
+						.conflictingAttributes(
+							((ChangedInSourceAndDetachedInTargetConflict) c).getChanges()
+								.stream()
+								.map(this::toConflictingAttribute)
+								.collect(Collectors.toList())
+						)
+						.build();
 			} else {
 				throw new UnsupportedOperationException("TODO implement");
 			}
 		}
+	}
+	
+	private ConflictingAttribute toConflictingAttribute(RevisionPropertyDiff diff) {
+		return ConflictingAttributeImpl.builder()
+			.property(diff.getProperty())
+			.oldValue(diff.getOldValue())
+			.value(diff.getNewValue())
+			.build();
 	}
 	
 }

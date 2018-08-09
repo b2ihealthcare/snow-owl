@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
@@ -35,6 +36,24 @@ public interface RevisionConflictProcessor {
 	 * </ul>
 	 */
 	RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange);
+
+	/**
+	 * @param objectId
+	 * @param sourceChanges
+	 * @return
+	 */
+	Conflict handleChangedInSourceDetachedInTarget(ObjectId objectId, List<RevisionPropertyDiff> sourceChanges);
+	
+	/**
+	 * Maps a raw revision property value to a human readable String version.
+	 * 
+	 * @param property
+	 * @param value
+	 * @return
+	 */
+	default String convertPropertyValue(String property, String value) {
+		return value;
+	}
 	
 	/**
 	 * Post-processes the resulting staging area before committing.
@@ -56,6 +75,11 @@ public interface RevisionConflictProcessor {
 			} else {
 				return null; 
 			}
+		}
+		
+		@Override
+		public Conflict handleChangedInSourceDetachedInTarget(ObjectId objectId, List<RevisionPropertyDiff> sourceChanges) {
+			return null; // by default do not report conflict and omit the changes
 		}
 		
 		@Override

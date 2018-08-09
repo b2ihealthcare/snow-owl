@@ -16,9 +16,16 @@
 package com.b2international.snowowl.snomed.core.merge;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
+import com.b2international.index.revision.Conflict;
+import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
@@ -54,6 +61,35 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 			}
 		}
 		return super.handleChangedInSourceAndTarget(revisionId, sourceChange, targetChange);
+	}
+	
+	@Override
+	public Conflict handleChangedInSourceDetachedInTarget(ObjectId objectId, List<RevisionPropertyDiff> sourceChanges) {
+		boolean conflicting = false;
+		for (RevisionPropertyDiff sourceChange : sourceChanges) {
+			if (SnomedDocument.Fields.RELEASED.equals(sourceChange.getProperty())) {
+				conflicting = true;
+			}
+		}
+		if (conflicting) {
+			return new ChangedInSourceAndDetachedInTargetConflict(objectId, sourceChanges.stream().map(diff -> diff.convert(this)).collect(Collectors.toList()));
+		} else {
+			return super.handleChangedInSourceDetachedInTarget(objectId, sourceChanges);
+		}
+	}
+	
+	@Override
+	public String convertPropertyValue(String property, String value) {
+		if (SnomedDocument.Fields.EFFECTIVE_TIME.equals(property)) {
+			if (EffectiveTimes.isUnset(value)) {
+				return null;
+			} else {
+				final long effectiveTime = Long.parseLong(value);
+				return Dates.formatByGmt(effectiveTime, DateFormats.SHORT);
+			}
+		} else {
+			return super.convertPropertyValue(property, value);
+		}
 	}
 
 }
