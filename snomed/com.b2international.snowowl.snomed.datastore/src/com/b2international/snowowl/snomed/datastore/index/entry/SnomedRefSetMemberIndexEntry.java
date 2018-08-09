@@ -659,97 +659,97 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 		
-		Builder acceptabilityId(String acceptabilityId) {
+		public Builder acceptabilityId(String acceptabilityId) {
 			this.acceptabilityId = acceptabilityId;
 			return getSelf();
 		}
 		
-		Builder attributeName(String attributeName) {
+		public Builder attributeName(String attributeName) {
 			this.attributeName = attributeName;
 			return getSelf();
 		}
 		
-		Builder characteristicTypeId(final String characteristicTypeId) {
+		public Builder characteristicTypeId(final String characteristicTypeId) {
 			this.characteristicTypeId = characteristicTypeId;
 			return getSelf();
 		}
 		
-		Builder correlationId(final String correlationId) {
+		public Builder correlationId(final String correlationId) {
 			this.correlationId = correlationId;
 			return getSelf();
 		}
 		
-		Builder dataType(final DataType dataType) {
+		public Builder dataType(final DataType dataType) {
 			this.dataType = dataType;
 			return getSelf();
 		}
 		
-		Builder descriptionFormat(final String descriptionFormat) {
+		public Builder descriptionFormat(final String descriptionFormat) {
 			this.descriptionFormat = descriptionFormat;
 			return getSelf();
 		}
 		
-		Builder descriptionLength(final Integer descriptionLength) {
+		public Builder descriptionLength(final Integer descriptionLength) {
 			this.descriptionLength = descriptionLength;
 			return getSelf();
 		}
 		
-		Builder mapAdvice(final String mapAdvice) {
+		public Builder mapAdvice(final String mapAdvice) {
 			this.mapAdvice = mapAdvice;
 			return getSelf();
 		}
 		
-		Builder mapCategoryId(final String mapCategoryId) {
+		public Builder mapCategoryId(final String mapCategoryId) {
 			this.mapCategoryId = mapCategoryId;
 			return getSelf();
 		}
 		
-		Builder mapGroup(final Integer mapGroup) {
+		public Builder mapGroup(final Integer mapGroup) {
 			this.mapGroup = mapGroup;
 			return getSelf();
 		}
 		
-		Builder mapPriority(final Integer mapPriority) {
+		public Builder mapPriority(final Integer mapPriority) {
 			this.mapPriority = mapPriority;
 			return getSelf();
 		}
 		
-		Builder mapRule(final String mapRule) {
+		public Builder mapRule(final String mapRule) {
 			this.mapRule = mapRule;
 			return getSelf();
 		}
 		
-		Builder mapTarget(final String mapTarget) {
+		public Builder mapTarget(final String mapTarget) {
 			this.mapTarget = mapTarget;
 			return getSelf();
 		}
 		
-		Builder mapTargetDescription(final String mapTargetDescription) {
+		public Builder mapTargetDescription(final String mapTargetDescription) {
 			this.mapTargetDescription = mapTargetDescription;
 			return getSelf();
 		}
 		
-		Builder operatorId(final String operatorId) {
+		public Builder operatorId(final String operatorId) {
 			this.operatorId = operatorId;
 			return getSelf();
 		}
 		
-		Builder query(final String query) {
+		public Builder query(final String query) {
 			this.query = query;
 			return getSelf();
 		}
 		
-		Builder sourceEffectiveTime(final Long sourceEffectiveTime) {
+		public Builder sourceEffectiveTime(final Long sourceEffectiveTime) {
 			this.sourceEffectiveTime = sourceEffectiveTime;
 			return getSelf();
 		}
 		
-		Builder targetEffectiveTime(final Long targetEffectiveTime) {
+		public Builder targetEffectiveTime(final Long targetEffectiveTime) {
 			this.targetEffectiveTime = targetEffectiveTime;
 			return getSelf();
 		}
 		
-		Builder unitId(final String unitId) {
+		public Builder unitId(final String unitId) {
 			this.unitId = unitId;
 			return getSelf();
 		}
@@ -762,111 +762,112 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder decimalValue(final BigDecimal value) {
+		public Builder decimalValue(final BigDecimal value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder booleanValue(final Boolean value) {
+		public Builder booleanValue(final Boolean value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder integerValue(final Integer value) {
+		public Builder integerValue(final Integer value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder stringValue(final String value) {
+		public Builder stringValue(final String value) {
 			this.value = value;
 			return getSelf();
 		}
 		
-		Builder valueId(String valueId) {
+		public Builder valueId(String valueId) {
 			this.valueId = valueId;
 			return getSelf();
 		}
 		
-		Builder owlExpression(String owlExpression) {
+		public Builder owlExpression(String owlExpression) {
 			this.owlExpression = owlExpression;
 			return getSelf();
 		}
 		
-		Builder domainConstraint(String domainConstraint) {
+		public Builder domainConstraint(String domainConstraint) {
 			this.domainConstraint = domainConstraint;
 			return getSelf();
 		}
 		
-		Builder parentDomain(String parentDomain) {
+		public Builder parentDomain(String parentDomain) {
 			this.parentDomain = parentDomain;
 			return getSelf();
 		}
 		
-		Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
+		public Builder proximalPrimitiveConstraint(String proximalPrimitiveConstraint) {
 			this.proximalPrimitiveConstraint = proximalPrimitiveConstraint;
 			return getSelf();
 		}
 		
-		Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
+		public Builder proximalPrimitiveRefinement(String proximalPrimitiveRefinement) {
 			this.proximalPrimitiveRefinement = proximalPrimitiveRefinement;
 			return getSelf();
 		}
 		
-		Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
+		public Builder domainTemplateForPrecoordination(String domainTemplateForPrecoordination) {
 			this.domainTemplateForPrecoordination = domainTemplateForPrecoordination;
 			return getSelf();
 		}
-		Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
+		
+		public Builder domainTemplateForPostcoordination(String domainTemplateForPostcoordination) {
 			this.domainTemplateForPostcoordination = domainTemplateForPostcoordination;
 			return getSelf();
 		}
 		
-		Builder editorialGuideReference(String editorialGuideReference) {
+		public Builder editorialGuideReference(String editorialGuideReference) {
 			this.editorialGuideReference = editorialGuideReference;
 			return getSelf();
 		}
 		
-		Builder domainId(String domainId) {
+		public Builder domainId(String domainId) {
 			this.domainId = domainId;
 			return getSelf();
 		}
 		
-		Builder grouped(Boolean grouped) {
+		public Builder grouped(Boolean grouped) {
 			this.grouped = grouped;
 			return getSelf();
 		}
 		
-		Builder attributeCardinality(String attributeCardinality) {
+		public Builder attributeCardinality(String attributeCardinality) {
 			this.attributeCardinality = attributeCardinality;
 			return getSelf();
 		}
 		
-		Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
+		public Builder attributeInGroupCardinality(String attributeInGroupCardinality) {
 			this.attributeInGroupCardinality = attributeInGroupCardinality;
 			return getSelf();
 		}
 		
-		Builder ruleStrengthId(String ruleStrengthId) {
+		public Builder ruleStrengthId(String ruleStrengthId) {
 			this.ruleStrengthId = ruleStrengthId;
 			return getSelf();
 		}
 		
-		Builder contentTypeId(String contentTypeId) {
+		public Builder contentTypeId(String contentTypeId) {
 			this.contentTypeId = contentTypeId;
 			return getSelf();
 		}
 		
-		Builder rangeConstraint(String rangeConstraint) {
+		public Builder rangeConstraint(String rangeConstraint) {
 			this.rangeConstraint = rangeConstraint;
 			return getSelf();
 		}
 		
-		Builder attributeRule(String attributeRule) {
+		public Builder attributeRule(String attributeRule) {
 			this.attributeRule = attributeRule;
 			return getSelf();
 		}
 		
-		Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
+		public Builder mrcmRuleRefsetId(String mrcmRuleRefsetId) {
 			this.mrcmRuleRefsetId = mrcmRuleRefsetId;
 			return getSelf();
 		}
