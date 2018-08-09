@@ -29,10 +29,12 @@ import org.slf4j.Logger;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.status.Statuses;
+import com.b2international.index.revision.AddedInSourceAndTargetConflict;
 import com.b2international.index.revision.BranchMergeConflictException;
 import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
 import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
@@ -44,6 +46,7 @@ import com.b2international.snowowl.core.merge.MergeConflictImpl;
 import com.b2international.snowowl.core.merge.MergeImpl;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.BranchExclusiveRule;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -126,7 +129,8 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 		
 		final MergeConflictImpl.Builder conflict = MergeConflictImpl.builder()
 			.componentId(objectId.id())
-			.componentType(objectId.type());
+			.componentType(objectId.type())
+			.type(ConflictType.CONFLICTING_CHANGE);
 		
 		final List<ConflictingAttribute> conflictingAttributes = conflicts.stream()
 			.filter(ChangedInSourceAndTargetConflict.class::isInstance)
@@ -139,9 +143,17 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 			.collect(Collectors.toList());
 		
 		if (!conflictingAttributes.isEmpty()) {
-			 return conflict.type(ConflictType.CONFLICTING_CHANGE).conflictingAttributes(conflictingAttributes).build();
+			 return conflict.conflictingAttributes(conflictingAttributes).build();
 		} else {
-			throw new UnsupportedOperationException("TODO implement");
+			Conflict c = Iterables.getOnlyElement(conflicts);
+			if (c instanceof AddedInSourceAndTargetConflict) {
+				return conflict
+						.message(c.getMessage())
+						.conflictingAttribute(ConflictingAttributeImpl.builder().property(Revision.Fields.ID).build())
+						.build();
+			} else {
+				throw new UnsupportedOperationException("TODO implement");
+			}
 		}
 	}
 	

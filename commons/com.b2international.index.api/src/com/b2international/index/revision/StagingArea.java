@@ -589,6 +589,19 @@ public final class StagingArea {
 
 		
 		List<Conflict> conflicts = newArrayList();
+		
+		// check for added in both source and target conflicts
+		for (Class<? extends Revision> type : newRevisionIdsToMergeByType.keySet()) {
+			final String docType = DocumentMapping.getType(type);
+			final Set<String> newRevisionIdsOnSource = ImmutableSet.copyOf(newRevisionIdsToMergeByType.get(type));
+			final Set<String> newRevisionIdsOnTarget = ImmutableSet.copyOf(newRevisionIdsToCheckByType.get(type));
+			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
+			if (!addedInSourceAndTarget.isEmpty()) {
+				addedInSourceAndTarget.forEach(revisionId -> {
+					conflicts.add(new AddedInSourceAndTargetConflict(ObjectId.of(docType, revisionId)));
+				});
+			}
+		}
 
 		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> propertyUpdatesToApply = newHashMap();
 		
