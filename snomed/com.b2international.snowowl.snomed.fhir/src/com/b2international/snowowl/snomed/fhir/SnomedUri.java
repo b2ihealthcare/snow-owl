@@ -256,7 +256,6 @@ public class SnomedUri {
 	}
 	
 	private static void parseQueryPart(Builder builder, String queryPartString, String parameterName) {
-		System.out.println("qp: " + queryPartString);
 		queryPartString = queryPartString.substring(1, queryPartString.length());
 		
 		//parse VS
