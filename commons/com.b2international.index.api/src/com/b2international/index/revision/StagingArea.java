@@ -529,83 +529,24 @@ public final class StagingArea {
 			return squash ? -1L : fastForwardCommitTimestamp;
 		}
 		
+		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
 		// check conflicts and commit only the resolved conflicts
-		final List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE).getDetails();
+		final List<RevisionCompareDetail> toChangeDetails = toChanges.getDetails();
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {
 			return fastForwardCommitTimestamp;
 		}
 		
-		// process and categorize from changes
-		final Multimap<Class<? extends Revision>, String> newRevisionIdsToMergeByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToMergeByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToMergeByType = HashMultimap.create();
-		final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedSourceRevisions = newHashMap();
-		
-		fromChangeDetails.forEach(detail -> {
-			// add all objects to the tx
-			if (detail.isAdd()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					newRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
-					if (!detail.getObject().isRoot()) {
-						containersRequiredForNewAndChangedSourceRevisions.put(detail.getComponent(), detail.getObject());
-					}
-				}
-			} else if (detail.isChange()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					changedRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getObject().id());
-				}
-			} else if (detail.isRemove()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					removedRevisionIdsToMergeByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
-				}
-			} else {
-				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());
-			}
-		});
-		
-		// process and categorize toChanges
-		final Multimap<Class<? extends Revision>, String> newRevisionIdsToCheckByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> changedRevisionIdsToCheckByType = HashMultimap.create();
-		final Multimap<Class<? extends Revision>, String> removedRevisionIdsToCheckByType = HashMultimap.create();
-		final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedTargetRevisions = newHashMap();
-		
-		toChangeDetails.forEach(detail -> {
-			// add all objects to the tx
-			if (detail.isAdd()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					newRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
-					if (!detail.getObject().isRoot()) {
-						containersRequiredForNewAndChangedTargetRevisions.put(detail.getComponent(), detail.getObject());
-					}
-				}
-			} else if (detail.isChange()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					changedRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getObject().id());
-				}
-			} else if (detail.isRemove()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
-				if (Revision.class.isAssignableFrom(revType)) {
-					removedRevisionIdsToCheckByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
-				}
-			} else {
-				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());
-			}
-		});
-
+		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(fromChanges);
+		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(toChanges);
 		
 		List<Conflict> conflicts = newArrayList();
 		
-		for (Class<? extends Revision> type : Iterables.concat(newRevisionIdsToMergeByType.keySet(), newRevisionIdsToCheckByType.keySet())) {
+		for (Class<? extends Revision> type : Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes())) {
 			final String docType = DocumentMapping.getType(type);
-			final Set<String> newRevisionIdsOnSource = ImmutableSet.copyOf(newRevisionIdsToMergeByType.get(type));
-			final Set<String> newRevisionIdsOnTarget = ImmutableSet.copyOf(newRevisionIdsToCheckByType.get(type));
+			final Set<String> newRevisionIdsOnSource = fromChangeSet.getAddedIds(type);
+			final Set<String> newRevisionIdsOnTarget = toChangeSet.getAddedIds(type);
 			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
 			// check for added in both source and target conflicts
 			if (!addedInSourceAndTarget.isEmpty()) {
@@ -616,8 +557,8 @@ public final class StagingArea {
 			// check deleted containers on target and report them as conflicts
 			newRevisionIdsOnSource.forEach(newRevisionOnSource -> {
 				ObjectId newRevisionOnSourceId = ObjectId.of(docType, newRevisionOnSource);
-				ObjectId requiredContainer = containersRequiredForNewAndChangedSourceRevisions.get(newRevisionOnSourceId);
-				if (requiredContainer != null && removedRevisionIdsToCheckByType.containsEntry(DocumentMapping.getClass(requiredContainer.type()), requiredContainer.id())) {
+				ObjectId requiredContainer = fromChangeSet.getContainerId(newRevisionOnSourceId);
+				if (requiredContainer != null && toChangeSet.isRemoved(requiredContainer)) {
 					conflicts.add(new AddedInSourceAndDetachedInTargetConflict(newRevisionOnSourceId, requiredContainer));
 				}
 			});
@@ -625,8 +566,8 @@ public final class StagingArea {
 			// check deleted containers on source and report them as conflicts
 			newRevisionIdsOnTarget.forEach(newRevisionOnTarget -> {
 				ObjectId newRevisionOnTargetId = ObjectId.of(docType, newRevisionOnTarget);
-				ObjectId requiredContainer = containersRequiredForNewAndChangedTargetRevisions.get(newRevisionOnTargetId);
-				if (requiredContainer != null && removedRevisionIdsToMergeByType.containsEntry(DocumentMapping.getClass(requiredContainer.type()), requiredContainer.id())) {
+				ObjectId requiredContainer = toChangeSet.getContainerId(newRevisionOnTargetId);
+				if (requiredContainer != null && fromChangeSet.isRemoved(requiredContainer)) {
 					conflicts.add(new AddedInTargetAndDetachedInSourceConflict(newRevisionOnTargetId, requiredContainer));
 				}
 			});
@@ -635,11 +576,11 @@ public final class StagingArea {
 		// check property conflicts
 		final Map<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> propertyUpdatesToApply = newHashMap();
 		
-		Set<String> changedRevisionIdsToCheck = newHashSet(changedRevisionIdsToCheckByType.values());
-		Set<String> removedRevisionIdsToCheck = newHashSet(removedRevisionIdsToCheckByType.values());
-		for (Class<? extends Revision> type : ImmutableSet.copyOf(changedRevisionIdsToMergeByType.keySet())) {
+		Set<String> changedRevisionIdsToCheck = newHashSet(toChangeSet.getChangedIds());
+		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
+		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
 			final String docType = DocumentMapping.getType(type);
-			Set<String> changedRevisionIdsToMerge = newHashSet(changedRevisionIdsToMergeByType.get(type));
+			Set<String> changedRevisionIdsToMerge = fromChangeSet.getChangedIds(type);
 			// first handle changed vs. removed
 			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
 			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
@@ -657,7 +598,7 @@ public final class StagingArea {
 				});
 				// register them as revised on source from the target branch point of view
 				revisionsToReviseOnMergeSource.putAll(type, changedInSourceDetachedInTargetIds);
-				changedInSourceDetachedInTargetIds.forEach(id -> changedRevisionIdsToMergeByType.remove(type, id));
+				changedInSourceDetachedInTargetIds.forEach(id -> fromChangeSet.removeChanged(type, id));
 				changedRevisionIdsToMerge.removeAll(changedInSourceDetachedInTargetIds);
 			}
 			// then handle changed vs. changed with the conflict processor
@@ -682,7 +623,7 @@ public final class StagingArea {
 								propertyUpdatesToApply.put(type, HashMultimap.create());
 							}
 							propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, sourceChangeDiff);
-							changedRevisionIdsToMergeByType.remove(type, changedInSourceAndTargetId);
+							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 						} else {
 							RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
 							// changed on both sides, ask conflict processor to resolve the issue or raise conflict error
@@ -699,7 +640,7 @@ public final class StagingArea {
 								}
 								propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, resolution);
 							}
-							changedRevisionIdsToMergeByType.remove(type, changedInSourceAndTargetId);
+							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 						}
 					}
 				}
@@ -729,15 +670,15 @@ public final class StagingArea {
 		
 		if (squash) {
 			// apply new objects
-			for (Class<? extends Revision> type : newHashSet(newRevisionIdsToMergeByType.keySet())) {
-				final Collection<String> newRevisionIds = newRevisionIdsToMergeByType.removeAll(type);
+			for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
+				final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
 				index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(this::stageNew);
 				stagedChanges = true;
 			}
 			
 			// apply changed objects
-			for (Class<? extends Revision> type : newHashSet(changedRevisionIdsToMergeByType.keySet())) {
-				final Collection<String> changedRevisionIds = changedRevisionIdsToMergeByType.removeAll(type);
+			for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
+				final Collection<String> changedRevisionIds = fromChangeSet.getChangedIds(type);
 				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
 				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 				
@@ -755,8 +696,8 @@ public final class StagingArea {
 		}
 		
 		// always apply deleted objects, they set the revised timestamp properly without introducing any new document
-		for (Class<? extends Revision> type : newHashSet(removedRevisionIdsToMergeByType.keySet())) {
-			final Collection<String> removedRevisionIds = removedRevisionIdsToMergeByType.removeAll(type);
+		for (Class<? extends Revision> type : fromChangeSet.getRemovedTypes()) {
+			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
 			stagedChanges = true;
 		}
