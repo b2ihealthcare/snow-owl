@@ -36,15 +36,17 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -57,6 +59,9 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
+	
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	private static final String OWL_EXPRESSION = "SubClassOf("
 			+ "ObjectIntersectionOf("
@@ -454,6 +459,12 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
 		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
 	}
+	
+//	@Test
+//	public void import28InvalidConcept() {
+//		importArchive("SnomedCT_Release_INT_20150131_new_invalid_concept.zip");
+//		expectedException.expectCause(isA(SnowowlRuntimeException.class));
+//	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {

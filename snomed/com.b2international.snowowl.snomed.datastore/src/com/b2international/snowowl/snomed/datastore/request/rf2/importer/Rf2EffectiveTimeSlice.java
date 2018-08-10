@@ -31,6 +31,8 @@ import org.eclipse.emf.cdo.util.CommitException;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
@@ -57,6 +59,27 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.RF2MRCMAttributeRangeRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2AssocationRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2AttributeValueRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ComplexMapRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ConceptRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2DescriptionRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2DescriptionTypeRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ExtendedMapRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2LanguageRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2MRCMAttributeDomainRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2MRCMDomainRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2MRCMModuleScopeRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ModuleDependencyRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2OWLExpressionRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2RelationshipRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2SimpleMapWithDescriptionRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2SimpleRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationResponseEntity;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
@@ -69,6 +92,8 @@ import com.google.common.collect.Multimap;
  * @since 6.0
  */
 public final class Rf2EffectiveTimeSlice {
+	
+	private static final Logger LOG = LoggerFactory.getLogger("RF2 import");
 
 	private static final int BATCH_SIZE = 5000;
 
@@ -122,8 +147,12 @@ public final class Rf2EffectiveTimeSlice {
 		
 		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + valuesWithType);
 	}
+	
+	public String getEffectiveTime() {
+		return effectiveTime;
+	}
 
-	public void register(String containerId, Rf2ContentType<?> type, String[] values) {
+	public void register(String containerId, Rf2ContentType<?> type, String[] values, Rf2ValidationResponseEntity validationEntity) {
 		String[] valuesWithType = new String[values.length + 1];
 		valuesWithType[0] = type.getType();
 		System.arraycopy(values, 0, valuesWithType, 1, values.length);
@@ -142,10 +171,66 @@ public final class Rf2EffectiveTimeSlice {
 				registerDependencies(containerIdL, PrimitiveSets.newLongOpenHashSet(Long.parseLong(componentId)));
 			}
 		}
+		final AbstractRf2RowValidator validator = assignTerminologyRowValidator(type, values, validationEntity);
+		if (validator != null) {
+			validator.validateRows(type.getHeaderColumns());
+		}
 		tmpComponentsById.put(componentId, valuesWithType);
 		if (tmpComponentsById.size() >= BATCH_SIZE) {
 			flush();
 		}
+	}
+	
+	private AbstractRf2RowValidator assignTerminologyRowValidator(Rf2ContentType<?> type, String[] values, Rf2ValidationResponseEntity validationEntity) {
+		if (type instanceof Rf2ConceptContentType) {
+			return new Rf2ConceptRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2DescriptionContentType) {
+			return new Rf2DescriptionRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2RelationshipContentType) {
+			return new Rf2RelationshipRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2RefSetContentType) {
+			return assignRefsetRowValidator(type, values, validationEntity); 
+		}
+		
+		validationEntity.put(Rf2ValidationType.WARNING, Rf2ValidationDefects.ENCOUNTER_UNKNOWN_RELEASE_FILE.getLabel());
+		return null;
+	}
+	
+	private AbstractRf2RowValidator assignRefsetRowValidator(Rf2ContentType<?> type, String[] values, Rf2ValidationResponseEntity validationEntity) {
+		if (type instanceof Rf2AssociationRefSetContentType) {
+			return new Rf2AssocationRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2AttributeValueRefSetContentType) {
+			return new Rf2AttributeValueRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2ComplexMapRefSetContentType) {
+			return new Rf2ComplexMapRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2DescriptionTypeRefSetContentType) {
+			return new Rf2DescriptionTypeRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2ExtendedMapRefSetContentType) {
+			return new Rf2ExtendedMapRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2LanguageRefSetContentType) {
+			return new Rf2LanguageRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2ModuleDependencyRefSetContentType) {
+			return new Rf2ModuleDependencyRefSetRowValidator(validationEntity, values); 
+		} else if (type instanceof Rf2MRCMAttributeDomainRefSetContentType) {
+			return new Rf2MRCMAttributeDomainRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2MRCMAttributeRangeRefSetContentType) {
+			return new RF2MRCMAttributeRangeRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2MRCMDomainRefSetContentType) {
+			return new Rf2MRCMDomainRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2MRCMModuleScopeRefSetContentType) {
+			return new Rf2MRCMModuleScopeRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2OwlExpressionRefSetContentType) {
+			return new Rf2OWLExpressionRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2SimpleMapRefSetContentType) {
+			return new Rf2SimpleRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2SimpleMapWithDescriptionContentType) {
+			return new Rf2SimpleMapWithDescriptionRefSetRowValidator(validationEntity, values);
+		} else if (type instanceof Rf2SimpleRefSetContentType) {
+			return new Rf2SimpleRefSetRowValidator(validationEntity, values);
+		}
+		
+		validationEntity.put(Rf2ValidationType.WARNING, Rf2ValidationDefects.ENCOUNTER_UNKNOWN_RELEASE_FILE.getLabel());
+		return null;
 	}
 	
 	public void registerDependencies(long componentId, LongSet dependencies) {
@@ -174,7 +259,7 @@ public final class Rf2EffectiveTimeSlice {
 		final boolean createVersions = importConfig.isCreateVersions();
 		final String userId = importConfig.getUserId();
 		
-		System.err.println(logMessage);
+		LOG.info(logMessage);
 		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.service(TransactionContextProvider.class).get(context, userId, null, DatastoreLockContextDescriptions.ROOT), storageKeysByComponent, storageKeysByRefSet, loadOnDemand)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
@@ -237,7 +322,7 @@ public final class Rf2EffectiveTimeSlice {
 					.execute(context);
 			}
 		}
-		System.err.println(commitMessage + " in " + w);
+		LOG.info(commitMessage + " in " + w);
 	}
 	
 	private void createNewVersion(CodeSystemVersion versionToCreate, String codeSystemShortName, BranchContext context, String userId) {
@@ -247,7 +332,7 @@ public final class Rf2EffectiveTimeSlice {
 		try (final SnomedEditingContext codeSystemEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
 			codeSystemEditingContext.lookup(codeSystemShortName, CodeSystem.class).getCodeSystemVersions().add(versionToCreate);
 			if (codeSystemEditingContext.isDirty()) {
-				System.err.println(commitMessage);
+				LOG.info(commitMessage);
 
 				new CDOServerCommitBuilder(userId, commitMessage, codeSystemEditingContext.getTransaction())
 						.sendCommitNotification(false)

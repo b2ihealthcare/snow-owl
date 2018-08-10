@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.ecore.EObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
@@ -68,6 +70,8 @@ import com.google.common.collect.Multimaps;
  * @since 6.0.0
  */
 final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+	
+	private static final Logger LOG = LoggerFactory.getLogger("import");
 
 	private final Map<String, CDOObject> newComponents = newHashMap();
 	private final Map<String, SnomedRefSet> newRefSets = newHashMap();
@@ -114,7 +118,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	public long commit(String userId, String commitComment, String parentContextDescription) {
 		try {
 			if (this.editingContext.isDirty()) {
-				System.err.println("Pushing changes: " + commitComment);
+				LOG.info("Pushing changes: " + commitComment);
 				return getDelegate().commit(userId, commitComment, parentContextDescription);
 			} else {
 				return -1L;

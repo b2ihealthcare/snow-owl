@@ -22,6 +22,7 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationResponseEntity;
 import com.google.common.base.Strings;
 
 /**
@@ -29,9 +30,9 @@ import com.google.common.base.Strings;
  */
 public interface Rf2ContentType<T extends SnomedComponent> {
 
-	default void register(String[] values, Rf2EffectiveTimeSlice slice) {
+	default void register(String[] values, Rf2EffectiveTimeSlice slice, Rf2ValidationResponseEntity validationEntity) {
 		final String containerId = getContainerId(values);
-		slice.register(containerId, this, values);
+		slice.register(containerId, this, values, validationEntity);
 		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
 	}
 

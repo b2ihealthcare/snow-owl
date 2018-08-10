@@ -33,7 +33,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -58,6 +61,8 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Effe
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationResponseEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -73,7 +78,11 @@ import com.google.common.collect.ImmutableList;
  */
 public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
+	private static final Logger LOG = LoggerFactory.getLogger("import");
+	
 	private static final String TXT_EXT = ".txt";
+	
+	private final Rf2ValidationResponseEntity validationEntity = new Rf2ValidationResponseEntity();
 
 	@NotNull
 	private final UUID rf2ArchiveId;
@@ -136,7 +145,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			if (!isLoadOnDemandEnabled()) {
 				Stopwatch w = Stopwatch.createStarted();
 				for (Class<?> type : ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class)) {
-					System.err.println(String.format("Loading available '%s' IDs and StorageKeys...", type.getName()));
+					LOG.info(String.format("Loading available '%s' IDs and StorageKeys...", type.getName()));
 					final List<String> fieldsToLoad;
 					if (SnomedConceptDocument.class == type) {
 						fieldsToLoad = ImmutableList.of(RevisionDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY, SnomedConceptDocument.Fields.REFSET_STORAGEKEY);
@@ -164,7 +173,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 						}
 					}
 				}
-				System.err.println("Loading available components IDs and StorageKeys took: " + w);
+				LOG.info("Loading available components IDs and StorageKeys took: " + w);
 			}
 			
 			// create executor service to parallel update the underlying index store
@@ -172,10 +181,28 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
 			read(importconfig.getRf2Archive(), effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
-			System.err.println("Preparing RF2 import took: " + w);
+			LOG.info("Preparing RF2 import took: " + w);
 			w.reset().start();
-
-			for (Rf2EffectiveTimeSlice slice : effectiveTimeSlices.consumeInOrder()) {
+			
+			// results of row based validation
+			
+			if (validationEntity.getNumberOfErrors() > 0) {
+				System.err.println("There were validation issues");
+				validationEntity.logErorrs(LOG);
+				throw new BadRequestException(String.format("There were %d validation problems with the RF2 import files", validationEntity.getNumberOfErrors()));
+			}
+			
+			// run global validation
+			Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
+			Rf2GlobalValidator validator = new Rf2GlobalValidator(db, orderedEffectiveTimeSlices);
+			
+			if (validationEntity.getNumberOfErrors() > 0 || validationEntity.getNumberOfWarnings() > 0) {
+				System.err.println("There were validation issues");
+//				validationEntity.logValidationIssues(LOG);
+				throw new BadRequestException("There were %s validation problems with the RF2 import files" + validationEntity.getNumberOfErrors());
+			}
+			
+			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(importconfig, context);
 			}
 		}
@@ -203,7 +230,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 					try (final InputStream in = zip.getInputStream(entry)) {
 						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet);
 					}
-					System.err.println(entry.getName() + " - " + w);
+					LOG.info(entry.getName() + " - " + w);
 				}
 			}
 		} catch (IOException e) {
@@ -231,14 +258,14 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				}
 
 				if (resolver == null) {
-					System.err.println("Unrecognized RF2 file: " + entry.getName());
+					LOG.warn("Unrecognized RF2 file: " + entry.getName());
 					break;
 				}
 				
 				header = false;
 			} else {
 				final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
-				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime));
+				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), validationEntity);
 			}
 
 		}
