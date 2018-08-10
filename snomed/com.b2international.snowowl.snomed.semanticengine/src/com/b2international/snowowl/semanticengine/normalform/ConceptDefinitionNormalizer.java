@@ -86,7 +86,7 @@ public class ConceptDefinitionNormalizer {
 					.getSync();
 			//for (int i = 0; i < outgoingRelationships.length; i++) {
 			for (SnomedRelationship relationship : outboundRelationships) {
-				if (!Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType())) {
+				if (!Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType().getConceptId())) {
 					
 					int relationshipGroup = relationship.getGroup();
 					Attribute attribute = ScgFactory.eINSTANCE.createAttribute();

@@ -1,4 +1,0 @@
-# Debugging and tracing options
-
-org.eclipse.net4j.db.mysql/debug = true
-org.eclipse.net4j.db.mysql/debug.sql = true

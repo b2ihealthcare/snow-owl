@@ -761,13 +761,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.net4j.db.mysql"
-         download-size="0"
-         install-size="0"
-         version="4.0.200.v20130710-2145-b2i"
-         unpack="false"/>
-
-   <plugin
          id="xstream"
          download-size="0"
          install-size="0"

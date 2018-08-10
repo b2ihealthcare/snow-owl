@@ -10,16 +10,6 @@
       </provider>
    </extension>
    <extension
-         point="org.eclipse.core.expressions.propertyTesters">
-      <propertyTester
-            class="com.b2international.snowowl.snomed.datastore.ConceptIdPropertyTester"
-            id="com.b2international.snowowl.snomed.datastore.ConceptIdProp"
-            namespace="com.b2international.snowowl.snomed.datastore"
-            properties="conceptId"
-            type="java.lang.Object">
-      </propertyTester>
-   </extension>
-   <extension
          point="com.b2international.snowowl.datastore.validationIssueDetailExtension">
       <validationIssueDetailExtension
             class="com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension">
