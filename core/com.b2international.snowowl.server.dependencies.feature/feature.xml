@@ -726,13 +726,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.slf4j.log4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.yaml.snakeyaml"
          download-size="0"
          install-size="0"
@@ -921,13 +914,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -1144,15 +1130,21 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="ch.qos.logback.slf4j"
+         id="groovy-all"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin
-         id="groovy-all"
+         id="log4j.over.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"

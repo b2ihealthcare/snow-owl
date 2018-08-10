@@ -21,10 +21,6 @@
 		<module>com.b2international.snowowl.snomed.api.feature</module>
 		<module>com.b2international.snowowl.snomed.api.rest.feature</module>
 		
-		<!-- SNOMED CT Models -->
-		<module>com.b2international.snowowl.snomed.model</module>
-		<module>com.b2international.snowowl.snomed.refset.model</module>
-		
 		<!-- SNOMED CT Core modules -->
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
@@ -40,9 +36,6 @@
 		<module>com.b2international.snowowl.snomed.semanticengine.test</module>
 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
-		
-		<!-- SNOMED CT MRCM Support -->
-		<module>com.b2international.snowowl.snomed.mrcm.model</module>
 		
 		<!-- SNOMED CT Import-Export -->
 		<module>com.b2international.snowowl.snomed.importer</module>

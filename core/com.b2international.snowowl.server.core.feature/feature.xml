@@ -86,13 +86,6 @@ Visit us at http://b2i.sg
          version="0.0.0"/>
 
    <plugin
-         id="com.b2international.snowowl.server.console"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="com.b2international.collections.api"
          download-size="0"
          install-size="0"
