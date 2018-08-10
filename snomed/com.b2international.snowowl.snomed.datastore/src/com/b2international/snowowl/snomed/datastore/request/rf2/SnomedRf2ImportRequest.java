@@ -50,6 +50,7 @@ import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
+import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -76,7 +77,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 6.0.0
  */
-public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
+public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
@@ -117,7 +118,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	}
 	
 	@Override
-	public Boolean execute(BranchContext context) {
+	public Rf2ImportResponse execute(BranchContext context) {
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String feature = Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, context.branchPath());
 
@@ -126,8 +127,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		final Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(userId, createVersions, rf2Archive, codeSystemShortName, type);
 		try {
 			features.enable(feature);
-			doImport(importConfig, context);
-			return Boolean.TRUE;
+			return doImport(importConfig, context);
 		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
 		} finally {
@@ -135,8 +135,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 	}
 
-	void doImport(final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
+	Rf2ImportResponse doImport(final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
+		final Rf2ImportResponse response = new Rf2ImportResponse();
+		
 		try (final DB db = createDb()) {
 			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
 			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
@@ -183,24 +185,31 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 			LOG.info("Preparing RF2 import took: " + w);
 			w.reset().start();
 			
-			logValidationIssues(reporter);
+			// log issues with rows
+			logValidationIssues(reporter, response);
 			
 			// run global validation
-			Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			Rf2GlobalValidator validator = new Rf2GlobalValidator(db, orderedEffectiveTimeSlices);
+			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(db, orderedEffectiveTimeSlices);
+			globalValidator.validate(reporter);
 			
-			logValidationIssues(reporter);
-		
+			// log global validation issues
+			logValidationIssues(reporter, response);
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(importconfig, context);
 			}
+			// import completed successfully
+			response.setStatus(ImportStatus.COMPLETED);
 		}
+		return response;
 	}
 
-	private void logValidationIssues(final Rf2ValidationIssueReporter reporter) {
+	private void logValidationIssues(final Rf2ValidationIssueReporter reporter, Rf2ImportResponse response) {
 		reporter.logWarnings(LOG);
+		response.getIssues().addAll(reporter.getIssues());
 		if (reporter.getNumberOfErrors() > 0) {
+			response.setStatus(ImportStatus.FAILED);
 			reporter.logErrors(LOG);
 			throw new BadRequestException(String.format("There were %s validation errors with the RF2 import files", reporter.getNumberOfErrors()));
 		}

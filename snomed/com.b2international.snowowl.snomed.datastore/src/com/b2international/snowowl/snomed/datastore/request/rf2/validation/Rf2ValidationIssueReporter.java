@@ -59,6 +59,10 @@ public final class Rf2ValidationIssueReporter {
 	public Collection<String> getWarnings() {
 		return validationProblems.get(Rf2ValidationType.WARNING);
 	}
+	
+	public Collection<String> getIssues() {
+		return validationProblems.values();
+	}
 
 	public void logWarnings(Logger log) {
 		getWarnings().forEach(log::warn);;

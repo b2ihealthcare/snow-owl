@@ -27,8 +27,8 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 6.0.0
  */
 public final class SnomedRf2ImportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Boolean> 
-		implements RevisionIndexRequestBuilder<Boolean> {
+		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Rf2ImportResponse> 
+		implements RevisionIndexRequestBuilder<Rf2ImportResponse> {
 
 	private String userId;
 	private UUID rf2ArchiveId;
@@ -65,7 +65,7 @@ public final class SnomedRf2ImportRequestBuilder
 	}
 	
 	@Override
-	protected Request<BranchContext, Boolean> doBuild() {
+	protected Request<BranchContext, Rf2ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
