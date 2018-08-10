@@ -69,6 +69,11 @@ public interface IndexClientFactory {
 	String CLUSTER_URL = "clusterUrl";
 	
 	/**
+	 * Configuration key to specify the string each index name should be prefixed with (used in multi-tenant deployments). 
+	 */
+	String INDEX_PREFIX = "indexPrefix";
+
+	/**
 	 * The default translog sync interval is 5 seconds.
 	 */
 	String DEFAULT_TRANSLOG_SYNC_INTERVAL = "5s";
@@ -89,6 +94,11 @@ public interface IndexClientFactory {
 	 */
 	String DEFAULT_CLUSTER_URL = "http://127.0.0.1:9200";
 
+	/**
+	 * The default index prefix is empty
+	 */
+	String DEFAULT_INDEX_PREFIX = "";
+	
 	/**
 	 * Create a new {@link IndexClient} with the given name.
 	 * 

@@ -37,7 +37,6 @@ import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.RestStatus;
@@ -73,6 +72,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final ObjectMapper mapper;
 	
 	private final Logger log;
+	private final String prefix;
 
 	public EsIndexAdmin(EsClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
 		this.client = client;
@@ -82,9 +82,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.mapper = mapper;
 		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
+		
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
+		
+		final String prefix = (String) settings.get(IndexClientFactory.INDEX_PREFIX);
+		this.prefix = prefix.isEmpty() ? "" : prefix + ".";
 	}
 	
 	@Override
@@ -403,9 +407,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	public String getTypeIndex(DocumentMapping mapping) {
 		if (mapping.getParent() != null) {
-			return String.format("%s-%s", name, mapping.getParent().typeAsString());
+			return String.format("%s%s-%s", prefix, name, mapping.getParent().typeAsString());
 		} else {
-			return String.format("%s-%s", name, mapping.typeAsString());
+			return String.format("%s%s-%s", prefix, name, mapping.typeAsString());
 		}
 	}
 	

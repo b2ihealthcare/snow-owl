@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -58,6 +59,9 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 	private int mergeMaxResults = 100;
 
 	private boolean revisionCacheEnabled = true;
+	
+	@Pattern(regexp = "^[a-zA-Z0-9_-]{0,32}$")
+	private String deploymentId = "";
 	
 	/**
 	 * @return the host
@@ -151,7 +155,10 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 	 * @return the JDBC URL of the database for the repository
 	 */
 	public JdbcUrl getDatabaseUrl() {
-		return new JdbcUrl(getDatabaseConfiguration().getScheme(), getDatabaseConfiguration().getLocation(), getDatabaseConfiguration().getSettings());
+		return new JdbcUrl(getDatabaseConfiguration().getScheme(),
+				getDatabaseConfiguration().getLocation(), 
+				deploymentId,
+				getDatabaseConfiguration().getSettings());
 	}
 	
 	/**
@@ -192,4 +199,13 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 		this.revisionCacheEnabled = revisionCacheEnabled;
 	}
 
+	@JsonProperty
+	public String getDeploymentId() {
+		return deploymentId;
+	}
+	
+	@JsonProperty
+	public void setDeploymentId(String deploymentId) {
+		this.deploymentId = deploymentId;
+	}
 }

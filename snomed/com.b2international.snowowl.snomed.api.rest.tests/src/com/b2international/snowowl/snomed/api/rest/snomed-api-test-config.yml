@@ -1,5 +1,5 @@
 #
-# Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # Redirects configuration directory to a random directory under OSGI installation directory
@@ -25,3 +25,6 @@ snomed:
   
 metrics:
   enabled: true
+  
+repository:
+  deploymentId: api-test
