@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
@@ -55,6 +58,7 @@ public abstract class BaseRevisionBranching {
 	private final RevisionIndex index;
 	private final TimestampProvider timestampProvider;
 	private final ObjectMapper mapper;
+	private final List<Consumer<String>> onBranchChange = newArrayListWithCapacity(1);
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
 			.expireAfterAccess(5L, TimeUnit.MINUTES)
@@ -319,11 +323,32 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	/**
-	 * Subclasses should override this method if they want to broadcast notifications of changed branches.
+	 * Broadcast notifications of changed branches.
+	 * 
 	 * @param branchPath the subject of the notification (may not be {@code null})
-	 * @return {@code branch} (for convenience)
 	 */
-	protected void sendChangeEvent(final String branchPath) {
+	protected final void sendChangeEvent(final String branchPath) {
+		onBranchChange.forEach(c -> c.accept(branchPath));
+	}
+	
+	/**
+	 * Listen on branch changes
+	 * 
+	 * @param onBranchChange - the listener to add
+	 */
+	public final void addBranchChangeListener(Consumer<String> onBranchChange) {
+		if (!this.onBranchChange.contains(onBranchChange)) {
+			this.onBranchChange.add(onBranchChange);
+		}
+	}
+	
+	/**
+	 * Remove branch change listener
+	 * 
+	 * @param onBranchChange - the listener to remove
+	 */
+	public final void removeBranchChangeListener(Consumer<String> onBranchChange) {
+		this.onBranchChange.remove(onBranchChange);
 	}
 	
 	/**

@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
+import com.b2international.snowowl.datastore.events.BranchChangedEvent;
 import com.b2international.snowowl.datastore.events.RepositoryCommitNotification;
 import com.b2international.snowowl.datastore.internal.merge.MergeServiceImpl;
 import com.b2international.snowowl.datastore.review.ReviewConfiguration;
@@ -132,6 +133,9 @@ public final class TerminologyRepository extends DelegatingContext implements In
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, service(TimestampProvider.class), mapper);
+		revisionIndex.branching().addBranchChangeListener(path -> {
+			sendNotification(new BranchChangedEvent(repositoryId, path));
+		});
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
