@@ -17,8 +17,8 @@ package com.b2international.snowowl.core.merge;
 
 import java.util.Collection;
 
+import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.merge.MergeConflict;
 
 /**
  * Generic interface for merge conflict rules
@@ -28,11 +28,11 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 public interface IMergeConflictRule {
 
 	/**
-	 * Executes the given conflict rule and returns a collection of {@link MergeConflict} if there was any.
+	 * Executes the given conflict rule and returns a collection of {@link Conflict} if there was any.
 	 * 
 	 * @param staging
 	 * @return
 	 */
-	Collection<MergeConflict> validate(StagingArea staging);
+	Collection<Conflict> validate(StagingArea staging);
 	
 }

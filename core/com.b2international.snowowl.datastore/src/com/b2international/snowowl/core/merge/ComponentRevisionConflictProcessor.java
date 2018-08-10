@@ -24,9 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.RevisionConflictProcessor;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.exceptions.MergeConflictException;
 import com.google.common.base.Stopwatch;
 
 /**
@@ -43,16 +43,13 @@ public class ComponentRevisionConflictProcessor extends RevisionConflictProcesso
 	}
 	
 	@Override
-	public void postProcess(StagingArea staging) {
+	public List<Conflict> postProcess(StagingArea staging) {
 		LOG.info("Post-processing merge/rebase operation...");
 		Stopwatch w = Stopwatch.createStarted();
-		
-		final List<MergeConflict> conflicts = rules.stream().flatMap(rule -> rule.validate(staging).stream()).collect(Collectors.toList());
-		
-		LOG.info("Post-processing took {}", TimeUtil.toString(w));
-		
-		if (!conflicts.isEmpty()) {
-			throw new MergeConflictException(conflicts, "Domain specific conflicts detected while post-processing merge changes.");
+		try {
+			return rules.stream().flatMap(rule -> rule.validate(staging).stream()).collect(Collectors.toList());
+		} finally {
+			LOG.info("Post-processing took {}", TimeUtil.toString(w));
 		}
 	}
 	

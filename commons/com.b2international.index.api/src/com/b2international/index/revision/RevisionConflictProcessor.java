@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -69,8 +70,9 @@ public interface RevisionConflictProcessor {
 	 * Post-processes the resulting staging area before committing.
 	 * 
 	 * @param staging - the final state of the {@link StagingArea} before committing to the repository
+	 * @return - a list of additional conflicts to report or empty collection if there are no domain specific conflicts, never <code>null</code>.
 	 */
-	void postProcess(StagingArea staging);
+	 List<Conflict> postProcess(StagingArea staging);
 	
 	/**
 	 * @since 7.0
@@ -93,7 +95,8 @@ public interface RevisionConflictProcessor {
 		}
 		
 		@Override
-		public void postProcess(StagingArea staging) {
+		public List<Conflict> postProcess(StagingArea staging) {
+			return Collections.emptyList();
 		}
 		
 	}
