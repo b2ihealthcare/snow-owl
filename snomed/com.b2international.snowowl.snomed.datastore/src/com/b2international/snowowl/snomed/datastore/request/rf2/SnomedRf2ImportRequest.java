@@ -122,9 +122,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		final FeatureToggles features = context.service(FeatureToggles.class);
 		final String feature = Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, context.branchPath());
 
-		final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
-		final File rf2Archive = fileReg.getFile(rf2ArchiveId);
-		final Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(userId, createVersions, rf2Archive, codeSystemShortName, type);
+		final Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(userId, createVersions, codeSystemShortName, type);
 		try {
 			features.enable(feature);
 			return doImport(importConfig, context);
@@ -181,7 +179,10 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(importconfig.getRf2Archive(), effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet, reporter);
+			
+			final InternalFileRegistry fileReg = (InternalFileRegistry) context.service(FileRegistry.class);
+			final File rf2Archive = fileReg.getFile(rf2ArchiveId);
+			read(rf2Archive, effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet, reporter);
 			LOG.info("Preparing RF2 import took: " + w);
 			w.reset().start();
 			
@@ -190,8 +191,8 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			
 			// run global validation
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(db, orderedEffectiveTimeSlices);
-			globalValidator.validate(reporter);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator();
+			globalValidator.validate(orderedEffectiveTimeSlices, reporter, context);
 			
 			// log global validation issues
 			logValidationIssues(reporter, response);

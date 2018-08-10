@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
-import java.io.File;
-
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
@@ -26,14 +24,12 @@ public final class Rf2ImportConfiguration {
 	
 	private String userId;
 	private boolean createVersions;
-	private File rf2Archive;
 	private String codeSystemShortName;
 	private Rf2ReleaseType releaseType;
 
-	public Rf2ImportConfiguration(String userId, boolean createVersions, File rf2Archive, String codeSystemShortName, Rf2ReleaseType releaseType) {
+	public Rf2ImportConfiguration(String userId, boolean createVersions, String codeSystemShortName, Rf2ReleaseType releaseType) {
 		this.userId = userId;
 		this.createVersions = createVersions;
-		this.rf2Archive = rf2Archive;
 		this.codeSystemShortName = codeSystemShortName;
 		this.releaseType = releaseType;
 	}
@@ -52,14 +48,6 @@ public final class Rf2ImportConfiguration {
 
 	public void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
-	}
-
-	public File getRf2Archive() {
-		return rf2Archive;
-	}
-
-	public void setRf2Archive(File rf2Archive) {
-		this.rf2Archive = rf2Archive;
 	}
 
 	public String getCodeSystemShortName() {

@@ -167,6 +167,10 @@ public final class Rf2EffectiveTimeSlice {
 			dependenciesByComponent.get(componentId).addAll(dependencies);
 		}
 	}
+	
+	public LongKeyMap<LongSet> getDependenciesByComponent() {
+		return dependenciesByComponent;
+	}
 
 	public void flush() {
 		if (!tmpComponentsById.isEmpty()) {

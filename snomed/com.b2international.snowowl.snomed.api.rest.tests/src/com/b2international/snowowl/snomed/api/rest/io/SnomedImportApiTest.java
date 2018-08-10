@@ -71,7 +71,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				+ "sct:8801005 Secondary diabetes mellitus (disorder))";
 
 	private void importArchive(final String fileName) {
-		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);
+		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA, ImportStatus.COMPLETED);
 	}
 	
 	private void importArchive(final String fileName, ImportStatus expectedStatus) {
@@ -470,6 +470,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void import28InvalidConcept() {
 		importArchive("SnomedCT_Release_INT_20150131_new_invalid_concept.zip", ImportStatus.FAILED);
+	}
+	
+	@Test
+	public void import29DescriptionWithNonExistantConceptId() {
+		importArchive("SnomedCT_Release_INT_20150201_new_description_with_non_existant_conceptId.zip", ImportStatus.FAILED);
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

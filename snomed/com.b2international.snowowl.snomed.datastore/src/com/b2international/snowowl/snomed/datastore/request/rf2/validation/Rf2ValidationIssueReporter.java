@@ -27,8 +27,6 @@ import com.google.common.collect.Multimap;
  */
 public final class Rf2ValidationIssueReporter {
 	
-	public static final int MAX_LOGGABLE_ISSUES = 100;
-	
 	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create();
 	
 	public Rf2ValidationIssueReporter() {

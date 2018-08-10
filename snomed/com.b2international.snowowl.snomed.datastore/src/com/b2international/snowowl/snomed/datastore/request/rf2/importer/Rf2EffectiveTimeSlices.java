@@ -17,13 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.mapdb.DB;
 
-import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -62,20 +60,14 @@ public final class Rf2EffectiveTimeSlices {
 	}
 
 	public Iterable<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return Ordering.from((o1, o2) -> {
-			if (o1 instanceof String && o2 instanceof String) {
-				final String effectiveTime1 = (String) o1;
-				final String effectiveTime2 = (String) o2;
-				if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1) || EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
-					return -1;
-				} else {
-					// both are effective times and we can safely convert them
-					final Date effectiveDate1 = EffectiveTimes.parse(effectiveTime1, DateFormats.SHORT);
-					final Date effectiveDate2 = EffectiveTimes.parse(effectiveTime2, DateFormats.SHORT);
-					return effectiveDate1.compareTo(effectiveDate2);
-				}
+		return Ordering.<String>from((effectiveTime1, effectiveTime2) -> {
+			if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1)) {
+				return 1;
+			} else if(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
+				return -1;
+			} else  {
+				return effectiveTime1.compareTo(effectiveTime2);
 			}
-			return -1;
 		}).immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
 	}
 	
