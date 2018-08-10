@@ -123,20 +123,8 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.module</groupId>
-				<artifactId>jackson-module-scala_2.10</artifactId>
-				<version>${jackson.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
 				<groupId>com.fasterxml.jackson.datatype</groupId>
 				<artifactId>jackson-datatype-guava</artifactId>
-				<version>${jackson.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.jaxrs</groupId>
-				<artifactId>jackson-jaxrs-json-provider</artifactId>
 				<version>${jackson.version}</version>
 				<scope>provided</scope>
 			</dependency>
@@ -180,12 +168,6 @@
 				<groupId>com.codahale.metrics</groupId>
 				<artifactId>metrics-healthchecks</artifactId>
 				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>5.1.25</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -850,16 +832,8 @@
 					<artifactId>jackson-module-jsonSchema</artifactId>
 				</dependency>
 				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-scala_2.10</artifactId>
-				</dependency>
-				<dependency>
 					<groupId>com.fasterxml.jackson.datatype</groupId>
 					<artifactId>jackson-datatype-guava</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.jaxrs</groupId>
-					<artifactId>jackson-jaxrs-json-provider</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>com.codahale.metrics</groupId>
@@ -888,10 +862,6 @@
 				<dependency>
 					<groupId>com.codahale.metrics</groupId>
 					<artifactId>metrics-healthchecks</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>com.thoughtworks.xstream</groupId>

@@ -155,16 +155,8 @@
 					<artifactId>jackson-module-jsonSchema</artifactId>
 				</dependency>
 				<dependency>
-					<groupId>com.fasterxml.jackson.module</groupId>
-					<artifactId>jackson-module-scala_2.10</artifactId>
-				</dependency>
-				<dependency>
 					<groupId>com.fasterxml.jackson.datatype</groupId>
 					<artifactId>jackson-datatype-guava</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.fasterxml.jackson.jaxrs</groupId>
-					<artifactId>jackson-jaxrs-json-provider</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>com.codahale.metrics</groupId>
@@ -193,10 +185,6 @@
 				<dependency>
 					<groupId>com.codahale.metrics</groupId>
 					<artifactId>metrics-healthchecks</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>mysql</groupId>
-					<artifactId>mysql-connector-java</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>com.thoughtworks.xstream</groupId>
