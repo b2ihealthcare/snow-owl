@@ -134,13 +134,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.net4j.db"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.net4j.jvm"
          download-size="0"
          install-size="0"
@@ -650,13 +643,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.eclipse.core.net"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.net4j.db.h2"
          download-size="0"
          install-size="0"
          version="0.0.0"

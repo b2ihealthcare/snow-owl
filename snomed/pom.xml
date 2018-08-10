@@ -37,10 +37,6 @@
 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast</module>
 		<module>com.b2international.snowowl.snomed.semanticengine.simpleast.test</module>
 		
-		<!-- SNOMED CT Import-Export -->
-		<module>com.b2international.snowowl.snomed.importer</module>
-		<module>com.b2international.snowowl.snomed.importer.rf2</module>
-		
 		<!-- SNOMED CT DSLs -->
 		<module>com.b2international.snowowl.snomed.dsl</module>
 		<module>com.b2international.snowowl.snomed.scg</module>

@@ -48,8 +48,8 @@
 			<version>${spring.hateoas.version}</version>
 			<scope>provided</scope>
 		</dependency>
-	
 	</dependencies>
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -105,5 +105,5 @@
 		</pluginManagement>
 		
 	</build>
-
+	
 </project>
