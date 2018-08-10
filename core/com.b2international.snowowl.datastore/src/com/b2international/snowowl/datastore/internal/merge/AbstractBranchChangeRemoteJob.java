@@ -173,6 +173,10 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 			} else if (c instanceof AddedInTargetAndDetachedInSourceConflict) {
 				return conflict.message(c.getMessage())
 						.type(ConflictType.HAS_MISSING_REFERENCE)
+						.conflictingAttribute(ConflictingAttributeImpl.builder()
+								.property(((AddedInTargetAndDetachedInSourceConflict) c).getFeatureName())
+								.value(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().id())
+								.build())
 						.build();
 			} else {
 				return conflict.message("Not implemented conflict mapping").build();

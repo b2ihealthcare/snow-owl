@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.b2international.index.revision.AddedInSourceAndDetachedInTargetConflict;
+import com.b2international.index.revision.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
 import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
@@ -89,6 +91,22 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		} else {
 			return super.convertPropertyValue(property, value);
 		}
+	}
+	
+	@Override
+	public Conflict convertConflict(Conflict conflict) {
+		if (conflict instanceof AddedInSourceAndDetachedInTargetConflict) {
+			AddedInSourceAndDetachedInTargetConflict c = (AddedInSourceAndDetachedInTargetConflict) conflict;
+			if ("member".equals(c.getAddedOnSource().type())) {
+				return c.withFeatureName("referencedComponent");
+			}
+		} else if (conflict instanceof AddedInTargetAndDetachedInSourceConflict) {
+			AddedInTargetAndDetachedInSourceConflict c = (AddedInTargetAndDetachedInSourceConflict) conflict;
+			if ("member".equals(c.getDetachedOnSource().type())) {
+				return c.withFeatureName("referencedComponent");
+			}
+		}
+		return super.convertConflict(conflict);
 	}
 
 }

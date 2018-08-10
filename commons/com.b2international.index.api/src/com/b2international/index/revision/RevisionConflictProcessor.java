@@ -56,6 +56,16 @@ public interface RevisionConflictProcessor {
 	}
 	
 	/**
+	 * Alter the internals of the conflict to make it more domain specific. 
+	 * 
+	 * @param conflict
+	 * @return
+	 */
+	default Conflict convertConflict(Conflict conflict) {
+		return conflict;
+	}
+	
+	/**
 	 * Post-processes the resulting staging area before committing.
 	 * 
 	 * @param staging - the final state of the {@link StagingArea} before committing to the repository

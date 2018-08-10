@@ -707,7 +707,7 @@ public final class StagingArea {
 		}
 		
 		if (!conflicts.isEmpty()) {
-			throw new BranchMergeConflictException(conflicts);
+			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
 		boolean stagedChanges = false;

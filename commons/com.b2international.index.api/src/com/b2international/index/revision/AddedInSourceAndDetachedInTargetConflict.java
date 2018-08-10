@@ -21,10 +21,17 @@ package com.b2international.index.revision;
 public final class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 
 	private final ObjectId detachedOnTarget;
+	
+	private String featureName;
 
 	public AddedInSourceAndDetachedInTargetConflict(ObjectId addedInSource, ObjectId detachedOnTarget) {
+		this(addedInSource, detachedOnTarget, "container");
+	}
+	
+	public AddedInSourceAndDetachedInTargetConflict(ObjectId addedInSource, ObjectId detachedOnTarget, String featureName) {
 		super(addedInSource, String.format("'%s' added on source, but '%s' removed on target.", addedInSource, detachedOnTarget));
 		this.detachedOnTarget = detachedOnTarget;
+		this.featureName = featureName;
 	}
 	
 	public ObjectId getAddedOnSource() {
@@ -33,6 +40,15 @@ public final class AddedInSourceAndDetachedInTargetConflict extends Conflict {
 	
 	public ObjectId getDetachedOnTarget() {
 		return detachedOnTarget;
+	}
+	
+	public String getFeatureName() {
+		return featureName;
+	}
+	
+	public AddedInSourceAndDetachedInTargetConflict withFeatureName(String featureName) {
+		this.featureName = featureName;
+		return this;
 	}
 
 }
