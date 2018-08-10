@@ -341,7 +341,7 @@ public final class ReasonerTaxonomyBuilder {
 				if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
 					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
 				} else {
-					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
+					addToLongMultimap(inferredConcreteDomainMap, referencedComponentId, fragment);
 				}
 			}
 		}
