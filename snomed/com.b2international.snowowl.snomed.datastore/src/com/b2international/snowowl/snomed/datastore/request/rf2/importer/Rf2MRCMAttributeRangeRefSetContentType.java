@@ -25,6 +25,9 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.RF2MRCMAttributeRangeRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableMap;
 
@@ -70,4 +73,9 @@ public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentT
 		return MRCM_ATTRIBUTE_RANGE_HEADER;
 	}
 
+	@Override
+	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		return new RF2MRCMAttributeRangeRefSetRowValidator(reporter, values);
+	}
+	
 }

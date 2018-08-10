@@ -25,22 +25,22 @@ import com.google.common.collect.Multimap;
 /**
  * @since 7.0
  */
-public final class Rf2ValidationResponseEntity {
+public final class Rf2ValidationIssueReporter {
 	
-	private static final int MAX_LOGGABLE_ISSUES = 100;
+	public static final int MAX_LOGGABLE_ISSUES = 100;
 	
 	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create();
 	
-	public Rf2ValidationResponseEntity() {
+	public Rf2ValidationIssueReporter() {
 
 	}
 	
-	public void put(Rf2ValidationType type, String validationMessage) {
-		validationProblems.put(type, validationMessage);
+	public void error(String validationMessage) {
+		validationProblems.put(Rf2ValidationType.ERROR, validationMessage);
 	}
 	
-	public void putAll(Multimap<Rf2ValidationType, String> validationProblems) {
-		this.validationProblems.putAll(validationProblems);
+	public void warning(String validationMessage) {
+		validationProblems.put(Rf2ValidationType.WARNING, validationMessage);
 	}
 	
 	public int getNumberOfErrors() {
@@ -51,15 +51,21 @@ public final class Rf2ValidationResponseEntity {
 		return validationProblems.get(Rf2ValidationType.WARNING).size();
 	}
 	
-	public void logErorrs(Logger logger) {
-		final Collection<String> errors = validationProblems.get(Rf2ValidationType.ERROR);
+	public Collection<String> getErrors() {
+		return validationProblems.get(Rf2ValidationType.ERROR);
 
-		errors.forEach(logger::error);
 	}
 	
-	public void logWarnings(Logger logger) {
-		final Collection<String> warnings = validationProblems.get(Rf2ValidationType.WARNING);
-		warnings.forEach(logger::warn);
+	public Collection<String> getWarnings() {
+		return validationProblems.get(Rf2ValidationType.WARNING);
+	}
+
+	public void logWarnings(Logger log) {
+		getWarnings().forEach(log::warn);;
+	}
+	
+	public void logErrors(Logger log) {
+		getErrors().forEach(log::error);
 	}
 	
 }

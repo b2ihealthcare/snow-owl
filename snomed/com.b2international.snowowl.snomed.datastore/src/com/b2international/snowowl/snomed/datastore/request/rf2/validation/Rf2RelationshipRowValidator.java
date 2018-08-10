@@ -25,8 +25,8 @@ public class Rf2RelationshipRowValidator extends AbstractRf2RowValidator {
 
 	private final ComponentCategory category = ComponentCategory.RELATIONSHIP;
 	
-	public Rf2RelationshipRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2RelationshipRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class Rf2RelationshipRowValidator extends AbstractRf2RowValidator {
 	
 	private void validateSourceDestinationEquity(String sourceId, String destinationId) {
 		if (sourceId.equals(destinationId)) {
-			reportIssue(Rf2ValidationType.ERROR, Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel());
+			reportError(Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel());
 		}
 	}
 	

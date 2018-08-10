@@ -24,8 +24,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
  */
 public abstract class Rf2RefSetRowValidator extends AbstractRf2RowValidator {
 
-	public Rf2RefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2RefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -38,7 +38,7 @@ public abstract class Rf2RefSetRowValidator extends AbstractRf2RowValidator {
 		try {
 			UUID.fromString(memberId);
 		} catch (IllegalArgumentException e) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Invalid UUID '%s' in release file", memberId));
+			reportError(String.format("Invalid UUID '%s' in release file", memberId));
 		}
 		
 	}

@@ -26,8 +26,8 @@ public class Rf2DescriptionRowValidator extends AbstractRf2RowValidator {
 	
 	private final ComponentCategory category = ComponentCategory.DESCRIPTION;
 	
-	public Rf2DescriptionRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2DescriptionRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class Rf2DescriptionRowValidator extends AbstractRf2RowValidator {
 		final String term = values[7];
 		
 		if (Strings.isNullOrEmpty(term)) {
-			reportIssue(Rf2ValidationType.ERROR, Rf2ValidationDefects.MISSING_DESCRIPTION_TERM.getLabel());
+			reportError(Rf2ValidationDefects.MISSING_DESCRIPTION_TERM.getLabel());
 		}
 		addValidatableConceptIds(values);
 		validateId(descriptionId, category);

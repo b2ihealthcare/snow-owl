@@ -62,7 +62,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Effe
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationResponseEntity;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -82,8 +82,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	
 	private static final String TXT_EXT = ".txt";
 	
-	private final Rf2ValidationResponseEntity validationEntity = new Rf2ValidationResponseEntity();
-
 	@NotNull
 	private final UUID rf2ArchiveId;
 	
@@ -138,6 +136,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 	}
 
 	void doImport(final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
+		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		try (final DB db = createDb()) {
 			final Map<String, Long> storageKeysByComponent = db.hashMap("storageKeysByComponent", Serializer.STRING, Serializer.LONG).create();
 			final Map<String, Long> storageKeysByRefSet = db.hashMap("storageKeysByRefSet", Serializer.STRING, Serializer.LONG).create();
@@ -180,27 +179,18 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, storageKeysByComponent, storageKeysByRefSet, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
-			read(importconfig.getRf2Archive(), effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet);
+			read(importconfig.getRf2Archive(), effectiveTimeSlices, storageKeysByComponent, storageKeysByRefSet, reporter);
 			LOG.info("Preparing RF2 import took: " + w);
 			w.reset().start();
 			
-			// results of row based validation
-			
-			if (validationEntity.getNumberOfErrors() > 0) {
-				System.err.println("There were validation issues");
-				validationEntity.logErorrs(LOG);
-				throw new BadRequestException(String.format("There were %d validation problems with the RF2 import files", validationEntity.getNumberOfErrors()));
-			}
+			logValidationIssues(reporter);
 			
 			// run global validation
 			Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
 			Rf2GlobalValidator validator = new Rf2GlobalValidator(db, orderedEffectiveTimeSlices);
 			
-			if (validationEntity.getNumberOfErrors() > 0 || validationEntity.getNumberOfWarnings() > 0) {
-				System.err.println("There were validation issues");
-//				validationEntity.logValidationIssues(LOG);
-				throw new BadRequestException("There were %s validation problems with the RF2 import files" + validationEntity.getNumberOfErrors());
-			}
+			logValidationIssues(reporter);
+		
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(importconfig, context);
@@ -208,11 +198,19 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		}
 	}
 
+	private void logValidationIssues(final Rf2ValidationIssueReporter reporter) {
+		reporter.logWarnings(LOG);
+		if (reporter.getNumberOfErrors() > 0) {
+			reporter.logErrors(LOG);
+			throw new BadRequestException(String.format("There were %s validation errors with the RF2 import files", reporter.getNumberOfErrors()));
+		}
+	}
+	
 	private boolean isLoadOnDemandEnabled() {
 		return Rf2ReleaseType.DELTA == type;
 	}
 	
-	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet) {
+	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, Rf2ValidationIssueReporter reporter) {
 		final CsvMapper csvMapper = new CsvMapper();
 		csvMapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
 		final CsvSchema schema = CsvSchema.emptySchema()
@@ -228,7 +226,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
 					w.reset().start();
 					try (final InputStream in = zip.getInputStream(entry)) {
-						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet);
+						readFile(entry, in, oReader, slices, storageKeysByComponent, storageKeysByRefSet, reporter);
 					}
 					LOG.info(entry.getName() + " - " + w);
 				}
@@ -240,7 +238,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 		slices.flushAll();
 	}
 
-	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet)
+	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Map<String, Long> storageKeysByComponent, Map<String, Long> storageKeysByRefSet, Rf2ValidationIssueReporter reporter)
 			throws IOException, JsonProcessingException {
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
@@ -265,7 +263,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Boolean> {
 				header = false;
 			} else {
 				final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
-				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), validationEntity);
+				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
 			}
 
 		}

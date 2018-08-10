@@ -27,8 +27,8 @@ import com.google.common.base.Strings;
  */
 public class Rf2ModuleDependencyRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2ModuleDependencyRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2ModuleDependencyRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 
@@ -43,7 +43,7 @@ public class Rf2ModuleDependencyRefSetRowValidator extends Rf2RefSetRowValidator
 	
 	private void validateSpecialFields(String memberId, String sourceEffectiveTime, String targetEffectiveTime) {
 		if (Strings.isNullOrEmpty(sourceEffectiveTime) || Strings.isNullOrEmpty(targetEffectiveTime)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Source or target effective time field was empty for '%s'", memberId));
+			reportError(String.format("Source or target effective time field was empty for '%s'", memberId));
 			return;
 		}
 		
@@ -51,7 +51,7 @@ public class Rf2ModuleDependencyRefSetRowValidator extends Rf2RefSetRowValidator
 			final Date sourceDate = EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
 			final Date targetDate = EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
 		} catch (SnowowlRuntimeException e) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Source or target effective time field date type was in the incorrect format for '%s'", memberId));
+			reportError(String.format("Source or target effective time field date type was in the incorrect format for '%s'", memberId));
 		}
 		
 	}

@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class Rf2ExtendedMapRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2ExtendedMapRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2ExtendedMapRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -43,23 +43,23 @@ public class Rf2ExtendedMapRefSetRowValidator extends Rf2RefSetRowValidator {
 		final String mapTarget = values[10];
 		
 		if (Strings.isNullOrEmpty(mapGroup)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map group field was empty for '%s' in a release file", memberId));
+			reportError(String.format("Map group field was empty for '%s' in a release file", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(mapPriority)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map priority field was empty for '%s' in a release file", memberId));
+			reportError(String.format("Map priority field was empty for '%s' in a release file", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(mapRule)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map rule field was empty for '%s' in a release file", memberId));
+			reportError(String.format("Map rule field was empty for '%s' in a release file", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(mapAdvice)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map advice field was empty for '%s' in a release file", memberId));
+			reportError(String.format("Map advice field was empty for '%s' in a release file", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(mapTarget)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map target field was empty for '%s' in a release file", memberId));
+			reportError(String.format("Map target field was empty for '%s' in a release file", memberId));
 		}
 	}
 	

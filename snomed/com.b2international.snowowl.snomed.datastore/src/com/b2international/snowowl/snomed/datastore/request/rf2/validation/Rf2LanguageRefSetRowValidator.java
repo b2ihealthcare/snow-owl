@@ -22,8 +22,8 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
  */
 public class Rf2LanguageRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2LanguageRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2LanguageRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 	@Override

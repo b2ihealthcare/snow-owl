@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
  */
 public class Rf2SimpleMapRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2SimpleMapRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2SimpleMapRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -32,7 +32,7 @@ public class Rf2SimpleMapRefSetRowValidator extends Rf2RefSetRowValidator {
 		final String memberId = values[0];
 		final String mapTarget = values[6];
 		if (Strings.isNullOrEmpty(mapTarget)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Map target field was empty for '%s'", memberId));
+			reportError(String.format("Map target field was empty for '%s'", memberId));
 		}
 	}
 

@@ -28,23 +28,23 @@ import com.google.common.collect.Lists;
  */
 public abstract class AbstractRf2RowValidator {
 
-	private Rf2ValidationResponseEntity validationEntity;
+	private Rf2ValidationIssueReporter reporter;
 	private String[] values;
 	private List<String> validatableConceptIds = Lists.newArrayList();
 
-	public AbstractRf2RowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		this.validationEntity = validationEntity;
+	public AbstractRf2RowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		this.reporter = reporter;
 		this.values = values;
 	}
 	
-	public void validateRows(String[] headerColumns) {
+	public void validateRow(String[] headerColumns) {
 		final String isActive = values[2];
 		final String moduleId = values[3];
 		if (values.length != headerColumns.length) {
-			validationEntity.put(Rf2ValidationType.ERROR, Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
+			reporter.error(Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
 		}
 		if (Strings.isNullOrEmpty(isActive)) {
-			validationEntity.put(Rf2ValidationType.ERROR, "Missing active flag from release file");
+			reporter.error("Missing active flag from release file");
 		}
 		validateId(moduleId, ComponentCategory.CONCEPT);
 		validate(values);
@@ -53,8 +53,12 @@ public abstract class AbstractRf2RowValidator {
 	
 	protected abstract void validate(String[] values);
 	
-	protected void reportIssue(Rf2ValidationType validationType, String validationMessage) {
-		validationEntity.put(validationType, validationMessage);
+	protected void reportError(String validationMessage) {
+		reporter.error(validationMessage);
+	}
+	
+	protected void reportWarning(String validationMessage) {
+		reporter.warning(validationMessage);
 	}
 	
 	protected void addValidatableConcept(String conceptId) {
@@ -70,7 +74,7 @@ public abstract class AbstractRf2RowValidator {
 		if (!issuesFound) {
 			final ComponentCategory componentCategory = SnomedIdentifiers.getComponentCategory(id);
 			if (componentCategory != expectedCategory) {
-				validationEntity.put(Rf2ValidationType.ERROR, Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
+				reporter.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
 			}
 		}
 
@@ -82,7 +86,7 @@ public abstract class AbstractRf2RowValidator {
 		for (String id : idsToValidate) {
 			if (Strings.isNullOrEmpty(id)) {
 				issuesFound = true;
-				validationEntity.put(Rf2ValidationType.ERROR, "Missing id from release file");
+				reporter.error("Missing id from release file");
 				break;
 			}
 			
@@ -90,7 +94,7 @@ public abstract class AbstractRf2RowValidator {
 				SnomedIdentifiers.validate(id);
 			} catch (IllegalArgumentException e) {
 				issuesFound = true;
-				validationEntity.put(Rf2ValidationType.ERROR, String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
+				reporter.error(String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
 				
 			}
 		}

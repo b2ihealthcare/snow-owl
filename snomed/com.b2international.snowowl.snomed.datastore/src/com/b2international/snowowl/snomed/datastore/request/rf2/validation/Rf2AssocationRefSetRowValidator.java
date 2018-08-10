@@ -22,8 +22,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class Rf2AssocationRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2AssocationRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2AssocationRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override

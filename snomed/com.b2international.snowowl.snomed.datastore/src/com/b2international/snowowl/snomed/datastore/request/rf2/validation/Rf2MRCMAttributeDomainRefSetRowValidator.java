@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class Rf2MRCMAttributeDomainRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2MRCMAttributeDomainRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2MRCMAttributeDomainRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -40,15 +40,15 @@ public class Rf2MRCMAttributeDomainRefSetRowValidator extends Rf2RefSetRowValida
 		final String attributeCardinality = values[8];
 		final String attributeInGroupCardinality = values[9];
 		if (Strings.isNullOrEmpty(grouped)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Grouped field was empty for member '%s'", memberId));
+			reportError(String.format("Grouped field was empty for member '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(attributeCardinality)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("AttributeCardinality field was empty for member '%s'", memberId));
+			reportError(String.format("AttributeCardinality field was empty for member '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(attributeInGroupCardinality)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("AttributeInGroupCardinality field was empty for member '%s'", memberId));
+			reportError(String.format("AttributeInGroupCardinality field was empty for member '%s'", memberId));
 		}
 		
 	}

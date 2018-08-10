@@ -21,8 +21,8 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
  */
 public class Rf2MRCMModuleScopeRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2MRCMModuleScopeRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2MRCMModuleScopeRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override

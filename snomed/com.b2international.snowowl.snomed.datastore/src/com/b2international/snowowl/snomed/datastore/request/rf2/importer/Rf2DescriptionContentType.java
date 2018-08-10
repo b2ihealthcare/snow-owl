@@ -20,6 +20,9 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2DescriptionRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
  * @since 6.0.0
@@ -63,6 +66,11 @@ final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescriptio
 			Long.parseLong(values[6]),
 			Long.parseLong(values[8])
 		);
+	}
+	
+	@Override
+	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		return new Rf2DescriptionRowValidator(reporter, values);
 	}
 
 }

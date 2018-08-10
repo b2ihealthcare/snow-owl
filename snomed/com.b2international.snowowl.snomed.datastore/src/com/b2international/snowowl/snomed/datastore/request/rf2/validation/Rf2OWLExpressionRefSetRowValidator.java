@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
  */
 public class Rf2OWLExpressionRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2OWLExpressionRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2OWLExpressionRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class Rf2OWLExpressionRefSetRowValidator extends Rf2RefSetRowValidator {
 		final String owlExpression = values[6];
 		
 		if (Strings.isNullOrEmpty(owlExpression)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Owl expression field was empty for '%s'", memberId));
+			reportError(String.format("Owl expression field was empty for '%s'", memberId));
 		}
 	}
 	

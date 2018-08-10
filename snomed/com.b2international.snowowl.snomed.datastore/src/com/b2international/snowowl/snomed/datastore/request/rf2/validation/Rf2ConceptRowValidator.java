@@ -22,8 +22,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class Rf2ConceptRowValidator extends AbstractRf2RowValidator {
 
-	public Rf2ConceptRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2ConceptRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 
 	@Override

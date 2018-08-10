@@ -24,8 +24,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class RF2MRCMAttributeRangeRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public RF2MRCMAttributeRangeRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public RF2MRCMAttributeRangeRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -41,11 +41,11 @@ public class RF2MRCMAttributeRangeRefSetRowValidator extends Rf2RefSetRowValidat
 		final String attributeRule = values[7];
 		
 		if (Strings.isNullOrEmpty(rangeConstraint)) {
-			reportIssue(Rf2ValidationType.WARNING, String.format("Range constraint field was empty for '%s'", memberId));
+			reportError(String.format("Range constraint field was empty for '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(attributeRule)) {
-			reportIssue(Rf2ValidationType.WARNING, String.format("Attribute Rule field was empty for '%s'", memberId));
+			reportWarning(String.format("Attribute Rule field was empty for '%s'", memberId));
 		}
 	}
 	

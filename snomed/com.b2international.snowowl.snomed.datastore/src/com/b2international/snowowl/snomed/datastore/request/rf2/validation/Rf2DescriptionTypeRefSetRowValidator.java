@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
  */
 public class Rf2DescriptionTypeRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2DescriptionTypeRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2DescriptionTypeRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -35,7 +35,7 @@ public class Rf2DescriptionTypeRefSetRowValidator extends Rf2RefSetRowValidator 
 		
 		final String memberId = values[0];
 		if (Strings.isNullOrEmpty(values[7])) {
-			reportIssue(Rf2ValidationType.WARNING, String.format("Reference set member '%s' description length property is empty.", memberId));
+			reportWarning(String.format("Reference set member '%s' description length property is empty.", memberId));
 		}
 	}
 

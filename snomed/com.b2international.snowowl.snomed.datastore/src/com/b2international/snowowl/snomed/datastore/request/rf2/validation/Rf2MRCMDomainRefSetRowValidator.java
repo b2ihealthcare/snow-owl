@@ -22,8 +22,8 @@ import com.google.common.base.Strings;
  */
 public class Rf2MRCMDomainRefSetRowValidator extends Rf2RefSetRowValidator {
 
-	public Rf2MRCMDomainRefSetRowValidator(Rf2ValidationResponseEntity validationEntity, String[] values) {
-		super(validationEntity, values);
+	public Rf2MRCMDomainRefSetRowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		super(reporter, values);
 	}
 	
 	@Override
@@ -41,22 +41,22 @@ public class Rf2MRCMDomainRefSetRowValidator extends Rf2RefSetRowValidator {
 		final String guideURL = values[12];
 		
 		if (Strings.isNullOrEmpty(domainConstraint)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Domain constraint field was empty for '%s'", memberId));
+			reportError(String.format("Domain constraint field was empty for '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(proximalPrimitiveConstraint)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Proximal primitive constraint field was empty for '%s'", memberId));
+			reportError(String.format("Proximal primitive constraint field was empty for '%s'", memberId));
 		}
 		if (Strings.isNullOrEmpty(domainTemplateForPrecoordination)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Domain template for precoordination was empty for '%s'", memberId));
+			reportError(String.format("Domain template for precoordination was empty for '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(domainTemplateForPostcoordination)) {
-			reportIssue(Rf2ValidationType.ERROR, String.format("Domain template for postcoordination field was empty for '%s'", memberId));
+			reportError(String.format("Domain template for postcoordination field was empty for '%s'", memberId));
 		}
 		
 		if (Strings.isNullOrEmpty(guideURL)) {
-			reportIssue(Rf2ValidationType.WARNING, String.format("GuideURL field was empty for '%s'", memberId));
+			reportWarning(String.format("GuideURL field was empty for '%s'", memberId));
 		}
 	}
 
