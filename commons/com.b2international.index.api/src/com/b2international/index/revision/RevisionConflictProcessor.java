@@ -67,12 +67,12 @@ public interface RevisionConflictProcessor {
 	}
 	
 	/**
-	 * Post-processes the resulting staging area before committing.
+	 * Post-processes the resulting staging area and the change sets before committing the changeset.
 	 * 
-	 * @param staging - the final state of the {@link StagingArea} before committing to the repository
+	 * @param staging - the current state of the staging area
 	 * @return - a list of additional conflicts to report or empty collection if there are no domain specific conflicts, never <code>null</code>.
 	 */
-	 List<Conflict> postProcess(StagingArea staging);
+	 List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges);
 	
 	/**
 	 * @since 7.0
@@ -95,7 +95,7 @@ public interface RevisionConflictProcessor {
 		}
 		
 		@Override
-		public List<Conflict> postProcess(StagingArea staging) {
+		public List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges) {
 			return Collections.emptyList();
 		}
 		

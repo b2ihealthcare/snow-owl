@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.revision.Conflict;
+import com.b2international.index.revision.RevisionBranchChangeSet;
 import com.b2international.index.revision.RevisionConflictProcessor;
 import com.b2international.index.revision.StagingArea;
 import com.google.common.base.Stopwatch;
@@ -43,11 +44,11 @@ public class ComponentRevisionConflictProcessor extends RevisionConflictProcesso
 	}
 	
 	@Override
-	public List<Conflict> postProcess(StagingArea staging) {
+	public List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges) {
 		LOG.info("Post-processing merge/rebase operation...");
 		Stopwatch w = Stopwatch.createStarted();
 		try {
-			return rules.stream().flatMap(rule -> rule.validate(staging).stream()).collect(Collectors.toList());
+			return rules.stream().flatMap(rule -> rule.validate(staging, fromChanges, toChanges).stream()).collect(Collectors.toList());
 		} finally {
 			LOG.info("Post-processing took {}", TimeUtil.toString(w));
 		}

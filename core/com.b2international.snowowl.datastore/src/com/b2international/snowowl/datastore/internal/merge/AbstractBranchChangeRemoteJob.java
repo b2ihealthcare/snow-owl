@@ -173,9 +173,11 @@ public abstract class AbstractBranchChangeRemoteJob extends Job {
 			} else if (c instanceof AddedInTargetAndDetachedInSourceConflict) {
 				return conflict.message(c.getMessage())
 						.type(ConflictType.HAS_MISSING_REFERENCE)
+						.componentId(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().id())
+						.componentType(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().type())
 						.conflictingAttribute(ConflictingAttributeImpl.builder()
 								.property(((AddedInTargetAndDetachedInSourceConflict) c).getFeatureName())
-								.value(((AddedInTargetAndDetachedInSourceConflict) c).getAddedOnTarget().id())
+								.value(((AddedInTargetAndDetachedInSourceConflict) c).getDetachedOnSource().id())
 								.build())
 						.build();
 			} else {

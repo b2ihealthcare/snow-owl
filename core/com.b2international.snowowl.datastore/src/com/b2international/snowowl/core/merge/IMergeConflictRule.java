@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.merge;
 import java.util.Collection;
 
 import com.b2international.index.revision.Conflict;
+import com.b2international.index.revision.RevisionBranchChangeSet;
 import com.b2international.index.revision.StagingArea;
 
 /**
@@ -30,9 +31,11 @@ public interface IMergeConflictRule {
 	/**
 	 * Executes the given conflict rule and returns a collection of {@link Conflict} if there was any.
 	 * 
-	 * @param staging
+	 * @param staging - the staging area in its current state
+	 * @param fromChanges - the changes from the branch that is the source of the merge operation
+	 * @param toChanges - the changes from the branch that is the target of the merge operation
 	 * @return
 	 */
-	Collection<Conflict> validate(StagingArea staging);
+	Collection<Conflict> validate(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges);
 	
 }

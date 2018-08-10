@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.index.IndexRead;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -29,14 +30,18 @@ import com.google.common.collect.Multimap;
 /**
  * @since 7.0
  */
-public class RevisionBranchChangeSet {
+public final class RevisionBranchChangeSet {
 
+	private final DefaultRevisionIndex index;
+	private final RevisionBranchRef ref;
 	private final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
 	private final Multimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
 	private final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
 	private final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedRevisions = newHashMap();
 	
-	public RevisionBranchChangeSet(RevisionCompare compare) {
+	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, RevisionCompare compare) {
+		this.index = index;
+		this.ref = ref;
 		compare.getDetails().forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {
@@ -109,6 +114,10 @@ public class RevisionBranchChangeSet {
 
 	public void removeChanged(Class<? extends Revision> type, String id) {
 		changedRevisionIdsByType.remove(type, id);
+	}
+
+	public <T> T read(RevisionIndexRead<T> read) {
+		return index.read(ref, read);
 	}
 
 }

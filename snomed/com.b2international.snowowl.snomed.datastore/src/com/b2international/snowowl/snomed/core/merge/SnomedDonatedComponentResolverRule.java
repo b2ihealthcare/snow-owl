@@ -28,27 +28,17 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
-import org.eclipse.emf.cdo.view.CDOStaleReferencePolicy;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.merge.MergeConflict;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.datastore.utils.ComponentUtils2;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.Relationship;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
@@ -57,7 +47,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 6.1.0
  */
-public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConflictRule {
+public class SnomedDonatedComponentResolverRule implements IMergeConflictRule {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedDonatedComponentResolverRule.class);
 
@@ -70,7 +60,7 @@ public class SnomedDonatedComponentResolverRule extends AbstractSnomedMergeConfl
 	}
 
 	@Override
-	public Collection<MergeConflict> validate(final CDOTransaction transaction) {
+	public Collection<MergeConflict> validate(final StagingArea transaction) {
 
 		Stopwatch stopwatch = Stopwatch.createStarted();
 		

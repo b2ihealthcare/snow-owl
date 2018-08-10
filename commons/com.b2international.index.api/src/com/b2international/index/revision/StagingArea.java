@@ -538,8 +538,8 @@ public final class StagingArea {
 			return fastForwardCommitTimestamp;
 		}
 		
-		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(fromChanges);
-		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(toChanges);
+		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
+		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChanges);
 		
 		List<Conflict> conflicts = newArrayList();
 		
@@ -568,7 +568,7 @@ public final class StagingArea {
 				ObjectId newRevisionOnTargetId = ObjectId.of(docType, newRevisionOnTarget);
 				ObjectId requiredContainer = toChangeSet.getContainerId(newRevisionOnTargetId);
 				if (requiredContainer != null && fromChangeSet.isRemoved(requiredContainer)) {
-					conflicts.add(new AddedInTargetAndDetachedInSourceConflict(newRevisionOnTargetId, requiredContainer));
+					conflicts.add(new AddedInTargetAndDetachedInSourceConflict(requiredContainer, newRevisionOnTargetId));
 				}
 			});
 		}
@@ -580,7 +580,7 @@ public final class StagingArea {
 		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
 		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
 			final String docType = DocumentMapping.getType(type);
-			Set<String> changedRevisionIdsToMerge = fromChangeSet.getChangedIds(type);
+			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
 			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
 			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
@@ -647,6 +647,9 @@ public final class StagingArea {
 			}
 		}
 		
+		// after generic conflict processing execute domain specific merge rules via conflict processor
+		conflictProcessor.checkConflicts(this, fromChangeSet, toChangeSet).forEach(conflicts::add);
+		
 		if (!conflicts.isEmpty()) {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
@@ -701,9 +704,6 @@ public final class StagingArea {
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
 			stagedChanges = true;
 		}
-		
-		// after the staging area contains all merged changes, call postProcess to verify the contents of the StagingArea
-		conflictProcessor.postProcess(this);
 		
 		return stagedChanges ? -1L : fastForwardCommitTimestamp;
 	}
