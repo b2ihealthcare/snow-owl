@@ -51,11 +51,9 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -203,68 +201,6 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		}
 
 		assertThat(expectedAttributes).isEmpty();
-	}
-
-	@Test
-	public void changedInTargetDetachedInSourceDescription() {
-		String descriptionId = createNewDescription(branchPath);
-
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204); // Parent deletes the description
-		changeCaseSignificance(a, descriptionId); // Child branch changes to CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased case significance change over deletion")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("caseSignificanceId")
-				.oldValue(CaseSignificance.INITIAL_CHARACTER_CASE_INSENSITIVE.getConceptId())
-				.value(CaseSignificance.ENTIRE_TERM_CASE_SENSITIVE.getConceptId())
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(descriptionId, conflict.getComponentId());
-		assertEquals("description", conflict.getComponentType());
-		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
-	}
-
-	@Test
-	public void changedInTargetDetachedInSourceConcept() {
-		String conceptId = createNewConcept(branchPath);
-
-		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		createBranch(a).statusCode(201);
-
-		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204); // Parent deletes the concept
-		SnomedRestFixtures.changeToDefining(a, conceptId); // Child branch changes to DefinitionStatus.FULLY_DEFINED
-
-		Collection<MergeConflict> conflicts = merge(branchPath, a, "Rebased definition status change over deletion")
-				.body("status", equalTo(Merge.Status.CONFLICTS.name()))
-				.extract().as(Merge.class)
-				.getConflicts();
-
-		assertEquals(1, conflicts.size());
-
-		ConflictingAttribute attribute = ConflictingAttributeImpl.builder()
-				.property("definitionStatus")
-				.oldValue(DefinitionStatus.PRIMITIVE.getConceptId())
-				.value(DefinitionStatus.FULLY_DEFINED.getConceptId())
-				.build();
-
-		MergeConflict conflict = Iterables.getOnlyElement(conflicts);
-
-		assertEquals(conceptId, conflict.getComponentId());
-		assertEquals("concept", conflict.getComponentType());
-		assertEquals(ConflictType.CHANGED_WHILE_DELETED, conflict.getType());
-		assertEquals(attribute.toDisplayName(), Iterables.getOnlyElement(conflict.getConflictingAttributes()).toDisplayName());
 	}
 
 	@Test

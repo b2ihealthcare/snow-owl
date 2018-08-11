@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -48,52 +49,78 @@ public class SnomedComponentReferencingDetachedConceptRule implements IMergeConf
 	}
 
 	private Iterable<? extends Conflict> check(RevisionBranchChangeSet newAndChangedChangeSet, RevisionBranchChangeSet detachedChangeSet, boolean addedInSource) {
-		final Set<String> detachedComponentIds = detachedChangeSet.getRemovedIds(SnomedConceptDocument.class);
+		final Set<String> detachedConceptIds = detachedChangeSet.getRemovedIds(SnomedConceptDocument.class);
 		// in case of no detached components, skip
-		if (detachedComponentIds.isEmpty()) {
+		if (detachedConceptIds.isEmpty()) {
 			return Collections.emptySet();
 		}
 		
 		final ImmutableList.Builder<Conflict> conflicts = ImmutableList.builder();
 		
-		// check new/changed descriptions vs detached type
-		Set<String> newAndChangedDescriptions = ImmutableSet.<String>builder()
-			.addAll(newAndChangedChangeSet.getAddedIds(SnomedDescriptionIndexEntry.class))
-			.addAll(newAndChangedChangeSet.getChangedIds(SnomedDescriptionIndexEntry.class))
-			.build();
-
-		newAndChangedChangeSet
-			.read(searcher -> searcher.get(SnomedDescriptionIndexEntry.class, newAndChangedDescriptions))
-			.forEach(description -> {
-				// TODO add other concept ID props???
-				if (detachedComponentIds.contains(description.getTypeId())) {
-					if (addedInSource) {
-						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("description", description.getId()), ObjectId.of("concept", description.getTypeId()), "typeId"));
-					} else {
-						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", description.getTypeId()), ObjectId.of("description", description.getId()), "typeId"));
-					}
-				}
-			});
-		
-		Set<String> newAndChangedRelationships = ImmutableSet.<String>builder()
-				.addAll(newAndChangedChangeSet.getAddedIds(SnomedRelationshipIndexEntry.class))
-				.addAll(newAndChangedChangeSet.getChangedIds(SnomedRelationshipIndexEntry.class))
-				.build();
-		
-		newAndChangedChangeSet
-			.read(searcher -> searcher.get(SnomedRelationshipIndexEntry.class, newAndChangedRelationships))
-			.forEach(relationship -> {
-				// TODO add other concept ID props??
-				if (detachedComponentIds.contains(relationship.getDestinationId())) {
-					if (addedInSource) {
-						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("relationship", relationship.getId()), ObjectId.of("concept", relationship.getDestinationId()), "destinationId"));
-					} else {
-						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", relationship.getDestinationId()), ObjectId.of("relationship", relationship.getId()), "destinationId"));
-					}
-				}
-			});
+		collectDescriptionConflicts(newAndChangedChangeSet, detachedConceptIds, addedInSource, conflicts);
+		collectRelationshipConflicts(newAndChangedChangeSet, detachedConceptIds, addedInSource, conflicts);
 
 		return conflicts.build();
+	}
+	
+	private void collectDescriptionConflicts(RevisionBranchChangeSet changeSet, final Set<String> detachedConceptIds,
+			boolean addedInSource, final ImmutableList.Builder<Conflict> conflicts) {
+		Set<String> newAndChangedDescriptions = ImmutableSet.<String>builder()
+			.addAll(changeSet.getAddedIds(SnomedDescriptionIndexEntry.class))
+			.addAll(changeSet.getChangedIds(SnomedDescriptionIndexEntry.class))
+			.build();
+
+		changeSet
+			.read(searcher -> searcher.get(SnomedDescriptionIndexEntry.class, newAndChangedDescriptions))
+			.forEach(description -> {
+				final String conflictingReference;
+				if (detachedConceptIds.contains(description.getTypeId())) {
+					conflictingReference = SnomedDescriptionIndexEntry.Fields.TYPE_ID;
+				} else if (detachedConceptIds.contains(description.getCaseSignificanceId())) {
+					conflictingReference = SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID;
+				} else {
+					conflictingReference = "";
+				}
+				if (!Strings.isNullOrEmpty(conflictingReference)) {
+					if (addedInSource) {
+						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("description", description.getId()), ObjectId.of("concept", description.getTypeId()), conflictingReference));
+					} else {
+						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", description.getTypeId()), ObjectId.of("description", description.getId()), conflictingReference));
+					}
+				}
+			});
+	}
+	
+	private void collectRelationshipConflicts(RevisionBranchChangeSet changeSet, final Set<String> detachedConceptIds,
+			boolean addedInSource, final ImmutableList.Builder<Conflict> conflicts) {
+		Set<String> newAndChangedRelationships = ImmutableSet.<String>builder()
+				.addAll(changeSet.getAddedIds(SnomedRelationshipIndexEntry.class))
+				.addAll(changeSet.getChangedIds(SnomedRelationshipIndexEntry.class))
+				.build();
+		
+		changeSet
+			.read(searcher -> searcher.get(SnomedRelationshipIndexEntry.class, newAndChangedRelationships))
+			.forEach(relationship -> {
+				final String conflictingReference;
+				if (detachedConceptIds.contains(relationship.getDestinationId())) {
+					conflictingReference = SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
+				} else if (detachedConceptIds.contains(relationship.getTypeId())) {
+					conflictingReference = SnomedRelationshipIndexEntry.Fields.TYPE_ID;	
+				} else if (detachedConceptIds.contains(relationship.getModifierId())) {
+					conflictingReference = SnomedRelationshipIndexEntry.Fields.MODIFIER_ID;
+				} else if (detachedConceptIds.contains(relationship.getCharacteristicTypeId())) {
+					conflictingReference = SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID;
+				} else {
+					conflictingReference = "";
+				}
+				if (!Strings.isNullOrEmpty(conflictingReference)) {
+					if (addedInSource) {
+						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("relationship", relationship.getId()), ObjectId.of("concept", relationship.getDestinationId()), conflictingReference));
+					} else {
+						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", relationship.getDestinationId()), ObjectId.of("relationship", relationship.getId()), conflictingReference));
+					}
+				}
+			});
 	}
 
 }
