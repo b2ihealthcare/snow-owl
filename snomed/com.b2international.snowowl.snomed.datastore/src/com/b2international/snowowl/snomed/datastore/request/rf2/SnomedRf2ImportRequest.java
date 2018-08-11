@@ -192,7 +192,7 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			// run global validation
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
 			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator();
-			globalValidator.validate(orderedEffectiveTimeSlices, reporter, context);
+			globalValidator.validate(db, orderedEffectiveTimeSlices, reporter, context);
 			
 			// log global validation issues
 			logValidationIssues(reporter, response);
