@@ -157,6 +157,8 @@ public final class RevisionCompareDetail {
 				return this;
 			} else if (isChange() && other.isAdd()) {
 				return other;
+			} else if (isChange() && other.isChange()) {
+				return this; // two changes after each other in the commit history, keep only a single change
 			} else {
 				throw new UnsupportedOperationException("Unknown case for _component change: " + this + " vs. " + other);
 			}
