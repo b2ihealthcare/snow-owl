@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.api.rest.admin;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,27 +23,23 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.api.admin.IMessagingService;
+import com.b2international.snowowl.core.messaging.MessagingRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
- * Spring controller for exposing {@link IMessagingService} functionality.
- * since 7.0 
+ * Spring controller for exposing messaging API.
+ * 
+ * @since 7.0 
  */
 @Api(value = "Administration", description="Administration", tags = { "administration" })
 @RestController
 @RequestMapping(value={"/messages"}, consumes={ MediaType.TEXT_PLAIN_VALUE }, produces={ MediaType.TEXT_PLAIN_VALUE })
-@ApiIgnore
 public class MessagingRestService extends AbstractAdminRestService {
-
-	@Autowired
-	protected IMessagingService messagingService;
 
 	@RequestMapping(value="send", method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -59,7 +54,10 @@ public class MessagingRestService extends AbstractAdminRestService {
 			@RequestBody
 			@ApiParam(value="the message to send")
 			final String message) {
-
-		messagingService.sendMessage(message);
+		
+		MessagingRequests.prepareSendMessage(message)
+			.buildAsync()
+			.execute(bus)
+			.getSync();
 	}
 }

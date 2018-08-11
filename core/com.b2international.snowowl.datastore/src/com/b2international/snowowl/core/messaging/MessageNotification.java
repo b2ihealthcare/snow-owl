@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.admin;
+package com.b2international.snowowl.core.messaging;
+
+import com.b2international.snowowl.core.events.SystemNotification;
 
 /**
- * Implementations of the messaging service can be used to send informational messages to connected desktop clients.
+ * @since 7.0
  */
-public interface IMessagingService {
+public final class MessageNotification extends SystemNotification {
 
-	/**
-	 * Sends an informational message to all connected thick clients; the message is displayed in the desktop application
-	 * immediately.
-	 * 
-	 * @param message the message to send (may not be {@code null})
-	 */
-	void sendMessage(String message);
+	private final String message;
+
+	public MessageNotification(String message) {
+		this.message = message;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+	
 }

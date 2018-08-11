@@ -75,7 +75,6 @@ public class UserSessionCommandProvider implements CommandProvider {
 		final StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl user session commands---\n");
 		buffer.append("\tsession users - List the users that are currently logged in\n");
-		buffer.append("\tsession message [user1Name,userName2,userNameN|ALL] [message] - Send message to active user(s) or all users. Do not use space between the users.\n");
 		buffer.append("\tsession disconnect [userName1,userName2,userNameN|ALL] - Disconnect active user(s) or all users.  Do not use space between the users.\n");
 		buffer.append("\tsession login [enabled|disabled|status] - Enables/disables login for new, non-administrator sessions.\n");
 		buffer.append("\tsession showlocks - Displays all currently acquired locks on the server.\n");
@@ -104,9 +103,6 @@ public class UserSessionCommandProvider implements CommandProvider {
 					break;
 				case "disconnect":
 					disconnect(interpreter);
-					break;
-				case "message":
-					message(interpreter);
 					break;
 				case "login":
 					login(interpreter);
@@ -162,71 +158,6 @@ public class UserSessionCommandProvider implements CommandProvider {
 
 	}
 
-	/**
-	 * Sends a message to all the users.
-	 * 
-	 * @param interpreter
-	 */
-	public synchronized void message(final CommandInterpreter interpreter) {
-
-		final String usage = "Command usage: session message [user1Name,userName2,userNameN|ALL] [message]";
-		final String userListParameter = interpreter.nextArgument();
-		if (StringUtils.isEmpty(userListParameter)) {
-			interpreter.println("User is null.");
-			interpreter.print(usage);
-			return;
-		}
-		
-		final String messageBody = interpreter.nextArgument();
-		if (StringUtils.isEmpty(messageBody)) {
-			interpreter.println("Message is null.");
-			interpreter.print(usage);
-			return;
-		}
-		
-		final StringBuilder sb = new StringBuilder(messageBody);
-		sb.append(' ');
-		while (true) {
-			
-			final String messageFragment = interpreter.nextArgument();
-			if (StringUtils.isEmpty(messageFragment)) { 
-				break;
-			} else {
-				sb.append(messageFragment);
-				sb.append(' ');
-			}
-		}
-		
-		final AtomicBoolean success = new AtomicBoolean(false);
-		final ICDORepositoryManager repositoryManager = ApplicationContext.getInstance().getService(ICDORepositoryManager.class);
-
-		final String message = sb.toString();
-		
-		final ISessionOperationCallback callback = new ISessionOperationCallback() {
-			
-			@Override public void done(final CDORemoteSession session) {
-				interpreter.println("Message sent to " + session.getUserID());
-				success.compareAndSet(false, true);
-			}
-		};
-
-		if ("ALL".equals(userListParameter)) {
-			
-			repositoryManager.sendMessageToAll(message, callback);
-			
-		} else {
-			
-			repositoryManager.sendMessageTo(message, tokenizeParameter(userListParameter), callback);
-			
-		}
-
-		if (!success.get()) {
-			interpreter.println("Failed to message user(s): " + userListParameter
-					+ ". Are these active users? Currently active users are:\n");
-			users(interpreter);
-		}
-	}
-	
 	/**
 	 * Disconnect the users.
 	 * 
