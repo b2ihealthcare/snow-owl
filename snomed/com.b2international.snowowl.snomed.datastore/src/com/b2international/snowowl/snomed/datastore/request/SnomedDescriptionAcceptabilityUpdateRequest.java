@@ -179,12 +179,14 @@ final class SnomedDescriptionAcceptabilityUpdateRequest implements Request<Trans
 					.execute(context.service(IEventBus.class))
 					.getSync();
 
+			SnomedRefSetMemberIndexEntry memberToCheck = updatedMember.build();
+			
 			final String referenceAcceptabilityId = (String) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
-			final String existingAcceptabilityId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
+			final String existingAcceptabilityId = (String) memberToCheck.getAcceptabilityId();
 			
 			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.isActive() == referenceMember.isActive();
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getModuleId().equals(referenceMember.getModuleId());
 			restoreEffectiveTime = restoreEffectiveTime && existingAcceptabilityId.equals(referenceAcceptabilityId);
 
 			if (restoreEffectiveTime) {

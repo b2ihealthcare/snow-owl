@@ -239,12 +239,13 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 					.getSync();
 
 			final String referenceValueId = (String) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
-			final String existingValueId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
+
+			final SnomedRefSetMemberIndexEntry memberToCheck = updatedMember.build();
 			
 			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingValueId.equals(referenceValueId);
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.isActive() == referenceMember.isActive();
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getModuleId().equals(referenceMember.getModuleId());
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getValueId().equals(referenceValueId);
 
 			if (restoreEffectiveTime) {
 

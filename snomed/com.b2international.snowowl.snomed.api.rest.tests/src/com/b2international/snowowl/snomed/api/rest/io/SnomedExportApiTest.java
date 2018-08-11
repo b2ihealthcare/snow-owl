@@ -43,7 +43,6 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -70,13 +69,15 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -911,7 +912,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.getMembers();
 
 		assertEquals(2, versionedMembers.getTotal());
-		versionedMembers.forEach(m -> assertNotNull(m.getEffectiveTime()));
+		versionedMembers.forEach(m -> assertEquals(EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT), m.getEffectiveTime()));
 
 		Map<String, Acceptability> updatedAcceptabilityMap = ImmutableMap.<String, Acceptability>builder()
 				.put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)

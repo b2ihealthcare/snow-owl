@@ -146,7 +146,6 @@ final class SnomedAssociationTargetUpdateRequest implements Request<TransactionC
 
 				// Exact match, just make sure that the member is active and remove it from the working list
 				final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
-				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
 				ensureMemberActive(context, existingMember, updatedMember);
 				memberIterator.remove();
 			}
@@ -252,12 +251,13 @@ final class SnomedAssociationTargetUpdateRequest implements Request<TransactionC
 					.getSync();
 
 			final SnomedComponent releasedTargetComponentValue = (SnomedComponent) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
-			final SnomedComponent existingTargetComponentValue = (SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 			
+			SnomedRefSetMemberIndexEntry memberToCheck = updatedMember.build();
 			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && releasedTargetComponentValue.getId().equals(existingTargetComponentValue.getId());
+			
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.isActive() == referenceMember.isActive();
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getModuleId().equals(referenceMember.getModuleId());
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getTargetComponent().equals(releasedTargetComponentValue.getId());
 
 			if (restoreEffectiveTime) {
 

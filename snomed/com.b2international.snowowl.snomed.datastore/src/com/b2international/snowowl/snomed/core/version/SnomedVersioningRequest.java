@@ -112,7 +112,9 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		// sourceModuleId to targetModuleId map
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
-		log.info("Publishing components...");
+		log.info("Publishing SNOMED CT components [effectiveTime: {}]...", EffectiveTimes.format(config().getEffectiveTime()));
+		long effectiveTime = EffectiveTimes.getEffectiveTime(config().getEffectiveTime());
+		
 		for (CollectionResource<?> hits : response.getResponses(CollectionResource.class)) {
 			for (SnomedComponent hit : Iterables.filter(hits, SnomedComponent.class)) {
 				
@@ -159,7 +161,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				context.update(
 					updatedComponent.build(), 
 					updatedComponent
-						.effectiveTime(EffectiveTimes.getEffectiveTime(config().getEffectiveTime()))
+						.effectiveTime(effectiveTime)
 						.released(true)
 						.build()
 				);
