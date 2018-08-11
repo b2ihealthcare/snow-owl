@@ -189,7 +189,7 @@ final class SnomedRefSetMemberUpdateRequest implements Request<TransactionContex
 		}
 		
 		Date newEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME), DateFormats.SHORT);
-		if (!Objects.equals(newEffectiveTime, original.getEffectiveTime())) {
+		if (!Objects.equals(newEffectiveTime, EffectiveTimes.toDate(original.getEffectiveTime()))) {
 			if (newEffectiveTime == null) {
 				// if effective time is null, then unset the effective time but don't change the released flag
 				member.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
