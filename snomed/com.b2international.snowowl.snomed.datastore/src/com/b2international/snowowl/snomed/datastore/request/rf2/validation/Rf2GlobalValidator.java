@@ -19,8 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mapdb.DB;
-
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
@@ -42,11 +40,11 @@ import com.google.common.collect.Sets;
  */
 public class Rf2GlobalValidator {
 
-	public void validate(DB db, Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+	public void validate(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
 		final int slices = Iterables.size(orderedEffectiveTimeSlices);
 		for (int i = 0; i < slices ; i++) {
 			final Rf2EffectiveTimeSlice currentSlice = Iterables.get(orderedEffectiveTimeSlices, i);
-			final String currentEffectiveTime = extractEffectiveTime(currentSlice.getEffectiveTime());
+			final Map<String, String[]> currentRowsByComponentId = currentSlice.getContent();
 			final Set<String> conceptIdsToFetch = Sets.newHashSet();
 			
 			final LongKeyMap<LongSet> dependenciesByComponent = currentSlice.getDependenciesByComponent();
@@ -56,14 +54,12 @@ public class Rf2GlobalValidator {
 					final long dependencyId = it.next();
 					final String stringDependencyId = Long.toString(dependencyId);
 					boolean foundDependency = false;
-					final Map<String, String[]> currentRowsByComponentId = db.get(currentEffectiveTime);
 					
 					// current effectiveTimeSlice did not contain a required dependency check previous effectiveTimeSlices
 					if (!currentRowsByComponentId.containsKey(stringDependencyId)) {
 						for (int j = 0; j < i; j++) {
 							final Rf2EffectiveTimeSlice previousEffectiveTimeSlice = Iterables.get(orderedEffectiveTimeSlices, j);
-							final String previousEffectiveTime = extractEffectiveTime(previousEffectiveTimeSlice.getEffectiveTime());
-							final Map<String, String[]> previousRowsByComponentId = db.get(previousEffectiveTime);
+							final Map<String, String[]> previousRowsByComponentId = previousEffectiveTimeSlice.getContent();
 							if (previousRowsByComponentId.containsKey(stringDependencyId)) {
 								foundDependency = true;
 								if (conceptIdsToFetch.contains(stringDependencyId)) {
@@ -118,10 +114,6 @@ public class Rf2GlobalValidator {
 		}
 
 		return existingConceptIds;
-	}
-	
-	private String extractEffectiveTime(String effectiveTime) {
-		return effectiveTime.replaceAll("-", "");
 	}
 	
 }

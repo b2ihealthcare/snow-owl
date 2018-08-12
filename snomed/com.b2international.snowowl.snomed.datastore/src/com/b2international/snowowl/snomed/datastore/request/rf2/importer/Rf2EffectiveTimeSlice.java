@@ -97,6 +97,10 @@ public final class Rf2EffectiveTimeSlice {
 		this.membersByContainer = PrimitiveMaps.newLongKeyOpenHashMap();
 		this.loadOnDemand = loadOnDemand;
 	}
+	
+	public Map<String, String[]> getContent() {
+		return componentsById;
+	}
 
 	private <T extends SnomedComponent> T getComponent(String componentId) {
 		final String[] valuesWithType = componentsById.get(componentId);
