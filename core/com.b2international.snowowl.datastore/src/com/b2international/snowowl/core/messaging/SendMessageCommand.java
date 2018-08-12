@@ -17,49 +17,34 @@ package com.b2international.snowowl.core.messaging;
 
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.console.Command;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.console.CommandLineStream;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Parameters;
 
 /**
  * @since 7.0
  */
-@Component
+@CommandLine.Command(
+	name = "message",
+	header = "Send a message to the end users",
+	description = "Sends a message to all currently connected (via the TCP client) end users"
+)
 public final class SendMessageCommand extends Command {
 
+	@Parameters(arity = "1..*", paramLabel = "MESSAGE", description = { "The message to send to the end users" })
+	String[] messages;
+	
 	@Override
-	public void run(CommandInterpreter interpreter) {
-		final String messageBody = interpreter.nextArgument();
-		final StringBuilder sb = new StringBuilder(messageBody);
-		sb.append(' ');
-		while (true) {
-			final String messageFragment = interpreter.nextArgument();
-			if (Strings.isNullOrEmpty(messageFragment)) { 
-				break;
-			} else {
-				sb.append(messageFragment);
-				sb.append(' ');
-			}
-		}
-		
-		final String message = sb.toString();
-		
+	public void run(CommandLineStream out) {
+		final String message = String.join(" ", messages);
 		MessagingRequests.prepareSendMessage(message)
 			.buildAsync()
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
-	}
-
-	@Override
-	public String getCommand() {
-		return "message [message]";
-	}
-
-	@Override
-	public String getDescription() {
-		return "Send a message to all currently connected (via tcp client) users.";
+		out.println("Message has been successfully sent:");
+		out.println(message);
 	}
 
 }

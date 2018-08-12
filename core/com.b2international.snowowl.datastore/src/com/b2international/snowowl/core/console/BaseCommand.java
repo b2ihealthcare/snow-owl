@@ -15,29 +15,18 @@
  */
 package com.b2international.snowowl.core.console;
 
-import com.b2international.commons.extension.Component;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.eventbus.IEventBus;
-
-import picocli.CommandLine;
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * @since 7.0
  */
-@Component
-@CommandLine.Command(
-	header = "TODO",
-	description = "TODO",
-	headerHeading = "Usage:%n%n",
-    synopsisHeading = "%n",
-    descriptionHeading = "%nDescription:%n%n",
-    parameterListHeading = "%nParameters:%n",
-    optionListHeading = "%nOptions:%n"
-)
-public abstract class Command extends BaseCommand {
+public abstract class BaseCommand {
 
-	protected final IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
+	public abstract void run(CommandLineStream out);
+	
+	final String getCommand() {
+		checkArgument(getClass().isAnnotationPresent(picocli.CommandLine.Command.class), "%s class must be annotated and configured with picocli in order to be used as Snow Owl shell command", getClass().getSimpleName());
+		return getClass().getAnnotation(picocli.CommandLine.Command.class).name();
 	}
-
+	
 }

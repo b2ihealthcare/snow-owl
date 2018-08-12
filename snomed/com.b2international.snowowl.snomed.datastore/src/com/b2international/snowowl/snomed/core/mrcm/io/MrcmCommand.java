@@ -42,7 +42,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 
  */
-public final class MrcmCommand extends Command {
+public final class MrcmCommand {
 
 private String exportFormatsString = StringUtils.toString(Sets.newHashSet(MrcmExportFormat.values()));
 	

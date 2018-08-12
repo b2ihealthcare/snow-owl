@@ -39,7 +39,9 @@ Export-Package: com.b2international.commons,
  javax.annotation,
  javax.annotation.concurrent,
  javax.annotation.meta,
- net.jodah.typetools
+ net.jodah.typetools,
+ picocli,
+ picocli.groovy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.eclipse.core.net;bundle-version="1.2.200",
  org.eclipse.emf.ecore;bundle-version="2.10.0";visibility:=reexport,
@@ -61,4 +63,5 @@ Bundle-ClassPath: .,
  lib/flexigraph.jar,
  lib/jsr305-1.3.9.jar,
  lib/typetools-0.4.8.jar,
- lib/zjsonpatch-0.4.4.jar
+ lib/zjsonpatch-0.4.4.jar,
+ lib/picocli-3.5.1.jar

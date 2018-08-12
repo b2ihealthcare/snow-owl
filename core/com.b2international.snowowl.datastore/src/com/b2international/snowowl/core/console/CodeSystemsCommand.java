@@ -15,21 +15,19 @@
  */
 package com.b2international.snowowl.core.console;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
+import com.b2international.snowowl.datastore.CodeSystemVersions;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -39,51 +37,74 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Option;
+
 /**
  * @since 7.0
  */
-@Component
+@CommandLine.Command(
+	name = "codesystems", 
+	header = "Displays information about the available Code Systems",
+	description = {"Displays information about the available Code Systems and their versions"}
+)
 public final class CodeSystemsCommand extends Command {
 
 	private static final Ordering<CodeSystemEntry> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystemEntry::getShortName);
+
+	@Option(names = { "-c", "--codesystem" }, description = { "A short name of the codeSystem to return" })
+	String codeSystem;
+	
+	@Option(names = { "-v", "--versions" }, description = { "Display version information along with each returned Code System" })
+	boolean showVersions;
 	
 	@Override
-	public void run(CommandInterpreter interpreter) {
-		String codeSystemShortName = interpreter.nextArgument();
-		if (Strings.isNullOrEmpty(codeSystemShortName)) {
-			interpreter.print(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInformation(input))));
+	public void run(CommandLineStream out) {
+		if (Strings.isNullOrEmpty(codeSystem)) {
+			out.println(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInfo(input))));
 		} else {
-			CodeSystemEntry codeSystem = getCodeSystemById(codeSystemShortName);
+			CodeSystemEntry cs = getCodeSystemById(codeSystem);
 			
-			if (codeSystem == null) {
-				interpreter.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystemShortName));
+			if (cs == null) {
+				out.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystem));
 				return;
 			}
 			
-			interpreter.println(getCodeSystemInformation(codeSystem));
+			out.println(getCodeSystemInfo(cs));
 		}
 	}
-	
-	@Override
-	public String getCommand() {
-		return "codesystems [codeSystemShortName]";
-	}
-	
-	@Override
-	public String getDescription() {
-		return "lists all/single available terminologies/terminology in the system";
-	}
-	
-	private String getCodeSystemInformation(CodeSystemEntry codeSystem) {
-		StringBuilder builder = new StringBuilder();
-		builder
+
+	private String getCodeSystemInfo(CodeSystemEntry codeSystem) {
+		return new StringBuilder()
 			.append("Name: ").append(codeSystem.getName()).append("\n")
 			.append("Short name: ").append(codeSystem.getShortName()).append("\n")
-			.append("Code System OID: ").append(codeSystem.getOid()).append("\n")
+			.append("OID: ").append(codeSystem.getOid()).append("\n")
 			.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
 			.append("Language: ").append(codeSystem.getLanguage()).append("\n")
-			.append("Current branch path: ").append(codeSystem.getBranchPath()).append("\n");
-		return builder.toString();
+			.append("Working branch: ").append(codeSystem.getBranchPath())
+			.append(showVersions ? getCodeSystemVersionsInfo(codeSystem) : "")
+			.toString();
+	}
+	
+	private String getCodeSystemVersionsInfo(CodeSystemEntry cs) {
+		final StringBuilder info = new StringBuilder("\nVersions:\n");
+		final CodeSystemVersions versions = CodeSystemRequests
+			.prepareSearchCodeSystemVersion()
+			.all()
+			.filterByCodeSystemShortName(cs.getShortName())
+			.sortBy(SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+			.build(cs.getRepositoryUuid())
+			.execute(getBus())
+			.getSync();
+		if (versions.isEmpty()) {
+			info.append("\tNo versions have been created yet.");
+		} else {
+			info.append(versions
+					.stream()
+					.map(this::getCodeSystemVersionInformation)
+					.collect(Collectors.joining("\n")));
+		}
+		return info.toString();
 	}
 	
 	private List<String> getRepositoryIds() {
@@ -112,7 +133,6 @@ public final class CodeSystemsCommand extends Command {
 	}
 	
 	private CodeSystemEntry getCodeSystemById(String shortNameOrOid) {
-		checkNotNull(shortNameOrOid, "Shortname Or OID parameter may not be null.");
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()
@@ -134,17 +154,14 @@ public final class CodeSystemsCommand extends Command {
 	}
 	
 	private String getCodeSystemVersionInformation(CodeSystemVersionEntry codeSystemVersion) {
-		StringBuilder builder = new StringBuilder();
-		builder
-			.append("Version id: ").append(codeSystemVersion.getVersionId()).append("\n")
-			.append("Description: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("Effective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
-			.append("Creation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
-			.append("Last update: ").append(codeSystemVersion.getLatestUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLatestUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
-			.append("Version branch path: ").append(codeSystemVersion.getPath()).append("\n")
-			.append("Parent branch path: ").append(codeSystemVersion.getParentBranchPath()).append("\n")
-			.append("Repository id: ").append(codeSystemVersion.getRepositoryUuid()).append("\n");
-		return builder.toString();
+		return new StringBuilder()
+			.append("\tVersion id: ").append(codeSystemVersion.getVersionId()).append("\n")
+			.append("\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
+			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
+			.append("\tCreation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
+			.append("\tLast update: ").append(codeSystemVersion.getLatestUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLatestUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
+			.append("\tVersion branch path: ").append(codeSystemVersion.getPath())
+			.toString();
 	}
 	
 }

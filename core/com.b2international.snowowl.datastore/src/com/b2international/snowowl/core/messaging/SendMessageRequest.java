@@ -20,12 +20,14 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.0
  */
 final class SendMessageRequest implements Request<ServiceProvider, Boolean> {
 
+	@JsonProperty
 	@NotEmpty
 	private final String message;
 

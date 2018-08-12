@@ -15,34 +15,19 @@
  */
 package com.b2international.snowowl.core.console;
 
-import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.commons.extension.Component;
-import com.b2international.snowowl.datastore.request.RepositoryRequests;
-
 /**
  * @since 7.0
  */
-@Component
-public final class VersionCommand extends Command {
+public interface CommandLineStream {
 
-	@Override
-	public void run(CommandInterpreter interpreter) {
-		String version = RepositoryRequests.prepareGetServerInfo().buildAsync()
-				.execute(getBus())
-				.getSync()
-				.version();
-		interpreter.println(version);
-	}
-
-	@Override
-	public String getCommand() {
-		return "--version";
-	}
-
-	@Override
-	public String getDescription() {
-		return "returns the current version";
+	void print(Object o);
+	
+	void println();
+	
+	void println(Object o);
+	
+	default void println(String message, Object...args) {
+		println(String.format(message, args));
 	}
 	
 }
