@@ -105,15 +105,10 @@ public enum ClassPathScanner {
 	/*Filters and returns Class<?> instances for the given classNames, where the class is annotated with the Component annotation*/
 	private List<Class<?>> getComponentClasses(final List<String> classNames) {
 		return registry.classNamesToClassRefs(classNames).stream()
-				.filter(this::isComponentAnnotationPresent)
+				.filter(type -> type.isAnnotationPresent(Component.class))
 				.collect(Collectors.toList());
 	}
 	
-	private boolean isComponentAnnotationPresent(Class<?> type) {
-		return type.isAnnotationPresent(Component.class) 
-				|| (type.getSuperclass() != null && isComponentAnnotationPresent(type.getSuperclass()));
-	}
-
 	/**
 	 * Returns instances of classes annotated with the given annotation.
 	 * @param annotation
