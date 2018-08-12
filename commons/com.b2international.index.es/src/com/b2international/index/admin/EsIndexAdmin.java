@@ -88,7 +88,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		
 		final String prefix = (String) settings.get(IndexClientFactory.INDEX_PREFIX);
-		this.prefix = prefix.isEmpty() ? "" : prefix + ".";
+		this.prefix = Strings.isNullOrEmpty(prefix) ? "" : prefix + ".";
 	}
 	
 	@Override
