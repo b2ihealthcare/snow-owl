@@ -39,18 +39,15 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -237,25 +234,6 @@ public final class Rf2EffectiveTimeSlice {
 			}
 		}
 		LOG.info(commitMessage + " in " + w);
-	}
-	
-	private void createNewVersion(CodeSystemVersion versionToCreate, String codeSystemShortName, BranchContext context, String userId) {
-		final String parentBranch = context.branch().path();
-		final String commitMessage = String.format("Created SNOMED CT version %s for branch '%s'", effectiveTime, parentBranch);
-		
-		try (final SnomedEditingContext codeSystemEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-			codeSystemEditingContext.lookup(codeSystemShortName, CodeSystem.class).getCodeSystemVersions().add(versionToCreate);
-			if (codeSystemEditingContext.isDirty()) {
-				LOG.info(commitMessage);
-
-				new CDOServerCommitBuilder(userId, commitMessage, codeSystemEditingContext.getTransaction())
-						.sendCommitNotification(false)
-						.parentContextDescription(DatastoreLockContextDescriptions.IMPORT)
-						.commit();
-			}
-		} catch (CommitException e) {
-			throw new SnowowlRuntimeException(String.format("Unable to commit SNOMED CT version %s for branch '%s'", effectiveTime, versionToCreate));
-		}
 	}
 	
 	private boolean isUnpublishedSlice() {

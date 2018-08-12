@@ -80,7 +80,7 @@ public final class SnomedRf2ImportRequestBuilder
 	}
 	
 	@Override
-	public AsyncRequest<Boolean> build(String repositoryId, String branch) {
+	public AsyncRequest<Rf2ImportResponse> build(String repositoryId, String branch) {
 		return new AsyncRequest<>(
 			new RepositoryRequest<>(repositoryId,
 				new IndexReadRequest<>(
