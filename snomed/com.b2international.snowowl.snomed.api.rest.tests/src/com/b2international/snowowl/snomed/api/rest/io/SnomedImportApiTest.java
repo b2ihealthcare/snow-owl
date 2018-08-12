@@ -198,11 +198,16 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive("SnomedCT_Release_INT_20150204_inactivate_concept.zip");
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
-		.body("active", equalTo(false))
-		.body("pt.id", equalTo("11320138110"));
+			.body("active", equalTo(false))
+			.body("pt.id", equalTo("11320138110"));
 
 		createCodeSystem(branchPath, "SNOMEDCT-EXT").statusCode(201);
 		createVersion("SNOMEDCT-EXT", "v1", "20170301").statusCode(201);
+		
+		// sanity check that versioning did not mess with the descriptions
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
+			.body("active", equalTo(false))
+			.body("pt.id", equalTo("11320138110"));
 
 		/*
 		 * In this archive, all components are backdated, so they should have no effect on the dataset,
@@ -210,11 +215,14 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		 */
 		importArchive("SnomedCT_Release_INT_20150131_index_init_bug.zip");
 
+		// check that the new unpublished component did get imported
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "45527646019").statusCode(200);
+		
+		// verify that it did not change the PT of the concept
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
 		.body("active", equalTo(false))
 		.body("pt.id", equalTo("11320138110"));
 
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "45527646019").statusCode(200);
 	}
 
 	@Test

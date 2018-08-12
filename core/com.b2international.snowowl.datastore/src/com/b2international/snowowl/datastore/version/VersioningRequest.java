@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -54,16 +56,24 @@ public class VersioningRequest implements Request<TransactionContext, Boolean> {
 		}
 
 		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
-		doVersionComponents(context);
-		context.add(createVersion(context, config));
+		try {
+			doVersionComponents(context);
+			context.add(createVersion(context, config));
+		} catch (Exception e) {
+			if (e instanceof ApiException) {
+				throw (ApiException) e;
+			}
+			throw new SnowowlRuntimeException(e);
+		}
 		return Boolean.TRUE;
 	}
 	
 	/**
 	 * Subclasses may override this method to update versioning properties on terminology components before creating the version. 
 	 * @param context
+	 * @throws Exception 
 	 */
-	protected void doVersionComponents(TransactionContext context) {
+	protected void doVersionComponents(TransactionContext context) throws Exception {
 	}
 
 	@Nullable

@@ -61,7 +61,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
- * A p into your next commit.
+ * A place that stores information about what will go into your next commit.
  * 
  * @since 7.0
  * @see RevisionIndex#prepareCommit()

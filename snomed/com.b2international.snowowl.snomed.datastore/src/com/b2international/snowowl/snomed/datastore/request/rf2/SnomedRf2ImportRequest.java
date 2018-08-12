@@ -33,6 +33,7 @@ import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -116,6 +117,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			features.enable(feature);
 			return doImport(rf2Archive, new Rf2ImportConfiguration(userId, createVersions, codeSystemShortName, type), context);
 		} catch (Exception e) {
+			if (e instanceof ApiException) {
+				throw (ApiException) e;
+			}
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			features.disable(feature);

@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 /**
  * @since 7.0
@@ -30,7 +32,7 @@ public abstract class AbstractRf2RowValidator {
 
 	private Rf2ValidationIssueReporter reporter;
 	private String[] values;
-	private List<String> validatableConceptIds = Lists.newArrayList();
+	private Set<String> validatableConceptIds = newHashSet();
 
 	public AbstractRf2RowValidator(Rf2ValidationIssueReporter reporter, String[] values) {
 		this.reporter = reporter;
