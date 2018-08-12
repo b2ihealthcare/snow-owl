@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -43,6 +44,7 @@ import picocli.CommandLine.Option;
 /**
  * @since 7.0
  */
+@Component
 @CommandLine.Command(
 	name = "codesystems", 
 	header = "Displays information about the available Code Systems",

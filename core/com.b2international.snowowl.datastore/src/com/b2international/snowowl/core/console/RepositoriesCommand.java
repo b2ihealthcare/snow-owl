@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.console;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -32,6 +33,7 @@ import picocli.CommandLine.Option;
 /**
  * @since 7.0
  */
+@Component
 @CommandLine.Command(
 	name = "repositories",
 	header = "Displays information about the available repositories",

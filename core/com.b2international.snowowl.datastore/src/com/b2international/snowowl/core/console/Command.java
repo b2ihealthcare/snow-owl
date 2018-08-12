@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.console;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -24,7 +23,6 @@ import picocli.CommandLine;
 /**
  * @since 7.0
  */
-@Component
 @CommandLine.Command(
 	header = "TODO",
 	description = "TODO",

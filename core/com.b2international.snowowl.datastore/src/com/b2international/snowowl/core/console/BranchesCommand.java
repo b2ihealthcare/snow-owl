@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.console;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
@@ -36,6 +37,7 @@ import picocli.CommandLine.Parameters;
 /**
  * @since 7.0
  */
+@Component
 @CommandLine.Command(
 	name = "branches",
 	header = "Displays information about branches in a repository",

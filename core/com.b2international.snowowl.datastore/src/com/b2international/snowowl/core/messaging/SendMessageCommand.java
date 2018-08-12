@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.messaging;
 
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 
@@ -26,6 +27,7 @@ import picocli.CommandLine.Parameters;
 /**
  * @since 7.0
  */
+@Component
 @CommandLine.Command(
 	name = "message",
 	header = "Send a message to the end users",
