@@ -28,6 +28,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
@@ -63,6 +66,8 @@ import com.google.common.collect.Multimaps;
  * @since 6.0
  */
 final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+	
+	private static final Logger LOG = LoggerFactory.getLogger("import");
 
 	private static final List<Class<? extends SnomedDocument>> IMPORT_ORDER = ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class, SnomedRelationshipIndexEntry.class, SnomedRefSetMemberIndexEntry.class);
 	
@@ -109,7 +114,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		try {
 			// clear local cache before executing commit
 			newComponents = newHashMap();
-			System.err.println("Pushing changes: " + commitComment);
+			LOG.info("Pushing changes: " + commitComment);
 			long timestamp = getDelegate().commit(userId, commitComment, parentContextDescription);
 			return timestamp;
 		} catch (Exception e) {
@@ -218,7 +223,7 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				} else if (existingObject instanceof SnomedDocument && rf2Component instanceof SnomedComponent) {
 					final SnomedComponent rf2Row = (SnomedComponent) rf2Component;
 					final SnomedDocument existingRow = (SnomedDocument) existingObject;
-					if (rf2Row.getEffectiveTime().getTime() > existingRow.getEffectiveTime()) {
+					if (rf2Row.getEffectiveTime() == null || rf2Row.getEffectiveTime().getTime() > existingRow.getEffectiveTime()) {
 						componentsToImport.add(rf2Component);
 					}
 				}

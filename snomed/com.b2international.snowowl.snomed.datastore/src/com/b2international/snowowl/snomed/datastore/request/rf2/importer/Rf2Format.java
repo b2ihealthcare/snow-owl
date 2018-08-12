@@ -28,12 +28,12 @@ public final class Rf2Format {
 			// Terminology
 			.add(new Rf2ConceptContentType())
 			.add(new Rf2DescriptionContentType())
+			.add(new Rf2OwlExpressionRefSetContentType())
 			.add(new Rf2RelationshipContentType())
 			// Refset/Content
 			.add(new Rf2AssociationRefSetContentType())
 			.add(new Rf2AttributeValueRefSetContentType())
 			.add(new Rf2SimpleRefSetContentType())
-			.add(new Rf2OwlExpressionRefSetContentType())
 			// Refset/Language
 			.add(new Rf2LanguageRefSetContentType())
 			// Refset/Map

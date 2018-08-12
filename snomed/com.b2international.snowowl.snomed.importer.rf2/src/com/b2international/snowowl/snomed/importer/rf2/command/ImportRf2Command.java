@@ -238,6 +238,7 @@ final class ImportRf2Command extends AbstractRf2ImporterCommand {
 			SnomedRequests.rf2().prepareImport()
 				.setRf2ArchiveId(rf2ArchiveId)
 				.setReleaseType(releaseType)
+				.setCodeSystemShortName(codeSystemShortName)
 				.setCreateVersions(createVersions)
 				.setUserId(authenticator.getUsername())
 				.build(codeSystem.getRepositoryUuid(), branchPath)

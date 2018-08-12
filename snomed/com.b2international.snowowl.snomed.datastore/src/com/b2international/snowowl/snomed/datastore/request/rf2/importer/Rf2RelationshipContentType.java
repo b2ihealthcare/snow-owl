@@ -21,6 +21,9 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2RelationshipRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
  * @since 6.0.0
@@ -68,6 +71,11 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 			Long.parseLong(values[8]),
 			Long.parseLong(values[9])
 		);
+	}
+	
+	@Override
+	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		return new Rf2RelationshipRowValidator(reporter, values);
 	}
 
 }

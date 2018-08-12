@@ -32,12 +32,13 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 6.0.0
  */
 public final class SnomedRf2ImportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Boolean> 
-		implements RevisionIndexRequestBuilder<Boolean> {
+		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Rf2ImportResponse> 
+		implements RevisionIndexRequestBuilder<Rf2ImportResponse> {
 
 	private String userId;
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType;
+	private String codeSystemShortName;
 	private boolean createVersions;
 	
 	SnomedRf2ImportRequestBuilder() {
@@ -58,17 +59,23 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
+		this.codeSystemShortName = codeSystemShortName;
+		return getSelf();
+	}
+	
 	public SnomedRf2ImportRequestBuilder setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
 		return getSelf();
 	}
 	
 	@Override
-	protected Request<BranchContext, Boolean> doBuild() {
+	protected Request<BranchContext, Rf2ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
 		req.setUserId(userId);
+		req.setCodeSystemShortName(codeSystemShortName);
 		return req;
 	}
 	

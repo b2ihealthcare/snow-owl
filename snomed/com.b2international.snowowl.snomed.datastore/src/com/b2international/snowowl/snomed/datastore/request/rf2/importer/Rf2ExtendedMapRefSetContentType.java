@@ -29,6 +29,9 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ExtendedMapRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -73,6 +76,11 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 			Long.parseLong(values[11]),
 			Long.parseLong(values[12])
 		);
+	}
+	
+	@Override
+	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		return new Rf2ExtendedMapRefSetRowValidator(reporter, values);
 	}
 	
 }

@@ -155,12 +155,12 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setRf2ArchiveId(importId)
 			.setCreateVersions(configuration.shouldCreateVersion())
 			.setReleaseType(releaseType)
+			.setCodeSystemShortName(configuration.getCodeSystemShortName())
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(getEventBus())
 			.then(result -> {
-				// TODO set validation errors
-				((SnomedImportConfiguration) configuration).setStatus(convertStatus(result));
+				((SnomedImportConfiguration) configuration).setStatus(result.getStatus());
 				return null;
 			})
 			.fail(e -> {
@@ -172,16 +172,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
 	}
 	
-	private ImportStatus convertStatus(Boolean result) {
-//		for (SnomedValidationDefect validationDefect : validationDefects) {
-//			if (validationDefect.getDefectType().isCritical()) {
-//				return ImportStatus.FAILED;
-//			}
-//		}
-		
-		return ImportStatus.COMPLETED;
-	}
-
 	private boolean isImportAlreadyRunning() {
 		return Iterables.any(configurationMapping.values(), configuration -> ImportStatus.RUNNING.equals(configuration.getStatus()));
 	}

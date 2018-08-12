@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.mapdb.DB;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 
@@ -55,7 +56,15 @@ public final class Rf2EffectiveTimeSlices {
 	}
 
 	public Iterable<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return Ordering.natural().immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
+		return Ordering.<String>from((effectiveTime1, effectiveTime2) -> {
+			if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1)) {
+				return 1;
+			} else if(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
+				return -1;
+			} else  {
+				return effectiveTime1.compareTo(effectiveTime2);
+			}
+		}).immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
 	}
 	
 }
