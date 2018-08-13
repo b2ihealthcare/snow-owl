@@ -97,10 +97,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
 	SnomedModuleDependencyRefsetTest.class,
 	SnomedVersioningApiTest.class,
-	// Extension test cases
-	SnomedExtensionUpgradeTest.class,
-	SnomedExtensionDowngradeTest.class,
-	SnomedExtensionVersioningTest.class,
+	// Extension test cases - 7.0.preview version currently does not support extension upgrade
+//	SnomedExtensionUpgradeTest.class, 
+//	SnomedExtensionDowngradeTest.class,
+//	SnomedExtensionVersioningTest.class,
 	// Performance test cases
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
