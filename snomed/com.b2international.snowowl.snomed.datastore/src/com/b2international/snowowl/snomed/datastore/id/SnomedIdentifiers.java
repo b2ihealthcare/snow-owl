@@ -177,6 +177,20 @@ public class SnomedIdentifiers {
 	}
 	
 	/**
+	 * @param componentId - the ID to check
+	 * @return <code>true</code> if the given componentId is a valid SNOMED CT core component identifier, <code>false</code> otherwise.
+	 * @see #validate(String)
+	 */
+	public static boolean isValid(String componentId) {
+		try {
+			validate(componentId);
+			return true;
+		} catch (final IllegalArgumentException e) {
+			return false;
+		}
+	}
+	
+	/**
 	 * Validates the given collection of componentIds by using the rules defined
 	 * in the latest SNOMED CT Identifier specification, which are the following
 	 * constraints:
