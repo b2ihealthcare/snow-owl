@@ -77,18 +77,18 @@ public final class ReasonerTaxonomyBuilder {
 	private static final int SCROLL_LIMIT = 50_000;
 
 	private static void entering(final String taskName) {
-		LOGGER.info(MessageFormat.format(">>> {0}", taskName));
+		LOGGER.info(">>> {}", taskName);
 	}
 
 	private static void checkpoint(final String taskName, final String message, final Stopwatch stopwatch) {
-		LOGGER.info(MessageFormat.format("--- {0}: {1} [{2}]", taskName, message, TimeUtil.toString(stopwatch)));
+		LOGGER.info("--- {}: {} [{}]", taskName, message, TimeUtil.toString(stopwatch));
 	}
 
 	private static void leaving(final String taskName, final Stopwatch stopwatch) {
-		LOGGER.info(MessageFormat.format("<<< {0} [{1}]", taskName, TimeUtil.toString(stopwatch)));
+		LOGGER.info("<<< {} [{}]", taskName, TimeUtil.toString(stopwatch));
 	}
 
-	private static <T> void addToLongMultimap(LongKeyMap<Collection<T>> multimap, long key, T value) {
+	private static <T> void addToLongMultimap(final LongKeyMap<Collection<T>> multimap, final long key, final T value) {
 		Collection<T> fragments = multimap.get(key);
 		if (fragments == null) {
 			fragments = newArrayListWithExpectedSize(1);
@@ -143,8 +143,8 @@ public final class ReasonerTaxonomyBuilder {
 	 * @param searcher - an active revision searcher on a branch where this reasoner taxonomy builder should collect data from
 	 * @param collectConcreteDomains - if concrete domain reference set members should be populated
 	 * @param collectInferredComponents - if the inferred counterparts of collected components should also be collected
+	 * @param collectFullySpecifiedNames - if an active FSN for each participating active concepts should also be collected
 	 * @param excludedModules - the set of modules to exclude from classification
-	 * @param locales - if null or empty, skip collecting preferred terms for each concept; the order of preference for PTs otherwise 
 	 */
 	public ReasonerTaxonomyBuilder(final RevisionSearcher searcher,
 			final boolean collectConcreteDomains,
@@ -172,7 +172,7 @@ public final class ReasonerTaxonomyBuilder {
 		leaving(taskName, stopwatch);
 	}
 	
-	private LongSet initConceptIdSets(String taskName, final RevisionSearcher searcher, Set<String> excludedModules) {
+	private LongSet initConceptIdSets(final String taskName, final RevisionSearcher searcher, final Set<String> excludedModules) {
 		
 		final ExpressionBuilder builder = Expressions.builder()
 				.filter(active());
@@ -193,15 +193,15 @@ public final class ReasonerTaxonomyBuilder {
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
 		LongSet activeConceptIds = null;
 		
-		for (Hits<String[]> page : scrolledHits) {
+		for (final Hits<String[]> page : scrolledHits) {
 			if (activeConceptIds == null) {
 				activeConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
 				fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
 				exhaustiveConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(page.getTotal());
 			}
 			
-			for (String[] conceptFields : page) {
-				long conceptId = Long.parseLong(conceptFields[0]);
+			for (final String[] conceptFields : page) {
+				final long conceptId = Long.parseLong(conceptFields[0]);
 				activeConceptIds.add(conceptId);
 				
 				if (!Boolean.parseBoolean(conceptFields[1])) {
@@ -214,7 +214,9 @@ public final class ReasonerTaxonomyBuilder {
 			}
 		}
 		
+		// Create empty sets if the dataset did not contain a single active concept of interest
 		if (activeConceptIds == null) {
+			activeConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
 			fullyDefinedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
 			exhaustiveConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
 		}
@@ -223,11 +225,11 @@ public final class ReasonerTaxonomyBuilder {
 		return activeConceptIds;
 	}
 
-	private void initStatements(String taskName, 
-			RevisionSearcher searcher, 
-			Set<String> excludedModules,
-			boolean collectInferredComponents, 
-			int conceptCount) {
+	private void initStatements(final String taskName, 
+			final RevisionSearcher searcher, 
+			final Set<String> excludedModules,
+			final boolean collectInferredComponents, 
+			final int conceptCount) {
 		
 		final ExpressionBuilder builder = Expressions.builder()
 				.filter(active());
@@ -260,13 +262,13 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
 		
-		for (Hits<String[]> page : scrolledHits) {
+		for (final Hits<String[]> page : scrolledHits) {
 			if (statedStatementMap == null) {
 				statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 				inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 			}
 			
-			for (String[] statementFields : page) {
+			for (final String[] statementFields : page) {
 				final StatementFragment statement = new StatementFragment(
 						Long.parseLong(statementFields[3]),
 						Long.parseLong(statementFields[4]),
@@ -277,7 +279,7 @@ public final class ReasonerTaxonomyBuilder {
 						Long.parseLong(statementFields[0]),
 						Long.parseLong(statementFields[1]));
 				
-				long sourceId = Long.parseLong(statementFields[2]);
+				final long sourceId = Long.parseLong(statementFields[2]);
 				
 				if (Concepts.STATED_RELATIONSHIP.equals(statementFields[9])) {
 					addToLongMultimap(statedStatementMap, sourceId, statement);
@@ -287,6 +289,7 @@ public final class ReasonerTaxonomyBuilder {
 			}
 		}
 		
+		// Create empty sets if the dataset did not contain a single active relationship of interest
 		if (statedStatementMap == null) {
 			statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 			inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
@@ -295,10 +298,10 @@ public final class ReasonerTaxonomyBuilder {
 		checkpoint(taskName, "collecting statements", stopwatch);
 	}
 
-	private void initConcreteDomains(String taskName, 
-			RevisionSearcher searcher, 
-			Set<String> excludedModules,
-			boolean collectInferredComponents) {
+	private void initConcreteDomains(final String taskName, 
+			final RevisionSearcher searcher, 
+			final Set<String> excludedModules,
+			final boolean collectInferredComponents) {
 	
 		final ExpressionBuilder builder = Expressions.builder()
 				.filter(active())
@@ -323,8 +326,8 @@ public final class ReasonerTaxonomyBuilder {
 		statedConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		inferredConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		
-		for (Hits<SnomedRefSetMemberIndexEntry> page : scrolledHits) {
-			for (SnomedRefSetMemberIndexEntry entry : page) {
+		for (final Hits<SnomedRefSetMemberIndexEntry> page : scrolledHits) {
+			for (final SnomedRefSetMemberIndexEntry entry : page) {
 				final long referencedComponentId = Long.parseLong(entry.getReferencedComponentId());
 				final long refsetId = Long.parseLong(entry.getReferenceSetId());
 				final byte dataType = (byte) entry.getDataType().ordinal();
@@ -349,7 +352,7 @@ public final class ReasonerTaxonomyBuilder {
 		checkpoint(taskName, "collecting concrete domain reference set members...", stopwatch);
 	}
 
-	private void initTaxonomy(String taskName, LongSet activeConceptIds) {
+	private void initTaxonomy(final String taskName, final LongSet activeConceptIds) {
 		final int conceptCount = activeConceptIds.size();
 
 		internalIdToconceptId = PrimitiveLists.newLongArrayListWithExpectedSize(conceptCount);
@@ -424,7 +427,7 @@ public final class ReasonerTaxonomyBuilder {
 		checkpoint(taskName, "building taxonomy", stopwatch);
 	}
 
-	private void initActiveFsns(String taskName, RevisionSearcher searcher, Set<String> excludedModules) {
+	private void initActiveFsns(final String taskName, final RevisionSearcher searcher, final Set<String> excludedModules) {
 		final ExpressionBuilder builder = Expressions.builder()
 				.filter(active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME));
@@ -444,13 +447,13 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
 		
-		for (Hits<String[]> page : scrolledHits) {
+		for (final Hits<String[]> page : scrolledHits) {
 			if (fullySpecifiedNameMap == null) {
 				fullySpecifiedNameMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(page.getTotal());
 			}
 			
-			for (String[] conceptFields : page) {
-				long conceptId = Long.parseLong(conceptFields[1]);
+			for (final String[] conceptFields : page) {
+				final long conceptId = Long.parseLong(conceptFields[1]);
 				fullySpecifiedNameMap.put(conceptId, conceptFields[2]);
 			}
 		}
@@ -688,8 +691,8 @@ public final class ReasonerTaxonomyBuilder {
 		return result;
 	}
 
-	public String getFullySpecifiedName(long conceptId) {
-		if (fullySpecifiedNameMap.containsKey(conceptId)) {
+	public String getFullySpecifiedName(final long conceptId) {
+		if (fullySpecifiedNameMap != null && fullySpecifiedNameMap.containsKey(conceptId)) {
 			return fullySpecifiedNameMap.get(conceptId);
 		} else {
 			return Long.toString(conceptId);
