@@ -26,8 +26,6 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
@@ -67,7 +65,7 @@ import com.google.common.collect.Maps;
  * This class implements the export process of the DSV export for map type reference sets. 
  * Used by the SnomedSimpleTypeRefSetExportServerIndication class.
  */
-public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
+final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private final String tmpDir;
 	private final String delimiter;
@@ -89,9 +87,8 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 
 	@Override
-	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException, IOException {
+	public File executeDSVExport() throws Exception {
 		
-		final int memberNumberToSignal = 100;
 		final ApplicationContext applicationContext = ApplicationContext.getInstance();
 		final LanguageSetting languageSetting = applicationContext.getService(LanguageSetting.class);
 		final IEventBus bus = applicationContext.getService(IEventBus.class);
@@ -113,12 +110,6 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		String fileName = ptOfRefset == null ? exportSetting.getRefSetId() : ptOfRefset.getTerm();
 		
-		final int activeMemberCount = refSet.getMembers().getTotal();
-		if (activeMemberCount < memberNumberToSignal) {
-			monitor.begin(1);
-		} else {
-			monitor.begin(activeMemberCount/memberNumberToSignal);
-		}
 		final File file = new File(tmpDir, fileName + ".csv");
 		DataOutputStream os = null;
 		try {
@@ -173,20 +164,12 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				labelMap.put(modelComponentIndexEntry.getId(), modelComponentIndexEntry.getLabel());
 			}
 			
-			int count = 0;
 			for (final SnomedRefSetMemberIndexEntry entry : SnomedRefSetMemberIndexEntry.from(refSet.getMembers())) {
 				os.writeBytes(getLineForConcept(entry, labelMap));
-				count++;
-				if (count % memberNumberToSignal == 0) {
-					monitor.worked();
-				}
 			}
 		} catch (final Exception e) {
 			throw new SnowowlServiceException(e);
 		} finally {
-			if (null != monitor) {
-				monitor.done();
-			}
 			if (null != os) {
 				try {
 					os.close();

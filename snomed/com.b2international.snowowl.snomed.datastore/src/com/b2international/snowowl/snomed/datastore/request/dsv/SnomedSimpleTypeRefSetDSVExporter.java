@@ -20,7 +20,6 @@ import static java.util.Optional.ofNullable;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,9 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
@@ -119,15 +115,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * 
 	 * @param monitor
 	 * @return The file with the exported values.
-	 * @throws SnowowlServiceException
+	 * @throws Exception
 	 */
 	@Override
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException, IOException {
+	public File executeDSVExport() throws Exception {
 
-		monitor.begin(100);
-		Async async = monitor.forkAsync(80);
-		OMMonitor remainderMonitor = null;
-		
 		SnomedDescription pt = SnomedRequests.prepareGetConcept(refSetId)
 			.setLocales(locales)
 			.setExpand("pt()")
@@ -172,10 +164,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			sb.append(System.getProperty("line.separator"));
 			os.writeBytes(sb.toString());
 
-			async.stop();
-			async = null;
-			remainderMonitor = monitor.fork(20);
-			remainderMonitor.begin(referencedComponents.getTotal());
 			// write data to the file row by row
 			LinkedHashMap<String, Integer> groupZeroCounts = groupedRelationships.getOrDefault(0, new LinkedHashMap<>());
 			
@@ -275,24 +263,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				}
 				stringBuffer.append(System.getProperty("line.separator"));
 				os.writeBytes(stringBuffer.toString());
-				remainderMonitor.worked(1);
 			}
-			File zipFile = FileUtils.createZipArchive(file.getParentFile(), Files.createTempFile("export", ".zip").toFile());
-			return zipFile;
+			return FileUtils.createZipArchive(file.getParentFile(), Files.createTempFile("export", ".zip").toFile());
 		} catch (Exception e) {
 			throw new SnowowlServiceException(e);
 		} finally {
 			if (file != null) {
 				file.delete();
-			}
-			if (null != async) {
-				async.stop();
-			}
-			if (null != remainderMonitor) {
-				remainderMonitor.done();
-			}
-			if (null != monitor) {
-				monitor.done();
 			}
 		}
 	}
