@@ -33,13 +33,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public final class EsIndexClientFactory implements IndexClientFactory {
 
+	private static final Path DEFAULT_PATH = Paths.get("target", "resources", "indexes");
+
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
 		final boolean persistent = settings.containsKey(DATA_DIRECTORY);
-		final Object dir = persistent ? settings.get(DATA_DIRECTORY) : new File("target");
-		final Object configDir = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : Paths.get("target");
-		final File dataDirectory = dir instanceof File ? (File) dir : new File((String) dir);
-		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
+		final Object dataSetting = persistent ? settings.get(DATA_DIRECTORY) : DEFAULT_PATH;
+		final Object configSetting = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : DEFAULT_PATH;
+		final Path dataDirectory = dataSetting instanceof Path ? (Path) dataSetting : Paths.get((String) dataSetting);
+		final Path configDirectory = configSetting instanceof Path ? (Path) configSetting : Paths.get((String) configSetting);
 		
 		final HttpHost host;
 		if (settings.containsKey(CLUSTER_URL)) {
