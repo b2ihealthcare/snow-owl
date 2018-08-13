@@ -25,7 +25,6 @@
 		<module>com.b2international.snowowl.snomed.common</module>
 		<module>com.b2international.snowowl.snomed.datastore</module>
 		<module>com.b2international.snowowl.snomed.datastore.tests</module>
-		<module>com.b2international.snowowl.snomed.datastore.server</module>
 		
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
