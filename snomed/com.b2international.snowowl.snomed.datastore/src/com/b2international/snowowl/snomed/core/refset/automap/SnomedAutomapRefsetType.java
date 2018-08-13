@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.refset.automap;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 
 /**
  * @since 3.1

@@ -43,7 +43,6 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -68,15 +67,17 @@ import org.junit.Test;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -85,10 +86,10 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
@@ -323,10 +324,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					Rf2ExportResult firstResult = (Rf2ExportResult) input.get(0);
 					Rf2ExportResult secondResult = (Rf2ExportResult) input.get(1);
 					
-					InternalFileRegistry fileRegistry = (InternalFileRegistry) ApplicationContext.getServiceForClass(FileRegistry.class);
+					InternalAttachmentRegistry fileRegistry = (InternalAttachmentRegistry) ApplicationContext.getServiceForClass(AttachmentRegistry.class);
 					
-					File firstArchive = fileRegistry.getFile(firstResult.getRegistryId());
-					File secondArchive = fileRegistry.getFile(secondResult.getRegistryId());
+					File firstArchive = fileRegistry.getAttachment(firstResult.getRegistryId());
+					File secondArchive = fileRegistry.getAttachment(secondResult.getRegistryId());
 					
 					final Map<String, Boolean> firstArchiveMap = ImmutableMap.<String, Boolean>builder()
 							.put("sct2_Concept_Full", true)
@@ -911,7 +912,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.getMembers();
 
 		assertEquals(2, versionedMembers.getTotal());
-		versionedMembers.forEach(m -> assertNotNull(m.getEffectiveTime()));
+		versionedMembers.forEach(m -> assertEquals(EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT), m.getEffectiveTime()));
 
 		Map<String, Acceptability> updatedAcceptabilityMap = ImmutableMap.<String, Acceptability>builder()
 				.put(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE)

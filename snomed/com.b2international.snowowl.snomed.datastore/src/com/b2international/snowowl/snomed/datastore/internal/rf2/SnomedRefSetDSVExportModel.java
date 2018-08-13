@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 
 /**

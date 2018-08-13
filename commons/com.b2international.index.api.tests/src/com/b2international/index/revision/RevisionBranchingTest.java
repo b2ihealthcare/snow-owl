@@ -111,28 +111,12 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void behindStateAfterParentCommit() throws Exception {
-		final String path = createBranch(MAIN, "a");
-		commit(MAIN, Collections.emptySet());
-		assertState(path, BranchState.BEHIND);
-	}
-	
-	@Test
 	public void divergedStateAfterParentAndBranchCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
 		commit(MAIN, Collections.emptySet());
 		commit(path, Collections.emptySet());
+		
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.DIVERGED);
-	}
-	
-	@Test(expected = BadRequestException.class)
-	public void rebaseMain() throws Exception {
-		branching().rebase(MAIN, MAIN, "Message", () -> {});
-	}
-	
-	@Test(expected = BadRequestException.class)
-	public void mergeMain() throws Exception {
-		branching().merge(MAIN, MAIN, "Message");
 	}
 	
 	@Test(expected = NotFoundException.class)
@@ -204,144 +188,12 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		assertTrue(getBranch("MAIN/a/1/2").isDeleted());
 	}
 	
-	@Test(expected = BranchMergeException.class)
-	public void mergeUpToDate() throws Exception {
-		String a = createBranch(MAIN, "a");
-		branching().merge(a, MAIN, "Merge A to MAIN");
-	}
-	
-	@Test
-	public void mergeForward() throws Exception {
-		RevisionBranch originalMain = getMainBranch();
-		String a = createBranch(MAIN, "a");
-		branching().handleCommit(a, currentTime());
-		branching().merge(a, MAIN, "Merge A to MAIN");
-		RevisionBranch mainA = getMainBranch();
-		assertTrue(mainA.getHeadTimestamp() > originalMain.getHeadTimestamp());
-		assertState(a, BranchState.UP_TO_DATE);
-	}
-	
-	@Test(expected = BranchMergeException.class)
-	public void mergeBehind() throws Exception {
-		String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		branching().merge(a, MAIN, "Merge A to MAIN");
-	}
-	
-	@Test(expected = BranchMergeException.class)
-	public void mergeDiverged() throws Exception {
-		String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		branching().merge(a, MAIN, "Merge A to MAIN");
-	}
-	
-	@Test
-	public void rebaseUpToDateState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final long expected = getBranch(a).getBaseTimestamp();
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		final long actual = getBranch(a).getBaseTimestamp();
-		assertEquals("Rebasing UP_TO_DATE branch should do nothing", expected, actual);
-	}
-	
-	@Test
-	public void rebaseForwardState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final long expected = getBranch(a).getBaseTimestamp();
-		branching().handleCommit(a, currentTime());
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		final long actual = getBranch(a).getBaseTimestamp();
-		assertEquals("Rebasing FORWARD branch should do nothing", expected, actual);
-	}
-	
-	@Test
-	public void rebaseBehindState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		assertState(a, BranchState.BEHIND);
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		assertState(a, BranchState.UP_TO_DATE);
-		assertLaterBase(a, MAIN);
-	}
-
-	@Test
-	public void rebaseDivergedState() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		assertState(a, BranchState.DIVERGED);
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		assertState(a, BranchState.FORWARD);
-		assertLaterBase(a, MAIN);
-	}
-
-	@Test
-	public void rebaseDivergedWithBehindChild() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final String b = createBranch(a, "b");
-		
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(a, currentTime());
-		
-		assertState(a, BranchState.DIVERGED);
-		assertState(b, BranchState.BEHIND);
-		
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		
-		assertState(a, BranchState.FORWARD);
-		assertLaterBase(a, MAIN);
-		assertState(b, BranchState.STALE);
-	}
-	
-	@Test
-	public void rebaseBehindWithForwardChild() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		final String b = createBranch(a, "b");
-		
-		branching().handleCommit(MAIN, currentTime());
-		branching().handleCommit(b, currentTime());
-		
-		assertState(a, BranchState.BEHIND);
-		assertState(b, BranchState.FORWARD);
-		
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		
-		assertState(a, BranchState.UP_TO_DATE);
-		assertLaterBase(a, MAIN);
-		assertState(b, BranchState.STALE);
-	}
-	
-	@Test
-	public void rebaseDivergedWithTwoChildren() throws Exception {
-		final String a = createBranch(MAIN, "a");
-		branching().handleCommit(MAIN, currentTime());
-		
-		final String b = createBranch(a, "b");
-		branching().handleCommit(a, currentTime());
-		
-		final String c = createBranch(a, "c");
-		
-		branching().rebase(a, MAIN, "Rebase A", () -> {});
-		
-		assertState(a, BranchState.FORWARD);
-		assertState(b, BranchState.STALE);
-		assertState(c, BranchState.STALE);
-	}
-	
-	@Test
-	public void rebaseBehindChildOnRebasedForwardParent() throws Exception {
-		rebaseDivergedWithBehindChild();
-		branching().rebase("MAIN/a/b", "MAIN/a", "Rebase A", () -> {});
-		assertState("MAIN/a/b", BranchState.UP_TO_DATE);
-	}
-	
 	@Test
 	public void updateMetadata() throws Exception {
 		final BaseRevisionBranching branching = branching();
 		final String branchA = branching.createBranch(MAIN, "a", new MetadataImpl(ImmutableMap.<String, Object>of("test", 0)));
 		final long commitTimestamp = currentTime();
-		final IndexWrite<Void> timestampUpdate = branching.update(branchA, RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", commitTimestamp));
+		final IndexWrite<Void> timestampUpdate = branching.update(branchA, RevisionBranch.Scripts.COMMIT, ImmutableMap.of("headTimestamp", commitTimestamp));
 		final IndexWrite<Void> metadataUpdate = branching.update(branchA, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", new MetadataImpl(ImmutableMap.<String, Object>of("test", 1))));
 		final Collection<IndexWrite<Void>> parallelUpdates = ImmutableList.of(timestampUpdate, metadataUpdate);
 		
@@ -370,14 +222,6 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		final RevisionBranch branch = getBranch("MAIN/a");
 		assertEquals(branch.getHeadTimestamp(), commitTimestamp);
 		assertEquals(branch.metadata(), ImmutableMap.<String, Object>of("test", 1));
-	}
-	
-	private void assertLaterBase(String branch, String other) {
-		assertTrue(String.format("Basetimestamp of branch '%s' should be later than headTimestamp of '%s'.", branch, other), getBranch(branch).getBaseTimestamp() > getBranch(other).getHeadTimestamp());
-	}
-	
-	private void assertState(String branchPath, BranchState expectedState) {
-		assertEquals(expectedState, branching().getBranchState(branchPath));
 	}
 	
 }

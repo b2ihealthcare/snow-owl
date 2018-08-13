@@ -23,10 +23,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.datastore.review.ConceptChanges;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.datastore.review.ReviewStatus;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 

@@ -31,18 +31,16 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.terminologymetadata.CodeSystemVersion;
-import com.b2international.snowowl.terminologymetadata.TerminologymetadataPackage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.MoreObjects;
 import com.google.common.primitives.Longs;
 
 /**
- * CDO independent representation of a {@link CodeSystemVersion}.
+ * @since 5.0
  */
-@Doc
+@Doc(type = "codesystemversion")
 @JsonDeserialize(builder = CodeSystemVersionEntry.Builder.class)
 public final class CodeSystemVersionEntry implements Serializable {
 
@@ -119,20 +117,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 	
 	public static Builder builder() {
 		return new Builder();
-	}
-	
-	public static Builder builder(CodeSystemVersion version) {
-		final String codeSystemShortName = version.getCodeSystem().getShortName();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(version.cdoID()))
-				.versionId(version.getVersionId())
-				.description(version.getDescription())
-				.effectiveDate(EffectiveTimes.getEffectiveTime(version.getEffectiveDate()))
-				.importDate(Dates.getTime(version.getImportDate()))
-				.latestUpdateDate(EffectiveTimes.getEffectiveTime(version.getLastUpdateDate()))
-				.repositoryUuid(version.getCodeSystem().getRepositoryUuid())
-				.codeSystemShortName(codeSystemShortName)
-				.parentBranchPath(version.getParentBranchPath());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
@@ -356,7 +340,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 
 	@Override
 	public String toString() {
-		return new StringBuilder(versionId).append(patched ? "*" : "").toString();
+		return MoreObjects.toStringHelper(getClass())
+				.add("codeSystemShortName", codeSystemShortName)
+				.add("versionId", versionId)
+				.toString();
 	}
 	
 }

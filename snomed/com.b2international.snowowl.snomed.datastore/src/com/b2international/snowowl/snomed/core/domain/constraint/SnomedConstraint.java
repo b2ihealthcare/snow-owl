@@ -15,24 +15,40 @@
  */
 package com.b2international.snowowl.snomed.core.domain.constraint;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.snomed.mrcm.AttributeConstraint;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
-import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.constraint.CompositeDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.EnumeratedDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 
 /**
  * The component representation of an MRCM constraint.
  * 
  * @since 6.5
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.CONSTRAINT,
+	shortId = SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER,
+	componentCategory = ComponentCategory.UNKNOWN,
+	name = "SNOMED CT MRCM Constraint",
+	docType = SnomedConstraintDocument.class
+)
 public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
 	public static final String PROP_STRENGTH = "strength";
@@ -95,29 +111,44 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		this.predicate = predicate;
 	}
 
-	@Override
-	public AttributeConstraint createModel() {
-		return MrcmFactory.eINSTANCE.createAttributeConstraint();
-	}
+	public boolean applyChangesTo(final SnomedConstraintDocument.Builder updatedModel) {
 
-	@Override
-	public AttributeConstraint applyChangesTo(final ConceptModelComponent existingModel) {
-		final AttributeConstraint updatedModel = (existingModel instanceof AttributeConstraint)
-				? (AttributeConstraint) existingModel
-				: createModel();
+		// Examine the inner predicate in case it is wrapped in cardinality restrictions
+		SnomedPredicate predicate = getPredicate();
+		if (predicate instanceof SnomedCardinalityPredicate) {
+			predicate = ((SnomedCardinalityPredicate) predicate).getPredicate();
+		}
+		
+		final SnomedConstraintPredicateType predicateType = SnomedConstraintPredicateType.typeOf(predicate);
+		final ConceptSetDefinitionFragment domainFragment = getDomain().createModel();
+		final PredicateFragment predicateFragment = getPredicate().createModel();
+		/* 
+		 * Collect SCT identifiers and keys seen in the constraint's domain part, which will be used when we
+		 * are looking for applicable constraints.
+		 */
+		final Set<String> selfIds = newHashSet();
+		final Set<String> descendantIds = newHashSet();
+		final Set<String> refSetIds = newHashSet();
+		final Set<String> relationshipKeys = newHashSet(); // "typeId=destinationId" format
+		collectIds(domainFragment, selfIds, descendantIds, refSetIds, relationshipKeys);
+		
+		updatedModel.id(getId());
+		updatedModel.active(isActive());
+		updatedModel.author(getAuthor());
+		updatedModel.description(getDescription());
+		updatedModel.effectiveTime(getEffectiveTime());
+		updatedModel.form(getForm());
+		updatedModel.strength(getStrength());
+		updatedModel.validationMessage(getValidationMessage());
+		updatedModel.domain(domainFragment);
+		updatedModel.predicate(predicateFragment);
+		updatedModel.predicateType(SnomedConstraintPredicateType.typeOf(getPredicate()));
+		updatedModel.selfIds(selfIds);
+		updatedModel.descendantIds(descendantIds);
+		updatedModel.refSetIds(refSetIds);
+		updatedModel.relationshipKeys(relationshipKeys);
 
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setDescription(getDescription());
-		updatedModel.setDomain(getDomain().applyChangesTo(updatedModel.getDomain()));
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setForm(getForm());
-		updatedModel.setPredicate(getPredicate().applyChangesTo(updatedModel.getPredicate()));
-		updatedModel.setStrength(getStrength());
-		updatedModel.setUuid(getId());
-		updatedModel.setValidationMessage(getValidationMessage());
-
-		return updatedModel;
+		return true;
 	}
 
 	@Override
@@ -183,4 +214,61 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		if (!Objects.equals(validationMessage, other.validationMessage)) { return false; }
 		return true;
 	}
+	
+	/**
+	 * Collects key concept IDs from the specified concept set definition. Results are aggregated in the
+	 * given sets.
+	 * 
+	 * @param definition
+	 *            the definition to parse
+	 * @param selfIds
+	 *            the definition applies to these concepts
+	 * @param descendantIds
+	 *            the definition applies to the descendants of these concepts
+	 * @param refSetIds
+	 *            the definition applies to members of these reference sets
+	 * @param relationshipKeys
+	 *            the definition applies to concepts that include a relationship with these
+	 *            type-destination values
+	 */
+	private static void collectIds(final ConceptSetDefinitionFragment definition, 
+			final Set<String> selfIds, 
+			final Set<String> descendantIds, 
+			final Set<String> refSetIds, 
+			final Set<String> relationshipKeys) {
+		
+		if (definition instanceof HierarchyDefinitionFragment) {
+			HierarchyDefinitionFragment hierarchyDefinition = (HierarchyDefinitionFragment) definition;
+			final String focusConceptId = hierarchyDefinition.getConceptId();
+			final HierarchyInclusionType inclusionType = hierarchyDefinition.getInclusionType();
+
+			switch (inclusionType) {
+				case SELF:
+					selfIds.add(focusConceptId);
+					break;
+				case DESCENDANT:
+					descendantIds.add(focusConceptId);
+					break;
+				case SELF_OR_DESCENDANT:
+					selfIds.add(focusConceptId);
+					descendantIds.add(focusConceptId);
+					break;
+				default: 
+					throw new IllegalStateException("Unexpected hierarchy inclusion type '" + inclusionType + "'.");
+			}
+		} else if (definition instanceof EnumeratedDefinitionFragment) {
+			selfIds.addAll(((EnumeratedDefinitionFragment) definition).getConceptIds());
+		} else if (definition instanceof ReferenceSetDefinitionFragment) {
+			refSetIds.add(((ReferenceSetDefinitionFragment) definition).getRefSetId());			
+		} else if (definition instanceof CompositeDefinitionFragment) {
+			for (final ConceptSetDefinitionFragment childDefinition : ((CompositeDefinitionFragment) definition).getChildren()) {
+				collectIds(childDefinition, selfIds, descendantIds, refSetIds, relationshipKeys);
+			}
+		} else if (definition instanceof RelationshipDefinitionFragment) {
+			final String typeId = ((RelationshipDefinitionFragment) definition).getTypeId();
+			final String destinationId = ((RelationshipDefinitionFragment) definition).getDestinationId();
+			relationshipKeys.add(String.format("%s=%s", typeId, destinationId));			
+		}
+	}
+	
 }

@@ -22,7 +22,7 @@ import java.util.Collection;
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -30,12 +30,12 @@ import com.google.common.collect.ImmutableSet;
  */
 public class RevisionCompareTest extends BaseRevisionIndexTest {
 
-	private static final String DOC_TYPE = DocumentMapping.getType(Data.class);
+	private static final String DOC_TYPE = DocumentMapping.getType(RevisionData.class);
 	private static final ObjectId ROOT = ObjectId.rootOf(DOC_TYPE);
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(Data.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test
@@ -54,7 +54,7 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	@Test
 	public void compareBranchWithNewComponent() throws Exception {
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).hasSize(1);
 		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
@@ -65,9 +65,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithNewComponent_BaseWithNewComponent() throws Exception {
-		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, new Data(STORAGE_KEY2, "field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).hasSize(1);
@@ -79,9 +79,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithNewComponent_BaseWithNewComponent_Reverse() throws Exception {
-		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, new Data(STORAGE_KEY2, "field1", "field2"));
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
 		assertThat(compare.getDetails()).isEmpty();
@@ -89,11 +89,11 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareChangeOnMainSinceBranchBasePoint_Reverse() throws Exception {
-		final Data rev1 = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
-		indexRevision(branch, new Data(STORAGE_KEY2, "field1", "field2"));
-		final Data rev2 = new Data(STORAGE_KEY1, "field1Changed", "field2");
+		indexRevision(branch, new RevisionData(STORAGE_KEY2, "field1", "field2"));
+		final RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		indexChange(MAIN, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
@@ -108,10 +108,10 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithChangedComponent() throws Exception {
-		Data rev1 = new Data(STORAGE_KEY1, "field1", "field2");
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
-		Data rev2 = new Data(STORAGE_KEY1, "field1Changed", "field2");
+		RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		indexChange(branch, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
@@ -127,10 +127,10 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithChangedComponent_Reverse() throws Exception {
-		Data rev1 = new Data(STORAGE_KEY1, "field1", "field2");
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
-		Data rev2 = new Data(STORAGE_KEY1, "field1Changed", "field2");
+		RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		indexChange(branch, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
@@ -139,9 +139,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithDeletedComponent() throws Exception {
-		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		deleteRevision(branch, Data.class, STORAGE_KEY1);
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		assertThat(compare.getDetails()).hasSize(1);
@@ -153,9 +153,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithDeletedComponent_Reverse() throws Exception {
-		indexRevision(MAIN, new Data(STORAGE_KEY1, "field1", "field2"));
+		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		final String branch = createBranch(MAIN, "a");
-		deleteRevision(branch, Data.class, STORAGE_KEY1);
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
 		assertThat(compare.getDetails()).isEmpty();
@@ -163,11 +163,11 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithRevertedChanges() throws Exception {
-		Data rev1 = new Data(STORAGE_KEY1, "field1", "field2");
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, rev1);
 		final String branch = createBranch(MAIN, "a");
 		// change storageKey1 component then revert the change
-		Data changed = new Data(STORAGE_KEY1, "field1", "field2Changed");
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
 		indexChange(branch, rev1, changed);
 		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
 

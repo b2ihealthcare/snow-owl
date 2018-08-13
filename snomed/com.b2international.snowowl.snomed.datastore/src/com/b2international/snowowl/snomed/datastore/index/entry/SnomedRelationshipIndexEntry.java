@@ -29,16 +29,16 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Objects.ToStringHelper;
@@ -53,6 +53,7 @@ import com.google.common.base.Strings;
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
 	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.RELEASED,
 	SnomedRelationshipIndexEntry.Fields.GROUP,
 	SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
 	SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
@@ -75,7 +76,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	public static Builder builder(final SnomedRelationship input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.sourceId(input.getSourceId())
@@ -98,37 +98,16 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		return builder;
 	}
 	
-	public static Builder builder(Relationship relationship) {
-		String id = relationship.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(relationship.cdoID()))
-				.id(id)
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.active(relationship.isActive())
-				.sourceId(relationship.getSource().getId())
-				.typeId(relationship.getType().getId())
-				.destinationId(relationship.getDestination().getId())
-				.characteristicTypeId(relationship.getCharacteristicType().getId())
-				.group(relationship.getGroup())
-				.unionGroup(relationship.getUnionGroup())
-				.released(relationship.isReleased())
-				.modifierId(relationship.getModifier().getId())
-				.destinationNegated(relationship.isDestinationNegated())
-				.moduleId(relationship.getModule().getId())
-				.effectiveTime(relationship.isSetEffectiveTime() ? relationship.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
-	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
 		String id = input.getId();
 		return builder()
-				.storageKey(CDOIDUtils.asLong(input.cdoID()))
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.active(input.isActive())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
-				.characteristicTypeId(input.getCharacteristicType().getConceptId())
+				.characteristicTypeId(input.getCharacteristicTypeId())
 				.group(input.getGroup())
 				.unionGroup(input.getUnionGroup())
 				.released(input.isReleased())
@@ -217,7 +196,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedRelationshipIndexEntry> {
 
 		private String sourceId;
 		private String typeId;
@@ -265,16 +244,34 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder group(final Integer group) {
+			return group(group == null ? DEFAULT_GROUP : group);
+		}
+		
+		@JsonProperty
 		public Builder group(final int group) {
 			this.group = group;
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder unionGroup(final Integer unionGroup) {
+			return unionGroup(unionGroup == null ? DEFAULT_UNION_GROUP : unionGroup);
+		}
+		
+		@JsonProperty
 		public Builder unionGroup(final int unionGroup) {
 			this.unionGroup = unionGroup;
 			return getSelf();
 		}
 
+		@JsonIgnore
+		Builder destinationNegated(final Boolean destinationNegated) {
+			return destinationNegated(destinationNegated == null ? false : destinationNegated);
+		}
+		
+		@JsonProperty
 		public Builder destinationNegated(final boolean destinationNegated) {
 			this.destinationNegated = destinationNegated;
 			return getSelf();
@@ -283,7 +280,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		public SnomedRelationshipIndexEntry build() {
 			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
 					label,
-					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -315,7 +311,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released,
 			final boolean active, 
@@ -335,7 +330,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		super(id, 
 				label,
 				typeId, // XXX: iconId is the same as typeId 
-				storageKey,
 				moduleId, 
 				released, 
 				active, 
@@ -356,6 +350,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.destinationNegated = destinationNegated;
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 
 	@Override

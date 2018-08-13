@@ -145,7 +145,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 
 	private SnomedDescriptionFragment descriptionFragment(String typeId, String term, String languageRefSetId) {
-		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), -1L, typeId, term, languageRefSetId);
+		return new SnomedDescriptionFragment(RandomSnomedIdentiferGenerator.generateDescriptionId(), typeId, term, languageRefSetId);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.id.assigner;
 
-import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.preference.ModulePreference;
-import com.b2international.snowowl.snomed.datastore.SnomedConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.Ordering;
 
 /**
  * Simple assigner that allocates the default namespace and module for relationships and concrete domains.
@@ -53,9 +49,7 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 	@Override
 	public void collectRelationshipNamespacesAndModules(final Set<String> conceptIds, final BranchContext context) {
 		if (defaultNamespace == null) {
-			final SnomedConfiguration snomedConfiguration = context.service(SnomedConfiguration.class);
-			defaultNamespace = snomedConfiguration.getNamespaces()
-					.getDefaultChildKey();
+			defaultNamespace = context.service(SnomedCoreConfiguration.class).getDefaultNamespace();
 		}
 
 		initializeDefaultModule(context);
@@ -68,21 +62,10 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 
 	private void initializeDefaultModule(final BranchContext context) {
 		if (defaultModule == null) {
-			final List<String> moduleIds = ModulePreference.getModulePreference();
-			final Ordering<SnomedConcept> ordering = Ordering.explicit(moduleIds)
-					.reverse()
-					.onResultOf(SnomedConcept::getId);
+			defaultModule = context.service(SnomedCoreConfiguration.class).getDefaultModule();
 
-			defaultModule = SnomedRequests.prepareSearchConcept()
-					.setLimit(moduleIds.size())
-					.filterByIds(moduleIds)
-					.build()
-					.execute(context)
-					.stream()
-					.sorted(ordering)
-					.findFirst()
-					.map(SnomedConcept::getId)
-					.get();
+			// verify that the default module concept exists
+			SnomedRequests.prepareGetConcept(defaultModule).build().execute(context);
 		}
 	}
 	

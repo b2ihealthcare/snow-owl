@@ -26,8 +26,8 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 
 /**
  * @since 4.5

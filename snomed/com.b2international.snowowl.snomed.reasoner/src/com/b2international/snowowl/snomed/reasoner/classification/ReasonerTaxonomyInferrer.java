@@ -49,12 +49,12 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdEdges;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdMap;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdMultimap;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdSet;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalIdEdges;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalIdMap;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdMultimap;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdSet;
+import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
@@ -233,8 +233,8 @@ public final class ReasonerTaxonomyInferrer {
 		final String representativeId = SnomedRequests.prepareSearchConcept()
 				.one()
 				.filterByIds(conceptIdsAsString)
-				.setFields(SnomedConceptDocument.Fields.ID, RevisionDocument.Fields.STORAGE_KEY)
-				.sortBy(SortField.ascending(RevisionDocument.Fields.STORAGE_KEY))
+				.setFields(SnomedConceptDocument.Fields.ID)
+				.sortBy(SortField.ascending(RevisionDocument.Fields.ID))
 				.build()
 				.execute(branchContext)
 				.first()

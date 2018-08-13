@@ -30,5 +30,7 @@ interface InternalRevisionIndex extends RevisionIndex {
 	 * @return
 	 */
 	List<Commit> history(String id);
+
+	RevisionCompare compare(RevisionBranchRef base, RevisionBranchRef compare, int limit);
 	
 }

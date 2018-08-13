@@ -15,19 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
-import java.util.stream.Collectors;
-
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.CompositeConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.5
@@ -54,49 +44,4 @@ public abstract class ConceptSetDefinitionFragment extends ConceptModelComponent
 		super(uuid, active, effectiveTime, author);
 	}
 
-	public static ConceptSetDefinitionFragment from(final ConceptSetDefinition definition) {
-
-		if (definition instanceof CompositeConceptSetDefinition) {
-			return new CompositeDefinitionFragment(definition.getUuid(), 
-					definition.isActive(), 
-					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
-					definition.getAuthor(),
-					((CompositeConceptSetDefinition) definition).getChildren().stream()
-						.map(ConceptSetDefinitionFragment::from)
-						.collect(Collectors.toSet()));
-
-		} else if (definition instanceof EnumeratedConceptSetDefinition) {
-			return new EnumeratedDefinitionFragment(definition.getUuid(), 
-					definition.isActive(), 
-					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
-					definition.getAuthor(),
-					ImmutableSet.copyOf(((EnumeratedConceptSetDefinition) definition).getConceptIds()));
-
-		} else if (definition instanceof HierarchyConceptSetDefinition) {
-			return new HierarchyDefinitionFragment(definition.getUuid(), 
-					definition.isActive(), 
-					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
-					definition.getAuthor(),
-					((HierarchyConceptSetDefinition) definition).getConceptId(),
-					((HierarchyConceptSetDefinition) definition).getInclusionType());
-
-		} else if (definition instanceof ReferenceSetConceptSetDefinition) {
-			return new ReferenceSetDefinitionFragment(definition.getUuid(), 
-					definition.isActive(), 
-					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
-					definition.getAuthor(),
-					((ReferenceSetConceptSetDefinition) definition).getRefSetIdentifierConceptId());
-
-		} else if (definition instanceof RelationshipConceptSetDefinition) {
-			return new RelationshipDefinitionFragment(definition.getUuid(), 
-					definition.isActive(), 
-					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
-					definition.getAuthor(),
-					((RelationshipConceptSetDefinition) definition).getTypeConceptId(),
-					((RelationshipConceptSetDefinition) definition).getDestinationConceptId());
-
-		} else {
-			throw new IllegalArgumentException("Unexpected concept set definition class '" + definition.getClass().getSimpleName() + "'.");
-		}
-	}
 }

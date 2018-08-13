@@ -42,12 +42,12 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -87,7 +87,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class))).with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
-				.with(ClassLoader.class, SnomedDatastoreServerActivator.class.getClassLoader())
+				.with(ClassLoader.class, SnomedDatastoreActivator.class.getClassLoader())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
 		// index common required SNOMED CT Concepts
 

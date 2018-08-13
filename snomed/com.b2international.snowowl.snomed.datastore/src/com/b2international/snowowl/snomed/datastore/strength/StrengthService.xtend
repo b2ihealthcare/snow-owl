@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.strength
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
+import com.b2international.snowowl.snomed.core.domain.refset.DataType
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
-import com.b2international.snowowl.snomed.snomedrefset.DataType
 import com.google.common.collect.Multimaps
 import com.google.common.collect.Range
 import java.math.BigDecimal

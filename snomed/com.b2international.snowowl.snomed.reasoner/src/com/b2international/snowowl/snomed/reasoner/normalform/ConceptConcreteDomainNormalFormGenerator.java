@@ -29,7 +29,7 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;

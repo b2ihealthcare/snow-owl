@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -30,12 +29,10 @@ final class SnomedAttributeValueMemberUpdateDelegate extends SnomedRefSetMemberU
 	}
 
 	@Override
-	boolean execute(SnomedRefSetMember member, TransactionContext context) {
-		SnomedAttributeValueRefSetMember attributeValueMember = (SnomedAttributeValueRefSetMember) member;
+	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
 		String newValueId = getComponentId(SnomedRf2Headers.FIELD_VALUE_ID);
-
-		if (newValueId != null && !newValueId.equals(attributeValueMember.getValueId())) {
-			attributeValueMember.setValueId(newValueId);
+		if (newValueId != null && !newValueId.equals(original.getValueId())) {
+			member.field(SnomedRf2Headers.FIELD_VALUE_ID, newValueId);
 			return true;
 		} else {
 			return false;

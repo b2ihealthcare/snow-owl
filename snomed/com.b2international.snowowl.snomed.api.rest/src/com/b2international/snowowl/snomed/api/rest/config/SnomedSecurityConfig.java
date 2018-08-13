@@ -48,21 +48,20 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
-		// REST should have no state, each request is re-authenticated
 		http
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
+			.csrf().disable()
 			.authorizeRequests()
-				.antMatchers("/api-docs/**").authenticated()
-				.antMatchers("/static/**").authenticated()
-				.antMatchers("/").authenticated()
-				.antMatchers("/**").hasAuthority("ROLE_USER")
+				.antMatchers("/", "/static/**", "/api-docs")
+				.permitAll()
 			.and()
-			.httpBasic()
+			.authorizeRequests()
+				.antMatchers("/**")
+				.hasAuthority("ROLE_USER")
 			.and()
-			.csrf()
-				.disable();
+				.httpBasic();
 	}
 	
 	@Override

@@ -19,7 +19,7 @@
 			<onMatch>DENY</onMatch>
 		</filter>
 	    <encoder>
-	      <pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%thread] %-5level %logger{35} - %msg %n</pattern>
+	      <pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] [%thread] %-5level %logger{35} - %msg %n</pattern>
 	    </encoder>
 	  </appender>
 
@@ -35,7 +35,7 @@
 			<onMatch>ACCEPT</onMatch>
 		</filter>
 		<encoder>
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -51,7 +51,7 @@
 			<onMatch>ACCEPT</onMatch>
 		</filter>
 		<encoder>
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -67,7 +67,7 @@
 			<onMatch>ACCEPT</onMatch>
 		</filter>
 		<encoder>
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -83,7 +83,7 @@
 			<onMatch>ACCEPT</onMatch>
 		</filter>
 		<encoder>
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 
@@ -109,7 +109,7 @@
 
 		</filter>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Branch: %X{BRANCH} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -135,7 +135,7 @@
 
 		</filter>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -161,7 +161,7 @@
 
 		</filter>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 	
@@ -187,7 +187,7 @@
 
 		</filter>
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-			<Pattern>[%d{yyyy-MM-dd HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
+			<Pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] User: %X{USER} Event: %msg %ex%n</Pattern>
 		</encoder>
 	</appender>
 

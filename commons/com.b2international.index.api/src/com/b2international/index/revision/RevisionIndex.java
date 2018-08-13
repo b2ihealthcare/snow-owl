@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
 
+import com.b2international.index.Index;
 import com.b2international.index.admin.Administrable;
 import com.google.common.base.Strings;
 
@@ -131,6 +132,16 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 */
 	StagingArea prepareCommit(String branchPath);
+	
+	/**
+	 * @return the Hooks API to register/unregister hooks to this {@link RevisionIndex}.
+	 */
+	Hooks hooks();
+	
+	/**
+	 * @return the underlying index to access the raw documents in the repository
+	 */
+	Index index();
 	
 	/**
 	 * Returns a single {@link String} that can be used to query revision available on the specified compare path only.

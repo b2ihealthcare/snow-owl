@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.id;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -43,9 +43,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 4.5
  */
-public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
+@Component
+public final class SnomedIdentifierBootstrap extends Plugin {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SnomedIdentifierBootstrap.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("snomedids");
 	private static final String SNOMED_IDS_INDEX = "snomedids";
 	private static final String STORE_RESERVATIONS = "store_reservations";
 
@@ -60,7 +61,7 @@ public class SnomedIdentifierBootstrap extends DefaultBootstrapFragment {
 	}
 
 	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
+	public void run(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			final ISnomedIdentifierReservationService reservationService = env.service(ISnomedIdentifierReservationService.class);
 			final SnomedIdentifierConfiguration conf = configuration.getModuleConfig(SnomedCoreConfiguration.class).getIds();

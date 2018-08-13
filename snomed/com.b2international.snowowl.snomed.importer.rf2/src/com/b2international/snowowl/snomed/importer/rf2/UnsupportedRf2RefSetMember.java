@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.importer.rf2;
 
 import java.util.Date;
 
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;

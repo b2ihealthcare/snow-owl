@@ -21,6 +21,8 @@ import java.util.UUID;
 
 import org.eclipse.emf.common.util.WrappedException;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.commons.exceptions.ApiException;
@@ -56,8 +58,13 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	}
 	
 	@Override
-	public RepositoryContext get(String repositoryId) {
+	public RepositoryContext getContext(String repositoryId) {
 		return this;
+	}
+	
+	@Override
+	public Logger log() {
+		return LoggerFactory.getLogger(repositoryId);
 	}
 	
 	@Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@ package com.b2international.snowowl.datastore.request;
 
 import javax.validation.constraints.NotNull;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -33,12 +32,12 @@ final class DeleteRequest implements Request<TransactionContext, Boolean> {
 	private String componentId;
 	
 	@NotNull
-	private Class<? extends EObject> type;
+	private Class<? extends RevisionDocument> type;
 	
 	@NotNull
 	private Boolean force;
 
-	DeleteRequest(String componentId, Class<? extends EObject> type, Boolean force) {
+	DeleteRequest(String componentId, Class<? extends RevisionDocument> type, Boolean force) {
 		this.componentId = componentId;
 		this.type = type;
 		this.force = force;

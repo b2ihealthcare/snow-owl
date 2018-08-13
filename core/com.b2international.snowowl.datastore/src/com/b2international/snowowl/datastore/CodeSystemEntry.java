@@ -17,7 +17,6 @@ package com.b2international.snowowl.datastore;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyLong;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -25,18 +24,15 @@ import java.util.Collection;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.terminologymetadata.CodeSystem;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
 
 
 /**
- * CDO independent representation of a {@link CodeSystem}.
+ * @since 5.0
  */
-@Doc
+@Doc(type = "codesystem")
 @JsonDeserialize(builder = CodeSystemEntry.Builder.class)
 public final class CodeSystemEntry implements Serializable {
 
@@ -47,10 +43,6 @@ public final class CodeSystemEntry implements Serializable {
 	
 	public static class Expressions {
 
-		public static Expression storageKeys(Iterable<Long> storageKeys) {
-			return matchAnyLong(Fields.STORAGE_KEY, storageKeys);
-		}
-		
 		public static Expression shortName(String shortName) {
 			return exactMatch(Fields.SHORT_NAME, shortName);
 		}
@@ -86,26 +78,24 @@ public final class CodeSystemEntry implements Serializable {
 		return new Builder();
 	}
 	
-	public static Builder builder(CodeSystem codeSystem) {
+	public static Builder builder(CodeSystemEntry codeSystem) {
 		return builder()
-				.oid(codeSystem.getCodeSystemOID())
+				.oid(codeSystem.getOid())
 				.name(codeSystem.getName())
 				.shortName(codeSystem.getShortName())
-				.orgLink(codeSystem.getMaintainingOrganizationLink())
+				.orgLink(codeSystem.getOrgLink())
 				.language(codeSystem.getLanguage())
 				.citation(codeSystem.getCitation())
 				.iconPath(codeSystem.getIconPath())
 				.terminologyComponentId(codeSystem.getTerminologyComponentId())
-				.storageKey(CDOUtils.isTransient(codeSystem) ? CDOUtils.NO_STORAGE_KEY : CDOIDUtils.asLong(codeSystem.cdoID()))
 				.repositoryUuid(codeSystem.getRepositoryUuid())
 				.branchPath(codeSystem.getBranchPath())
-				.extensionOf(codeSystem.getExtensionOf() == null ? null : codeSystem.getExtensionOf().getShortName());
+				.extensionOf(codeSystem.getExtensionOf());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder {
 		
-		private long storageKey;
 		private String oid;
 		private String name; 
 		private String shortName; 
@@ -119,11 +109,6 @@ public final class CodeSystemEntry implements Serializable {
 		private String extensionOf;
 		
 		Builder() {
-		}
-		
-		public Builder storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return this;
 		}
 		
 		public Builder oid(String oid) {
@@ -182,13 +167,12 @@ public final class CodeSystemEntry implements Serializable {
 		}
 		
 		public CodeSystemEntry build() {
-			return new CodeSystemEntry(oid, name, shortName, orgLink, language, citation, iconPath, terminologyComponentId, storageKey, repositoryUuid, branchPath, extensionOf);
+			return new CodeSystemEntry(oid, name, shortName, orgLink, language, citation, iconPath, terminologyComponentId, repositoryUuid, branchPath, extensionOf);
 		}
 		
 		
 	}
 
-	private final long storageKey;
 	private final String oid;
 	private final String name; 
 	private final String shortName; 
@@ -202,9 +186,8 @@ public final class CodeSystemEntry implements Serializable {
 	private final String extensionOf;
 	
 	private CodeSystemEntry(final String oid, final String name, final String shortName, final String orgLink, 
-			final String language, final String citation, final String iconPath, final String terminologyComponentId, final long storageKey, final String repositoryUuid,
-			final String branchPath, final String extensionOf) {
-		this.storageKey = storageKey;
+			final String language, final String citation, final String iconPath, final String terminologyComponentId, 
+			final String repositoryUuid, final String branchPath, final String extensionOf) {
 		this.oid = Strings.nullToEmpty(oid);
 		this.name = Strings.nullToEmpty(name);
 		this.shortName = Strings.nullToEmpty(shortName);
@@ -292,14 +275,6 @@ public final class CodeSystemEntry implements Serializable {
 		return repositoryUuid;
 	}
 	
-	/**
-	 * Returns with the storage key of the code system.
-	 * @return
-	 */
-	public long getStorageKey() {
-		return  storageKey;
-	}
-
 	/**
 	 * Returns the branch path of the code system.
 	 * @return the path for the code system.

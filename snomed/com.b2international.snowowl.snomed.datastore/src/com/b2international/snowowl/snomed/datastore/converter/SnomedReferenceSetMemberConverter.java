@@ -192,7 +192,6 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	@Override
 	protected SnomedReferenceSetMember toResource(SnomedRefSetMemberIndexEntry entry) {
 		final SnomedReferenceSetMember member = new SnomedReferenceSetMember();
-		member.setStorageKey(entry.getStorageKey());
 		member.setId(entry.getId());
 		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
 		member.setReleased(entry.isReleased());

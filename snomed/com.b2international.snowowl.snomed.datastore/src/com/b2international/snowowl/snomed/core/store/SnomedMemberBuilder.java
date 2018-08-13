@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,23 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.UUID;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 
 /**
  * @since 4.5
  */
-public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T extends SnomedRefSetMember> extends SnomedComponentBuilder<B, T> {
+public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> extends SnomedComponentBuilder<B, SnomedRefSetMemberIndexEntry.Builder, SnomedRefSetMemberIndexEntry> {
 
 	private String referenceSetId;
 	private String referencedComponent;
@@ -43,7 +47,7 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	 *            - the referenced component to refer to
 	 * @return
 	 */
-	public B withReferencedComponent(String referencedComponent) {
+	public final B withReferencedComponent(String referencedComponent) {
 		this.referencedComponent = referencedComponent;
 		return getSelf();
 	}
@@ -55,29 +59,36 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B, T>, T
 	 *            - the identifier concept ID of the reference set
 	 * @return
 	 */
-	public B withRefSet(String referenceSetId) {
+	public final B withRefSet(String referenceSetId) {
 		this.referenceSetId = referenceSetId;
 		return getSelf();
 	}
 	
-	public final T addTo(TransactionContext context) {
-		final T component = build(context);
-		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
-		addToList(context, refSet, component);
-		return component;
+	public final SnomedRefSetMemberIndexEntry addTo(TransactionContext context) {
+		final SnomedRefSetMemberIndexEntry member = build(context);
+		context.add(member);
+		return member;
 	}
 	
-	protected void addToList(TransactionContext context, SnomedRefSet refSet, T component) {
-		((SnomedRegularRefSet) refSet).getMembers().add(component);
+	@Override
+	protected final Builder create() {
+		return SnomedRefSetMemberIndexEntry.builder();
 	}
-
+	
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public void init(T component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setReferencedComponentId(referencedComponent);
-		final SnomedRefSet refSet = context.lookup(referenceSetId, SnomedRefSet.class);
-		component.setRefSet(refSet);
+		final SnomedConceptDocument refSet = context.lookup(referenceSetId, SnomedConceptDocument.class);
+		checkState(refSet.getRefSetType() != null, "RefSet properties are missing from identifier concept document %s", referenceSetId);
+		component
+			.referencedComponentId(referencedComponent)
+			.referenceSetId(referenceSetId)
+			.referenceSetType(refSet.getRefSetType());
+		
+		if (refSet.getRefSetType() == SnomedRefSetType.CONCRETE_DATA_TYPE) {
+			component.field(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, SnomedRefSetUtil.getDataType(referenceSetId));
+		}
 	}
 	
 }

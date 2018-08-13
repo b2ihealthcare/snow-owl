@@ -19,16 +19,10 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.index.WithScore;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects.ToStringHelper;
@@ -57,30 +51,18 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	 * @since 4.7
 	 */
 	public static class Fields extends Revision.Fields {
-		public static final String STORAGE_KEY = "storageKey";
 		public static final String ICON_ID = "iconId";
 	}
 	
 	/**
-	 * @param <B> - the builder type
 	 * @since 4.7
 	 */
-	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B>> {
+	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> extends Revision.Builder<B, T> {
 		
 		protected String id;
 		protected String label;
 		protected String iconId;
 		protected float score = 0.0f;
-		
-		// XXX only for JSON deserialization
-		protected long storageKey;
-		protected RevisionBranchPoint created;
-		protected List<RevisionBranchPoint> revised = Collections.emptyList();
-
-		public final B storageKey(long storageKey) {
-			this.storageKey = storageKey;
-			return getSelf();
-		} 
 		
 		public B id(final String id) {
 			this.id = id;
@@ -105,34 +87,16 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 			return getSelf();
 		}
 		
-		B revised(final List<RevisionBranchPoint> revised) {
-			this.revised = revised;
-			return getSelf();
-		}
-		
-		B created(final RevisionBranchPoint created) {
-			this.created = created;
-			return getSelf();
-		}
-		
-		protected abstract B getSelf();
-		
 	}
 	
 	private final String label;
 	private final String iconId;
 	private float score = 0.0f;
-	private final long storageKey;
 	
-	protected RevisionDocument(final String id, final String label, String iconId, final long storageKey) {
+	protected RevisionDocument(final String id, final String label, String iconId) {
 		super(id);
 		this.label = label;
 		this.iconId = iconId;
-		this.storageKey = storageKey;
-	}
-	
-	public final long getStorageKey() {
-		return storageKey;
 	}
 	
 	@JsonIgnore
@@ -160,19 +124,9 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add(Fields.STORAGE_KEY, storageKey)
 				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);
 	}
 
-	/**
-	 * (non-API)
-	 * 
-	 * @return returns with the storage key of the current component as a CDO ID.
-	 */
-	public CDOID cdoID() {
-		return CDOIDUtil.createLong(getStorageKey());
-	}
-	
 }

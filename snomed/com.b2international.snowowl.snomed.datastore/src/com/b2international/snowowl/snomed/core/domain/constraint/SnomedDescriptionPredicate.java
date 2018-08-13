@@ -20,10 +20,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.datastore.index.constraint.DescriptionPredicateFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -44,23 +41,8 @@ public final class SnomedDescriptionPredicate extends SnomedPredicate {
 	}
 
 	@Override
-	public DescriptionPredicate createModel() {
-		return MrcmFactory.eINSTANCE.createDescriptionPredicate();
-	}
-
-	@Override
-	public DescriptionPredicate applyChangesTo(final ConceptModelComponent existingModel) {
-		final DescriptionPredicate updatedModel = (existingModel instanceof DescriptionPredicate)
-				? (DescriptionPredicate) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setTypeId(getTypeId());
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public DescriptionPredicateFragment createModel() {
+		return new DescriptionPredicateFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), getTypeId());
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -34,7 +34,7 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 
 	private String branchA;
@@ -48,21 +48,21 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void readRangeWithoutBase() throws Exception {
-		search(RevisionIndex.toRevisionRange("", branchA), Query.select(Data.class).where(Expressions.matchAll()).build());
+		search(RevisionIndex.toRevisionRange("", branchA), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void readRangeWithoutCompare() throws Exception {
-		search(RevisionIndex.toRevisionRange(MAIN, ""), Query.select(Data.class).where(Expressions.matchAll()).build());
+		search(RevisionIndex.toRevisionRange(MAIN, ""), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 	}
 	
 	@Test
 	public void readRange() throws Exception {
-		final Data data1 = new Data(STORAGE_KEY1, "field1", "field2");
-		final Data data2 = new Data(STORAGE_KEY2, "field1", "field2Changed");
+		final RevisionData data1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data2 = new RevisionData(STORAGE_KEY2, "field1", "field2Changed");
 		indexRevision(MAIN, data1);
 		indexRevision(branchA, data2);
-		final Iterable<Data> hits = search(RevisionIndex.toRevisionRange(MAIN, branchA), Query.select(Data.class).where(Expressions.matchAll()).build());
+		final Iterable<RevisionData> hits = search(RevisionIndex.toRevisionRange(MAIN, branchA), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 		assertThat(hits).containsOnly(data2);
 	}
 	

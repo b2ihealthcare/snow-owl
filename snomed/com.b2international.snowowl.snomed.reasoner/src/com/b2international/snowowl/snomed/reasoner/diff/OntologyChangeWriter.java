@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.b2international.index.DocWriter;
 import com.b2international.index.IndexException;
+import com.b2international.index.Writer;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 
 /**
@@ -32,11 +32,11 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 	private static final int WRITES_PER_COMMIT = 10_000;
 
 	protected final String classificationId;
-	protected final DocWriter writer;
+	protected final Writer writer;
 	private int writeOps;
 	private boolean hasInferredChanges;
 
-	public OntologyChangeWriter(final String classificationId, final DocWriter writer) {
+	public OntologyChangeWriter(final String classificationId, final Writer writer) {
 		this.classificationId = classificationId;
 		this.writer = writer;
 	}

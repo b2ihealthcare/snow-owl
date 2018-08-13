@@ -24,12 +24,11 @@ import java.util.UUID;
 import org.eclipse.net4j.util.om.monitor.Monitor;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportResult;
@@ -73,7 +72,7 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		try {
 			file = doExport(toExportModel(context));
 			UUID fileId = UUID.randomUUID();
-			context.service(FileRegistry.class).upload(fileId, new FileInputStream(file));
+			context.service(AttachmentRegistry.class).upload(fileId, new FileInputStream(file));
 			return fileId;
 		} catch (Exception e) {
 			throw new RuntimeException("Error occurred during DSV export.", e);
@@ -100,8 +99,7 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 	private SnomedRefSetDSVExportModel toExportModel(BranchContext context) {
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
 		Branch branch = context.branch();
-		
-		model.setUserId(ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId());
+		model.setUserId(User.SYSTEM.getUsername());
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);

@@ -36,6 +36,6 @@ public interface IndexWrite<T> {
 	 * @return
 	 * @throws IOException
 	 */
-	T execute(DocWriter index) throws IOException;
+	T execute(Writer index) throws IOException;
 
 }

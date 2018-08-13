@@ -15,18 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.constraint;
 
-import java.util.stream.Collectors;
-
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.CardinalityPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
-import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
-import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
  * @since 6.5
@@ -53,57 +44,4 @@ public abstract class PredicateFragment extends ConceptModelComponentFragment {
 		super(uuid, active, effectiveTime, author);
 	}
 
-	public static PredicateFragment from(final ConceptModelPredicate predicate) {
-		
-		if (predicate instanceof CardinalityPredicate) {
-			return new CardinalityPredicateFragment(predicate.getUuid(), 
-					predicate.isActive(), 
-					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
-					predicate.getAuthor(),
-					((CardinalityPredicate) predicate).getMinCardinality(),
-					((CardinalityPredicate) predicate).getMaxCardinality(),
-					((CardinalityPredicate) predicate).getGroupRule(),
-					PredicateFragment.from(((CardinalityPredicate) predicate).getPredicate()));
-					
-		} else if (predicate instanceof ConcreteDomainElementPredicate) {
-			return new ConcreteDomainPredicateFragment(predicate.getUuid(), 
-					predicate.isActive(), 
-					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
-					predicate.getAuthor(), 
-					((ConcreteDomainElementPredicate) predicate).getLabel(), 
-					((ConcreteDomainElementPredicate) predicate).getName(), 
-					((ConcreteDomainElementPredicate) predicate).getType(), 
-					((ConcreteDomainElementPredicate) predicate).getCharacteristicTypeConceptId());
-			
-		} else if (predicate instanceof DependencyPredicate) {
-			return new DependencyPredicateFragment(predicate.getUuid(), 
-					predicate.isActive(), 
-					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
-					predicate.getAuthor(),
-					((DependencyPredicate) predicate).getGroupRule(),
-					((DependencyPredicate) predicate).getOperator(),
-					((DependencyPredicate) predicate).getChildren().stream()
-						.map(PredicateFragment::from)
-						.collect(Collectors.toSet()));
-			
-		} else if (predicate instanceof DescriptionPredicate) {
-			return new DescriptionPredicateFragment(predicate.getUuid(), 
-					predicate.isActive(), 
-					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
-					predicate.getAuthor(),
-					((DescriptionPredicate) predicate).getTypeId());
-			
-		} else if (predicate instanceof RelationshipPredicate) {
-			return new RelationshipPredicateFragment(predicate.getUuid(), 
-					predicate.isActive(), 
-					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
-					predicate.getAuthor(),
-					ConceptSetDefinitionFragment.from(((RelationshipPredicate) predicate).getAttribute()), 
-					ConceptSetDefinitionFragment.from(((RelationshipPredicate) predicate).getRange()), 
-					((RelationshipPredicate) predicate).getCharacteristicTypeConceptId());
-			
-		} else {
-			throw new IllegalArgumentException("Unexpected concept model predicate class '" + predicate.getClass().getSimpleName() + "'.");
-		}
-	}
 }

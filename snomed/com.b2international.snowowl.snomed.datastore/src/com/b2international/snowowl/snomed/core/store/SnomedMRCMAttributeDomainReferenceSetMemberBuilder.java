@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMAttributeDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMAttributeDomainReferenceSetMemberBuilder, SnomedMRCMAttributeDomainRefSetMember> {
+public final class SnomedMRCMAttributeDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMAttributeDomainReferenceSetMemberBuilder> {
 
 	private String domainId;
 	private boolean grouped;
@@ -62,19 +62,15 @@ public class SnomedMRCMAttributeDomainReferenceSetMemberBuilder extends SnomedMe
 	}
 
 	@Override
-	protected SnomedMRCMAttributeDomainRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMAttributeDomainRefSetMember();
-	}
-
-	@Override
-	public void init(final SnomedMRCMAttributeDomainRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedRefSetMemberIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
-		component.setDomainId(domainId);
-		component.setGrouped(grouped);
-		component.setAttributeCardinality(attributeCardinality);
-		component.setAttributeInGroupCardinality(attributeInGroupCardinality);
-		component.setRuleStrengthId(ruleStrengthId);
-		component.setContentTypeId(contentTypeId);
+		component
+			.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainId)
+			.field(SnomedRf2Headers.FIELD_MRCM_GROUPED, grouped)
+			.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, attributeCardinality)
+			.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, attributeInGroupCardinality)
+			.field(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, ruleStrengthId)
+			.field(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, contentTypeId);
 	}
 
 }

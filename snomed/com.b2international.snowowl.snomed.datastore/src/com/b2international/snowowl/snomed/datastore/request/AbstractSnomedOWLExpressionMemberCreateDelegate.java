@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
@@ -34,7 +34,7 @@ abstract class AbstractSnomedOWLExpressionMemberCreateDelegate extends SnomedRef
 	abstract protected SnomedRefSetType getRefsetType();
 
 	@Override
-	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, getRefsetType());
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_OWL_EXPRESSION);
@@ -42,7 +42,7 @@ abstract class AbstractSnomedOWLExpressionMemberCreateDelegate extends SnomedRef
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		final SnomedOWLExpressionRefSetMember member = SnomedComponents.newOWLExpressionReferenceSetMember()
+		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newOWLExpressionReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -51,7 +51,7 @@ abstract class AbstractSnomedOWLExpressionMemberCreateDelegate extends SnomedRef
 				.withOWLExpression(getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 }

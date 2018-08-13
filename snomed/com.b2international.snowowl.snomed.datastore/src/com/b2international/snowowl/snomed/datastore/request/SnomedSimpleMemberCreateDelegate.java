@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -32,14 +32,14 @@ final class SnomedSimpleMemberCreateDelegate extends SnomedRefSetMemberCreateDel
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.SIMPLE);
 		checkReferencedComponent(refSet);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		SnomedRefSetMember member = SnomedComponents.newSimpleMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newSimpleMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -47,7 +47,7 @@ final class SnomedSimpleMemberCreateDelegate extends SnomedRefSetMemberCreateDel
 				.withRefSet(getReferenceSetId())
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 }

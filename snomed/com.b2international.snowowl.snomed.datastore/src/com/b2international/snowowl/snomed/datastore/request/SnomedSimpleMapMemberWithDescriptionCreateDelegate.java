@@ -19,11 +19,11 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -38,7 +38,7 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
@@ -50,7 +50,7 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
 		}
 		
-		SnomedSimpleMapRefSetMember member = SnomedComponents.newSimpleMapMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newSimpleMapMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -60,7 +60,7 @@ final class SnomedSimpleMapMemberWithDescriptionCreateDelegate extends SnomedRef
 				.withMapTargetDescription(Strings.nullToEmpty(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

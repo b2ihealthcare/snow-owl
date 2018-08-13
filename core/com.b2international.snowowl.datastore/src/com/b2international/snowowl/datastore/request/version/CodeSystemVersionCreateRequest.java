@@ -31,15 +31,14 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -50,10 +49,14 @@ import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockE
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.datastore.request.IndexReadRequest;
+import com.b2international.snowowl.datastore.request.RepositoryRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.datastore.version.IVersioningManager;
-import com.b2international.snowowl.datastore.version.PublishOperationConfiguration;
-import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.datastore.version.VersioningConfiguration;
+import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -91,14 +94,16 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		final String user = job.getUser();
 
 		// get code system
-		CodeSystemEntry codeSystem = null; 
-		Set<String> repositoryIds = context.service(RepositoryManager.class).repositories().stream().map(Repository::id).collect(Collectors.toSet());
+		CodeSystemEntry codeSystem = null;
+		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
+		final Set<String> repositoryIds = repositoryManager.repositories().stream().map(Repository::id).collect(Collectors.toSet());
 		for (String repositoryId : repositoryIds) {
 			try {
 				codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
 						.build(repositoryId)
 						.execute(context.service(IEventBus.class))
 						.getSync();
+				break;
 			} catch (NotFoundException e) {
 				// ignore
 			}
@@ -107,13 +112,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
-
+		
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
+		final String repositoryId = codeSystem.getRepositoryUuid();
+		
 		try {
 			RepositoryRequests.branching()
 				.prepareGet(newVersionPath)
-				.build(codeSystem.getRepositoryUuid())
+				.build(repositoryId)
 				.execute(context.service(IEventBus.class))
 				.getSync();
 			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
@@ -128,17 +135,21 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
-			IVersioningManager versioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(codeSystem.getTerminologyComponentId());
-			monitor.worked(1);
-			// execute publication process via the tooling specific VersioningManager 
-			versioningManager.publish(new PublishOperationConfiguration(user, codeSystemShortName, codeSystem.getBranchPath(), versionId, description, effectiveTime), monitor);
-			monitor.worked(1);
+			
+			new RepositoryRequest<>(repositoryId,
+				new IndexReadRequest<>(
+					new BranchRequest<>(codeSystem.getBranchPath(),
+						new RevisionIndexReadRequest<CommitResult>(
+							repositoryManager.get(repositoryId)
+								.service(VersioningRequestBuilder.class)
+								.build(new VersioningConfiguration(user, codeSystemShortName, versionId, description, effectiveTime))
+						)
+					)
+				)
+			).execute(context);
+			
 			// tag the repository
 			doTag(context, codeSystem, monitor);
-			// execute any post commit steps defined by the versioning manager
-			postCommit(versioningManager, monitor);
-		} catch (SnowowlServiceException e) {
-			throw new SnowowlRuntimeException("Error occurred during versioning.", e);
 		} finally {
 			releaseLocks(context);
 			if (null != monitor) {
@@ -150,7 +161,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
-		if (!CoreTerminologyBroker.getInstance().isEffectiveTimeSupported(codeSystem.getTerminologyComponentId())) {
+		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyComponentId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
@@ -210,14 +221,4 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		monitor.worked(1);
 	}
 
-	/*
-	 * Performs actions after the successful commit. 
-	 */
-	private void postCommit(final IVersioningManager versioningManager, final IProgressMonitor monitor) throws SnowowlServiceException {
-		versioningManager.postCommit();
-		if (null != monitor) {
-			monitor.worked(1);
-		}
-	}
-	
 }

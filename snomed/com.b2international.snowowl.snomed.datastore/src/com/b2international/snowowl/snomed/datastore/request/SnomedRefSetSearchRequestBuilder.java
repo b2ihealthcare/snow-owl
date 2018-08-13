@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Strings;
 
 /**
@@ -54,10 +54,10 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		if (Strings.isNullOrEmpty(referencedComponentType)) {
 			return getSelf();
 		}
-		if (CoreTerminologyBroker.UNSPECIFIED.equals(referencedComponentType)) {
+		if (TerminologyRegistry.UNSPECIFIED.equals(referencedComponentType)) {
 			return getSelf();
 		}
-		final int referencedComponentTypeAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType);
+		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(referencedComponentType).shortId();
 		return filterByReferencedComponentType(referencedComponentTypeAsInt);
 	}
 	

@@ -15,13 +15,15 @@
  */
 package com.b2international.index.revision;
 
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Metadata;
-import com.b2international.index.Index;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.inject.Provider;
 
 /**
  * @since 6.5
@@ -31,16 +33,14 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	private final AtomicInteger branchIds = new AtomicInteger(0);
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
+	private final long mainBranchId;
 
-	public DefaultRevisionBranching(Provider<Index> index, ObjectMapper mapper) {
-		super(index, mapper);
+	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
+		super(index, timestampProvider, mapper);
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
+		this.mainBranchId = nextBranchId();
 	}
 	
-	public long currentTime() {
-		return System.nanoTime();
-	}
-
 	public long nextBranchId() {
 		return branchIds.getAndIncrement();
 	}
@@ -49,16 +49,29 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	protected RevisionBranch doReopen(RevisionBranch parentBranch, String child, Metadata metadata) {
 		final long currentTime = currentTime();
 		final long newBranchId = nextBranchId();
-		final RevisionSegment parentSegment = parentBranch.getSegments().last();
+		final RevisionSegment parentLastSegment = parentBranch.getSegments().last();
+		final SortedSet<RevisionSegment> parentSegments = ImmutableSortedSet.<RevisionSegment>naturalOrder()
+			.addAll(parentBranch.getSegments().headSet(parentLastSegment))
+			.add(parentLastSegment.withEnd(currentTime))
+			.build();
+		
+		final SortedSet<RevisionBranchPoint> initialMergeSources = parentSegments.stream()
+				.map(RevisionSegment::getEndPoint)
+				.collect(Collectors.toCollection(TreeSet::new));
+		
 		final RevisionBranch branch = RevisionBranch.builder()
 				.id(newBranchId)
 				.parentPath(parentBranch.getPath())
 				.name(child)
 				.segments(ImmutableSortedSet.<RevisionSegment>naturalOrder()
-						.addAll(parentBranch.getSegments().headSet(parentSegment))
-						.add(parentSegment.withEnd(currentTime))
+						.addAll(parentSegments)
 						.add(new RevisionSegment(newBranchId, currentTime, currentTime))
 						.build())
+				.mergeSources(
+					ImmutableList.of(
+						new RevisionBranchMergeSource(currentTime, initialMergeSources, false)
+					)
+				)
 				.metadata(metadata)
 				.build();
 		return commit(create(branch));
@@ -76,16 +89,7 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	
 	@Override
 	protected long getMainBranchId() {
-		return nextBranchId();
-	}
-
-	@Override
-	protected String applyChangeSet(RevisionBranch from, RevisionBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
-		// TODO implement proper apply change set here
-		if (!dryRun && from.getHeadTimestamp() > from.getBaseTimestamp()) {
-			handleCommit(to.getPath(), currentTime());
-		}
-		return to.getPath();
+		return mainBranchId;
 	}
 
 }

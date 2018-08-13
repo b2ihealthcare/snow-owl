@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedQueryReferenceSetMemberBuilder, SnomedQueryRefSetMember> {
+public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedQueryReferenceSetMemberBuilder> {
 
 	private String query;
 
@@ -38,14 +38,9 @@ public final class SnomedQueryReferenceSetMemberBuilder extends SnomedMemberBuil
 	}
 
 	@Override
-	protected SnomedQueryRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedQueryRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedQueryRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setQuery(query);
+		component.field(SnomedRf2Headers.FIELD_QUERY, query);
 	}
 
 }

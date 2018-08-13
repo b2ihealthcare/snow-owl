@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
@@ -337,6 +338,9 @@ public final class RemoteJobEntry implements Serializable {
 	 */
 	public <T> T getResultAs(ObjectMapper mapper, Class<T> type) {
 		try {
+			if (CompareUtils.isEmpty(getResult())) {
+				return null;
+			}
 			return mapper.readValue(getResult(), type);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);

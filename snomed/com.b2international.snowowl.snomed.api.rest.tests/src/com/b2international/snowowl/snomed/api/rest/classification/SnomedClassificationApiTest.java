@@ -38,7 +38,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;

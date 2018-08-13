@@ -19,10 +19,10 @@ import java.util.Collection;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotImplementedException;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -43,7 +43,7 @@ public abstract class RefSetSupport {
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.DESCRIPTION)
 			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.RELATIONSHIP)
-			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, CoreTerminologyBroker.UNSPECIFIED)
+			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, TerminologyRegistry.UNSPECIFIED)
 			.put(SnomedRefSetType.COMPLEX_MAP, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
 			.put(SnomedRefSetType.EXTENDED_MAP, SnomedTerminologyComponentConstants.CONCEPT)

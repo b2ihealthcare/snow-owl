@@ -16,11 +16,17 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
@@ -31,13 +37,17 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Longs;
 
 /**
  * @since 6.0
  */
 @Doc(type="branch")
 @JsonDeserialize(builder=RevisionBranch.Builder.class)
-@Script(name=RevisionBranch.Scripts.WITH_HEADTIMESTAMP, script=""
+@Script(name=RevisionBranch.Scripts.COMMIT, script=""
+		+ "if (params.mergeSources != null) {"
+		+ "    ctx._source.mergeSources.add(['timestamp': params.headTimestamp, 'branchPoints': params.mergeSources, 'squash': params.squash]);"
+		+ "}"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
 		+ "        segment.end = params.headTimestamp;"
@@ -54,7 +64,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * @since 6.5
 	 */
 	public static enum BranchState {
-		UP_TO_DATE, FORWARD, BEHIND, DIVERGED, STALE
+		UP_TO_DATE, FORWARD, BEHIND, DIVERGED
 	}
 	
 	/**
@@ -67,11 +77,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
 	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
 
-	/**
-	 * Branch name prefix used for temporary branches during rebase.
-	 */
-	public static final String TEMP_PREFIX = "$";
-	
 	/**
 	 * Temporary branch name format. Values are prefix, name, current time. 
 	 */
@@ -126,7 +131,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			public BranchNameValidatorImpl(String allowedCharacterSet, int maximumLength) {
 				this.allowedCharacterSet = allowedCharacterSet;
 				this.maximumLength = maximumLength;
-				pattern = Pattern.compile(String.format("^(%s)?[%s]{1,%s}(_[0-9]{1,19})?$", Pattern.quote(TEMP_PREFIX), allowedCharacterSet, maximumLength));
+				pattern = Pattern.compile(String.format("^[%s]{1,%s}(_[0-9]{1,19})?$", allowedCharacterSet, maximumLength));
 			}
 
 			@Override
@@ -151,9 +156,10 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		/**
 		 * @param headTimestamp - the new headTimestamp value of this branch
 		 */
-		public static final String WITH_HEADTIMESTAMP = "withHeadTimestamp";
+		public static final String COMMIT = "commit";
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
+		public static final String WITH_MERGE_SOURCE = "withMergeSource";
 		public static final String REPLACE = "replace";
 	}
 	
@@ -170,6 +176,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		private boolean deleted;
 		private Metadata metadata;
 		private SortedSet<RevisionSegment> segments;
+		private List<RevisionBranchMergeSource> mergeSources;
 		
 		Builder() {}
 		
@@ -203,6 +210,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 			return this;
 		}
 		
+		public Builder mergeSources(List<RevisionBranchMergeSource> mergeSources) {
+			this.mergeSources = mergeSources;
+			return this;
+		}
+		
 		Builder path(String path) {
 			return this;
 		}
@@ -214,7 +226,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
 					name, 
 					deleted, 
 					metadata, 
-					segments);
+					segments,
+					mergeSources);
 		}
 		
 	}
@@ -225,6 +238,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     private final String path;
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
+	private final List<RevisionBranchMergeSource> mergeSources;
 
     private RevisionBranch(
     		long id,
@@ -232,7 +246,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
     		String name, 
     		boolean deleted, 
     		Metadata metadata,
-    		SortedSet<RevisionSegment> segments) {
+    		SortedSet<RevisionSegment> segments, 
+    		List<RevisionBranchMergeSource> mergeSources) {
     	super(metadata);
     	BranchNameValidator.DEFAULT.checkName(name);
     	checkArgument(!CompareUtils.isEmpty(segments), "At least one segment is required to created a revision branch.");
@@ -242,6 +257,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		this.path = CompareUtils.isEmpty(parentPath) ? name : String.format("%s%s%s", parentPath, SEPARATOR, name);
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
+		this.mergeSources = Collections3.toImmutableList(mergeSources);
 	}
     
     /**
@@ -321,6 +337,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
     }
     
     /**
+     * Returns the current merge sources. A merge source represents a set of new {@link RevisionBranchPoint}s introduced by a merge commit on this branch.
+	 * 
+	 * @return
+	 */
+    public List<RevisionBranchMergeSource> getMergeSources() {
+		return mergeSources;
+	}
+    
+    /**
      * Returns the segments common with the parent branch.
      * @return
      */
@@ -335,12 +360,41 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
-		return new RevisionBranchRef(getId(), getPath(), getSegments());
+    	final Map<Long, RevisionBranchPoint> latestMergeSources = getLatestMergeSources(false);
+    	// extend segments with the latest merge timestamp to access all revisions
+    	final SortedSet<RevisionSegment> visibleSegments = getSegments().stream()
+    			.map(segment -> {
+    				RevisionBranchPoint latestMergeSource = latestMergeSources.remove(segment.branchId());
+    				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
+    					return segment.withEnd(latestMergeSource.getTimestamp());
+    				} else {
+    					return segment;
+    				}
+    			})
+    			.collect(Collectors.toCollection(TreeSet::new));
+    	
+    	// add all remaining merge sources to the visible segment list
+    	latestMergeSources.values().forEach(latestMergeSource -> {
+    		// TODO start timestamp???
+    		visibleSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
+    	});
+    	
+		return new RevisionBranchRef(getId(), getPath(), visibleSegments);
 	}
 
     @JsonIgnore
 	public RevisionBranchRef baseRef() {
-		return new RevisionBranchRef(getParentSegments().last().branchId(), getParentPath(), getParentSegments());
+		final SortedSet<RevisionSegment> parentSegments = getParentSegments().stream()
+    			.map(segment -> {
+    				RevisionBranchPoint latestMergeSource = getLatestMergeSource(segment.branchId(), false);
+    				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
+    					return segment.withEnd(latestMergeSource.getTimestamp());
+    				} else {
+    					return segment;
+    				}
+    			})
+    			.collect(Collectors.toCollection(TreeSet::new));
+		return new RevisionBranchRef(parentSegments.last().branchId(), getParentPath(), parentSegments);
 	}
     
     /**
@@ -360,16 +414,27 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 */
     @JsonIgnore
 	public BranchState state(RevisionBranch target) {
-    	if (MAIN_PATH.equals(getPath())) {
-    		throw new UnsupportedOperationException(getPath() + " cannot compute state compared to target " + target.getPath());
+    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId(), true);
+    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId(), true);
+    	
+    	long baseTimestamp = getBaseTimestamp();
+    	if (mergeSource != null) {
+    		baseTimestamp = mergeSource.getTimestamp();
     	}
-    	final long baseTimestamp = getBaseTimestamp();
-    	final long headTimestamp = getHeadTimestamp();
-    	final long targetBaseTimestamp = target.getBaseTimestamp();
+    	
+    	long headTimestamp = getHeadTimestamp();
+    	if (mergeTarget != null) {
+    		if (mergeTarget.getTimestamp() > baseTimestamp) {
+    			baseTimestamp = mergeTarget.getTimestamp();
+    		}
+    		if (mergeTarget.getTimestamp() > headTimestamp) {
+    			headTimestamp = mergeTarget.getTimestamp();
+    		}
+    	}
+    	
     	final long targetHeadTimestamp = target.getHeadTimestamp();
-		if (baseTimestamp < targetBaseTimestamp) {
-        	return BranchState.STALE;
-        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp < baseTimestamp) {
+    	
+        if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
         	return BranchState.FORWARD;
         } else if (headTimestamp == baseTimestamp && targetHeadTimestamp > baseTimestamp) {
         	return BranchState.BEHIND;
@@ -379,5 +444,24 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	    return BranchState.UP_TO_DATE;
         }
     }
+
+	private RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+		return getLatestMergeSources(withSquashMerges).get(branchToFind);
+	}
+
+	private Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
+		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
+		getMergeSources()
+			.stream()
+			.filter(ms -> withSquashMerges || !ms.isSquash()) // skip squash merge sources when not required
+			.flatMap(ms -> ms.getBranchPoints().stream())
+			.sorted((p1, p2) -> -1 * Longs.compare(p1.getTimestamp(), p2.getTimestamp()))
+			.forEach(branchPoint -> {
+				if (!latestMergeSources.containsKey(branchPoint.getBranchId())) {
+					latestMergeSources.put(branchPoint.getBranchId(), branchPoint);
+				}
+			});
+		return latestMergeSources;
+	}
 
 }

@@ -20,7 +20,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import com.b2international.index.revision.RevisionFixtures.Data;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -30,13 +30,13 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(Data.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 	
 	@Test
 	public void tx1UpdateAndTx2UpdateOnSameDocumentShouldInvalidateThePreviousRevisionOnBothSegments() throws Exception {
 		// store the initial revision on segment 0
-		final Data data = new Data(STORAGE_KEY1, "field1", "field2");
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		indexRevision(MAIN, data);
 		
 		// create MAIN/a, which will create two new segments, 1 for 'a' and 2 for 'MAIN'
@@ -50,18 +50,18 @@ public class RevisionTransactionalityTest extends BaseRevisionIndexTest {
 		StagingArea mainCommit = index.prepareCommit(MAIN);
 		StagingArea childCommit = index.prepareCommit("MAIN/a");
 		
-		mainCommit.stageNew(new Data(STORAGE_KEY1, "field1ChangedOnMAIN", "field2"));
-		childCommit.stageNew(new Data(STORAGE_KEY1, "field1", "field2ChangedOnChild"));
+		mainCommit.stageNew(new RevisionData(STORAGE_KEY1, "field1ChangedOnMAIN", "field2"));
+		childCommit.stageNew(new RevisionData(STORAGE_KEY1, "field1", "field2ChangedOnChild"));
 		
 		mainCommit.commit(mainCommitTime, UUID.randomUUID().toString(), "Commit on MAIN");
 		childCommit.commit(childCommitTime, UUID.randomUUID().toString(), "Commit on MAIN/a");
 		
 		// after both tx commit query the branches for the latest revision
-		final Data childRevision = getRevision("MAIN/a", Data.class, STORAGE_KEY1);
-		final Data mainRevision = getRevision(MAIN, Data.class, STORAGE_KEY1);
+		final RevisionData childRevision = getRevision("MAIN/a", RevisionData.class, STORAGE_KEY1);
+		final RevisionData mainRevision = getRevision(MAIN, RevisionData.class, STORAGE_KEY1);
 		
-		final Data expectedOnChild = new Data(STORAGE_KEY1, "field1", "field2ChangedOnChild");
-		final Data expectedOnMain = new Data(STORAGE_KEY1, "field1ChangedOnMAIN", "field2");
+		final RevisionData expectedOnChild = new RevisionData(STORAGE_KEY1, "field1", "field2ChangedOnChild");
+		final RevisionData expectedOnMain = new RevisionData(STORAGE_KEY1, "field1ChangedOnMAIN", "field2");
 		
 		assertDocEquals(expectedOnChild, childRevision);
 		assertDocEquals(expectedOnMain, mainRevision);

@@ -114,7 +114,7 @@ public abstract class EffectiveTimes {
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @param datePattern
 	 *            - the pattern to use, cannot be <code>null</code>
-	 * @return - the parsed date, never <code>null</code>.
+	 * @return - the parsed date or <code>null</code> if the given effectiveTime value equals with the value {@link #UNSET_EFFECTIVE_TIME_LABEL}.
 	 * @throws SnowowlRuntimeException
 	 *             - if a {@link ParseException} is throw during execution
 	 * @throws NullPointerException
@@ -153,6 +153,24 @@ public abstract class EffectiveTimes {
 	@Nullable
 	public static Date toDate(long effectiveTime) {
 		return UNSET_EFFECTIVE_TIME == effectiveTime ? null : new Date(effectiveTime);
+	}
+
+	/**
+	 * Returns <code>true</code> if the given Object is an unset representation of an effective time value.
+	 * @param effectiveTimeValue
+	 * @return
+	 */
+	public static boolean isUnset(Object effectiveTimeValue) {
+		if (effectiveTimeValue == null) {
+			return true;
+		} else if (UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTimeValue)) {
+			return true;
+		} else if (effectiveTimeValue instanceof Long && UNSET_EFFECTIVE_TIME == (long) effectiveTimeValue) {
+			return true;
+		} else if (effectiveTimeValue instanceof String && UNSET_EFFECTIVE_TIME == Long.parseLong((String) effectiveTimeValue)) {
+			return true;
+		}
+		return false;
 	}
 
 }

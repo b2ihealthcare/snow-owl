@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMModuleScopeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMModuleScopeReferenceSetMemberBuilder, SnomedMRCMModuleScopeRefSetMember> {
+public final class SnomedMRCMModuleScopeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMModuleScopeReferenceSetMemberBuilder> {
 
 	private String mrcmRuleRefsetId;
 
@@ -32,14 +32,9 @@ public class SnomedMRCMModuleScopeReferenceSetMemberBuilder extends SnomedMember
 	}
 
 	@Override
-	protected SnomedMRCMModuleScopeRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMModuleScopeRefSetMember();
-	}
-
-	@Override
-	public void init(final SnomedMRCMModuleScopeRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedRefSetMemberIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
-		component.setMrcmRuleRefsetId(mrcmRuleRefsetId);
+		component.field(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, mrcmRuleRefsetId);
 	}
 
 }

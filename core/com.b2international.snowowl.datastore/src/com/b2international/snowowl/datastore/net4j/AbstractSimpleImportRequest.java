@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,7 @@ import org.eclipse.net4j.util.io.ExtendedDataInputStream;
 import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
  * Simple, user aware import request.
@@ -38,10 +36,12 @@ public abstract class AbstractSimpleImportRequest extends RequestWithMonitoring<
 	private static final int REQUEST_TIMEOUT_MILLIS = 60 * 30 * 1000;
 
 	private final File importFile;
+	private final String userId;
 
-	public AbstractSimpleImportRequest(final SignalProtocol<?> protocol, final short signalId, final File importFile) {
+	public AbstractSimpleImportRequest(final SignalProtocol<?> protocol, final short signalId, final File importFile, final String userId) {
 		super(protocol, signalId);
 		this.importFile = importFile;
+		this.userId = userId;
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public abstract class AbstractSimpleImportRequest extends RequestWithMonitoring<
 		out.writeUTF(importFile.getName());
 
 		// requesting user ID for the import
-		out.writeUTF(getUserId());
+		out.writeUTF(userId);
 
 		try (FileInputStream fileInputStream = new FileInputStream(importFile)) {
 			try (BufferedInputStream in = new BufferedInputStream(fileInputStream)) {
@@ -111,7 +111,4 @@ public abstract class AbstractSimpleImportRequest extends RequestWithMonitoring<
 		return in.readBoolean();
 	}
 
-	private String getUserId() {
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId();
-	}
 }

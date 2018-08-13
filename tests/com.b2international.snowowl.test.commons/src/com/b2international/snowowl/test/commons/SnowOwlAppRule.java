@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.google.common.base.Strings;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
 /**
- * Bootstraps a {@link SnowOwlApplication} and runs it before test method execution. After all test execution finished, shuts the application down.
+ * Bootstraps a {@link SnowOwl} and runs it before test method execution. After all test execution finished, shuts the application down.
  * <p>
  * Usage:
  *
@@ -64,11 +64,12 @@ import ch.qos.logback.classic.LoggerContext;
  */
 public class SnowOwlAppRule extends ExternalResource {
 
+	private final static Logger LOGGER = LoggerFactory.getLogger(SnowOwlAppRule.class);
+	
 	private String configPath;
 	private boolean clearResources = false;
-	private BootstrapFragment[] fragments;
-	
-	private final static Logger LOGGER = LoggerFactory.getLogger(SnowOwlAppRule.class);
+	private Plugin[] plugins;
+	private SnowOwl snowowl;
 
 	private SnowOwlAppRule() {
 		
@@ -104,31 +105,31 @@ public class SnowOwlAppRule extends ExternalResource {
 	}
 
 	/**
-	 * Defines additional {@link BootstrapFragment} instances to be part of the setup process.
+	 * Defines additional {@link Plugin} instances to be part of the setup process.
 	 * @param fragments
 	 * @return
 	 */
-	public SnowOwlAppRule fragments(BootstrapFragment...fragments) {
-		this.fragments = fragments;
+	public SnowOwlAppRule fragments(Plugin...fragments) {
+		this.plugins = fragments;
 		return this;
 	}
 
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		SnowOwlApplication.INSTANCE.bootstrap(configPath, fragments);
+		snowowl = SnowOwl.create(configPath, this.plugins);
 		if (clearResources) {
-			final SnowOwlConfiguration config = SnowOwlApplication.INSTANCE.getConfiguration();
-			final File resourceDirectory = new File(config.getResourceDirectory());
+			final File resourceDirectory = new File(snowowl.getConfiguration().getResourceDirectory());
 			FileUtils.cleanDirectory(resourceDirectory);
 		}
-		SnowOwlApplication.INSTANCE.run();
+		snowowl.bootstrap();
+		snowowl.run();
 	}
 
 	@Override
 	protected void after() {
 		super.after();
-		SnowOwlApplication.INSTANCE.shutdown();
+		snowowl.shutdown();
 	}
 
 	/**

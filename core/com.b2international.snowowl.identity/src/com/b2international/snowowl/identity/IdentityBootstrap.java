@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,25 @@ package com.b2international.snowowl.identity;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
+import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.setup.ModuleConfig;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.google.common.collect.Iterables;
 
 /**
  * @since 5.11
  */
-@ModuleConfig(fieldName = "identity", type = IdentityConfiguration.class)
-public class IdentityBootstrap extends DefaultBootstrapFragment {
+@Component
+public final class IdentityBootstrap extends Plugin {
 
+	@Override
+	public void addConfigurations(ConfigurationRegistry registry) {
+		registry.add("identity", IdentityConfiguration.class);
+	}
+	
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final IdentityConfiguration conf = configuration.getModuleConfig(IdentityConfiguration.class);
@@ -37,7 +43,7 @@ public class IdentityBootstrap extends DefaultBootstrapFragment {
 		
 		IdentityProvider identityProvider = null; 
 		if (providers.isEmpty()) {
-			throw new SnowOwlApplication.InitializationException("No identity provider configured");
+			throw new SnowOwl.InitializationException("No identity provider configured");
 		} else if (providers.size() == 1) {
 			identityProvider = Iterables.getOnlyElement(providers);
 		} else {

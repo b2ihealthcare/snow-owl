@@ -33,11 +33,11 @@ import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.ContentAvailabilityInfoManager;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
@@ -149,18 +149,18 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 					codeSystemShortName);
 		}
 
-		ApplicationContext.getServiceForClass(FileRegistry.class).upload(importId, inputStream);
+		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(importId, inputStream);
 		
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(importId)
 			.setCreateVersions(configuration.shouldCreateVersion())
 			.setReleaseType(releaseType)
+			.setCodeSystemShortName(configuration.getCodeSystemShortName())
 			.setUserId(User.SYSTEM.getUsername())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(getEventBus())
 			.then(result -> {
-				// TODO set validation errors
-				((SnomedImportConfiguration) configuration).setStatus(convertStatus(result));
+				((SnomedImportConfiguration) configuration).setStatus(result.getStatus());
 				return null;
 			})
 			.fail(e -> {
@@ -172,16 +172,6 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 		((SnomedImportConfiguration) configuration).setStatus(ImportStatus.RUNNING);
 	}
 	
-	private ImportStatus convertStatus(Boolean result) {
-//		for (SnomedValidationDefect validationDefect : validationDefects) {
-//			if (validationDefect.getDefectType().isCritical()) {
-//				return ImportStatus.FAILED;
-//			}
-//		}
-		
-		return ImportStatus.COMPLETED;
-	}
-
 	private boolean isImportAlreadyRunning() {
 		return Iterables.any(configurationMapping.values(), configuration -> ImportStatus.RUNNING.equals(configuration.getStatus()));
 	}

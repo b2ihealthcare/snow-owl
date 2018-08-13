@@ -21,9 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
-import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -49,23 +47,8 @@ public final class SnomedReferenceSetDefinition extends SnomedConceptSetDefiniti
 	}
 
 	@Override
-	public ReferenceSetConceptSetDefinition createModel() {
-		return MrcmFactory.eINSTANCE.createReferenceSetConceptSetDefinition();
-	}
-
-	@Override
-	public ReferenceSetConceptSetDefinition applyChangesTo(final ConceptModelComponent existingModel) {
-		final ReferenceSetConceptSetDefinition updatedModel = (existingModel instanceof ReferenceSetConceptSetDefinition)
-				? (ReferenceSetConceptSetDefinition) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setRefSetIdentifierConceptId(getRefSetId());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public ReferenceSetDefinitionFragment createModel() {
+		return new ReferenceSetDefinitionFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), getRefSetId());
 	}
 
 	@Override

@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 
 import javax.inject.Provider;
 
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 
 /**
  * @since 6.3

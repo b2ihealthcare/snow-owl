@@ -19,11 +19,11 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -37,7 +37,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.COMPLEX_MAP);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
@@ -55,7 +55,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
 		}
 		
-		SnomedComplexMapRefSetMember member = SnomedComponents.newComplexMapMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newComplexMapMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -69,7 +69,7 @@ final class SnomedComplexMapMemberCreateDelegate extends SnomedRefSetMemberCreat
 				.withCorrelationId(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override

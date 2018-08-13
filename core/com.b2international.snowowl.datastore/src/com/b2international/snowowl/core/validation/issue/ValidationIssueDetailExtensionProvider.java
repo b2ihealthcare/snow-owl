@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.validation.issue;
 
 import java.util.Collection;
 
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 
 /**
  * @since 6.4

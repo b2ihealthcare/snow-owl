@@ -44,12 +44,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.b2international.snowowl.api.admin.IMessagingService;
 import com.b2international.snowowl.api.admin.IRepositoryService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.impl.admin.MessagingServiceImpl;
 import com.b2international.snowowl.api.impl.admin.RepositoryServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
@@ -106,11 +104,6 @@ public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		return new SnowOwlAuthenticationProvider();
-	}
-	
-	@Bean
-	public IMessagingService messagingService() {
-		return new MessagingServiceImpl();
 	}
 	
 	@Bean

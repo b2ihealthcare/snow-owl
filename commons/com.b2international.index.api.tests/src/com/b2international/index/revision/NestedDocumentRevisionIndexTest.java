@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.RevisionFixtures.NestedData;
+import com.b2international.index.revision.RevisionFixtures.NestedRevisionData;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,7 +35,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(NestedData.class);
+		return ImmutableList.<Class<?>>of(NestedRevisionData.class);
 	}
 	
 	@Test
@@ -44,9 +44,9 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		child.setField1("field1");
 		child.setField2("field2");
 		
-		final NestedData parent = new NestedData(STORAGE_KEY1, "parent1", child);
+		final NestedRevisionData parent = new NestedRevisionData(STORAGE_KEY1, "parent1", child);
 		indexRevision(MAIN, parent);
-		assertEquals(parent, getRevision(MAIN, NestedData.class, STORAGE_KEY1));
+		assertEquals(parent, getRevision(MAIN, NestedRevisionData.class, STORAGE_KEY1));
 	}
 
 	@Test
@@ -54,21 +54,21 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final Data child1 = new Data();
 		child1.setField1("field1_1");
 		child1.setField2("field2_1");
-		final NestedData parent1 = new NestedData(STORAGE_KEY1, "parent1", child1);
+		final NestedRevisionData parent1 = new NestedRevisionData(STORAGE_KEY1, "parent1", child1);
 		
 		final Data child2 = new Data();
 		child2.setField1("field1_2");
 		child2.setField2("field2_2");
-		final NestedData parent2 = new NestedData(STORAGE_KEY2, "parent2", child2);
+		final NestedRevisionData parent2 = new NestedRevisionData(STORAGE_KEY2, "parent2", child2);
 		
 		indexRevision(MAIN, parent1);
 		indexRevision(MAIN, parent2);
 		
-		final Query<NestedData> query = Query.select(NestedData.class)
+		final Query<NestedRevisionData> query = Query.select(NestedRevisionData.class)
 				.where(Expressions.nestedMatch("data", Expressions.exactMatch("field1", "field1_1")))
 				.build();
 		
-		final Iterable<NestedData> matches = search(MAIN, query);
+		final Iterable<NestedRevisionData> matches = search(MAIN, query);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(parent1);
 	}

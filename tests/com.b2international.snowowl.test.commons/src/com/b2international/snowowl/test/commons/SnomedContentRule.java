@@ -26,10 +26,10 @@ import org.junit.rules.ExternalResource;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -66,12 +66,13 @@ public class SnomedContentRule extends ExternalResource {
 		createBranch();
 		createCodeSystemIfNotExist();
 		UUID rf2ArchiveId = UUID.randomUUID();
-		ApplicationContext.getServiceForClass(FileRegistry.class).upload(rf2ArchiveId, new FileInputStream(importArchive));
+		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, new FileInputStream(importArchive));
 		SnomedRequests.rf2().prepareImport()
 			.setRf2ArchiveId(rf2ArchiveId)
 			.setUserId("info@b2international.com")
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
+			.setCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
 			.execute(getBus())
 			.getSync();

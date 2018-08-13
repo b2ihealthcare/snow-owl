@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMAttributeRangeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMAttributeRangeReferenceSetMemberBuilder, SnomedMRCMAttributeRangeRefSetMember> {
+public final class SnomedMRCMAttributeRangeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedMRCMAttributeRangeReferenceSetMemberBuilder> {
 
 	private String rangeConstraint;
 	private String attributeRule;
@@ -50,17 +50,13 @@ public class SnomedMRCMAttributeRangeReferenceSetMemberBuilder extends SnomedMem
 	}
 
 	@Override
-	protected SnomedMRCMAttributeRangeRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedMRCMAttributeRangeRefSetMember();
-	}
-
-	@Override
-	public void init(final SnomedMRCMAttributeRangeRefSetMember component, final TransactionContext context) {
+	public void init(final SnomedRefSetMemberIndexEntry.Builder component, final TransactionContext context) {
 		super.init(component, context);
-		component.setRangeConstraint(rangeConstraint);
-		component.setAttributeRule(attributeRule);
-		component.setRuleStrengthId(ruleStrengthId);
-		component.setContentTypeId(contentTypeId);
+		component
+			.field(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, rangeConstraint)
+			.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, attributeRule)
+			.field(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, ruleStrengthId)
+			.field(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, contentTypeId);
 	}
 
 }

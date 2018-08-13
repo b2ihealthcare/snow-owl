@@ -27,9 +27,9 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -62,12 +62,10 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
 				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
 				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
-				.storageKey(1L)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);
 		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, Concepts.ROOT_CONCEPT);
-		assertEquals(1L, actual.getStorageKey());
 		assertEquals(null, actual.getNamespace());
 		assertDocEquals(concept, actual);
 	}
@@ -90,13 +88,10 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.refSetType(SnomedRefSetType.ASSOCIATION)
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
-				.storageKey(1L)
-				.refSetStorageKey(3L)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);
 		final SnomedConceptDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConceptDocument.class, Concepts.ROOT_CONCEPT);
-		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(concept, actual);
 	}
 

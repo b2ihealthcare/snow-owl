@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@ package com.b2international.snowowl.test.commons;
 
 import java.io.File;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.setup.Plugin;
 import com.google.common.base.Strings;
 
 /**
- * A {@link BootstrapFragment} implementation to use for dataset copy before actually running the application in an integration test environment. The location
+ * A {@link Plugin} implementation to use for dataset copy before actually running the application in an integration test environment. The location
  * must be specified as a JVM argument in a {@value #LOC_PARAM_NAME} parameter.
  * <p>
  * <i>NOTE: make sure you do NOT clear the resources folder when running the application, see {@link SnowOwlAppRule#clearResources(boolean)}
@@ -57,7 +56,7 @@ import com.google.common.base.Strings;
  *
  * @since 3.8
  */
-public class DatasetBootstrap implements BootstrapFragment {
+public class DatasetBootstrap extends Plugin {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DatasetBootstrap.class);
 	public static final String LOC_PARAM_NAME = "so.dataset.location";
@@ -79,10 +78,6 @@ public class DatasetBootstrap implements BootstrapFragment {
 		FileUtils.cleanDirectory(resourceDirectory);
 		LOG.info("Extracting dataset from {} to {}", datasetFile, resourceDirectory);
 		FileUtils.decompressZipArchive(datasetFile, resourceDirectory);
-	}
-
-	@Override
-	public void run(SnowOwlConfiguration configuration, Environment env, IProgressMonitor monitor) throws Exception {
 	}
 
 }

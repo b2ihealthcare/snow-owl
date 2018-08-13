@@ -22,8 +22,11 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2OWLExpressionRefSetRowValidator;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -38,6 +41,8 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 			component.setType(SnomedRefSetType.OWL_AXIOM);
 		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getReferenceSetId())) {
 			component.setType(SnomedRefSetType.OWL_ONTOLOGY);
+		} else {
+			throw new UnsupportedOperationException("Unrecognized OWL Reference Set " + component.getReferenceSetId());
 		}
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
@@ -60,6 +65,11 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public String[] getHeaderColumns() {
 		return OWL_EXPRESSION_HEADER;
+	}
+	
+	@Override
+	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
+		return new Rf2OWLExpressionRefSetRowValidator(reporter, values);
 	}
 
 }

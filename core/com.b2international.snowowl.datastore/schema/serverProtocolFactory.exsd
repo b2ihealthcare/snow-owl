@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="com.b2international.snowowl.datastore" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="com.b2international.snowowl.datastore" id="serverProtocolFactory" name="Net4j Server Protocol Factory"/>
+      </appinfo>
+      <documentation>
+         The Net4j Signal Reactor extension point allows developers to register Net4j protocol factory implementations, which are used by Snow Owl&apos;s Net4j based RPC mechanism.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="protocolFactory" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="protocolFactory">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the unique identifier of the protocol factory
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  the protocol factory implementation class, that extends &lt;samp&gt;org.eclipse.spi.net4j.ServerProtocolFactory&lt;/samp&gt;
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="org.eclipse.spi.net4j.ServerProtocolFactory:"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         &lt;p&gt;
+&lt;pre&gt;
+   &lt;extension
+         point=&quot;com.b2international.snowowl.datastore.server.protocolFactory&quot;&gt;
+      &lt;protocolFactory
+            class=&quot;com.b2international.snowowl.atc.datastore.server.index.AtcIndexServerProtocolFactory&quot;
+            id=&quot;com.b2international.snowowl.atc.datastore.server.index.AtcIndexServerProtocolFactory&quot;&gt;
+      &lt;/protocolFactory&gt;
+   &lt;/extension&gt;
+&lt;/pre&gt;
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+
+
+
+</schema>

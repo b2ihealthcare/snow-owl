@@ -37,14 +37,14 @@ public class RevisionFixtures {
 	
 	@Doc
 	@RevisionHash({ "field1", "field2" })
-	public static class Data extends Revision {
+	public static class RevisionData extends Revision {
 		
 		@Text(analyzer=Analyzers.TOKENIZED)
 		private String field1;
 		private String field2;
 
 		@JsonCreator
-		public Data(
+		public RevisionData(
 				@JsonProperty(Revision.Fields.ID) final String id, 
 				@JsonProperty("field1") final String field1, 
 				@JsonProperty("field2") final String field2) {
@@ -58,7 +58,7 @@ public class RevisionFixtures {
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			Data other = (Data) obj;
+			RevisionData other = (RevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
 		}
 		
@@ -106,7 +106,7 @@ public class RevisionFixtures {
 	@Doc
 	@Script(name="doi", script="return doc.doi.value")
 	@Script(name="doiFactor", script="return doc.doi.value * params.factor")
-	public static class ScoredData extends Data implements WithScore {
+	public static class ScoredData extends RevisionData implements WithScore {
 		
 		private float score = 0.0f;
 		private final float doi;
@@ -145,7 +145,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class BooleanData extends Data {
+	public static class BooleanData extends RevisionData {
 
 		private final boolean active;
 
@@ -166,7 +166,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class RangeData extends Data {
+	public static class RangeData extends RevisionData {
 		
 		private final int from;
 		private final int to;
@@ -194,14 +194,14 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class NestedData extends Revision {
+	public static class NestedRevisionData extends Revision {
 		
 		private String field1;
 		// using unversioned data not the revision based one here
 		private com.b2international.index.Fixtures.Data data;
 		
 		@JsonCreator
-		public NestedData(
+		public NestedRevisionData(
 				@JsonProperty(Revision.Fields.ID) final String id,
 				@JsonProperty("field1") String field1, 
 				@JsonProperty("data") com.b2international.index.Fixtures.Data data) {
@@ -215,7 +215,7 @@ public class RevisionFixtures {
 			if (this == obj) return true;
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
-			NestedData other = (NestedData) obj;
+			NestedRevisionData other = (NestedRevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
 		}
 		

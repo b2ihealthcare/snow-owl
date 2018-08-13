@@ -15,17 +15,13 @@
  */
 package com.b2international.snowowl.datastore.config;
 
-import java.util.Map;
-
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.db.JdbcUrl;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 
 /**
@@ -34,7 +30,7 @@ import com.google.common.net.HostAndPort;
  * 
  * @since 3.4
  */
-public class RepositoryConfiguration extends ConnectionPoolConfiguration {
+public class RepositoryConfiguration {
 	
 	@NotEmpty
 	private String host = "0.0.0.0";
@@ -43,9 +39,6 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 	@Max(65535)
 	private int port = 2036;
 
-	@NotNull
-	private DatabaseConfiguration databaseConfiguration = new DatabaseConfiguration();
-	
 	@NotNull
 	private IndexConfiguration indexConfiguration = new IndexConfiguration();
 	
@@ -118,22 +111,6 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 		this.numberOfWorkers = numberOfWorkers;
 	}
 	
-	/**
-	 * @return the databaseConfiguration
-	 */
-	@JsonProperty("database")
-	public DatabaseConfiguration getDatabaseConfiguration() {
-		return databaseConfiguration;
-	}
-	
-	/**
-	 * @param databaseConfiguration the databaseConfiguration to set
-	 */
-	@JsonProperty("database")
-	public void setDatabaseConfiguration(DatabaseConfiguration databaseConfiguration) {
-		this.databaseConfiguration = databaseConfiguration;
-	}
-	
 	@JsonProperty("index")
 	public IndexConfiguration getIndexConfiguration() {
 		return indexConfiguration;
@@ -144,16 +121,6 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 		this.indexConfiguration = indexConfiguration;
 	}
 
-	/**
-	 * Constructs a JDBC type database URL from the current configuration
-	 * parameters.
-	 * 
-	 * @return the JDBC URL of the database for the repository
-	 */
-	public JdbcUrl getDatabaseUrl() {
-		return new JdbcUrl(getDatabaseConfiguration().getScheme(), getDatabaseConfiguration().getLocation(), getDatabaseConfiguration().getSettings());
-	}
-	
 	/**
 	 * @return the maximum number of completed merge job results to keep
 	 */
@@ -167,21 +134,6 @@ public class RepositoryConfiguration extends ConnectionPoolConfiguration {
 		this.mergeMaxResults = mergeMaxResults;
 	}
 	
-	/**
-	 * Returns a property map for the given repository name.
-	 * 
-	 * @param repositoryName
-	 * @return
-	 */
-	public Map<Object, Object> getDatasourceProperties(String repositoryName) {
-		final ImmutableMap.Builder<Object, Object> properties = ImmutableMap.builder();
-		properties.put("class", getDatabaseConfiguration().getDatasourceClass());
-		properties.put("uRL", getDatabaseUrl().build(repositoryName)); // XXX: strange casing required by net4j's uncapitalizer method when inspecting setters!
-		properties.put("user", getDatabaseConfiguration().getUsername());
-		properties.put("password", getDatabaseConfiguration().getPassword());
-		return properties.build();
-	}
-
 	@JsonProperty("revisionCache")
 	public boolean isRevisionCacheEnabled() {
 		return revisionCacheEnabled ;

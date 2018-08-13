@@ -26,8 +26,8 @@ import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.Maps;
 
@@ -98,36 +98,35 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 				.orElse(null);
 	}
 		
-	protected boolean updateModule(final TransactionContext context, final Component component) {
+	protected boolean updateModule(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
 		if (null == moduleId) {
 			return false;
 		}
 
-		final String currentModuleId = component.getModule().getId();
-		if (!currentModuleId.equals(moduleId)) {
-			component.setModule(context.lookup(moduleId, Concept.class));
+		if (!original.getModuleId().equals(moduleId)) {
+			component.moduleId(context.lookup(moduleId, SnomedConceptDocument.class).getId());
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	protected boolean updateStatus(final TransactionContext context, final Component component) {
+	protected boolean updateStatus(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
 		if (null == active) {
 			return false;
 		}
 
-		if (component.isActive() != active) {
-			component.setActive(active);
+		if (original.isActive() != active) {
+			component.active(active);
 			return true;
 		} else {
 			return false;
 		}
 	}
 	
-	protected void checkUpdateOnReleased(Component component, String field, Object value) {
+	protected void checkUpdateOnReleased(SnomedComponentDocument component, String field, Object value) {
 		if (component.isReleased()) {
-			throw new BadRequestException("Cannot update '%s' to '%s' on released %s '%s'", field, value, component.eClass().getName(), component.getId());
+			throw new BadRequestException("Cannot update '%s' to '%s' on released %s '%s'", field, value, component.getClass().getSimpleName(), component.getId());
 		}
 	}
 	

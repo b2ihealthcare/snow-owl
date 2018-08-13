@@ -33,7 +33,7 @@ public abstract class CodeSystemRestRequests {
 
 	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName) {
 		Map<?,?> requestBody = ImmutableMap.builder()
-				.put("name", "name")
+				.put("name", shortName)
 				.put("branchPath", branchPath.getPath())
 				.put("shortName", shortName)
 				.put("citation", "citation")

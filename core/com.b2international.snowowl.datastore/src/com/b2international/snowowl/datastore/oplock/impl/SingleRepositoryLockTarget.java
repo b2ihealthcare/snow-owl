@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@
 package com.b2international.snowowl.datastore.oplock.impl;
 
 import java.text.MessageFormat;
-
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 
 /**
  * A lock target referring to a single repository by its unique identifier. Conflicts with other
@@ -45,18 +41,6 @@ public class SingleRepositoryLockTarget extends AbstractDatastoreLockTarget {
 		return repositoryUuid;
 	}
 	
-	/**
-	 * @return the human readable name of the repository, or the UUID if no connection can be found for the target UUID
-	 */
-	public String getRepositoryDisplayName() {
-		final ICDOConnectionManager connectionManager = ApplicationContext.getInstance().getService(ICDOConnectionManager.class);
-		final ICDOConnection connection = connectionManager.getByUuid(repositoryUuid);
-		
-		return (null != connection) 
-				? connection.getRepositoryName() 
-				: getRepositoryUuid();
-	}
-
 	@Override
 	public int hashCode() {
 		return 31 + repositoryUuid.hashCode();
@@ -83,6 +67,6 @@ public class SingleRepositoryLockTarget extends AbstractDatastoreLockTarget {
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("repository ''{0}''", getRepositoryDisplayName());
+		return MessageFormat.format("repository ''{0}''", getRepositoryUuid());
 	}
 }

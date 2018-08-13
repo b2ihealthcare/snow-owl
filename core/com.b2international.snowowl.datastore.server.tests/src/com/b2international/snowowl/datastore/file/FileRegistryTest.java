@@ -32,8 +32,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.internal.file.DefaultFileRegistry;
-import com.b2international.snowowl.datastore.internal.file.InternalFileRegistry;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.DefaultAttachmentRegistry;
+import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.google.common.io.Resources;
 
 /**
@@ -41,12 +42,12 @@ import com.google.common.io.Resources;
  */
 public class FileRegistryTest {
 
-	private static final Path FOLDER = Paths.get("target", FileRegistry.class.getSimpleName().toLowerCase());
-	private InternalFileRegistry registry;
+	private static final Path FOLDER = Paths.get("target", AttachmentRegistry.class.getSimpleName().toLowerCase());
+	private InternalAttachmentRegistry registry;
 
 	@Before
 	public void setup() {
-		this.registry = new DefaultFileRegistry(FOLDER);
+		this.registry = new DefaultAttachmentRegistry(FOLDER);
 	}
 	
 	@Test
@@ -74,7 +75,7 @@ public class FileRegistryTest {
 		registry.delete(id);
 		
 		try {
-			registry.getFile(id);
+			registry.getAttachment(id);
 			fail("Expected exception " + NotFoundException.class.getName());
 		} catch (NotFoundException e) {
 			// expected
@@ -82,7 +83,7 @@ public class FileRegistryTest {
 	}
 
 	private boolean exists(UUID id) {
-		return registry.getFile(id).exists();
+		return registry.getAttachment(id).exists();
 	}
 
 	private void upload(final UUID id, final String resourceName) throws IOException {

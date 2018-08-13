@@ -35,9 +35,9 @@ import org.junit.Test;
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -53,6 +53,8 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -66,8 +68,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
@@ -87,7 +87,7 @@ public class SnomedRefSetDSVExportTest {
 	
 	private IEventBus bus;
 	
-	private FileRegistry fileRegistry;
+	private AttachmentRegistry fileRegistry;
 
 	private File tempDir;
 
@@ -96,7 +96,7 @@ public class SnomedRefSetDSVExportTest {
 	@Before
 	public void setup() {
 		bus = ApplicationContext.getInstance().getService(IEventBus.class);
-		fileRegistry = ApplicationContext.getInstance().getService(FileRegistry.class);
+		fileRegistry = ApplicationContext.getInstance().getService(AttachmentRegistry.class);
 		tempDir = Files.createTempDir();
 		branchPath = createBranch(methodName.get());
 	}

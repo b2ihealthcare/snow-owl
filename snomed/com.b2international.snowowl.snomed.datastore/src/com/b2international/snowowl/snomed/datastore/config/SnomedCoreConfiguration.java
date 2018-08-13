@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.datastore.config;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.datastore.config.ConnectionPoolConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @since 3.4
  */
-public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
+public class SnomedCoreConfiguration {
 	
 	public static final String ELK_REASONER_ID = "org.semanticweb.elk.elk.reasoner.factory"; //$NON-NLS-1$
 	private static final String DEFAULT_REASONER = ELK_REASONER_ID;
@@ -39,6 +39,7 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	public static final int DEFAULT_MAXIMUM_REASONER_RESULTS = 10;
 	public static final int DEFAULT_MAXIMUM_REASONER_RUNS = 1000;
 	public static final String DEFAULT_NAMESPACE = ""; //$NON-NLS-1$
+	public static final String DEFAULT_MODULE = Concepts.MODULE_SCT_CORE;
 	
 	@Min(1)
 	@Max(3)
@@ -90,7 +91,13 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	
 	//enables the manual editing of inferred relationships and concrete data types
 	private boolean inferredEditingEnabled = false;
-		
+
+	@NotNull
+	private String defaultNamespace = DEFAULT_NAMESPACE;
+	
+	@NotEmpty
+	private String defaultModule = DEFAULT_MODULE;
+	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -351,6 +358,32 @@ public class SnomedCoreConfiguration extends ConnectionPoolConfiguration {
 	@JsonProperty("datetimeDataTypeRefsetIdentifier")
 	public void setDatetimeDatatypeRefsetIdentifier(String datetimeDatatypeRefsetIdentifier) {
 		this.datetimeDatatypeRefsetIdentifier = datetimeDatatypeRefsetIdentifier;
+	}
+	
+	/**
+	 * @return the default module ID to use when not set in any other way
+	 */
+	@JsonProperty
+	public String getDefaultModule() {
+		return defaultModule;
+	}
+	
+	/**
+	 * @return the default namespace to use for ID generation when not set in any other way
+	 */
+	@JsonProperty
+	public String getDefaultNamespace() {
+		return defaultNamespace;
+	}
+	
+	@JsonProperty
+	public void setDefaultModule(String defaultModule) {
+		this.defaultModule = defaultModule;
+	}
+	
+	@JsonProperty
+	public void setDefaultNamespace(String defaultNamespace) {
+		this.defaultNamespace = defaultNamespace;
 	}
 	
 }

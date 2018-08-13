@@ -119,8 +119,8 @@ public class MergeImpl implements Merge {
 	}
 
 	@Override
-	public Merge failedWithConflicts(Collection<MergeConflict> newConflicts, ApiError newApiError) {
-		return new MergeImpl(id, source, target, Status.CONFLICTS, scheduledDate, startDate, new Date(), newApiError, newConflicts);
+	public Merge failedWithConflicts(Collection<MergeConflict> newConflicts) {
+		return new MergeImpl(id, source, target, Status.CONFLICTS, scheduledDate, startDate, new Date(), apiError, newConflicts);
 	}
 
 	@Override

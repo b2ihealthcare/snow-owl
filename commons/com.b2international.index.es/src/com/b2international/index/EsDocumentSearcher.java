@@ -60,6 +60,7 @@ import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
@@ -76,7 +77,7 @@ import com.google.common.primitives.Ints;
 /**
  * @since 5.10
  */
-public class EsDocumentSearcher implements DocSearcher {
+public class EsDocumentSearcher implements Searcher {
 
 	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
 	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
@@ -108,6 +109,11 @@ public class EsDocumentSearcher implements DocSearcher {
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
+		return search(Query.select(type).where(Expressions.matchAny(DocumentMapping._ID, keys)).limit(Iterables.size(keys)).build());
 	}
 
 	@Override

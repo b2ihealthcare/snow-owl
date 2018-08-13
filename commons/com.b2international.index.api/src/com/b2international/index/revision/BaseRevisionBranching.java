@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
@@ -46,15 +49,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.inject.Provider;
 
 /**
  * @since 6.5
  */
 public abstract class BaseRevisionBranching {
 
-	private final Provider<Index> index;
+	private final RevisionIndex index;
+	private final TimestampProvider timestampProvider;
 	private final ObjectMapper mapper;
+	private final List<Consumer<String>> onBranchChange = newArrayListWithCapacity(1);
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
 			.expireAfterAccess(5L, TimeUnit.MINUTES)
@@ -65,9 +69,14 @@ public abstract class BaseRevisionBranching {
 				}
 			});
 
-	public BaseRevisionBranching(Provider<Index> index, ObjectMapper mapper) {
+	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
 		this.index = index;
+		this.timestampProvider = timestampProvider;
 		this.mapper = mapper;
+	}
+	
+	public long currentTime() {
+		return timestampProvider.getTimestamp();
 	}
 	
 	/**
@@ -139,7 +148,21 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	protected RevisionBranch get(String branchPath) {
-		return index.get().read(searcher -> searcher.get(RevisionBranch.class, branchPath));
+		return index().read(searcher -> searcher.get(RevisionBranch.class, branchPath));
+	}
+
+	/**
+	 * @return the raw index to access raw documents
+	 */
+	protected final Index index() {
+		return index.index();
+	}
+	
+	/**
+	 * @return the revision index to access revision controlled documents
+	 */
+	protected final InternalRevisionIndex revisionIndex() {
+		return (InternalRevisionIndex) index;
 	}
 	
 	/**
@@ -148,11 +171,11 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	public Hits<RevisionBranch> search(Query<RevisionBranch> query) {
-		return index.get().read(searcher -> searcher.search(query));
+		return index().read(searcher -> searcher.search(query));
 	}
 	
 	public <T> T commit(IndexWrite<T> changes) {
-		return index.get().write(writer -> {
+		return index().write(writer -> {
 			T result = changes.execute(writer);
 			writer.commit();
 			return result;
@@ -228,6 +251,10 @@ public abstract class BaseRevisionBranching {
 		return getBranchState(getBranch(branchPath));
 	}
 	
+	public BranchState getBranchState(String branchPath, String compareWith) {
+		return getBranch(branchPath).state(getBranch(compareWith));
+	}
+	
 	public BranchState getBranchState(RevisionBranch branch) {
 		if (RevisionBranch.MAIN_PATH.equals(branch.getPath())) {
 			return BranchState.UP_TO_DATE;
@@ -236,6 +263,14 @@ public abstract class BaseRevisionBranching {
 		}
 	}
 
+	public Commit merge(String fromPath, String toPath, String commitMessage) {
+		return merge(fromPath, toPath, commitMessage, new RevisionConflictProcessor.Default());
+	}
+	
+	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor) {
+		return merge(fromPath, toPath, commitMessage, conflictProcessor, false);
+	}
+	
 	/**
 	 * Merges changes to the toPath branch by squashing the change set of the specified fromPath into a single commit.
 	 * 
@@ -243,76 +278,36 @@ public abstract class BaseRevisionBranching {
 	 * @param toPath - the branch to push the changes to
 	 * @param commitMessage
 	 *            - the commit message
-	 * @return
-	 * @throws BranchMergeException
-	 *             - if the branch cannot be merged for some reason
+	 * @param squash 
+	 * @return the commit object representing the merge commit or <code>null</code> if there is nothing to merge
 	 */
-	public String merge(String fromPath, String toPath, String commitMessage) {
+	public Commit merge(String fromPath, String toPath, String commitMessage, RevisionConflictProcessor conflictProcessor, boolean squash) {
 		if (toPath.equals(fromPath)) {
 			throw new BadRequestException(String.format("Can't merge branch '%s' onto itself.", toPath));
 		}
 		RevisionBranch to = getBranch(toPath);
 		RevisionBranch from = getBranch(fromPath);
-		BranchState changesFromState = from.state(getBranch(from.getParentPath()));
 		
-		if (changesFromState == BranchState.FORWARD) {
-			final String mergedToPath = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
-			// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
-			if (from.getParentPath().equals(mergedToPath)) {
-				final RevisionBranch reopenedFrom = reopen(getBranch(mergedToPath), from.getName(), from.metadata());
-				sendChangeEvent(reopenedFrom.getPath()); // Explicit notification (reopen)
-				return reopenedFrom.getPath();
-			}
-			return mergedToPath;
-		} else {
-			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", fromPath, toPath, changesFromState);
+		BranchState changesFromState = from.state(to);
+
+		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
+		if (changesFromState == BranchState.UP_TO_DATE || changesFromState == BranchState.BEHIND) {
+			return null;
 		}
+		
+		final InternalRevisionIndex index = revisionIndex();
+		final StagingArea staging = index.prepareCommit(to.getPath());
+		
+		// TODO add conflict processing
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), squash, conflictProcessor);
+		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
+		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
+			fastForwardCommitTimestamp = -1L;
+		}
+		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !squash;
+		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), "TODO", commitMessage);
 	}
 	
-	/**
-	 * Rebases the branch associated with the given path on top of the branch specified with the onTopOfPath argument.
-	 * <p>
-	 * Commits available on the target branch will be available on the resulting branch after successful rebase.
-	 * 
-	 * @param branchPath - the branch to rebase
-	 * @param onTopOf 
-	 *            - the branch on top of which this branch should be lifted
-	 * @param commitMessage
-	 *            - the commit message
-	 * @param postReopen - any additional code to run after postReopen phase
-	 * 
-	 * @return
-	 */
-	public final String rebase(final String branchPath, final String onTopOfPath, final String commitMessage, final Runnable postReopen) {
-		if (RevisionBranch.MAIN_PATH.equals(branchPath)) {
-			throw new BadRequestException("MAIN cannot be rebased");
-		}
-		final RevisionBranch revisionBranch = getBranch(branchPath);
-		final BranchState state = revisionBranch.state(getBranch(revisionBranch.getParentPath()));
-		if (state == BranchState.BEHIND || state == BranchState.DIVERGED || state == BranchState.STALE) {
-			final RevisionBranch branch = getBranch(branchPath);
-			final RevisionBranch onTopOf = getBranch(onTopOfPath);
-			return doRebase(branch, onTopOf, commitMessage, postReopen);
-		} else {
-			return branchPath;
-		}
-	}
-
-	protected String doRebase(final RevisionBranch branch, final RevisionBranch onTopOf, final String commitMessage, final Runnable postReopen) {
-		applyChangeSet(branch, onTopOf, true, true, commitMessage);
-		final RevisionBranch rebasedBranch = reopen(onTopOf, branch.getName(), branch.metadata());
-		postReopen.run();
-		
-		if (branch.getHeadTimestamp() > branch.getBaseTimestamp()) {
-			return applyChangeSet(branch, rebasedBranch, false, true, commitMessage); // Implicit notification (reopen & commit)
-		} else {
-			sendChangeEvent(rebasedBranch.getPath()); // Explicit notification (reopen)
-			return rebasedBranch.getPath();
-		}
-	}
-
-	protected abstract String applyChangeSet(RevisionBranch from, RevisionBranch to, boolean dryRun, boolean isRebase, String commitMessage);
-
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return index -> {
 			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
@@ -328,11 +323,32 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	/**
-	 * Subclasses should override this method if they want to broadcast notifications of changed branches.
+	 * Broadcast notifications of changed branches.
+	 * 
 	 * @param branchPath the subject of the notification (may not be {@code null})
-	 * @return {@code branch} (for convenience)
 	 */
-	protected void sendChangeEvent(final String branchPath) {
+	protected final void sendChangeEvent(final String branchPath) {
+		onBranchChange.forEach(c -> c.accept(branchPath));
+	}
+	
+	/**
+	 * Listen on branch changes
+	 * 
+	 * @param onBranchChange - the listener to add
+	 */
+	public final void addBranchChangeListener(Consumer<String> onBranchChange) {
+		if (!this.onBranchChange.contains(onBranchChange)) {
+			this.onBranchChange.add(onBranchChange);
+		}
+	}
+	
+	/**
+	 * Remove branch change listener
+	 * 
+	 * @param onBranchChange - the listener to remove
+	 */
+	public final void removeBranchChangeListener(Consumer<String> onBranchChange) {
+		this.onBranchChange.remove(onBranchChange);
 	}
 	
 	/**
@@ -342,7 +358,7 @@ public abstract class BaseRevisionBranching {
 	 */
 	public final List<RevisionBranch> getChildren(String parentPath) {
 		return ImmutableList.copyOf(search(Query.select(RevisionBranch.class)
-				.where(Expressions.prefixMatch("path", parentPath + RevisionBranch.SEPARATOR))
+				.where(Expressions.prefixMatch(RevisionBranch.Fields.PATH, parentPath + RevisionBranch.SEPARATOR))
 				.limit(Integer.MAX_VALUE)
 				.build()));
 	}
@@ -364,11 +380,6 @@ public abstract class BaseRevisionBranching {
 	 */
 	public final void updateMetadata(String branchPath, Metadata metadata) {
 		commit(update(branchPath, RevisionBranch.Scripts.WITH_METADATA, ImmutableMap.of("metadata", metadata)));
-	}
-	
-	public final void handleCommit(final String branchPath, final long timestamp) {
-		commit(update(branchPath, RevisionBranch.Scripts.WITH_HEADTIMESTAMP, ImmutableMap.of("headTimestamp", timestamp)));
-		sendChangeEvent(branchPath); // Explicit notification (commit)
 	}
 	
 }

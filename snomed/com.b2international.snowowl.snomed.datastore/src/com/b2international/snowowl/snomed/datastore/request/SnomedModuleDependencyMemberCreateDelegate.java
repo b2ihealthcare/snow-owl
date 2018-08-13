@@ -19,10 +19,10 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
@@ -34,7 +34,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 	}
 
 	@Override
-	public String execute(SnomedRefSet refSet, TransactionContext context) {
+	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MODULE_DEPENDENCY);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
@@ -43,7 +43,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		SnomedModuleDependencyRefSetMember member = SnomedComponents.newModuleDependencyMember()
+		SnomedRefSetMemberIndexEntry member = SnomedComponents.newModuleDependencyMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
@@ -53,7 +53,7 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 				.withTargetEffectiveTime(EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 }

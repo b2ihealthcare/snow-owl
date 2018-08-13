@@ -17,11 +17,11 @@ package com.b2international.snowowl.snomed.datastore.index.constraint;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
-import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
-import com.b2international.snowowl.snomed.mrcm.DependencyPredicate;
-import com.b2international.snowowl.snomed.mrcm.DescriptionPredicate;
-import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDependencyPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
 
 /**
  * @since 2.0
@@ -32,16 +32,16 @@ public enum SnomedConstraintPredicateType {
 	DESCRIPTION,
 	RELATIONSHIP;
 
-	public static SnomedConstraintPredicateType typeOf(final ConceptModelPredicate predicate) {
+	public static SnomedConstraintPredicateType typeOf(final SnomedPredicate predicate) {
 		checkNotNull(predicate, "Predicate instance may not be null.");
 		
-		if (predicate instanceof ConcreteDomainElementPredicate) {
+		if (predicate instanceof SnomedConcreteDomainPredicate) {
 			return DATATYPE;
-		} else if (predicate instanceof DependencyPredicate) {
+		} else if (predicate instanceof SnomedDependencyPredicate) {
 			return DEPENDENCY;
-		} else if (predicate instanceof DescriptionPredicate) {
+		} else if (predicate instanceof SnomedDescriptionPredicate) {
 			return DESCRIPTION;
-		} else if (predicate instanceof RelationshipPredicate) {
+		} else if (predicate instanceof SnomedRelationshipPredicate) {
 			return RELATIONSHIP;
 		} else {
 			throw new IllegalArgumentException("Unexpected concept model predicate class '" + predicate.getClass().getSimpleName() + "'.");

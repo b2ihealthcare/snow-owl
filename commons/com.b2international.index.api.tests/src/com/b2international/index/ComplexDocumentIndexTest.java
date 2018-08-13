@@ -52,7 +52,7 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 		writer.commit();
 		
 		// try to get nested document as is first
-		DocSearcher searcher = client().searcher();
+		Searcher searcher = client().searcher();
 		// get single data
 		final DeepData actual = searcher.get(DeepData.class, KEY1);
 		assertEquals(data, actual);
@@ -76,7 +76,7 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 		writer.put(KEY2, data2);
 		writer.commit();
 		
-		DocSearcher searcher = client().searcher();
+		Searcher searcher = client().searcher();
 		// get data by key
 		final MultipleNestedData actual = searcher.get(MultipleNestedData.class, KEY1);
 		assertEquals(data, actual);

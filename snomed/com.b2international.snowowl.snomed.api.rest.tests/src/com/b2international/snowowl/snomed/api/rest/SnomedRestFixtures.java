@@ -28,24 +28,24 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
-import com.b2international.snowowl.core.SnowOwlApplication;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -486,7 +486,7 @@ public abstract class SnomedRestFixtures {
 		Map<?, ?> refSetRequestBody = createConceptRequestBody(Concepts.REFSET_CONCRETE_DOMAIN_TYPE)
 				.put("id", refSetId)
 				.put("type", SnomedRefSetType.CONCRETE_DATA_TYPE)
-				.put("referencedComponentType", CoreTerminologyBroker.UNSPECIFIED)
+				.put("referencedComponentType", TerminologyRegistry.UNSPECIFIED)
 				.put("commitComment", "Created new concrete domain reference set")
 				.build();
 
@@ -498,7 +498,7 @@ public abstract class SnomedRestFixtures {
 	}
 
 	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {
-		return SnowOwlApplication.INSTANCE.getConfiguration().getModuleConfig(SnomedCoreConfiguration.class);
+		return ApplicationContext.getServiceForClass(SnowOwlConfiguration.class).getModuleConfig(SnomedCoreConfiguration.class);
 	}
 
 	private SnomedRestFixtures() {

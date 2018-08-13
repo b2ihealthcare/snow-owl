@@ -43,7 +43,7 @@ import com.google.common.collect.Maps;
  */
 public class SnomedIdentifierReservationServiceImpl implements ISnomedIdentifierReservationService {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ISnomedIdentifierReservationService.class);
+	private static final Logger LOG = LoggerFactory.getLogger("snomedids");
 	private final Map<String, Reservation> reservations = Collections.synchronizedMap(Maps.<String, Reservation>newHashMap());
 	
 	public SnomedIdentifierReservationServiceImpl() {

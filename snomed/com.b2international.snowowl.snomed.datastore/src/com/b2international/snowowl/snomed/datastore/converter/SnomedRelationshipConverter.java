@@ -52,7 +52,6 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	@Override
 	protected SnomedRelationship toResource(final SnomedRelationshipIndexEntry input) {
 		final SnomedRelationship result = new SnomedRelationship();
-		result.setStorageKey(input.getStorageKey());
 		result.setActive(input.isActive());
 		result.setCharacteristicType(toCharacteristicType(input.getCharacteristicTypeId()));
 		result.setDestinationNegated(input.isDestinationNegated());

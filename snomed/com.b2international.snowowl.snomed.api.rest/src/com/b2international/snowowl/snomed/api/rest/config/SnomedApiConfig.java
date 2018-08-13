@@ -55,33 +55,26 @@ import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.api.ISnomedConceptHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
-import com.b2international.snowowl.snomed.api.ISnomedReferenceSetHistoryService;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
-import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserComponent;
 import com.b2international.snowowl.snomed.api.impl.SnomedBrowserService;
-import com.b2international.snowowl.snomed.api.impl.SnomedConceptHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedExportService;
-import com.b2international.snowowl.snomed.api.impl.SnomedReferenceSetHistoryServiceImpl;
 import com.b2international.snowowl.snomed.api.impl.SnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.rest.AntPathWildcardMatcher;
 import com.b2international.snowowl.snomed.api.rest.SnowOwlAuthenticationProvider;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.BranchStateMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResourceMixin;
-import com.b2international.snowowl.snomed.api.rest.domain.ISnomedComponentMixin;
 import com.b2international.snowowl.snomed.api.rest.domain.ReviewMixin;
 import com.b2international.snowowl.snomed.api.rest.util.CsvMessageConverter;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -142,8 +135,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 		objectMapper.setDateFormat(dateFormat);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixIn(CollectionResource.class, CollectionResourceMixin.class);
-		objectMapper.addMixIn(SnomedComponent.class, ISnomedComponentMixin.class);
-		objectMapper.addMixIn(ISnomedBrowserComponent.class, ISnomedComponentMixin.class);
 		objectMapper.addMixIn(Branch.class, BranchMixin.class);
 		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
 		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
@@ -189,8 +180,8 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public FileRegistry fileRegistry() {
-		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(FileRegistry.class);
+	public AttachmentRegistry fileRegistry() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(AttachmentRegistry.class);
 	}
 	
 	@Bean
@@ -209,16 +200,6 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public ICodeSystemVersionService codeSystemVersionService() {
 		return new CodeSystemVersionServiceImpl();
-	}
-	
-	@Bean
-	public ISnomedConceptHistoryService conceptHistoryService() {
-		return new SnomedConceptHistoryServiceImpl();
-	}
-	
-	@Bean
-	public ISnomedReferenceSetHistoryService referenceSetHistoryService() {
-		return new SnomedReferenceSetHistoryServiceImpl();
 	}
 	
 	@Bean

@@ -60,7 +60,12 @@ public enum ComponentCategory {
 	/**
 	 * Points to a source and a target component, indicating that a mapping exists between the two in the context of the member's parent map.
 	 */
-	MAP_MEMBER;
+	MAP_MEMBER,
+	
+	/**
+	 * Use if a terminology component cannot be categorized into any of the other literals.
+	 */
+	UNKNOWN;
 
 	/**
 	 * Returns the human-readable name of this category, obtained by converting the original name of the enum value to lower case, changing underscore

@@ -31,12 +31,12 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -123,11 +123,11 @@ public class BranchCompareRequestTest {
 	
 	@Test
 	public void compareBranchWithDeletedComponents() throws Exception {
-		final Set<ComponentIdentifier> deletedIds = prepareBranchWithNewChanges(branchPath);
+		final Set<ComponentIdentifier> componentIdsToDelete = prepareBranchWithNewChanges(branchPath);
 		
 		final String taskBranchPath = createBranch(branchPath, "taskBranch");
 		
-		final ComponentIdentifier concept = deletedIds.stream()
+		final ComponentIdentifier concept = componentIdsToDelete.stream()
 				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.findFirst()
 				.get();
@@ -141,7 +141,7 @@ public class BranchCompareRequestTest {
 		final CompareResult compare = compare(branchPath, taskBranchPath);
 		assertThat(compare.getNewComponents()).isEmpty();
 		assertThat(compare.getChangedComponents()).isEmpty();
-		assertThat(compare.getDeletedComponents()).containsAll(deletedIds);
+		assertThat(compare.getDeletedComponents()).containsAll(componentIdsToDelete);
 	}
 	
 	@Test

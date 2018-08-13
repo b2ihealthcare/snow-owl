@@ -22,21 +22,14 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Concept;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRegularRefSet;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -56,7 +49,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	@NotEmpty
 	private final String referencedComponentType;
 	
-	private String mapTargetComponentType = CoreTerminologyBroker.UNSPECIFIED;
+	private String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
 	
 	private String identifierId;
 	
@@ -81,90 +74,28 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	public String execute(TransactionContext context) {
 		RefSetSupport.checkType(type, referencedComponentType);
 		
+		final SnomedConceptDocument concept;
 		if (Strings.isNullOrEmpty(identifierId)) {
 			throw new BadRequestException("Reference set identifier ID may not be null or empty.");
 		} else {
 			try {
-				context.lookup(identifierId, Concept.class);
+				concept = context.lookup(identifierId, SnomedConceptDocument.class);
+				if (concept.getRefSetType() != null) {
+					throw new BadRequestException("Identifier concept %s has been already registered as refset", identifierId);
+				}
 			} catch (ComponentNotFoundException e) {
 				throw e.toBadRequestException();
 			}
 		}
 		
-		// FIXME due to different resource lists we need access to the specific editing context (which will be removed later)
-		final SnomedRefSetEditingContext refSetContext = context.service(SnomedEditingContext.class).getRefSetEditingContext();
-		final SnomedRefSet refSet;
-		
-		switch (type) {
-			case SIMPLE: //$FALL-THROUGH$
-			case QUERY: //$FALL-THROUGH$
-			case DESCRIPTION_TYPE: //$FALL-THROUGH$
-			case MODULE_DEPENDENCY: //$FALL-THROUGH$
-			case OWL_AXIOM: //$FALL-THROUGH$
-			case OWL_ONTOLOGY: //$FALL-THROUGH$
-			case MRCM_DOMAIN: //$FALL-THROUGH$
-			case MRCM_ATTRIBUTE_DOMAIN: //$FALL-THROUGH$
-			case MRCM_ATTRIBUTE_RANGE: //$FALL-THROUGH$
-			case MRCM_MODULE_SCOPE: //$FALL-THROUGH$
-				refSet = createRegularRefSet(context);
-				break;
-			case CONCRETE_DATA_TYPE:
-				refSet = createConcreteDomainRefSet(context);
-				break;
-			case COMPLEX_MAP: //$FALL-THROUGH$
-			case EXTENDED_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP: //$FALL-THROUGH$
-			case SIMPLE_MAP_WITH_DESCRIPTION:
-				refSet = createMappingRefSet(context);
-				break;
-			case ASSOCIATION: //$FALL-THROUGH$
-			case LANGUAGE:
-				refSet = createStructuralRefSet(context);
-				break;
-			case ATTRIBUTE_VALUE:
-				if (STRUCTURAL_ATTRIBUTE_VALUE_SETS.contains(identifierId)) {
-					refSet = createStructuralRefSet(context);
-				} else {
-					refSet = createRegularRefSet(context);
-				}
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported reference set type " + type + " for reference set identifier " + identifierId);
-		}
-		
-		refSetContext.add(refSet);
+		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
+		final SnomedReferenceSet refSet = new SnomedReferenceSet();
+		refSet.setType(type);
+		refSet.setReferencedComponentType(referencedComponentType);
+		refSet.setMapTargetComponentType(mapTargetComponentType);
+		updatedConcept.refSet(refSet);
+		context.update(concept, updatedConcept.build());
 		return identifierId;
 	}
 
-	private SnomedRegularRefSet createRegularRefSet(TransactionContext context) {
-		return SnomedComponents.newRegularReferenceSet()
-			.withType(type)
-			.withReferencedComponentType(referencedComponentType)
-			.withIdentifierConceptId(identifierId)
-			.build(context);
-	}
-
-	private SnomedConcreteDataTypeRefSet createConcreteDomainRefSet(TransactionContext context) {
-		return SnomedComponents.newConcreteDomainReferenceSet()
-			.withDataType(SnomedRefSetUtil.getDataType(identifierId))
-			.withIdentifierConceptId(identifierId)
-			.build(context);
-	}
-
-	private SnomedMappingRefSet createMappingRefSet(TransactionContext context) {
-		return SnomedComponents.newMappingReferenceSet()
-			.withType(type)
-			.withIdentifierConceptId(identifierId)
-			.withReferencedComponentType(referencedComponentType)
-			.withMapTargetComponentType(mapTargetComponentType)
-			.build(context);
-	}
-
-	private SnomedRefSet createStructuralRefSet(TransactionContext context) {
-		return SnomedComponents.newStructuralReferenceSet()
-				.withType(type)
-				.withReferencedComponentType(referencedComponentType)
-				.withIdentifierConceptId(identifierId)
-				.build(context);
-	}
 }

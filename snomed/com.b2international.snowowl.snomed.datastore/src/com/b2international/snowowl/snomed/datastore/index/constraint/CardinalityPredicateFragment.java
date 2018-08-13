@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore.index.constraint;
 
 import java.util.Objects;
 
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
+import com.b2international.snowowl.snomed.core.domain.constraint.GroupRule;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

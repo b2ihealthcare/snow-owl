@@ -57,48 +57,6 @@ Visit us at http://b2i.sg
          fragment="true"/>
 
    <plugin
-         id="org.eclipse.emf.cdo"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emf.cdo.common"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emf.cdo.net4j"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emf.cdo.server"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emf.cdo.server.db"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emf.cdo.server.net4j"
-         download-size="0"
-         install-size="0"
-         version="4.1.12.b2i"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.emf.common"
          download-size="0"
          install-size="0"
@@ -173,13 +131,6 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="4.1.2.b2i"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.net4j.db"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
          unpack="false"/>
 
    <plugin
@@ -539,12 +490,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.codehaus.groovy"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="org.eclipse.debug.core"
          download-size="0"
          install-size="0"
@@ -704,13 +649,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.net4j.db.h2"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.objectweb.asm"
          download-size="0"
          install-size="0"
@@ -774,13 +712,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.slf4j.log4j"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.yaml.snakeyaml"
          download-size="0"
          install-size="0"
@@ -813,13 +744,6 @@ Visit us at http://b2i.sg
          download-size="0"
          install-size="0"
          version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.net4j.db.mysql"
-         download-size="0"
-         install-size="0"
-         version="4.0.200.v20130710-2145-b2i"
          unpack="false"/>
 
    <plugin
@@ -969,13 +893,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.fasterxml.jackson.dataformat.jackson-dataformat-cbor"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -1192,15 +1109,21 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="ch.qos.logback.slf4j"
+         id="groovy-all"
          download-size="0"
          install-size="0"
          version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin
-         id="groovy-all"
+         id="log4j.over.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"

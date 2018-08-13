@@ -17,12 +17,15 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set.
@@ -49,9 +52,22 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
  * 
  * @since 4.5
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.REFSET,
+	shortId = SnomedTerminologyComponentConstants.REFSET_NUMBER,
+	componentCategory = ComponentCategory.SET,
+	name = "SNOMED CT Reference Set",
+	docType = SnomedConceptDocument.class,
+	supportedRefSetTypes = {
+		"QUERY"
+	}
+)
 public final class SnomedReferenceSet extends SnomedComponent {
 
 	private static final long serialVersionUID = 6190078291559073421L;
+
+	public static final SnomedReferenceSet DELETE = new SnomedReferenceSet();
+	public static final SnomedReferenceSet FORCE_DELETE = new SnomedReferenceSet();
 
 	private SnomedRefSetType type;
 	private String referencedComponentType;
@@ -96,6 +112,13 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	 */
 	public SnomedReferenceSetMembers getMembers() {
 		return members;
+	}
+	
+	/**
+	 * @return the {@link DataType} if this refset represents a concrete domain reference set, otherwise returns <code>null</code>.
+	 */
+	public DataType getDataType() {
+		return getType() == SnomedRefSetType.CONCRETE_DATA_TYPE ? SnomedRefSetUtil.getDataType(getId()) : null;
 	}
 	
 	public void setReferencedComponentType(String referencedComponent) {

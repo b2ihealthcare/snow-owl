@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
-import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.google.common.base.Preconditions;
@@ -114,17 +112,6 @@ public enum CaseSignificance {
 	 */
 	public static CaseSignificance getById(final long conceptId) {
 		return getById(String.valueOf(conceptId));
-	}
-	
-	/**
-	 * Returns with the proper case significance instance based on the specified description's case significance concept. 
-	 * @param description SNOMED&nbsp;CT description.
-	 * @return the case significance enumeration.
-	 */
-	public static CaseSignificance getForDescripition(final Description description) {
-		CDOUtils.check(description);
-		Preconditions.checkNotNull(description.getCaseSignificance(), "Case significance metadata concept of the description was null. " + description.getId());
-		return getById(description.getCaseSignificance().getId());
 	}
 	
 	/**

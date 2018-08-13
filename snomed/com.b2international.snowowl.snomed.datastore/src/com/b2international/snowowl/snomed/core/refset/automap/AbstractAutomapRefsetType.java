@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 
 /**
  * Represents automap target reference set type.

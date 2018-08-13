@@ -20,11 +20,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
-import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
+import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.google.common.base.Strings;
 
 /**
@@ -69,24 +65,8 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 	}
 
 	@Override
-	public HierarchyConceptSetDefinition createModel() {
-		return MrcmFactory.eINSTANCE.createHierarchyConceptSetDefinition();
-	}
-
-	@Override
-	public HierarchyConceptSetDefinition applyChangesTo(final ConceptModelComponent existingModel) {
-		final HierarchyConceptSetDefinition updatedModel = (existingModel instanceof HierarchyConceptSetDefinition)
-				? (HierarchyConceptSetDefinition) existingModel
-				: createModel();
-
-		updatedModel.setActive(isActive());
-		updatedModel.setAuthor(getAuthor());
-		updatedModel.setConceptId(getConceptId());
-		updatedModel.setInclusionType(getInclusionType());
-		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updatedModel.setUuid(getId());
-
-		return updatedModel;
+	public HierarchyDefinitionFragment createModel() {
+		return new HierarchyDefinitionFragment(getId(), isActive(), getEffectiveTime(), getAuthor(), getConceptId(), getInclusionType());
 	}
 
 	@Override

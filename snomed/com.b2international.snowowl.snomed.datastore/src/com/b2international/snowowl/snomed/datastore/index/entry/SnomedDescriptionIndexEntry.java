@@ -21,7 +21,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
-import static com.google.common.collect.Sets.newHashSet;
+import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -44,11 +44,10 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
-import com.b2international.snowowl.snomed.Description;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
@@ -73,6 +72,7 @@ import com.google.common.collect.Maps;
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
 	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.RELEASED,
 	SnomedDescriptionIndexEntry.Fields.TYPE_ID,
 	SnomedDescriptionIndexEntry.Fields.TERM,
 	SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
@@ -103,7 +103,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(final SnomedDescription input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(input.getTerm()) 
@@ -132,22 +131,22 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		return builder;
 	}
 	
-	public static Builder builder(Description description) {
-		String id = description.getId();
-		return builder()
-				.storageKey(CDOIDUtils.asLong(description.cdoID()))
-				.id(id) 
-				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
-				.term(description.getTerm())
-				.moduleId(description.getModule().getId())
-				.released(description.isReleased()) 
-				.active(description.isActive()) 
-				.typeId(description.getType().getId()) 
-				.caseSignificanceId(description.getCaseSignificance().getId()) 
-				.conceptId(description.getConcept().getId())
-				.languageCode(description.getLanguageCode())
-				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	}
+//	public static Builder builder(Description description) {
+//		String id = description.getId();
+//		return builder()
+//				.storageKey(CDOIDUtils.asLong(description.cdoID()))
+//				.id(id) 
+//				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
+//				.term(description.getTerm())
+//				.moduleId(description.getModule().getId())
+//				.released(description.isReleased()) 
+//				.active(description.isActive()) 
+//				.typeId(description.getType().getId()) 
+//				.caseSignificanceId(description.getCaseSignificance().getId()) 
+//				.conceptId(description.getConcept().getId())
+//				.languageCode(description.getLanguageCode())
+//				.effectiveTime(description.isSetEffectiveTime() ? description.getEffectiveTime().getTime() : EffectiveTimes.UNSET_EFFECTIVE_TIME);
+//	}
 	
 	/**
 	 * Creates a new {@link Builder} from the given {@link SnomedDescriptionIndexEntry}. The acceptability map is not copied over to the
@@ -159,7 +158,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
 		String id = doc.getId();
 		return builder()
-				.storageKey(doc.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.term(doc.getTerm())
@@ -170,7 +168,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				.caseSignificanceId(doc.getCaseSignificanceId())
 				.conceptId(doc.getConceptId())
 				.languageCode(doc.getLanguageCode())
-				.effectiveTime(doc.getEffectiveTime());
+				.effectiveTime(doc.getEffectiveTime())
+				.acceptabilityMap(doc.getAcceptabilityMap());
 	}
 	
 	public static List<SnomedDescriptionIndexEntry> fromDescriptions(Iterable<SnomedDescription> descriptions) {
@@ -299,7 +298,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedDescriptionIndexEntry> {
 
 		private String term;
 		private String conceptId;
@@ -307,8 +306,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String typeId;
 		private String typeLabel;
 		private String caseSignificanceId;
-		private Set<String> acceptableIn = newHashSet();
-		private Set<String> preferredIn = newHashSet();
+		private Set<String> acceptableIn = newHashSetWithExpectedSize(2);
+		private Set<String> preferredIn = newHashSetWithExpectedSize(2);
 		private String semanticTag;
 
 		@JsonCreator
@@ -380,6 +379,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
+			this.acceptableIn = newHashSetWithExpectedSize(2);
+			this.preferredIn = newHashSetWithExpectedSize(2);
 			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
 				acceptability(entry.getKey(), entry.getValue());
 			}
@@ -397,7 +398,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			}
 			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
 					term,
-					storageKey,
 					moduleId,
 					released, 
 					active, 
@@ -436,7 +436,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
@@ -456,7 +455,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		super(id,
 				label,
 				typeId /* XXX: iconId is the same as typeId*/,
-				storageKey,
 				moduleId,
 				released,
 				active,
@@ -473,6 +471,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		this.caseSignificanceId = caseSignificanceId;
 		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
 		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
+	}
+	
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 	
 	@Override

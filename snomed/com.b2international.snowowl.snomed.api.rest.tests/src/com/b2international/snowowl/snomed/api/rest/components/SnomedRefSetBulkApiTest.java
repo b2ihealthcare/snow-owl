@@ -36,7 +36,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -87,7 +87,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 
 		bulkUpdateMembers(branchPath, refSetId, bulkRequest).statusCode(204);
 
-		Collection<SnomedRefSetMember> members = getComponent(branchPath, SnomedComponentType.REFSET, refSetId, "members()")
+		Collection<SnomedReferenceSetMember> members = getComponent(branchPath, SnomedComponentType.REFSET, refSetId, "members()")
 				.statusCode(200)
 				.body("members.items.id", hasItems(memberIds.toArray()))
 				.body("members.items.active", hasItems(true, false))
@@ -132,7 +132,7 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 
 		bulkUpdateMembers(branchPath, refSetId, bulkRequest).statusCode(204);
 
-		Collection<SnomedRefSetMember> members = getComponent(branchPath, SnomedComponentType.REFSET, refSetId, "members()")
+		Collection<SnomedReferenceSetMember> members = getComponent(branchPath, SnomedComponentType.REFSET, refSetId, "members()")
 				.statusCode(200)
 				.body("members.items.id", hasItems(memberIds.toArray()))
 				.body("members.items.active", hasItems(true, true))

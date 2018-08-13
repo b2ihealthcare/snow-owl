@@ -29,7 +29,6 @@ import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
 import com.b2international.snowowl.snomed.api.japi.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.api.japi.issue.IssueSO2503RemoteJobDynamicMappingFix;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedBranchingApiTest;
-import com.b2international.snowowl.snomed.api.rest.branches.SnomedListFeaturesTests;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.api.rest.branches.SnomedReviewApiTest;
@@ -68,7 +67,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// High-level issue test cases, Java API test cases
 	IssueSO2503RemoteJobDynamicMappingFix.class,
 	Issue3019FixDeletionOfReferringMembersTest.class,
-	SnomedListFeaturesTests.class,
 	EclSerializerTest.class,
 	// RESTful API test cases
 	// Branch API tests

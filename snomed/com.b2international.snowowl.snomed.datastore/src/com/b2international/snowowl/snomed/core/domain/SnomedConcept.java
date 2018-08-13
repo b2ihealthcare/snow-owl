@@ -22,11 +22,13 @@ import java.util.Set;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -62,12 +64,30 @@ import com.google.common.collect.Multimap;
  * returns only the descriptions with the specified <i>typeId</i>
  * 
  * <p>
- * @see BaseResourceRequestBuilder#setLocales(java.util.List)
  * @see SnomedDescription
  * @see SnomedRelationship
  * @see SnomedReferenceSet
  * @see SnomedReferenceSetMember
  */
+@TerminologyComponent(
+	id = SnomedTerminologyComponentConstants.CONCEPT, 
+	shortId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
+	name = "SNOMED CT Concept", 
+	componentCategory = ComponentCategory.CONCEPT,
+	docType = SnomedConceptDocument.class,
+	supportedRefSetTypes = {
+		"SIMPLE",
+		"SIMPLE_MAP",
+		"SIMPLE_MAP_WITH_DESCRIPTION",
+		"ATTRIBUTE_VALUE",
+		"COMPLEX_MAP",
+		"EXTENDED_MAP"
+	},
+	supportedMapTargetTypes = {
+		"SIMPLE_MAP",
+		"SIMPLE_MAP_WITH_DESCRIPTION"
+	}
+)
 public final class SnomedConcept extends SnomedCoreComponent implements DefinitionStatusProvider {
 
 	private static final long serialVersionUID = 1L;

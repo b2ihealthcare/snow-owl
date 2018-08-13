@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ public abstract class AbstractFilteredComponentsExportRequest extends AbstractEx
 
 	private final Collection<String> componentIds;
 
-	public AbstractFilteredComponentsExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath, final Collection<String> componentIds) {
-		super(protocol, importSignal, branchPath, exportPath);
+	public AbstractFilteredComponentsExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath, final String userId, final Collection<String> componentIds) {
+		super(protocol, importSignal, branchPath, exportPath, userId);
 		this.componentIds = componentIds;
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.emf.cdo.CDOObject;
-import org.eclipse.emf.cdo.CDOState;
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.view.CDOView;
-
 import com.b2international.commons.collections.BackwardListIterator;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.NullBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Joiner;
@@ -76,33 +70,6 @@ public abstract class BranchPathUtils {
 	}
 	
 	/**
-	 * Returns with the {@link IBranchPath branch path} instance based on the specified CDO based branch.
-	 * @param branch the CDO branch.
-	 * @return the path for the branch.
-	 */
-	public static IBranchPath createPath(final CDOBranch branch) {
-		return getOrCache(new BranchPath(Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.").getPathName()));
-	}
-	
-	/**
-	 * Returns with the {@link IBranchPath path} instance based on the underlying CDO branch extracted from the specified view.
-	 * @param view the CDO view.
-	 * @return the branch path.
-	 */
-	public static IBranchPath createPath(final CDOView view) {
-		return createPath(CDOUtils.check(view).getBranch());
-	}
-	
-	/**
-	 * Returns with the {@link IBranchPath branch path} instance based on the CDO View where this given object lives.
-	 * @param object the CDO object. Should not have {@link CDOState#TRANSIENT transient} state.
-	 * @return the branch path.
-	 */
-	public static IBranchPath createPath(final CDOObject object) {
-		return createPath(CDOUtils.check(object).cdoView());
-	}
-	
-	/**
 	 * Returns a new {@code IBranchPath} instance where the path has this instance's path and the specified segment concatenated. Multiple
 	 * separators at the insertion point will be converted to a single separator.
 	 * 
@@ -120,15 +87,6 @@ public abstract class BranchPathUtils {
 		final Iterable<String> allSegments = Iterables.concat(sourceSegments, appendedSegments);
 		
 		return BranchPathUtils.createPath(Joiner.on(IBranchPath.SEPARATOR_CHAR).join(allSegments));
-	}
-	
-	/**
-	 * Returns {@code true} if the specified CDO branch is representing the MAIN branch. 
-	 * @param branch the CDO branch to check.
-	 * @return {@code true} if the branch path is representing the MAIN, otherwise returns with {@code false}.
-	 */
-	public static boolean isMain(final CDOBranch branch) {
-		return Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.").isMainBranch();
 	}
 	
 	/**

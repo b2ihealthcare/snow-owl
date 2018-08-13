@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 
 import org.junit.Before;
@@ -45,7 +44,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
@@ -162,16 +160,12 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 
 	private CompareResult getCompareResult(final String parentBranchPath, final String childBranchPath) throws IOException {
 		final ImmutableMap<String, Object> compareRequest = createCompareRequest(parentBranchPath, childBranchPath);
-		final InputStream responseInputStream = givenAuthenticatedRequest(SCT_API)
+		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
 				.accept(ContentType.JSON)
 				.body(compareRequest)
 				.post("/compare")
-				.asInputStream();
-		
-		final ObjectMapper mapper = new ObjectMapper();
-		final CompareResult compareResult = mapper.readValue(responseInputStream, CompareResult.class);
-		return compareResult;
+				.as(CompareResult.class);
 	}
 	
 	private String createBranch(String parent, String name) {

@@ -36,11 +36,11 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.file.FileRegistry;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
@@ -104,7 +104,7 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 			final OWLOntology ontology = ontologyManager.createOntology(ontologyIRI);
 			final OWLDocumentFormat documentFormat = getOWLDocumentFormat();
-			final FileRegistry fileRegistry = context.service(FileRegistry.class);
+			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 
 			final UUID id = UUID.randomUUID();
 			final PipedOutputStream os = new PipedOutputStream();

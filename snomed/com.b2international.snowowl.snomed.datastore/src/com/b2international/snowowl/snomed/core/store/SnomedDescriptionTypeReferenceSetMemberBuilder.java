@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
  */
-public final class SnomedDescriptionTypeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedDescriptionTypeReferenceSetMemberBuilder, SnomedDescriptionTypeRefSetMember> {
+public final class SnomedDescriptionTypeReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedDescriptionTypeReferenceSetMemberBuilder> {
 
 	private String descriptionFormatId;
 	private int descriptionLength;
@@ -38,15 +38,11 @@ public final class SnomedDescriptionTypeReferenceSetMemberBuilder extends Snomed
 	}
 	
 	@Override
-	protected SnomedDescriptionTypeRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedDescriptionTypeRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedDescriptionTypeRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setDescriptionFormat(descriptionFormatId);
-		component.setDescriptionLength(descriptionLength);
+		component
+			.field(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, descriptionFormatId)
+			.field(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, descriptionLength);
 	}
 	
 }

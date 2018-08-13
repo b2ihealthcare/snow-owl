@@ -79,14 +79,14 @@ import com.google.common.util.concurrent.MoreExecutors;
 /**
  * @since 5.10 
  */
-public class EsDocumentWriter implements DocWriter {
+public class EsDocumentWriter implements Writer {
 
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 
 	private static final int BATCHS_SIZE = 10_000;
 	
 	private final EsIndexAdmin admin;
-	private final DocSearcher searcher;
+	private final Searcher searcher;
 
 	private final Random random = new Random();
 	private final Map<String, Object> indexOperations = newHashMap();
@@ -95,7 +95,7 @@ public class EsDocumentWriter implements DocWriter {
 	private List<BulkUpdate<?>> bulkUpdateOperations = newArrayList();
 	private List<BulkDelete<?>> bulkDeleteOperations = newArrayList();
  	
-	public EsDocumentWriter(EsIndexAdmin admin, DocSearcher searcher, ObjectMapper mapper) {
+	public EsDocumentWriter(EsIndexAdmin admin, Searcher searcher, ObjectMapper mapper) {
 		this.admin = admin;
 		this.searcher = searcher;
 		this.mapper = mapper;
@@ -419,7 +419,7 @@ public class EsDocumentWriter implements DocWriter {
 	}
 
 	@Override
-	public DocSearcher searcher() {
+	public Searcher searcher() {
 		return searcher;
 	}
 }

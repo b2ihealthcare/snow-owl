@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.diff.concretedomain;
 
-import com.b2international.index.DocWriter;
+import com.b2international.index.Writer;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDoc
  */
 public final class ConcreteDomainWriter extends OntologyChangeWriter<ConcreteDomainFragment> {
 
-	public ConcreteDomainWriter(final String classificationId, final DocWriter writer) {
+	public ConcreteDomainWriter(final String classificationId, final Writer writer) {
 		super(classificationId, writer);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 
 /**
  * @since 5.0
  */
-public final class SnomedSimpleMapReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedSimpleMapReferenceSetMemberBuilder, SnomedSimpleMapRefSetMember> {
+public final class SnomedSimpleMapReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedSimpleMapReferenceSetMemberBuilder> {
 
 	private String mapTargetId;
 	private String mapTargetDescription;
@@ -38,15 +38,11 @@ public final class SnomedSimpleMapReferenceSetMemberBuilder extends SnomedMember
 	}
 
 	@Override
-	protected SnomedSimpleMapRefSetMember create() {
-		return SnomedRefSetFactory.eINSTANCE.createSnomedSimpleMapRefSetMember();
-	}
-
-	@Override
-	public void init(SnomedSimpleMapRefSetMember component, TransactionContext context) {
+	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.setMapTargetComponentId(mapTargetId);
-		component.setMapTargetComponentDescription(mapTargetDescription);
+		component
+			.field(SnomedRf2Headers.FIELD_MAP_TARGET, mapTargetId)
+			.field(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, mapTargetDescription);
 	}
 
 }

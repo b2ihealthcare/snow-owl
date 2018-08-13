@@ -100,12 +100,12 @@ public abstract class SnomedDocument extends RevisionDocument {
 	};
 
 	// XXX: Type parameter reveals subclass to AbstractBuilder for fluent API
-	public static abstract class SnomedDocumentBuilder<B extends SnomedDocumentBuilder<B>> extends RevisionDocumentBuilder<B> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends SnomedDocument> extends RevisionDocumentBuilder<B, T> {
 
 		protected String moduleId;
 		protected boolean active;
 		protected boolean released;
-		protected long effectiveTime;
+		protected long effectiveTime = EffectiveTimes.UNSET_EFFECTIVE_TIME;
 
 		public B moduleId(final String moduleId) {
 			this.moduleId = moduleId;
@@ -144,12 +144,11 @@ public abstract class SnomedDocument extends RevisionDocument {
 	protected SnomedDocument(final String id,
 			final String label,
 			final String iconId,
-			final long storageKey,
 			final String moduleId, 
 			final boolean released, 
 			final boolean active, 
 			final long effectiveTime) {
-		super(id, label, iconId, storageKey);
+		super(id, label, iconId);
 		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = moduleId;
 		this.released = released;

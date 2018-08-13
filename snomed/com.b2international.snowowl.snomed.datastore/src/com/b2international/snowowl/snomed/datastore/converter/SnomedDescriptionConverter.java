@@ -58,7 +58,6 @@ final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<Sno
 	@Override
 	protected SnomedDescription toResource(final SnomedDescriptionIndexEntry input) {
 		final SnomedDescription result = new SnomedDescription();
-		result.setStorageKey(input.getStorageKey());
 		result.setAcceptabilityMap(input.getAcceptabilityMap());
 		result.setActive(input.isActive());
 		result.setCaseSignificance(toCaseSignificance(input.getCaseSignificanceId()));

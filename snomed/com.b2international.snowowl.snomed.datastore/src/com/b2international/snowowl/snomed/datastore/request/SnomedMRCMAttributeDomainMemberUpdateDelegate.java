@@ -17,23 +17,20 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
-public class SnomedMRCMAttributeDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
+final class SnomedMRCMAttributeDomainMemberUpdateDelegate extends SnomedRefSetMemberUpdateDelegate {
 
 	SnomedMRCMAttributeDomainMemberUpdateDelegate(final SnomedRefSetMemberUpdateRequest request) {
 		super(request);
 	}
 
 	@Override
-	boolean execute(final SnomedRefSetMember member, final TransactionContext context) {
-
-		final SnomedMRCMAttributeDomainRefSetMember domainMember = (SnomedMRCMAttributeDomainRefSetMember) member;
+	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, final TransactionContext context) {
 
 		final String domainId = getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);
 		final Boolean grouped = getProperty(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.class);
@@ -44,33 +41,33 @@ public class SnomedMRCMAttributeDomainMemberUpdateDelegate extends SnomedRefSetM
 
 		boolean changed = false;
 
-		if (!Strings.isNullOrEmpty(domainId) && !domainId.equals(domainMember.getDomainId())) {
-			domainMember.setDomainId(domainId);
+		if (!Strings.isNullOrEmpty(domainId) && !domainId.equals(original.getDomainId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, domainId);
 			changed |= true;
 		}
 
-		if (grouped != null && grouped.booleanValue() ^ domainMember.isGrouped()) {
-			domainMember.setGrouped(grouped);
+		if (grouped != null && grouped.booleanValue() ^ original.isGrouped()) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_GROUPED, grouped);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(attributeCardinality) && !attributeCardinality.equals(domainMember.getAttributeCardinality())) {
-			domainMember.setAttributeCardinality(attributeCardinality);
+		if (!Strings.isNullOrEmpty(attributeCardinality) && !attributeCardinality.equals(original.getAttributeCardinality())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, attributeCardinality);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(attributeInGroupCardinality) && !attributeInGroupCardinality.equals(domainMember.getAttributeInGroupCardinality())) {
-			domainMember.setAttributeInGroupCardinality(attributeInGroupCardinality);
+		if (!Strings.isNullOrEmpty(attributeInGroupCardinality) && !attributeInGroupCardinality.equals(original.getAttributeInGroupCardinality())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, attributeInGroupCardinality);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(ruleStrengthId) && !ruleStrengthId.equals(domainMember.getRuleStrengthId())) {
-			domainMember.setRuleStrengthId(ruleStrengthId);
+		if (!Strings.isNullOrEmpty(ruleStrengthId) && !ruleStrengthId.equals(original.getRuleStrengthId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, ruleStrengthId);
 			changed |= true;
 		}
 
-		if (!Strings.isNullOrEmpty(contentTypeId) && !contentTypeId.equals(domainMember.getContentTypeId())) {
-			domainMember.setContentTypeId(contentTypeId);
+		if (!Strings.isNullOrEmpty(contentTypeId) && !contentTypeId.equals(original.getContentTypeId())) {
+			member.field(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, contentTypeId);
 			changed |= true;
 		}
 

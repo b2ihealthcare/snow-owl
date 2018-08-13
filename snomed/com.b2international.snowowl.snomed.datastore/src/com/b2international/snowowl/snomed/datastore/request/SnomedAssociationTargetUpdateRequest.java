@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,21 +31,18 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.Component;
-import com.b2international.snowowl.snomed.Inactivatable;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
 import com.google.common.base.Function;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -79,15 +80,14 @@ import com.google.common.collect.Multimap;
  * and its effective time is restored to the original value if the final state matches the most recently versioned 
  * state. 
  * 
- * @param <C> the type of the component to update (must implement {@link Inactivatable} and {@link Component})
  * @since 4.5
  */
-final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Component> implements Request<TransactionContext, Void> {
+final class SnomedAssociationTargetUpdateRequest implements Request<TransactionContext, Void> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedAssociationTargetUpdateRequest.class);
 
 	private final String componentId;
-	private final Class<C> componentType;
+	private final String moduleId;
 	
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
@@ -98,9 +98,9 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 	
 	private Multimap<AssociationType, String> newAssociationTargets;
 
-	SnomedAssociationTargetUpdateRequest(final String componentId, final Class<C> componentType) {
+	SnomedAssociationTargetUpdateRequest(final String componentId, final String moduleId) {
 		this.componentId = componentId;
-		this.componentType = componentType;
+		this.moduleId = moduleId;
 	}
 
 	void setNewAssociationTargets(final Multimap<AssociationType, String> newAssociationTargets) {
@@ -113,42 +113,52 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 		if (null == newAssociationTargets) {
 			return null;
 		} else {
-			final Inactivatable inactivatable = context.lookup(componentId, componentType);
-			updateAssociationTargets(context, inactivatable);
+			updateAssociationTargets(context);
 			return null;
 		}
 	}
 
-	private void updateAssociationTargets(final TransactionContext context, final Inactivatable component) {
-		final List<SnomedAssociationRefSetMember> existingMembers = Lists.newArrayList(component.getAssociationRefSetMembers());
+	private void updateAssociationTargets(final TransactionContext context) {
+		final List<SnomedReferenceSetMember> existingMembers = newArrayList(
+			SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByReferencedComponent(componentId)
+				.filterByRefSet(Arrays.asList(AssociationType.values()).stream().map(AssociationType::getConceptId).collect(Collectors.toSet()))
+				.build()
+				.execute(context)
+				.getItems()
+		);
 		final Multimap<AssociationType, String> newAssociationTargetsToCreate = HashMultimap.create(newAssociationTargets);
 
-		final Iterator<SnomedAssociationRefSetMember> memberIterator = existingMembers.iterator();
+		final Iterator<SnomedReferenceSetMember> memberIterator = existingMembers.iterator();
 		while (memberIterator.hasNext()) {
 			
-			final SnomedAssociationRefSetMember existingMember = memberIterator.next();
-			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
+			final SnomedReferenceSetMember existingMember = memberIterator.next();
+			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getReferenceSetId());
 			
 			if (null == associationType) {
 				continue;
 			}
 
-			final String existingTargetId = existingMember.getTargetComponentId();
+			final String existingTargetId = ((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId();
 			
 			if (newAssociationTargetsToCreate.remove(associationType, existingTargetId)) {
 
 				// Exact match, just make sure that the member is active and remove it from the working list
-				ensureMemberActive(context, existingMember);
+				final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
+				ensureMemberActive(context, existingMember, updatedMember);
 				memberIterator.remove();
 			}
 		}
 
-		for (final SnomedAssociationRefSetMember existingMember : existingMembers) {
-			
-			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getRefSetIdentifierId());
+		for (final SnomedReferenceSetMember existingMember : existingMembers) {
+
+			final AssociationType associationType = AssociationType.getByConceptId(existingMember.getReferenceSetId());
 			if (null == associationType) {
 				continue;
 			}
+			
+			final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 			
 			if (newAssociationTargetsToCreate.containsKey(associationType)) {
 
@@ -159,34 +169,35 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 
 				if (LOG.isDebugEnabled()) { 
 					LOG.debug("Changing association member {} with type {} and target component identifier from {} to {}.", 
-							existingMember.getUuid(), 
+							existingMember.getId(), 
 							associationType, 
-							existingMember.getTargetComponentId(), 
+							((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), 
 							newTargetId);
 				}
 
-				existingMember.setTargetComponentId(newTargetId);
-				ensureMemberActive(context, existingMember);
+				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
+				updatedMember.field(SnomedRf2Headers.FIELD_TARGET_COMPONENT, newTargetId);
+				ensureMemberActive(context, existingMember, updatedMember);
+				context.update(oldRevision, updatedMember.build());
 
 			} else {
 				
 				// We have no use for this member -- remove or inactivate if already released
-				removeOrDeactivate(context, existingMember);
+				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
+				if (removeOrDeactivate(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());
+				}
 			}
 		}
 
 		// With all existing members processed, any remaining entries in the multimap will need to be added as members
 		for (final Entry<AssociationType, String> newAssociationEntry : newAssociationTargetsToCreate.entries()) {
-			
-			final SnomedAssociationRefSetMember member = SnomedComponents
-					.newAssociationMember()
+			SnomedComponents.newAssociationMember()
 					.withRefSet(newAssociationEntry.getKey().getConceptId())
 					.withTargetComponentId(newAssociationEntry.getValue())
-					.withReferencedComponent(((Component) component).getId())
-					.withModule(((Component) component).getModule().getId())
+					.withReferencedComponent(componentId)
+					.withModule(moduleId)
 					.addTo(context);
-
-			component.getAssociationRefSetMembers().add(member);
 		}
 	}
 
@@ -194,82 +205,90 @@ final class SnomedAssociationTargetUpdateRequest<C extends Inactivatable & Compo
 		return referenceBranchFunction.apply(context);
 	}
 
-	private void ensureMemberActive(final TransactionContext context, final SnomedAssociationRefSetMember existingMember) {
-		
+	private boolean ensureMemberActive(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isActive()) {
 			
-			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating association member {}.", existingMember.getUuid()); }
-			existingMember.setActive(true);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
-			
+			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating association member {}.", existingMember.getId()); }
+			updatedMember.active(true);
+			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember, updatedMember);
+			return true;
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already active, not updating.", existingMember.getUuid()); }
+			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} already active, not updating.", existingMember.getId()); }
+			return false;
 		}
 	}
 
-	private void removeOrDeactivate(final TransactionContext context, final SnomedAssociationRefSetMember existingMember) {
-		
+	private boolean removeOrDeactivate(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isReleased()) {
 			
-			if (LOG.isDebugEnabled()) { LOG.debug("Removing association member {}.", existingMember.getUuid()); }
-			SnomedModelExtensions.remove(existingMember);
-
+			if (LOG.isDebugEnabled()) { LOG.debug("Removing association member {}.", existingMember.getId()); }
+			context.delete(updatedMember.build());
+			return false;
+			
 		} else if (existingMember.isActive()) {
 
-			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating association member {}.", existingMember.getUuid()); }
-			existingMember.setActive(false);
-			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember);
+			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating association member {}.", existingMember.getId()); }
+			updatedMember.active(false);
+			updateEffectiveTime(context, getLatestReleaseBranch(context), existingMember, updatedMember);
+			return true;
 			
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} is released and already inactive, not updating.", existingMember.getUuid()); }
+			
+			if (LOG.isDebugEnabled()) { LOG.debug("Association member {} is released and already inactive, not updating.", existingMember.getId()); }
+			return false;
+			
 		}
 	}
 
-	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedAssociationRefSetMember existingMember) {
+	private boolean updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		
 		if (existingMember.isReleased()) {
 			
 			// The most recently versioned representation should always exist if the member has already been released once
-			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
+			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getId())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
 					.execute(context.service(IEventBus.class))
 					.getSync();
 
-			final SnomedConcept targetComponent = (SnomedConcept) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+			final SnomedComponent releasedTargetComponentValue = (SnomedComponent) referenceMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
 			
+			SnomedRefSetMemberIndexEntry memberToCheck = updatedMember.build();
 			boolean restoreEffectiveTime = true;
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.isActive() == referenceMember.isActive();
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getModuleId().equals(referenceMember.getModuleId());
-			restoreEffectiveTime = restoreEffectiveTime && existingMember.getTargetComponentId().equals(targetComponent.getId());
+			
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.isActive() == referenceMember.isActive();
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getModuleId().equals(referenceMember.getModuleId());
+			restoreEffectiveTime = restoreEffectiveTime && memberToCheck.getTargetComponent().equals(releasedTargetComponentValue.getId());
 
 			if (restoreEffectiveTime) {
 
 				if (LOG.isDebugEnabled()) { 
 					LOG.debug("Restoring effective time on association member {} to reference value {}.", 
-							existingMember.getUuid(), 
+							existingMember.getId(), 
 							EffectiveTimes.format(referenceMember.getEffectiveTime(), DateFormats.SHORT));
 				}
 
-				existingMember.setEffectiveTime(referenceMember.getEffectiveTime());
-				
+				updatedMember.effectiveTime(referenceMember.getEffectiveTime().getTime());
+				return true;
 			} else {
-				unsetEffectiveTime(existingMember);
+				return unsetEffectiveTime(existingMember, updatedMember);
 			}
 			
 		} else {
 			
 			// If it is unreleased, the effective time should be unset, but it doesn't hurt to double-check
-			unsetEffectiveTime(existingMember);
+			return unsetEffectiveTime(existingMember, updatedMember);
 		}
 	}
 	
-	private void unsetEffectiveTime(SnomedAssociationRefSetMember existingMember) {
+	private boolean unsetEffectiveTime(SnomedReferenceSetMember existingMember, SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		
-		if (existingMember.isSetEffectiveTime()) {
-			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on association member {}.", existingMember.getUuid()); }
-			existingMember.unsetEffectiveTime();
+		if (existingMember.getEffectiveTime() != null) {
+			if (LOG.isDebugEnabled()) { LOG.debug("Unsetting effective time on association member {}.", existingMember.getId()); }
+			updatedMember.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+			return true;
 		} else {
-			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on association member {} already unset, not updating.", existingMember.getUuid()); }
+			if (LOG.isDebugEnabled()) { LOG.debug("Effective time on association member {} already unset, not updating.", existingMember.getId()); }
+			return false;
 		}
 	}
 }

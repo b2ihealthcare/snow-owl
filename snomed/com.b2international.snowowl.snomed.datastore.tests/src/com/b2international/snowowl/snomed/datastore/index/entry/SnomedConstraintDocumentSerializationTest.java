@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -26,6 +24,11 @@ import org.junit.Test;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
+import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStrength;
+import com.b2international.snowowl.snomed.core.domain.constraint.GroupRule;
+import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
+import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.DescriptionPredicateFragment;
@@ -33,11 +36,6 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.EnumeratedD
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.mrcm.ConstraintForm;
-import com.b2international.snowowl.snomed.mrcm.ConstraintStrength;
-import com.b2international.snowowl.snomed.mrcm.GroupRule;
-import com.b2international.snowowl.snomed.mrcm.HierarchyInclusionType;
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -87,12 +85,10 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 								Concepts.FULLY_SPECIFIED_NAME)))
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of SNOMED CT Root, including the concept itself, must have exactly one FSN.")
-				.storageKey(1L)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, constraint);
 		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 
@@ -134,14 +130,12 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 										Concepts.ROOT_CONCEPT, 
 										HierarchyInclusionType.SELF_OR_DESCENDANT),
 								Concepts.STATED_RELATIONSHIP)))
-				.storageKey(1L)
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of SNOMED CT Root must have exactly one stated IS_A relationship.")
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, constraint);
 		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 
@@ -175,14 +169,12 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 								"canBeTaggedWithVaccine",
 								DataType.BOOLEAN,
 								Concepts.STATED_RELATIONSHIP)))
-				.storageKey(1L)
 				.strength(ConstraintStrength.MANDATORY_CM)
 				.validationMessage("All descendants of Substance must have exactly one boolean concrete domain member called 'Vaccine'.")
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, constraint);
 		final SnomedConstraintDocument actual = getRevision(RevisionBranch.MAIN_PATH, SnomedConstraintDocument.class, id);
-		assertEquals(1L, actual.getStorageKey());
 		assertDocEquals(constraint, actual);
 	}
 }

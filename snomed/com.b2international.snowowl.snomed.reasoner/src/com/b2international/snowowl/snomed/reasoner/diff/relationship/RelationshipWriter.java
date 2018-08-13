@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.reasoner.diff.relationship;
 
-import com.b2international.index.DocWriter;
+import com.b2international.index.Writer;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -28,7 +28,7 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 
 	private boolean hasRedundantStatedChanges;
 	
-	public RelationshipWriter(final String classificationId, final DocWriter writer) {
+	public RelationshipWriter(final String classificationId, final Writer writer) {
 		super(classificationId, writer);
 	}
 

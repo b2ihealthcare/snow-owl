@@ -16,13 +16,12 @@
 package com.b2international.snowowl.datastore.index;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.RevisionWriter;
-import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
-import com.google.common.collect.Multimap;
+import com.b2international.index.revision.StagingArea;
 
 /**
  * @since 4.3
@@ -32,12 +31,12 @@ public interface ChangeSetProcessor {
 	/**
 	 * Processes the changes and writer index changes using the given {@link RevisionWriter}.
 	 * 
-	 * @param commitChangeSet
-	 *            - the set of changes
+	 * @param staging
+	 *            - the current state of the commit staging area
 	 * @param searcher
 	 *            - the revision index searcher to query previous state of the revisions, if required
 	 */
-	void process(ICDOCommitChangeSet commitChangeSet, RevisionSearcher searcher) throws IOException;
+	void process(StagingArea staging, RevisionSearcher searcher) throws IOException;
 
 	/**
 	 * Returns the description of the change set processor.
@@ -65,6 +64,6 @@ public interface ChangeSetProcessor {
 	 * 
 	 * @return
 	 */
-	Multimap<Class<? extends Revision>, String> getDeletions();
+	Collection<RevisionDocument> getDeletions();
 
 }

@@ -18,7 +18,7 @@ package com.b2international.snowowl.server.product;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 
 /**
  * Server side Snow Owl product bootstraps and runs the entire headless server
@@ -33,6 +33,8 @@ public class ServerProductActivator implements BundleActivator {
 		return bundleContext;
 	}
 
+	private SnowOwl snowowl;
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -43,8 +45,7 @@ public class ServerProductActivator implements BundleActivator {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		ServerProductActivator.bundleContext = context;
-		SnowOwlApplication.INSTANCE.bootstrap();
-		SnowOwlApplication.INSTANCE.run();
+		snowowl = SnowOwl.create().bootstrap().run();
 	}
 
 	/*
@@ -55,7 +56,7 @@ public class ServerProductActivator implements BundleActivator {
 	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		SnowOwlApplication.INSTANCE.shutdown();
+		snowowl.shutdown();
 		ServerProductActivator.bundleContext = null;
 	}
 

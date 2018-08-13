@@ -48,7 +48,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	private final String parentContextDescription;
 
-	TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
+	public TransactionalRequest(String userId, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentContextDescription) {
 		this.next = checkNotNull(next, "next");
 		this.userId = userId;
 		this.commitComment = commitComment;
@@ -76,8 +76,6 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		MetricsThreadLocal.set(metrics);
 		try {
 			commitTimer.start();
-			// TODO consider moving preCommit into commit(userId, commitComment)
-			context.preCommit();
 			
 			/*
 			 * FIXME: at this point, the component identifier might have changed even though the input 

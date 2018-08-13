@@ -15,14 +15,7 @@
 	<modules>
 		<module>com.b2international.snowowl.hibernate.validator</module>
 		<module>com.b2international.org.apache.lucene</module>
-		<module>org.eclipse.emf.cdo</module>
-		<module>org.eclipse.emf.cdo.common</module>
-		<module>org.eclipse.emf.cdo.net4j</module>
-		<module>org.eclipse.emf.cdo.server</module>
-		<module>org.eclipse.emf.cdo.server.db</module>
-		<module>org.eclipse.emf.cdo.server.net4j</module>
 		<module>org.eclipse.net4j</module>
-		<module>org.eclipse.net4j.db.mysql</module>
 		<module>org.eclipse.net4j.util</module>
 		<module>org.supercsv</module>
 	</modules>

@@ -16,6 +16,7 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -23,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.index.DocSearcher;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
@@ -36,12 +36,13 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
  */
-public final class DefaultRevisionIndex implements InternalRevisionIndex {
+public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks {
 
 	private static final String SCROLL_KEEP_ALIVE = "2m";
 	
@@ -53,12 +54,13 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	private final BaseRevisionBranching branching;
 	private final RevisionIndexAdmin admin;
 	private final ObjectMapper mapper;
+	private final List<Hooks.Hook> hooks = newArrayList();
 
-	public DefaultRevisionIndex(Index index, BaseRevisionBranching branching, ObjectMapper mapper) {
+	public DefaultRevisionIndex(Index index, TimestampProvider timestampProvider, ObjectMapper mapper) {
 		this.index = index;
-		this.branching = branching;
 		this.mapper = mapper;
 		this.admin = new RevisionIndexAdmin(this, index.admin());
+		this.branching = new DefaultRevisionBranching(this, timestampProvider, mapper);
 	}
 	
 	@Override
@@ -69,6 +71,11 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 	@Override
 	public String name() {
 		return index.name();
+	}
+	
+	@Override
+	public Index index() {
+		return index;
 	}
 	
 	@Override
@@ -147,7 +154,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit);
 	}
 	
-	private RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
+	@Override
+	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
 		return index.read(searcher -> {
 			
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
@@ -163,7 +171,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 		});
 	}
 	
-	private void doRevisionCompare(DocSearcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
+	private void doRevisionCompare(Searcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
 		if (compareRef.segments().isEmpty()) {
 			return;
 		}
@@ -186,7 +194,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 				.forEach(result::apply);
 	}
 
-	private String getBranchPath(DocSearcher searcher, long branchId) throws IOException {
+	private String getBranchPath(Searcher searcher, long branchId) throws IOException {
 		return searcher.search(Query.select(String.class)
 				.from(RevisionBranch.class)
 				.fields(RevisionBranch.Fields.PATH)
@@ -279,6 +287,31 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					.build())
 					.getHits();
 		});
+	}
+	
+	@Override
+	public Hooks hooks() {
+		return this;
+	}
+	
+	@Override
+	public void addHook(Hook hook) {
+		if (!this.hooks.contains(hook)) {
+			this.hooks.add(hook);
+		}
+	}
+	
+	@Override
+	public void removeHook(Hook hook) {
+		this.hooks.remove(hook);
+	}
+	
+	/**
+	 * Returns the currently registered {@link List} of {@link Hook}s.
+	 * @return
+	 */
+	List<Hooks.Hook> getHooks() {
+		return ImmutableList.copyOf(hooks);
 	}
 
 	private RevisionBranchRef getBranchRef(final String branchPath) {

@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.MemberChangeImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluation;
 import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEvaluationImpl;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -62,7 +62,7 @@ public final class EvaluateQueryRefSetMemberRequest extends ResourceRequest<Bran
 		final String query;
 		final String targetReferenceSet;
 		if (context instanceof TransactionContext) {
-			SnomedQueryRefSetMember member = ((TransactionContext) context).lookup(memberId, SnomedQueryRefSetMember.class);
+			SnomedRefSetMemberIndexEntry member = ((TransactionContext) context).lookup(memberId, SnomedRefSetMemberIndexEntry.class);
 			query = member.getQuery();
 			targetReferenceSet = member.getReferencedComponentId();
 		} else {

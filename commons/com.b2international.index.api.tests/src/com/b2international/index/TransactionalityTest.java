@@ -56,7 +56,7 @@ public class TransactionalityTest extends BaseIndexTest {
 		tx1.commit();
 		
 		// at this point tx2 content should not be visible
-		DocSearcher searcher = client().searcher();
+		Searcher searcher = client().searcher();
 		assertEquals(data, searcher.get(Data.class, KEY1));
 		assertNull(searcher.get(Data.class, KEY2));
 		

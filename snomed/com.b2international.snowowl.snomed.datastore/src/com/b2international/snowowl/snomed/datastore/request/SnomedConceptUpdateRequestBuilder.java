@@ -19,10 +19,11 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.core.domain.AssociationType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.InactivationIndicator;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -39,6 +40,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 	private List<SnomedDescription> descriptions;
 	private List<SnomedRelationship> relationships;
 	private List<SnomedReferenceSetMember> members;
+	private SnomedReferenceSet refSet;
 
 	SnomedConceptUpdateRequestBuilder(String componentId) {
 		super(componentId);
@@ -84,6 +86,11 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		return getSelf();
 	}
 	
+	public SnomedConceptUpdateRequestBuilder clearRefSet(boolean force) {
+		this.refSet = force ? SnomedReferenceSet.FORCE_DELETE : SnomedReferenceSet.DELETE;
+		return getSelf();
+	}
+	
 	@Override
 	protected void init(SnomedConceptUpdateRequest req) {
 		super.init(req);
@@ -94,6 +101,7 @@ public final class SnomedConceptUpdateRequestBuilder extends BaseSnomedComponent
 		req.setDescriptions(descriptions);
 		req.setRelationships(relationships);
 		req.setMembers(members);
+		req.setRefSet(refSet);
 	}
 	
 }

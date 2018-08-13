@@ -34,19 +34,19 @@ import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
-import com.b2international.index.DocSearcher;
-import com.b2international.index.DocWriter;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
+import com.b2international.index.Searcher;
+import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdMultimap;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdSet;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdMultimap;
+import com.b2international.snowowl.snomed.core.taxonomy.InternalSctIdSet;
+import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainWriter;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.RelationshipWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -147,7 +147,7 @@ public final class ClassificationTracker implements IDisposableService {
 		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpInterval, cleanUpInterval);
 	}
 
-	private void updateTasksByStatus(final DocWriter writer, 
+	private void updateTasksByStatus(final Writer writer, 
 			final Set<ClassificationStatus> statuses,
 			final String script,
 			final Map<String, Object> scriptArgs) {
@@ -160,7 +160,7 @@ public final class ClassificationTracker implements IDisposableService {
 				scriptArgs));
 	}
 
-	private void deleteClassifications(final DocWriter writer, final Query<String> query) throws IOException {
+	private void deleteClassifications(final Writer writer, final Query<String> query) throws IOException {
 		final Hits<String> deletedIds = writer.searcher()
 				.search(query);
 
@@ -289,7 +289,7 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	private void indexUnsatisfiableConcepts(final DocWriter writer, 
+	private void indexUnsatisfiableConcepts(final Writer writer, 
 			final String classificationId, 
 			final InternalSctIdSet unsatisfiableConcepts) {
 
@@ -304,7 +304,7 @@ public final class ClassificationTracker implements IDisposableService {
 		}
 	}
 
-	private void indexEquivalentConcepts(final DocWriter writer, 
+	private void indexEquivalentConcepts(final Writer writer, 
 			final String classificationId, 
 			final InternalSctIdMultimap equivalentConcepts) {
 
@@ -355,7 +355,7 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	private ClassificationTaskDocument getClassificationChecked(final DocSearcher searcher, final String classificationId) {
+	private ClassificationTaskDocument getClassificationChecked(final Searcher searcher, final String classificationId) {
 		try {
 
 			final ClassificationTaskDocument document = searcher.get(ClassificationTaskDocument.class, classificationId);

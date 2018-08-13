@@ -20,15 +20,12 @@ import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchAnyLong;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getValue;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
@@ -40,17 +37,15 @@ import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
-import com.b2international.snowowl.core.CoreTerminologyBroker;
+import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.datastore.cdo.CDOUtils;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMappingRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -109,7 +104,8 @@ import com.google.common.collect.ImmutableMap;
 @RevisionHash({ 
 	SnomedDocument.Fields.ACTIVE, 
 	SnomedDocument.Fields.EFFECTIVE_TIME, 
-	SnomedDocument.Fields.MODULE_ID, 
+	SnomedDocument.Fields.MODULE_ID,
+	SnomedDocument.Fields.RELEASED,
 	SnomedConceptDocument.Fields.PRIMITIVE,
 	SnomedConceptDocument.Fields.EXHAUSTIVE
 })
@@ -191,14 +187,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
 		
-		public static Expression structuralRefSet() {
-			return match(Fields.STRUCTURAL, true);
-		}
-		
-		public static Expression regularRefSet() {
-			return match(Fields.STRUCTURAL, false);
-		}
-		
 		public static Expression referringPredicate(String referringPredicate) {
 			return exactMatch(Fields.REFERRING_PREDICATES, referringPredicate);
 		}
@@ -214,11 +202,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String PARENTS = "parents";
 		public static final String STATED_PARENTS = "statedParents";
-		public static final String PREDICATES = "predicates";
 		public static final String REFSET_TYPE = "refSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
-		public static final String STRUCTURAL = "structural";
 		public static final String DOI = "doi";
 		public static final String DESCRIPTIONS = "preferredDescriptions";
 	}
@@ -226,7 +212,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	public static Builder builder(final SnomedConceptDocument input) {
 		final String id = input.getId();
 		return builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 //				.score(input.getScore())
@@ -241,19 +226,16 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.ancestors(input.getAncestors())
 				.statedParents(input.getStatedParents())
 				.statedAncestors(input.getStatedAncestors())
-				.refSetStorageKey(input.getRefSetStorageKey())
 				.referencedComponentType(input.getReferencedComponentType())
 				.mapTargetComponentType(input.getMapTargetComponentType())
 				.preferredDescriptions(input.getPreferredDescriptions())
 				.refSetType(input.getRefSetType())
-				.structural(input.isStructural())
 				.doi(input.getDoi());
 	}
 	
 	public static Builder builder(SnomedConcept input) {
 		String id = input.getId();
 		final Builder builder = builder()
-				.storageKey(input.getStorageKey())
 				.id(id)
 				.namespace(!Strings.isNullOrEmpty(id) ? SnomedIdentifiers.getNamespace(id) : null)
 				.moduleId(input.getModuleId())
@@ -288,7 +270,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
-	public static class Builder extends SnomedComponentDocumentBuilder<Builder> {
+	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
 
 		private boolean primitive;
 		private boolean exhaustive;
@@ -297,11 +279,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private short referencedComponentType;
-		private int mapTargetComponentType;
+		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
+		private short mapTargetComponentType;
 		private float doi = DEFAULT_DOI;
-		private long refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
-		private boolean structural = false;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 
 		@JsonCreator
@@ -325,7 +305,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		}
 		
 		@JsonIgnore
-		public Builder parents(final long ...parents) {
+		public Builder parents(final long...parents) {
 			return parents(PrimitiveSets.newLongOpenHashSet(parents));
 		}
 
@@ -335,6 +315,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		@JsonIgnore
+		public Builder statedParents(final long...statedParents) {
+			return statedParents(PrimitiveSets.newLongOpenHashSet(statedParents));
+		}
+		
+		@JsonProperty("statedParents")
 		public Builder statedParents(final LongSet statedParents) {
 			this.statedParents = statedParents;
 			return getSelf();
@@ -354,65 +340,38 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public Builder clearRefSet() {
 			referencedComponentType = 0;
 			mapTargetComponentType = 0;
-			refSetStorageKey = CDOUtils.NO_STORAGE_KEY;
 			refSetType = null;
-			structural = false;
 			return getSelf();
-		}
-		
-		@JsonIgnore
-		public Builder refSet(final SnomedRefSet refSet) {
-			if (refSet instanceof SnomedMappingRefSet) {
-				mapTargetComponentType(((SnomedMappingRefSet) refSet).getMapTargetComponentType());
-			}
-			return structural(SnomedRefSetUtil.isStructural(refSet.getIdentifierId(), refSet.getType()))
-					.refSetType(refSet.getType())
-					.referencedComponentType(refSet.getReferencedComponentType())
-					.refSetStorageKey(CDOIDUtil.getLong(refSet.cdoID()));
 		}
 		
 		@JsonIgnore
 		public Builder refSet(final SnomedReferenceSet refSet) {
 			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
-				final int componentType = CoreTerminologyBroker.getInstance()
-						.getTerminologyComponentIdAsInt(refSet.getMapTargetComponentType());
-				mapTargetComponentType(componentType);
+				mapTargetComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getMapTargetComponentType()).shortId());
 			}
 			
-			Builder b = structural(SnomedRefSetUtil.isStructural(refSet.getId(), refSet.getType()))
-					.refSetType(refSet.getType())
-					.refSetStorageKey(refSet.getStorageKey());
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
-				b.referencedComponentType(getValue(refSet.getReferencedComponentType()));
+				referencedComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getReferencedComponentType()).shortId());
 			}
-			return b;
+			
+			return refSetType(refSet.getType());
 		}
 		
-		Builder mapTargetComponentType(int mapTargetComponentType) {
+		public Builder mapTargetComponentType(short mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
 		
-		Builder refSetStorageKey(long refSetStorageKey) {
-			this.refSetStorageKey = refSetStorageKey;
-			return getSelf();
-		}
-
-		Builder referencedComponentType(short referencedComponentType) {
+		public Builder referencedComponentType(short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
 		}
 
-		Builder refSetType(SnomedRefSetType refSetType) {
+		public Builder refSetType(SnomedRefSetType refSetType) {
 			this.refSetType = refSetType;
 			return getSelf();
 		}
 
-		Builder structural(boolean structural) {
-			this.structural = structural;
-			return getSelf();
-		}
-		
 		public Builder doi(float doi) {
 			this.doi = doi;
 			return getSelf();
@@ -430,7 +389,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					label,
 					iconId, 
-					storageKey,
 					moduleId, 
 					released, 
 					active, 
@@ -441,8 +399,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					refSetType, 
 					referencedComponentType,
 					mapTargetComponentType,
-					refSetStorageKey,
-					structural,
 					memberOf,
 					activeMemberOf,
 					preferredDescriptions);
@@ -475,9 +431,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final short referencedComponentType;
-	private final int mapTargetComponentType;
-	private final boolean structural;
-	private final long refSetStorageKey;
+	private final short mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -489,7 +443,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private SnomedConceptDocument(final String id,
 			final String label,
 			final String iconId,
-			final long storageKey,
 			final String moduleId,
 			final boolean released,
 			final boolean active,
@@ -499,26 +452,23 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
 			final short referencedComponentType,
-			final int mapTargetComponentType,
-			final long refSetStorageKey,
-			final boolean structural,
+			final short mapTargetComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
-		super(id, label, iconId, storageKey, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
+		super(id, label, iconId, moduleId, released, active, effectiveTime, namespace, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
 		this.mapTargetComponentType = mapTargetComponentType;
-		this.refSetStorageKey = refSetStorageKey;
-		this.structural = structural;
 		this.preferredDescriptions = preferredDescriptions;
 	}
 	
-	public long getRefSetStorageKey() {
-		return refSetStorageKey;
+	@Override
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+		return builder(this);
 	}
 	
 	public float getDoi() {
@@ -563,12 +513,13 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return referencedComponentType;
 	}
 	
-	public int getMapTargetComponentType() {
+	public short getMapTargetComponentType() {
 		return mapTargetComponentType;
 	}
 	
-	public boolean isStructural() {
-		return structural;
+	@JsonIgnore
+	public boolean isRefSet() {
+		return getRefSetType() != null;
 	}
 	
 	public List<SnomedDescriptionFragment> getPreferredDescriptions() {
@@ -583,13 +534,33 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.add("refSetType", refSetType)
 				.add("referencedComponentType", referencedComponentType)
 				.add("mapTargetComponentType", mapTargetComponentType)
-				.add("structural", structural)
-				.add("refSetStorageKey", refSetStorageKey)
 				.add("parents", parents)
 				.add("ancestors", ancestors)
 				.add("statedParents", statedParents)
 				.add("statedAncestors", statedAncestors)
 				.add("doi", doi);
+	}
+	
+	/**
+	 * Computes whether a reference set is structural or not.
+	 * @param refSetId
+	 * @param type
+	 * @return
+	 */
+	public static boolean isStructural(final String refSetId, final SnomedRefSetType type) {
+		switch (type) {
+			case LANGUAGE: //$FALL-THROUGH$
+			case CONCRETE_DATA_TYPE: //$FALL-THROUGH$
+			case ASSOCIATION: //$FALL-THROUGH$
+			case MODULE_DEPENDENCY: //$FALL-THROUGH$
+				return true;
+			case ATTRIBUTE_VALUE:
+				return 
+						Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(refSetId) 
+						|| Concepts.REFSET_RELATIONSHIP_REFINABILITY.equals(refSetId);
+			default: return false;
+		}
 	}
 
 }

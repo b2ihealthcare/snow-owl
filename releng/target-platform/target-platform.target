@@ -33,7 +33,6 @@
 <repository location="http://download.eclipse.org/modeling/emf/emf/updates/2.12/core/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.net4j.db.feature.group" version="4.1.2.v20121030-0624"/>
 <unit id="org.eclipse.net4j.feature.group" version="4.1.2.v20121028-0914"/>
 <unit id="org.eclipse.net4j.util.feature.group" version="4.1.2.v20121028-0914"/>
 <repository location="http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.1/"/>

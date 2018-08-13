@@ -16,11 +16,11 @@
 package com.b2international.snowowl.snomed.api.rest.domain;
 
 import com.b2international.snowowl.datastore.request.TransactionalRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.base.Strings;
 

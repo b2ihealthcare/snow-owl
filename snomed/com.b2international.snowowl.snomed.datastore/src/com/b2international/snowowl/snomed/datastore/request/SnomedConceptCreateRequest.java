@@ -34,7 +34,6 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -43,9 +42,10 @@ import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
@@ -105,7 +105,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	@Override
 	public String execute(TransactionContext context) {
-		final Concept concept = convertConcept(context);
+		final SnomedConceptDocument concept = convertConcept(context);
 		context.add(concept);
 
 		convertDescriptions(context, concept.getId());
@@ -116,7 +116,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		return concept.getId();
 	}
 
-	private Concept convertConcept(final TransactionContext context) {
+	private SnomedConceptDocument convertConcept(final TransactionContext context) {
 		try {
 			final String conceptId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			return SnomedComponents.newConcept()

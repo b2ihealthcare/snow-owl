@@ -15,26 +15,11 @@
  */
 package com.b2international.snowowl.datastore.cdo;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
-import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
-import org.eclipse.emf.cdo.net4j.CDONet4jSession;
-import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
-import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
-import org.eclipse.emf.cdo.server.IRepository;
-import org.eclipse.emf.cdo.server.RepositoryNotFoundException;
-import org.eclipse.emf.cdo.session.remote.CDORemoteSessionManager;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranchManager.BranchLoader;
-import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.connector.ConnectorException;
 import org.eclipse.net4j.connector.IConnector;
@@ -44,15 +29,15 @@ import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.signal.heartbeat.HeartBeatProtocol;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IPluginContainer;
-import org.eclipse.net4j.util.event.IListener;
-import org.eclipse.net4j.util.io.GZIPStreamWrapper;
+import org.eclipse.net4j.util.lifecycle.Lifecycle;
 import org.eclipse.net4j.util.lifecycle.LifecycleException;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.security.PasswordCredentials;
 import org.eclipse.net4j.util.security.PasswordCredentialsProvider;
 import org.eclipse.spi.net4j.ClientProtocolFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.config.ClientPreferences;
@@ -68,19 +53,19 @@ import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * Abstract implementation of the {@link ICDOConnectionManager}.
  * 
  */
-/*default*/ class CDOConnectionManager extends CDOContainer<ICDOConnection> implements ICDOConnectionManager {
+/*default*/ class CDOConnectionManager extends Lifecycle {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(CDOConnectionManager.class);
+	
 	private final String username;
 	private final transient String password;
 
 	@Nullable private User user;
-	@Nullable private Map<String, CDONet4jSessionConfiguration> repositoryNameToConfiguration;
 	@Nullable private AtomicBoolean embedded;
 	@Nullable private Authenticator authenticator;
 	@Nullable private IConnector connector;
@@ -89,13 +74,11 @@ import com.google.common.collect.Maps;
 		this.username = Preconditions.checkNotNull(username, "Username argument cannot be null.");
 		this.password = Preconditions.checkNotNull(password, "Password argument cannot be null.");
 		this.user = User.SYSTEM.getUsername().equals(username) ? User.SYSTEM : null;
-		repositoryNameToConfiguration = Maps.newHashMap();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#getUser()
 	 */
-	@Override
 	public User getUser() {
 		return user;
 	}
@@ -103,12 +86,10 @@ import com.google.common.collect.Maps;
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#getUserId()
 	 */
-	@Override
 	public String getUserId() {
 		return getUser().getUsername();
 	}
 	
-	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -116,74 +97,11 @@ import com.google.common.collect.Maps;
 	/* (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#isEmbedded()
 	 */
-	@Override
 	public boolean isEmbedded() {
 		return embedded.get();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(org.eclipse.emf.cdo.common.branch.CDOBranch)
-	 */
-	@Override
-	public ICDOConnection get(final CDOBranch branch) {
-
-		Preconditions.checkNotNull(branch, "CDO branch argument cannot be null.");
-		final BranchLoader loader = ((InternalCDOBranchManager) branch.getBranchManager()).getBranchLoader();
-
-		String uuid = null;
-
-		if (loader instanceof CDONet4jSession) {
-
-			uuid = ((CDONet4jSession) loader).getRepositoryInfo().getUUID();
-
-		} else if (loader instanceof IRepository) {
-
-			uuid = ((IRepository) loader).getUUID();
-
-		} else if (loader instanceof SignalProtocol<?>) {
-
-			final Object infraStructure = ((SignalProtocol<?>) loader).getInfraStructure();
-
-			if (infraStructure instanceof CDONet4jSession) {
-
-				uuid = ((CDONet4jSession) infraStructure).getRepositoryInfo().getUUID();
-
-			}
-
-		}
-
-		Preconditions.checkState(!StringUtils.isEmpty(uuid), "Unrecognized CDO branch loader. [Branch loader: " + loader + "]");
-
-		return ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getByUuid(uuid);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(org.eclipse.emf.cdo.common.revision.CDORevision)
-	 */
-	@Override
-	public ICDOConnection get(final CDORevision revision) {
-
-		Preconditions.checkNotNull(revision, "CDO revision argument cannot be null.");
-		return get(revision.getBranch());
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#get(org.eclipse.emf.cdo.view.CDOView)
-	 */
-	@Override
-	public ICDOConnection get(final CDOView view) {
-		return get(CDOUtils.check(view).getBranch());
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#openProtocol(org.eclipse.net4j.signal.ISignalProtocol)
-	 */
-	@Override
-	public void openProtocol(final ISignalProtocol<?> protocol) {
+	void openProtocol(final ISignalProtocol<?> protocol) {
 		Preconditions.checkNotNull(protocol, "Signal protocol argument cannot be null.");
 		// Open with the default signal timeout, then update it, as the opposite does not seem to work for JVMConnectors. 
 		protocol.open(connector);
@@ -197,70 +115,10 @@ import com.google.common.collect.Maps;
 		return authenticator;
 	}
 
-	/**
-	 * (non-API)
-	 * <br>
-	 * Returns with the session configuration for the connection.
-	 * @param connection the connection instance.
-	 * @return the CDO session configuration.
-	 */
-	public synchronized CDONet4jSessionConfiguration getSessionConfiguration(final ICDOConnection connection) {
-
-		Preconditions.checkNotNull(connection, "Connection argument cannot be null.");
-
-		return repositoryNameToConfiguration.get(connection.getUuid());
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#getConnector()
-	 */
-	@Override
 	public IConnector getConnector() {
 		return connector;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#subscribeForRemoteMessages(org.eclipse.net4j.util.event.IListener)
-	 */
-	@Override
-	public void subscribeForRemoteMessages(final IListener listener) {
-
-		Preconditions.checkNotNull(listener, "Listener argument cannot be null.");
-
-		for (final Iterator<ICDOConnection> itr = iterator(); itr.hasNext(); /* */) {
-
-			final ICDOConnection connection = itr.next();
-			final CDORemoteSessionManager sessionManager = connection.getSession().getRemoteSessionManager();
-			sessionManager.addListener(listener);
-			sessionManager.setForceSubscription(true);
-
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.ICDOConnectionManager#unsbscribeFromRemoteMessages(org.eclipse.net4j.util.event.IListener)
-	 */
-	@Override
-	public void unsbscribeFromRemoteMessages(final IListener listener) {
-
-		Preconditions.checkNotNull(listener, "Listener argument cannot be null.");
-
-		for (final Iterator<ICDOConnection> itr = iterator(); itr.hasNext(); /* */) {
-
-			final ICDOConnection connection = itr.next();
-			final CDORemoteSessionManager sessionManager = connection.getSession().getRemoteSessionManager();
-			sessionManager.removeListener(listener);
-
-		}
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.CDOContainer#doBeforeActivate()
-	 */
 	@Override
 	protected void doBeforeActivate() throws Exception {
 
@@ -289,37 +147,10 @@ import com.google.common.collect.Maps;
 				watchdog.start(connectionConfiguration.getWatchdogRate(), connectionConfiguration.getWatchdogTimeout());
 			}
 
-			for (final Iterator<ICDOConnection> itr = _iterator(); itr.hasNext(); /**/) {
-
-				final ICDOConnection connection = itr.next();
-				final String repositoryUuid = connection.getUuid();
-
-				final CDONet4jSessionConfiguration sessionConfiguration = CDONet4jUtil.createNet4jSessionConfiguration();
-				
-				// Set initial signal timeout to the connection timeout, as we want to be notified in a reasonable time
-				sessionConfiguration.setSignalTimeout(connectionConfiguration.getConnectionTimeout());
-				sessionConfiguration.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
-				sessionConfiguration.getAuthenticator().setCredentialsProvider(credentials);
-				sessionConfiguration.setRepositoryName(repositoryUuid);
-				sessionConfiguration.setConnector(connector);
-
-				if (!isEmbedded() && getSnowOwlConfiguration().isGzip()) {
-					sessionConfiguration.setStreamWrapper(new GZIPStreamWrapper());
-				}
-
-				repositoryNameToConfiguration.put(repositoryUuid, sessionConfiguration);
-
-			}
-
 		} catch (final ConnectorException e) {
 
 			LOGGER.error("Could not connect to server, please check your settings.", e);
 			throw new SnowowlServiceException("Could not connect to server, please check your settings.", e);
-
-		} catch (final RepositoryNotFoundException e) {
-
-			LOGGER.error("Repository doesn't exist: " + e.getRepositoryName(), e);
-			throw new SnowowlServiceException("Repository doesn't exist: " + e.getRepositoryName(), e);
 
 		} catch (final IllegalArgumentException e) {
 
@@ -378,13 +209,6 @@ import com.google.common.collect.Maps;
 
 		super.doDeactivate();
 
-		if (null != repositoryNameToConfiguration) {
-
-			repositoryNameToConfiguration.clear();
-			repositoryNameToConfiguration = null;
-
-		}
-
 		LifecycleUtil.deactivate(connector);
 
 		authenticator = null;
@@ -392,23 +216,6 @@ import com.google.common.collect.Maps;
 		connector = null;
 		user = null;
 
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.CDOManager#getUuid(org.eclipse.net4j.util.lifecycle.ILifecycle)
-	 */
-	@Override
-	protected String getUuid(final ICDOConnection managedItem) {
-		return managedItem.getUuid();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.b2international.snowowl.datastore.cdo.CDOContainer#createItem(java.lang.String, java.lang.String, byte, java.lang.String, java.lang.String, boolean)
-	 */
-	@Override
-	protected ICDOConnection createItem(final String repositoryUuid, @Nullable final String repositoryName, final byte namespaceId, 
-			@Nullable final String toolingId, @Nullable final String dependsOnRepositoryUuid, final boolean meta) {
-		return new CDOConnection(repositoryUuid, repositoryName, namespaceId, toolingId, dependsOnRepositoryUuid, meta);
 	}
 
 	/*sets the embedded flag if necessary*/

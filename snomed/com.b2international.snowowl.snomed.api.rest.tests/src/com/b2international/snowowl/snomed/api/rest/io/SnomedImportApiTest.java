@@ -36,15 +36,17 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedBranchingRestRequests;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -57,6 +59,9 @@ import com.jayway.restassured.response.ValidatableResponse;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
+	
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	private static final String OWL_EXPRESSION = "SubClassOf("
 			+ "ObjectIntersectionOf("
@@ -66,27 +71,34 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				+ "sct:8801005 Secondary diabetes mellitus (disorder))";
 
 	private void importArchive(final String fileName) {
-		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA);
+		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA, ImportStatus.COMPLETED);
+	}
+	
+	private void importArchive(final String fileName, ImportStatus expectedStatus) {
+		importArchive(fileName, branchPath, false, Rf2ReleaseType.DELTA, expectedStatus);
 	}
 	
 	private void importArchive(String fileName, IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType) {
-		
+		importArchive(fileName, path, createVersion, releaseType, ImportStatus.COMPLETED);
+	}
+	
+	private void importArchive(String fileName, IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, ImportStatus expectedStatus) { 
 		final Map<?, ?> importConfiguration = ImmutableMap.builder()
 				.put("type", releaseType.name())
 				.put("branchPath", path.getPath())
 				.put("createVersions", createVersion)
 				.build();
 
-		importArchive(fileName, importConfiguration);
+		importArchive(fileName, importConfiguration, expectedStatus);
 	}
 
-	private void importArchive(final String fileName, Map<?, ?> importConfiguration) {
+	private void importArchive(final String fileName, Map<?, ?> importConfiguration, ImportStatus expectedStatus) {
 		final String importId = lastPathSegment(createImport(importConfiguration).statusCode(201)
 				.extract().header("Location"));
 
 		getImport(importId).statusCode(200).body("status", equalTo(ImportStatus.WAITING_FOR_FILE.name()));
 		uploadImportFile(importId, getClass(), fileName).statusCode(204);
-		waitForImportJob(importId).statusCode(200).body("status", equalTo(ImportStatus.COMPLETED.name()));
+		waitForImportJob(importId).statusCode(200).body("status", equalTo(expectedStatus.name()));
 	}
 
 	@Test
@@ -186,11 +198,16 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive("SnomedCT_Release_INT_20150204_inactivate_concept.zip");
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
-		.body("active", equalTo(false))
-		.body("pt.id", equalTo("11320138110"));
+			.body("active", equalTo(false))
+			.body("pt.id", equalTo("11320138110"));
 
 		createCodeSystem(branchPath, "SNOMEDCT-EXT").statusCode(201);
 		createVersion("SNOMEDCT-EXT", "v1", "20170301").statusCode(201);
+		
+		// sanity check that versioning did not mess with the descriptions
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
+			.body("active", equalTo(false))
+			.body("pt.id", equalTo("11320138110"));
 
 		/*
 		 * In this archive, all components are backdated, so they should have no effect on the dataset,
@@ -198,11 +215,14 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		 */
 		importArchive("SnomedCT_Release_INT_20150131_index_init_bug.zip");
 
+		// check that the new unpublished component did get imported
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "45527646019").statusCode(200);
+		
+		// verify that it did not change the PT of the concept
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
 		.body("active", equalTo(false))
 		.body("pt.id", equalTo("11320138110"));
 
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "45527646019").statusCode(200);
 	}
 
 	@Test
@@ -228,7 +248,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.put("codeSystemShortName", "SNOMEDCT-NE")
 				.build();
 
-		importArchive("SnomedCT_Release_INT_20150205_new_extension_concept.zip", importConfiguration);
+		importArchive("SnomedCT_Release_INT_20150205_new_extension_concept.zip", importConfiguration, ImportStatus.COMPLETED);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
 		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
@@ -453,6 +473,16 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getReferenceSetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
 		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
+	}
+	
+	@Test
+	public void import28InvalidConcept() {
+		importArchive("SnomedCT_Release_INT_20150131_new_invalid_concept.zip", ImportStatus.FAILED);
+	}
+	
+	@Test
+	public void import29DescriptionWithNonExistantConceptId() {
+		importArchive("SnomedCT_Release_INT_20150201_new_description_with_non_existant_conceptId.zip", ImportStatus.FAILED);
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

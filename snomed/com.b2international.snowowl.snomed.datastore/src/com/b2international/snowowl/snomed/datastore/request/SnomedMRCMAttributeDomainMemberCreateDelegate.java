@@ -19,10 +19,10 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -35,7 +35,7 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 	}
 
 	@Override
-	public String execute(final SnomedRefSet refSet, final TransactionContext context) {
+	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID);
@@ -52,7 +52,7 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, getProperty(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID));
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, getProperty(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 
-		final SnomedMRCMAttributeDomainRefSetMember member = SnomedComponents.newMRCMAttributeDomainReferenceSetMember()
+		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newMRCMAttributeDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withModule(getModuleId())
@@ -66,7 +66,7 @@ final class SnomedMRCMAttributeDomainMemberCreateDelegate extends SnomedRefSetMe
 				.withContentTypeId(getProperty(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID))
 				.addTo(context);
 
-		return member.getUuid();
+		return member.getId();
 	}
 
 	@Override
