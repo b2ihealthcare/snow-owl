@@ -209,7 +209,7 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 			.contains(Concepts.ROOT_CONCEPT)
 			.doesNotContain(Concepts.NAMESPACE_ROOT);
 		assertThat(changes.deletedConcepts())
-			.isEmpty(); // In this test case we never see c1
+			.contains(deletedConceptId);
 	}
 
 	@Test
@@ -246,7 +246,8 @@ public class SnomedReviewApiTest extends AbstractSnomedApiTest {
 		assertThat(changes.changedConcepts())
 			.contains(Concepts.ROOT_CONCEPT)
 			.doesNotContain(Concepts.NAMESPACE_ROOT);
-		assertThat(changes.deletedConcepts()).isEmpty();
+		assertThat(changes.deletedConcepts())
+			.contains(deletedConceptId);
 	}
 
 	@Test
