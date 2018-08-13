@@ -52,7 +52,6 @@ import com.b2international.snowowl.snomed.core.merge.SnomedComponentRevisionConf
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
-import com.b2international.snowowl.snomed.core.mrcm.io.XMIMrcmImporter;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -104,8 +103,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		if (env.isServer() || env.isEmbedded()) {
 			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl());
 			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmExporter.class, MrcmExporterImpl.class.getClassLoader());
-			env.services().registerService(MrcmImporter.class, new XMIMrcmImporter());
-			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, XMIMrcmImporter.class.getClassLoader());
 		}
 	}
 	
