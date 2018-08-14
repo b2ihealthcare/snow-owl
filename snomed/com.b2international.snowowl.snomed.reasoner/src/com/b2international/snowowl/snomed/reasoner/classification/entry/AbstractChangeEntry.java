@@ -28,8 +28,20 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 	 * Enumerates the possible natures of an {@link AbstractChangeEntry}.
 	 */
 	public enum Nature {
-		INFERRED, 
-		REDUNDANT
+		
+		INFERRED("Inferred"), 
+		REDUNDANT("Redundant");
+		
+		private String name;
+		
+		private Nature(String name) {
+			this.name = name;
+		};
+		
+		public String getName() {
+			return name;
+		}
+		
 	}
 
 	private final ChangeConcept source;
