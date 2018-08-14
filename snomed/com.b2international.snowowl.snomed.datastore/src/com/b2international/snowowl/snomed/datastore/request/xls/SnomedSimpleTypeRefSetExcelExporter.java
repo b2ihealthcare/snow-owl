@@ -15,14 +15,13 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.xls;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -36,7 +35,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.datastore.importer.AbstractTerminologyExporter;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -48,12 +47,9 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.label.SnomedConceptNameProvider;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.base.Function;
 
 /**
  * Exporter class to export simple type reference sets to Excel format where the 
@@ -70,11 +66,15 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 	
 	private final CellStyle DEFAULT_STYLE;
 	private final CellStyle BOLD_STYLE;
+	private final BranchContext context;
 
-	public SnomedSimpleTypeRefSetExcelExporter(final String userId, final IBranchPath branchPath, final String refSetId) {
-		super(userId, branchPath);
+	public SnomedSimpleTypeRefSetExcelExporter(final BranchContext context, final String userId, final String refSetId) {
+		super(userId, context.branch().branchPath());
+		this.context = context;
 		
-		this.refSet = SnomedRequests.prepareGetReferenceSet(refSetId).build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(getBus()).getSync();
+		this.refSet = SnomedRequests.prepareGetReferenceSet(refSetId)
+				.build()
+				.execute(context);
 		this.workbook = new XSSFWorkbook();
 		
 		final Font headerFont = workbook.createFont();
@@ -91,10 +91,6 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		
 		DEFAULT_STYLE = workbook.createCellStyle();
 		DEFAULT_STYLE.setFont(defaultFont);
-	}
-
-	private IEventBus getBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
 	@Override
@@ -148,7 +144,7 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 			
 			async = monitor.forkAsync(70);
 
-			final Collection<SnomedCoreComponent> components = getComponents(refSet);
+			final Collection<SnomedCoreComponent> components = fetchReferencedComponents(refSet);
 			
 			async.stop();
 			
@@ -182,28 +178,19 @@ public class SnomedSimpleTypeRefSetExcelExporter extends AbstractTerminologyExpo
 		}
 	}
 
-	private Collection<SnomedCoreComponent> getComponents(SnomedReferenceSet refSet) {
+		private Collection<SnomedCoreComponent> fetchReferencedComponents(SnomedReferenceSet refSet) {
 		return SnomedRequests.prepareSearchMember()
-				.all()
-				.filterByRefSet(refSet.getId())
-				.setExpand(getExpand(refSet))
-				.setLocales(getLocales())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranchPath().getPath())
-				.execute(getBus())
-				.then(new Function<SnomedReferenceSetMembers, Collection<SnomedCoreComponent>>() {
-					@Override
-					public Collection<SnomedCoreComponent> apply(SnomedReferenceSetMembers input) {
-						final Collection<SnomedCoreComponent> components = newHashSet();
-						
-						for (SnomedReferenceSetMember member : input) {
-							components.add(member.getReferencedComponent());
-						}
-						
-						return components;
-					}
-				})
-				.getSync();
+			.all()
+			.filterByRefSet(refSet.getId())
+			.setExpand(getExpand(refSet))
+			.setLocales(getLocales())
+			.build()
+			.execute(context)
+			.stream()
+			.map(SnomedReferenceSetMember::getReferencedComponent)
+			.collect(Collectors.toList());
 	}
+	
 
 	private List<ExtendedLocale> getLocales() {
 		return ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference();

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.internal.rf2;
+package com.b2international.snowowl.snomed.datastore.request.xls;
+
+import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedExportModel;
 
 /**
  * Model used in simple type reference set Excel export process.

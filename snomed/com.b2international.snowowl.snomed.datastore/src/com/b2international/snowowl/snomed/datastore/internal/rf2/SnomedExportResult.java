@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.io.Serializable;
  * 
  * @since 3.1
  */
-public class SnomedExportResult implements Serializable {
+public final class SnomedExportResult implements Serializable {
 	
 	private static final long serialVersionUID = 7589566473306643358L;
 	

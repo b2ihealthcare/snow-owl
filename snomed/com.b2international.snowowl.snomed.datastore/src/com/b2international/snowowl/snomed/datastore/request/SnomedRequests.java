@@ -49,6 +49,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.b2international.snowowl.snomed.datastore.request.xls.SnomedExcelRequests;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -333,10 +334,18 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns the central class that provides access to IO services, turning the SNOMED CT content to delimiter separated values (DSV), and vice versa.
-	 * @return central SNOMED CT RF2 client
+	 * @return central SNOMED CT DSV client
 	 */
 	public static SnomedDSVRequests dsv() {
 		return new SnomedDSVRequests();
+	}
+	
+	/**
+	 * Returns the central class that provides access to IO services, turning the SNOMED CT content to Excel sheets.
+	 * @return central SNOMED CT Excel client
+	 */
+	public static SnomedExcelRequests xls() {
+		return new SnomedExcelRequests();
 	}
 
 	/**
