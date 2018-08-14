@@ -62,6 +62,8 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		
 		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, indexConfig.getCommitInterval());
 		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, indexConfig.getCommitConcurrencyLevel());
+		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
+		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
 		
 		final SlowLogConfig slowLog = createSlowLogConfig(indexConfig);
 		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);

@@ -25,6 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface IndexClientFactory {
 
+	//
+	// Configuration keys
+	//
+	
 	/**
 	 * Configuration key to use when specifying the configuration directory
 	 * where index specific configuration can be found.
@@ -74,6 +78,20 @@ public interface IndexClientFactory {
 	String INDEX_PREFIX = "indexPrefix";
 
 	/**
+	 * Configuration key to specify the REST client connection timeout in milliseconds.
+	 */
+	String CONNECT_TIMEOUT = "connectTimeout";
+	
+	/**
+	 * Configuration key to specify the REST client communication timeout in milliseconds.
+	 */
+	String SOCKET_TIMEOUT = "socketTimeout";
+	
+	//
+	// Default values
+	//
+	
+	/**
 	 * The default translog sync interval is 5 seconds.
 	 */
 	String DEFAULT_TRANSLOG_SYNC_INTERVAL = "5s";
@@ -98,6 +116,16 @@ public interface IndexClientFactory {
 	 * The default index prefix is empty
 	 */
 	String DEFAULT_INDEX_PREFIX = "";
+
+	/**
+	 * The default connection timeout is 1s
+	 */
+	int DEFAULT_CONNECT_TIMEOUT = 1_000;
+
+	/**
+	 * The default socket timeout (sending requests, waiting for a response) is 30s
+	 */
+	int DEFAULT_SOCKET_TIMEOUT = 30_000;
 	
 	/**
 	 * Create a new {@link IndexClient} with the given name.
@@ -109,5 +137,4 @@ public interface IndexClientFactory {
 	 * @return
 	 */
 	IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings);
-
 }

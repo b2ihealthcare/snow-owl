@@ -74,6 +74,8 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.CheckedFunction;
 import org.elasticsearch.common.Nullable;
@@ -103,7 +105,6 @@ import com.b2international.org.apache.lucene.Activator;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
 /**
@@ -113,29 +114,29 @@ public final class EsClient {
 
 	private static final Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
 	
-	private static final LoadingCache<HttpHost, EsClient> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<HttpHost, EsClient>() {
-				@Override
-				public void onRemoval(RemovalNotification<HttpHost, EsClient> notification) {
-					Activator.withTccl(() -> {
-						try {
-							notification.getValue().close();
-							LOG.info("Closed ES REST client for '{}'", notification.getKey().toURI());
-						} catch (IOException e) {
-							LOG.error("Unable to close ES REST client", e);
-						}
-					});
-				}
-			})
-			.build(new CacheLoader<HttpHost, EsClient>() {
-				@Override
-				public EsClient load(HttpHost host) throws Exception {
-					return new EsClient(host);
-				}
-			});
+	private static final LoadingCache<EsClientConfiguration, EsClient> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
+			.removalListener(EsClient::onRemove)
+			.build(CacheLoader.from(EsClient::onAdd));
 	
-	public static final EsClient create(final HttpHost host) {
-		return CLIENTS_BY_HOST.getUnchecked(host);
+	private static EsClient onAdd(final EsClientConfiguration configuration) {
+		return new EsClient(configuration);
+	}
+	
+	private static void onRemove(final RemovalNotification<EsClientConfiguration, EsClient> notification) {
+		Activator.withTccl(() -> {
+			try {
+				notification.getValue().close();
+				LOG.info("Closed ES REST client for '{}'", notification.getKey()
+						.getHost()
+						.toURI());
+			} catch (final IOException e) {
+				LOG.error("Unable to close ES REST client", e);
+			}
+		});
+	}
+	
+	public static final EsClient create(final EsClientConfiguration configuration) {
+		return CLIENTS_BY_HOST.getUnchecked(configuration);
 	}
 	
 	public static final void stop() {
@@ -146,11 +147,23 @@ public final class EsClient {
 	private final RestHighLevelClient client;
 	private final NamedXContentRegistry registry;
 	
-	private EsClient(final HttpHost host) {
+	private EsClient(final EsClientConfiguration configuration) {
 		// XXX: Adjust the thread context classloader while ES client is initializing 
 		this.client = Activator.withTccl(() -> {
-			LOG.info("ES REST client is connecting to '{}'.", host.toURI());
-			final RestHighLevelClient client = new RestHighLevelClient(RestClient.builder(host));
+			final HttpHost host = configuration.getHost();
+			LOG.info("ES REST client is connecting to '{}', connect timeout: {} ms, socket timeout: {} ms.", 
+					host.toURI(),
+					configuration.getConnectTimeout(),
+					configuration.getSocketTimeout());
+
+			final RequestConfigCallback requestConfigCallback = requestConfigBuilder -> requestConfigBuilder
+					.setConnectTimeout(configuration.getConnectTimeout())
+					.setSocketTimeout(configuration.getSocketTimeout());
+			
+			final RestClientBuilder restClientBuilder = RestClient.builder(host)
+				.setRequestConfigCallback(requestConfigCallback);
+			
+			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
 			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
 			return client;
 		}); 
