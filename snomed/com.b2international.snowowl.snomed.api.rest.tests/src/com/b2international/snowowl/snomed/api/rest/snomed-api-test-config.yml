@@ -28,3 +28,7 @@ metrics:
   
 repository:
   deploymentId: api-test
+  
+  index:
+    socketTimeout: 60000
+
