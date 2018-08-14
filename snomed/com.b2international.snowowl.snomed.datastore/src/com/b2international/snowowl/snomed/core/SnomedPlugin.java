@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
 import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.snomed.core.merge.SnomedComponentRevisionConf
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
+import com.b2international.snowowl.snomed.core.mrcm.io.MrcmJsonImporter;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -103,6 +105,8 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		if (env.isServer() || env.isEmbedded()) {
 			env.services().registerService(MrcmExporter.class, new MrcmExporterImpl());
 			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmExporter.class, MrcmExporterImpl.class.getClassLoader());
+			env.services().registerService(MrcmImporter.class, new MrcmJsonImporter(env.provider(IEventBus.class)));
+			RpcUtil.getInitialServerSession(env.container()).registerClassLoader(MrcmImporter.class, MrcmJsonImporter.class.getClassLoader());
 		}
 	}
 	

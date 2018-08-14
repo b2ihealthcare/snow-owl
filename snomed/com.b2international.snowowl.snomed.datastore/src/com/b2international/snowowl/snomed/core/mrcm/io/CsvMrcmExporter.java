@@ -40,7 +40,7 @@ import com.google.common.base.Joiner;
  * 
  * @since 4.6
  */
-public class CsvMrcmExporter {
+class CsvMrcmExporter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CsvMrcmExporter.class);
 

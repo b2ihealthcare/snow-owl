@@ -19,5 +19,5 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
  * The export format for the MRCM rules.
  */
 public enum MrcmExportFormat {
-	CSV
+	CSV, JSON
 }

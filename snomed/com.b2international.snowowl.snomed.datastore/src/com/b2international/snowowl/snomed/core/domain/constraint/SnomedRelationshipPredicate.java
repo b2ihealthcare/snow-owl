@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 
 /**
@@ -58,10 +59,12 @@ public final class SnomedRelationshipPredicate extends SnomedPredicate {
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
+	@JsonIgnore
 	public String getAttributeExpression() {
 		return attribute.toEcl();
 	}
 
+	@JsonIgnore
 	public String getRangeExpression() {
 		return range.toEcl();
 	}

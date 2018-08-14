@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -36,6 +38,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSe
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
  * The component representation of an MRCM constraint.
@@ -119,7 +122,6 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 			predicate = ((SnomedCardinalityPredicate) predicate).getPredicate();
 		}
 		
-		final SnomedConstraintPredicateType predicateType = SnomedConstraintPredicateType.typeOf(predicate);
 		final ConceptSetDefinitionFragment domainFragment = getDomain().createModel();
 		final PredicateFragment predicateFragment = getPredicate().createModel();
 		/* 
@@ -142,7 +144,7 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		updatedModel.validationMessage(getValidationMessage());
 		updatedModel.domain(domainFragment);
 		updatedModel.predicate(predicateFragment);
-		updatedModel.predicateType(SnomedConstraintPredicateType.typeOf(getPredicate()));
+		updatedModel.predicateType(SnomedConstraintPredicateType.typeOf(predicate));
 		updatedModel.selfIds(selfIds);
 		updatedModel.descendantIds(descendantIds);
 		updatedModel.refSetIds(refSetIds);
@@ -269,6 +271,14 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 			final String destinationId = ((RelationshipDefinitionFragment) definition).getDestinationId();
 			relationshipKeys.add(String.format("%s=%s", typeId, destinationId));			
 		}
+	}
+
+	public Request<TransactionContext, String> toCreateRequest() {
+		return SnomedRequests.prepareNewConstraint().setConstraint(this).build();
+	}
+	
+	public Request<TransactionContext, Boolean> toUpdateRequest() {
+		return SnomedRequests.prepareUpdateConstraint().setConstraint(this).build();
 	}
 	
 }

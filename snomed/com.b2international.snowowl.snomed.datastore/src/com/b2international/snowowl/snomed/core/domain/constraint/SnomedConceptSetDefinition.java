@@ -19,11 +19,25 @@ import java.util.Date;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
+@JsonTypeInfo(
+	use = JsonTypeInfo.Id.NAME,
+	include = JsonTypeInfo.As.PROPERTY,
+	property = "type"
+)
+@JsonSubTypes({
+	@JsonSubTypes.Type(value = SnomedCompositeDefinition.class, name = "composite"),
+	@JsonSubTypes.Type(value = SnomedEnumeratedDefinition.class, name = "enumerated"),
+	@JsonSubTypes.Type(value = SnomedHierarchyDefinition.class, name = "hierarchy"),
+	@JsonSubTypes.Type(value = SnomedReferenceSetDefinition.class, name = "refSet"),
+	@JsonSubTypes.Type(value = SnomedRelationshipDefinition.class, name = "relationship")
+})
 public abstract class SnomedConceptSetDefinition extends SnomedConceptModelComponent {
 
 	/**

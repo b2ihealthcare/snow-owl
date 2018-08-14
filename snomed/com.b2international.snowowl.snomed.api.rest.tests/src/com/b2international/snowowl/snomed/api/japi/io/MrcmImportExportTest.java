@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -34,66 +36,49 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
  * @since 4.4
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MrcmImportExportTest {
 
 	@Test
-	public void importTest() throws Exception {
+	public void _01_importTest() throws Exception {
 		// default/old MRCM import file contains 58 rules
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_defaults.xmi"));
+		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json"));
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
 			Services.service(MrcmImporter.class).doImport("test", stream);
 		} 
 		
-		
-		// verify CDO content
-		try (SnomedEditingContext context = new SnomedEditingContext(branch)) {
-			assertEquals(58, context.getConstraints().size());
-		}
-		// verify index
-		final SnomedConstraints allPredicates = SnomedRequests.prepareSearchConstraint()
-				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync();
-		assertEquals(58, allPredicates.getTotal());
+		// verify content
+		int numberOfConstraints = SnomedRequests.prepareSearchConstraint()
+			.setLimit(0)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync()
+			.getTotal();
+		assertEquals(100, numberOfConstraints);
 	}
 	
 	@Test
-	public void exportTest() throws Exception {
-		importTest();
-		
+	public void _02_exportTest() throws Exception {
 		Path target = Paths.get("target");
 		target.toFile().mkdirs();
-		Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".xmi");
-		assertFalse(exportedFile.toFile().exists());
-		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
-			Services.service(MrcmExporter.class).doExport("test", stream, MrcmExportFormat.XMI);
-		}
-		assertTrue(exportedFile.toFile().exists());
-		
-		target = Paths.get("target");
-		target.toFile().mkdirs();
-		exportedFile = target.resolve("mrcm_" + Dates.now() + ".csv");
+		Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".csv");
 		assertFalse(exportedFile.toFile().exists());
 		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
 			Services.service(MrcmExporter.class).doExport("test", stream, MrcmExportFormat.CSV);
 		}
 		assertTrue(exportedFile.toFile().exists());
-		
 	}
 	
 }

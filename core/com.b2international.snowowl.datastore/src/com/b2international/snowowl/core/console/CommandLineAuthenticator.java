@@ -18,11 +18,13 @@ package com.b2international.snowowl.core.console;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
-import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.commons.StringUtils;
-import com.google.common.base.Preconditions;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.identity.request.UserRequests;
 import com.google.common.base.Strings;
 
 /**
@@ -31,41 +33,33 @@ import com.google.common.base.Strings;
  */
 public class CommandLineAuthenticator {
 
-	private String username;
+	private User user;
 
-	public boolean authenticate(final CommandInterpreter interpreter) {
+	public boolean authenticate(final CommandLineStream out) {
+		out.print("Impersonate operation as: ");
 		
-		Preconditions.checkNotNull(interpreter);
-		interpreter.print("Impersonate operation as: ");
+		final String username = readUsername();
 		
-		username = readUsername();
-		
-		if (StringUtils.isEmpty(username)) {
-			interpreter.println("Impersonating user name should be specified.");
+		if (Strings.isNullOrEmpty(username)) {
+			out.println("Impersonating user name should be specified.");
 			return false;
 		} else {
-			
-			//XXX removed due to missing configuration for JAAS when using LDAP
-//			if (null == ApplicationContext.getInstance().getService(IUserManager.class).getUser(username)) {
-//				interpreter.println("Cannot impersonate non-existing user '" + username + "'.");
-//				return false;
-//			}
-			
-			return true;
+			try {
+				user = UserRequests.prepareGet(username).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(1, TimeUnit.MINUTES);
+				return true;
+			} catch (NotFoundException e) {
+				out.println("Cannot impersonate non-existing user '%s'.", username);
+				return false;
+			}
 		}
 		
 	}
 	
-	/**
-	 * Returns with the user name if the authentication was successful, otherwise returns with {@code null}.
-	 * @return the user ID.
-	 */
-	public String getUsername() {
-		return username;
+	public User getUser() {
+		return user;
 	}
 
 	private String readUsername() {
-
 		BufferedReader reader = null;
 		String reply = null;
 		try {
@@ -80,13 +74,9 @@ public class CommandLineAuthenticator {
 		return Strings.nullToEmpty(reply);
  	}
 
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
-		return Strings.nullToEmpty(username);
+		return user == null ? "N/A" : user.getUsername();
 	}
-	
+
 }

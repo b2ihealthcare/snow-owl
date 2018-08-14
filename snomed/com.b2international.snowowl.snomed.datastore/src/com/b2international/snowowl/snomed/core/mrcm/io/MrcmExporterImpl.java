@@ -27,7 +27,9 @@ public class MrcmExporterImpl implements MrcmExporter {
 
 	@Override
 	public void doExport(String user, OutputStream content, MrcmExportFormat exportFormat) {
-		if (exportFormat == MrcmExportFormat.CSV) {
+		if (exportFormat == MrcmExportFormat.JSON) {
+			new JsonMrcmExporter().doExport(user, content);
+		} else if (exportFormat == MrcmExportFormat.CSV) {
 			new CsvMrcmExporter().doExport(user, content);
 		} else {
 			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);

@@ -25,6 +25,7 @@ import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.api.japi.branches.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.api.japi.branches.SnomedBranchRequestTest;
+import com.b2international.snowowl.snomed.api.japi.io.MrcmImportExportTest;
 import com.b2international.snowowl.snomed.api.japi.io.SnomedRefSetDSVExportTest;
 import com.b2international.snowowl.snomed.api.japi.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.api.japi.issue.IssueSO2503RemoteJobDynamicMappingFix;
@@ -43,9 +44,6 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMember
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetMemberParameterizedTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRefSetParameterizedTest;
 import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationshipApiTest;
-import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionDowngradeTest;
-import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionUpgradeTest;
-import com.b2international.snowowl.snomed.api.rest.ext.SnomedExtensionVersioningTest;
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
@@ -101,6 +99,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	SnomedExtensionUpgradeTest.class, 
 //	SnomedExtensionDowngradeTest.class,
 //	SnomedExtensionVersioningTest.class,
+	// MRCM export/import
+	MrcmImportExportTest.class,
 	// Performance test cases
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,

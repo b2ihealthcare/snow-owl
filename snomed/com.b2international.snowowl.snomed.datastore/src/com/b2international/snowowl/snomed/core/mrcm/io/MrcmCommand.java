@@ -19,172 +19,135 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.TimeUnit;
 
-import org.eclipse.osgi.framework.console.CommandInterpreter;
-
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineAuthenticator;
+import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.PermissionIdConstant;
 import com.b2international.snowowl.identity.domain.User;
-import com.b2international.snowowl.identity.request.UserRequests;
-import com.google.common.collect.Sets;
+
+import picocli.CommandLine;
+import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
- * @since 
+ * @since 7.0
  */
-public final class MrcmCommand {
+@Component
+@picocli.CommandLine.Command(
+	name = "mrcm",
+	header = "Import/Export MRCM rules",
+	description = "Imports and exports MRCM content from/to CSV and JSON files",
+	subcommands = {
+		HelpCommand.class,
+		MrcmCommand.ImportCommand.class,
+		MrcmCommand.ExportCommand.class
+	}
+)
+public final class MrcmCommand extends Command {
 
-private String exportFormatsString = StringUtils.toString(Sets.newHashSet(MrcmExportFormat.values()));
+	@Override
+	public void run(CommandLineStream out) {
+		CommandLine.usage(this, (PrintStream) out);
+	}
 	
-	public void _mrcm(final CommandInterpreter interpreter) {
+	@picocli.CommandLine.Command(
+		name = "import",
+		header = "Imports MRCM rules",
+		description = "Imports MRCM rules from JSON file"
+	)
+	private static final class ImportCommand extends Command {
+
+		@Parameters(paramLabel = "FILE", description = "The JSON file with MRCM rules to import")
+		String file;
 		
-		try {
-			final String nextArgument = interpreter.nextArgument();
+		@Override
+		public void run(CommandLineStream out) {
+			final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
 			
-			if ("import".equals(nextArgument)) {
-				_import(interpreter);
+			if (!authenticator.authenticate(out)) {
 				return;
-			} else if ("export".equals(nextArgument)) {
-				_export(interpreter);
-				return;
-			} else {
-				interpreter.println(getHelp());
 			}
 			
-		} catch (final Throwable t) {
-			interpreter.println(getHelp());
-		}
-	}
-	
-	public synchronized void _import(final CommandInterpreter interpreter) {
-		
-		final String filePath = interpreter.nextArgument();
-		
-		if (StringUtils.isEmpty(filePath)) {
-			interpreter.println("MRCM import file path should be specified.");
-			return;
-		}
-		
-		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
-		
-		if (!authenticator.authenticate(interpreter)) {
-			return;
-		}
-		
-		final User user = getUser(authenticator.getUsername());
-		if (!user.hasPermission(PermissionIdConstant.IMPORT)) {
-			interpreter.print("User is unauthorized to import MRCM rules.");
-			return;
-		}
-
-		final Path file = Paths.get(filePath);
-		try (final InputStream content = Files.newInputStream(file, StandardOpenOption.READ)) {
-			new XMIMrcmImporter().doImport(authenticator.getUsername(), content);
-		} catch (IOException e) {
-			interpreter.printStackTrace(e);
-		}
-		
-	}
-
-	private User getUser(final String username) {
-		return UserRequests.prepareGet(username).buildAsync().execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(1, TimeUnit.MINUTES);
-	}
-
-	public synchronized void _export(final CommandInterpreter interpreter) {
-
-		final String format = interpreter.nextArgument();
-		if (StringUtils.isEmpty(format)) {
-			interpreter.println("Format needs to be specified.");
-			return;
-		}
-		
-		MrcmExportFormat selectedFormat = null;
-		try {
-			selectedFormat = MrcmExportFormat.valueOf(format);
-		} catch(IllegalArgumentException iae) {
-			interpreter.println("Incorrect format: " + format + " Supported formats: " + exportFormatsString + ".");
-			return;
-		}
-		
-		final String destinationFolder = interpreter.nextArgument();
-		
-		if (StringUtils.isEmpty(destinationFolder)) {
-			interpreter.println("Export destination folder needs to be specified.");
-			return;
-		}
-		
-		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
-		
-		if (!authenticator.authenticate(interpreter)) {
-			return;
-		}
-		
-		final User user = getUser(authenticator.getUsername());
-		if (!user.hasPermission(PermissionIdConstant.EXPORT)) {
-			interpreter.print("User is not authorized to export MRCM rules.");
-			return;
-		}
-		
-		final String username = User.SYSTEM.getUsername();
-
-		interpreter.println("Exporting MRCM rules (" + selectedFormat.name() + ")...");
-		
-		final Path outputFolder = Paths.get(destinationFolder);
-		checkOutputFolder(outputFolder);
-		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + selectedFormat.name().toLowerCase());
-		
-		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
-			if (selectedFormat == MrcmExportFormat.XMI) {
-				new XMIMrcmExporter().doExport(username, stream);
-			} else if (selectedFormat == MrcmExportFormat.CSV) {
-				new CsvMrcmExporter().doExport(username, stream);
+			final User user = authenticator.getUser();
+			if (!user.hasPermission(PermissionIdConstant.IMPORT)) {
+				out.println("User is unauthorized to import MRCM rules.");
+				return;
 			}
-			interpreter.println("Exported MRCM rules to " + exportPath + " in " 
-			+ selectedFormat.name() + " format.");
-		} catch (IOException e) {
-			interpreter.printStackTrace(e);
+			
+			try (final InputStream content = Files.newInputStream(Paths.get(file), StandardOpenOption.READ)) {
+				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user.getUsername(), content);
+			} catch (IOException e) {
+				out.println("Failed to import MRCM JSON file: " + file);
+			}			
+			
 		}
-	}
-	
-	private void checkOutputFolder(Path outputFolder) {
-		final File folder = outputFolder.toFile();
-		if (!folder.exists() || !folder.isDirectory()) {
-			throw new BadRequestException("Export destination folder cannot be found.");
-		}
-		if (!folder.canRead()) {
-			throw new BadRequestException("Cannot read destination folder.");
-		}		
-	}
-
-	@Override
-	public void run(CommandInterpreter interpreter) {
 		
 	}
 
-	@Override
-	public String getCommand() {
-		return "mrcm [import|export] <path>";
+	@picocli.CommandLine.Command(
+		name = "export",
+		header = "Exports MRCM rules",
+		description = "Exports MRCM rules to the selected format. Available formats are: CSV, JSON."
+	)
+	private static final class ExportCommand extends Command {
+
+		@Parameters(paramLabel = "PATH", description = "Output directory to export the MRCM rules to. The output file will be automatically created.")
+		String path;
+		
+		@Option(names = { "-f", "--format" }, defaultValue = "JSON", description = "MRCM Export Format option. CSV and JSON are supported.")
+		MrcmExportFormat format;
+		
+		@Override
+		public void run(CommandLineStream out) {
+			final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
+			
+			if (!authenticator.authenticate(out)) {
+				return;
+			}
+			
+			final User user = authenticator.getUser();
+			if (!user.hasPermission(PermissionIdConstant.EXPORT)) {
+				out.println("User is unauthorized to export MRCM rules.");
+				return;
+			}
+			
+			out.println("Exporting MRCM rules (%s)...", format);
+			
+			final Path outputFolder = Paths.get(path);
+			checkOutputFolder(outputFolder);
+			final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + format.name().toLowerCase());
+			
+			try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
+				ApplicationContext.getServiceForClass(MrcmExporter.class).doExport(user.getUsername(), stream, format);
+				out.println("Exported MRCM rules to " + exportPath + " in " + format.name() + " format.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				out.println("Failed to export MRCM rules");
+			}
+			
+		}
+		
+		private void checkOutputFolder(Path outputFolder) {
+			final File folder = outputFolder.toFile();
+			if (!folder.exists() || !folder.isDirectory()) {
+				throw new BadRequestException("Export destination folder cannot be found.");
+			}
+			if (!folder.canRead()) {
+				throw new BadRequestException("Cannot read destination folder.");
+			}		
+		}
+		
 	}
 
-	@Override
-	public String getDescription() {
-		return "";
-//		.append("\tmrcm import [importFileAbsolutePath] - Imports the MRCM rules from the given XMI source file.\n")
-//		.append("\tmrcm export ")
-//		.append(exportFormatsString)
-//		.append(" [destinationDirectoryPath] - Exports the MRCM rules in the given format to the destination folder.\n").toString()
-	}
-
-	
-	
 }

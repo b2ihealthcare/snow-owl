@@ -19,11 +19,25 @@ import java.util.Date;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
+@JsonTypeInfo(
+	use = JsonTypeInfo.Id.NAME,
+	include = JsonTypeInfo.As.PROPERTY,
+	property = "predicateType"
+)
+@JsonSubTypes({
+	@JsonSubTypes.Type(value = SnomedCardinalityPredicate.class, name = "cardinality"),
+	@JsonSubTypes.Type(value = SnomedConcreteDomainPredicate.class, name = "concreteDomain"),
+	@JsonSubTypes.Type(value = SnomedDependencyPredicate.class, name = "dependency"),
+	@JsonSubTypes.Type(value = SnomedDescriptionPredicate.class, name = "description"),
+	@JsonSubTypes.Type(value = SnomedRelationshipPredicate.class, name = "relationship")
+})
 public abstract class SnomedPredicate extends SnomedConceptModelComponent {
 
 	public abstract PredicateFragment createModel();
