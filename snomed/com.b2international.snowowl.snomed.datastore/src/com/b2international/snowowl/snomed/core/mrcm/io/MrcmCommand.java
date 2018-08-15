@@ -73,13 +73,8 @@ public final class MrcmCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
+			final User user = out.authenticate();
 			
-			if (!authenticator.authenticate(out)) {
-				return;
-			}
-			
-			final User user = authenticator.getUser();
 			if (!user.hasPermission(PermissionIdConstant.IMPORT)) {
 				out.println("User is unauthorized to import MRCM rules.");
 				return;

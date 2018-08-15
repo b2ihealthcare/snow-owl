@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.console;
 
+import com.b2international.snowowl.identity.domain.User;
+
 /**
  * @since 7.0
  */
@@ -25,6 +27,16 @@ public interface CommandLineStream {
 	void println();
 	
 	void println(Object o);
+	
+	default User authenticate() {
+		final CommandLineAuthenticator authenticator = new CommandLineAuthenticator();
+		
+		if (!authenticator.authenticate(this)) {
+			return null;
+		}
+		
+		return authenticator.getUser();
+	}
 	
 	default void println(String message, Object...args) {
 		println(String.format(message, args));
