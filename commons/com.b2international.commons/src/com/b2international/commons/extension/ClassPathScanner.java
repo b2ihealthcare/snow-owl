@@ -59,9 +59,12 @@ public enum ClassPathScanner {
 			if (SYSTEM_BUNDLE_ID  == bundle.getBundleId()) {
 				continue;
 			}
-			ClassLoader classLoader = bundle.adapt(BundleWiring.class).getClassLoader();
-			if (classLoader != null) {
-				classLoaders.add(classLoader);
+			BundleWiring wiring = bundle.adapt(BundleWiring.class);
+			if (wiring != null) {
+				ClassLoader classLoader = wiring.getClassLoader();
+				if (classLoader != null) {
+					classLoaders.add(classLoader);
+				}
 			}
 		}
 		registry = new FastClasspathScanner()
@@ -174,14 +177,18 @@ public enum ClassPathScanner {
 	            for (int i = 0; i < entries.length; i++) {
 	                final Object bundleFile = ReflectionUtils.invokeMethod(entries[i], "getBundleFile", false);
 	                final File baseFile = (File) ReflectionUtils.invokeMethod(bundleFile, "getBaseFile", false);
-	                if (baseFile != null && baseFile.isDirectory() && DevClassPathHelper.inDevelopmentMode()) {
-	                	DefaultClassLoader cl = (DefaultClassLoader) classloader;
-	                	String[] devClassPath = DevClassPathHelper.getDevClassPath(cl.getBundle().getSymbolicName());
-	                	for (String cp : devClassPath) {
-                			final File cpFile = new File(baseFile, cp);
-                			if (cpFile.isDirectory()) {
-                				classpathOrderOut.addClasspathElement(cpFile.getPath(), classloader, log);
-                			}
+	                if (baseFile != null) {
+	                	if (DevClassPathHelper.inDevelopmentMode() && baseFile.isDirectory()) {
+	                		DefaultClassLoader cl = (DefaultClassLoader) classloader;
+	                		String[] devClassPath = DevClassPathHelper.getDevClassPath(cl.getBundle().getSymbolicName());
+	                		for (String cp : devClassPath) {
+	                			final File cpFile = new File(baseFile, cp);
+	                			if (cpFile.isDirectory()) {
+	                				classpathOrderOut.addClasspathElement(cpFile.getPath(), classloader, log);
+	                			}
+	                		}
+	                	} else {
+	                		classpathOrderOut.addClasspathElement(baseFile.getPath(), classloader, log);
 	                	}
 	                }
 	            }
