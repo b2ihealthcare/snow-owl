@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Collection;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
@@ -38,12 +39,12 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		return ImmutableSet.<Class<?>>of(RevisionData.class);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeEmptyBranch() throws Exception {
 		index().purge(MAIN, Purge.ALL);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeBranchWithSingleRevision() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		index().purge(MAIN, Purge.ALL);
@@ -51,7 +52,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeBranchWithTwoRevisionsOfDocument() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1,"field1Changed", "field2"));
@@ -66,7 +67,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertDocEquals(new RevisionData(STORAGE_KEY1, "field1Changed", "field2"), actual);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeMainWithTwoRevisionsAndABranch() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		createBranch(MAIN, "a");
@@ -86,7 +87,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertDocEquals(new RevisionData(STORAGE_KEY1, "field1", "field2"), actualOnChild);
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeChildBranchDoesNotPurgeParentRevisions() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1Changed", "field2"));
@@ -101,7 +102,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertEquals(2, Iterables.size(revisions));
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeLatestPurgesOnlyMostRecentSegment() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1Changed", "field2"));
@@ -117,7 +118,7 @@ public class RevisionPurgeTest extends BaseRevisionIndexTest {
 		assertEquals(3, Iterables.size(revisions));
 	}
 	
-	@Test
+	@Test @Ignore
 	public void purgeHistoryPurgesHistoricalSegments() throws Exception {
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1", "field2"));
 		indexRevision(MAIN, new RevisionData(STORAGE_KEY1, "field1Changed", "field2"));

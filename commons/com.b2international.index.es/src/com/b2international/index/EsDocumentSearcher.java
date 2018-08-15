@@ -155,7 +155,7 @@ public class EsDocumentSearcher implements Searcher {
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
 		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
-		final boolean isLiveScrolled = query.getSearchAfter() != null;
+		final boolean isLiveScrolled = !Strings.isNullOrEmpty(query.getSearchAfter());
 		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
 			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
@@ -314,8 +314,8 @@ public class EsDocumentSearcher implements Searcher {
 		}
 		
 		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			final JavaBinCodec codec = new JavaBinCodec(baos, null);
-			codec.writeArray(searchAfter);
+			final JavaBinCodec codec = new JavaBinCodec();
+			codec.marshal(searchAfter, baos);
 			codec.close();
 			
 			final byte[] tokenBytes = baos.toByteArray();
@@ -335,10 +335,10 @@ public class EsDocumentSearcher implements Searcher {
 				.decode(searchAfterToken);
 		
 		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
-			final Object[] values = new JavaBinCodec()
-					.readArray(dis)
-					.toArray();
-			return values;
+			JavaBinCodec codec = new JavaBinCodec();
+			List<Object> obj = (List<Object>) codec.unmarshal(dis);
+			codec.close();
+			return obj.toArray();
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
 		}
