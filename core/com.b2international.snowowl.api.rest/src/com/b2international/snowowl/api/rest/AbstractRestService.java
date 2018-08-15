@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.api.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
  * @since 1.0
@@ -22,8 +26,15 @@ package com.b2international.snowowl.api.rest;
 public abstract class AbstractRestService {
 
 	/**
-	 * The currently supported versioned media type of the snowowl RESTful API.
+	 * The media type produced and accepted by Snow Owl's RESTful API for JSON content.
 	 */
-	public static final String SO_MEDIA_TYPE = "application/vnd.com.b2international.snowowl+json";
-
+	public static final String JSON_MEDIA_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
+	
+	/**
+	 * The media type produced and accepted by Snow Owl's RESTful API for text content.
+	 */
+	public static final String TEXT_MEDIA_TYPE = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8";
+	
+	@Autowired
+	protected IEventBus bus;
 }

@@ -19,16 +19,15 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.security.Principal;
 
-import javax.annotation.Resource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +42,6 @@ import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 
 import io.swagger.annotations.Api;
@@ -57,22 +55,19 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
-@RequestMapping(value = "/codesystems", produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(value = "/codesystems") 
 public class CodeSystemRestService extends AbstractRestService {
 
 	@Autowired
 	private ICodeSystemService codeSystemService;
 	
-	@Resource
-	private IEventBus bus;
-
 	@ApiOperation(
 			value="Retrieve all code systems",
 			notes="Returns a list containing generic information about registered code systems.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK")
 	})
-	@RequestMapping(method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public CollectionResource<ICodeSystem> getCodeSystems() {
 		return CollectionResource.of(codeSystemService.getCodeSystems());
 	}
@@ -84,7 +79,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="{shortNameOrOid}", method=RequestMethod.GET)
+	@GetMapping(value = "/{shortNameOrOid}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ICodeSystem getCodeSystemByShortNameOrOid(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
@@ -98,14 +93,13 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 201, message = "Created", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System already exists in the system", response = RestApiError.class)
 	})
-	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> createCodeSystem(
 			@RequestBody
 			final CodeSystem codeSystem,
-			
-			final Principal principal
-			) {
+			final Principal principal) {
+
 		ApiValidation.checkInput(codeSystem);
 		
 		final String userId = principal.getName();
@@ -142,9 +136,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 204, message = "No content", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System cannot be updated", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{shortNameOrOid}", 
-		method = RequestMethod.PUT, 
-		consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(value = "/{shortNameOrOid}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void updateCodeSystem(
 			@ApiParam(value="The code system identifier (short name or OID)")
@@ -179,5 +171,4 @@ public class CodeSystemRestService extends AbstractRestService {
 			throw new BadRequestException("Repository ID cannot be empty for Code System update.");
 		}
 	}
-
 }

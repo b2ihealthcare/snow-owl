@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.rest;
+package com.b2international.snowowl.api.rest.info;
 
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.api.rest.admin.AbstractAdminRestService;
+import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.core.ServerInfo;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -35,15 +34,17 @@ import io.swagger.annotations.ApiOperation;
  */
 @Api(value = "Server info", description="Info", tags = { "info" })
 @Controller
-public class ServerInfoRestApi extends AbstractAdminRestService {
+@RequestMapping(value = "/info") 
+public class ServerInfoRestService extends AbstractRestService {
 
 	@ApiOperation(
 		value="Retrieve server information",
 		notes="Retrieves information about the running server, including version, available repositories, etc."
 	)
-	@RequestMapping(value="/info", produces={MediaType.APPLICATION_JSON_VALUE}, method= {RequestMethod.GET, RequestMethod.HEAD})
+	@RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<ServerInfo> info() {
-		return DeferredResults.wrap(RepositoryRequests.prepareGetServerInfo().buildAsync().execute(bus));
+		return DeferredResults.wrap(RepositoryRequests.prepareGetServerInfo()
+				.buildAsync()
+				.execute(bus));
 	}
-	
 }

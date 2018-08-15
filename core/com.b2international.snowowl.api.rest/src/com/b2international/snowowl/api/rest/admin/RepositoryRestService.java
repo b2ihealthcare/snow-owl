@@ -17,11 +17,11 @@ package com.b2international.snowowl.api.rest.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,6 +32,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.api.admin.IRepositoryService;
 import com.b2international.snowowl.api.admin.exception.LockException;
+import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
 import com.b2international.snowowl.core.Repositories;
@@ -50,8 +51,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Repositories", description="Repositories", tags = { "repositories" })
 @RestController
-@RequestMapping(value="/repositories", produces={ MediaType.APPLICATION_JSON_VALUE })
-public class RepositoryRestService extends AbstractAdminRestService {
+@RequestMapping(value = "/repositories") 
+public class RepositoryRestService extends AbstractRestService {
 	
 	@Autowired
 	protected IRepositoryService repositoryService;
@@ -65,7 +66,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 	@ApiOperation(
 			value="Retrieve all repositories",
 			notes="Retrieves all repositories that store terminology content.")
-	@RequestMapping(method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<Repositories> getRepositories(
 			@ApiParam
 			@RequestParam(value="id", required=false)
@@ -85,7 +86,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{id}", method=RequestMethod.GET)
+	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<RepositoryInfo> getRepository(
 			@ApiParam("The repository identifier")
 			@PathVariable("id")
@@ -104,7 +105,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		@ApiResponse(code=400, message="Illegal timeout value, or locking-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@RequestMapping(value="lock", method=RequestMethod.POST)
+	@PostMapping("/lock")
 	public void lockGlobal(
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false) 
 			@ApiParam(value="lock timeout in milliseconds")
@@ -121,7 +122,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		@ApiResponse(code=400, message="Unspecified unlock-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@RequestMapping(value="unlock", method=RequestMethod.POST)
+	@PostMapping("/unlock")
 	public void unlockGlobal() {
 		repositoryService.unlockGlobal();
 	}
@@ -138,7 +139,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		@ApiResponse(code=400, message="Illegal timeout value, or locking-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@RequestMapping(value="{id}/lock", method=RequestMethod.POST)
+	@PostMapping("/{id}/lock")
 	public void lockRepository(
 			@PathVariable(value="id") 
 			@ApiParam(value="The repository id")
@@ -160,7 +161,7 @@ public class RepositoryRestService extends AbstractAdminRestService {
 		@ApiResponse(code=400, message="Unspecified unlock-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@RequestMapping(value="{id}/unlock", method=RequestMethod.POST)
+	@PostMapping("/{id}/unlock")
 	public void unlockRepository(
 			@ApiParam(value="The repository id")
 			@PathVariable(value="id") 
@@ -168,5 +169,4 @@ public class RepositoryRestService extends AbstractAdminRestService {
 
 		repositoryService.unlockRepository(repositoryUuid);
 	}
-
 }

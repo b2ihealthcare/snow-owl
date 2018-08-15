@@ -16,13 +16,13 @@
 package com.b2international.snowowl.api.rest.admin;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.core.messaging.MessagingRequests;
 
 import io.swagger.annotations.Api;
@@ -38,10 +38,10 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Administration", description="Administration", tags = { "administration" })
 @RestController
-@RequestMapping(value={"/messages"}, consumes={ MediaType.TEXT_PLAIN_VALUE }, produces={ MediaType.TEXT_PLAIN_VALUE })
-public class MessagingRestService extends AbstractAdminRestService {
+@RequestMapping(value = "/messages")
+public class MessagingRestService extends AbstractRestService {
 
-	@RequestMapping(value="send", method=RequestMethod.POST)
+	@PostMapping(value = "/send", consumes = { AbstractRestService.TEXT_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@ApiOperation(
 			value="Send message to connected users",

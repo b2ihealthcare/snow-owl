@@ -22,12 +22,12 @@ import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,9 +51,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
-@RequestMapping(
-		value = "/codesystems/{shortName}/versions",
-		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(value = "/codesystems/{shortName}/versions")
 public class CodeSystemVersionRestService extends AbstractRestService {
 	
 	@Autowired
@@ -66,7 +64,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public CollectionResource<ICodeSystemVersion> getAllCodeSystemVersionsByShortName(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") final String shortName) {
@@ -81,7 +79,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system or version not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{version}", method=RequestMethod.GET)
+	@GetMapping(value = "/{version}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ICodeSystemVersion getCodeSystemVersionByShortNameAndVersionId(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") 
@@ -104,8 +102,8 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Code system version conflicts with existing branch", response = RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-	@ResponseStatus(value=HttpStatus.CREATED)
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") 
