@@ -73,6 +73,7 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
 		public static final String STATE = "state";
+		public static final String SCHEDULE_DATE = "scheduleDate";
 	}
 	
 	public static class Expressions {
