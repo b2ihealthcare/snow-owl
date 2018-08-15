@@ -370,7 +370,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			final Request<BranchContext, SnomedDescriptions> languageCodeRequest = SnomedRequests.prepareSearchDescription()
 					.all()
 					.filterByLanguageCodes(filteredLanguageCodes)
-					.setFields(SnomedRf2Headers.FIELD_LANGUAGE_CODE)
+					.setFields(SnomedRf2Headers.FIELD_ID, SnomedRf2Headers.FIELD_LANGUAGE_CODE)
 					.build();
 			
 			final SnomedDescriptions descriptions = execute(context, branch, languageCodeRequest);
