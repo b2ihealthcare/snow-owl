@@ -77,12 +77,12 @@ public final class SnomedCommand extends Command {
 		String branch = Branch.MAIN_PATH;
 		
 		@Option(names = { "-f", "--format" }, description = "The import file format. Currently 'rf2' is supported only.", defaultValue = SUPPORTED_FORMAT)
-		String format;
+		String format = SUPPORTED_FORMAT;
 		
 		@Option(names = { "-t" }, description = "The importable release type from an RF2 compatible file.", defaultValue = "FULL")
 		Rf2ReleaseType rf2ReleaseType = Rf2ReleaseType.FULL;
 		
-		@Option(names = { "-v" }, description = "Whether to create versions for the underlying code system or just import the content.")
+		@Option(names = { "-v" }, description = "Whether to create versions for the underlying code system or just import the content.", defaultValue = "true")
 		boolean createVersions;
 		
 		@Parameters(paramLabel = "PATH", description = "The absolute path to the importable file")
@@ -114,6 +114,7 @@ public final class SnomedCommand extends Command {
 					.setCreateVersions(createVersions)
 					.setRf2ArchiveId(rf2ArchiveId)
 					.setUserId(user.getUsername())
+					.setReleaseType(rf2ReleaseType)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 					.execute(getBus())
 					.getSync();
