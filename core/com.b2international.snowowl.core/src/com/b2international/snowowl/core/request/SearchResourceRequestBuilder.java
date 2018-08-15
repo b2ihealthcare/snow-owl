@@ -120,6 +120,18 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
+	 * Sorts the result set by the given sort descriptor.
+	 * <p>
+	 * The format is <code>field1,field2:asc,field3:desc</code>.
+	 * 
+	 * @param sortBy - the sort descriptor
+	 * @return this builder instance
+	 */
+	public final B sortBy(String sortBy) {
+		return sortBy(SortParser.parse(sortBy));
+	}
+	
+	/**
 	 * Sorts the result set by the given sort fields.
 	 * 
 	 * @param first - the first sort field
