@@ -340,6 +340,6 @@ public class SnomedConceptRestService extends AbstractRestService {
 	}
 
 	private URI getConceptLocationURI(String branchPath, String conceptId) {
-		return linkTo(SnomedConceptRestService.class).slash(branchPath).slash("concepts").slash(conceptId).toUri();
+		return linkTo(SnomedConceptRestService.class, branchPath).slash(conceptId).toUri();
 	}
 }

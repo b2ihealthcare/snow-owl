@@ -364,6 +364,6 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	private URI getRefSetMemberLocationURI(String branchPath, String memberId) {
-		return linkTo(SnomedReferenceSetMemberRestService.class).slash(branchPath).slash("members").slash(memberId).toUri();
+		return linkTo(SnomedReferenceSetMemberRestService.class, branchPath).slash(memberId).toUri();
 	}
 }

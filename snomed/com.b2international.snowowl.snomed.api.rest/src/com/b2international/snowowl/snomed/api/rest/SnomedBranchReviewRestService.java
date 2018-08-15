@@ -48,7 +48,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * Provides REST endpoints for computing Reviewerences between branches.
+ * Provides REST endpoints for creating terminology change reviews.
  * 
  * @since 4.2
  */

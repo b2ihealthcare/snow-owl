@@ -350,6 +350,6 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 	}
 	
 	private URI getDescriptionLocation(final String branchPath, final String descriptionId) {
-		return linkTo(SnomedDescriptionRestService.class).slash(branchPath).slash("descriptions").slash(descriptionId).toUri();
+		return linkTo(SnomedDescriptionRestService.class, branchPath).slash(descriptionId).toUri();
 	}
 }

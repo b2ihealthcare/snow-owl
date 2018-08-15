@@ -315,6 +315,6 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 	}
 
 	private URI getRelationshipLocation(final String branchPath, final String relationshipId) {
-		return linkTo(SnomedRelationshipRestService.class).slash(branchPath).slash("relationships").slash(relationshipId).toUri();
+		return linkTo(SnomedRelationshipRestService.class, branchPath).slash(relationshipId).toUri();
 	}
 }
