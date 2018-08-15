@@ -42,6 +42,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -103,15 +104,19 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			
 			for (Hits<String[]> hits : searcher.scroll(query)) {
 				for (String[] hit : hits) {
-					issuesByComponentId.get(hit[0]).forEach(validationIssue -> {
-						validationIssue.setDetails(COMPONENT_STATUS, hit[1]);
-						validationIssue.setDetails(COMPONENT_MODULE_ID, hit[2]);
+					String id = hit[0];
+					String status = hit[1];
+					String moduleId = hit[2];
+					issuesByComponentId.get(id).forEach(validationIssue -> {
+						validationIssue.setDetails(COMPONENT_STATUS, status);
+						validationIssue.setDetails(COMPONENT_MODULE_ID, moduleId);
 						if (CONCEPT == category) {
-							validationIssue.setDetails(CONCEPT_STATUS, hit[1]);
-							alreadyFetchedConceptIds.add(hit[0]);
+							validationIssue.setDetails(CONCEPT_STATUS, status);
+							alreadyFetchedConceptIds.add(id);
 						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
-							if (!issueIdsByConceptIds.containsKey(hit[3]) || !alreadyFetchedConceptIds.contains(hit[3])) {
-								issueIdsByConceptIds.put(hit[3], hit[0]);
+							String containerConceptId = hit[3];
+							if (!Strings.isNullOrEmpty(containerConceptId) && (!issueIdsByConceptIds.containsKey(containerConceptId) || !alreadyFetchedConceptIds.contains(containerConceptId))) {
+								issueIdsByConceptIds.put(containerConceptId, id);
 							}
 						}
 					});

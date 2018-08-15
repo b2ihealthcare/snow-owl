@@ -51,7 +51,12 @@ public class IndexConfiguration {
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	
-	private String clusterUrl; 
+	// @Nullable
+	private String clusterUrl;
+	@Min(1_000)
+	private int connectTimeout = IndexClientFactory.DEFAULT_CONNECT_TIMEOUT;
+	@Min(1_000)
+	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -171,5 +176,25 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setClusterUrl(String clusterUrl) {
 		this.clusterUrl = clusterUrl;
+	}
+	
+	@JsonProperty
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
+	
+	@JsonProperty
+	public void setConnectTimeout(int connectTimeout) {
+		this.connectTimeout = connectTimeout;
+	}
+	
+	@JsonProperty
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
+	
+	@JsonProperty
+	public void setSocketTimeout(int socketTimeout) {
+		this.socketTimeout = socketTimeout;
 	}
 }

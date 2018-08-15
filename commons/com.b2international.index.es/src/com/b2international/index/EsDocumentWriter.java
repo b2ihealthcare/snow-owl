@@ -17,7 +17,6 @@ package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.ByteArrayOutputStream;
@@ -45,7 +44,6 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -57,6 +55,7 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 
 import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.es.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,11 +63,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.RawValue;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.util.concurrent.Futures;
@@ -89,7 +90,7 @@ public class EsDocumentWriter implements Writer {
 	private final Searcher searcher;
 
 	private final Random random = new Random();
-	private final Map<String, Object> indexOperations = newHashMap();
+	private final Table<Class<?>, String, Object> indexOperations = HashBasedTable.create();
 	private final Multimap<Class<?>, String> deleteOperations = HashMultimap.create();
 	private final ObjectMapper mapper;
 	private List<BulkUpdate<?>> bulkUpdateOperations = newArrayList();
@@ -103,12 +104,12 @@ public class EsDocumentWriter implements Writer {
 	
 	@Override
 	public void put(String key, Object object) {
-		indexOperations.put(key, object);
+		indexOperations.put(object.getClass(), key, object);
 	}
 
 	@Override
 	public <T> void putAll(Map<String, T> objectsByKey) {
-		indexOperations.putAll(objectsByKey);
+		objectsByKey.forEach(this::put);
 	}
 
 	@Override
@@ -145,7 +146,7 @@ public class EsDocumentWriter implements Writer {
 		}
 		
 		final Set<DocumentMapping> mappingsToRefresh = Collections.synchronizedSet(newHashSet());
-		final RestHighLevelClient client = admin.client();
+		final EsClient client = admin.client();
 		// apply bulk updates first
 		final ListeningExecutorService executor;
 		if (bulkUpdateOperations.size() > 1 || bulkDeleteOperations.size() > 1) {
@@ -197,54 +198,75 @@ public class EsDocumentWriter implements Writer {
 			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
 			.build();
 
-			for (Entry<String, Object> entry : Iterables.consumingIterable(indexOperations.entrySet())) {
-				final String id = entry.getKey();
-				if (!deleteOperations.containsValue(id)) {
-					final Object obj = entry.getValue();
-					final DocumentMapping mapping = admin.mappings().getMapping(obj.getClass());
-					mappingsToRefresh.add(mapping);
-
-					final Set<String> hashedFields = mapping.getHashedFields();
-					final byte[] _source;
-					
-					if (!hashedFields.isEmpty()) {
-						final ObjectNode objNode = mapper.valueToTree(obj);
-						final ObjectNode hashedNode = mapper.createObjectNode();
-					
-						// Preserve property order, share references with objNode
-						for (String hashedField : hashedFields) {
-							JsonNode value = objNode.get(hashedField);
-							if (value != null && !value.isNull()) {
-								hashedNode.set(hashedField, value);
-							}
-						}
-					
-						final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
-						final HashCode hashCode = Hashing.sha1().hashBytes(hashedBytes);
-						
-						// Inject the result as an extra field into the to-be-indexed JSON content
-						objNode.put(DocumentMapping._HASH, hashCode.toString());
-						_source = mapper.writeValueAsBytes(objNode);
-						
-					} else {
-						_source = mapper.writeValueAsBytes(obj);
-					}
-					
-					processor.add(new IndexRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), id)
-							.opType(OpType.INDEX)
-							.source(_source, XContentType.JSON));
-				}
-			}
-
-			for (Class<?> type : deleteOperations.keySet()) {
+			for (Class<?> type : ImmutableSet.copyOf(indexOperations.rowKeySet())) {
+				final Map<String, Object> indexOperationsForType = indexOperations.row(type);
+				
 				final DocumentMapping mapping = admin.mappings().getMapping(type);
-				mappingsToRefresh.add(mapping);
 				final String typeString = mapping.typeAsString();
-				for (String id : deleteOperations.get(type)) {
-					processor.add(new DeleteRequest(admin.getTypeIndex(mapping), typeString, id));
+				final String typeIndex = admin.getTypeIndex(mapping);
+				
+				mappingsToRefresh.add(mapping);
+				
+				for (Entry<String, Object> entry : Iterables.consumingIterable(indexOperationsForType.entrySet())) {
+					final String id = entry.getKey();
+					if (!deleteOperations.containsValue(id)) {
+						final Object obj = entry.getValue();
+						final Set<String> hashedFields = mapping.getHashedFields();
+						final byte[] _source;
+						
+						if (!hashedFields.isEmpty()) {
+							final ObjectNode objNode = mapper.valueToTree(obj);
+							final ObjectNode hashedNode = mapper.createObjectNode();
+						
+							// Preserve property order, share references with objNode
+							for (String hashedField : hashedFields) {
+								JsonNode value = objNode.get(hashedField);
+								if (value != null && !value.isNull()) {
+									hashedNode.set(hashedField, value);
+								}
+							}
+						
+							final byte[] hashedBytes = mapper.writeValueAsBytes(hashedNode);
+							final HashCode hashCode = Hashing.sha1().hashBytes(hashedBytes);
+							
+							// Inject the result as an extra field into the to-be-indexed JSON content
+							objNode.put(DocumentMapping._HASH, hashCode.toString());
+							_source = mapper.writeValueAsBytes(objNode);
+							
+						} else {
+							_source = mapper.writeValueAsBytes(obj);
+						}
+						
+						processor.add(new IndexRequest(typeIndex, typeString, id)
+								.opType(OpType.INDEX)
+								.source(_source, XContentType.JSON));
+					}
 				}
+	
+				for (String id : deleteOperations.removeAll(type)) {
+					processor.add(new DeleteRequest(typeIndex, typeString, id));
+				}
+				
+				// Flush processor between index boundaries
+				processor.flush();
 			}
 			
+			// Remaining delete operations can be executed on their own
+			for (Class<?> type : ImmutableSet.copyOf(deleteOperations.keySet())) {
+				final DocumentMapping mapping = admin.mappings().getMapping(type);
+				final String typeString = mapping.typeAsString();
+				final String typeIndex = admin.getTypeIndex(mapping);
+				
+				mappingsToRefresh.add(mapping);
+				
+				for (String id : deleteOperations.removeAll(type)) {
+					processor.add(new DeleteRequest(typeIndex, typeString, id));
+				}
+
+				// Flush processor between index boundaries
+				processor.flush();
+			}
+
 			try {
 				processor.awaitClose(5, TimeUnit.MINUTES);
 			} catch (InterruptedException e) {
@@ -256,18 +278,18 @@ public class EsDocumentWriter implements Writer {
 		admin.refresh(mappingsToRefresh);
 	}
 
-	private void bulkUpdate(final RestHighLevelClient client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
+	private void bulkUpdate(final EsClient client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
 		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
 		final String rawScript = mapping.getScript(update.getScript()).script();
 		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
 		bulkIndexByScroll(client, update, "_update_by_query", script, mappingsToRefresh);
 	}
 
-	private void bulkDelete(final RestHighLevelClient client, final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
+	private void bulkDelete(final EsClient client, final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
 		bulkIndexByScroll(client, delete, "_delete_by_query", null, mappingsToRefresh);
 	}
 
-	private void bulkIndexByScroll(final RestHighLevelClient client,
+	private void bulkIndexByScroll(final EsClient client,
 			final BulkOperation<?> op, 
 			final String command, 
 			final org.elasticsearch.script.Script script, 
@@ -310,15 +332,14 @@ public class EsDocumentWriter implements Writer {
 				}
 				
 				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#docs-update-by-query-response-body
-				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-delete-by-query.html#_response_body
-				final JsonNode bulkByScrollResponse = mapper.readTree(response.getEntity().getContent());
+				final JsonNode updateByQueryResponse = mapper.readTree(response.getEntity().getContent());
 				
-				final int updateCount = bulkByScrollResponse.get("updated").asInt();
-				final int deleteCount = bulkByScrollResponse.get("deleted").asInt();
-				final int noops = bulkByScrollResponse.get("noops").asInt();
-				final ArrayNode failures = (ArrayNode) bulkByScrollResponse.get("failures");
+				final int updateCount = updateByQueryResponse.get("updated").asInt();
+				final int deleteCount = updateByQueryResponse.get("deleted").asInt();
+				final int noops = updateByQueryResponse.get("noops").asInt();
+				final ArrayNode failures = (ArrayNode) updateByQueryResponse.get("failures");
 				
-				versionConflicts = bulkByScrollResponse.get("version_conflicts").asInt();
+				versionConflicts = updateByQueryResponse.get("version_conflicts").asInt();
 				
 				boolean updated = updateCount > 0;
 				if (updated) {
@@ -342,7 +363,6 @@ public class EsDocumentWriter implements Writer {
 				
 				if (failures.size() > 0) {
 					boolean versionConflictsOnly = true;
-					
 					for (JsonNode failure : failures) {
 						final String failureMessage = failure.get("cause").get("reason").asText();
 						final int failureStatus = failure.get("status").asInt();
@@ -354,7 +374,7 @@ public class EsDocumentWriter implements Writer {
 							admin.log().warn("Version conflict reason: {}", failureMessage);
 						}
 					}
-					
+
 					if (!versionConflictsOnly) {
 						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.");
 					}
@@ -401,8 +421,10 @@ public class EsDocumentWriter implements Writer {
 	 */
 	private void dumpOps() throws IOException {
 		System.err.println("Added documents:");
-		for (Entry<String, Object> entry : indexOperations.entrySet()) {
-			System.err.format("\t%s -> %s\n", entry.getKey(), mapper.writeValueAsString(entry.getValue()));
+		for (Entry<Class<?>, Map<String, Object>> indexOperationsByType  : indexOperations.rowMap().entrySet()) {
+			for (Entry<String, Object> entry : indexOperationsByType.getValue().entrySet()) {
+				System.err.format("\t%s -> %s\n", entry.getKey(), mapper.writeValueAsString(entry.getValue()));
+			}
 		}
 		System.err.println("Deleted documents: ");
 		for (Class<?> type : deleteOperations.keySet()) {

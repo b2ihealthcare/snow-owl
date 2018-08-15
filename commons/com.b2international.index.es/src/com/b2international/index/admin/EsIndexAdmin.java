@@ -37,7 +37,6 @@ import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.RestStatus;
@@ -53,6 +52,7 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
 import com.b2international.index.Text;
+import com.b2international.index.es.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
@@ -67,15 +67,16 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private final RestHighLevelClient client;
+	private final EsClient client;
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
 	private final ObjectMapper mapper;
 	
 	private final Logger log;
+	private final String prefix;
 
-	public EsIndexAdmin(RestHighLevelClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
+	public EsIndexAdmin(EsClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
@@ -83,9 +84,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.mapper = mapper;
 		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
+		
 		this.settings.putIfAbsent(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, IndexClientFactory.DEFAULT_COMMIT_CONCURRENCY_LEVEL);
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
+		
+		final String prefix = (String) settings.get(IndexClientFactory.INDEX_PREFIX);
+		this.prefix = Strings.isNullOrEmpty(prefix) ? "" : prefix + ".";
 	}
 	
 	@Override
@@ -408,13 +413,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 	
 	public String getTypeIndex(DocumentMapping mapping) {
 		if (mapping.getParent() != null) {
-			return String.format("%s-%s", name, mapping.getParent().typeAsString());
+			return String.format("%s%s-%s", prefix, name, mapping.getParent().typeAsString());
 		} else {
-			return String.format("%s-%s", name, mapping.typeAsString());
+			return String.format("%s%s-%s", prefix, name, mapping.typeAsString());
 		}
 	}
 	
-	public RestHighLevelClient client() {
+	public EsClient client() {
 		return client;
 	}
 	

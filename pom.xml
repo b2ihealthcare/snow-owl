@@ -766,7 +766,7 @@
 		</profile>
 		<profile>
    			<id>m2e</id>
-   			<!-- This profile is only activated when building in Eclipse with m2e -->
+   			<!-- This profile is only activated when not building in Eclipse with m2e -->
    			<activation>
      			<property>
 		       		<name>!m2e.version</name>

@@ -17,8 +17,6 @@ package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Arrays;
-
 import com.b2international.index.Index;
 import com.b2international.index.admin.Administrable;
 import com.google.common.base.Strings;
@@ -150,6 +148,8 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 */
 	static String toRevisionRange(String base, String compare) {
+		checkArgument(!Strings.isNullOrEmpty(base));
+		checkArgument(!Strings.isNullOrEmpty(compare));
 		return String.format("%s%s%s", base, REV_RANGE, compare);
 	}
 	
@@ -159,11 +159,12 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * @return
 	 * @throws IllegalArgumentException - if the given path cannot be parsed as a revision range path expression
 	 */
-	static String[] getRevisionRangePaths(String revisionRangePath) {
-		final String[] branches = revisionRangePath.split("\\.\\.\\.");
-		checkArgument(branches.length == 2 && !Strings.isNullOrEmpty(branches[0]) && !Strings.isNullOrEmpty(branches[1]), 
-				"Diff notation ('%s') requires two full branch paths. Got %s.", RevisionIndex.REV_RANGE, Arrays.toString(branches));
-		return branches;
+	static String[] getRevisionRangePaths(final String revisionRangePath) {
+		if (!isRevRangePath(revisionRangePath)) {
+			throw new IllegalArgumentException(
+					String.format("Diff notation ('%s') requires two full branch paths. Got %s.", RevisionIndex.REV_RANGE, revisionRangePath));
+		}
+		return revisionRangePath.split("\\.\\.\\.");
 	}
 
 	/**

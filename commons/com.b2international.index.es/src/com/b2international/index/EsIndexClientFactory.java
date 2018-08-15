@@ -15,16 +15,15 @@
  */
 package com.b2international.index;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestHighLevelClient;
 
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.es.EsClient;
+import com.b2international.index.es.EsClientConfiguration;
 import com.b2international.index.es.EsNode;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,13 +33,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public final class EsIndexClientFactory implements IndexClientFactory {
 
+	private static final Path DEFAULT_PATH = Paths.get("target", "resources", "indexes");
+
 	@Override
 	public IndexClient createClient(String name, ObjectMapper mapper, Mappings mappings, Map<String, Object> settings) {
 		final boolean persistent = settings.containsKey(DATA_DIRECTORY);
-		final Object dir = persistent ? settings.get(DATA_DIRECTORY) : new File("target");
-		final Object configDir = settings.containsKey(CONFIG_DIRECTORY) ? settings.get(CONFIG_DIRECTORY) : Paths.get("target");
-		final File dataDirectory = dir instanceof File ? (File) dir : new File((String) dir);
-		final Path configDirectory = configDir instanceof Path ? (Path) configDir : Paths.get((String) configDir);
+		final Object dataSetting = settings.getOrDefault(DATA_DIRECTORY, DEFAULT_PATH);
+		final Object configSetting = settings.getOrDefault(CONFIG_DIRECTORY, DEFAULT_PATH);
+		final Path dataDirectory = dataSetting instanceof Path ? (Path) dataSetting : Paths.get((String) dataSetting);
+		final Path configDirectory = configSetting instanceof Path ? (Path) configSetting : Paths.get((String) configSetting);
 		
 		final HttpHost host;
 		if (settings.containsKey(CLUSTER_URL)) {
@@ -51,7 +52,13 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			host = HttpHost.create(DEFAULT_CLUSTER_URL);
 		}
 		
-		final RestHighLevelClient client = EsClient.create(host);
+		final Object connectTimeoutSetting = settings.getOrDefault(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+		final Object socketTimeoutSetting = settings.getOrDefault(SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
+		final int connectTimeout = connectTimeoutSetting instanceof Integer ? (int) connectTimeoutSetting : Integer.parseInt((String) connectTimeoutSetting);
+		final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
+		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host);
+		
+		final EsClient client = EsClient.create(clientConfiguration);
 		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
 	}
 }

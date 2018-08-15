@@ -36,7 +36,6 @@ import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -58,6 +57,7 @@ import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
+import com.b2international.index.es.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.EsQueryBuilder;
 import com.b2international.index.query.Expressions;
@@ -118,7 +118,7 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		final RestHighLevelClient client = admin.client();
+		final EsClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
 		
 		// Restrict variables to the theoretical maximum
@@ -411,7 +411,7 @@ public class EsDocumentSearcher implements Searcher {
 	@Override
 	public <T> Aggregation<T> aggregate(AggregationBuilder<T> aggregation) throws IOException {
 		final String aggregationName = aggregation.getName();
-		final RestHighLevelClient client = admin.client();
+		final EsClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
 		
 		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping);

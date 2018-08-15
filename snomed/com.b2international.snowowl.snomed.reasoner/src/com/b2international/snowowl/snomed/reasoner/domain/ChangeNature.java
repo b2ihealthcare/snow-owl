@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.domain;
 
+import com.b2international.commons.StringUtils;
+
 /**
  * Enumerates possible change types for a particular component.
  * 
@@ -34,4 +36,9 @@ public enum ChangeNature {
 	 * whether it has been published earlier.
 	 */
 	REDUNDANT;
+	
+	public String getName() {
+		return StringUtils.capitalizeFirstLetter(name().toLowerCase());
+	}
+	
 }

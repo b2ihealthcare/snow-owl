@@ -121,17 +121,19 @@ public final class RepositoryPlugin extends Plugin {
 		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
 		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigDirectory().toPath().toString());
 		
-		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
-				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class);
+		builder.put(IndexClientFactory.INDEX_PREFIX, repositoryConfig.getDeploymentId());
 		
-		if (config.getClusterUrl() != null) {
-			builder.put(IndexClientFactory.CLUSTER_URL, config.getClusterUrl());
+		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
+		if (indexConfig.getClusterUrl() != null) {
+			builder.put(IndexClientFactory.CLUSTER_URL, indexConfig.getClusterUrl());
 		}
 		
-		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getCommitInterval());
-		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, config.getCommitConcurrencyLevel());
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, indexConfig.getCommitInterval());
+		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, indexConfig.getCommitConcurrencyLevel());
 		
-		final SlowLogConfig slowLog = createSlowLogConfig(config);
+		final SlowLogConfig slowLog = createSlowLogConfig(indexConfig);
 		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
 		
 		return builder.build();

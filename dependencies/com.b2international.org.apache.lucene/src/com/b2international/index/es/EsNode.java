@@ -17,7 +17,9 @@ package com.b2international.index.es;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
 import org.elasticsearch.common.settings.Settings;
@@ -30,7 +32,6 @@ import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.org.apache.lucene.Activator;
 import com.google.common.collect.ImmutableList;
 
@@ -45,10 +46,10 @@ public final class EsNode extends Node {
 	
 	private static EsNode INSTANCE;
 
-	private final File directory;
+	private final Path dataPath;
 	private final boolean persistent;
 	
-	public static Node getInstance(Path configPath, File directory, boolean persistent) {
+	public static Node getInstance(Path configPath, Path dataPath, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
@@ -56,8 +57,8 @@ public final class EsNode extends Node {
 					Activator.withTccl(() -> {
 						try {
 							System.setProperty("es.logs.base_path", configPath.toString());
-							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), directory);
-							final EsNode node = new EsNode(esSettings, directory, persistent);
+							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), dataPath);
+							final EsNode node = new EsNode(esSettings, dataPath, persistent);
 							node.start();
 							
 							AwaitPendingTasks.await(node.client(), LOG);
@@ -86,7 +87,10 @@ public final class EsNode extends Node {
 				INSTANCE.close();
 				
 				if (!INSTANCE.persistent) {
-					FileUtils.deleteDirectory(INSTANCE.directory);
+					Files.walk(INSTANCE.dataPath)
+				      .sorted(Comparator.reverseOrder())
+				      .map(Path::toFile)
+				      .forEach(File::delete);
 				}
 				
 			} catch (Exception e) {
@@ -95,7 +99,7 @@ public final class EsNode extends Node {
 		});
 	}
 	
-	private static Settings configureSettings(Path configPath, File directory) throws IOException {
+	private static Settings configureSettings(Path configPath, Path dataPath) throws IOException {
 		final Settings.Builder esSettings;
 		if (configPath.toFile().exists()) {
 			LOG.info("Loading configuration settings from file {}", configPath);
@@ -105,7 +109,7 @@ public final class EsNode extends Node {
 		}
 
 		// configure es home directory
-		putSettingIfAbsent(esSettings, "path.home", directory.toPath().resolve(CLUSTER_NAME).toString());
+		putSettingIfAbsent(esSettings, "path.home", dataPath.resolve(CLUSTER_NAME).toString());
 		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
 		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
 		
@@ -114,6 +118,7 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "http.type", "netty4");
 		putSettingIfAbsent(esSettings, "http.cors.enabled", true);
 		putSettingIfAbsent(esSettings, "http.cors.allow-origin", "/https?:\\/\\/localhost(:[0-9]+)?/");
+		putSettingIfAbsent(esSettings, "rest.action.multi.allow_explicit_index", false);
 		
 		return esSettings.build();
 	}
@@ -130,7 +135,7 @@ public final class EsNode extends Node {
 		}
 	}
 	
-	protected EsNode(Settings settings, File directory, boolean persistent) {
+	protected EsNode(Settings settings, Path dataPath, boolean persistent) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
 				.add(Netty4Plugin.class)
 				.add(ReindexPlugin.class)
@@ -138,7 +143,7 @@ public final class EsNode extends Node {
 				.add(CommonAnalysisPlugin.class)
 				.build());
 
-		this.directory = directory;
+		this.dataPath = dataPath;
 		this.persistent = persistent;
 	}
 }
