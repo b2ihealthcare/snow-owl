@@ -24,7 +24,6 @@
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
   <Listener className="org.eclipse.virgo.web.tomcat.support.ServerLifecycleLoggingListener"/>
-  <Listener className="org.apache.catalina.security.SecurityListener" />
 
   <Service name="Catalina">
     <Connector address="0.0.0.0" port="8080" 
