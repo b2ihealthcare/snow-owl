@@ -724,4 +724,27 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.getSync();
 		
 	}
+	
+	@Test
+	public void findUtf8Term() {
+		String descriptionId = createNewDescription(branchPath);
+		// The escaped form is used below; hopefully this catches source file encoding issues as well. 
+		String term = "Ménière";
+		Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TERM, term)
+				.put("commitComment", "Updated unreleased description term with special UTF8 char.")
+				.build();
+		
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+									.statusCode(200)
+									.body(SnomedRf2Headers.FIELD_TERM, equalTo(term));
+		
+		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+			.when().get(String.format("/%s/descriptions?term=M\u00E9ni\u00E8re", branchPath.getPath()))
+			.then().log().ifValidationFails()
+			.and().assertThat().statusCode(200)
+			.and().body("total", equalTo(1));
+	}
 }
