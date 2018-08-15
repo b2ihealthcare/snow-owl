@@ -17,10 +17,9 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import java.util.List;
 
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -42,8 +41,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Commits", description="Commits", tags = { "commits" })
 @RestController
-@RequestMapping(value="/commits", produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
+@RequestMapping(value="/commits")
+public class SnomedCommitInfoRestService extends AbstractRestService {
 
 	@ApiOperation(
 		value = "Retrieve commit entries",
@@ -52,7 +51,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
-	@RequestMapping(method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<CommitInfos> search(
 			@ApiParam(value="The author of the commit to match")
 			@RequestParam(value="author", required=false)
@@ -103,7 +102,7 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response=CollectionResource.class)
 	})
-	@RequestMapping(value="/{commitId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<CommitInfo> get(
 			@ApiParam(value="Commit ID to match")
 			@PathVariable(value="commitId")
@@ -120,5 +119,4 @@ public class SnomedCommitInfoRestService extends AbstractSnomedRestService {
 					.build(repositoryId)
 					.execute(bus));
 	}
-	
 }

@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedIdentifierResponse;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -42,19 +39,16 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Identifiers", description="Identifiers", tags = { "identifiers" })
 @RestController
-@RequestMapping(value="/ids", produces = { AbstractRestService.SO_MEDIA_TYPE })
+@RequestMapping(value = "/ids")
 public class SnomedIdentifierRestService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
-	
 	@ApiOperation(
 			value="Create a new SNOMED CT Identifier", 
 			notes="Creates a new, unique SNOMED CT Identifier.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created")
 	})
-	@RequestMapping(method = RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public DeferredResult<SnomedIdentifierResponse> generate(@RequestBody final SnomedIdentifierRequest request) {
 		return DeferredResults.wrap(SnomedRequests.identifiers()
@@ -65,5 +59,4 @@ public class SnomedIdentifierRestService extends AbstractRestService {
 					.execute(bus)
 					.then(result -> new SnomedIdentifierResponse(result.first().get())));
 	}
-	
 }

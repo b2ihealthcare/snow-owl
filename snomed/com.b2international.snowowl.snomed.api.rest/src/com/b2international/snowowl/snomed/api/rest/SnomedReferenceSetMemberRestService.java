@@ -24,16 +24,17 @@ import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -46,7 +47,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.ChangeRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedMemberRestUpdate;
@@ -73,11 +73,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Reference Set Members", description="Reference Set Members", tags = { "reference set members" })
 @Controller
-@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {
-
-	@Autowired
-	private IEventBus bus;
+@RequestMapping(value="/{path:**}/members")
+public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	
 	@ApiOperation(
 			value="Retrieve reference set members from a branch", 
@@ -89,7 +86,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK", response = PageableCollectionResource.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members", method=RequestMethod.GET)	
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
 	public @ResponseBody DeferredResult<SnomedReferenceSetMembers> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -179,7 +176,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or reference set member not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.GET)
+	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedReferenceSetMember> get(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -225,7 +222,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -257,7 +254,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Member cannot be deleted", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.DELETE)
+	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
 			@ApiParam(value="The branch path")
@@ -291,7 +288,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 204, message = "Update successful"),
 		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members/{id}", method=RequestMethod.PUT, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@ApiParam(value="The branch path")
@@ -336,7 +333,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		@ApiResponse(code = 204, message = "No content"),
 		@ApiResponse(code = 404, message = "Branch or member not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/members/{id}/actions", method=RequestMethod.POST, consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(value = "/{id}/actions", 
+		consumes = { AbstractRestService.JSON_MEDIA_TYPE }, 
+		produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Object executeAction(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -367,5 +366,4 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	private URI getRefSetMemberLocationURI(String branchPath, String memberId) {
 		return linkTo(SnomedReferenceSetMemberRestService.class).slash(branchPath).slash("members").slash(memberId).toUri();
 	}
-	
 }

@@ -25,13 +25,14 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,9 +63,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Relationships", description="Relationships", tags = { "relationships" })
 @RestController
-@RequestMapping(
-		produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedRelationshipRestService extends AbstractSnomedRestService {
+@RequestMapping(value = "/{path:**}/relationships")		
+public class SnomedRelationshipRestService extends AbstractRestService {
 
 	@ApiOperation(
 			value="Retrieve Relationships from a branch", 
@@ -79,7 +79,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/relationships", method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<SnomedRelationships> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -185,10 +185,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/{path:**}/relationships", 
-			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
@@ -221,7 +218,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{relationshipId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<SnomedRelationship> read(
 			@ApiParam(value="The branch path")
 			@PathVariable("path") 
@@ -244,10 +241,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "Update successful"),
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/{path:**}/relationships/{relationshipId}/updates", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@ApiParam(value="The branch path")
@@ -296,7 +290,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Relationship not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Relationship cannot be deleted", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/relationships/{relationshipId}", method=RequestMethod.DELETE)
+	@DeleteMapping(value = "/{relationshipId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
 			@ApiParam(value="The branch path")

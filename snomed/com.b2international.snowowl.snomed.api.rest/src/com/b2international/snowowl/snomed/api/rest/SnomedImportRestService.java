@@ -26,12 +26,13 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,10 +56,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Imports", description="Imports", tags = { "imports" })
 @RestController
-@RequestMapping(
-		value="/imports",
-		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedImportRestService extends AbstractSnomedRestService {
+@RequestMapping(value = "/imports")
+public class SnomedImportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedRf2ImportService delegate; 
@@ -73,8 +72,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Code system version not found"),
 		@ApiResponse(code = 404, message = "Task not found", response = RestApiError.class),
 	})
-	@RequestMapping(method=RequestMethod.POST,
-		consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="Import parameters")
@@ -92,7 +90,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
-	@RequestMapping(value="/{importId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{importId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public SnomedImportDetails getImportDetails(
 			@ApiParam(value="The import identifier")
 			@PathVariable(value="importId") 
@@ -108,7 +106,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "Delete successful"),
 		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
-	@RequestMapping(value="/{importId}", method=RequestMethod.DELETE)
+	@DeleteMapping(value="/{importId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteImportDetails(
 			@ApiParam(value="The import identifier")
@@ -125,9 +123,7 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "No content"),
 		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
 	})
-	@RequestMapping(value="/{importId}/archive", 
-		method=RequestMethod.POST, 
-		consumes={ MediaType.MULTIPART_FORM_DATA_VALUE })
+	@PostMapping(value="/{importId}/archive", consumes = { AbstractRestService.MULTIPART_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void startImport(
 			@ApiParam(value="The import identifier")
@@ -160,5 +156,4 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		details.setBranchPath(configuration.getBranchPath());
 		return details;
 	}
-	
 }

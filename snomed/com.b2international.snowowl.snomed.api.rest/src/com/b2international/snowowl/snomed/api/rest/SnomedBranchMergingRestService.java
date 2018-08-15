@@ -20,13 +20,13 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import java.net.URI;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -35,7 +35,6 @@ import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeCollection;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.MergeRestRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -52,12 +51,9 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Branches", description="Branches", tags = { "branches" })
 @RestController
-@RequestMapping(value="/merges", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(value="/merges") 
 public class SnomedBranchMergingRestService extends AbstractRestService {
 
-	@Autowired
-	private IEventBus bus;
-	
 	@ApiOperation(
 			value = "Start branch merge or rebase", 
 			notes = "Signals that making changes on the source branch available on the target branch in the SNOMED CT repository " +
@@ -67,7 +63,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
 			@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
 		})
-	@RequestMapping(method = RequestMethod.POST, consumes={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest) {
 		ApiValidation.checkInput(restRequest);
 		
@@ -93,7 +89,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class),
 			@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 		})
-	@RequestMapping(method = RequestMethod.GET, value="/{id}")
+	@GetMapping(value="/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<Merge> getMerge(@PathVariable("id") UUID id) {
 		return DeferredResults.wrap(RepositoryRequests.merging().prepareGet(id).build(repositoryId).execute(bus));
 	}
@@ -105,7 +101,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 400, message = "Bad request", response=RestApiError.class)
 	})
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public DeferredResult<MergeCollection> searchMerge(			
 			@ApiParam(value="The source branch path to match")
 			@RequestParam(value="source", required = false) 
@@ -135,7 +131,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 		@ApiResponse(code = 204, message = "No content, delete successful"),
 		@ApiResponse(code = 404, message = "Merge request not found in queue", response=RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.DELETE, value="/{id}")
+	@DeleteMapping(value="/{id}")
 	public DeferredResult<ResponseEntity<Void>> deleteMerge(@PathVariable("id") UUID id) {
 		return DeferredResults.wrap(
 				RepositoryRequests.merging()

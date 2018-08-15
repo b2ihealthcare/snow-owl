@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +41,7 @@ import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserDescr
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserParentConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.impl.domain.browser.SnomedBrowserConceptUpdate;
-import com.b2international.snowowl.snomed.api.rest.AbstractSnomedRestService;
+import com.b2international.snowowl.snomed.api.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 
 import io.swagger.annotations.Api;
@@ -54,15 +55,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "IHTSDO SNOMED CT Browser", description="IHTSDO SNOMED CT Browser", tags = { "ihtsdo snomed ct browser" })
 @RestController
-@RequestMapping(
-		value="/browser/{path:**}",
-		produces={ SnomedBrowserRestService.IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedBrowserRestService extends AbstractSnomedRestService {
-
-	/**
-	 * The currently supported versioned media type of the IHTSDO SNOMED CT Browser RESTful API.
-	 */
-	public static final String IHTSDO_V1_MEDIA_TYPE = "application/vnd.org.ihtsdo.browser+json";
+@RequestMapping(value="/browser/{path:**}")
+public class SnomedBrowserRestService extends AbstractRestService {
 
 	@Autowired
 	protected ISnomedBrowserService browserService;
@@ -74,7 +68,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/concepts/{conceptId}", method=RequestMethod.GET)
+	@GetMapping(value="/concepts/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody ISnomedBrowserConcept getConceptDetails(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -108,9 +102,9 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK", response = Void.class),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/concepts", 
-			method=RequestMethod.POST, 
-			consumes={ IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(value = "/concepts", 
+			consumes = { AbstractRestService.JSON_MEDIA_TYPE }, 
+			produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody ISnomedBrowserConcept createConcept(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -146,9 +140,9 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK", response = Void.class),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/concepts/{conceptId}", 
-			method=RequestMethod.PUT,
-			consumes={ IHTSDO_V1_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(value="/concepts/{conceptId}", 
+			consumes = { AbstractRestService.JSON_MEDIA_TYPE }, 
+			produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody ISnomedBrowserConcept updateConcept(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -193,9 +187,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/concepts/{conceptId}/parents",
-			method = RequestMethod.GET)
+	@GetMapping(value = "/concepts/{conceptId}/parents", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody List<ISnomedBrowserParentConcept> getConceptParents(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -230,9 +222,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/concepts/{conceptId}/children",
-			method = RequestMethod.GET)
+	@GetMapping(value = "/concepts/{conceptId}/children", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody List<ISnomedBrowserChildConcept> getConceptChildren(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -275,9 +265,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK"),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/descriptions-fsn",
-			method = RequestMethod.GET)
+	@GetMapping(value="/descriptions-fsn", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptionsFSN(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -324,9 +312,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK"),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/descriptions",
-			method = RequestMethod.GET)
+	@GetMapping(value = "/descriptions", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody List<ISnomedBrowserDescriptionResult> searchDescriptionsPT(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -371,7 +357,7 @@ public class SnomedBrowserRestService extends AbstractSnomedRestService {
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Void.class)
 	})
-	@RequestMapping(value="/constants", method=RequestMethod.GET)
+	@GetMapping(value="/constants", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Map<String, ISnomedBrowserConstant> getConstants(
 
 			@ApiParam(value="The branch path")

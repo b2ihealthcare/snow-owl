@@ -27,14 +27,16 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -79,8 +81,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Classifications", description="Classifications", tags = { "classifications" })
 @Controller
-@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
-public class SnomedClassificationRestService extends AbstractSnomedRestService {
+@RequestMapping(value = "/classifications")
+public class SnomedClassificationRestService extends AbstractRestService {
 
 	@Autowired
 	protected ISnomedBrowserService browserService;
@@ -92,7 +94,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/classifications", method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<ClassificationTasks> getAllClassificationRuns(
 			@ApiParam(value="The branch path")
 			@RequestParam(value="branch") 
@@ -124,10 +126,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 201, message = "Created"),
 		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
 	})
-	@RequestMapping(
-			value="/classifications", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public ResponseEntity<?> beginClassification(
 			@ApiParam(value="Classification parameters")
@@ -154,7 +153,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{classificationId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<ClassificationTask> getClassificationRun(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
@@ -173,7 +172,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/classifications/{classificationId}/equivalent-concepts", method=RequestMethod.GET)
+	@GetMapping(value = "/{classificationId}/equivalent-concepts", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<EquivalentConceptSets> getEquivalentConceptSets(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
@@ -210,10 +209,9 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(
-			value="/classifications/{classificationId}/relationship-changes", 
-			method=RequestMethod.GET, 
-			produces={ MediaType.APPLICATION_JSON_VALUE, "text/csv" })
+	@GetMapping(
+			value = "/{classificationId}/relationship-changes", 
+			produces = { AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<RelationshipChanges> getRelationshipChanges(
 			@ApiParam(value="The classification identifier")
 			@PathVariable(value="classificationId") 
@@ -243,7 +241,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			@ApiResponse(code = 200, message = "OK", response = Void.class),
 			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/classifications/{classificationId}/concept-preview/{conceptId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{classificationId}/concept-preview/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody
 	ISnomedBrowserConcept getConceptDetails(
 			@ApiParam(value="The classification identifier")
@@ -325,10 +323,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "No content, update successful"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(
-			value="/classifications/{classificationId}", 
-			method=RequestMethod.PUT,
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(value = "/{classificationId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void updateClassificationRun(
 			@ApiParam(value="The classification identifier")
@@ -357,7 +352,7 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "No content, delete successful"),
 		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
 	})
-	@RequestMapping(value="/classifications/{classificationId}", method=RequestMethod.DELETE)
+	@DeleteMapping(value = "/{classificationId}")
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void deleteClassificationRun(
 			@ApiParam(value="The classification identifier")

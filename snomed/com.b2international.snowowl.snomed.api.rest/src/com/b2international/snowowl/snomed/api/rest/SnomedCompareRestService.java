@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
@@ -28,7 +26,6 @@ import org.springframework.web.context.request.async.DeferredResult;
 import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.compare.CompareResult;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedCompareRestRequest;
 import com.b2international.snowowl.snomed.api.rest.util.DeferredResults;
@@ -43,11 +40,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Compare", description = "Compare", tags = { "compare" })
 @RestController
-@RequestMapping(value="/compare", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
+@RequestMapping(value = "/compare")
 public class SnomedCompareRestService extends AbstractRestService {
-	
-	@Autowired
-	private IEventBus bus;
 	
 	@ApiOperation(
 		value = "Compare two branches", 
@@ -56,7 +50,7 @@ public class SnomedCompareRestService extends AbstractRestService {
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.OK)
 	public DeferredResult<CompareResult> compareBranches(@RequestBody SnomedCompareRestRequest request) {
 		ApiValidation.checkInput(request);
@@ -68,5 +62,4 @@ public class SnomedCompareRestService extends AbstractRestService {
 			.execute(bus));
 		
 	}
-	
 }

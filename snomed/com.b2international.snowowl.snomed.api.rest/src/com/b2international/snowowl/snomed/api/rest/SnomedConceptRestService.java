@@ -25,14 +25,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -66,8 +67,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Concepts", description="Concepts", tags = { "concepts" })
 @Controller
-@RequestMapping(produces={ AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedConceptRestService extends AbstractSnomedRestService {
+@RequestMapping(value = "/{path:**}/concepts")
+public class SnomedConceptRestService extends AbstractRestService {
 
 	@ApiOperation(
 			value="Retrieve Concepts from a branch", 
@@ -82,7 +83,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/concepts", method=RequestMethod.GET)
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedConcepts> search(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -185,7 +186,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 200, message = "OK", response = Void.class),
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.GET)
+	@GetMapping(value = "/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody DeferredResult<SnomedConcept> read(
 			@ApiParam(value="The branch path")
 			@PathVariable(value="path")
@@ -229,10 +230,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 201, message = "Concept created on task"),
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/{path:**}/concepts", 
-			method=RequestMethod.POST, 
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@ApiParam(value="The branch path")
@@ -279,10 +277,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 204, message = "Update successful"),
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class)
 	})
-	@RequestMapping(
-			value="/{path:**}/concepts/{conceptId}/updates", 
-			method=RequestMethod.POST,
-			consumes={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(value = "/{conceptId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
 			@ApiParam(value="The branch path")
@@ -320,7 +315,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Branch or Concept not found", response = RestApiError.class),
 		@ApiResponse(code = 409, message = "Cannot be deleted if released", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{path:**}/concepts/{conceptId}", method=RequestMethod.DELETE)
+	@DeleteMapping(value = "/{conceptId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
 			@ApiParam(value="The branch path")

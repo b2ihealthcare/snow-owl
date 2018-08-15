@@ -35,11 +35,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -80,9 +81,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "Exports", description="Exports", tags = { "exports" })
 @RestController
-@RequestMapping(
-		value="/exports", produces = { AbstractRestService.SO_MEDIA_TYPE })
-public class SnomedExportRestService extends AbstractSnomedRestService {
+@RequestMapping(value="/exports")
+public class SnomedExportRestService extends AbstractRestService {
 
 	@Autowired
 	private ISnomedExportService exportService;
@@ -99,7 +99,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=201, message="Created"),
 		@ApiResponse(code=404, message="Code system version and/or task not found", response = RestApiError.class)
 	})
-	@RequestMapping(method=RequestMethod.POST, consumes = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> beginExport(
 			@ApiParam(value="Export configuration")
@@ -203,7 +203,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=200, message="OK"),
 		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{id}", method=RequestMethod.GET)
+	@GetMapping(value="/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public SnomedExportRestRun getExport(
 			@ApiParam(value="Export run identifier")
 			@PathVariable(value="id")
@@ -225,7 +225,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		@ApiResponse(code=200, message="OK"),
 		@ApiResponse(code=404, message="Export run not found", response = RestApiError.class)
 	})
-	@RequestMapping(value="/{id}/archive", method=RequestMethod.GET, produces = { AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE })
+	@GetMapping(value="/{id}/archive", produces = { AbstractRestService.OCTET_STREAM_MEDIA_TYPE })
 	public @ResponseBody ResponseEntity<?> getArchive(
 			@ApiParam(value="Export run ID")
 			@PathVariable(value="id")
