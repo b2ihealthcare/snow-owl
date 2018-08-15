@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>org.semanticweb.elk</groupId>
 			<artifactId>elk-protege</artifactId>
-			<version>0.4.2</version>
+			<version>0.4.3</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -72,7 +72,7 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>org.semanticweb.elk</id>
-								<versionRange>0.0.0</versionRange>
+								<versionRange>[0.4.3,0.4.4)</versionRange>
 							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
