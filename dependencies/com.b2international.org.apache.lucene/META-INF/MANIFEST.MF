@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Lucene and Elasticsearch
 Bundle-SymbolicName: com.b2international.org.apache.lucene;singleton:=true
-Bundle-Version: 7.3.1.201808131237-b2i
+Bundle-Version: 7.3.1.201808151052-b2i
 Bundle-ClassPath: .,
  lib/aggs-matrix-stats-client-6.3.2.jar,
  lib/analysis-common-6.3.2.jar,
