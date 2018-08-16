@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.attributeNames;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Iterables;
@@ -162,6 +163,18 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				// TODO: Restore ECL filter when concrete domain attributes are represented with SCTIDs
 				// addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
 				queryBuilder.filter(attributeNames(propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
+				queryBuilder.filter(domainIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID)) {
+				queryBuilder.filter(contentTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID)) {
+				queryBuilder.filter(ruleStrengthIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
+				queryBuilder.filter(ruleRefSetIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, String.class)));
 			}
 			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {
