@@ -30,14 +30,16 @@
     <Connector address="0.0.0.0" port="8080" 
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                asyncTimeout="60000"
-               connectionTimeout="20000" enableLookups="false" redirectPort="8443" />
+               connectionTimeout="20000" enableLookups="false" redirectPort="8443" 
+               URIencoding="UTF-8" />
 
     <Connector address="0.0.0.0" port="8443"
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                asyncTimeout="60000"
                sslImplementationName="org.apache.tomcat.util.net.jsse.JSSEImplementation"
                SSLEnabled="true" scheme="https" secure="true" 
-               enableLookups="false" maxThreads="150">
+               enableLookups="false" maxThreads="150"
+               URIencoding="UTF-8">
 
       <SSLHostConfig hostName="_default_"
                      protocols="TLSv1.2" sslProtocol="TLSv1.2"
