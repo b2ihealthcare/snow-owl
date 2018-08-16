@@ -33,7 +33,6 @@ import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultimap;
@@ -91,17 +90,18 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 	}
 
 	private Class<? extends CDOObject> getCdoType(String componentId) {
-		switch (SnomedIdentifiers.getComponentCategory(componentId)) {
-		case CONCEPT: return Concept.class;
-		case DESCRIPTION: return Description.class;
-		case RELATIONSHIP: return Relationship.class;
-		default: break;
-		}
-		try {
-			UUID.fromString(componentId);
-			return SnomedRefSetMember.class;
-		} catch (IllegalArgumentException e) {
-			throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
+		switch (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId)) {
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return Concept.class;
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return Description.class;
+			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return Relationship.class;
+			default: {
+				try {
+					UUID.fromString(componentId);
+					return SnomedRefSetMember.class;
+				} catch (IllegalArgumentException e) {
+					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
+				}
+			}
 		}
 	}
 	
