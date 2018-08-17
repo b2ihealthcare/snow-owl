@@ -450,6 +450,22 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.VALUE_ID, valueIds);
 		}
 		
+		public static Expression domainIds(Collection<String> domainIds) {
+			return matchAny(Fields.MRCM_DOMAIN_ID, domainIds);
+		}
+		
+		public static Expression contentTypeIds(Collection<String> contentTypeIds) {
+			return matchAny(Fields.MRCM_CONTENT_TYPE_ID, contentTypeIds);
+		}
+		
+		public static Expression ruleStrengthIds(Collection<String> strengthIds) {
+			return matchAny(Fields.MRCM_RULE_STRENGTH_ID, strengthIds);
+		}
+		
+		public static Expression ruleRefSetIds(Collection<String> refSetIds) {
+			return matchAny(Fields.MRCM_RULE_REFSET_ID, refSetIds);
+		}
+		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
 			case STRING: 

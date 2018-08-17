@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.5
  */
-final class DeleteRequest implements Request<TransactionContext, Boolean> {
+public final class DeleteRequest implements Request<TransactionContext, Boolean> {
 
 	@JsonProperty
 	@NotNull
@@ -47,6 +47,10 @@ final class DeleteRequest implements Request<TransactionContext, Boolean> {
 	public Boolean execute(TransactionContext context) {
 		context.delete(context.lookup(componentId, type), force);
 		return Boolean.TRUE;
+	}
+
+	public String getComponentId() {
+		return componentId;
 	}
 	
 }

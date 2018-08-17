@@ -18,15 +18,19 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.acceptabilityIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.attributeNames;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.contentTypeIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.correlationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.dataTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.descriptionFormats;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.domainIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapCategoryIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapTargetDescriptions;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.mapTargets;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.operatorIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.ruleRefSetIds;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.ruleStrengthIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.targetComponents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.unitIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.valueIds;
@@ -162,6 +166,18 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 				// TODO: Restore ECL filter when concrete domain attributes are represented with SCTIDs
 				// addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
 				queryBuilder.filter(attributeNames(propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
+				queryBuilder.filter(domainIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID)) {
+				queryBuilder.filter(contentTypeIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID)) {
+				queryBuilder.filter(ruleStrengthIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, String.class)));
+			}
+			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID)) {
+				queryBuilder.filter(ruleRefSetIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, String.class)));
 			}
 			final Collection<DataType> dataTypes = propsFilter.getCollection(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, DataType.class);
 			if (propKeys.remove(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE)) {

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -25,13 +26,15 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
+import com.b2international.snowowl.datastore.request.DeleteRequest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
@@ -50,7 +53,8 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 	@Override
 	public R execute(TransactionContext context) {
 		ImmutableList.Builder<SnomedComponentRequest<?>> requests = ImmutableList.builder();
-		collectNestedRequests(next(), requests);
+		ImmutableList.Builder<DeleteRequest> deletions = ImmutableList.builder();
+		collectNestedRequests(next(), requests, deletions);
 		
 		// Prefetch all component IDs mentioned in reference set member creation requests, abort if any of them can not be found
 		final Set<String> requiredComponentIds = requests.build()
@@ -59,15 +63,13 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			.filter(componentId -> SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId) != -1L) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
-		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = FluentIterable.from(requiredComponentIds)
-				.index(componentId -> {
-					switch (SnomedIdentifiers.getComponentCategory(componentId)) {
-					case CONCEPT: return SnomedConceptDocument.class;
-					case DESCRIPTION: return SnomedDescriptionIndexEntry.class;
-					case RELATIONSHIP: return SnomedRelationshipIndexEntry.class;
-					default: throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
-					}
-				});
+		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = HashMultimap.create(FluentIterable.from(requiredComponentIds).index(this::getDocType));
+		
+		// collect all deleted IDs as well
+		deletions.build()
+			.stream()
+			.map(DeleteRequest::getComponentId)
+			.forEach(componentId -> componentIdsByType.put(getDocType(componentId), componentId));
 		
 		try {
 			for (final Entry<Class<? extends SnomedDocument>, Collection<String>> idsForType : componentIdsByType.asMap().entrySet()) {
@@ -85,14 +87,32 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		return next(newContext);
 	}
 
-	private static void collectNestedRequests(Request<?, ?> root, ImmutableList.Builder<SnomedComponentRequest<?>> requests) {
-		if (root instanceof SnomedComponentRequest<?>) {
+	private Class<? extends SnomedDocument> getDocType(String componentId) {
+		switch (SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(componentId)) {
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
+			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
+			default: {
+				try {
+					UUID.fromString(componentId);
+					return SnomedRefSetMemberIndexEntry.class;
+				} catch (IllegalArgumentException e) {
+					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
+				}
+			}
+		}
+	}
+	
+	private static void collectNestedRequests(Request<?, ?> root, ImmutableList.Builder<SnomedComponentRequest<?>> requests, ImmutableList.Builder<DeleteRequest> deletions) {
+		if (root instanceof DeleteRequest) {
+			deletions.add((DeleteRequest) root);
+		} else if (root instanceof SnomedComponentRequest<?>) {
 			requests.add((SnomedComponentRequest<?>) root);
 		} else if (root instanceof DelegatingRequest<?, ?, ?>) {
-			collectNestedRequests(((DelegatingRequest<?, ?, ?>) root).next(), requests);
+			collectNestedRequests(((DelegatingRequest<?, ?, ?>) root).next(), requests, deletions);
 		} else if (root instanceof BulkRequest<?>) {
 			((BulkRequest<?>) root).getRequests().forEach(req -> {
-				collectNestedRequests(req, requests);
+				collectNestedRequests(req, requests, deletions);
 			});
 		}
 	}
