@@ -454,19 +454,36 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 			if (!transientEffectiveTime.isEmpty()) {
 				return adjustCurrentHour(Dates.parse(transientEffectiveTime, DateFormats.SHORT));
+			} else if (endEffectiveTime != null) {
+				final CodeSystemVersionEntry versionBeforeEndEffectiveTime = getVersionBefore(versionsToExport, endEffectiveTime.getTime());
+				return adjustCurrentHour(getNextEffectiveDate(versionBeforeEndEffectiveTime.getEffectiveDate()));
 			} else if (latestVersion.isPresent()) {
 				return adjustCurrentHour(getNextEffectiveDate(latestVersion.get().getEffectiveDate()));
 			}
 			
 		} else {
 			
-			if (latestVersion.isPresent()) {
+			if (endEffectiveTime != null) {
+				final CodeSystemVersionEntry versionBeforeEndEffectiveTime = getVersionBefore(versionsToExport, endEffectiveTime.getTime());
+				return adjustCurrentHour(getNextEffectiveDate(versionBeforeEndEffectiveTime.getEffectiveDate()));
+			} else if (latestVersion.isPresent()) {
 				return adjustCurrentHour(new Date(latestVersion.get().getEffectiveDate()));
 			}
 			
 		}
 		
 		return adjustCurrentHour(Dates.parse(Dates.format(new Date(), TimeZone.getTimeZone("UTC"), DateFormats.DEFAULT)));
+	}
+
+	private CodeSystemVersionEntry getVersionBefore(final TreeSet<CodeSystemVersionEntry> versionsToExport, final long timestamp) {
+		CodeSystemVersionEntry versionBeforeEndEffectiveTime = null;
+		for (CodeSystemVersionEntry version : versionsToExport) {
+			if (version.getEffectiveDate() > timestamp) {
+				break;
+			}
+			versionBeforeEndEffectiveTime = version;
+		}
+		return versionBeforeEndEffectiveTime;
 	}
 
 	private Date adjustCurrentHour(final Date effectiveDate) {
