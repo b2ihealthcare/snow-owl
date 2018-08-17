@@ -456,7 +456,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 				return adjustCurrentHour(Dates.parse(transientEffectiveTime, DateFormats.SHORT));
 			} else if (endEffectiveTime != null) {
 				final CodeSystemVersionEntry versionBeforeEndEffectiveTime = getVersionBefore(versionsToExport, endEffectiveTime.getTime());
-				return adjustCurrentHour(new Date(versionBeforeEndEffectiveTime.getEffectiveDate()));
+				return adjustCurrentHour(getNextEffectiveDate(versionBeforeEndEffectiveTime.getEffectiveDate()));
 			} else if (latestVersion.isPresent()) {
 				return adjustCurrentHour(getNextEffectiveDate(latestVersion.get().getEffectiveDate()));
 			}
