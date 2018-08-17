@@ -1,6 +1,29 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.7.0
+
+### Added
+- A new `deploymentId` configuration key to specify both DB and Index name prefix to support multi-tenant deployments (#256)
+- Support MRCM reference set member properties in `SnomedRefSetMemberSearchRequest` (a14b9d9) 
+
+### Changed
+- Use the high-level Elasticsearch REST Client to communicate with either an embedded note or remote cluster (#251)  
+- Check all potential reference set member properties where a component ID might be referenced during module dependency updates (17b3a2a)
+
+### Dependencies
+- Bump Virgo package version from `3.7.0.M3` to `3.7.2` (#253)
+- Bump Elasticsearch version from `6.0.1` to `6.3.2` (#251)
+
+### Performance
+- Improve SNOMED CT RF2 export performance (#249)
+- Reduce number of documents to load when using `snomed-query` based validation rules (4f980a1) 
+
+### Bugs
+- Fix cache cleanup (memory leak) in `SnomedEditingContext/SnomedRefSetEditingContext` (d97bf3e)
+- Fix occasionally failing unit tests due to index refresh bug in `EsDocumentSearcher` (2d3cd7f)
+- Fix incorrect `RF2` archive effective date when using `endEffectiveDate` filter in `RF2` Delta exports (cd54af3)
+
 ## 6.6.0
 
 ### Added
