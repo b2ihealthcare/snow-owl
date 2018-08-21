@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
-import org.eclipse.osgi.internal.baseadaptor.DevClassPathHelper;
 import org.eclipse.osgi.service.resolver.BundleDescription;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
@@ -43,7 +41,6 @@ import io.github.lukehutch.fastclasspathscanner.utils.ReflectionUtils;
 /**
  * @since 7.0
  */
-@SuppressWarnings("restriction")
 public enum ClassPathScanner {
 	
 	INSTANCE;
@@ -178,23 +175,33 @@ public enum ClassPathScanner {
 	                final Object bundleFile = ReflectionUtils.invokeMethod(entries[i], "getBundleFile", false);
 	                final File baseFile = (File) ReflectionUtils.invokeMethod(bundleFile, "getBaseFile", false);
 	                if (baseFile != null) {
-	                	if (DevClassPathHelper.inDevelopmentMode() && baseFile.isDirectory()) {
-	                		DefaultClassLoader cl = (DefaultClassLoader) classloader;
-	                		String[] devClassPath = DevClassPathHelper.getDevClassPath(cl.getBundle().getSymbolicName());
-	                		for (String cp : devClassPath) {
-	                			final File cpFile = new File(baseFile, cp);
-	                			if (cpFile.isDirectory()) {
-	                				classpathOrderOut.addClasspathElement(cpFile.getPath(), classloader, log);
-	                			}
-	                		}
-	                	} else {
-	                		classpathOrderOut.addClasspathElement(baseFile.getPath(), classloader, log);
-	                	}
+	                	try {
+							Class<?> devClassPathHelperClass = Class.forName("org.eclipse.osgi.internal.baseadaptor.DevClassPathHelper", false, classloader);
+							handleEquinox39(baseFile, classloader, classpathOrderOut, log, devClassPathHelperClass);
+						} catch (ClassNotFoundException ignored) {
+						}
 	                }
 	            }
 	        }
 		}
+
+		private static void handleEquinox39(final File baseFile, ClassLoader classloader, ClasspathOrder classpathOrderOut, LogNode log, Class<?> devClassPathHelperClass) {
+			Boolean inDevMode = (Boolean) ReflectionUtils.invokeStaticMethod(devClassPathHelperClass, "inDevelopmentMode", true);
+        	if (inDevMode && baseFile.isDirectory()) {
+        		Bundle bundle = (Bundle) ReflectionUtils.invokeMethod(classloader, "getBundle", true);
+	    		String[] devClassPath = (String[]) ReflectionUtils.invokeStaticMethod(devClassPathHelperClass, "getDevClassPath", String.class, bundle.getSymbolicName(), true);
+	    		for (String cp : devClassPath) {
+	    			final File cpFile = new File(baseFile, cp);
+	    			if (cpFile.isDirectory()) {
+	    				classpathOrderOut.addClasspathElement(cpFile.getPath(), classloader, log);
+	    			}
+	    		}
+	    	} else {
+	    		classpathOrderOut.addClasspathElement(baseFile.getPath(), classloader, log);
+	    	}
+		}
 		
 	}
+
 
 }
