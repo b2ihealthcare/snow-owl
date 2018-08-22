@@ -210,12 +210,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		String locationName = "$expand.url";
 		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, locationName);
 		
-		System.out.println("Query part: " + snomedUri.getQueryPart());
 		//validateVersion(snomedUri, lookup.getVersion());
 		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
-		//String branchPath = codeSystemVersion.getPath();
-		//String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
 		
 		if (snomedUri.hasQueryPart()) {
 			QueryPart queryPart = snomedUri.getQueryPart();
@@ -232,9 +229,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 					return buildSimpleTypeRefsetValueSet(queryPart.getQueryValue(), codeSystemVersion);
 				case REFSETS:
 					//All simple type refsets??
-					return null;
-				case ISA:
 					return null; //TODO
+				case ISA:
+					return buildSubsumptionValueSet(queryPart.getQueryValue(), codeSystemVersion);
 				default:
 					//should not happen
 					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
@@ -247,6 +244,74 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 	}
 	
+	/**
+	 * @param queryValue
+	 * @param codeSystemVersion
+	 * @return
+	 */
+	private ValueSet buildSubsumptionValueSet(String parentConceptId, CodeSystemVersionEntry codeSystemVersion) {
+		
+		Builder builder = ValueSet.builder();
+		
+		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
+				
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(uri.toString())
+			//.value("1")
+			.build();
+		
+		builder
+			.status(PublicationStatus.ACTIVE)
+			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.language(displayLanguage)
+			.version(codeSystemVersion.getVersionId())
+			.identifier(identifier)
+			.url(uri.toUri());
+		
+		String narrativeText = String.format("<div>This is the Value Set representation of the SNOMED CT concept [%s] and its decendants, requested by the SNOMED CT URI query part (isa) .</div>", parentConceptId);
+		
+		builder.text(Narrative.builder()
+			.status(NarrativeStatus.GENERATED)
+			.div(narrativeText)
+			.build());
+		
+		//evaluate the ECL expression
+		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterByEcl("<<" + parentConceptId)
+			.filterByActive(true)
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setExpand("pt()")
+			.build(repositoryId, codeSystemVersion.getPath())
+			.execute(getBus())
+			.getSync();
+		
+		com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion.Builder expansionBuilder = Expansion.builder()
+				.identifier("1")
+				.timestamp(new Date())
+				.total(snomedConcepts.getTotal())
+				.addParameter(UriParameter.builder()
+					.name("version")
+					.value(uri.toUri())
+					.build());
+		
+		snomedConcepts.forEach(c -> {
+			
+			Contains content = Contains.builder()
+					.system(SnomedUri.SNOMED_BASE_URI)
+					.code(c.getId())
+					.display(c.getPt().getTerm())
+					.build();
+			expansionBuilder.addContains(content);
+		});
+		
+		builder.name(String.format("SNOMED CT concept [ID: %s] and descendants (<<%s)", parentConceptId, parentConceptId))
+			.expansion(expansionBuilder.build());
+		
+		return builder.build();
+	}
+
 	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, String displayLanguage) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());

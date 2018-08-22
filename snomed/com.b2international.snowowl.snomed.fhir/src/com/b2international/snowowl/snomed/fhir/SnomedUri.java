@@ -217,15 +217,16 @@ public class SnomedUri {
 		
 		String extensionString = uriString.replaceFirst(SNOMED_BASE_URI_STRING, "");
 		
-		//remove the query part if any
-		if (extensionString.contains("?")) {
-			String queryPartString = extensionString.substring(extensionString.indexOf("?"), extensionString.length());
-			
-			parseQueryPart(builder, queryPartString, parameterName);
-			extensionString = extensionString.replace(queryPartString, "");
-			
+		String[] splitUri = extensionString.split("\\?");
+		if (splitUri.length > 2) {
+			throw new BadRequestException(String.format("Invalid SNOMED CT URI [%s].", uriString), parameterName);
 		}
-		StringTokenizer tokenizer = new StringTokenizer(extensionString, "/");
+		
+		if (splitUri.length == 2) {
+			parseQueryPart(builder, uriString, splitUri[1], parameterName);
+		}
+		
+		StringTokenizer tokenizer = new StringTokenizer(splitUri[0], "/");
 		
 		//this should not happen
 		if (!tokenizer.hasMoreTokens()) return builder.build();
@@ -263,51 +264,57 @@ public class SnomedUri {
 		return builder.version(versionTag).build();
 	}
 	
-	private static void parseQueryPart(Builder builder, String queryPartString, String parameterName) {
-		queryPartString = queryPartString.substring(1, queryPartString.length());
+	/*
+	 URI: http://snomed.info/sct?fhir_cm=138875005
+	 URI: http://snomed.info/sct?fhir_vs
+	 URI: http://snomed.info/sct?fhir_vs=isa/138875005
+	 URI: http://snomed.info/sct?fhir_vs=refset
+	 URI: http://snomed.info/sct?fhir_vs=refset/138875005
+	*/
+	private static void parseQueryPart(Builder builder, String uriString, String queryPartString, String parameterName) {
 		
 		//parse VS
 		if (queryPartString.startsWith(QueryPart.PREFIX_VS)) {
 			String[] queryParts = queryPartString.split("=");
 			
 			if (queryParts.length == 1) {
-				builder.valueSetsQuery();
+				builder.valueSetsQuery();  //fhir_vs
 			} else if (queryParts.length == 2) {
 				String parameter = queryParts[1];
 				
 				if (parameter.startsWith(QueryPartDefinition.ISA.getUrlString())) {
 					String[] split = parameter.split("/");
 					if (split.length == 2) {
-						builder.isAQuery(split[1]);
+						builder.isAQuery(split[1]); //isa/138875005
 					} else {
-						throw new BadRequestException(String.format("Invalid 'fhir_vs=isa/conceptId' query part.", queryPartString), parameterName);
+						throw new BadRequestException(String.format("Invalid 'fhir_vs=isa/conceptId' query part [%s] for URI [%s].", queryPartString, uriString), parameterName);
 					}
 				} else if (parameter.startsWith(QueryPartDefinition.REFSET.getUrlString())) {
 					String[] split = parameter.split("/");
 					if (split.length == 2) {
-						builder.refsetQuery(split[1]);
+						builder.refsetQuery(split[1]);  //refset/138875005
 					} else {
-						throw new BadRequestException(String.format("Invalid 'fhir_vs=refset/conceptId' query part.", queryPartString), parameterName);
+						throw new BadRequestException(String.format("Invalid 'fhir_vs=refset/conceptId' query part [%s] for URI [%s].", queryPartString, uriString), parameterName);
 					}
 				} else if (parameter.startsWith(QueryPartDefinition.REFSETS.getUrlString())) {
-					builder.refsetsQuery();
+					builder.refsetsQuery();  //fhir_vs=refset
 				}
 			}
 			else {
-				throw new BadRequestException(String.format("Invalid 'fhir_vs' query part [%s].", queryPartString), parameterName); 
+				throw new BadRequestException(String.format("Invalid 'fhir_vs' query part [%s] for URI [%s].", queryPartString, uriString), parameterName); 
 			}
 			
 		} else if (queryPartString.startsWith(QueryPart.PREFIX_CM)) {
 			String[] split = queryPartString.split("=");
 			
 			if (split.length == 2) {
-				builder.conceptMapQuery(split[1]);
+				builder.conceptMapQuery(split[1]); //fhir_cm=138875005
 			} else {
-				throw new BadRequestException(String.format("Invalid 'fhir_cm' query part [%s], the format is '?fhir_cm=conceptId'.", queryPartString), parameterName);
+				throw new BadRequestException(String.format("Invalid 'fhir_cm' query part [%s] for the URI [%s], the format is '?fhir_cm=conceptId'.", queryPartString, uriString), parameterName);
 			}
 			
 		} else {
-			throw new BadRequestException(String.format("Invalid query part [%s], it should be either '?fhir_vs' or '?fhir_cm'.", queryPartString), parameterName);
+			throw new BadRequestException(String.format("Invalid query part [%s] for the URI [%s], it should be either '?fhir_vs' or '?fhir_cm'.", queryPartString, uriString), parameterName);
 		}
 	}
 

@@ -26,7 +26,6 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
-import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 
 /**

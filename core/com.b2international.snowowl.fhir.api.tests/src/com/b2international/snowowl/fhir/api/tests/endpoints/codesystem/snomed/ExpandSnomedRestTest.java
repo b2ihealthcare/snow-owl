@@ -18,7 +18,7 @@ package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 
 import org.hamcrest.core.StringStartsWith;
 import org.junit.BeforeClass;
@@ -72,13 +72,16 @@ public class ExpandSnomedRestTest extends FhirTest {
 			.when().get("/ValueSet/$expand")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
+			.body("id", nullValue())
+			.body("text.status", equalTo("generated"))
 			.body("language", equalTo("en-us"))
 			.body("version", equalTo("2018-01-31"))
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem("362460007"))
+			.body("expansion.contains.code", hasItem("50697003"))
+			.body("expansion.parameter[0].name", equalTo("version"))
+			.body("expansion.parameter[0].valueUri", equalTo("http://snomed.info/sct/version/20180131"))
 			.statusCode(200);
 	}
 	
