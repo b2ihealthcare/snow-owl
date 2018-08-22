@@ -37,7 +37,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 5.4
@@ -49,7 +50,7 @@ public final class EclExpression {
 	private Promise<Set<String>> promise;
 	private Promise<Expression> expressionPromise;
 	private Promise<SnomedConcepts> conceptPromise;
-	private Promise<Set<String>> conceptsWithGroups;
+	private Promise<Multimap<String, Integer>> conceptsWithGroups;
 
 	private EclExpression(String ecl) {
 		this.ecl = ecl.trim();
@@ -122,7 +123,7 @@ public final class EclExpression {
 				});
 	}
 	
-	public Promise<Set<String>> resolveToConceptsWithGroups(final BranchContext context) {
+	public Promise<Multimap<String, Integer>> resolveToConceptsWithGroups(final BranchContext context) {
 		if (conceptsWithGroups == null) {
 			conceptsWithGroups = SnomedRequests.prepareSearchRelationship()
 					.all()
@@ -130,18 +131,21 @@ public final class EclExpression {
 					.filterByCharacteristicTypes(SnomedEclRefinementEvaluator.ALLOWED_CHARACTERISTIC_TYPES)
 					.filterBySource(ecl)
 					.filterByGroup(1, Integer.MAX_VALUE)
-					.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+					.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.GROUP)
 					.build(context.id(), context.branchPath())
 					.execute(context.service(IEventBus.class))
-					.then(new Function<SnomedRelationships, Set<String>>() {
+					.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
 						@Override
-						public Set<String> apply(SnomedRelationships input) {
-							return FluentIterable.from(input).transform(SnomedRelationship::getSourceId).toSet();
+						public Multimap<String, Integer> apply(SnomedRelationships input) {
+							final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(input, SnomedRelationship::getSourceId);
+							return Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getGroup);
 						}
 					});
 		}
 		return conceptsWithGroups;
 	}
+	
+	
 
 	public Promise<Expression> resolveToAndExpression(BranchContext context, Set<String> matchingIds) {
 		if (matchingIds.isEmpty()) {
