@@ -203,11 +203,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 			 */
 			
 			// GET /_cluster/health/test1,test2
-			final StringBuilder endpoint = new StringBuilder("_cluster/health");
-			for (int i = 0; i < indices.length; i++) {
-				endpoint.append(i == 0 ? "/" : ",");
-				endpoint.append(indices[i]);
-			}
+			final String endpoint = new EsClient.EndpointBuilder()
+					.addPathPartAsIs("_cluster")
+					.addPathPartAsIs("health")
+					.addCommaSeparatedPathParts(indices)
+					.build();
 			
 			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
 			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
@@ -218,7 +218,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			try {
 				
 				final Response clusterHealthResponse = client().getLowLevelClient()
-						.performRequest(HttpGet.METHOD_NAME, endpoint.toString(), parameters);
+						.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
 				final InputStream responseStream = clusterHealthResponse.getEntity()
 						.getContent();
 				final JsonNode responseNode = mapper.readTree(responseStream);

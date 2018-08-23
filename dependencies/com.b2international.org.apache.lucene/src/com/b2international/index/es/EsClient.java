@@ -326,11 +326,11 @@ public final class EsClient {
     /**
      * Utility class to build request's endpoint given its parts as strings
      */
-    static class EndpointBuilder {
+    public static class EndpointBuilder {
 
         private final StringJoiner joiner = new StringJoiner("/", "/", "");
 
-        EndpointBuilder addPathPart(String... parts) {
+        public EndpointBuilder addPathPart(String... parts) {
             for (String part : parts) {
                 if (Strings.hasLength(part)) {
                     joiner.add(encodePart(part));
@@ -339,19 +339,19 @@ public final class EsClient {
             return this;
         }
 
-        EndpointBuilder addCommaSeparatedPathParts(String[] parts) {
+        public EndpointBuilder addCommaSeparatedPathParts(String[] parts) {
             addPathPart(String.join(",", parts));
             return this;
         }
 
-        EndpointBuilder addPathPartAsIs(String part) {
+        public EndpointBuilder addPathPartAsIs(String part) {
             if (Strings.hasLength(part)) {
                 joiner.add(part);
             }
             return this;
         }
 
-        String build() {
+        public String build() {
             return joiner.toString();
         }
 

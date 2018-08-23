@@ -280,7 +280,11 @@ public class EsDocumentWriter implements Writer {
 			 */
 			try {
 				
-				final String endpoint = String.format("%s/%s/_update_by_query", admin.getTypeIndex(mapping), mapping.typeAsString());
+				// POST /index/type/_update_by_query
+				final String endpoint = new EsClient.EndpointBuilder()
+						.addPathPart(admin.getTypeIndex(mapping), mapping.typeAsString())
+						.addPathPartAsIs("_update_by_query")
+						.build();
 				
 				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#_url_parameters_2
 				final Map<String, String> parameters = ImmutableMap.<String, String>builder()
