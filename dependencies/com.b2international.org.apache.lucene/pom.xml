@@ -9,4 +9,5 @@
   </parent>
   <artifactId>com.b2international.org.apache.lucene</artifactId>
   <packaging>eclipse-plugin</packaging>
+  <version>7.3.1-SNAPSHOT</version>
 </project>
