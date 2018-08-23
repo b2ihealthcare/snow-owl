@@ -62,6 +62,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	Collection<String> ruleIds;
+
+	private boolean isUnpublishedValidation;
 	
 	ValidateRequest() {}
 	
@@ -99,7 +101,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, isUnpublishedValidation);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -214,6 +216,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	public void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
+	}
+	
+	public void setUnpublishedValidation(boolean isUnpublishedValidation) {
+		this.isUnpublishedValidation = isUnpublishedValidation;
 	}
 	
 	private static final class IssuesToPersist {

@@ -33,8 +33,15 @@ public final class ValidateRequestBuilder
 	
 	private Collection<String> ruleIds;
 	
+	private boolean isUnpublishedValidation;
+	
 	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
+		return getSelf();
+	}
+	
+	public ValidateRequestBuilder setUnpublishedValidation(boolean isUnpublishedValidation) {
+		this.isUnpublishedValidation = isUnpublishedValidation;
 		return getSelf();
 	}
 	
@@ -42,6 +49,7 @@ public final class ValidateRequestBuilder
 	protected Request<BranchContext, ValidationResult> doBuild() {
 		ValidateRequest validateRequest = new ValidateRequest();
 		validateRequest.setRuleIds(ruleIds);
+		validateRequest.setUnpublishedValidation(isUnpublishedValidation);
 		return validateRequest;
 	}
 
