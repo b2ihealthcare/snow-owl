@@ -38,13 +38,14 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, boolean isUnpublishedValidation) throws Exception {
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
 		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
 			ImmutableMap.<String, Object>of(
 				"ctx", context,
+				"isUnpublishedValidation", isUnpublishedValidation,
 				"resourcesDir", validationResourcesDirectory
 			)
 		);

@@ -26,10 +26,12 @@ import java.util.regex.Pattern;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.index.Hits;
-import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -75,7 +77,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, boolean isUnpublishedValidation) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
 		
 		SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent> validationQuery = context.service(ObjectMapper.class)
@@ -85,11 +87,16 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				.prepareSearch();
 		
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
-		Expression where = searchReq.toRawQuery(context);
+		
+		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
+		if (isUnpublishedValidation) {
+			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+		}
+		
 		Iterable<Hits<String>> pages = context.service(RevisionSearcher.class).scroll(Query.select(String.class)
 				.from(validationQuery.getDocType())
 				.fields(SnomedDocument.Fields.ID)
-				.where(where)
+				.where(expressionBuilder.build())
 				.limit(RULE_LIMIT)
 				.withScores(false)
 				.build());
