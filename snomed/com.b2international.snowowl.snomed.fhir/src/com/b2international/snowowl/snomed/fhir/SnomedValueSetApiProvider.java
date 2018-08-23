@@ -20,11 +20,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
@@ -47,6 +46,7 @@ import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
@@ -202,7 +203,10 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.findFirst()
 			.orElseThrow(() -> new NotFoundException("Active value set", codeSystemVersion.getPath() + "/" + componentId));
 	}
-
+	
+	/*
+	 * Implicit value set expansion
+	 */
 	//url=http://snomed.info/sct?fhir_vs=isa/SCT_ID for SNOMED CT
 	@Override
 	public ValueSet expandValueSet(String uriString) {
@@ -224,14 +228,14 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				
 				case NONE:
 					//Entire SNOMED CT, makes no real sense
-					return null; //TODO
+					return buildSubsumptionValueSet(Concepts.ROOT_CONCEPT, codeSystemVersion, false);
 				case REFSET:
 					return buildSimpleTypeRefsetValueSet(queryPart.getQueryValue(), codeSystemVersion);
 				case REFSETS:
-					//All simple type refsets??
-					return null; //TODO
+					//All simple type refsets
+					return buildSimpleTypeRefsetValueSets(codeSystemVersion);
 				case ISA:
-					return buildSubsumptionValueSet(queryPart.getQueryValue(), codeSystemVersion);
+					return buildSubsumptionValueSet(queryPart.getQueryValue(), codeSystemVersion, true);
 				default:
 					//should not happen
 					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
@@ -240,18 +244,93 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		} else {
 			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
 		}
-		
-		
 	}
 	
-	/**
-	 * @param queryValue
-	 * @param codeSystemVersion
-	 * @return
-	 */
-	private ValueSet buildSubsumptionValueSet(String parentConceptId, CodeSystemVersionEntry codeSystemVersion) {
+	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {
 		
-		Builder builder = ValueSet.builder();
+		int all = Integer.MAX_VALUE;
+		
+		//collect all simple type reference set members
+		Set<SnomedConcept> memberConcepts = SnomedRequests.prepareSearchRefSet()
+			.filterByActive(true)
+			.filterByType(SnomedRefSetType.SIMPLE)
+			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
+			.build(repositoryId, codeSystemVersion.getPath())
+			.execute(getBus())
+			
+			//collect the members
+			.then(refsets -> {
+				return refsets.stream()
+						
+						//get the members
+						.map(r -> r.getMembers())
+						
+						//convert to membersList
+						.map(ms -> ms.getItems())
+						
+						//flatten the nested collections
+						.flatMap(Collection::stream)
+						
+						//get the referenced components
+						.map(member -> member.getReferencedComponent())
+
+						//convert to referenced concepts
+						.map(SnomedConcept.class::cast).collect(Collectors.toSet());
+			})
+			.getSync();
+		
+		Builder builder = ValueSet.builder(UUID.randomUUID().toString());
+		
+		//TODO: module needs to be added as well
+		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
+				
+		Identifier identifier = Identifier.builder()
+			.use(IdentifierUse.OFFICIAL)
+			.system(uri.toString())
+			//.value(referenceSetId)
+			.build();
+		
+		builder.status(PublicationStatus.ACTIVE)
+			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.language(displayLanguage)
+			.version(codeSystemVersion.getVersionId())
+			.identifier(identifier)
+			.url(uri.toUri())
+			.name("SNOMED CT all simple type reference sets");
+		
+		builder.text(Narrative.builder()
+			.status(NarrativeStatus.GENERATED)
+			.div("<div>This is the Value Set representation of all the active simple type SNOMED CT reference sets, requested by the SNOMED CT URI query part (?refset) .</div>")
+			.build());
+		
+		com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion.Builder expansionBuilder = Expansion.builder()
+				.identifier("1")
+				.timestamp(new Date())
+				.total(memberConcepts.size())
+				.addParameter(UriParameter.builder()
+					.name("version")
+					.value(uri.toUri())
+					.build());
+		
+		for (SnomedConcept concept : memberConcepts) {
+			
+			Contains content = Contains.builder()
+				.system(SnomedUri.SNOMED_BASE_URI)
+				.code(concept.getId())
+				.display(concept.getPt().getTerm())
+				.build();
+			expansionBuilder.addContains(content);
+		}
+		
+		builder.expansion(expansionBuilder.build());
+		return builder.build();		
+	}
+	
+	private ValueSet buildSubsumptionValueSet(String parentConceptId, CodeSystemVersionEntry codeSystemVersion, boolean fetchAll) {
+		
+		Builder builder = ValueSet.builder(UUID.randomUUID().toString());
 		
 		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
 				
@@ -261,8 +340,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			//.value("1")
 			.build();
 		
-		builder
-			.status(PublicationStatus.ACTIVE)
+		builder.status(PublicationStatus.ACTIVE)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
 			.language(displayLanguage)
 			.version(codeSystemVersion.getVersionId())
@@ -277,13 +355,17 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.build());
 		
 		//evaluate the ECL expression
-		SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
-			.all()
+		SnomedConceptSearchRequestBuilder snomedConceptSearchRequestBuilder = SnomedRequests.prepareSearchConcept()
 			.filterByEcl("<<" + parentConceptId)
 			.filterByActive(true)
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-			.setExpand("pt()")
-			.build(repositoryId, codeSystemVersion.getPath())
+			.setExpand("pt()");
+		
+		if (fetchAll) {
+			snomedConceptSearchRequestBuilder.all();
+		}
+		
+		SnomedConcepts snomedConcepts  = snomedConceptSearchRequestBuilder.build(repositoryId, codeSystemVersion.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -428,6 +510,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			return SnomedRequests.prepareSearchRefSet()
 				.all()
 				.filterByType(SnomedRefSetType.SIMPLE)
+				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.build(repositoryId, csve.getPath())
 				.execute(getBus())
 				.then(refsets -> {

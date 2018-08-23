@@ -90,14 +90,6 @@ public class ValueSet extends TerminologyResource {
 		this.expansion = expansion;
 	}
 	
-	/**
-	 * To create a builder without resource ID (dynamically created or to be persisted)
-	 * @return
-	 */
-	public static Builder builder() {
-		return new Builder();
-	}
-	
 	public static Builder builder(String valueSetId) {
 		return new Builder(valueSetId);
 	}
@@ -108,9 +100,6 @@ public class ValueSet extends TerminologyResource {
 		private Boolean extensible;
 		private Collection<Compose> composeParts = Lists.newArrayList();
 		private Expansion expansion;
-		
-		public Builder() {
-		}
 		
 		public Builder(String valueSetId) {
 			super(valueSetId);

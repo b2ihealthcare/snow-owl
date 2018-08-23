@@ -29,6 +29,6 @@ identity:
   providers:
     - file:
         name: users
-    - ldap:
-        uri: ldap://arnold:389
-        rootDnPassword: adminpwd
+   # - ldap:
+   #     uri: ldap://arnold:389
+   #     rootDnPassword: adminpwd

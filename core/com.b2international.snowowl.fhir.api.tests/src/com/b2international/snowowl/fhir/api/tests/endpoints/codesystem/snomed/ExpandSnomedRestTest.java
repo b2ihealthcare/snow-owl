@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.TestValueSetCreator;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -48,6 +49,7 @@ public class ExpandSnomedRestTest extends FhirTest {
 		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
+	//Single SNOMED CT simple type reference set
 	@Test
 	public void implicitRefsetTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -65,6 +67,25 @@ public class ExpandSnomedRestTest extends FhirTest {
 			.statusCode(200);
 	}
 	
+	//all simple type reference sets
+	@Test
+	public void implicitRefsetsTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("url", "http://snomed.info/sct?fhir_vs=refset") 
+			.when().get("/ValueSet/$expand")
+			.then()
+			.body("resourceType", equalTo("ValueSet"))
+			.body("id", notNullValue())
+			.body("language", equalTo("en-us"))
+			.body("version", equalTo("2018-01-31"))
+			.body("status", equalTo("active"))
+			.body("expansion.total", notNullValue())
+			.body("expansion.timestamp", notNullValue())
+			.body("expansion.contains.code", hasItem("362460007"))
+			.statusCode(200);
+	}
+	
+	//isA subsumption based value set
 	@Test
 	public void implicitIsaTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -72,7 +93,7 @@ public class ExpandSnomedRestTest extends FhirTest {
 			.when().get("/ValueSet/$expand")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", nullValue())
+			.body("id", notNullValue())
 			.body("text.status", equalTo("generated"))
 			.body("language", equalTo("en-us"))
 			.body("version", equalTo("2018-01-31"))
@@ -80,6 +101,27 @@ public class ExpandSnomedRestTest extends FhirTest {
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
 			.body("expansion.contains.code", hasItem("50697003"))
+			.body("expansion.parameter[0].name", equalTo("version"))
+			.body("expansion.parameter[0].valueUri", equalTo("http://snomed.info/sct/version/20180131"))
+			.statusCode(200);
+	}
+	
+	//all SNOMED CT concepts
+	@Test
+	public void implicitSnomedCTTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("url", "http://snomed.info/sct?fhir_vs") 
+			.when().get("/ValueSet/$expand")
+			.then()
+			.body("resourceType", equalTo("ValueSet"))
+			.body("id", notNullValue())
+			.body("text.status", equalTo("generated"))
+			.body("language", equalTo("en-us"))
+			.body("version", equalTo("2018-01-31"))
+			.body("status", equalTo("active"))
+			.body("expansion.total", notNullValue())
+			.body("expansion.timestamp", notNullValue())
+			//.body("expansion.contains.code", hasItem(Concepts.ROOT_CONCEPT))
 			.body("expansion.parameter[0].name", equalTo("version"))
 			.body("expansion.parameter[0].valueUri", equalTo("http://snomed.info/sct/version/20180131"))
 			.statusCode(200);
