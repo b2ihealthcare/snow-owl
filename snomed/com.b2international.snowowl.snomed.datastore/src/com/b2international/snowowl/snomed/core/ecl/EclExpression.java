@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -138,7 +139,8 @@ public final class EclExpression {
 						@Override
 						public Multimap<String, Integer> apply(SnomedRelationships input) {
 							final Multimap<String, SnomedRelationship> relationshipsBySource = Multimaps.index(input, SnomedRelationship::getSourceId);
-							return Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getGroup);
+							final Multimap<String, Integer> groupsByRelationshipId = Multimaps.transformValues(relationshipsBySource, SnomedRelationship::getGroup);
+							return ImmutableSetMultimap.copyOf(groupsByRelationshipId);
 						}
 					});
 		}

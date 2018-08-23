@@ -78,7 +78,6 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private static final String HAS_ACTIVE_INGREDIENT = Concepts.HAS_ACTIVE_INGREDIENT;
 	private static final String SUBSTANCE = Concepts.SUBSTANCE;
 	
-	
 	// random IDs
 	private static final String TRIPHASIL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
 	private static final String PANADOL_TABLET = RandomSnomedIdentiferGenerator.generateConceptId();
@@ -726,6 +725,25 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void refinementGroupCardinality() throws Exception {
+		generateHierarchy();
+		final Expression actual = eval(String.format("<<%s:{[0..1]%s=<<%s,[1..1]%s=<<%s,[1..1]%s=<<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, HAS_BOSS, SUBSTANCE, HAS_TRADE_NAME, SUBSTANCE));
+		
+		final Expression descendantsOrSelfOf = Expressions.builder()
+				.should(ids(Collections.singleton(DRUG_ROOT)))
+				.should(parents(Collections.singleton(DRUG_ROOT)))
+				.should(ancestors(Collections.singleton(DRUG_ROOT)))
+				.build();
+		
+		final Expression expected = and(
+			descendantsOrSelfOf,
+			ids(ImmutableSet.of(ABACAVIR_TABLET, PANADOL_TABLET))
+		);
+		
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void refinementGroupDefaultCardinalityAndRelationshipOneToOneCardinality() throws Exception {
 		generateDrugsWithGroups();
 		
@@ -1122,6 +1140,46 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, nextStorageKey(), integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500).build());
 		indexRevision(MAIN, nextStorageKey(), decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d)).build());
 		indexRevision(MAIN, nextStorageKey(), decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d)).build());
+	}
+	
+	
+	/**
+	 * Generates the following test fixtures:
+	 * <ul>
+	 * 	<li>Substances (children of SUBSTANCE):
+	 * 		<ul>
+	 * 			<li>INGREDIENT1 (ingredient with three inbound from PANADOL and ABACAVIR TABLET)</li>
+	 * 			<li>INGREDIENT2 (ingredient with five inbound from TRIPHASIL AND PANADOL AND ABACAVIR TABLET)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * 	<li>Drugs (children of DRUG_ROOT):
+	 * 		<ul>
+	 * 			<li>ABACAVIR_TABLET (drug with two outgoing inferred relationships, one HAS_BOSS and one HAS_TRADE_NAME relationship to INGREDIENT1)</li>
+	 * 			<li>PANADOL_TABLET (drug with three outgoing inferred relationships, one HAI to INGREDIENT1, one HAS_BOSS to INGREDIENT 2 and one HAS_TRADE_NAME to INGREDIENT2)</li>
+	 * 			<li>TRIPHASIL_TABLET (drug with three outgoing inferred relationships, one HAI, one HAS_BOSS and one HAS_TRADE_NAME to INGREDIENT2)</li>
+	 * 		</ul>
+	 * 	</li>
+	 * </ul>
+	 */
+	private void generateHierarchy() {
+		// substances
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		
+		//drugs
+		indexRevision(MAIN, nextStorageKey(), concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		indexRevision(MAIN, nextStorageKey(), concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
+		
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_BOSS, INGREDIENT2).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(PANADOL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_BOSS, INGREDIENT1).group(1).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(ABACAVIR_TABLET, HAS_TRADE_NAME, INGREDIENT1).group(1).build());
+
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(2).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(2).build());
+		indexRevision(MAIN, nextStorageKey(), relationship(TRIPHASIL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build());
 	}
 
 	/**
