@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.options.Options;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -63,7 +65,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	Collection<String> ruleIds;
 
-	private boolean isUnpublishedValidation;
+	private Options filterOptions;
 	
 	ValidateRequest() {}
 	
@@ -86,7 +88,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.build()
 				.execute(context);
 		
-		
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
 		
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
@@ -101,7 +102,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, isUnpublishedValidation);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, filterOptions);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -218,8 +219,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		this.ruleIds = ruleIds;
 	}
 	
-	public void setUnpublishedValidation(boolean isUnpublishedValidation) {
-		this.isUnpublishedValidation = isUnpublishedValidation;
+	public void setFilterOptions(Options filterOptions) {
+		this.filterOptions = filterOptions;
 	}
 	
 	private static final class IssuesToPersist {

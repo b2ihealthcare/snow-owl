@@ -20,11 +20,13 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -77,7 +80,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, boolean isUnpublishedValidation) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Options filterOptions) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
 		
 		SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent> validationQuery = context.service(ObjectMapper.class)
@@ -89,8 +92,15 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
-		if (isUnpublishedValidation) {
-			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+		
+		if (filterOptions.containsKey(SnomedRf2Headers.FIELD_EFFECTIVE_TIME)) {
+			long effectiveTimeOption = (long) filterOptions.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
+			// if effectiveTimeOption is 1 then the validation must be run on published components
+			if (effectiveTimeOption == 1) {
+				expressionBuilder.mustNot(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+			} else if (EffectiveTimes.UNSET_EFFECTIVE_TIME == effectiveTimeOption) {
+				expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+			}
 		}
 		
 		Iterable<Hits<String>> pages = context.service(RevisionSearcher.class).scroll(Query.select(String.class)

@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import java.util.Collection;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -28,20 +29,20 @@ import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder
 public final class ValidateRequestBuilder 
 		extends BaseRequestBuilder<ValidateRequestBuilder, BranchContext, ValidationResult>
 		implements RevisionIndexRequestBuilder<ValidationResult> {
-
+	
 	ValidateRequestBuilder() {}
 	
 	private Collection<String> ruleIds;
 	
-	private boolean isUnpublishedValidation;
+	private Options filterOptions;
 	
 	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
 		return getSelf();
 	}
 	
-	public ValidateRequestBuilder setUnpublishedValidation(boolean isUnpublishedValidation) {
-		this.isUnpublishedValidation = isUnpublishedValidation;
+	public ValidateRequestBuilder setFilterOptions(Options filterOptions) {
+		this.filterOptions = filterOptions;
 		return getSelf();
 	}
 	
@@ -49,7 +50,7 @@ public final class ValidateRequestBuilder
 	protected Request<BranchContext, ValidationResult> doBuild() {
 		ValidateRequest validateRequest = new ValidateRequest();
 		validateRequest.setRuleIds(ruleIds);
-		validateRequest.setUnpublishedValidation(isUnpublishedValidation);
+		validateRequest.setFilterOptions(filterOptions);
 		return validateRequest;
 	}
 

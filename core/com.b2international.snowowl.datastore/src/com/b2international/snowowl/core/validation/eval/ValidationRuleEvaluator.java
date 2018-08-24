@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -78,11 +79,11 @@ public interface ValidationRuleEvaluator {
 	 * Evaluate the given rule
 	 * @param context - the context where the rule should be evaluated
 	 * @param rule - the rule to evaluate
-	 * @param isUnpublishedValidation - filters components by unpublished status
+	 * @param filterOptions - the map of filter options
 	 * @return
 	 * @throws Exception
 	 */
-	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, boolean isUnpublishedValidation) throws Exception;
+	List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Options filterOptions) throws Exception;
 
 	/**
 	 * Unique type identifier of this validation rule evaluator. The type should represent the kind of rules that this evaluator can evaluate using

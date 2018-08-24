@@ -18,8 +18,10 @@ package com.b2international.snowowl.core.validation.eval;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.options.Options;
 import com.b2international.scripting.api.ScriptEngine;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -38,14 +40,14 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, boolean isUnpublishedValidation) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Options filterOptions) throws Exception {
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
 		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
 			ImmutableMap.<String, Object>of(
 				"ctx", context,
-				"isUnpublishedValidation", isUnpublishedValidation,
+				"options", filterOptions,
 				"resourcesDir", validationResourcesDirectory
 			)
 		);
