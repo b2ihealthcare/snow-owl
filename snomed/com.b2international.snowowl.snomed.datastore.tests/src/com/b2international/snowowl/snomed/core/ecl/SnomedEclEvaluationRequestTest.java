@@ -725,7 +725,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void refinementGroupCardinality() throws Exception {
+	public void refinementWithZeroToOneCardinalityInAttributeConjuction() throws Exception {
 		generateHierarchy();
 		final Expression actual = eval(String.format("<<%s:{[0..1]%s=<<%s,[1..1]%s=<<%s,[1..1]%s=<<%s}", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, HAS_BOSS, SUBSTANCE, HAS_TRADE_NAME, SUBSTANCE));
 		
