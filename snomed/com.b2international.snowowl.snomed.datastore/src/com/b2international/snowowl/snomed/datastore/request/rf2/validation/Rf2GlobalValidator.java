@@ -40,7 +40,7 @@ import com.google.common.collect.Sets;
  */
 public class Rf2GlobalValidator {
 
-	public void validate(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
 		final int slices = Iterables.size(orderedEffectiveTimeSlices);
 		for (int i = 0; i < slices ; i++) {
 			final Rf2EffectiveTimeSlice currentSlice = Iterables.get(orderedEffectiveTimeSlices, i);
@@ -88,10 +88,16 @@ public class Rf2GlobalValidator {
 						issuesToReport.forEach(id -> reporter.error(String.format("%s %s in effective time %s", Rf2ValidationDefects.MISSING_DEPENDANT_ID.getLabel(), id, currentSlice.getEffectiveTime())));
 					}
 				}
-				
 			}
-			
 		}
+	}
+
+	public void validateMembers(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+		final int slices = Iterables.size(orderedEffectiveTimeSlices);
+		for (int i = 0; i < slices; i++) {
+			final Rf2EffectiveTimeSlice slice = Iterables.get(orderedEffectiveTimeSlices, i);
+		}
+	
 	}
 
 	private Set<String> fetchConcepts(Rf2ValidationIssueReporter reporter, BranchContext context, final Rf2EffectiveTimeSlice currentSlice, final Set<String> conceptIdsToFetch) {
