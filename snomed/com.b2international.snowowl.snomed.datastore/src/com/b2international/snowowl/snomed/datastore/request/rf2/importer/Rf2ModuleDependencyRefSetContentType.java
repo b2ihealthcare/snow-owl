@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
+import java.util.Date;
+
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ModuleDependencyRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -63,10 +65,27 @@ final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType
 			Long.parseLong(values[5])
 		);
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2ModuleDependencyRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String sourceEffectiveTime = values[6];
+		final String targetEffectiveTime = values[7];
+		validateEffectiveTimeFields(memberId, sourceEffectiveTime, targetEffectiveTime, reporter);
+	}
+
+	private void validateEffectiveTimeFields(String memberId, String sourceEffectiveTime, String targetEffectiveTime, Rf2ValidationIssueReporter reporter) {
+		if (Strings.isNullOrEmpty(sourceEffectiveTime) || Strings.isNullOrEmpty(targetEffectiveTime)) {
+			reporter.error(String.format("Source or target effective time field was empty for '%s'", memberId));
+			return;
+		}
+		
+		try {
+			final Date sourceDate = EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
+			final Date targetDate = EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
+		} catch (SnowowlRuntimeException e) {
+			reporter.error(String.format("Source or target effective time field date type was in the incorrect format for '%s'", memberId));
+		}
 	}
 	
 }

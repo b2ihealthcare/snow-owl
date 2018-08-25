@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2RelationshipRowValidator;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
@@ -37,7 +38,8 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 
 	@Override
 	public String getContainerId(String[] values) {
-		return values[4];
+		final String sourceId = values[4];
+		return sourceId;
 	}
 
 	@Override
@@ -74,8 +76,26 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 	}
 	
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2RelationshipRowValidator(reporter, values);
+	public void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String relationshipId = values[0];
+		final String sourceId = values[4];
+		final String destinationId = values[5];
+		final String typeId = values[7];
+		final String characteristicTypeId = values[8];
+		final String modifierId = values[9];
+		
+		if (sourceId.equals(destinationId)) {
+			reporter.error(Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel());
+		}
+		
+		try {
+			SnomedIdentifiers.validate(relationshipId);
+			validateByComponentCategory(relationshipId, reporter, ComponentCategory.RELATIONSHIP);
+		} catch (IllegalArgumentException e) {
+			reporter.error(String.format("%s %s", relationshipId, Rf2ValidationDefects.INVALID_ID.getLabel()));
+		}
+		
+		validateConceptIds(reporter, sourceId, destinationId, typeId, characteristicTypeId, modifierId);
 	}
 
 }
