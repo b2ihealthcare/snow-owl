@@ -282,6 +282,11 @@ public class SnomedBrowserRestService extends AbstractRestService {
 			@ApiParam(value="A scrollId to continue scrolling a previous query")
 			@RequestParam(value="scrollId", required=false) 
 			final String scrollId,
+			
+			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter,
+
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)
@@ -301,7 +306,11 @@ public class SnomedBrowserRestService extends AbstractRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN, scrollKeepAlive, scrollId, limit);
+		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.FSN,
+				scrollKeepAlive, 
+				scrollId, 
+				searchAfter,
+				limit);
 	}
 
 	@ApiOperation(
@@ -330,6 +339,10 @@ public class SnomedBrowserRestService extends AbstractRestService {
 			@RequestParam(value="scrollId", required=false) 
 			final String scrollId,
 
+			@ApiParam(value="The sort key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter,
+
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)
 			final int limit,
@@ -348,7 +361,11 @@ public class SnomedBrowserRestService extends AbstractRestService {
 			throw new BadRequestException(e.getMessage());
 		}
 		
-		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, scrollKeepAlive, scrollId, limit);
+		return browserService.getDescriptions(branchPath, query, extendedLocales, ISnomedBrowserDescriptionResult.TermType.PT, 
+				scrollKeepAlive, 
+				scrollId, 
+				searchAfter,
+				limit);
 	}
 
 	@ApiOperation(

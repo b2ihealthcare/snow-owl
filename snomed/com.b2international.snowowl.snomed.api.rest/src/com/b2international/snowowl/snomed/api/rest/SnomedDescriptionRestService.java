@@ -139,6 +139,10 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@ApiParam(value="A scrollId to continue scrolling a previous query")
 			@RequestParam(value="scrollId", required=false) 
 			final String scrollId,
+			
+			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter,
 
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
@@ -203,6 +207,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 					.setLimit(limit)
 					.setScroll(scrollKeepAlive)
 					.setScrollId(scrollId)
+					.setSearchAfter(searchAfter)
 					.setExpand(expand)
 					.sortBy(sortField)
 					.build(repositoryId, branch)

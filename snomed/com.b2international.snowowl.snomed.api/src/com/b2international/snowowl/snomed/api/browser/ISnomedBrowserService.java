@@ -85,13 +85,18 @@ public interface ISnomedBrowserService {
 	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @param scrollKeepAlive
 	 * @param scrollId
+	 * @param searchAfter 
 	 * @param limit the maximal number of results to return
 	 * @return the search result list of descriptions
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 * @throws IllegalArgumentException if the query is {@code null} or too short
 	 */
-	List<ISnomedBrowserDescriptionResult> getDescriptions(String branchPath, String query, List<ExtendedLocale> extendedLocales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, String scrollKeepAlive, String scrollId, int limit);
+	List<ISnomedBrowserDescriptionResult> getDescriptions(String branchPath, String query, List<ExtendedLocale> extendedLocales, ISnomedBrowserDescriptionResult.TermType resultConceptTermType, 
+			String scrollKeepAlive, 
+			String scrollId, 
+			String searchAfter, 
+			int limit);
 
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.

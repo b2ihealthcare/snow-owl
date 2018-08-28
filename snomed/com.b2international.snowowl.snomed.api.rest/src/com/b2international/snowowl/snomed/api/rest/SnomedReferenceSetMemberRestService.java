@@ -125,6 +125,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@RequestParam(value="scrollId", required=false) 
 			final String scrollId,
 
+			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false) 
+			final String searchAfter,
+
 			@ApiParam(value="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
@@ -151,6 +155,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.setLimit(limit)
 				.setScroll(scrollKeepAlive)
 				.setScrollId(scrollId)
+				.setSearchAfter(searchAfter)
 				.filterByRefSet(referenceSetFilter)
 				.filterByReferencedComponent(referencedComponentIdFilter)
 				.filterByActive(activeFilter)
