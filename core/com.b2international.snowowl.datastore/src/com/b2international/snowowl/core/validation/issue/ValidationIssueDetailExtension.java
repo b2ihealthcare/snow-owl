@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 
 /**
@@ -26,7 +27,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
  */
 public interface ValidationIssueDetailExtension {
 
-	void prepareQuery(ExpressionBuilder queryBuilder, Options options);
+	void prepareQuery(ServiceProvider context, ExpressionBuilder queryBuilder, Options options, Collection<String> branches);
 
 	void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issues);
 	

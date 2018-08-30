@@ -143,11 +143,12 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 			queryBuilder.filter(Expressions.match(ValidationIssue.Fields.WHITELISTED, whitelisted));
 		}
 		
+		
 		if (containsKey(OptionKey.DETAILS)) {
 			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
 			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
 				Options options = getOptions(OptionKey.DETAILS);
-				extension.prepareQuery(queryBuilder, options);
+				extension.prepareQuery(context, queryBuilder, options, getCollection(OptionKey.BRANCH_PATH, String.class));
 			}
 		}
 		

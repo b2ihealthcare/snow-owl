@@ -59,7 +59,7 @@ public class ValidationIssueApiTest {
 	private static final class TestValidationDetailExtension implements ValidationIssueDetailExtension {
 
 		@Override
-		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
+		public void prepareQuery(ServiceProvider context, ExpressionBuilder queryBuilder, Options options, Collection<String> branches) {
 			final Set<String> keySet = options.keySet();
 			if (!keySet.isEmpty()) {
 				for (String key : keySet) {
