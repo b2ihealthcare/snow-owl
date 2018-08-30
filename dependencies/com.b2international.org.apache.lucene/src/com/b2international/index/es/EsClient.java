@@ -161,7 +161,8 @@ public final class EsClient {
 					.setSocketTimeout(configuration.getSocketTimeout());
 			
 			final RestClientBuilder restClientBuilder = RestClient.builder(host)
-				.setRequestConfigCallback(requestConfigCallback);
+				.setRequestConfigCallback(requestConfigCallback)
+				.setMaxRetryTimeoutMillis(configuration.getSocketTimeout()); // retry timeout should match socket timeout
 			
 			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
 			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
