@@ -20,14 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.options.Options;
 import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
@@ -43,6 +48,7 @@ import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.datastore.server.snomed.SnomedDatastoreServerActivator;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -57,6 +63,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
 /**
@@ -77,6 +84,16 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 	private BranchContext context;
 
+	private Options options;
+	
+	@Parameter
+	public long effectiveTime;
+	
+	@Parameters(name = "EffectiveTime: {0}")
+	public static Iterable<? extends Object> data() {
+	    return Arrays.asList(-1, 0, 1);
+	}
+	
 	@Override
 	public void setup() {
 		super.setup();
@@ -90,6 +107,9 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
 		// index common required SNOMED CT Concepts
 
+		final Map<String, Object> filterOptions = ImmutableMap.of(SnomedRf2Headers.FIELD_EFFECTIVE_TIME, effectiveTime);
+		options = Options.from(filterOptions);
+		
 		index().write(MAIN, 1L, writer -> {
 			writer.put(nextStorageKey(), concept(Concepts.ROOT_CONCEPT).build());
 			// Attributes
@@ -138,7 +158,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 
 	protected final ValidationIssues validate(String ruleId) {
-		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
+		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().setFilterOptions(options).build()).execute(context);
 		return ValidationRequests.issues().prepareSearch().all().filterByRule(ruleId).build().execute(context);
 	}
 
