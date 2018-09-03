@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.solr.common.util.JavaBinCodec;
 import org.elasticsearch.action.get.GetRequest;
@@ -62,7 +61,6 @@ import com.b2international.index.query.EsQueryBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -391,16 +389,19 @@ public class EsDocumentSearcher implements DocSearcher {
 		} else {
 			items.add(sortBy);
 		}
-
-		Optional<SortByField> existingDocIdSort = items.stream()
-			.filter(SortByField.class::isInstance)
-			.map(SortByField.class::cast)
-			.filter(field -> DocumentMapping._ID.equals(field.getField()))
-			.findFirst();
 		
-		if (!existingDocIdSort.isPresent()) {
-			// add _id field as tiebreaker if not defined in the original SortBy
-			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
+		final int idSortIdx = Iterables.indexOf(items, item -> {
+			return (item instanceof SortByField) && DocumentMapping._ID.equals(((SortByField) item).getField());
+		});
+
+		if (idSortIdx >= 0 && items.size() > 1) {
+			// Remove all sort conditions after _id, as these values should be unique
+			for (int i = items.size() - 1; i > idSortIdx; i--) {
+				items.remove(i);
+			}
+		} else {
+			// Add _id as a tie-breaker to the end
+			items.add(SortBy.DOC_ID);
 		}
 		
 		return Iterables.filter(items, SortBy.class);
