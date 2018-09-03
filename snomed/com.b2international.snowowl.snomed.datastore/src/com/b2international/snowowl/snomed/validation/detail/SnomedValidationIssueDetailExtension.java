@@ -19,6 +19,8 @@ import static com.b2international.snowowl.core.terminology.ComponentCategory.CON
 import static com.b2international.snowowl.core.terminology.ComponentCategory.DESCRIPTION;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.RELATIONSHIP;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.SET_MEMBER;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_EFFECTIVE_TIME_END;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_EFFECTIVE_TIME_START;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
@@ -28,11 +30,13 @@ import java.util.Set;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -59,6 +63,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		public static final String COMPONENT_STATUS = "componentStatus";
 		public static final String COMPONENT_MODULE_ID = "componentModuleId";
+		public static final String COMPONENT_EFFECTIVE_TIME_START = "effectiveTimeStart";
+		public static final String COMPONENT_EFFECTIVE_TIME_END = "effectiveTimeEnd";
 		public static final String CONCEPT_STATUS = "conceptStatus";
 		
 	}
@@ -67,7 +73,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	
 	@Override
 	public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {
-
 		if (options.containsKey(COMPONENT_STATUS)) {
 			final Boolean isActive = options.get(COMPONENT_STATUS, Boolean.class);
 			queryBuilder.filter(Expressions.match(COMPONENT_STATUS, isActive));
@@ -82,8 +87,21 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			final Boolean isConceptActive = options.get(CONCEPT_STATUS, Boolean.class);
 			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
 		}
+		
+		if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
+			final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
+			final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
+
+			final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
+				start == null ? 0L : start,
+				end == null ? Long.MAX_VALUE : end
+			);
+			
+			queryBuilder.filter(effectiveTimeExpression);
+		}
 
 	}
+	
 	
 	@Override
 	public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issues) {
@@ -112,9 +130,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 						validationIssue.setDetails(COMPONENT_MODULE_ID, moduleId);
 						if (CONCEPT == category) {
 							validationIssue.setDetails(CONCEPT_STATUS, status);
+							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							alreadyFetchedConceptIds.add(id);
 						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
 							String containerConceptId = hit[3];
+							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							if (!Strings.isNullOrEmpty(containerConceptId) && (!issueIdsByConceptIds.containsKey(containerConceptId) || !alreadyFetchedConceptIds.contains(containerConceptId))) {
 								issueIdsByConceptIds.put(containerConceptId, id);
 							}
@@ -148,16 +168,30 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final QueryBuilder<String[]> queryBuilder = Query.select(String[].class);
 		switch (category) {
 		case CONCEPT:
-			queryBuilder.from(SnomedConceptDocument.class)
-				.fields(SnomedConceptDocument.Fields.ID, SnomedConceptDocument.Fields.ACTIVE, SnomedConceptDocument.Fields.MODULE_ID);
+			queryBuilder.from(SnomedConceptDocument.class).fields(
+					SnomedConceptDocument.Fields.ID,
+					SnomedConceptDocument.Fields.ACTIVE,
+					SnomedConceptDocument.Fields.MODULE_ID,
+					SnomedDocument.Fields.EFFECTIVE_TIME
+			);
 			break;
 		case DESCRIPTION:
-			queryBuilder.from(SnomedDescriptionIndexEntry.class)
-				.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.ACTIVE, SnomedDescriptionIndexEntry.Fields.MODULE_ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID);
+			queryBuilder.from(SnomedDescriptionIndexEntry.class).fields(
+					SnomedDescriptionIndexEntry.Fields.ID,
+					SnomedDescriptionIndexEntry.Fields.ACTIVE,
+					SnomedDescriptionIndexEntry.Fields.MODULE_ID,
+					SnomedDescriptionIndexEntry.Fields.CONCEPT_ID,
+					SnomedDocument.Fields.EFFECTIVE_TIME
+			);
 			break;
 		case RELATIONSHIP:
-			queryBuilder.from(SnomedRelationshipIndexEntry.class)
-				.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.ACTIVE, SnomedRelationshipIndexEntry.Fields.MODULE_ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID);
+			queryBuilder.from(SnomedRelationshipIndexEntry.class).fields(
+					SnomedRelationshipIndexEntry.Fields.ID,
+					SnomedRelationshipIndexEntry.Fields.ACTIVE,
+					SnomedRelationshipIndexEntry.Fields.MODULE_ID,
+					SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
+					SnomedDocument.Fields.EFFECTIVE_TIME
+			);
 			break;
 		default:
 			break;
