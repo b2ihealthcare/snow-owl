@@ -39,6 +39,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
@@ -82,7 +83,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	private static final class TestValidationDetailExtension implements ValidationIssueDetailExtension {
 
 		@Override
-		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {}
+		public void prepareQuery(ServiceProvider context, ExpressionBuilder queryBuilder, Options options, Collection<String> branches) {}
 
 		@Override
 		public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issue) {}
