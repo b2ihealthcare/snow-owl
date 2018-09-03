@@ -20,6 +20,7 @@ import static com.b2international.snowowl.core.terminology.ComponentCategory.DES
 import static com.b2international.snowowl.core.terminology.ComponentCategory.RELATIONSHIP;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.SET_MEMBER;
 import static com.b2international.snowowl.core.validation.issue.ValidationIssue.Fields.AFFECTED_COMPONENT_ID;
+import static com.b2international.snowowl.core.validation.issue.ValidationIssue.Fields.FILTER_TEXT;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
@@ -58,6 +59,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @since 6.4
@@ -71,7 +73,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		public static final String COMPONENT_STATUS = "componentStatus";
 		public static final String COMPONENT_MODULE_ID = "componentModuleId";
 		public static final String CONCEPT_STATUS = "conceptStatus";
-		
 	}
 	
 	private static final int SCROLL_SIZE = 50_000;
@@ -82,7 +83,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			final Boolean isActive = options.get(COMPONENT_STATUS, Boolean.class);
 			queryBuilder.filter(Expressions.match(COMPONENT_STATUS, isActive));
 		}
-
+		
 		if (options.containsKey(COMPONENT_MODULE_ID)) {
 			final Collection<String> moduleIds = options.getCollection(COMPONENT_MODULE_ID, String.class);
 			queryBuilder.filter(Expressions.matchAny(COMPONENT_MODULE_ID, moduleIds));
@@ -93,10 +94,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
 		}
 		
-		if (options.containsKey(AFFECTED_COMPONENT_ID)) {
-			final String searchString = options.getString(AFFECTED_COMPONENT_ID);
-			
-			final Collection<String> affectedComponentIds = getMatchingComponentIds(Iterables.getOnlyElement(branches), context, queryBuilder, searchString);
+		if (options.containsKey(FILTER_TEXT)) {
+			final String filterText = options.getString(FILTER_TEXT);
+			final Collection<String> affectedComponentIds = StringUtils.isNumeric(filterText)
+					? Collections.singleton(filterText)
+					: getMatchingComponentIds(Iterables.getOnlyElement(branches), context, queryBuilder, filterText);
 			queryBuilder.filter(Expressions.matchAny(AFFECTED_COMPONENT_ID, affectedComponentIds));
 		}
 	}
@@ -107,7 +109,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		RevisionIndexReadRequest<Set<String>> request = new RevisionIndexReadRequest<>(branchContext -> {
 			final RevisionSearcher searcher = branchContext.service(RevisionSearcher.class);
 			final Set<String> matchingAffectedComponentIds = Sets.newHashSet();
-			final Set<String> preferredTypes = getPTs(searcher);
 			
 			//Collect ids of relevant validation issues based on other filters
 			final Query<String[]> affectedComponentQuery = Query.select(String[].class)
@@ -127,24 +128,20 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 			//Use ids to limit results to affected components in component type specific preferred description searches
 			for (Short componentType : affectedComponentCategoryMap.keySet()) {
-				final ExpressionBuilder expression = Expressions.builder()
-						.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.TYPE_ID, preferredTypes));
-
 				switch((short)componentType) {
 				case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-					matchingAffectedComponentIds.addAll(filterAffectedConcepts(searcher, affectedComponentCategoryMap.get(componentType), expression, searchString));
+					matchingAffectedComponentIds.addAll(filterAffectedConcepts(searcher, affectedComponentCategoryMap.get(componentType), searchString));
 					break;
 				case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-					matchingAffectedComponentIds.addAll(filterAffectedDescriptions(searcher, affectedComponentCategoryMap.get(componentType), expression, searchString));
+					matchingAffectedComponentIds.addAll(filterAffectedDescriptions(searcher, affectedComponentCategoryMap.get(componentType), searchString));
 					break;
 				case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-					matchingAffectedComponentIds.addAll(filterAffectedRelationships(searcher, affectedComponentCategoryMap.get(componentType), expression, searchString));
+					matchingAffectedComponentIds.addAll(filterAffectedRelationships(searcher, affectedComponentCategoryMap.get(componentType), searchString));
 					break;
 				default:
 					break;
 				}
 			}
-
 			return matchingAffectedComponentIds;
 		});
 		
@@ -153,8 +150,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			).execute(context);
 	}
 	
-	private Set<String> filterAffectedConcepts(RevisionSearcher searcher, final Collection<String> conceptIds, ExpressionBuilder expression, String searchString) {
+	private Set<String> filterAffectedConcepts(RevisionSearcher searcher, final Collection<String> conceptIds, String searchString) {
+		final ExpressionBuilder expression = Expressions.builder();
+		expression.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.TYPE_ID, getPTs(searcher)));
 		expression.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID , conceptIds));
+		
 		final Query<String[]> descriptionQuery = Query.select(String[].class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.TERM, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
@@ -175,8 +175,9 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		return matchingAffectedComponentIds;
 	}
 	
-	private Set<String> filterAffectedDescriptions(RevisionSearcher searcher, final Collection<String> descriptionIds, ExpressionBuilder expression, String searchString) {
-		expression.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.ID , descriptionIds));
+	private Set<String> filterAffectedDescriptions(RevisionSearcher searcher, final Collection<String> descriptionIds, String searchString) {
+		final ExpressionBuilder expression = Expressions.builder().filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.ID , descriptionIds));
+		
 		final Query<String[]> descriptionQuery = Query.select(String[].class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.TERM, SnomedDescriptionIndexEntry.Fields.ID)
@@ -197,9 +198,12 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		return matchingAffectedComponentIds;
 	}
 	
-	private Set<String> filterAffectedRelationships(RevisionSearcher searcher, final Collection<String> relationshipIds, ExpressionBuilder expression, String searchString) {
+	private Set<String> filterAffectedRelationships(RevisionSearcher searcher, final Collection<String> relationshipIds, String searchString) {
 		Multimap<String, String> relationshipConceptIdMap = relationshipConceptIdMap(searcher, relationshipIds);
+		final ExpressionBuilder expression = Expressions.builder();
+		expression.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.TYPE_ID, getPTs(searcher)));
 		expression.filter(Expressions.matchAny(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, relationshipConceptIdMap.keySet()));
+		
 		final Query<String[]> descriptionQuery = Query.select(String[].class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.TERM, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
@@ -244,8 +248,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	}
 	
 	private Set<String> getPTs(RevisionSearcher searcher) {
-		Set<String> ptTypes = Sets.newHashSet(SnomedConstants.Concepts.SYNONYM);
-		
+		Set<String> ptTypes = Sets.newHashSet(SnomedConstants.Concepts.SYNONYM);	
 		final Query<String> synonymQuery = Query.select(String.class)
 				.from(SnomedConceptDocument.class)
 				.fields(SnomedConceptDocument.Fields.ID)

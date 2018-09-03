@@ -45,8 +45,9 @@ public final class ValidationIssue implements Serializable {
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String WHITELISTED = "whitelisted";
 		public static final String DETAILS = "details";
+		public static final String FILTER_TEXT = "filterText";
 	}
-
+	
 	public static class Scripts {
 		public static final String WHITELIST = "whitelist";
 	}
