@@ -18,20 +18,23 @@ package com.b2international.index;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.solr.common.util.JavaBinCodec;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -48,6 +51,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.collections.PrimitiveCollection;
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.admin.EsIndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -148,7 +152,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
 		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
-		final boolean isLiveScrolled = query.getSearchAfter() != null;
+		final boolean isLiveScrolled = !Strings.isNullOrEmpty(query.getSearchAfter());
 		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
 			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
@@ -158,7 +162,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			req.scroll(query.getScrollKeepAlive());
 		} else if (isLiveScrolled) {
 			checkArgument(!isScrolled, "Cannot scroll and live scroll at the same time");
-			reqSource.searchAfter(query.getSearchAfter());
+			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
 		// disable explain explicitly, just in case
@@ -298,7 +302,44 @@ public class EsDocumentSearcher implements DocSearcher {
 				searchAfterSortValues = hit.getSortValues();
 			}
 		}
-		return new Hits<T>(result.build(), scrollId, searchAfterSortValues, limit, totalHits);
+		return new Hits<T>(result.build(), scrollId, toSearchAfterToken(searchAfterSortValues), limit, totalHits);
+	}
+	
+	private String toSearchAfterToken(final Object[] searchAfter) {
+		if (searchAfter == null) {
+			return null;
+		}
+		
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			final JavaBinCodec codec = new JavaBinCodec();
+			codec.marshal(searchAfter, baos);
+			codec.close();
+			
+			final byte[] tokenBytes = baos.toByteArray();
+			return Base64.getUrlEncoder().encodeToString(tokenBytes);
+		} catch (IOException e) {
+			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+		}
+	}
+
+	private Object[] fromSearchAfterToken(final String searchAfterToken) {
+		if (Strings.isNullOrEmpty(searchAfterToken)) {
+			return null;
+		}
+		
+		final byte[] decodedToken = Base64
+				.getUrlDecoder()
+				.decode(searchAfterToken);
+		
+		try (final ByteArrayInputStream bais = new ByteArrayInputStream(decodedToken)) {
+			JavaBinCodec codec = new JavaBinCodec();
+			List<Object> obj = (List<Object>) codec.unmarshal(bais);
+			codec.close();
+			
+			return obj.toArray();
+		} catch (final IOException e) {
+			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
+		}
 	}
 
 	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy) {

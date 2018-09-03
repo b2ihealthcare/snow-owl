@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 
 	private final String scrollId;
 	
-	private final Object[] searchAfter;
+	private final String searchAfter;
 	
 //	@ApiModelProperty("The number of requested maximum items")
 	private final int limit;
@@ -41,7 +41,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 //	@ApiModelProperty("Total number of results available")
 	private final int total;
 
-	protected PageableCollectionResource(List<T> items, String scrollId, Object[] searchAfter, int limit, int total) {
+	protected PageableCollectionResource(List<T> items, String scrollId, String searchAfter, int limit, int total) {
 		super(items);
 		this.scrollId = scrollId;
 		this.searchAfter = searchAfter;
@@ -50,11 +50,11 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	}
 
 	/**
-	 * Returns the sort values array that can be used to get the next page based on these values.
+	 * Returns a sort token that can be used to get the next page of results.
 	 * @return
-	 * @see SearchResourceRequestBuilder#setSearchAfter(Object[])
+	 * @see SearchResourceRequestBuilder#setSearchAfter(String)
 	 */
-	public Object[] getSearchAfter() {
+	public String getSearchAfter() {
 		return searchAfter;
 	}
 	
@@ -93,6 +93,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 		return MoreObjects.toStringHelper(PageableCollectionResource.class)
 				.add("items", StringUtils.limitedToString(getItems(), 10))
 				.add("scrollId", scrollId)
+				.add("searchAfter", searchAfter)
 				.add("limit", limit)
 				.add("total", total).toString();
 	}
@@ -110,11 +111,10 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	@JsonCreator
 	public static <T> PageableCollectionResource<T> of(@JsonProperty("items") List<T> items, 
 			@JsonProperty("scrollId") String scrollId, 
-			@JsonProperty("searchAfter") Object[] searchAfter,
+			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 
 			@JsonProperty("total") int total) {
 		
 		return new PageableCollectionResource<T>(items, scrollId, searchAfter, limit, total);
 	}
-
 }

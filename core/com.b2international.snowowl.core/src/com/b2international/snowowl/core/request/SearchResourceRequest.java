@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	private String scrollId;
 	private String scrollKeepAlive;
-	private Object[] searchAfter;
+	private String searchAfter;
 
 	/**
 	 * Restrict search to the given collection of component identifiers.
@@ -168,7 +168,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		this.scrollKeepAlive = scrollKeepAlive;
 	}
 	
-	void setSearchAfter(Object[] searchAfter) {
+	void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
 	}
 	
@@ -187,7 +187,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	}
 	
 	@JsonProperty
-	protected final Object[] searchAfter() {
+	protected final String searchAfter() {
 		return searchAfter;
 	}
 	
@@ -303,5 +303,4 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	public static String operator(String property) {
 		return String.format("%sOperator", property);
 	}
-	
 }
