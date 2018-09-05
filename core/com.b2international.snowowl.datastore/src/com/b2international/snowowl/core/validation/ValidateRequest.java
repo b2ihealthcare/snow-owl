@@ -171,7 +171,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
 						final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
 						final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
-						extensions.extendIssuesWithDetails(context, issues);
+						extensions.extendIssues(context, issues);
 						for (ValidationIssue issue : issues) {
 							index.put(issue.getId(), issue);
 						}

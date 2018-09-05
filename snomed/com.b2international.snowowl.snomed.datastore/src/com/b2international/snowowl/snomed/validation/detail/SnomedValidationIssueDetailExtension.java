@@ -104,7 +104,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	
 	
 	@Override
-	public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issues) {
+	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues) {
 		final Multimap<String, ValidationIssue> issuesByComponentId = Multimaps.index(issues, issue -> issue.getAffectedComponent().getComponentId());
 
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
