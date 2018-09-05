@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -316,11 +317,19 @@ public final class DocumentMapping {
 	}
 
 	public Map<String, Text> getTextFields(String fieldName) {
-		return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+		if (isText(fieldName)) {
+			return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+		} else {
+			return Collections.emptyMap();
+		}
 	}
 	
 	public Map<String, Keyword> getKeywordFields(String fieldName) {
-		return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+		if (isKeyword(fieldName)) {
+			return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+		} else {
+			return Collections.emptyMap();
+		}
 	}
 	
 	public Analyzers getSearchAnalyzer(String fieldName) {
