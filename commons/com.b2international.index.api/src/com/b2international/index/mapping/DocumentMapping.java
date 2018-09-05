@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -29,8 +28,8 @@ import java.util.TreeMap;
 
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
-import com.b2international.index.RevisionHash;
 import com.b2international.index.Keyword;
+import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
@@ -317,19 +316,11 @@ public final class DocumentMapping {
 	}
 
 	public Map<String, Text> getTextFields(String fieldName) {
-		if (isText(fieldName)) {
-			return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
-		} else {
-			return Collections.emptyMap();
-		}
+		return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
 	}
 	
 	public Map<String, Keyword> getKeywordFields(String fieldName) {
-		if (isKeyword(fieldName)) {
-			return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
-		} else {
-			return Collections.emptyMap();
-		}
+		return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
 	}
 	
 	public Analyzers getSearchAnalyzer(String fieldName) {

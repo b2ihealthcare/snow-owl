@@ -256,14 +256,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 			} else {
 				final Map<String, Object> prop = newHashMap();
 				
-				final Map<String, Text> textFields = mapping.getTextFields(property);
-				final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
-				
-				if (textFields.isEmpty() && keywordFields.isEmpty()) {
+				if (!mapping.isText(property) && !mapping.isKeyword(property)) {
 					addFieldProperties(prop, fieldType);
 					properties.put(property, prop);
 				} else {
 					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
+					
+					final Map<String, Text> textFields = mapping.getTextFields(property);
+					final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
 					
 					final Text textMapping = textFields.get(property);
 					final Keyword keywordMapping = keywordFields.get(property);
