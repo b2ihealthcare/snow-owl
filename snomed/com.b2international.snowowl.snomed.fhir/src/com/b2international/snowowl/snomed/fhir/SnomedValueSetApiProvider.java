@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.fhir;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -42,9 +41,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
-import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -62,7 +59,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -71,8 +67,7 @@ import com.google.common.collect.Lists;
 /**
  * Provider for the SNOMED CT FHIR support
  * @since 6.4
- * @see ICodeSystemApiProvider
- * @see CodeSystemApiProvider
+ * @see IValueSetApiProvider
  */
 public final class SnomedValueSetApiProvider extends FhirApiProvider implements IValueSetApiProvider {
 
@@ -654,20 +649,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.title(referencedComponent.getPt().getTerm())
 			.addCompose(compose);
 		
-	}
-	
-	private CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
-		
-		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
-			.build(repositoryId)
-			.execute(getBus())
-			.getSync()
-			.first();
-			
-		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for value set id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
 	}
 	
 	@Override

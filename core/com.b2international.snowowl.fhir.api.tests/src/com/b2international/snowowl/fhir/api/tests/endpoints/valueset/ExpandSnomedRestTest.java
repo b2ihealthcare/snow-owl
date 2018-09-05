@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed;
+package com.b2international.snowowl.fhir.api.tests.endpoints.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.TestValueSetCreator;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
@@ -152,7 +151,7 @@ public class ExpandSnomedRestTest extends FhirTest {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		String refsetName = "FHIR Automated Test Query Type Refset";
-		String refsetLogicalId = TestValueSetCreator.create(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
+		String refsetLogicalId = TestValueSetCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

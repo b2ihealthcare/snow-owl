@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 
@@ -45,7 +46,7 @@ public class CodeSystemRestTest extends FhirTest {
 		RestAssuredConfig config = RestAssured.config();
 		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
 		RestAssured.given().config(config.logConfig(logConfig));
-		//config.httpClient(HttpClientConfig.httpClientConfig().reuseHttpClientInstance());
+		//config.httpClient(HttpClientConfig.httpClientConfig().dontReuseHttpClientInstance());
 		
 		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
 		//builder.expectStatusCode(200);

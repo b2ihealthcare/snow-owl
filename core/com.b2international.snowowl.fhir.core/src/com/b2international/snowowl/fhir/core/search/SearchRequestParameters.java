@@ -213,12 +213,12 @@ public class SearchRequestParameters {
 	protected void validateRequestParams() {
 		
 		if (summary != null && elements !=null) {
-			throw FhirException.createFhirError("Both '_summary' and '_elements' search parameters cannot be specified at the same time.", OperationOutcomeCode.MSG_PARAM_INVALID);
+			throw new BadRequestException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count & Request.summary");
 		}
 		
 		if (summary != null) {
 			if (getSummary() == SummaryParameterValue.COUNT) {
-				throw FhirException.createFhirError("'Count' summary parameter is only allowed for search operations.", OperationOutcomeCode.MSG_PARAM_INVALID);
+				throw new BadRequestException("'Count' summary parameter is only allowed for search operations.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count");
 			}
 		}
 	}

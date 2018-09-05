@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
+package com.b2international.snowowl.fhir.api.tests.endpoints.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,10 +31,10 @@ import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
- * Generic ValueSet REST end-point test cases
+ * Generic ValueSet REST end-point test cases for SNOMED 'valuesets'
  * @since 6.7
  */
-public class ValueSetRestTest extends FhirTest {
+public class SnomedValueSetRestTest extends FhirTest {
 	
 	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION";
 	
@@ -115,7 +115,7 @@ public class ValueSetRestTest extends FhirTest {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		String refsetName = "FHIR Automated Test Query Type Refset";
-		String refsetLogicalId = TestValueSetCreator.create(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
+		String refsetLogicalId = TestValueSetCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("Refset concept ID: " + refsetLogicalId);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
