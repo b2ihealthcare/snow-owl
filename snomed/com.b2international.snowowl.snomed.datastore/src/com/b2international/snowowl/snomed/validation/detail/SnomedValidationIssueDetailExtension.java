@@ -133,7 +133,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							alreadyFetchedConceptIds.add(id);
 						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
-							String containerConceptId = hit[3];
+							String containerConceptId = hit[4];
 							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							if (!Strings.isNullOrEmpty(containerConceptId) && (!issueIdsByConceptIds.containsKey(containerConceptId) || !alreadyFetchedConceptIds.contains(containerConceptId))) {
 								issueIdsByConceptIds.put(containerConceptId, id);
@@ -180,8 +180,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					SnomedDescriptionIndexEntry.Fields.ID,
 					SnomedDescriptionIndexEntry.Fields.ACTIVE,
 					SnomedDescriptionIndexEntry.Fields.MODULE_ID,
-					SnomedDescriptionIndexEntry.Fields.CONCEPT_ID,
-					SnomedDocument.Fields.EFFECTIVE_TIME
+					SnomedDocument.Fields.EFFECTIVE_TIME,
+					SnomedDescriptionIndexEntry.Fields.CONCEPT_ID
 			);
 			break;
 		case RELATIONSHIP:
@@ -189,8 +189,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					SnomedRelationshipIndexEntry.Fields.ID,
 					SnomedRelationshipIndexEntry.Fields.ACTIVE,
 					SnomedRelationshipIndexEntry.Fields.MODULE_ID,
-					SnomedRelationshipIndexEntry.Fields.SOURCE_ID,
-					SnomedDocument.Fields.EFFECTIVE_TIME
+					SnomedDocument.Fields.EFFECTIVE_TIME,
+					SnomedRelationshipIndexEntry.Fields.SOURCE_ID
 			);
 			break;
 		default:
