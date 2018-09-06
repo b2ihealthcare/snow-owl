@@ -33,6 +33,10 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.lcs.core.LcsCoreActivator;
+import com.b2international.snowowl.lcs.core.domain.LocalTerminology;
+import com.b2international.snowowl.lcs.core.request.LocalTerminologyConceptRequests;
+import com.b2international.snowowl.lcs.core.request.LocalTerminologyRequests;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -56,12 +60,13 @@ import com.b2international.snowowl.valueset.core.domain.ValueSet;
 import com.b2international.snowowl.valueset.core.request.ValueSetMemberRequests;
 import com.b2international.snowowl.valueset.core.request.ValueSetRequests;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
  * @since 7.0
  */
-public class TestValueSetCreator {
+public class TestArtifactCreator {
 	
 	/**
 	 * Creates a value set for testing with the given name and version, persisted on the given branchpath
@@ -176,6 +181,53 @@ public class TestValueSetCreator {
 				
 				return refsetId + "|" + firstMember.getId();
 			}
+	}
+	
+	/**
+	 * Creates a Local Code System and versions the content
+	 * @param shortName
+	 * @param localCodeSystemName
+	 * @param lcsVersion
+	 */
+	public static void createLocalCodeSystem(String shortName, String localCodeSystemName, String lcsVersion) {
+		
+		Optional<LocalTerminology> lcsOptional = LocalTerminologyRequests.INSTANCE.prepareSearch()
+			.all()
+			.filterById(shortName)
+			.build(LcsCoreActivator.REPOSITORY_UUID)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync()
+			.first();
+		
+		//already present
+		if (lcsOptional.isPresent()) return;
+		
+		System.out.println("Creating FHIR Test Local Code System....");
+		LocalTerminologyRequests.INSTANCE.prepareCreate()
+			.setId(shortName)
+			.setName(localCodeSystemName)
+			.setDescription("This is a FHIR Test Local Code System")
+			.setOid(UUID.randomUUID().toString())
+			.setMaintainingOrganizationLink("http://b2i.sg")
+			.setComments("This is a short comment")
+			.build(LcsCoreActivator.REPOSITORY_UUID, "info@b2international.com", "FHIR Automated LCS")
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
+
+		LocalTerminologyConceptRequests.INSTANCE.prepareCreate()
+			.setId("123")
+			.setTerm("Test concept")
+			.setAlternativeTerms(ImmutableSet.of("synonym1", "synonym 2"))
+			.setLocalTerminologyId(shortName)
+			.setActive(true)
+			.setParents(null)
+			.build(LcsCoreActivator.REPOSITORY_UUID, "MAIN/" + shortName, "info@b2international.com", "FHIR Automated LCS concept")
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.fail(error -> {
+				error.printStackTrace();
+				return null;
+			}).getSync();
+		createVersion(lcsVersion, shortName);
 	}
 	
 	private static String createRefset(String branchPath, String refsetName) {

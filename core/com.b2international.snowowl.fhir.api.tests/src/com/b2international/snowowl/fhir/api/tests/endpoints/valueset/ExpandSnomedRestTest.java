@@ -151,7 +151,7 @@ public class ExpandSnomedRestTest extends FhirTest {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		String refsetName = "FHIR Automated Test Query Type Refset";
-		String refsetLogicalId = TestValueSetCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
+		String refsetLogicalId = TestArtifactCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

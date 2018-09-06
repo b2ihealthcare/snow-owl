@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.HttpClientConfig;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
 

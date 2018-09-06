@@ -46,7 +46,7 @@ public class ValueSetRestTest extends FhirTest {
 	public static void setupSpec() {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
-		valueSetId = TestValueSetCreator.createValueSet(mainBranch, VALUE_SET_NAME, VALUE_SET_VERSION);
+		valueSetId = TestArtifactCreator.createValueSet(mainBranch, VALUE_SET_NAME, VALUE_SET_VERSION);
 
 		RestAssuredConfig config = RestAssured.config();
 		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();

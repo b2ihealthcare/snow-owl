@@ -198,7 +198,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		final Builder builder = CodeSystem.builder(id)
 			.identifier(identifier)
-			.language(getLanguageCode(codeSystemEntry.getLanguage()))
+			.language(getLanguage(codeSystemEntry))
 			.name(codeSystemEntry.getShortName())
 			.narrative(NarrativeStatus.ADDITIONAL, "<div>"+ codeSystemEntry.getCitation() + "</div>")
 			.publisher(codeSystemEntry.getOrgLink())
@@ -207,7 +207,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.title(codeSystemEntry.getName())
 			.description(codeSystemEntry.getCitation())
 			.url(getFhirUri(codeSystemEntry, codeSystemVersion))
-			.content(CodeSystemContentMode.NOT_PRESENT)
+			.content(getCodeSystemContentMode())
 			.count(getCount(codeSystemVersion));
 		
 		if (codeSystemVersion !=null) {
@@ -370,6 +370,14 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		 * Display is mandatory, why is it allowed to be listed as a requested property in the spec?? - bbanfai
 		 */
 		resultBuilder.display(displayString);
+	}
+	
+	protected CodeSystemContentMode getCodeSystemContentMode() {
+		return CodeSystemContentMode.NOT_PRESENT;
+	}
+
+	protected String getLanguage(CodeSystemEntry codeSystemEntry) {
+		return getLanguageCode(codeSystemEntry.getLanguage());
 	}
 	
 }
