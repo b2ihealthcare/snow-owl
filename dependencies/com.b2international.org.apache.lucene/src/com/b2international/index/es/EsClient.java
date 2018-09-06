@@ -36,9 +36,12 @@ import java.util.StringJoiner;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
@@ -75,6 +78,7 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.CheckedFunction;
@@ -150,11 +154,8 @@ public final class EsClient {
 	private EsClient(final EsClientConfiguration configuration) {
 		// XXX: Adjust the thread context classloader while ES client is initializing 
 		this.client = Activator.withTccl(() -> {
+			
 			final HttpHost host = configuration.getHost();
-			LOG.info("ES REST client is connecting to '{}', connect timeout: {} ms, socket timeout: {} ms.", 
-					host.toURI(),
-					configuration.getConnectTimeout(),
-					configuration.getSocketTimeout());
 
 			final RequestConfigCallback requestConfigCallback = requestConfigBuilder -> requestConfigBuilder
 					.setConnectTimeout(configuration.getConnectTimeout())
@@ -163,6 +164,27 @@ public final class EsClient {
 			final RestClientBuilder restClientBuilder = RestClient.builder(host)
 				.setRequestConfigCallback(requestConfigCallback)
 				.setMaxRetryTimeoutMillis(configuration.getSocketTimeout()); // retry timeout should match socket timeout
+			
+			boolean useAuthentication = !Strings.isNullOrEmpty(configuration.getUserName()) && !Strings.isNullOrEmpty(configuration.getPassword());
+
+			if (useAuthentication) {
+				
+				final HttpClientConfigCallback httpClientConfigCallback = httpClientConfigBuilder -> {
+					final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+					credentialsProvider.setCredentials(AuthScope.ANY, 
+							new UsernamePasswordCredentials(configuration.getUserName(), configuration.getPassword()));
+					return httpClientConfigBuilder.setDefaultCredentialsProvider(credentialsProvider);
+				};
+				
+				restClientBuilder.setHttpClientConfigCallback(httpClientConfigCallback);
+				
+			}
+			
+			LOG.info("ES REST client is connecting to '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
+					host.toURI(),
+					useAuthentication ? " using basic authentication" : "",
+					configuration.getConnectTimeout(),
+					configuration.getSocketTimeout());
 			
 			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
 			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());

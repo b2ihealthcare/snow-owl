@@ -27,11 +27,15 @@ public final class EsClientConfiguration {
 	private final int connectTimeout;
 	private final int socketTimeout;
 	private final HttpHost host;
+	private String username;
+	private String password;
 
-	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host) {
+	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host, String username, String password) {
 		this.connectTimeout = connectTimeout;
 		this.socketTimeout = socketTimeout;
 		this.host = host;
+		this.username = username;
+		this.password = password;
 	}
 
 	public int getConnectTimeout() {
@@ -44,6 +48,14 @@ public final class EsClientConfiguration {
 
 	public HttpHost getHost() {
 		return host;
+	}
+	
+	public String getUserName() {
+		return username;
+	}
+	
+	public String getPassword() {
+		return password;
 	}
 
 	@Override
