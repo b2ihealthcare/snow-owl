@@ -110,6 +110,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
  * @since 6.6
@@ -128,19 +129,29 @@ public final class EsClient {
 	
 	private static void onRemove(final RemovalNotification<EsClientConfiguration, EsClient> notification) {
 		Activator.withTccl(() -> {
-			try {
-				notification.getValue().close();
-				LOG.info("Closed ES REST client for '{}'", notification.getKey()
-						.getHost()
-						.toURI());
-			} catch (final IOException e) {
-				LOG.error("Unable to close ES REST client", e);
-			}
+			closeClient(notification.getKey(), notification.getValue().client);
 		});
+	}
+
+	private static void closeClient(final EsClientConfiguration configuration, RestHighLevelClient client) {
+		try {
+			client.close();
+			LOG.info("Closed ES REST client for '{}'", configuration.getHost().toURI());
+		} catch (final IOException e) {
+			LOG.error("Unable to close ES REST client", e);
+		}
 	}
 	
 	public static final EsClient create(final EsClientConfiguration configuration) {
-		return CLIENTS_BY_HOST.getUnchecked(configuration);
+		try {
+			return CLIENTS_BY_HOST.getUnchecked(configuration);
+		} catch (UncheckedExecutionException e) {
+			if (e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException) e.getCause();
+			} else {
+				throw new RuntimeException(e.getCause());
+			}
+		}
 	}
 	
 	public static final void stop() {
@@ -187,7 +198,17 @@ public final class EsClient {
 					configuration.getSocketTimeout());
 			
 			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
-			checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
+			
+			try {
+				checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
+			} catch (Exception e) {
+				if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
+					LOG.error("Unable to authenticate with remote cluster '{}' using the predefined credentials", host.toURI());
+				}
+				closeClient(configuration, client);
+				throw e;
+			}
+			
 			return client;
 		}); 
 		
