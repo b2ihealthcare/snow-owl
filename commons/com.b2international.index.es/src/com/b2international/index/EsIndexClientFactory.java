@@ -56,7 +56,10 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final Object socketTimeoutSetting = settings.getOrDefault(SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 		final int connectTimeout = connectTimeoutSetting instanceof Integer ? (int) connectTimeoutSetting : Integer.parseInt((String) connectTimeoutSetting);
 		final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
-		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host);
+		String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
+		String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
+		
+		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host, username, password);
 		
 		final EsClient client = EsClient.create(clientConfiguration);
 		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
