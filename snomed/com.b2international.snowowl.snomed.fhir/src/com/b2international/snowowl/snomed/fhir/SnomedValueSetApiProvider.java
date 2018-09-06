@@ -77,8 +77,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		SnomedUri.SNOMED_BASE_URI_STRING
 	);
 	
-	private String displayLanguage = "en-us"; //what should we do with this, probably grab it from the request and fall back to a default language
-	
 	private String repositoryId;
 	
 	public SnomedValueSetApiProvider() {

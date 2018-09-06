@@ -72,10 +72,6 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	private static final String URI_BASE = "http://snomed.info";
 	
-	//private static final Uri SNOMED_CT_URI = new Uri(URI_BASE + "/sct");
-	
-	//private static final Path SNOMED_INT_PATH = Paths.get(SnomedDatastoreActivator.REPOSITORY_UUID, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
-	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
 		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
