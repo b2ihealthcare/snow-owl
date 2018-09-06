@@ -203,7 +203,7 @@ public final class EsClient {
 				checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
 			} catch (Exception e) {
 				if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
-					LOG.error("Unable to authenticate with remote cluster '{}' using the predefined credentials", host.toURI());
+					LOG.error("Unable to authenticate with remote cluster '{}' using the given credentials", host.toURI());
 				}
 				closeClient(configuration, client);
 				throw e;
