@@ -9,6 +9,14 @@
 	<componentDescriptors>
 		<componentDescriptor>assembly/common.xml</componentDescriptor>
 	</componentDescriptors>
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<include>org.apache.sshd:sshd-core</include>
+			</includes>
+			<outputDirectory>plugins</outputDirectory>
+		</dependencySet>
+	</dependencySets>
 	<fileSets>
 		<!-- H2 specific configuration -->
 		<fileSet>

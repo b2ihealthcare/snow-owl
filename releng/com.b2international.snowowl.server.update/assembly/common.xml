@@ -24,6 +24,7 @@
 				<exclude>**/org.eclipse.virgo.apps.splash_3.7.2.RELEASE.jar
 				</exclude>
 				<exclude>repository/ext/osgi.console.properties</exclude>
+				<exclude>plugins/org.apache.sshd.core_0.5.0.v201108120515.jar</exclude>
 			</excludes>
 		</fileSet>
 		<!-- Common configuration -->
