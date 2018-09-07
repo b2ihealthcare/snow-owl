@@ -82,7 +82,8 @@ public class Rf2GlobalValidator {
 				}
 				
 				if (!conceptIdsToFetch.isEmpty()) {
-					final Set<String> existingConceptIds = fetchConcepts(reporter, context, currentSlice, conceptIdsToFetch);
+					final Set<String> existingConceptIds = fetchConcepts(context, conceptIdsToFetch);
+					// the difference between the sets are the ones which don't exist in any of the previous slices, or imported in the system
 					final Set<String> issuesToReport = Sets.difference(conceptIdsToFetch, existingConceptIds);
 					if (!issuesToReport.isEmpty()) {
 						issuesToReport.forEach(id -> reporter.error(String.format("%s %s in effective time %s", Rf2ValidationDefects.MISSING_DEPENDANT_ID.getLabel(), id, currentSlice.getEffectiveTime())));
@@ -100,7 +101,7 @@ public class Rf2GlobalValidator {
 	
 	}
 
-	private Set<String> fetchConcepts(Rf2ValidationIssueReporter reporter, BranchContext context, final Rf2EffectiveTimeSlice currentSlice, final Set<String> conceptIdsToFetch) {
+	private Set<String> fetchConcepts(BranchContext context, final Set<String> conceptIdsToFetch) {
 		SnomedConceptSearchRequestBuilder conceptRequestBuilder = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(conceptIdsToFetch)

@@ -103,7 +103,7 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 		}
 	}
 	
-	default void validateId (String id, Rf2ValidationIssueReporter reporter) {
+	default void validateId(String id, Rf2ValidationIssueReporter reporter) {
 		try {
 			SnomedIdentifiers.validate(id);
 		} catch (IllegalArgumentException e) {

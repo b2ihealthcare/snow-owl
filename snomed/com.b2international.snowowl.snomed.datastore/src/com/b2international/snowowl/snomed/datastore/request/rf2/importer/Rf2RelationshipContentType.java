@@ -85,7 +85,7 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 		final String modifierId = values[9];
 		
 		if (sourceId.equals(destinationId)) {
-			reporter.error(Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel());
+			reporter.error(String.format("%s for relationship: %s",Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel(), relationshipId));
 		}
 		
 		try {

@@ -64,21 +64,72 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void importConceptWithDescriptionDefStatusId() throws FileNotFoundException {
+	public void importConceptWithDescriptionAsDefStatusId() throws FileNotFoundException {
 		final String archiveFilePath = "SnomedCT_Release_INT_20150131_concept_with_desc_as_defStatusId.zip";
-		final File importArchive = new File(PlatformUtil.toAbsolutePath(getClass(), archiveFilePath));
-		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA, importArchive);
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
 		final Collection<String> issues = response.getIssues();
 		assertThat(issues).hasSize(1);
 		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel(), Iterables.getOnlyElement(issues));
 		assertEquals(ImportStatus.FAILED, response.getStatus());
 	}
 	
-//	@Test
-	public void import29DescriptionWithNonExistantConceptId() throws FileNotFoundException {
-		final String archiveFilePath = "SnomedCT_Release_INT_20150201_new_description_with_non_existant_conceptId.zip";
-		final File importArchive = new File(PlatformUtil.toAbsolutePathBundleEntry(this.getClass(), archiveFilePath));
-		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA, importArchive);
+	@Test
+	public void importDescriptionWithDescriptionAsConceptId() throws FileNotFoundException {
+		final String archiveFilePath = "SnomedCT_Release_INT_20150201_new_description_with_description_as_concept_id.zip";
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
+		final Collection<String> issues = response.getIssues();
+		assertThat(issues).hasSize(1);
+		assertEquals(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel(), Iterables.getOnlyElement(issues));
+		assertEquals(ImportStatus.FAILED, response.getStatus());
+	}
+	
+	@Test
+	public void importRelationshipWithSameSourceDestination() throws FileNotFoundException {
+		final String archiveFilePath = "SnomedCT_Release_INT_20150202_new_relationship_with_same_source_destination.zip";
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
+		final Collection<String> issues = response.getIssues();
+		final String issue = Iterables.getOnlyElement(issues);
+		assertThat(issues).hasSize(1);
+		assertThat(issue).containsSequence(Rf2ValidationDefects.RELATIONSHIP_SOURCE_DESTINATION_EQUALS.getLabel());
+		assertEquals(ImportStatus.FAILED, response.getStatus());
+	}
+	
+	@Test
+	public void importReferenceSetWithNonUUID() throws FileNotFoundException {
+		final String archiveFilePath = "SnomedCT_RF2Release_INT_20180223_member_with_non_uuid.zip";
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
+		final Collection<String> issues = response.getIssues();
+		final String issue = Iterables.getOnlyElement(issues);
+		assertThat(issues).hasSize(1);
+		assertThat(issue).containsSequence(Rf2ValidationDefects.INVALID_UUID.getLabel());
+		assertEquals(ImportStatus.FAILED, response.getStatus());
+	}
+	
+	@Test
+	public void importAssociationRefSetMemberWithInvalidTargetComponent() throws FileNotFoundException {
+		final String archiveFilePath = "SnomedCT_RF2Release_INT_20180223_association_member_with_invalid_target_component.zip";
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
+		final Collection<String> issues = response.getIssues();
+		final String issue = Iterables.getOnlyElement(issues);
+		assertThat(issues).hasSize(1);
+		assertThat(issue).containsSequence(Rf2ValidationDefects.INVALID_ID.getLabel());
+		assertEquals(ImportStatus.FAILED, response.getStatus());
+	}
+	
+	@Test
+	public void importAttributeValueRefSetMemberWithInvalidValueId() throws FileNotFoundException {
+		final String archiveFilePath = "SnomedCT_RF2Release_INT_20180223_attribute_member_with_invalid_valueId.zip";
+		final Rf2ImportResponse response = importArchive(archiveFilePath, Rf2ReleaseType.DELTA);
+		
+		final Collection<String> issues = response.getIssues();
+		final String issue = Iterables.getOnlyElement(issues);
+		assertThat(issues).hasSize(1);
+		assertThat(issue).containsSequence(Rf2ValidationDefects.INVALID_ID.getLabel());
 		assertEquals(ImportStatus.FAILED, response.getStatus());
 	}
 	
@@ -109,7 +160,8 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	private Rf2ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType, File importArchive) throws FileNotFoundException {
+	private Rf2ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
+		final File importArchive = new File(PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath));
 		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
 		
 		return SnomedRequests.rf2().prepareImport()
