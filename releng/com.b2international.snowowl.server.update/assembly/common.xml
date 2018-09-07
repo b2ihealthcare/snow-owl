@@ -82,4 +82,13 @@
 			</excludes>
 		</fileSet>
 	</fileSets>
+	<!-- Copy updated SSHD bundle that fixes SSH connection from newer, smarter clients --> 
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<include>org.apache.sshd:sshd-core</include>
+			</includes>
+			<outputDirectory>plugins</outputDirectory>
+		</dependencySet>
+	</dependencySets>
 </component>
