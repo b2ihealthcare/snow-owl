@@ -141,6 +141,9 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			
 			// log issues with rows
 			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
 			
 			// run global validation
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
@@ -150,12 +153,13 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			
 			// log global validation issues
 			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(importconfig, context);
 			}
-			// import completed successfully
-			response.setStatus(ImportStatus.COMPLETED);
 		}
 		return response;
 	}
@@ -166,7 +170,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		if (reporter.getNumberOfErrors() > 0) {
 			response.setStatus(ImportStatus.FAILED);
 			reporter.logErrors(LOG);
-			throw new BadRequestException(String.format("There were %s validation errors with the RF2 import files", reporter.getNumberOfErrors()));
 		}
 	}
 	

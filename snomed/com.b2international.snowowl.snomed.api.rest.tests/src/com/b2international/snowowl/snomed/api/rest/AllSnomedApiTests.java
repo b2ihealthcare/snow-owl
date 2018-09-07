@@ -47,6 +47,7 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationship
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
+import com.b2international.snowowl.snomed.api.rest.io.SnomedImportRowValidatorTest;
 import com.b2international.snowowl.snomed.api.rest.perf.SnomedConceptCreatePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.perf.SnomedMergePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
@@ -62,48 +63,49 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	// High-level issue test cases, Java API test cases
-	IssueSO2503RemoteJobDynamicMappingFix.class,
-	Issue3019FixDeletionOfReferringMembersTest.class,
-	EclSerializerTest.class,
-	// RESTful API test cases
-	// Branch API tests
-	SnomedBranchRequestTest.class,
-	BranchCompareRequestTest.class,
-	SnomedCompareRestRequestTest.class,
-	SnomedBranchingApiTest.class,
-	// Component API test cases
-	SnomedIdentifierApiTest.class,
-	SnomedConceptApiTest.class,
-	SnomedDescriptionApiTest.class,
-	SnomedRelationshipApiTest.class,
-	SnomedRefSetApiTest.class,
-	SnomedRefSetParameterizedTest.class,
-	SnomedRefSetMemberParameterizedTest.class,
-	SnomedRefSetMemberApiTest.class,
-	SnomedRefSetBulkApiTest.class,
-	SnomedBrowserApiTest.class,
-	// Merge, Review test cases
-	SnomedMergeApiTest.class,
-	SnomedMergeConflictTest.class,
-	SnomedReviewApiTest.class,
-	// Import-Export-Versioning-Classification
-	SnomedClassificationApiTest.class,
-	SnomedImportApiTest.class,
-	SnomedExportApiTest.class,
-	SnomedRefSetDSVExportTest.class,
-	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
-	SnomedModuleDependencyRefsetTest.class,
-	SnomedVersioningApiTest.class,
-	// Extension test cases - 7.0.preview version currently does not support extension upgrade
-//	SnomedExtensionUpgradeTest.class, 
-//	SnomedExtensionDowngradeTest.class,
-//	SnomedExtensionVersioningTest.class,
-	// MRCM export/import
-	MrcmImportExportTest.class,
-	// Performance test cases
-	SnomedConceptCreatePerformanceTest.class,
-	SnomedMergePerformanceTest.class,
+//	// High-level issue test cases, Java API test cases
+//	IssueSO2503RemoteJobDynamicMappingFix.class,
+//	Issue3019FixDeletionOfReferringMembersTest.class,
+//	EclSerializerTest.class,
+//	// RESTful API test cases
+//	// Branch API tests
+//	SnomedBranchRequestTest.class,
+//	BranchCompareRequestTest.class,
+//	SnomedCompareRestRequestTest.class,
+//	SnomedBranchingApiTest.class,
+//	// Component API test cases
+//	SnomedIdentifierApiTest.class,
+//	SnomedConceptApiTest.class,
+//	SnomedDescriptionApiTest.class,
+//	SnomedRelationshipApiTest.class,
+//	SnomedRefSetApiTest.class,
+//	SnomedRefSetParameterizedTest.class,
+//	SnomedRefSetMemberParameterizedTest.class,
+//	SnomedRefSetMemberApiTest.class,
+//	SnomedRefSetBulkApiTest.class,
+//	SnomedBrowserApiTest.class,
+//	// Merge, Review test cases
+//	SnomedMergeApiTest.class,
+//	SnomedMergeConflictTest.class,
+//	SnomedReviewApiTest.class,
+//	// Import-Export-Versioning-Classification
+//	SnomedClassificationApiTest.class,
+//	SnomedImportApiTest.class,
+	SnomedImportRowValidatorTest.class,
+//	SnomedExportApiTest.class,
+//	SnomedRefSetDSVExportTest.class,
+//	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
+//	SnomedModuleDependencyRefsetTest.class,
+//	SnomedVersioningApiTest.class,
+//	// Extension test cases - 7.0.preview version currently does not support extension upgrade
+////	SnomedExtensionUpgradeTest.class, 
+////	SnomedExtensionDowngradeTest.class,
+////	SnomedExtensionVersioningTest.class,
+//	// MRCM export/import
+//	MrcmImportExportTest.class,
+//	// Performance test cases
+//	SnomedConceptCreatePerformanceTest.class,
+//	SnomedMergePerformanceTest.class,
 })
 public class AllSnomedApiTests {
 
