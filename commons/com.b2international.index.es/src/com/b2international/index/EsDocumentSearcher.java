@@ -321,7 +321,7 @@ public class EsDocumentSearcher implements Searcher {
 			final byte[] tokenBytes = baos.toByteArray();
 			return Base64.getUrlEncoder().encodeToString(tokenBytes);
 		} catch (IOException e) {
-			throw new FormattedRuntimeException("Couldn't encode searchAfter paramaters to a token.", e);
+			throw new FormattedRuntimeException("Couldn't encode searchAfter parameters to a token.", e);
 		}
 	}
 
@@ -336,7 +336,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
 			JavaBinCodec codec = new JavaBinCodec();
-			List<Object> obj = (List<Object>) codec.unmarshal(dis);
+			List<?> obj = (List<?>) codec.unmarshal(dis);
 			codec.close();
 			return obj.toArray();
 		} catch (final IOException e) {
