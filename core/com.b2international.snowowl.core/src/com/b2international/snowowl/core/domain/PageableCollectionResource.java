@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,11 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 
-import org.apache.solr.common.util.JavaBinCodec;
-
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -57,7 +50,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 	}
 
 	/**
-	 * Returns the sort values array that can be used to get the next page based on these values.
+	 * Returns a sort token that can be used to get the next page of results.
 	 * @return
 	 * @see SearchResourceRequestBuilder#setSearchAfter(String)
 	 */
@@ -123,5 +116,4 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 		
 		return new PageableCollectionResource<T>(items, scrollId, searchAfter, limit, total);
 	}
-
 }
