@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.0
  */
-public class ReasonerExtensions extends PageableCollectionResource<ReasonerExtension> {
+public final class ReasonerExtensions extends PageableCollectionResource<ReasonerExtension> {
 
 	/**
 	 * Instantiates an empty pageable collection for reasoner extensions.

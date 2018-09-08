@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.0
  */
-public class RelationshipChanges extends PageableCollectionResource<RelationshipChange> {
+public final class RelationshipChanges extends PageableCollectionResource<RelationshipChange> {
 
 	/**
 	 * Instantiates an empty pageable collection for relationship changes.
