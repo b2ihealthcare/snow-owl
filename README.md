@@ -3,21 +3,24 @@
 Snow Owl<sup>®</sup> is a highly scalable, open source, revision-controlled terminology server and collaborative authoring platform. It allows you to store, search and author big volumes of terminology artifacts quickly and efficiently. 
 
 Features include:
+
+
+
 * Revision-controlled authoring
-** Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
-** Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
+    * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
+    * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-** Full SNOMED CT terminology support and APIs (full RF2 support, ECL v1.3, Reference Sets, OWL 2 EL/DL support)
-** With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
+    * Full SNOMED CT terminology support and APIs (full RF2 support, ECL v1.3, Reference Sets, OWL 2 EL/DL support)
+    * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
-** HTTP RESTful API
-** FHIR API
-** Native Java API
+    * HTTP RESTful API
+    * FHIR API
+    * Native Java API
 * Highly extensible and configurable
-** Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
+    * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
 * Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
-** Connect to your existing cluster or use the embedded instance
-** All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more) 
+    * Connect to your existing cluster or use the embedded instance
+    * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more) 
 
 ### Requirements
 
