@@ -1,4 +1,4 @@
-# <a href='https://b2i.gitbook.io/snow-owl'><img src='logo/logo-title.png' height='120' alt='Snow Owl Logo' /></a>
+# <a href='https://b2i.gitbook.io/snow-owl'><img src='logo/logo-title.png' height='140' alt='Snow Owl Logo' /></a>
 
 Snow Owl<sup>®</sup> is a highly scalable, open source, revision-controlled terminology server and collaborative authoring platform. It allows you to store, search and author big volumes of terminology artifacts quickly and efficiently. 
 
