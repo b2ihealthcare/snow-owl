@@ -1,29 +1,38 @@
-# Snow Owl
-
-## Introduction
-Snow Owl<sup>®</sup> is a terminology server and a collaborative terminology authoring platform.  The authoring platform maintains terminology artifacts developed by a team and supported by business workflows that are driven by external task management systems like Bugzilla and JIRA.  With its modular design, the server can maintain multiple terminologies where new terminologies can be plugged-in to the platform.  The functionality of Snow Owl is exposed via a REST API.
-
 ## Getting started
+
+Snow Owl<sup>®</sup> is a highly scalable, open source, revision-controlled terminology server and collaborative authoring platform. It allows you to store, search and author big volumes of terminology artifacts quickly and efficiently. 
+
+Features include:
+* Revision-controlled authoring
+** Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
+** Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
+* SNOMED CT and others
+** Full SNOMED CT terminology support and APIs (full RF2 support, ECL v1.3, Reference Sets, OWL 2 EL/DL support)
+** With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
+* Various set of APIs
+** HTTP RESTful API
+** FHIR API
+** Native Java API
+* Highly extensible and configurable
+** Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
+* Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
+** Connect to your existing cluster or use the embedded instance
+** All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more) 
 
 ### Requirements
 
-You need to have a recent version of Java installed (Java 8 update 102 or newer).
+You need to have a recent version of Java installed (Java 8 update 171 or newer).
 
 ### Installation
 
 * Download (Coming soon!) and unzip the official Snow Owl distribution (or use the official Docker image)
-* Run `bin/startup` on unix, or `bin/startup.bat` on windows.
+* Run `bin/startup` on unix, or `bin/startup.bat` on windows
 * Run `curl http://localhost:8080/snowowl/admin/info`
-* See API [docs](http://localhost:8080/snowowl/snomed-ct/v3)
+* See [REST API docs](http://localhost:8080/snowowl/snomed-ct/v3), [FHIR API docs](http://localhost:8080/snowowl/fhir)
 
-### Documentation
+### Where to go from here?
 
-Please refer to the [installation guide](documentation/src/main/asciidoc/installation_guide.adoc). 
-Prerequisites are detailed in the [software requirements](documentation/src/main/asciidoc/software_requirements.adoc) document. 
-Then see the [configuration guide](documentation/src/main/asciidoc/configuration_guide.adoc) to configure for your particular installation.
-The [SNOMED CT extension management guide](documentation/src/main/asciidoc/snomed_extension_management.adoc) provides details for managing multiple SNOMED extensions on a single terminology server.
-See the [administration guide](documentation/src/main/asciidoc/administration_guide.adoc) to manage your installation. 
-You may find the quick references for [console commands](documentation/src/main/asciidoc/administrative_console_reference.adoc) and the [administration REST API](documentation/src/main/asciidoc/administrative_rest_reference.adoc) helpful.
+We have just covered a very small portion of what Snow Owl is all about. For more information, please refer to the official [Snow Owl](https://b2i.gitbook.io/snow-owl/) website.
 
 ## Building from source
 
