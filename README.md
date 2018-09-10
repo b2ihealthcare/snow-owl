@@ -1,11 +1,8 @@
-## Getting started
+# <a href='https://b2i.gitbook.io/snow-owl'><img src='logo/logo-title.png' height='60' alt='Snow Owl Logo' /></a>
 
 Snow Owl<sup>®</sup> is a highly scalable, open source, revision-controlled terminology server and collaborative authoring platform. It allows you to store, search and author big volumes of terminology artifacts quickly and efficiently. 
 
 Features include:
-
-
-
 * Revision-controlled authoring
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
@@ -22,22 +19,22 @@ Features include:
     * Connect to your existing cluster or use the embedded instance
     * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more) 
 
-### Requirements
+## Requirements
 
 You need to have a recent version of Java installed (Java 8 update 171 or newer).
 
-### Installation
+## Installation
 
 * Download (Coming soon!) and unzip the official Snow Owl distribution (or use the official Docker image)
 * Run `bin/startup` on unix, or `bin/startup.bat` on windows
 * Run `curl http://localhost:8080/snowowl/admin/info`
 * See [REST API docs](http://localhost:8080/snowowl/snomed-ct/v3), [FHIR API docs](http://localhost:8080/snowowl/fhir)
 
-### Where to go from here?
+## Where to go from here?
 
 We have just covered a very small portion of what Snow Owl is all about. For more information, please refer to the official [Snow Owl](https://b2i.gitbook.io/snow-owl/) website.
 
-## Building from source
+# Building from source
 
 Snow Owl uses Maven for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
 
@@ -49,11 +46,11 @@ To run the test cases, use the following command:
 
     mvn clean verify
 
-## Development
+# Development
 
 These instructions will get Snow Owl up and running on your local machine for development and testing purposes.
 
-### Prerequisites
+## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server (using either Virgo or standalone OSGi). To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
 * Use latest Eclipse IDE for Eclipse Committers package: http://www.eclipse.org/downloads/eclipse-packages/
@@ -68,7 +65,7 @@ Required Eclipse plug-ins (install the listed features via `Help` -> `Install Ne
   * Xtext Complete SDK 2.11.0 (Xtext)
 * Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
-#### Eclipse Preferences
+### Eclipse Preferences
 
 Make sure you have the following preferences enabled/disabled.
 * Plug-in development API baseline errors is set to Ignored (Preferences > Plug-in Development > API Baselines)
@@ -76,11 +73,11 @@ Make sure you have the following preferences enabled/disabled.
 * Set the workspace encoding to *UTF-8* (Preferences->General->Workspace)
 * Set the line endings to *Unix* style (Preferences->General->Workspace)
 
-#### Git configuration
+### Git configuration
 
 * Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
 
-### First steps
+## First steps
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
 2. Open the `target-platform/target-platform-local.target` file
@@ -89,18 +86,18 @@ Make sure you have the following preferences enabled/disabled.
 5. Launch `snow-owl-community` launch configuration in the Run Configurations menu
 6. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
 
-## Contributing
+# Contributing
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## Versioning
+# Versioning
 
 Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
-## License
+# License
 
 This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) for details and refer to [NOTICE](NOTICE) for additional licensing notes and uses of third-party components.
 
-## Acknowledgements
+# Acknowledgements
 
 In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](http://www.snomed.org/members) and the global community under an open-source license.
