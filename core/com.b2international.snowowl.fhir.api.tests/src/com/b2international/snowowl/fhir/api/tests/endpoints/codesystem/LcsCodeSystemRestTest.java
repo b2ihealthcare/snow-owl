@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.junit.BeforeClass;
@@ -49,7 +49,7 @@ public class LcsCodeSystemRestTest extends FhirTest {
 		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
-	//@Test
+	@Test
 	public void getAllFullCodeSystemsTest() {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -78,7 +78,7 @@ public class LcsCodeSystemRestTest extends FhirTest {
 	}
 	
 	//Specific LCS Code system
-	//@Test
+	@Test
 	public void getLocalCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", "lcsStore:MAIN/FHIR_LCS/FHIR_Test_Version") 
@@ -115,6 +115,26 @@ public class LcsCodeSystemRestTest extends FhirTest {
 			.body("parameter[1].valueString", equalTo("FHIR_Test_Version"))
 			.body("parameter[2].name", equalTo("display"))
 			.body("parameter[2].valueString", equalTo("Test concept"))
+			.body("parameter.name", not(hasItem("property")))
+			.statusCode(200);
+	}
+	
+	//GET LCS with parameters and the alternative terms property
+	@Test
+	public void lookupFhirCodeSystemCodeWithPropertyTest() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("system", "http://b2i.sg/localcodesystems/FHIR_LCS")
+			.param("version", "FHIR_Test_Version")
+			.param("code", "123")
+			.param("property", "synonym")
+			.when().get("/CodeSystem/$lookup")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("FHIR_LCS"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Test concept"))
+			.body("parameter.name", hasItem("property"))
 			.statusCode(200);
 	}
 
