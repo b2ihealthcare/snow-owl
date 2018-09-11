@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Scripting Module
 Bundle-SymbolicName: com.b2international.scripting.api;singleton:=true
-Bundle-Version: 6.7.0
+Bundle-Version: 6.7.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

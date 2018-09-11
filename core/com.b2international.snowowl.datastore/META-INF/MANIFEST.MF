@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Terminology Datastore
 Bundle-SymbolicName: com.b2international.snowowl.datastore;singleton:=true
-Bundle-Version: 6.7.0
+Bundle-Version: 6.7.1.qualifier
 Bundle-Activator: com.b2international.snowowl.datastore.DatastoreActivator
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Semantic Engine Test
 Bundle-SymbolicName: com.b2international.snowowl.snomed.semanticengine.test
-Bundle-Version: 6.7.0
+Bundle-Version: 6.7.1.qualifier
 Bundle-Activator: com.b2international.snowowl.semanticengine.test.SemanticEngineTestPlugin
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.junit;bundle-version="4.8.2",
