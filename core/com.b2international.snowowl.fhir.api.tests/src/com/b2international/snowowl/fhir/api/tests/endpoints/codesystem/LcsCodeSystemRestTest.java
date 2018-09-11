@@ -20,11 +20,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.tests.FhirTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.TestArtifactCreator;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult.SubsumptionType;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.config.LogConfig;
 import com.jayway.restassured.config.RestAssuredConfig;
@@ -71,9 +77,9 @@ public class LcsCodeSystemRestTest extends FhirTest {
 			.body("publisher", equalTo("http://b2i.sg"))
 			.body("hierarchyMeaning", equalTo("is-a"))
 			.body("content", equalTo("complete"))
-			.body("count", equalTo(1))
+			.body("count", equalTo(2))
 			.body("property.size()", equalTo(5))
-			.body("concept.size()", equalTo(1))
+			.body("concept.size()", equalTo(2))
 			.statusCode(200);
 	}
 	
@@ -93,9 +99,9 @@ public class LcsCodeSystemRestTest extends FhirTest {
 			.body("publisher", equalTo("http://b2i.sg"))
 			.body("hierarchyMeaning", equalTo("is-a"))
 			.body("content", equalTo("complete"))
-			.body("count", equalTo(1))
+			.body("count", equalTo(2))
 			.body("property.size()", equalTo(5))
-			.body("concept.size()", equalTo(1))
+			.body("concept.size()", equalTo(2))
 			.statusCode(200);
 	}
 	
@@ -136,6 +142,46 @@ public class LcsCodeSystemRestTest extends FhirTest {
 			.body("parameter[1].valueString", equalTo("Test concept"))
 			.body("parameter.name", hasItem("property"))
 			.statusCode(200);
+	}
+	
+	@Test
+	public void subsumedByTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("codeA", "1234") 
+			.param("codeB", "123") //parent
+			.param("system", "http://b2i.sg/localcodesystems/FHIR_LCS")
+			.when().get("/CodeSystem/$subsumes")
+			.asString();
+		
+		SubsumptionResult result = convertToSubsumptionResult(responseString);
+		Assert.assertEquals(SubsumptionType.SUBSUMED_BY, result.getOutcome());
+	}
+	
+	@Test
+	public void subsumesTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("codeA", "123") //parent
+			.param("codeB", "1234")
+			.param("system", "http://b2i.sg/localcodesystems/FHIR_LCS")
+			.when().get("/CodeSystem/$subsumes")
+			.asString();
+		
+		SubsumptionResult result = convertToSubsumptionResult(responseString);
+		Assert.assertEquals(SubsumptionType.SUBSUMES, result.getOutcome());
+	}
+	
+	/**
+	 * Converts the parameter-formatted response string to a {@link SubsumptionResult} object
+	 * @param responseString
+	 * @return
+	 * @throws Exception
+	 */
+	protected SubsumptionResult convertToSubsumptionResult(String responseString) throws Exception {
+		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		return objectMapper.convertValue(json, SubsumptionResult.class);
 	}
 
 }
