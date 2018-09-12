@@ -62,6 +62,7 @@ import com.b2international.snowowl.valueset.core.request.ValueSetRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * @since 7.0
@@ -227,6 +228,22 @@ public class TestArtifactCreator {
 				error.printStackTrace();
 				return null;
 			}).getSync();
+		
+		//child concept
+		LocalTerminologyConceptRequests.INSTANCE.prepareCreate()
+			.setId("1234")
+			.setTerm("Test child concept")
+			.setAlternativeTerms(ImmutableSet.of("child synonym1", "child synonym 2"))
+			.setLocalTerminologyId(shortName)
+			.setActive(true)
+			.setParents(Sets.newHashSet("123"))
+			.build(LcsCoreActivator.REPOSITORY_UUID, "MAIN/" + shortName, "info@b2international.com", "FHIR Automated LCS concept")
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.fail(error -> {
+				error.printStackTrace();
+				return null;
+			}).getSync();
+		
 		createVersion(lcsVersion, shortName);
 	}
 	
