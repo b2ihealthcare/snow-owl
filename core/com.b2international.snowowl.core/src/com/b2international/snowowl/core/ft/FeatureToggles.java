@@ -29,13 +29,12 @@ public class FeatureToggles {
 
 	private final ConcurrentMap<String, Boolean> featureToggles = new MapMaker().makeMap();
 	
-	public boolean check(String feature) {
-		checkArgument(exists(feature), "Unknown feature: " + feature);
-		return Boolean.TRUE.equals(featureToggles.get(feature));
+	public boolean isEnabled(String feature) {
+		return exists(feature) ? check(feature) : false;
 	}
 	
-	public boolean exists(String feature) {
-		return featureToggles.containsKey(feature);
+	public boolean isDisabled(String feature) {
+		return !isEnabled(feature);
 	}
 	
 	public void enable(String feature) {
@@ -44,6 +43,15 @@ public class FeatureToggles {
 	
 	public void disable(String feature) {
 		featureToggles.put(feature, Boolean.FALSE);
+	}
+	
+	private boolean check(String feature) {
+		checkArgument(exists(feature), "Unknown feature: " + feature);
+		return Boolean.TRUE.equals(featureToggles.get(feature));
+	}
+	
+	private boolean exists(String feature) {
+		return featureToggles.containsKey(feature);
 	}
 	
 }

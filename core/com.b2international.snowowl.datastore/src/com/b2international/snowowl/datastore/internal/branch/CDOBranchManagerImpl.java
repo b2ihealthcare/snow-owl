@@ -36,10 +36,13 @@ import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkIndexWrite;
+import com.b2international.index.Hits;
 import com.b2international.index.IndexWrite;
 import com.b2international.index.Writer;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataImpl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -59,6 +62,7 @@ import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
@@ -68,6 +72,7 @@ import com.google.common.collect.ImmutableSet;
 public final class CDOBranchManagerImpl extends BranchManagerImpl implements BranchReplicator {
 
 	private static final String CDO_BRANCH_ID = "cdoBranchId";
+	private static final String SEGMENT_ID = "segmentId";
 
 	private final InternalRepository repository;
 	private final AtomicInteger segmentIds = new AtomicInteger(0);
@@ -83,16 +88,18 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
       	final int segmentId = segmentIds.getAndIncrement();
 		initBranchStore(new CDOMainBranchImpl(baseTimestamp, repository.getHeadTimestamp(cdoMainBranch), new MetadataImpl(), segmentId, ImmutableSet.of(segmentId)));
        	
-		int maxExistingSegment = segmentId;
-		for (Branch branch : getBranches()) {
-			if (branch instanceof InternalCDOBasedBranch) {
-				final int branchSegmentId = ((InternalCDOBasedBranch) branch).segmentId();
-				if (branchSegmentId > maxExistingSegment) {
-					maxExistingSegment = branchSegmentId;
-				}
-			}
-		}
-		segmentIds.set(maxExistingSegment+1);
+		final Hits<Integer> maxSegmentHits = searchStore(Query.select(Integer.class)
+				.from(BranchDocument.class)
+				.fields(SEGMENT_ID)
+				.where(Expressions.matchAll())
+				.sortBy(SortBy.field(SEGMENT_ID, Order.DESC))
+				.limit(1)
+				.build());
+			
+		if (!maxSegmentHits.isEmpty()) {
+			segmentIds.set(Iterables.getOnlyElement(maxSegmentHits) + 1);
+    	}
+		
 		this.mapper = mapper;
     }
     
@@ -116,8 +123,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 				} catch (NotFoundException e) {
 					// ignore not found branches
 				}
-				final int parentCdoBranchId = branch.getBase().getBranch().getID();
-				final InternalCDOBasedBranch parent = (InternalCDOBasedBranch) getBranch(parentCdoBranchId);
+				final InternalCDOBasedBranch parent = getParentById(branch);
 				if (parent == null) {
 					throw new SkipBranchException(branch);
 				}
@@ -128,6 +134,10 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 			}
 		}
     }
+
+	public InternalCDOBasedBranch getParentById(final org.eclipse.emf.cdo.common.branch.CDOBranch branch) {
+		return (InternalCDOBasedBranch) getBranch(branch.getBase().getBranch().getID());
+	}
 
     public final CDOBranch getCDOBranch(Branch branch) {
         checkArgument(!branch.isDeleted(), "Deleted branches cannot be retrieved.");
@@ -305,7 +315,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 				// the "new" child branch
 				final CDOBranchImpl childBranch = new CDOBranchImpl(name, parentPath, baseTimestamp, headTimestamp, metadata, cdoBranchId, nextTwoSegments.getA(), Collections.singleton(nextTwoSegments.getA()), parentSegments);
 				create(childBranch).execute(index);
-				update(parentPath, BranchDocument.Scripts.WITH_SEGMENTID, ImmutableMap.of("segmentId", nextTwoSegments.getB())).execute(index);
+				update(parentPath, BranchDocument.Scripts.WITH_SEGMENTID, ImmutableMap.of(SEGMENT_ID, nextTwoSegments.getB())).execute(index);
 				return childBranch;
 			}
 		});

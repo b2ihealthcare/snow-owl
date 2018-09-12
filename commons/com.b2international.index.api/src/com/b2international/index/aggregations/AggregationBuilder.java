@@ -15,7 +15,11 @@
  */
 package com.b2international.index.aggregations;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.b2international.index.query.Expression;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.0
@@ -23,16 +27,19 @@ import com.b2international.index.query.Expression;
 public final class AggregationBuilder<T> {
 	
 	private final String name;
-	private final Class<T> from;
+	private final Class<T> select;
+	private final Class<?> from;
 	
 	private Expression query;
-	private String field;
-	private String script;
+	private String groupByField;
+	private List<String> fields = Collections.emptyList();
+	private String groupByScript;
 	private int minBucketSize = 1;
 	private int bucketHitsLimit = 10;
 
-	AggregationBuilder(String name, Class<T> from) {
+	AggregationBuilder(String name, Class<T> select, Class<?> from) {
 		this.name = name;
+		this.select = select;
 		this.from = from;
 	}
 	
@@ -42,12 +49,21 @@ public final class AggregationBuilder<T> {
 	}
 	
 	public AggregationBuilder<T> onFieldValue(String field) {
-		this.field = field;
+		this.groupByField = field;
+		return this;
+	}
+	
+	public AggregationBuilder<T> fields(String...fields) {
+		return fields(ImmutableList.copyOf(fields));
+	}
+	
+	public AggregationBuilder<T> fields(List<String> fields) {
+		this.fields = fields;
 		return this;
 	}
 	
 	public AggregationBuilder<T> onScriptValue(String script) {
-		this.script = script;
+		this.groupByScript = script;
 		return this;
 	}
 	
@@ -61,7 +77,11 @@ public final class AggregationBuilder<T> {
 		return this;
 	}
 	
-	public Class<T> getFrom() {
+	public Class<T> getSelect() {
+		return select;
+	}
+	
+	public Class<?> getFrom() {
 		return from;
 	}
 	
@@ -69,12 +89,16 @@ public final class AggregationBuilder<T> {
 		return name;
 	}
 	
-	public String getField() {
-		return field;
+	public String getGroupByField() {
+		return groupByField;
 	}
 	
-	public String getScript() {
-		return script;
+	public List<String> getFields() {
+		return fields;
+	}
+	
+	public String getGroupByScript() {
+		return groupByScript;
 	}
 	
 	public int getMinBucketSize() {
@@ -90,7 +114,11 @@ public final class AggregationBuilder<T> {
 	}
 	
 	public static <T> AggregationBuilder<T> bucket(String name, Class<T> from) {
-		return new AggregationBuilder<>(name, from);
+		return bucket(name, from, from);
+	}
+	
+	public static <T> AggregationBuilder<T> bucket(String name, Class<T> select, Class<?> from) {
+		return new AggregationBuilder<>(name, select, from);
 	}
 
 }

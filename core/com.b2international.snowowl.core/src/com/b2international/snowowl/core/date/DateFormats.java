@@ -56,5 +56,10 @@ public abstract class DateFormats {
 	 * The most detailed time format which includes time up to millisecond resolution. Value: {@value}
 	 */
 	public static final String FULL = "yyyyMMddHHmmssSSS";
+	
+	/**
+	 * ISO-8601 compliant date format with the assumption of zero UTC offset
+	 */
+	public static final String ISO_8601_UTC = "yyyyMMdd'T'HHmmss'Z'";
 
 }

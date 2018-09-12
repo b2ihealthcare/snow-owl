@@ -110,7 +110,7 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 */
 	protected final CDOTransaction transaction;
 	
-	private final Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
+	private Map<Pair<String, Class<?>>, EObject> resolvedObjectsById = newHashMap();
 	
 	/*Handler to register/unregister objects to/from the cache on their state changes*/
 	private final CDOObjectHandler objectStateListener = new CDOObjectHandler() {
@@ -442,7 +442,8 @@ public abstract class CDOEditingContext implements AutoCloseable {
 	 * Clears resolved objects cache.
 	 */
 	public void clearCache() {
-		resolvedObjectsById.clear();
+		resolvedObjectsById = null;
+		resolvedObjectsById = newHashMap();
 	}
 	
 	/**

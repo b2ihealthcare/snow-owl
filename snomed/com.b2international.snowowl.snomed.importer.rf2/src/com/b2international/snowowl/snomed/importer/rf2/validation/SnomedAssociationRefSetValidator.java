@@ -52,7 +52,6 @@ public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.ASSOCIATION_REFSET_TARGET_COMPONENT_NOT_EXIST, targetComponentNotExist);
-		targetComponentNotExist.clear();
 	}
 	
 	@Override
@@ -67,6 +66,12 @@ public class SnomedAssociationRefSetValidator extends SnomedRefSetValidator {
 		if (!isComponentExists(targetComponent, ReleaseComponentType.CONCEPT)) {
 			targetComponentNotExist.add(getMissingComponentMessage(uuid, effectiveTime, "target component", targetComponent));
 		}
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		targetComponentNotExist = newHashSet();
 	}
 
 }

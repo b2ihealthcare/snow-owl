@@ -15,26 +15,32 @@
  */
 package com.b2international.snowowl.datastore.server.reindex;
 
-import java.util.Collection;
-
 import org.eclipse.emf.cdo.server.StoreThreadLocal;
 import org.eclipse.emf.cdo.spi.server.InternalSession;
 
+import com.b2international.index.Hits;
+import com.b2international.index.Index;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.ft.FeatureToggles;
+import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.internal.InternalRepository;
-import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
+import com.b2international.snowowl.datastore.internal.branch.BranchDocument;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
  */
 @SuppressWarnings("restriction")
 public final class ReindexRequest implements Request<RepositoryContext, ReindexResult> {
+	
+	private static final String CDO_BRANCH_ID = "cdoBranchId";
 	
 	private long failedCommitTimestamp = 1;
 
@@ -48,24 +54,27 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 	public ReindexResult execute(RepositoryContext context) {
 		final InternalRepository repository = (InternalRepository) context.service(Repository.class);
 		final FeatureToggles features = context.service(FeatureToggles.class);
+		final String reindexToggle = Features.getReindexFeatureToggle(context.id());
 		
-		int maxCdoBranchId = -1;
-		final BranchManager branchManager = context.service(BranchManager.class);
-		final Collection<? extends Branch> branches = branchManager.getBranches();
-		
-		for (final Branch branch : branches) {
-			final InternalCDOBasedBranch cdoBranch = (InternalCDOBasedBranch) branch;
-			if (cdoBranch.cdoBranchId() > maxCdoBranchId) {
-				maxCdoBranchId = cdoBranch.cdoBranchId();
-			}
-		}
-		
+		// XXX: We are deliberately side-stepping health checks here
+		final Index index = repository.getIndex();
+		final Hits<Integer> maxCdoBranchIdHits = index.read(searcher -> {
+			return searcher.search(Query.select(Integer.class)
+					.from(BranchDocument.class)
+					.fields(CDO_BRANCH_ID)
+					.where(Expressions.matchAll())
+					.sortBy(SortBy.field(CDO_BRANCH_ID, Order.DESC))
+					.limit(1)
+					.build());
+		});
+			
+		final int maxCdoBranchId = maxCdoBranchIdHits.isEmpty() ? -1 : Iterables.getOnlyElement(maxCdoBranchIdHits);
 		final org.eclipse.emf.cdo.internal.server.Repository cdoRepository = (org.eclipse.emf.cdo.internal.server.Repository) repository.getCdoRepository().getRepository();
 		final InternalSession session = cdoRepository.getSessionManager().openSession(null);
 		
 		try {
 			repository.setHealth(Health.YELLOW, "Reindex is in progress...");
-			features.enable(featureFor(context.id()));
+			features.enable(reindexToggle);
 			//set the session on the StoreThreadlocal for later access
 			StoreThreadLocal.setSession(session);
 			//for partial replication get the last branch id and commit time from the index
@@ -76,7 +85,7 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 			return new ReindexResult(replicationContext.getFailedCommitTimestamp(),
 					replicationContext.getProcessedCommits(), replicationContext.getSkippedCommits(), replicationContext.getException());
 		} finally {
-			features.disable(featureFor(context.id()));
+			features.disable(reindexToggle);
 			StoreThreadLocal.release();
 			session.close();
 			repository.checkHealth();
@@ -87,8 +96,4 @@ public final class ReindexRequest implements Request<RepositoryContext, ReindexR
 		return new ReindexRequestBuilder();
 	}
 
-	public static String featureFor(String repositoryId) {
-		return String.format("%s.reindex", repositoryId);
-	}
-	
 }

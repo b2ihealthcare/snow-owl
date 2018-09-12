@@ -31,9 +31,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.options.Options;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -43,6 +45,8 @@ import com.b2international.snowowl.core.internal.validation.ValidationThreadPool
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
@@ -72,9 +76,29 @@ import com.google.inject.Injector;
  */
 public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTest {
 
+	/**
+	 * Usage of this class intended for testing purposes only
+	 */
+	private static final class TestValidationDetailExtension implements ValidationIssueDetailExtension {
+
+		@Override
+		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {}
+
+		@Override
+		public void extendIssues(BranchContext context, Collection<ValidationIssue> issue) {}
+
+		@Override
+		public String getToolingId() { 
+			return SnomedQueryValidationRuleEvaluatorTest.TOOLING_ID; 
+		}
+		
+	}
+	
 	private BranchContext context;
 	private SnomedQueryValidationRuleEvaluator evaluator;
 	private ValidationRepository repository;
+	
+	private static final String TOOLING_ID = "toolingId";
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -100,13 +124,17 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
-				.with(ValidationThreadPool.class, new ValidationThreadPool(1))
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
 				.with(ValidationRepository.class, repository)
 				.build();
 		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {
 			ValidationRuleEvaluator.Registry.register(evaluator);
 		}
+		
+		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
+		extensionProvider.addExtension(new TestValidationDetailExtension());
+		
 	}
 	
 	@After
@@ -241,7 +269,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 			.setMessageTemplate("Error")
 			.setSeverity(Severity.ERROR)
 			.setImplementation(context.service(ObjectMapper.class).writeValueAsString(ruleQuery))
-			.setToolingId("toolingId")
+			.setToolingId(TOOLING_ID)
 			.build()
 			.execute(context);
 	}

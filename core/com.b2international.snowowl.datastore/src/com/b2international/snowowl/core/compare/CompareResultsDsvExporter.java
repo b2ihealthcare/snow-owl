@@ -21,10 +21,8 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
@@ -41,8 +39,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
@@ -50,7 +49,7 @@ import com.google.common.collect.Multimaps;
  */
 public final class CompareResultsDsvExporter {
 	
-	private static final int BUFFER = 1000;
+	private static final int PARTITION_SIZE = 10_000;
 	
 	private final String repositoryUuid;
 	private final String baseBranch;
@@ -69,7 +68,7 @@ public final class CompareResultsDsvExporter {
 			String compareBranch,
 			Path outputPath,
 			CompareResult compareResults, 
-			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> requestBuilderFunction,
+			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction,
 			Function<IComponent, String> componentTypeResolver,
 			Function<IComponent, String> labelResolver,
 			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent,
@@ -80,7 +79,7 @@ public final class CompareResultsDsvExporter {
 			this.compareBranch = compareBranch;
 			this.outputPath = outputPath;
 			this.compareResults = compareResults;
-			this.fetcherFunction = requestBuilderFunction;
+			this.fetcherFunction = fetcherFunction;
 			this.componentTypeResolver = componentTypeResolver;
 			this.labelResolver = labelResolver;
 			this.getCompareResultsOfComponent = getCompareResultsOfComponent;
@@ -98,102 +97,91 @@ public final class CompareResultsDsvExporter {
 		try (SequenceWriter writer = mapper.writer(schema).writeValues(outputPath.toFile())) {
 			monitor.beginTask("Exporting compare results to DSV", compareResults.getTotalNew() + compareResults.getTotalChanged() + compareResults.getTotalDeleted());
 			
-			List<List<ComponentIdentifier>> newComponentIdentifierChunks = Lists.partition(Lists.newArrayList(compareResults.getNewComponents()), BUFFER);
-
-			for (Collection<ComponentIdentifier> newComponentsIdentifiersChunk : newComponentIdentifierChunks) {
-				
-				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(newComponentsIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
-				
-				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
+			ListMultimap<Short, ComponentIdentifier> newComponentIdentifiers = Multimaps.index(compareResults.getNewComponents(), ComponentIdentifier::getTerminologyComponentId);
+			ListMultimap<Short, String> newComponentIds = ImmutableListMultimap.copyOf(Multimaps.transformValues(newComponentIdentifiers, ComponentIdentifier::getComponentId));
+			
+			for (short terminologyComponentId : newComponentIds.keySet()) {
+				for (List<String> componentIds : Lists.partition(newComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
+					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
-					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
-					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
+					if (componentFetchRequest == null) {
+						break;
+					}
 					
-					CollectionResource<IComponent> newComponents = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					CollectionResource<IComponent> components = componentFetchRequest
 						.build(repositoryUuid, compareBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
-					for (IComponent component : newComponents) {
+					for (IComponent component : components) {
 						writer.write(new CompareData(component, ChangeKind.ADDED));
 					}
-						
-				};
-				
-				
-				monitor.worked(newComponentsIdentifiersChunk.size());
+					
+					monitor.worked(components.getItems().size());
+				}
 			}
-		
-			// changed
+
+			ListMultimap<Short, ComponentIdentifier> changedComponentIdentifiers = Multimaps.index(compareResults.getChangedComponents(), ComponentIdentifier::getTerminologyComponentId);
+			ListMultimap<Short, String> changedComponentIds = ImmutableListMultimap.copyOf(Multimaps.transformValues(changedComponentIdentifiers, ComponentIdentifier::getComponentId));
+			ListMultimap<String, IComponent> componentPairs = ArrayListMultimap.create(PARTITION_SIZE, 2);
 			
-			List<List<ComponentIdentifier>> changedComponentIdentifiersChunks = Lists.partition(Lists.newArrayList(compareResults.getChangedComponents()), BUFFER);
-			
-			for (List<ComponentIdentifier> changedComponentIdentifiersChunk : changedComponentIdentifiersChunks) {
-				
-				Multimap<String, IComponent> changedComponentsChunk = ArrayListMultimap.create(changedComponentIdentifiersChunk.size(), 2);
-				
-				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(changedComponentIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
-				
-				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
+			for (short terminologyComponentId : changedComponentIds.keySet()) {
+				for (List<String> componentIds : Lists.partition(changedComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
+					componentPairs.clear();
+					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
-					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
-					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
+					if (componentFetchRequest == null) {
+						break;
+					}
 					
-					CollectionResource<IComponent> changedComponentsOnBaseBranch = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					componentFetchRequest
 						.build(repositoryUuid, baseBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-						.getSync();
+						.getSync()
+						.forEach(c -> componentPairs.put(c.getId(), c));
 					
-					changedComponentsOnBaseBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
-					
-					CollectionResource<IComponent> changedComponentsOnCompareBranch = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					componentFetchRequest
 						.build(repositoryUuid, compareBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-						.getSync();
+						.getSync()
+						.forEach(c -> componentPairs.put(c.getId(), c));
 					
-					changedComponentsOnCompareBranch.forEach(component -> changedComponentsChunk.put(component.getId(), component));
-				};
-				
-				for (Entry<String, Collection<IComponent>> entry : changedComponentsChunk.asMap().entrySet()) {
+					for (Entry<String, List<IComponent>> entry : Multimaps.asMap(componentPairs).entrySet()) {
+						IComponent baseComponent = entry.getValue().get(0);
+						IComponent compareComponent = entry.getValue().get(1);
+						Collection<CompareData> compareResults = getCompareResultsOfComponent.apply(baseComponent, compareComponent);
+						
+						for (CompareData d : compareResults) {
+							writer.write(d);
+						}
+					}
 					
-					IComponent baseComponent = ((List<IComponent>) (entry.getValue())).get(0);
-					IComponent compareComponent = ((List<IComponent>) (entry.getValue())).get(1);
-					
-					Collection<CompareData> comparisonResultsOfThisChunk = getCompareResultsOfComponent.apply(baseComponent, compareComponent);
-					
-					for (CompareData d : comparisonResultsOfThisChunk) {
-						writer.write(d);
-					};
-					
-					
-				};
-				
-				monitor.worked(changedComponentIdentifiersChunk.size());
+					monitor.worked(componentPairs.keySet().size());
+				}
 			}
 			
-			// deleted
+			ListMultimap<Short, ComponentIdentifier> deletedComponentIdentifiers = Multimaps.index(compareResults.getDeletedComponents(), ComponentIdentifier::getTerminologyComponentId);
+			ListMultimap<Short, String> deletedComponentIds = ImmutableListMultimap.copyOf(Multimaps.transformValues(deletedComponentIdentifiers, ComponentIdentifier::getComponentId));
 			
-			List<List<ComponentIdentifier>> deletedComponentIdentifiersChunks = Lists.partition(Lists.newArrayList(compareResults.getDeletedComponents()), BUFFER);
-			
-			for (List<ComponentIdentifier> deletedComponentIdentifiersChunk : deletedComponentIdentifiersChunks) {
-				
-				Multimap<Short, ComponentIdentifier> componentsInChunkByTerminologyComponentId = Multimaps.index(deletedComponentIdentifiersChunk, ComponentIdentifier::getTerminologyComponentId);
-				
-				for (Entry<Short, Collection<ComponentIdentifier>> entriesByTerminologyComponentId : componentsInChunkByTerminologyComponentId.asMap().entrySet()) {
-
-					short terminologyComponentIdForThisChunk = entriesByTerminologyComponentId.getKey();
-					Set<String> componentIdsInThisChunk = entriesByTerminologyComponentId.getValue().stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet());
+			for (short terminologyComponentId : deletedComponentIds.keySet()) {
+				for (List<String> componentIds : Lists.partition(deletedComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
+					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
-					CollectionResource<IComponent> deletedComponents = fetcherFunction.apply(terminologyComponentIdForThisChunk, componentIdsInThisChunk)
+					if (componentFetchRequest == null) {
+						break;
+					}
+					
+					CollectionResource<IComponent> components = componentFetchRequest
 						.build(repositoryUuid, baseBranch)
 						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 						.getSync();
 					
-					for (IComponent component : deletedComponents) {
+					for (IComponent component : components) {
 						writer.write(new CompareData(component, ChangeKind.DELETED));
-					};
-				};
-				monitor.worked(deletedComponentIdentifiersChunk.size());
+					}
+					
+					monitor.worked(components.getItems().size());
+				}
 			}
 			
 		} finally {
@@ -269,7 +257,5 @@ public final class CompareResultsDsvExporter {
 		public String getTo() {
 			return to;
 		}
-			
 	}
-	
 }

@@ -33,7 +33,7 @@ import com.google.common.base.Strings;
  */
 public class SnomedMRCMModuleScopeRefSetValidator extends SnomedRefSetValidator {
 
-	private final List<String> defects = newArrayList();
+	private List<String> defects = newArrayList();
 
 	public SnomedMRCMModuleScopeRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.MRCM_MODULE_SCOPE_REFSET, context, SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER);
@@ -54,7 +54,6 @@ public class SnomedMRCMModuleScopeRefSetValidator extends SnomedRefSetValidator 
 		if (!defects.isEmpty()) {
 			addDefect(DefectType.EMPTY_REFSET_MEMBER_FIELD, defects);
 		}
-		defects.clear();
 	}
 
 	@Override
@@ -65,5 +64,11 @@ public class SnomedMRCMModuleScopeRefSetValidator extends SnomedRefSetValidator 
 	private void validateRow(final List<String> row) {
 		// MRCM rule refset id
 		validateNotEmptyFieldValue(row.get(6), SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, row, defects);
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		defects = newArrayList();
 	}
 }

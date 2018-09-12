@@ -39,7 +39,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	private Set<String> componentIds;
 	private String scrollKeepAlive;
 	private String scrollId;
-	private Object[] searchAfter;
+	private String searchAfter;
 	
 	private int limit = 50;
 	
@@ -55,8 +55,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return
 	 * @see PageableCollectionResource#getSearchAfter()
 	 */
-	public B setSearchAfter(Object[] scrollValues) {
-		this.searchAfter = scrollValues;
+	public B setSearchAfter(String searchAfter) {
+		this.searchAfter = searchAfter;
 		return getSelf();
 	}
 	

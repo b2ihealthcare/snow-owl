@@ -15,42 +15,55 @@
  */
 package com.b2international.snowowl.core.internal.validation;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.UUID;
 
-import com.b2international.snowowl.core.IDisposableService;
+import javax.xml.bind.ValidationException;
+
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+
 import com.b2international.snowowl.core.events.util.Promise;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.CheckType;
 
 /**
  * @since 6.0
  */
-public final class ValidationThreadPool implements IDisposableService {
+public final class ValidationThreadPool {
 
-	private final AtomicBoolean disposed = new AtomicBoolean(false);
-	private final ListeningExecutorService executor;
-	
-	public ValidationThreadPool(int nThreads) {
-		this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(nThreads));
+	private final int maxValidationThreadCount;
+	private final int maxConcurrentExpensiveJobs;
+	private final int maxConcurrentNormalJobs;
+
+	public ValidationThreadPool(final int maxValidationThreadCount, final int maxAmountOfConcurrentExpensiveJobs, final int maxConcurrentNormalJobs) {
+		this.maxValidationThreadCount = maxValidationThreadCount;
+		this.maxConcurrentExpensiveJobs = maxAmountOfConcurrentExpensiveJobs;
+		this.maxConcurrentNormalJobs = maxConcurrentNormalJobs;
 	}
-	
-	@Override
-	public boolean isDisposed() {
-		return disposed.get();
+
+	public Promise<Object> submit(CheckType checkType, Runnable runnable) {
+		final Job job = new ValidationJob(checkType.getName(), runnable);
+		final String uniqueRuleId = UUID.randomUUID().toString();
+		final ISchedulingRule schedulingRule = new ValidationRuleSchedulingRule(checkType, maxValidationThreadCount, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs, uniqueRuleId);
+		final Promise<Object> promise = new Promise<>();
+
+		job.setSystem(true);
+		job.setRule(schedulingRule);
+		job.addJobChangeListener(new JobChangeAdapter() {
+			
+			@Override
+			public void done(IJobChangeEvent event) {
+				if (event.getResult().isOK()) {
+					promise.resolve(Boolean.TRUE);
+				} else {
+					promise.reject(new ValidationException(String.format("Validation job failed with status %s.", event.getResult())));
+				}
+			}
+
+		});
+		job.schedule();
+		return promise;
 	}
-	
-	@Override
-	public void dispose() {
-		if (disposed.compareAndSet(false, true)) {
-			MoreExecutors.shutdownAndAwaitTermination(executor, 1, TimeUnit.MINUTES);
-		}
-	}
-	
-	public Promise<Boolean> submit(Callable<Boolean> callable) {
-		return Promise.wrap(executor.submit(callable));
-	}
-	
+
 }

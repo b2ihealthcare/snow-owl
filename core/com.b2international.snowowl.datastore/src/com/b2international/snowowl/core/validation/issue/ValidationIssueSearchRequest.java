@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,7 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.0
@@ -65,6 +68,11 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		AFFECTED_COMPONENT_TYPE,
 		
 		/**
+		 * Filter matches by a single value of affected component label.
+		 */
+		AFFECTED_COMPONENT_LABEL,
+		
+		/**
 		 * Filter matches by that are whitelisted or not. 
 		 */
 		WHITELISTED,
@@ -81,6 +89,11 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 	@Override
 	protected Searcher searcher(ServiceProvider context) {
 		return context.service(ValidationRepository.class).searcher();
+	}
+	
+	@Override
+	protected boolean trackScores() {
+		return containsKey(OptionKey.AFFECTED_COMPONENT_LABEL);
 	}
 	
 	@Override
@@ -136,6 +149,23 @@ final class ValidationIssueSearchRequest extends SearchIndexResourceRequest<Serv
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
 			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
 			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
+		}
+		
+		if (containsKey(OptionKey.AFFECTED_COMPONENT_LABEL)) {
+			final String searchTerm = getString(OptionKey.AFFECTED_COMPONENT_LABEL);
+			if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
+				queryBuilder.must(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm));
+			} else {
+				final List<Expression> disjuncts = newArrayListWithExpectedSize(2);
+				disjuncts.add(Expressions.scriptScore(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+				disjuncts.add(Expressions.scriptScore(Expressions.matchTextAll(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+				queryBuilder.must(
+					Expressions.builder()
+						.should(Expressions.dismax(disjuncts))
+						.should(Expressions.boost(Expressions.exactMatch(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, searchTerm), 1000f))
+					.build()
+				);
+			}
 		}
 		
 		if (containsKey(OptionKey.WHITELISTED)) {

@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
  */
 public class SnomedMRCMDomainRefSetValidator extends SnomedRefSetValidator {
 
-	private final List<String> defects = newArrayList();
+	private List<String> defects = newArrayList();
 
 	public SnomedMRCMDomainRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final SnomedValidationContext context) {
 		super(configuration, releaseUrl, ComponentImportType.MRCM_DOMAIN_REFSET, context, SnomedRf2Headers.MRCM_DOMAIN_HEADER);
@@ -50,7 +50,6 @@ public class SnomedMRCMDomainRefSetValidator extends SnomedRefSetValidator {
 		if (!defects.isEmpty()) {
 			addDefect(DefectType.EMPTY_REFSET_MEMBER_FIELD, defects);
 		}
-		defects.clear();
 	}
 
 	@Override
@@ -80,4 +79,9 @@ public class SnomedMRCMDomainRefSetValidator extends SnomedRefSetValidator {
 
 	}
 
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		defects = newArrayList();
+	}
 }

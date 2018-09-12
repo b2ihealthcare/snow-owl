@@ -417,7 +417,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
 				fragment.getLabel(), 
 				fragment.getValue(), 
-				unitConcept);
+				unitConcept,
+				fragment.getDataType()
+				);
 		
 		return concreteDomainElement;
 	}

@@ -35,8 +35,8 @@ import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType
  */
 public class SnomedConceptValidator extends AbstractSnomedValidator {
 	
-	private final Collection<String> requiredModules = newHashSet();
-	private final Collection<String> requiredDefinitionStatuses = newHashSet();
+	private Collection<String> requiredModules = newHashSet();
+	private Collection<String> requiredDefinitionStatuses = newHashSet();
 	
 	public SnomedConceptValidator(final ImportConfiguration configuration, final SnomedValidationContext context) throws IOException {
 		super(configuration, configuration.toURL(configuration.getConceptFile()), ComponentImportType.CONCEPT, context, SnomedRf2Headers.CONCEPT_HEADER);
@@ -47,8 +47,6 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 		super.doValidate(effectiveTime, monitor);
 		checkConceptIds(effectiveTime, "Module", DefectType.MODULE_CONCEPT_NOT_EXIST, requiredModules);
 		checkConceptIds(effectiveTime, "Definition status", DefectType.CONCEPT_DEFINITION_STATUS_NOT_EXIST, requiredDefinitionStatuses);
-		requiredModules.clear();
-		requiredDefinitionStatuses.clear();
 	}
 	
 	@Override
@@ -74,5 +72,11 @@ public class SnomedConceptValidator extends AbstractSnomedValidator {
 			}
 		}
 		addDefect(type, errorMessages);
+	}
+	
+	@Override
+	protected void clearCaches() {
+		requiredModules = newHashSet();
+		requiredDefinitionStatuses = newHashSet();
 	}
 }

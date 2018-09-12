@@ -46,12 +46,21 @@ public class IndexConfiguration {
 	private long fetchDebugThreshold = SlowLogConfig.FETCH_DEBUG_THRESHOLD_DEFAULT;
 	@Min(10)
 	private long fetchTraceThreshold = SlowLogConfig.FETCH_TRACE_THRESHOLD_DEFAULT;
-	
 	@Min(1)
-	private Integer numberOfShards = 5;
-	
+	private Integer numberOfShards = 6;
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+	// @Nullable
+	private String clusterUrl;
+	// @Nullable
+	private String clusterUsername;
+	// @Nullable
+	private String clusterPassword;
+	
+	@Min(1_000)
+	private int connectTimeout = IndexClientFactory.DEFAULT_CONNECT_TIMEOUT;
+	@Min(1_000)
+	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -163,4 +172,53 @@ public class IndexConfiguration {
 		this.commitConcurrencyLevel = commitConcurrencyLevel;
 	}
 
+	@JsonProperty
+	public String getClusterUrl() {
+		return clusterUrl;
+	}
+	
+	@JsonProperty
+	public void setClusterUrl(String clusterUrl) {
+		this.clusterUrl = clusterUrl;
+	}
+	
+	@JsonProperty
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
+	
+	@JsonProperty
+	public void setConnectTimeout(int connectTimeout) {
+		this.connectTimeout = connectTimeout;
+	}
+	
+	@JsonProperty
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
+	
+	@JsonProperty
+	public void setSocketTimeout(int socketTimeout) {
+		this.socketTimeout = socketTimeout;
+	}
+	
+	@JsonProperty
+	public String getClusterUsername() {
+		return clusterUsername;
+	}
+	
+	@JsonProperty
+	public void setClusterUsername(String clusterUsername) {
+		this.clusterUsername = clusterUsername;
+	}
+	
+	@JsonProperty
+	public String getClusterPassword() {
+		return clusterPassword;
+	}
+	
+	@JsonProperty
+	public void setClusterPassword(String clusterPassword) {
+		this.clusterPassword = clusterPassword;
+	}
 }

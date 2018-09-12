@@ -22,7 +22,6 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -52,7 +51,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.b2international.snowowl.snomed.importer.rf2.util.ImportUtil;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
-import com.google.common.collect.Iterators;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -62,20 +61,20 @@ import com.google.common.collect.Sets;
  * Maps SNOMED CT component identifiers to CDO storage keys in a compact
  * in-memory map.
  * 
- * 
  * @param <C> the component type (must be either a subtype of {@link Component}
  * or a subtype of {@link SnomedRefSet})
  */
 public final class ComponentLookup<C extends CDOObject> {
 
-	private static final int EXPECTED_COMPONENT_SIZE = 50000;
-
-	private final LongKeyLongMap componentIdMap = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(EXPECTED_COMPONENT_SIZE);
+	public static final int EXPECTED_COMPONENT_SIZE = 50000;
+	
 	private final CDOEditingContext editingContext;
 	private final EnumSet<ComponentImportType> initializedComponents = EnumSet.noneOf(ComponentImportType.class);
-	private final Map<String, C> newComponents = Maps.newHashMap();
 	private final Class<? extends C> clazz;
 	private final RevisionIndex index;
+	
+	private LongKeyLongMap componentIdMap;
+	private Map<String, C> newComponents;
 	
 	public ComponentLookup(final RevisionIndex index, final SnomedEditingContext editingContext, Class<? extends C> clazz) {
 		this.index = index;
@@ -84,6 +83,9 @@ public final class ComponentLookup<C extends CDOObject> {
 	}
 
 	public void addNewComponent(final C component, final String id) {
+		if (newComponents == null) {
+			newComponents = Maps.newHashMap();
+		}
 		C prev = newComponents.put(id, component);
 		if (prev != null && component != prev) {
 			throw new IllegalStateException("Reregistering a new component with ID " + id);
@@ -91,7 +93,7 @@ public final class ComponentLookup<C extends CDOObject> {
 	}
 
 	public C getNewComponent(String componentId) {
-		return newComponents.get(componentId);
+		return newComponents == null ? null : newComponents.get(componentId);
 	}
 	
 	/**
@@ -136,7 +138,7 @@ public final class ComponentLookup<C extends CDOObject> {
 		final Set<String> missingStorageKeyComponentIds = newHashSet();
 		for (String componentId : componentIds) {
 			final long componentIdLong = ImportUtil.parseLong(componentId);
-			if (componentIdMap.containsKey(componentIdLong)) {
+			if (componentIdMap != null && componentIdMap.containsKey(componentIdLong)) {
 				storageKeys.add(componentIdMap.get(componentIdLong));
 			} else {
 				missingStorageKeyComponentIds.add(componentId);
@@ -192,6 +194,9 @@ public final class ComponentLookup<C extends CDOObject> {
 	}
 
 	private void registerComponentStorageKey(final String componentId, final long storageKey) {
+		if (componentIdMap == null) {
+			componentIdMap = PrimitiveMaps.newLongKeyLongOpenHashMapWithExpectedSize(EXPECTED_COMPONENT_SIZE);
+		}
 		final long existingKey = componentIdMap.put(ImportUtil.parseLong(componentId), storageKey);
 		
 		if (existingKey > 0L && existingKey != storageKey) {
@@ -203,9 +208,11 @@ public final class ComponentLookup<C extends CDOObject> {
 	
 	public void registerNewComponentStorageKeys() {
 		// Consume each element while it is being registered
-		for (final Iterator<Entry<String, C>> itr = Iterators.consumingIterator(newComponents.entrySet().iterator()); itr.hasNext();) {
-			final Entry<String, C> newComponent = itr.next();
-			registerComponentStorageKey(newComponent.getKey(), CDOIDUtil.getLong(newComponent.getValue().cdoID()));
+		if (newComponents != null) {
+			for (final Entry<String, C> newComponent : Iterables.consumingIterable(newComponents.entrySet())) {
+				registerComponentStorageKey(newComponent.getKey(), CDOIDUtil.getLong(newComponent.getValue().cdoID()));
+			}
+			newComponents = null;
 		}
 	}
 	
@@ -219,21 +226,15 @@ public final class ComponentLookup<C extends CDOObject> {
 	public void clear() {
 		
 		if (null != newComponents) {
-			
-			newComponents.clear();
-			
+			newComponents = null;
 		}
 		
 		if (null != componentIdMap) {
-			
-			componentIdMap.clear();
-			
+			componentIdMap = null;
 		}
 		
 		if (null != initializedComponents) {
-			
 			initializedComponents.clear();
-			
 		}
 		
 	}

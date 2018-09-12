@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.importer.rf2.validation;
 
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -32,22 +35,20 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the description release file.
  */
 public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 	
-	private final Map<String, List<String>> descriptionIdsWithEffectivetimeStatus = Maps.newHashMap();
-	private final Multimap<String, String> fullySpecifiedNames = HashMultimap.create();
-	private final Map<String, String> fullySpecifiedNameNotUnique = Maps.newHashMap();
-	private final Set<String> descriptionIdNotUnique = Sets.newHashSet();
-	private final Set<String> descriptionConceptNotExist = Sets.newHashSet();
-	private final Set<String> typeConceptNotExist = Sets.newHashSet();
-	private final Set<String> caseSignificanceConceptNotExist = Sets.newHashSet();
+	private Map<String, List<String>> descriptionIdsWithEffectivetimeStatus = newHashMap();
+	private Multimap<String, String> fullySpecifiedNames = HashMultimap.create();
+	private Map<String, String> fullySpecifiedNameNotUnique = newHashMap();
+	private Set<String> descriptionIdNotUnique = newHashSet();
+	private Set<String> descriptionConceptNotExist = newHashSet();
+	private Set<String> typeConceptNotExist = newHashSet();
+	private Set<String> caseSignificanceConceptNotExist = newHashSet();
 
 	public SnomedDescriptionValidator(final ImportConfiguration configuration, final SnomedValidationContext context, File descriptionFile) throws IOException {
 		super(configuration, configuration.toURL(descriptionFile), ComponentImportType.DESCRIPTION, context, SnomedRf2Headers.DESCRIPTION_HEADER);
@@ -63,7 +64,6 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 		final String caseSignificance = row.get(8);
 		
 		registerComponent(ComponentCategory.DESCRIPTION, componentId, active);
-		
 		
 		final boolean descriptionConceptExists = validateComponentExists(effectiveTime, concept, concept, ReleaseComponentType.CONCEPT, descriptionConceptNotExist);
 		final boolean typeConceptExists = validateComponentExists(effectiveTime, type, concept, ReleaseComponentType.CONCEPT, typeConceptNotExist);
@@ -105,14 +105,19 @@ public class SnomedDescriptionValidator extends AbstractSnomedValidator {
 		addDefect(DefectType.DESCRIPTION_CONCEPT_NOT_EXIST, descriptionConceptNotExist);
 		addDefect(DefectType.DESCRIPTION_TYPE_NOT_EXIST, typeConceptNotExist);
 		addDefect(DefectType.DESCRIPTION_CASE_SIGNIFICANCE_NOT_EXIST, caseSignificanceConceptNotExist);
+	}
+	
+	@Override
+	protected void clearCaches() {
 		
-		descriptionIdsWithEffectivetimeStatus.clear();
-		fullySpecifiedNames.clear();
-		descriptionIdNotUnique.clear();
-		fullySpecifiedNameNotUnique.clear();
-		descriptionConceptNotExist.clear();
-		typeConceptNotExist.clear();
-		caseSignificanceConceptNotExist.clear();
+		descriptionIdsWithEffectivetimeStatus = newHashMap();
+		fullySpecifiedNames = HashMultimap.create();
+		descriptionIdNotUnique = newHashSet();
+		fullySpecifiedNameNotUnique = newHashMap();
+		descriptionConceptNotExist = newHashSet();
+		typeConceptNotExist = newHashSet();
+		caseSignificanceConceptNotExist = newHashSet();
+		
 	}
 	
 }

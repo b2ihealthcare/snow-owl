@@ -19,7 +19,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,52 +31,26 @@ import com.b2international.snowowl.snomed.importer.net4j.ImportConfiguration;
 import com.b2international.snowowl.snomed.importer.release.ReleaseFileSet.ReleaseComponentType;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Represents a release file validator that validates the reference set.
  * 
  */
 public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
-	
-	private static class ReferencedComponentIdAndStatus {
-		
-		private final String referencedComponentId;
-		private boolean active;
-
-		public ReferencedComponentIdAndStatus(final String referencedComponentId, final boolean active) {
-			this.referencedComponentId = referencedComponentId;
-			this.active = active;
-		}
-
-		public String getReferencedComponentId() {
-			return referencedComponentId;
-		}
-		
-		public boolean isActive() {
-			return active;
-		}
-		
-		public void setActive(final boolean active) {
-			this.active = active;
-		}
-	}
 
 	private static final int COLUMN_UUID = 0;
-	private static final int COLUMN_STATUS = 1;
 	private static final int COLUMN_REFERENCED_COMPONENT_ID = 5;
 	
-	private final Set<String> uuidNotUnique = newHashSet();
-	private final Set<String> uuidInvalid = newHashSet();
-	private final Map<UUID, ReferencedComponentIdAndStatus> memberDataByUuid;
-	private final Set<String> referencedComponentNotExist = Sets.newHashSet();
+	private Set<String> uuidNotUnique = newHashSet();
+	private Set<String> uuidInvalid = newHashSet();
+	private Set<String> referencedComponentNotExist = newHashSet();
+	private Set<String> uuids = newHashSet();
 	
 	private static final String EMPTY_FIELD_VALIDATION_MESSAGE = "%s reference set member with uuid '%s' has an empty field '%s' in effective time '%s'";
 	
-	public SnomedRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final ComponentImportType importType, final SnomedValidationContext validationUtil, final String[] expectedHeader) {
+	public SnomedRefSetValidator(final ImportConfiguration configuration, final URL releaseUrl, final ComponentImportType importType,
+			final SnomedValidationContext validationUtil, final String[] expectedHeader) {
 		super(configuration, releaseUrl, importType, validationUtil, expectedHeader);
-		memberDataByUuid = Maps.newHashMap();
 	}
 	
 	/**
@@ -93,39 +66,19 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		validateReferencedComponent(row);
 	}
 
-	/**
-	 * Checks if the UUID is unique or not.
-	 * 
-	 * @param row the current row
-	 * @param lineNumber the current line number
-	 */
 	protected void validateIdUniqueness(final List<String> row) {
+		
 		final String uuid = row.get(COLUMN_UUID);
-		final String effectiveTime = row.get(1);
-		final UUID rowUuid;
 		
 		try {
-			rowUuid = UUID.fromString(uuid);
+			UUID.fromString(uuid);
 		} catch (final IllegalArgumentException e) {
-			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, effectiveTime, releaseFileName));
+			uuidInvalid.add(String.format("Invalid UUID '%s' in effective time '%s' in file '%s'", uuid, row.get(1), releaseFileName));
 			return;
 		}
 		
-		final String rowReferencedComponentId = row.get(COLUMN_REFERENCED_COMPONENT_ID);
-		final boolean rowActive = "1".equals(row.get(COLUMN_STATUS));
-		
-		final ReferencedComponentIdAndStatus existingData = memberDataByUuid.get(rowUuid);
-		
-		if (null != existingData) {
-			if (existingData.getReferencedComponentId().equals(rowReferencedComponentId)) {
-				// if the id is for the same component as before, update the active flag
-				existingData.setActive(rowActive);
-			} else if (existingData.isActive()) { 
-				// if it's for different component and the member referring to the previous component is still active, report it as an issue
-				uuidNotUnique.add(String.format("UUID '%s' is not unique in file '%s'", uuid, releaseFileName));
-			}
-		} else {
-			memberDataByUuid.put(rowUuid, new ReferencedComponentIdAndStatus(rowReferencedComponentId, rowActive));
+		if (!uuids.add(uuid)) {
+			uuidNotUnique.add(String.format("UUID '%s' and effective time '%s' is not unique in file '%s'", uuid, row.get(1), releaseFileName));
 		}
 	}
 
@@ -168,9 +121,6 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 		addDefect(DefectType.NOT_UNIQUE_REFSET_MEMBER_ID, uuidNotUnique);
 		addDefect(DefectType.INCORRECT_REFSET_MEMBER_ID, uuidInvalid);
 		addDefect(DefectType.REFSET_MEMBER_COMPONENT_NOT_EXIST, referencedComponentNotExist);
-		uuidInvalid.clear();
-		referencedComponentNotExist.clear();
-		memberDataByUuid.clear();
 	}
 
 	protected String getSafeEffectiveTime(String effectiveTime) {
@@ -193,6 +143,14 @@ public abstract class SnomedRefSetValidator extends AbstractSnomedValidator {
 			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return ReleaseComponentType.RELATIONSHIP;
 			default : return ReleaseComponentType.CONCEPT;
 		}
+	}
+	
+	@Override
+	protected void clearCaches() {
+		uuids = newHashSet();
+		uuidNotUnique = newHashSet();
+		uuidInvalid = newHashSet();
+		referencedComponentNotExist = newHashSet();
 	}
 	
 }

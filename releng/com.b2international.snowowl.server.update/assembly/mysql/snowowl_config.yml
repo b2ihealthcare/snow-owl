@@ -22,7 +22,7 @@ identity:
 repository:
   host: 0.0.0.0
   port: 2036
-
+  
   database:
     type: b2i_mysql
     datasource: com.mysql.jdbc.jdbc2.optional.MysqlDataSource
@@ -35,7 +35,10 @@ repository:
     # NOTE: changing the default username/password is recommended for production environments
     username: snowowl
     password: snowowl
-    
+  
+  index:
+    socketTimeout: 60000
+
 # Request execution metrics (response-time, detailed information about transactions, etc.)
 metrics:
   enabled: true

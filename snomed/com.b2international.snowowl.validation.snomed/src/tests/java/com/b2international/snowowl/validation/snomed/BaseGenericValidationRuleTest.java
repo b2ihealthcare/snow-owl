@@ -87,7 +87,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
 				.with(ClassLoader.class, SnomedDatastoreServerActivator.class.getClassLoader())
-				.with(ValidationThreadPool.class, new ValidationThreadPool(1)).build();
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
 		// index common required SNOMED CT Concepts
 
 		index().write(MAIN, 1L, writer -> {

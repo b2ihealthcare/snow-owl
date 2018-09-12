@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,13 +51,27 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
 		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigDirectory().toPath().toString());
 		
-		final IndexConfiguration config = env.service(SnowOwlConfiguration.class)
-				.getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
+		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
+				.getModuleConfig(RepositoryConfiguration.class);
+		builder.put(IndexClientFactory.INDEX_PREFIX, repositoryConfig.getDeploymentId());
 		
-		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, config.getCommitInterval());
-		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, config.getCommitConcurrencyLevel());
+		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
+		if (indexConfig.getClusterUrl() != null) {
+			builder.put(IndexClientFactory.CLUSTER_URL, indexConfig.getClusterUrl());
+			if (indexConfig.getClusterUsername() != null) {
+				builder.put(IndexClientFactory.CLUSTER_USERNAME, indexConfig.getClusterUsername());
+			}
+			if (indexConfig.getClusterPassword() != null) {
+				builder.put(IndexClientFactory.CLUSTER_PASSWORD, indexConfig.getClusterPassword());
+			}
+		}
 		
-		final SlowLogConfig slowLog = createSlowLogConfig(config);
+		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, indexConfig.getCommitInterval());
+		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, indexConfig.getCommitConcurrencyLevel());
+		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
+		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
+		
+		final SlowLogConfig slowLog = createSlowLogConfig(indexConfig);
 		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
 		
 		return builder.build();
@@ -76,5 +90,4 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		
 		return new SlowLogConfig(builder.build());
 	}
-	
 }

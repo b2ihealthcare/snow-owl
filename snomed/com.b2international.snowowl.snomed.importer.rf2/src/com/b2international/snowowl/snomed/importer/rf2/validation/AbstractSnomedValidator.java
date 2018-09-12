@@ -59,7 +59,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
 
@@ -71,8 +70,11 @@ public abstract class AbstractSnomedValidator {
 	public static final String SPECIAL_EFFECTIVE_TIME_KEY = "";
 	
 	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
-	private static final Collection<ComponentCategory> CORE_COMPONENT_CATEGORIES = ImmutableList.of(ComponentCategory.CONCEPT, ComponentCategory.DESCRIPTION, ComponentCategory.RELATIONSHIP);
-	
+	private static final Collection<ComponentCategory> CORE_COMPONENT_CATEGORIES = ImmutableList.of(
+			ComponentCategory.CONCEPT,
+			ComponentCategory.DESCRIPTION,
+			ComponentCategory.RELATIONSHIP);
+
 	private File componentStagingDirectory;
 	private final URL releaseUrl;
 	private final File stagingDirectoryRoot;
@@ -80,15 +82,14 @@ public abstract class AbstractSnomedValidator {
 	
 	private Set<String> moduleIdNotExist = newHashSet();
 	private Set<String> invalidEffectiveTimeFormat = newHashSet();
-	/**Set containing all visited SNOMED CT module concept IDs. Consider this as a cache to avoid excessive module concept existence check.*/
-	private final Set<String> visitedModuleIds = Sets.newHashSet();
+	private Set<String> visitedModuleIds = newHashSet();
+	private Collection<String> effectiveTimes = newHashSet();
 
 	protected final String releaseFileName;
 	protected final ImportConfiguration configuration;
 	
 	private final SnomedValidationContext validationContext;
 	private final String[] expectedHeader;
-	private final Collection<String> effectiveTimes = newHashSet();
 	
 	public AbstractSnomedValidator(final ImportConfiguration configuration, 
 			final URL releaseUrl,
@@ -239,9 +240,6 @@ public abstract class AbstractSnomedValidator {
 		// add additional defects after validation
 		addDefect(DefectType.MODULE_CONCEPT_NOT_EXIST, moduleIdNotExist);
 		addDefect(DefectType.INVALID_EFFECTIVE_TIME_FORMAT, invalidEffectiveTimeFormat);
-		
-		moduleIdNotExist.clear();
-		invalidEffectiveTimeFormat.clear();
 	}
 	
 	protected void postValidate(final SubMonitor monitor) {
@@ -251,6 +249,14 @@ public abstract class AbstractSnomedValidator {
 			validationContext.getLogger().error(MessageFormat.format("Couldn''t remove {0} staging directory ''{1}''.",
 					importType.getDisplayName(), componentStagingDirectory.getAbsolutePath()));
 		}
+		
+		visitedModuleIds = newHashSet();
+		effectiveTimes = newHashSet();
+	}
+	
+	protected void clearCaches() {
+		moduleIdNotExist = newHashSet();
+		invalidEffectiveTimeFormat = newHashSet();
 	}
 	
 	protected void addDefect(final DefectType type, String...defects) {

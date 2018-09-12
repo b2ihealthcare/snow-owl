@@ -56,8 +56,6 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.EXTENDED_MAP_REFERENCED_INVALID_CONCEPT, Iterables.concat(mapCategoryConceptNotExist, correlationConceptNotExist));
-		mapCategoryConceptNotExist.clear();
-		correlationConceptNotExist.clear();
 	}
 
 	@Override
@@ -89,5 +87,12 @@ public class SnomedExtendedMapTypeRefSetValidator extends SnomedRefSetValidator 
 		} catch (final Exception e) {
 			return null;
 		}
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		mapCategoryConceptNotExist = newHashSet();
+		correlationConceptNotExist = newHashSet();
 	}
 }

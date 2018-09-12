@@ -20,15 +20,14 @@ KERNEL_HOME=`dirname "$SCRIPT"`/..
 # make KERNEL_HOME absolute
 KERNEL_HOME=`cd "$KERNEL_HOME"; pwd`
 
-# setup classpath and java environment
-. "$KERNEL_HOME/bin/setupClasspath.sh"
-
 # execute user setenv script if needed
 if [ -r "$KERNEL_HOME/bin/setenv.sh" ]
 then
 	. $KERNEL_HOME/bin/setenv.sh
 fi
 
+# setup classpath and java environment
+. "$KERNEL_HOME/bin/setupClasspath.sh"
 
 # Run java version check with the discovered java jvm.
 . "$KERNEL_HOME/bin/checkJava.sh"
@@ -131,8 +130,9 @@ then
 
 	if [ "$CLEAN_FLAG" ]
 	then
-        rm -rf $KERNEL_HOME/work
-        rm -rf $KERNEL_HOME/serviceability
+        echo "Cleaning the serviceability and working directories..."
+        rm -rf "$KERNEL_HOME/work"
+        rm -rf "$KERNEL_HOME/serviceability"
 
         LAUNCH_OPTS="$LAUNCH_OPTS -clean" #equivalent to setting osgi.clean to "true"
 	fi
@@ -162,17 +162,6 @@ then
 	# Set the required permissions on the JMX configuration files
 	chmod 600 "$ACCESS_PROPERTIES"
 
-	JMX_OPTS=" \
-		$JMX_OPTS \
-		-Dcom.sun.management.jmxremote.port=$JMX_PORT \
-		-Dcom.sun.management.jmxremote.authenticate=true \
-		-Dcom.sun.management.jmxremote.login.config=virgo-kernel \
-		-Dcom.sun.management.jmxremote.access.file="$ACCESS_PROPERTIES" \
-		-Djavax.net.ssl.keyStore=$KEYSTORE_PATH \
-		-Djavax.net.ssl.keyStorePassword=$KEYSTORE_PASSWORD \
-		-Dcom.sun.management.jmxremote.ssl=true \
-		-Dcom.sun.management.jmxremote.ssl.need.client.auth=false"
-
    	if [ -z "$JAVA_HOME" ]
     then
       	JAVA_EXECUTABLE=java
@@ -186,12 +175,12 @@ then
 	then
 		TMP_DIR=$KERNEL_HOME/work/tmp
 		# Ensure that the tmp directory exists
-		mkdir -p $TMP_DIR
+		mkdir -p "$TMP_DIR"
 		
 		#Added awt.headless - http://mail-archives.apache.org/mod_mbox/poi-user/200705.mbox/%3C15719338671.20070504144714@dinom.ru%3E
-        JAVA_OPTS="$JAVA_OPTS \
+        JAVA_OPTS="	$JAVA_OPTS \
         			-Xms12g \
-                    -Xmx12g \
+       		        -Xmx12g \
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
                     -Xloggc:$KERNEL_HOME/`date +%F_%H%M-%S`-gc.log \
@@ -209,29 +198,38 @@ then
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
                     -Djava.awt.headless=true \
                     -XX:+AlwaysLockClassLoader \
-                    -Dosgi.classloader.type=nonparallel" 
+                    -Dosgi.classloader.type=nonparallel" \
+                    -Djdk.security.defaultKeySize=DSA:1024
 
-		cd $KERNEL_HOME; exec $JAVA_EXECUTABLE \
+		cd "$KERNEL_HOME"; exec $JAVA_EXECUTABLE \
 			$JAVA_OPTS \
 			$DEBUG_OPTS \
 			$JMX_OPTS \
 			-XX:+HeapDumpOnOutOfMemoryError \
-			-XX:ErrorFile=$KERNEL_HOME/serviceability/error.log \
-			-XX:HeapDumpPath=$KERNEL_HOME/serviceability/heap_dump.hprof \
-			-Djava.security.auth.login.config=$AUTH_LOGIN \
-			-Dorg.eclipse.virgo.kernel.authentication.file=$AUTH_FILE \
-			-Djava.io.tmpdir=$TMP_DIR \
-			-Dorg.eclipse.virgo.kernel.home=$KERNEL_HOME \
-			-Dorg.eclipse.virgo.kernel.config=$CONFIG_DIR \
-			-Dosgi.sharedConfiguration.area=$CONFIG_DIR \
+			-XX:ErrorFile="$KERNEL_HOME/serviceability/error.log" \
+			-XX:HeapDumpPath="$KERNEL_HOME/serviceability/heap_dump.hprof" \
+			-Djava.security.auth.login.config="$AUTH_LOGIN" \
+			-Dorg.eclipse.virgo.kernel.authentication.file="$AUTH_FILE" \
+			-Djava.io.tmpdir="$TMP_DIR" \
+			-Dorg.eclipse.virgo.kernel.home="$KERNEL_HOME" \
+			-Dorg.eclipse.virgo.kernel.config="$CONFIG_DIR" \
+			-Dosgi.sharedConfiguration.area="$CONFIG_DIR" \
 			-Dosgi.java.profile="file:$JAVA_PROFILE" \
             -Declipse.ignoreApp=true \
-            -Dosgi.install.area=$KERNEL_HOME \
-            -Dosgi.configuration.area=$CONFIG_AREA \
+            -Dosgi.install.area="$KERNEL_HOME" \
+            -Dosgi.configuration.area="$CONFIG_AREA" \
             -Dssh.server.keystore="$CONFIG_DIR/hostkey.ser" \
-            -Dosgi.frameworkClassPath=$FWCLASSPATH \
+            -Dosgi.frameworkClassPath="$FWCLASSPATH" \
             -Djava.endorsed.dirs="$KERNEL_HOME/lib/endorsed" \
-            -classpath $CLASSPATH \
+            -Dcom.sun.management.jmxremote.port=$JMX_PORT \
+		    -Dcom.sun.management.jmxremote.authenticate=true \
+	    	-Dcom.sun.management.jmxremote.login.config=virgo-kernel \
+    		-Dcom.sun.management.jmxremote.access.file="$ACCESS_PROPERTIES" \
+		    -Djavax.net.ssl.keyStore="$KEYSTORE_PATH" \
+		    -Djavax.net.ssl.keyStorePassword="$KEYSTORE_PASSWORD" \
+		    -Dcom.sun.management.jmxremote.ssl=true \
+		    -Dcom.sun.management.jmxremote.ssl.need.client.auth=false \
+            -classpath "$CLASSPATH" \
 			org.eclipse.equinox.launcher.Main \
             -noExit \
 			$LAUNCH_OPTS \
@@ -240,7 +238,7 @@ then
 elif [ "$COMMAND" = "stop" ]
 then
 
-	CONFIG_DIR=$KERNEL_HOME/configuration
+	CONFIG_DIR="$KERNEL_HOME/configuration"
 
 	#parse args for the script
 	if [ -z "$TRUSTSTORE_PATH" ]
@@ -286,11 +284,6 @@ then
 		shift
 	done
 	
-	JMX_OPTS=" \
-		$JMX_OPTS \
-		-Djavax.net.ssl.trustStore=${TRUSTSTORE_PATH} \
-		-Djavax.net.ssl.trustStorePassword=${TRUSTSTORE_PASSWORD}"
-
 	OTHER_ARGS+=" -jmxport $JMX_PORT"
 
     if $cygwin; then
@@ -298,10 +291,14 @@ then
         CONFIG_DIR=$(cygpath -wp $CONFIG_DIR)
     fi
 
-	exec $JAVA_EXECUTABLE $JAVA_OPTS $JMX_OPTS \
-		-classpath $CLASSPATH \
-		-Dorg.eclipse.virgo.kernel.home=$KERNEL_HOME \
-		-Dorg.eclipse.virgo.kernel.authentication.file=$CONFIG_DIR/org.eclipse.virgo.kernel.users.properties \
+	exec $JAVA_EXECUTABLE \
+	     $JAVA_OPTS \
+	     $JMX_OPTS \
+		-classpath "$CLASSPATH" \
+		-Djavax.net.ssl.trustStore="$TRUSTSTORE_PATH" \
+		-Djavax.net.ssl.trustStorePassword="$TRUSTSTORE_PASSWORD" \
+		-Dorg.eclipse.virgo.kernel.home="$KERNEL_HOME" \
+		-Dorg.eclipse.virgo.kernel.authentication.file="$CONFIG_DIR/org.eclipse.virgo.kernel.users.properties" \
 		org.eclipse.virgo.nano.shutdown.ShutdownClient $OTHER_ARGS
 	
 else

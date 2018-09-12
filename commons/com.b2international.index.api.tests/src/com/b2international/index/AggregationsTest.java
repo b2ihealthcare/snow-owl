@@ -40,14 +40,17 @@ public class AggregationsTest extends BaseIndexTest {
 	@Test
 	public void aggregateOnFieldValue() throws Exception {
 		final Data dup1 = new Data();
+		dup1.setField1("dup1");
 		dup1.setAnalyzedField("duplicate");
 		indexDocument(KEY1, dup1);
 		
 		final Data dup2 = new Data();
+		dup2.setField1("dup2");
 		dup2.setAnalyzedField("duplicate");
 		indexDocument(KEY2, dup2);
 		
 		final Data different = new Data();
+		different.setField1("different");
 		different.setAnalyzedField("different");
 		indexDocument("key3", different);
 		
@@ -60,7 +63,19 @@ public class AggregationsTest extends BaseIndexTest {
 		
 		assertThat(buckets.getBuckets()).hasSize(1);
 		assertThat(buckets.getBucket("duplicate")).containsOnly(dup1, dup2);
+		
+		final Aggregation<String[]> bucketsWithFieldSelect = aggregate(
+			AggregationBuilder.bucket("aggregateOnFieldValueSelect", String[].class, Data.class)
+				.query(Expressions.matchAll())
+				.onFieldValue("analyzedField.exact")
+				.fields("field1", "analyzedField")
+				.minBucketSize(2)
+		);
+		
+		assertThat(bucketsWithFieldSelect.getBuckets()).hasSize(1);
+		assertThat(bucketsWithFieldSelect.getBucket("duplicate")).containsOnly(new String[] {"dup1", "duplicate"}, new String[] {"dup2", "duplicate"});
 	}
+	
 	
 	@Test
 	public void aggregateOnScriptValue() throws Exception {

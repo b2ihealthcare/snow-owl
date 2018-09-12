@@ -111,7 +111,23 @@ import com.google.common.collect.ImmutableMap;
 	SnomedRefSetMemberIndexEntry.Fields.MAP_RULE,
 	SnomedRefSetMemberIndexEntry.Fields.MAP_GROUP,
 	SnomedRefSetMemberIndexEntry.Fields.MAP_PRIORITY,
-	SnomedRefSetMemberIndexEntry.Fields.QUERY
+	SnomedRefSetMemberIndexEntry.Fields.QUERY,
+	SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_CONSTRAINT,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_PARENT_DOMAIN,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_EDITORIAL_GUIDE_REFERENCE,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_CARDINALITY,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_STRENGTH_ID,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_CONTENT_TYPE_ID,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_RANGE_CONSTRAINT,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_ATTRIBUTE_RULE,
+	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
 })
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
@@ -446,6 +462,22 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression valueIds(Collection<String> valueIds) {
 			return matchAny(Fields.VALUE_ID, valueIds);
+		}
+		
+		public static Expression domainIds(Collection<String> domainIds) {
+			return matchAny(Fields.MRCM_DOMAIN_ID, domainIds);
+		}
+		
+		public static Expression contentTypeIds(Collection<String> contentTypeIds) {
+			return matchAny(Fields.MRCM_CONTENT_TYPE_ID, contentTypeIds);
+		}
+		
+		public static Expression ruleStrengthIds(Collection<String> strengthIds) {
+			return matchAny(Fields.MRCM_RULE_STRENGTH_ID, strengthIds);
+		}
+		
+		public static Expression ruleRefSetIds(Collection<String> refSetIds) {
+			return matchAny(Fields.MRCM_RULE_REFSET_ID, refSetIds);
 		}
 		
 		public static Expression values(DataType type, Collection<? extends Object> values) {

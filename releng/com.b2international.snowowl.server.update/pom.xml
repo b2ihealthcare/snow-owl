@@ -8,8 +8,16 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>6.6.0-SNAPSHOT</version>
+		<version>6.9.0-SNAPSHOT</version>
 	</parent>
+	
+	<dependencies>
+		<dependency>
+  			<groupId>org.apache.sshd</groupId>
+  			<artifactId>sshd-core</artifactId>
+  			<version>0.14.0</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<finalName>snowowl-${customer}_${build.version}</finalName>
@@ -28,7 +36,7 @@
 						<configuration>
 							<target>
 								<echo message="Unzipping Virgo archive..." />
-								<unzip src="assembly/virgo-tomcat-server-3.7.0.M03.zip"
+								<unzip src="assembly/virgo-tomcat-server-3.7.2.RELEASE.zip"
 									dest="target/" />
 							</target>
 						</configuration>

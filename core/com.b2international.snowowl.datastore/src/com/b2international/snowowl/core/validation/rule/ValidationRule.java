@@ -36,7 +36,9 @@ public final class ValidationRule implements Serializable {
 	public enum Severity {
 		ERROR("Error", 3),
 		WARNING("Warning", 2),
-		INFO("Info", 1);
+		INFO("Info", 1),
+		OTHER("Other", 0);
+		
 		
 		private final String name;
 		private int value;
@@ -55,6 +57,23 @@ public final class ValidationRule implements Serializable {
 		}
 	}
 	
+	public enum CheckType {
+		EXPENSIVE("Expensive"),
+		NORMAL("Normal"),
+		FAST("Fast");
+		
+		private final String name;
+		
+		private CheckType(String name) {
+			this.name = name;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+	}
+	
 	/**
 	 * @since 6.0
 	 */
@@ -63,6 +82,7 @@ public final class ValidationRule implements Serializable {
 		public static final String TOOLING_ID = "toolingId";
 		public static final String MESSAGE_TEMPLATE = "messageTemplate";
 		public static final String SEVERITY = "severity";
+		public static final String CHECK_TYPE = "checkType";
 		public static final String TYPE = "type";
 	}
 
@@ -70,6 +90,7 @@ public final class ValidationRule implements Serializable {
 	private final String toolingId;
 	private final String messageTemplate;
 	private final Severity severity;
+	private final CheckType checkType;
 	private final String type;
 	
 	@Keyword(index = false)
@@ -81,6 +102,7 @@ public final class ValidationRule implements Serializable {
 			@JsonProperty("toolingId") final String toolingId,
 			@JsonProperty("messageTemplate") final String messageTemplate,
 			@JsonProperty("severity") final Severity severity,
+			@JsonProperty("checkType") final CheckType checkType,
 			@JsonProperty("type") final String type,
 			@JsonProperty("implementation") final String implementation
 			) {
@@ -88,6 +110,7 @@ public final class ValidationRule implements Serializable {
 		this.toolingId = toolingId;
 		this.messageTemplate = messageTemplate;
 		this.severity = severity;
+		this.checkType = checkType;
 		this.type = type;
 		this.implementation = implementation;
 	}
@@ -108,6 +131,10 @@ public final class ValidationRule implements Serializable {
 		return severity;
 	}
 	
+	public CheckType getCheckType() {
+		return checkType;
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -122,6 +149,7 @@ public final class ValidationRule implements Serializable {
 				.add("id", id)
 				.add("messageTemplate", messageTemplate)
 				.add("severity", severity)
+				.add("checkType", checkType)
 				.add("type", type)
 				.add("implementation", StringUtils.truncate(implementation))
 				.toString();

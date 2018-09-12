@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.io.Serializable;
 
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Objects;
 
 /**
@@ -29,6 +30,7 @@ public class ConcreteDomainElement implements Serializable {
 	private final String attributeDisplayName;
 	private final String value;
 	private final ChangeConcept unit;
+	private final DataType dataType;
 
 	/**
 	 * Creates a new concrete domain element with the specified arguments.
@@ -37,10 +39,11 @@ public class ConcreteDomainElement implements Serializable {
 	 * @param value the value of the concrete domain member, suitable for display on the UI
 	 * @param unit the UOM component of the concrete domain member (can be {@code null} if no unit is associated with this member)
 	 */
-	public ConcreteDomainElement(final String attributeDisplayName, final String value, final ChangeConcept unit) {
+	public ConcreteDomainElement(final String attributeDisplayName, final String value, final ChangeConcept unit, DataType dataType) {
 		this.attributeDisplayName = attributeDisplayName;
 		this.value = value;
 		this.unit = unit;
+		this.dataType = dataType;
 	}
 
 	/**
@@ -62,6 +65,13 @@ public class ConcreteDomainElement implements Serializable {
 	 */
 	public ChangeConcept getUnit() {
 		return unit;
+	}
+	
+	/**
+	 * @return the DataType of the concrete domain member
+	 */
+	public DataType getDataType() {
+		return dataType;
 	}
 
 	@Override 

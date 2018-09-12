@@ -1,6 +1,65 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.8.0
+
+### Added
+- Support SNOMED CT component effective time filter in Validation Issues Search API (#260)
+- Support affectedComponent label filter in Validation Issues Search API (20962f2)
+- Complete `searchAfter` paging API support for REST API endpoints (#261)
+- A new `Other` Validation Rule severity type (#263) 
+- Support basic authentication configuration values in Elasticsearch configuration in case of connecting to a remote cluster (#264)
+
+### Changed
+- Use serialized `String` values for `searchAfter` parameters in search Java APIs (#261)
+- RF2 export archive and file effective times are now calculated based on module dependency refset entries of the selected module IDs (dc959e1)
+
+### Bugs
+- Fix attribute group cardinality bug in ECL evaluation (#259)
+- Use socket timeout as retry timeout in Elasticsearch HTTP REST client (34a6eb4)
+- Fix SSH connection to OSGi console (5e9cdff)
+
+## 6.7.0
+
+### Added
+- A new `deploymentId` configuration key to specify both DB and Index name prefix to support multi-tenant deployments (#256)
+- Support MRCM reference set member properties in `SnomedRefSetMemberSearchRequest` (a14b9d9) 
+
+### Changed
+- Use the high-level Elasticsearch REST Client to communicate with either an embedded note or remote cluster (#251)  
+- Check all potential reference set member properties where a component ID might be referenced during module dependency updates (17b3a2a)
+
+### Dependencies
+- Bump Virgo package version from `3.7.0.M3` to `3.7.2` (#253)
+- Bump Elasticsearch version from `6.0.1` to `6.3.2` (#251)
+
+### Performance
+- Improve SNOMED CT RF2 export performance (#249)
+- Reduce number of documents to load when using `snomed-query` based validation rules (4f980a1) 
+
+### Bugs
+- Fix cache cleanup (memory leak) in `SnomedEditingContext/SnomedRefSetEditingContext` (d97bf3e)
+- Fix occasionally failing unit tests due to index refresh bug in `EsDocumentSearcher` (2d3cd7f)
+- Fix incorrect `RF2` archive effective date when using `endEffectiveDate` filter in `RF2` Delta exports (cd54af3)
+
+## 6.6.0
+
+### Added
+- Configuration options for validation thread pool sizes and parallel execution of rules (#246, 09c971e)
+- Support field selection in low-level aggregations API (b429a46, a59cb7e)
+
+### Changed
+- Support delimiter parameter in DSV exports (7ad7d6f)
+- Support latest specification changes in OWL Axiom and Ontology Reference Sets (#248, 72994dc)
+- Increase number of default shards for revision indexes to `6` (11ca54d) 
+
+### Bugs
+- Use Groovy Eclipse release update site instead of snapshot (0e15090) 
+- Fix missing FSNs, PTs in RefSet DSV exports, change default file names to PT of the Reference Set (1bb3fe3, 3f7cd3e, af6d9d1)
+
+### Performance
+- Reduce memory consumption and execution time of large scale validation jobs (#246, 9e35a24)
+
 ## 6.5.0
 
 ### Breaking changes

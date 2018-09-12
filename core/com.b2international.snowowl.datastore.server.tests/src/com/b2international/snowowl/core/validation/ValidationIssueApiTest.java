@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -37,13 +38,15 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -65,6 +68,12 @@ public class ValidationIssueApiTest {
 				}
 			}
 		}
+
+		@Override
+		public void extendIssues(BranchContext context, Collection<ValidationIssue> issue) {}
+
+		@Override
+		public String getToolingId() { return null; }
 		
 	}
 	
@@ -87,9 +96,11 @@ public class ValidationIssueApiTest {
 	
 	@After
 	public void after() {
-		context.service(ValidationRepository.class).admin().delete();
-		if(context instanceof IDisposableService) {
-			((IDisposableService) context).dispose();
+		if (context != null) {
+			context.service(ValidationRepository.class).admin().delete();
+			if (context instanceof IDisposableService) {
+				((IDisposableService) context).dispose();
+			}
 		}
 	}
 	
@@ -110,10 +121,75 @@ public class ValidationIssueApiTest {
 		
 		assertThat(issues).hasSize(1);
 		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toList())).containsOnly(issueWithDetail);
+	}
+	
+	@Test
+	public void filterIssueByAffectedComponentLabel_Exact() throws Exception {
+		final String issueA = createIssue(Collections.emptyMap(), "A");
+		final String issueB = createIssue(Collections.emptyMap(), "B");
 		
+		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByAffectedComponentLabel("a")
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		assertThat(issues).hasSize(1);
+		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toSet())).containsOnly(issueA);
+	}
+	
+	@Test
+	public void filterIssueByAffectedComponentLabel_Partial() throws Exception {
+		final String issueA = createIssue(Collections.emptyMap(), "Systolic Blood Pressure");
+		final String issueB = createIssue(Collections.emptyMap(), "Pressure");
+		
+		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByAffectedComponentLabel("blood")
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		assertThat(issues).hasSize(1);
+		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toSet())).containsOnly(issueA);
+	}
+	
+	@Test
+	public void filterIssueByAffectedComponentLabel_Prefix() throws Exception {
+		final String issueA = createIssue(Collections.emptyMap(), "Systolic Blood Pressure");
+		final String issueB = createIssue(Collections.emptyMap(), "Blood Pressure");
+		
+		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByAffectedComponentLabel("sys blo pre")
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		assertThat(issues).hasSize(1);
+		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toSet())).containsOnly(issueA);
+	}
+	
+	@Test
+	public void filterIssueByAffectedComponentLabel_MatchID() throws Exception {
+		final String issueA = createIssue(Collections.emptyMap(), "A");
+		final String issueB = createIssue(Collections.emptyMap(), "B");
+		
+		final String issueAComponentId = ValidationRequests.issues().prepareGet(issueA).buildAsync().getRequest().execute(context).getAffectedComponent().getComponentId();
+		
+		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByAffectedComponentLabel(issueAComponentId)
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		assertThat(issues).hasSize(1);
+		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toSet())).containsOnly(issueA);
 	}
 
-	private String createIssue(Map<String, Object> details) {
+	private String createIssue(Map<String, Object> details, String...labels) {
 		final String branchPath = "testBranch";
 		final String issueId = UUID.randomUUID().toString();
 		final String ruleId = "testRuleId";
@@ -129,6 +205,10 @@ public class ValidationIssueApiTest {
 		
 		if (!CompareUtils.isEmpty(details)) {
 			issue.setDetails(details);
+		}
+		
+		if (!CompareUtils.isEmpty(labels)) {
+			issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
 		}
 		
 		context.service(ValidationRepository.class).write(index -> {

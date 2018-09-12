@@ -30,6 +30,10 @@ public final class ValidationWhiteListSearchRequestBuilder
 
 	ValidationWhiteListSearchRequestBuilder() {}
 	
+	public ValidationWhiteListSearchRequestBuilder filterByTerm(String term) {
+		return addOption(OptionKey.TERM, term);
+	}
+
 	public ValidationWhiteListSearchRequestBuilder filterByRuleId(String ruleId) {
 		return addOption(OptionKey.RULE_ID, ruleId);
 	}
@@ -52,7 +56,15 @@ public final class ValidationWhiteListSearchRequestBuilder
 
 	public ValidationWhiteListSearchRequestBuilder filterByComponentType(Iterable<Short> terminologyComponentIds) {
 		return addOption(OptionKey.COMPONENT_TYPE, terminologyComponentIds);
-	}	
+	}
+	
+	public ValidationWhiteListSearchRequestBuilder filterByReporter(String reporter) {
+		return addOption(OptionKey.REPORTER, reporter);
+	}
+
+	public ValidationWhiteListSearchRequestBuilder filterByReporters(Iterable<String> reporters) {
+		return addOption(OptionKey.REPORTER, reporters);
+	}
 	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, ValidationWhiteLists> createSearch() {

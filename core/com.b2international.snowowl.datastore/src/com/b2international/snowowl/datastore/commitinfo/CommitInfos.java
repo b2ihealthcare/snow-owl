@@ -33,7 +33,7 @@ public final class CommitInfos extends PageableCollectionResource<CommitInfo> {
 		this(Collections.emptyList(), repositoryId, null, null, limit, total);
 	}
 
-	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, Object[] searchAfter, int limit, int total) {
+	public CommitInfos(List<CommitInfo> items, String repositoryId, String scrollId, String searchAfter, int limit, int total) {
 		super(items, scrollId, searchAfter, limit, total);
 		this.repositoryId = repositoryId;
 	}

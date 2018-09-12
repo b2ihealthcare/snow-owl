@@ -39,6 +39,9 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class RevisionCompare {
 
+	// Allow to store a small amount of samples for each revision type, even if the limit has been hit
+	private static final int SAMPLE_LIMIT = 5_000;
+	
 	static Builder builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
 		return new Builder(index, base, compare, limit);
 	}
@@ -58,6 +61,8 @@ public final class RevisionCompare {
 		private final IntValueMap<Class<? extends Revision>> changedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 		private final IntValueMap<Class<? extends Revision>> deletedTotals = PrimitiveMaps.newObjectKeyIntOpenHashMap();
 
+		private int revisionCount = 0;
+		
 		Builder(InternalRevisionIndex index, RevisionBranch base, RevisionBranch compare, int limit) {
 			this.index = index;
 			this.base = base;
@@ -70,8 +75,9 @@ public final class RevisionCompare {
 				newComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
 			
-			if (newComponents.get(type).size() < limit) {
+			if (revisionCount < limit || newTotals.get(type) < SAMPLE_LIMIT) {
 				newComponents.get(type).add(storageKey);
+				revisionCount++;
 			}
 			
 			newTotals.put(type, newTotals.get(type) + 1);
@@ -83,8 +89,9 @@ public final class RevisionCompare {
 				changedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
 			
-			if (changedComponents.get(type).size() < limit) {
+			if (revisionCount < limit || changedTotals.get(type) < SAMPLE_LIMIT) {
 				changedComponents.get(type).add(storageKey);
+				revisionCount++;
 			}
 			
 			changedTotals.put(type, changedTotals.get(type) + 1);
@@ -96,8 +103,9 @@ public final class RevisionCompare {
 				deletedComponents.put(type, PrimitiveSets.newLongOpenHashSet());
 			}
 			
-			if (deletedComponents.get(type).size() < limit) {
+			if (revisionCount < limit || deletedTotals.get(type) < SAMPLE_LIMIT) {
 				deletedComponents.get(type).add(storageKey);
+				revisionCount++;
 			}
 			
 			deletedTotals.put(type, deletedTotals.get(type) + 1);
@@ -264,5 +272,4 @@ public final class RevisionCompare {
 				&& Objects.equals(base, other.base)
 				&& Objects.equals(compare, other.compare);
 	}
-
 }

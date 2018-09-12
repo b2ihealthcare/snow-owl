@@ -15,14 +15,42 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Collection;
+
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.domain.BranchContext;
 
 /**
  * @since 6.4
  */
 public interface ValidationIssueDetailExtension {
 
+	/**
+	 * Prepares the given queryBuilder with domain specific filters on fields mainly added by the {@link #extendIssues(BranchContext, Collection)}
+	 * method during issue indexing.
+	 * 
+	 * @param queryBuilder
+	 * @param options
+	 */
 	void prepareQuery(ExpressionBuilder queryBuilder, Options options);
-	
+
+	/**
+	 * Customize each issue by adding new fields to them via the {@link ValidationIssue#setDetails(String, Object)},
+	 * {@link ValidationIssue#setAffectedComponentLabels(java.util.List)} methods to support domain specific searching on it later via the
+	 * {@link ValidationIssueSearchRequestBuilder#filterByDetails(java.util.Map)} and
+	 * {@link ValidationIssueSearchRequestBuilder#filterByAffectedComponentLabel(String)} methods.
+	 * 
+	 * @param context
+	 *                    - the context to use for extension
+	 * @param issues
+	 *                    - the issues to extend
+	 */
+	void extendIssues(BranchContext context, Collection<ValidationIssue> issues);
+
+	/**
+	 * @return the tooling identifier
+	 */
+	String getToolingId();
+
 }

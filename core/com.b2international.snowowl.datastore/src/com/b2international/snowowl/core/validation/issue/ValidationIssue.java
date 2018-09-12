@@ -18,10 +18,15 @@ package com.b2international.snowowl.core.validation.issue;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
@@ -35,6 +40,7 @@ import com.google.common.base.MoreObjects;
  */
 @Doc
 @Script(name = ValidationIssue.Scripts.WHITELIST, script="ctx._source.whitelisted = params.whitelisted")
+@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationIssue implements Serializable {
 
 	public static class Fields {
@@ -43,6 +49,8 @@ public final class ValidationIssue implements Serializable {
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
+		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
+		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
 		public static final String WHITELISTED = "whitelisted";
 		public static final String DETAILS = "details";
 	}
@@ -57,6 +65,10 @@ public final class ValidationIssue implements Serializable {
 	private final String affectedComponentId;
 	private final short affectedComponentType;
 	private final boolean whitelisted;
+	
+	@Text(analyzer = Analyzers.TOKENIZED)
+	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	private List<String> affectedComponentLabels = Collections.emptyList();
 	
 	private Map<String, Object> details = null;
 	
@@ -119,6 +131,14 @@ public final class ValidationIssue implements Serializable {
 	
 	public boolean isWhitelisted() {
 		return whitelisted;
+	}
+	
+	public List<String> getAffectedComponentLabels() {
+		return affectedComponentLabels;
+	}
+	
+	public void setAffectedComponentLabels(List<String> affectedComponentLabels) {
+		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
 	}
 	
 	@JsonAnyGetter

@@ -53,7 +53,6 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 	protected void doValidate(String effectiveTime, IProgressMonitor monitor) {
 		super.doValidate(effectiveTime, monitor);
 		addDefect(DefectType.SIMPLE_MAP_TARGET_IS_EMPTY, mapTargetIsEmpty);
-		mapTargetIsEmpty.clear();
 	}
 	
 	@Override
@@ -68,5 +67,11 @@ public class SnomedSimpleMapTypeRefSetValidator extends SnomedRefSetValidator {
 		if (mapTarget.isEmpty()) {
 			mapTargetIsEmpty.add(String.format("Reference set member '%s''s map target is empty", uuid, effectiveTime));
 		}
+	}
+	
+	@Override
+	protected void clearCaches() {
+		super.clearCaches();
+		mapTargetIsEmpty = newHashSet();
 	}
 }

@@ -140,8 +140,9 @@ rem ------------------------------
 
   rem do Clean work:
     if not "%CLEAN_FLAG%"=="" (
-      rmdir /Q /S "%KERNEL_HOME%\serviceability"
-      rmdir /Q /S "%KERNEL_HOME%\work"
+      echo Cleaning the serviceability and working directories...
+      rmdir /Q /S "%KERNEL_HOME%\serviceability" 2>nul
+      rmdir /Q /S "%KERNEL_HOME%\work" 2>nul
       
       set LAUNCH_OPTS=%LAUNCH_OPTS% -clean
     )
@@ -182,13 +183,14 @@ rem ------------------------------
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+UseGCLogFileRotation
 	set JAVA_OPTS=%JAVA_OPTS% -XX:NumberOfGCLogFiles=10
 	set JAVA_OPTS=%JAVA_OPTS% -XX:GCLogFileSize=2M
-	set JAVA_OPTS=%JAVA_OPTS% -Xloggc:%KERNEL_HOME%\gc.log \
+	set JAVA_OPTS=%JAVA_OPTS% -Xloggc:%KERNEL_HOME%\gc.log
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl 
 	set JAVA_OPTS=%JAVA_OPTS% -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl
 	set JAVA_OPTS=%JAVA_OPTS% -XX:+AlwaysLockClassLoader
 	set JAVA_OPTS=%JAVA_OPTS% -Dosgi.classloader.type=nonparallel
 	set JAVA_OPTS=%JAVA_OPTS% -Djava.awt.headless=true
+	set JAVA_OPTS=%JAVA_OPTS% -Djdk.security.defaultKeySize=DSA:1024
     rem Run the server
   
       rem Marshall parameters
@@ -210,6 +212,11 @@ rem ------------------------------
 	  set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.configuration.area="%KERNEL_HOME%\work" 
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dosgi.frameworkClassPath="%FWCLASSPATH%"
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Djava.endorsed.dirs="%KERNEL_HOME%\lib\endorsed"
+      
+      rem If Windows 10 set system property os.name=win32, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=486353	
+	  for /f "tokens=4 delims=] " %%i in ('ver') do set VIRGO_DETECTED_WIN_VERSION=%%i 
+      if "%VIRGO_DETECTED_WIN_VERSION:~0,1%"=="1" set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -Dos.name=win32
+        
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -classpath "%CLASSPATH%" 
       set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% org.eclipse.equinox.launcher.Main
 	  set KERNEL_JAVA_PARMS=%KERNEL_JAVA_PARMS% -noExit

@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.b2international.snowowl</groupId>
-    <version>6.6.0-SNAPSHOT</version>
+    <version>6.9.0-SNAPSHOT</version>
     <artifactId>tests-parent</artifactId>
   </parent>
   <artifactId>com.b2international.snowowl.test.dependencies</artifactId>
@@ -38,6 +38,13 @@
         <groupId>org.eclipse.xtend</groupId>
         <artifactId>xtend-maven-plugin</artifactId>
         <version>${xtend.compiler.version}</version>
+        <dependencies>
+			<dependency>
+			    <groupId>org.eclipse.platform</groupId>
+			    <artifactId>org.eclipse.equinox.common</artifactId>
+			    <version>3.10.0</version>
+			</dependency>
+		</dependencies>
         <configuration>
           <outputDirectory>${basedir}/xtend-gen</outputDirectory>
         </configuration>
