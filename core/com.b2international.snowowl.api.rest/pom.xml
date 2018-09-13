@@ -7,8 +7,10 @@
 		<artifactId>core-parent</artifactId>
 		<version>7.0.0-SNAPSHOT</version>
 	</parent>
+	
 	<artifactId>com.b2international.snowowl.api.rest</artifactId>
 	<packaging>eclipse-plugin</packaging>
+	
 	<properties>
 		<spring.version>4.3.10.RELEASE</spring.version>
 		<spring.security.version>4.2.4.RELEASE</spring.security.version>
@@ -16,6 +18,7 @@
 		<springfox.version>2.8.0</springfox.version>
 	</properties>
 
+	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -47,14 +50,14 @@
 			<version>${spring.hateoas.version}</version>
 			<scope>provided</scope>
 		</dependency>
-	
 	</dependencies>
+	
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.0.2</version>
+				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<id>copy-runtime-dependencies</id>
@@ -63,8 +66,37 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
+							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
+							<includeArtifactIds>
+								byte-buddy,
+								classmate,
+								commons-logging,
+								javassist,
+								mapstruct,
+								reflections,
+								spring-aop,
+								spring-beans,
+								spring-context,
+								spring-core,
+								spring-expression,
+								spring-hateoas,
+								spring-plugin-core,
+								spring-plugin-metadata,
+								spring-security-config,
+								spring-security-core,
+								spring-security-web,
+								spring-web,
+								spring-webmvc,
+								springfox-core,
+								springfox-schema,
+								springfox-spi,
+								springfox-spring-web,
+								springfox-swagger-common,
+								springfox-swagger2,
+								swagger-annotations,
+								swagger-models
+							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
-							<includeScope>provided</includeScope>
 						</configuration>
 					</execution>
 				</executions>
@@ -102,6 +134,6 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
 	</build>
+	
 </project>
