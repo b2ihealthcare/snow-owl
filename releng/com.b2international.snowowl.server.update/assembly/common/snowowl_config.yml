@@ -1,5 +1,5 @@
 #
-# Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
 # Default identity provider is `file`.
@@ -20,7 +20,11 @@ identity:
 #        usePool: false
 
 repository:
+  host: 0.0.0.0
   port: 2036
+  
+  index:
+    socketTimeout: 60000
 
 # Request execution metrics (response-time, detailed information about transactions, etc.)
 metrics:

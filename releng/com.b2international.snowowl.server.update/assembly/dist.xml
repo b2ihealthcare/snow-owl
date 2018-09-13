@@ -1,4 +1,13 @@
-<component>
+<assembly
+	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+	<id>dist</id>
+	<formats>
+		<format>zip</format>
+		<format>tar.gz</format>
+		<format>dir</format> <!-- Required for packaging to RPM -->
+	</formats>
 	<!-- Virgo archive base content -->
 	<fileSets>
 		<fileSet>
@@ -6,13 +15,19 @@
 			</directory>
 			<outputDirectory></outputDirectory>
 			<useDefaultExcludes>true</useDefaultExcludes>
-			<!-- The following files will be overwritten or unnecessary in the resulting 
-				archive -->
+			<!-- The following files will be overwritten or unnecessary in the resulting archive -->
 			<excludes>
+				<!-- Exclude Virgo specific HTML and XML files -->
+				<exclude>**/About.html</exclude>
+				<exclude>**/AboutKernel.html</exclude>
+				<exclude>**/AboutNano.html</exclude>
+				<exclude>**/epl-v10.html</exclude>
+				<exclude>**/notice.html</exclude>
+				<exclude>**/artifacts.xml</exclude>
+				<!-- Exclude updated win32 batch files -->
 				<exclude>**/dmk.bat</exclude>
 				<exclude>**/startup.bat</exclude>
-				<!-- Exclude all *.sh file, as we will add 755 permission later during 
-					copy -->
+				<!-- Exclude all *.sh file, as we will add 755 permission later during copy -->
 				<exclude>**/*.sh</exclude>
 				<exclude>**/java-server.profile</exclude>
 				<exclude>**/org.eclipse.virgo.kernel.userregion.properties</exclude>
@@ -80,5 +95,15 @@
 				<exclude>org.apache.el*.jar</exclude>
 			</excludes>
 		</fileSet>
-	</fileSets>
-</component>
+		<!-- Copy release files from the ROOT of the repository -->
+		<fileSet>
+			<directory>${project.basedir}/../../</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>README*</include>
+				<include>LICENSE*</include>
+				<include>NOTICE*</include>
+			</includes>
+		</fileSet>
+	</fileSets>	
+</assembly>

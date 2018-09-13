@@ -12,7 +12,7 @@
 	</parent>
 
 	<build>
-		<finalName>snowowl-${customer}_${build.version}</finalName>
+		<finalName>snowowl-${build.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -49,27 +49,19 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
 				<executions>
 					<execution>
-						<id>package-h2</id>
+						<id>package-dist</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<workDirectory>${project.build.directory}/assembly/h2</workDirectory>
-							<descriptor>${basedir}/assembly/h2.xml</descriptor>
-						</configuration>
-					</execution>
-					<execution>
-						<id>package-mysql</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<workDirectory>${project.build.directory}/assembly/mysql</workDirectory>
-							<descriptor>${basedir}/assembly/mysql.xml</descriptor>
+							<appendAssemblyId>false</appendAssemblyId>
+							<workDirectory>${project.build.directory}/assembly/dist</workDirectory>
+							<descriptor>${basedir}/assembly/dist.xml</descriptor>
+							<outputDirectory>${project.build.directory}/dist</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -77,7 +69,7 @@
 			<plugin>
 				<groupId>de.dentrassi.maven</groupId>
 				<artifactId>rpm</artifactId>
-				<version>0.8.0</version>
+				<version>1.1.0</version>
 				<executions>
 					<execution>
 						<id>generate-rpm</id>
@@ -87,9 +79,10 @@
 					</execution>
 				</executions>
 				<configuration>
+					<targetDir>${project.build.directory}/dist</targetDir>
 					<attach>true</attach>
 					<group>Unspecified</group>
-					<packageName>snowowl-${customer}</packageName>
+					<packageName>snowowl</packageName>
 					<architecture>x86_64</architecture>
 					<skipSigning>true</skipSigning>
 					<rulesets>
@@ -102,11 +95,11 @@
 								</rule>
 								<rule>
 									<when>
-										<prefix>/opt/snowowl-${customer}/snowowl_config.yml</prefix>
+										<prefix>/opt/snowowl/snowowl_config.yml</prefix>
 										<type>file</type>
 									</when>
 									<when>
-										<prefix>/opt/snowowl-${customer}/configuration/</prefix>
+										<prefix>/opt/snowowl/configuration/</prefix>
 										<type>file</type>
 									</when>
 									<configuration>true</configuration>
@@ -125,7 +118,7 @@
 								</rule>
 								<rule>
 									<when>
-										<prefix>/opt/snowowl-${customer}/bin/</prefix>
+										<prefix>/opt/snowowl/bin/</prefix>
 										<type>file</type>
 									</when>
 									<mode>0755</mode>
@@ -135,10 +128,10 @@
 					</rulesets>
 					<entries>
 						<entry>
-							<name>/opt/snowowl-${customer}</name>
+							<name>/opt/snowowl</name>
 							<ruleset>rpm-default</ruleset>
 							<collect>
-								<from>${project.build.directory}/${project.build.finalName}-mysql/${project.build.finalName}</from>
+								<from>${project.build.directory}/dist/${project.build.finalName}/${project.build.finalName}</from>
 							</collect>
 						</entry>
 					</entries>
@@ -149,7 +142,7 @@
 						<script>
 							getent group snowowl >/dev/null || groupadd -r snowowl
 							getent passwd USERNAME >/dev/null || \
-								useradd -r -g snowowl -d /opt/snowowl-${customer} -s /sbin/nologin \
+								useradd -r -g snowowl -d /opt/snowowl -s /sbin/nologin \
     							-c "Snow Owl Server" snowowl
     						exit 0
 						</script>

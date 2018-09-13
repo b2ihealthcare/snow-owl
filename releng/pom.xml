@@ -37,7 +37,7 @@
 	<modules>
 		<module>target-platform</module>
 		<module>com.b2international.snowowl.server.update</module>
-		<module>distribution</module>
+<!-- 		<module>distribution</module> -->
 	</modules>
 	
 </project>

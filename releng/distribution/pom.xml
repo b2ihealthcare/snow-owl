@@ -12,7 +12,7 @@
 	</parent>
 
 	<build>
-		<finalName>snowowl-${customer}-bundle-v${build.version}</finalName>
+		<finalName>snowowl-bundle-v${build.version}</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>

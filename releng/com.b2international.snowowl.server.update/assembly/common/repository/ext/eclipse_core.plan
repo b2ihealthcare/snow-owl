@@ -8,8 +8,5 @@
 
 	<artifact type="bundle" name="org.eclipse.core.resources" version="3.8.0"/>
 	<artifact type="bundle" name="org.eclipse.net4j.util" version="3.2.0"/>
-	
-	<artifact type="bundle" name="org.eclipse.net4j.db" version="4.1.0"/>
-	<artifact type="bundle" name="org.eclipse.net4j.db.h2" version="4.0.0"/>
 	<artifact type="bundle" name="org.eclipse.emf.common" version="2.9.1.v20130827-0309" />
 </plan>

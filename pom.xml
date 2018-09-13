@@ -35,7 +35,6 @@
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
-		<customer>community</customer>
 	</properties>
 
 	<modules>
