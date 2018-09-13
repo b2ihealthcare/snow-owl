@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.provider;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 
 /**
  * FHIR API provider interface with common functionality for all resource-based FHIR providers.

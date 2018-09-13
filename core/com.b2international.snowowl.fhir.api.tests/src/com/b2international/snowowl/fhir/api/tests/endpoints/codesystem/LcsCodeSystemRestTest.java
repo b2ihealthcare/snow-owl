@@ -17,42 +17,35 @@ package com.b2international.snowowl.fhir.api.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.TestArtifactCreator;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult.SubsumptionType;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * CodeSystem REST end-point test cases
  * @since 6.6
  */
-public class LcsCodeSystemRestTest extends FhirTest {
+public class LcsCodeSystemRestTest extends FhirRestTest {
 	
 	private static final String LCS_VERSION = "FHIR_Test_Version";
 	private static final String LCS_SHORT_NAME = "FHIR_LCS";
 	private static final String LCS_NAME = "FHIR Local Code System";
 	
 	@BeforeClass
-	public static void setupSpec() {
-		
+	public static void setupLcs() {
 		TestArtifactCreator.createLocalCodeSystem(LCS_SHORT_NAME, LCS_NAME, LCS_VERSION);
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
 	@Test

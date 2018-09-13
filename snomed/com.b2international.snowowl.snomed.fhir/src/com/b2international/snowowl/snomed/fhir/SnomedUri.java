@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 
 /**
@@ -40,6 +41,7 @@ public class SnomedUri {
 	public static final String VERSION_PATH_SEGMENT = "version"; //$NON-NLS-N$
 	public static final String SNOMED_BASE_URI_STRING = "http://snomed.info/sct"; //$NON-NLS-N$
 	public static final Uri SNOMED_BASE_URI = new Uri(SNOMED_BASE_URI_STRING);
+	public static final Uri SNOMED_INT_CORE_MODULE_URI = new Uri(SNOMED_BASE_URI_STRING + "/" + Concepts.MODULE_SCT_CORE );
 	
 	public enum QueryPartDefinition {
 		

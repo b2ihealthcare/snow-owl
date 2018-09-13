@@ -20,33 +20,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult.SubsumptionType;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * CodeSystem $subsumes operation REST end-point test cases
  * 
  * @since 6.7
  */
-public class SubsumesSnomedRestTest extends FhirTest {
-	
-	@BeforeClass
-	public static void setupSpec() {
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-	}
+public class SubsumesSnomedRestTest extends FhirRestTest {
 	
 	@Test
 	public void subsumedByWithVersionTest() throws Exception {

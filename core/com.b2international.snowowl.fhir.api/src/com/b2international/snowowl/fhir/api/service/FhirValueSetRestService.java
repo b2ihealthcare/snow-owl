@@ -37,7 +37,12 @@ import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
@@ -181,6 +186,42 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
 		ValueSet valueSet = valueSetProvider.expandValueSet(url);
 		return valueSet;
+	}
+	
+	/**
+	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
+	 * @param valueSetId
+	 * @return validation results as {@link OperationOutcome}
+	 */
+	@ApiOperation(
+			response=ValueSet.class,
+			value="Validate a code in a value set",
+			notes="Validate that a coded value is in the set of codes allowed by a value set.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/{valueSetId:**}/$validate-code", method=RequestMethod.GET)
+	public Parameters.Fhir validateCode(
+			@ApiParam(value="The id of the value set to validate") @PathVariable("valueSetId") String valueSetId, 
+			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
+			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
+			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version)
+	{
+		
+		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
+		System.out.println("Logical Id: " + logicalId);
+		
+		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
+			.code(code)
+			.system(system)
+			.version(version)
+			.build();
+		
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
+		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, logicalId);
+		return toResponse(validateCodeResult);
 	}
 	
 	

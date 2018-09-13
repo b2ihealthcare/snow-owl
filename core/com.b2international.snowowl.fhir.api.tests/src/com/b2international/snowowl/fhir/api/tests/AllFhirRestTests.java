@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed.Lo
 import com.b2international.snowowl.fhir.api.tests.endpoints.codesystem.snomed.SubsumesSnomedRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.ExpandSnomedRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.SnomedValueSetRestTest;
+import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.ValidateValueSetRestTest;
 import com.b2international.snowowl.fhir.api.tests.endpoints.valueset.ValueSetRestTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
@@ -40,7 +41,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	/*
-	 */
 	CodeSystemRestTest.class,
 	SnomedValueSetRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
@@ -49,6 +49,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ExpandSnomedRestTest.class,
 	ValueSetRestTest.class,
 	LcsCodeSystemRestTest.class
+	 */
+	ValidateValueSetRestTest.class
+	
 	//SandBoxRestTest.class,
 })
 public class AllFhirRestTests {

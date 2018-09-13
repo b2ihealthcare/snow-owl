@@ -18,35 +18,22 @@ package com.b2international.snowowl.fhir.api.tests.endpoints.valueset;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.hamcrest.core.StringStartsWith;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 
 /**
  * ValueSet $expand operation REST end-point test cases
  * 
  * @since 7.0
  */
-public class ExpandSnomedRestTest extends FhirTest {
+public class ExpandSnomedRestTest extends FhirRestTest {
 	
 	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION";
-	
-	@BeforeClass
-	public static void setupSpec() {
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-	}
 	
 	//Single SNOMED CT simple type reference set
 	@Test
