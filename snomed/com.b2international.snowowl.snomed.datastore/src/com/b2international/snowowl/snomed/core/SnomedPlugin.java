@@ -96,7 +96,10 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
 
 		env.services().registerService(SnomedNamespaceAndModuleAssignerProvider.class, SnomedNamespaceAndModuleAssignerProvider.INSTANCE);
-		
+	}
+	
+	@Override
+	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		// initialize MRCM Import-Export API
 		if (!env.isEmbedded()) {
 			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));

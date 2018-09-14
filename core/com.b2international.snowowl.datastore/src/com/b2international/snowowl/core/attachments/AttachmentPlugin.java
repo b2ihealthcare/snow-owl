@@ -31,7 +31,7 @@ public final class AttachmentPlugin extends Plugin {
 	private static final String ATTACHMENTS_FOLDER = "attachments";
 
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		// register service proxy in remote mode
 		if (!env.isEmbedded()) {
 			env.services().registerService(AttachmentRegistry.class, RpcUtil.createProxy(env.container(), AttachmentRegistry.class));

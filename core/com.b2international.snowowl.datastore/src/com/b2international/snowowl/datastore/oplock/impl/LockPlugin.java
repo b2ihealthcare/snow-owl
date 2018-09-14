@@ -33,7 +33,7 @@ import com.b2international.snowowl.rpc.RpcUtil;
 public final class LockPlugin extends Plugin {
 
 	@Override
-	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
+	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer() || env.isEmbedded()) {
 			final DatastoreOperationLockManager lockManager = new DatastoreOperationLockManager();
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
