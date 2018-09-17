@@ -149,10 +149,6 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					compare,
 					limit);
 			
-			int added = 0;
-			int changed = 0;
-			int deleted = 0;
-
 			LongSet newOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
 			LongKeyMap<String> newOrChangedHashes = PrimitiveMaps.newLongKeyOpenHashMap();
 			LongSet deletedOrChangedKeys = PrimitiveSets.newLongOpenHashSet();
@@ -214,7 +210,6 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 									|| !Objects.equals(newOrChangedHashes.get(storageKey), hash)) {
 								
 								result.changedRevision(type, storageKey);
-								changed++;
 							}
 							
 							// Remove this storage key from newOrChanged, it is decidedly changed-or-same
@@ -227,13 +222,8 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					// Everything remaining in newOrChanged is NEW, as it had no previous revision in the common segments
 					for (LongIterator itr = newOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
 						result.newRevision(type, itr.next());
-						added++;
 					}
 					
-					if (added > limit && changed > limit) {
-						break;
-					}
-				
 				} // newOrChangedHits
 
 				// Revisions which existed on "base", but where replaced by another revision on "compare" segments
@@ -286,18 +276,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex {
 					// Everything remaining in deletedOrChanged is DELETED, as it had successor in the "compare" segments
 					for (LongIterator itr = deletedOrChangedKeys.iterator(); itr.hasNext(); /* empty */) {
 						result.deletedRevision(type, itr.next());
-						deleted++;
-					}
-					
-					if (deleted > limit) {
-						break;
 					}
 					
 				} // deletedOrChangedHits
-				
-				if (added > limit && changed > limit && deleted > limit) {
-					break;
-				}
 				
 			} // type
 			

@@ -73,6 +73,16 @@ public interface IndexClientFactory {
 	String CLUSTER_URL = "clusterUrl";
 	
 	/**
+	 * Configuration key to specify the user name for authenticating with the Elasticsearch cluster
+	 */
+	String CLUSTER_USERNAME = "clusterUsername";
+	
+	/**
+	 * Configuration key to specify the password for authenticating with the Elasticsearch cluster
+	 */
+	String CLUSTER_PASSWORD = "clusterPassword";
+	
+	/**
 	 * Configuration key to specify the string each index name should be prefixed with (used in multi-tenant deployments). 
 	 */
 	String INDEX_PREFIX = "indexPrefix";

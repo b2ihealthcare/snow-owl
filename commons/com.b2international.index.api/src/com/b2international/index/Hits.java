@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ public final class Hits<T> implements Iterable<T> {
 
 	private final List<T> hits;
 	private final String scrollId;
-	private final Object[] searchAfter;
+	private final String searchAfter;
 	private final int limit;
 	private final int total;
 
-	public Hits(List<T> hits, String scrollId, Object[] searchAfter, int limit, int total) {
+	public Hits(List<T> hits, String scrollId, String searchAfter, int limit, int total) {
 		this.hits = hits;
 		this.scrollId = scrollId;
 		this.searchAfter = searchAfter;
@@ -63,7 +63,7 @@ public final class Hits<T> implements Iterable<T> {
 		return scrollId;
 	}
 	
-	public Object[] getSearchAfter() {
+	public String getSearchAfter() {
 		return searchAfter;
 	}
 	
@@ -89,5 +89,4 @@ public final class Hits<T> implements Iterable<T> {
 	public static <T> Hits<T> empty(int limit) {
 		return new Hits<>(Collections.<T>emptyList(), null, null, limit, 0);
 	}
-
 }

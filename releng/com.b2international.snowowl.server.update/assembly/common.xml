@@ -24,6 +24,7 @@
 				<exclude>**/org.eclipse.virgo.apps.splash_3.7.2.RELEASE.jar
 				</exclude>
 				<exclude>repository/ext/osgi.console.properties</exclude>
+				<exclude>plugins/org.apache.sshd.core_0.5.0.v201108120515.jar</exclude>
 			</excludes>
 		</fileSet>
 		<!-- Common configuration -->
@@ -81,4 +82,13 @@
 			</excludes>
 		</fileSet>
 	</fileSets>
+	<!-- Copy updated SSHD bundle that fixes SSH connection from newer, smarter clients --> 
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<include>org.apache.sshd:sshd-core</include>
+			</includes>
+			<outputDirectory>plugins</outputDirectory>
+		</dependencySet>
+	</dependencySets>
 </component>

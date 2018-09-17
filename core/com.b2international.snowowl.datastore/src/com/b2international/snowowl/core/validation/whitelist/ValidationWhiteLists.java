@@ -35,10 +35,9 @@ public final class ValidationWhiteLists extends PageableCollectionResource<Valid
 	public ValidationWhiteLists(
 			@JsonProperty("items") List<ValidationWhiteList> items, 
 			@JsonProperty("scrollId") String scrollId, 
-			@JsonProperty("searchAfter") Object[] searchAfter, 
+			@JsonProperty("searchAfter") String searchAfter, 
 			@JsonProperty("limit") int limit,
 			@JsonProperty("total") int total) {
 		super(items, scrollId, searchAfter, limit, total);
 	}
-	
 }

@@ -87,8 +87,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 		this.settings.putIfAbsent(IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW);
 		this.settings.putIfAbsent(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL);
 		
-		final String prefix = (String) settings.get(IndexClientFactory.INDEX_PREFIX);
-		this.prefix = Strings.isNullOrEmpty(prefix) ? "" : prefix + ".";
+		final String prefix = (String) settings.getOrDefault(IndexClientFactory.INDEX_PREFIX, IndexClientFactory.DEFAULT_INDEX_PREFIX);
+		this.prefix = prefix.isEmpty() ? "" : prefix + ".";
 	}
 	
 	@Override
@@ -203,11 +203,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 			 */
 			
 			// GET /_cluster/health/test1,test2
-			final StringBuilder endpoint = new StringBuilder("_cluster/health");
-			for (int i = 0; i < indices.length; i++) {
-				endpoint.append(i == 0 ? "/" : ",");
-				endpoint.append(indices[i]);
-			}
+			final String endpoint = new EsClient.EndpointBuilder()
+					.addPathPartAsIs("_cluster")
+					.addPathPartAsIs("health")
+					.addCommaSeparatedPathParts(indices)
+					.build();
 			
 			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
 			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
@@ -218,7 +218,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			try {
 				
 				final Response clusterHealthResponse = client().getLowLevelClient()
-						.performRequest(HttpGet.METHOD_NAME, endpoint.toString(), parameters);
+						.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
 				final InputStream responseStream = clusterHealthResponse.getEntity()
 						.getContent();
 				final JsonNode responseNode = mapper.readTree(responseStream);
@@ -256,14 +256,14 @@ public final class EsIndexAdmin implements IndexAdmin {
 			} else {
 				final Map<String, Object> prop = newHashMap();
 				
-				final Map<String, Text> textFields = mapping.getTextFields(property);
-				final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
-				
-				if (textFields.isEmpty() && keywordFields.isEmpty()) {
+				if (!mapping.isText(property) && !mapping.isKeyword(property)) {
 					addFieldProperties(prop, fieldType);
 					properties.put(property, prop);
 				} else {
 					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
+					
+					final Map<String, Text> textFields = mapping.getTextFields(property);
+					final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
 					
 					final Text textMapping = textFields.get(property);
 					final Keyword keywordMapping = keywordFields.get(property);

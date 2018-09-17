@@ -36,7 +36,9 @@ public final class ValidationRule implements Serializable {
 	public enum Severity {
 		ERROR("Error", 3),
 		WARNING("Warning", 2),
-		INFO("Info", 1);
+		INFO("Info", 1),
+		OTHER("Other", 0);
+		
 		
 		private final String name;
 		private int value;

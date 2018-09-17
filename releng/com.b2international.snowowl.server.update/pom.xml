@@ -8,8 +8,16 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>6.8.0-SNAPSHOT</version>
+		<version>6.9.0-SNAPSHOT</version>
 	</parent>
+	
+	<dependencies>
+		<dependency>
+  			<groupId>org.apache.sshd</groupId>
+  			<artifactId>sshd-core</artifactId>
+  			<version>0.14.0</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<finalName>snowowl-${customer}_${build.version}</finalName>

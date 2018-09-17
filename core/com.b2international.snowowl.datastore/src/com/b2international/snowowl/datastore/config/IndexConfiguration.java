@@ -52,6 +52,11 @@ public class IndexConfiguration {
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	// @Nullable
 	private String clusterUrl;
+	// @Nullable
+	private String clusterUsername;
+	// @Nullable
+	private String clusterPassword;
+	
 	@Min(1_000)
 	private int connectTimeout = IndexClientFactory.DEFAULT_CONNECT_TIMEOUT;
 	@Min(1_000)
@@ -195,5 +200,25 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
+	}
+	
+	@JsonProperty
+	public String getClusterUsername() {
+		return clusterUsername;
+	}
+	
+	@JsonProperty
+	public void setClusterUsername(String clusterUsername) {
+		this.clusterUsername = clusterUsername;
+	}
+	
+	@JsonProperty
+	public String getClusterPassword() {
+		return clusterPassword;
+	}
+	
+	@JsonProperty
+	public void setClusterPassword(String clusterPassword) {
+		this.clusterPassword = clusterPassword;
 	}
 }

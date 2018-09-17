@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.8.0
+
+### Added
+- Support SNOMED CT component effective time filter in Validation Issues Search API (#260)
+- Support affectedComponent label filter in Validation Issues Search API (20962f2)
+- Complete `searchAfter` paging API support for REST API endpoints (#261)
+- A new `Other` Validation Rule severity type (#263) 
+- Support basic authentication configuration values in Elasticsearch configuration in case of connecting to a remote cluster (#264)
+
+### Changed
+- Use serialized `String` values for `searchAfter` parameters in search Java APIs (#261)
+- RF2 export archive and file effective times are now calculated based on module dependency refset entries of the selected module IDs (dc959e1)
+
+### Bugs
+- Fix attribute group cardinality bug in ECL evaluation (#259)
+- Use socket timeout as retry timeout in Elasticsearch HTTP REST client (34a6eb4)
+- Fix SSH connection to OSGi console (5e9cdff)
+
 ## 6.7.0
 
 ### Added

@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -61,6 +62,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -79,12 +81,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConceptExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2DescriptionExporter;
@@ -448,26 +452,32 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	private Date getArchiveEffectiveTime(final TreeSet<CodeSystemVersionEntry> versionsToExport) {
 
-		Optional<CodeSystemVersionEntry> latestVersion = versionsToExport.isEmpty() ? Optional.empty() : Optional.of(versionsToExport.last());
+		Optional<CodeSystemVersionEntry> lastVersionToExport;
+		
+		if (endEffectiveTime != null) {
+			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime.getTime()));
+		} else {
+			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
+		}
+		
+		Optional<Date> latestModuleEffectiveTime = lastVersionToExport.flatMap(this::getLatestModuleEffectiveTime);
 		
 		if (includePreReleaseContent) {
-
+			
 			if (!transientEffectiveTime.isEmpty()) {
 				return adjustCurrentHour(Dates.parse(transientEffectiveTime, DateFormats.SHORT));
-			} else if (endEffectiveTime != null) {
-				final CodeSystemVersionEntry versionBeforeEndEffectiveTime = getVersionBefore(versionsToExport, endEffectiveTime.getTime());
-				return adjustCurrentHour(getNextEffectiveDate(versionBeforeEndEffectiveTime.getEffectiveDate()));
-			} else if (latestVersion.isPresent()) {
-				return adjustCurrentHour(getNextEffectiveDate(latestVersion.get().getEffectiveDate()));
+			} else if (latestModuleEffectiveTime.isPresent()) {
+				return adjustCurrentHour(getNextEffectiveDate(latestModuleEffectiveTime.get().getTime()));
+			} else if (lastVersionToExport.isPresent()) {
+				return adjustCurrentHour(getNextEffectiveDate(lastVersionToExport.get().getEffectiveDate()));
 			}
 			
 		} else {
 			
-			if (endEffectiveTime != null) {
-				final CodeSystemVersionEntry versionBeforeEndEffectiveTime = getVersionBefore(versionsToExport, endEffectiveTime.getTime());
-				return adjustCurrentHour(new Date(versionBeforeEndEffectiveTime.getEffectiveDate()));
-			} else if (latestVersion.isPresent()) {
-				return adjustCurrentHour(new Date(latestVersion.get().getEffectiveDate()));
+			if (latestModuleEffectiveTime.isPresent()) {
+				return adjustCurrentHour(new Date(latestModuleEffectiveTime.get().getTime()));
+			} else if (lastVersionToExport.isPresent()) {
+				return adjustCurrentHour(new Date(lastVersionToExport.get().getEffectiveDate()));
 			}
 			
 		}
@@ -484,6 +494,39 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			versionBeforeEndEffectiveTime = version;
 		}
 		return versionBeforeEndEffectiveTime;
+	}
+	
+	private Optional<Date> getLatestModuleEffectiveTime(final CodeSystemVersionEntry version) {
+		
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
+			.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+			.filterByActive(true)
+			.sortBy(SortField.descending(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
+			.setLimit(1);
+		
+		// See the comment in setModules; a value of "null" means that all modules should be exported 
+		if (modules != null) {
+			requestBuilder.filterByModules(modules);
+		}
+		
+		final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, version.getPath())
+			.execute(getEventBus())
+			.getSync()
+			.first();
+		
+		return moduleDependencyMember.map(m -> {
+			try {
+				String sourceEffectiveTime = (String) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
+			} catch (SnowowlRuntimeException e) {
+				if (e.getCause() instanceof ParseException) {
+					return null;
+				} else {
+					throw e;
+				}
+			}
+		});
 	}
 
 	private Date adjustCurrentHour(final Date effectiveDate) {

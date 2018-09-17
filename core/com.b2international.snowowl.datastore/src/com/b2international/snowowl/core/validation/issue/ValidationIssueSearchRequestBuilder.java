@@ -73,6 +73,10 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentTypes);
 	}
 	
+	public ValidationIssueSearchRequestBuilder filterByAffectedComponentLabel(String affectedComponentLabel) {
+		return addOption(OptionKey.AFFECTED_COMPONENT_LABEL, affectedComponentLabel);
+	}
+	
 	public ValidationIssueSearchRequestBuilder isWhitelisted(boolean whitelisted) {
 		return addOption(OptionKey.WHITELISTED, whitelisted);
 	}

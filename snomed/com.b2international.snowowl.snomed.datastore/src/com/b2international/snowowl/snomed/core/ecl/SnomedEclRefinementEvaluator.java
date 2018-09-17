@@ -25,6 +25,7 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
@@ -253,15 +254,18 @@ final class SnomedEclRefinementEvaluator {
 							if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
 								// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
 								final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+							
+								
 								final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
 								return focusConcepts.resolveToConceptsWithGroups(context)
-										.then(new Function<Set<String>, Collection<Property>>() {
+										.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
 											@Override
-											public Collection<Property> apply(Set<String> focusConceptIds) {
-												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(focusConceptIds.size() - matchingIds.size());
-												for (String focusConceptId : focusConceptIds) {
-													if (!matchingIds.contains(focusConceptId)) {
-														matchingProperties.add(new Property(focusConceptId));
+											public Collection<Property> apply(Multimap<String, Integer> groupsById) {
+												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
+												for (Entry<String, Integer> entry : groupsById.entries()) {
+													final String id = entry.getKey();
+													if (!matchingIds.contains(id)) {
+														matchingProperties.add(new Property(id, entry.getValue()));
 													}
 												}
 												return matchingProperties;
@@ -276,13 +280,13 @@ final class SnomedEclRefinementEvaluator {
 						@Override
 						public Promise<Collection<Property>> apply(Throwable throwable) {
 							if (throwable instanceof MatchAll) {
-								return focusConcepts.resolve(context)
-										.then(new Function<Set<String>, Collection<Property>>() {
+								return focusConcepts.resolveToConceptsWithGroups(context)
+										.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
 											@Override
-											public Collection<Property> apply(Set<String> focusConceptMatches) {
-												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(focusConceptMatches.size());
-												for (String focusConceptId : focusConceptMatches) {
-													matchingProperties.add(new Property(focusConceptId));
+											public Collection<Property> apply(Multimap<String, Integer> groupsById) {
+												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size());
+												for (Entry<String, Integer> entry : groupsById.entries()) {
+													matchingProperties.add(new Property(entry.getKey(), entry.getValue()));
 												}
 												return matchingProperties;
 											}
@@ -342,7 +346,7 @@ final class SnomedEclRefinementEvaluator {
 					
 					final Collection<Property> leftSourceRelationships = leftRelationshipsBySource.get(sourceConcept);
 					final Collection<Property> rightSourceRelationships = rightRelationshipsBySource.get(sourceConcept);
-				
+					
 					final Multimap<Integer, Property> leftRelationshipsByGroup = Multimaps.index(leftSourceRelationships, Property::getGroup);
 					final Multimap<Integer, Property> rightRelationshipsByGroup = Multimaps.index(rightSourceRelationships, Property::getGroup);
 					
@@ -682,9 +686,10 @@ final class SnomedEclRefinementEvaluator {
 		private Object value;
 		private Integer group;
 		
-		public Property(final String objectId) {
+		public Property(final String objectId, final Integer group) {
 			this.id = objectId;
 			this.objectId = objectId;
+			this.group = group;
 		}
 		
 		public Property(final String id, final String objectId, final String typeId, final Object value, final Integer group) {
@@ -721,12 +726,17 @@ final class SnomedEclRefinementEvaluator {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			Property other = (Property) obj;
-			return Objects.equals(id, other.id);
+			return Objects.equals(id, other.id) && Objects.equals(group, other.group);
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(id);
+			return Objects.hash(id, group);
+		}
+		
+		@Override
+		public String toString() {
+			return "Property [id=" + id + ", objectId=" + objectId + ", typeId=" + typeId + ", value=" + value + ", group=" + group + "]";
 		}
 		
 	}
