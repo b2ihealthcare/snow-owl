@@ -39,7 +39,6 @@ public enum ComponentImportType {
 	QUERY_TYPE_REFSET("query type reference set member"),
 	DESCRIPTION_TYPE_REFSET("description format reference set member"),
 	CONCRETE_DOMAIN_REFSET("concrete domain reference set member"),
-	EXTENDED_CONCRETE_DOMAIN_REFSET("concrete domain reference set member"), // XXX: display name intentionally duplicated
 	EXTENDED_MAP_TYPE_REFSET("extended map type reference set member"),
 	TERMINOLOGY_REGISTRY("terminology registry"),
 	MODULE_DEPENDENCY_REFSET("module dependency reference set member"),

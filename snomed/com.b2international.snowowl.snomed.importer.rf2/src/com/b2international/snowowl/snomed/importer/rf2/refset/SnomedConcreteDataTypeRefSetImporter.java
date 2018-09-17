@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
+import org.supercsv.cellprocessor.ParseInt;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
 import com.b2international.snowowl.core.CoreTerminologyBroker;
@@ -44,10 +45,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * SNOMED&nbsp;CT concrete domain reference set importer.
@@ -55,60 +54,38 @@ import com.google.common.collect.ImmutableMap.Builder;
  */
 public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetImporter<ConcreteDomainRefSetRow, SnomedConcreteDataTypeRefSetMember> {
 
+	private static final Map<String, CellProcessor> CELL_PROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
+			.put(ConcreteDomainRefSetRow.PROP_UUID, new ParseUuid())
+			.put(ConcreteDomainRefSetRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
+			.put(ConcreteDomainRefSetRow.PROP_ACTIVE, new ParseBool("1", "0"))
+			.put(ConcreteDomainRefSetRow.PROP_MODULE_ID, NullObjectPattern.INSTANCE)
+			.put(ConcreteDomainRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
+			.put(ConcreteDomainRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
+			.put(ConcreteDomainRefSetRow.PROP_VALUE, NullObjectPattern.INSTANCE)
+			.put(ConcreteDomainRefSetRow.PROP_RELATIONSHIP_GROUP, new ParseInt())
+			.put(ConcreteDomainRefSetRow.PROP_TYPE_ID, NullObjectPattern.INSTANCE)
+			.put(ConcreteDomainRefSetRow.PROP_CHARACTERISTIC_TYPE_ID, NullObjectPattern.INSTANCE)
+			.build();
+			
 	public static final List<IndexConfiguration> INDEXES = ImmutableList.<IndexConfiguration>builder()
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1000", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "CDO_CREATED"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1001", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "CDO_CONTAINER", "CDO_BRANCH", "CDO_VERSION"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1002", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "REFERENCEDCOMPONENTID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1003", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "UUID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
-			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1004", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "OPERATORCOMPONENTID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1005", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "SERIALIZEDVALUE/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
-			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1006", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "UOMCOMPONENTID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
+			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1004", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "TYPEID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
+			.add(new IndexConfiguration("SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER_IDX1006", "SNOMEDREFSET_SNOMEDCONCRETEDATATYPEREFSETMEMBER", "CHARACTERISTICTYPEID/*!(255)*/", "CDO_BRANCH", "CDO_VERSION"))
 			.build();
 	
-	private static SnomedImportConfiguration<ConcreteDomainRefSetRow> createImportConfiguration(final boolean includesLabel) {
-	
-		final Builder<String, CellProcessor> builder = ImmutableMap.<String, CellProcessor>builder()
-				.put(ConcreteDomainRefSetRow.PROP_UUID, new ParseUuid())
-				.put(ConcreteDomainRefSetRow.PROP_EFFECTIVE_TIME, createEffectiveTimeCellProcessor())
-				.put(ConcreteDomainRefSetRow.PROP_ACTIVE, new ParseBool("1", "0"))
-				.put(ConcreteDomainRefSetRow.PROP_MODULE_ID, NullObjectPattern.INSTANCE)
-				.put(ConcreteDomainRefSetRow.PROP_REF_SET_ID, NullObjectPattern.INSTANCE)
-				.put(ConcreteDomainRefSetRow.PROP_REFERENCED_COMPONENT_ID, NullObjectPattern.INSTANCE)
-				.put(ConcreteDomainRefSetRow.PROP_UOM_ID, NullObjectPattern.INSTANCE)
-				.put(ConcreteDomainRefSetRow.PROP_OPERATOR_ID, NullObjectPattern.INSTANCE);
-		
-		if (includesLabel) {
-			builder.put(ConcreteDomainRefSetRow.PROP_ATTRIBUTE_NAME, NullObjectPattern.INSTANCE);
-		}
-		
-		builder.put(ConcreteDomainRefSetRow.PROP_DATA_VALUE, NullObjectPattern.INSTANCE);
+	private static final SnomedImportConfiguration<ConcreteDomainRefSetRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<ConcreteDomainRefSetRow>(
+			ComponentImportType.CONCRETE_DOMAIN_REFSET, 
+			CELL_PROCESSOR_MAPPING, 
+			ConcreteDomainRefSetRow.class, 
+			SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER, 
+			INDEXES);
 
-		if (includesLabel) {
-			builder.put(ConcreteDomainRefSetRow.PROP_CHARACTERISTIC_TYPE_ID, NullObjectPattern.INSTANCE);
-		}
-		
-		final Map<String, CellProcessor> cellProcessorMapping = builder.build();
-		
-		final ComponentImportType type = (includesLabel) 
-				? ComponentImportType.EXTENDED_CONCRETE_DOMAIN_REFSET 
-				: ComponentImportType.CONCRETE_DOMAIN_REFSET;
-		
-		final String[] expectedHeader = (includesLabel)
-				? SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL
-				: SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER;
-		
-		return new SnomedImportConfiguration<ConcreteDomainRefSetRow>(
-				type, 
-				cellProcessorMapping, 
-				ConcreteDomainRefSetRow.class, 
-				expectedHeader, 
-				INDEXES);
-	}
-
-	public SnomedConcreteDataTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, 
-			final boolean includesLabel, final String releaseFileIdentifier) {
-		
-		super(createImportConfiguration(includesLabel), importContext, releaseFileStream, releaseFileIdentifier);
+	public SnomedConcreteDataTypeRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
+		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
 	@Override
@@ -140,10 +117,9 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 		member.setActive(row.isActive());
 		member.setModuleId(row.getModuleId());
 		member.setReferencedComponentId(row.getReferencedComponentId());
-		member.setUomComponentId(Strings.emptyToNull(row.getUomId()));
-		member.setOperatorComponentId(row.getOperatorId());
-		member.setLabel(row.getAttributeName());
-		member.setSerializedValue(row.getDataValue());
+		member.setSerializedValue(row.getValue());
+		member.setGroup(row.getRelationshipGroup());
+		member.setTypeId(row.getTypeId());
 		member.setCharacteristicTypeId(row.getCharacteristicTypeId());
 	}
 	
@@ -168,8 +144,14 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 	
 	@Override
 	protected void attach(Collection<SnomedConcreteDataTypeRefSetMember> componentsToAttach) {
-		final Collection<String> containerComponentIds = componentsToAttach.stream().map(SnomedRefSetMember::getReferencedComponentId).collect(Collectors.toSet());
-		final Map<String, Component> containerComponents = getComponents(containerComponentIds).stream().collect(Collectors.toMap(Component::getId, c -> c));
+		final Collection<String> containerComponentIds = componentsToAttach.stream()
+				.map(SnomedRefSetMember::getReferencedComponentId)
+				.collect(Collectors.toSet());
+		
+		final Map<String, Component> containerComponents = getComponents(containerComponentIds)
+				.stream()
+				.collect(Collectors.toMap(c -> c.getId(), c -> c));
+		
 		for (SnomedConcreteDataTypeRefSetMember member : componentsToAttach) {
 			Component container = containerComponents.get(member.getReferencedComponentId());
 			if (container instanceof Annotatable) {
@@ -180,5 +162,4 @@ public class SnomedConcreteDataTypeRefSetImporter extends AbstractSnomedRefSetIm
 			}
 		}
 	}
-	
 }

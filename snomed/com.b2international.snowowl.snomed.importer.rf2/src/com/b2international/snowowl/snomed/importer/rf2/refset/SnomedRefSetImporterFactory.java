@@ -75,7 +75,7 @@ public abstract class SnomedRefSetImporterFactory {
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH)) {
 			return new SnomedDescriptionTypeRefSetImporter(importContext, url.openStream(), urlIdentifier);
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) {
-			return new SnomedConcreteDataTypeRefSetImporter(importContext, url.openStream(), true, urlIdentifier); 
+			return new SnomedConcreteDataTypeRefSetImporter(importContext, url.openStream(), urlIdentifier); 
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 			return new SnomedModuleDependencyRefSetImporter(importContext, url.openStream(), urlIdentifier);
 		} else if (lastColumnName.equalsIgnoreCase(SnomedRf2Headers.FIELD_OWL_EXPRESSION)) {
