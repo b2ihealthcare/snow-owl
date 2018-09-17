@@ -96,16 +96,11 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="SnomedConcreteDataTypeRefSetMember"
       eSuperTypes="#//SnomedRefSetMember">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="group" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="0"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="serializedValue" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="label" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString">
-      <eAnnotations source="http://www.eclipse.org/CDO/DBStore">
-        <details key="columnName" value="label0"/>
-      </eAnnotations>
-    </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="uomComponentId" lowerBound="1"
-        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="operatorComponentId" lowerBound="1"
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="typeId" lowerBound="1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="dataType" lowerBound="1"
         eType="#//DataType" changeable="false" transient="true" derived="true"/>
