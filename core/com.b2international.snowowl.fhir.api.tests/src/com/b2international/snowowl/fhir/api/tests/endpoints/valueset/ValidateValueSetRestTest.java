@@ -15,20 +15,15 @@
  */
 package com.b2international.snowowl.fhir.api.tests.endpoints.valueset;
 
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.*;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.startsWith;
 
-import org.hamcrest.core.StringStartsWith;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
@@ -47,6 +42,57 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	public static void setupValueSets() {
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		valueSetId = TestArtifactCreator.createValueSet(mainBranch, VALUE_SET_NAME, VALUE_SET_VERSION);
+	}
+	
+	//validate non-existent member code
+	@Test
+	public void validateNonExistentValueSetTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + "invalid") 
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
+			//.param("version", "2018-01-31")
+			.param("code", Concepts.ROOT_CONCEPT)
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(false))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString", startsWith("Could not find a valueset to check against"))
+			.statusCode(200);
+	}
+	
+	//validate non-existent member code
+	@Test
+	public void validateNonExistentCodeValueSetTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
+			//.param("version", "2018-01-31")
+			.param("code", "Invalid")
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(false))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString", startsWith("Could not find a valueset member"))
+			.statusCode(200);
+	}
+	
+	//validate version mismatch (SNOMED CT ROOT is in the Test ValueSet)
+	@Test
+	public void validateVersionMismatchValueSetTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20170131")
+			//.param("version", "2018-01-31")
+			.param("code", Concepts.ROOT_CONCEPT)
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(false))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString", startsWith("Versions do not match"))
+			.statusCode(200);
 	}
 	
 	//validate (SNOMED CT ROOT is in the Test ValueSet)

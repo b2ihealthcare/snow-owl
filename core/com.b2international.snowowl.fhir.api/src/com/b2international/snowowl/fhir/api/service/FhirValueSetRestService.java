@@ -39,8 +39,6 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -211,7 +209,6 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	{
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
-		System.out.println("Logical Id: " + logicalId);
 		
 		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
 			.code(code)
@@ -223,6 +220,5 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, logicalId);
 		return toResponse(validateCodeResult);
 	}
-	
 	
 }
