@@ -188,7 +188,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	
 	/**
 	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
-	 * @param valueSetId
+	 * The value set is identified by its Value Set ID
+	 * @param valueSetId the logical ID of the valueSet
 	 * @return validation results as {@link OperationOutcome}
 	 */
 	@ApiOperation(

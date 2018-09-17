@@ -44,8 +44,9 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 		valueSetId = TestArtifactCreator.createValueSet(mainBranch, VALUE_SET_NAME, VALUE_SET_VERSION);
 	}
 	
+	//ValueSet
 	//validate non-existent member code
-	@Test
+	//@Test
 	public void validateNonExistentValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + "invalid") 
@@ -61,8 +62,9 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
+	//ValueSet
 	//validate non-existent member code
-	@Test
+	//@Test
 	public void validateNonExistentCodeValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
@@ -78,8 +80,9 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
+	//ValueSet
 	//validate version mismatch (SNOMED CT ROOT is in the Test ValueSet)
-	@Test
+	//@Test
 	public void validateVersionMismatchValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
@@ -96,12 +99,30 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	}
 	
 	//validate (SNOMED CT ROOT is in the Test ValueSet)
-	@Test
+	//@Test
 	public void validateValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
 			//.param("version", "2018-01-31")
+			.param("code", Concepts.ROOT_CONCEPT)
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(true))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString", equalTo("OK"))
+			.statusCode(200);
+	}
+	
+	//SNOMED CT by logical ID
+	//validate (SNOMED CT ROOT is in the Test ValueSet)
+	@Test
+	public void validateSnomedCTValueSetTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") //simple type refset
+			//.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
 			.param("code", Concepts.ROOT_CONCEPT)
 			.when().get("/ValueSet/{id}/$validate-code")
 			.then()

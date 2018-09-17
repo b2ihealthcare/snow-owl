@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset;
 
+import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -82,6 +83,31 @@ public class ValidateCodeResult {
 			return this;
 		}
 		
+		public Builder okMessage() {
+			this.message = "OK";
+			return this;
+		}
+
+		/**
+		 * Builds a message for errors when value set is not found
+		 * @param logicalId
+		 * @return
+		 */
+		public Builder valueSetNotFoundMessage(LogicalId logicalId) {
+			this.message("Could not find a valueset to check against: " + logicalId);
+			return this;
+		}
+
+		/**
+		 * Builds a message for errors when value set member is not found
+		 * @param logicalId
+		 * @return
+		 */
+		public Builder valueSetMemberNotFoundMessage(String system, String componentId) {
+			this.message("Could not find a valueset member for: " + system + ":" + componentId);
+			return this;
+		}
+		
 		public Builder display(String display) {
 			this.display = display;
 			return this;
@@ -91,6 +117,7 @@ public class ValidateCodeResult {
 		public ValidateCodeResult doBuild() {
 			return new ValidateCodeResult(result, message, display);
 		}
+
 	}
 
 }
