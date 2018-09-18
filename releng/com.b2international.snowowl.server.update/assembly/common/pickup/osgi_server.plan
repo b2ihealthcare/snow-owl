@@ -29,15 +29,10 @@
 
         <!-- Add reasoner implementation bundles here before reasoner.server bundle, so they will be picked up during init -->
         <artifact type="bundle" name="org.semanticweb.elk" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.snowowl.snomed.reasoner.server" version="0.0.0"/>
-
-        <artifact type="bundle" name="com.b2international.snowowl.datastore.server" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.snowowl.server.console" version="0.0.0"/>
 
         <!-- Note: Terminology extension bundles should be defined before the server.product line -->
         <artifact type="bundle" name="com.b2international.snowowl.server.product" version="0.0.0"/>
 
-        <artifact type="bundle" name="com.b2international.snowowl.snomed.importer.rf2" version="0.0.0"/>
         <artifact type="bundle" name="com.b2international.snowowl.api.rest" version="0.0.0"/>
 		<artifact type="bundle" name="com.b2international.snowowl.snomed.api.rest" version="0.0.0"/>
 </plan>
