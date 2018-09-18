@@ -46,8 +46,8 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	
 	//ValueSet
 	//validate non-existent member code
-	//@Test
-	public void validateNonExistentValueSetTest() throws Exception {
+	@Test
+	public void nonExistentValueSetsTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + "invalid") 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
@@ -64,8 +64,8 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	
 	//ValueSet
 	//validate non-existent member code
-	//@Test
-	public void validateNonExistentCodeValueSetTest() throws Exception {
+	@Test
+	public void referencedCodeMissingTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
@@ -82,8 +82,8 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	
 	//ValueSet
 	//validate version mismatch (SNOMED CT ROOT is in the Test ValueSet)
-	//@Test
-	public void validateVersionMismatchValueSetTest() throws Exception {
+	@Test
+	public void versionMismatchTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20170131")
@@ -99,8 +99,8 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	}
 	
 	//validate (SNOMED CT ROOT is in the Test ValueSet)
-	//@Test
-	public void validateValueSetTest() throws Exception {
+	@Test
+	public void validsValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
@@ -116,14 +116,47 @@ public class ValidateValueSetRestTest extends FhirRestTest {
 	}
 	
 	//SNOMED CT by logical ID
-	//validate (SNOMED CT ROOT is in the Test ValueSet)
+	//invalid reference set
+	@Test
+	public void nonExistingRefsetTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/2018-01-31:12345") //simple type refset
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
+			.param("code", "273210008")
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(false))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString", startsWith("Could not find a valueset to check against"))
+			.statusCode(200);
+	}
+	
+	//SNOMED CT by logical ID
+	//invalid member (Root is not a member)
+	@Test
+	public void refsetReferencedCodeMissingTest() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") //simple type refset
+			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
+			.param("code", Concepts.ROOT_CONCEPT)
+			.when().get("/ValueSet/{id}/$validate-code")
+			.then()
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(false))
+			.body("parameter[1].name", equalTo("message"))
+			.body("parameter[1].valueString",  startsWith("Could not find a valueset member"))
+			.statusCode(200);
+	}
+	
+	//SNOMED CT by logical ID
+	//validate (273210008 is in the Refset)
 	@Test
 	public void validateSnomedCTValueSetTest() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") //simple type refset
-			//.pathParam("id", "valuesetStore:MAIN/" + VALUE_SET_VERSION + ":" + valueSetId) 
 			.param("system", SnomedUri.SNOMED_INT_CORE_MODULE_URI.getUriValue() + "/version/20180131")
-			.param("code", Concepts.ROOT_CONCEPT)
+			.param("code", "273210008")
 			.when().get("/ValueSet/{id}/$validate-code")
 			.then()
 			.body("parameter[0].name", equalTo("result"))

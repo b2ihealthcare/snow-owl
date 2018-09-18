@@ -104,9 +104,9 @@ public class ValidateCodeResult {
 		 * @param logicalId
 		 * @return
 		 */
-		public Builder valueSetMemberNotFoundResult(String system, String componentId) {
+		public Builder valueSetMemberNotFoundResult(String system, String componentId, String valueSetId) {
 			this.result = false;
-			this.message("Could not find a valueset member for: " + system + ":" + componentId);
+			this.message(String.format("Could not find a valueset member for: %s:%s in value set %s.", system, componentId, valueSetId));
 			this.display = componentId;
 			return this;
 		}

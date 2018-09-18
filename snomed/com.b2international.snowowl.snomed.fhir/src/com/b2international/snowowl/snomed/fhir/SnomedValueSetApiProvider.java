@@ -247,7 +247,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	@Override
 	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId valueSetLogicalId) {
 		
-		System.err.println("Logical ID:" + valueSetLogicalId);
 		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
 		
 		//simple type reference
@@ -293,7 +292,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			String componentId = validateCodeRequest.getCode();
 			Optional<SnomedConcept> optionalConcept = snomedConcepts.stream().filter(c -> c.getId().equals(componentId)).findFirst();
 			if (!optionalConcept.isPresent()) {
-				return ValidateCodeResult.builder().valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode()).build();
+				return ValidateCodeResult.builder()
+					.valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode(), valueSetLogicalId.toString())
+					.build();
 			}
 			
 			SnomedConcept concept = optionalConcept.get();
@@ -324,9 +325,10 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		}
 		
 		//fetch the simple type refset
+		String refsetId = valueSetLogicalId.getComponentId();
 		SnomedReferenceSets snomedReferenceSets = SnomedRequests.prepareSearchRefSet()
 			.filterByActive(true)
-			.filterById(componentId)
+			.filterById(refsetId)
 			.filterByType(SnomedRefSetType.SIMPLE)
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
@@ -340,9 +342,11 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		} 
 		
 		//Refset is found, how about the concept as as member?
-		Optional<SnomedReferenceSetMember> refsetMemberOptional = snomedReferenceSets.first().get().getMembers().stream().filter(m-> m.getReferencedComponent().getId().equals(componentId)).findFirst();
+		Optional<SnomedReferenceSetMember> refsetMemberOptional = snomedReferenceSets.first().get().getMembers().stream()
+				.filter(m-> m.getReferencedComponent().getId().equals(componentId)).findFirst();
+		
 		if (!refsetMemberOptional.isPresent()) {
-			return ValidateCodeResult.builder().valueSetMemberNotFoundResult(codeSystem, componentId).build();
+			return ValidateCodeResult.builder().valueSetMemberNotFoundResult(codeSystem, componentId, refsetId).build();
 		}
 		
 		SnomedReferenceSetMember snomedReferenceSetMember = refsetMemberOptional.get();
@@ -350,7 +354,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		if (snomedReferenceSetMember.isActive() && !snomedReferenceSetMember.getReferencedComponent().isActive()) {
 			return ValidateCodeResult.builder().result(true).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
 		}
-		return ValidateCodeResult.builder().okMessage().display(concept.getPt().getTerm()).build();
+		return ValidateCodeResult.builder().okResult(concept.getPt().getTerm()).build();
 	}
 	
 	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {

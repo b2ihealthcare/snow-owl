@@ -43,6 +43,20 @@ The endpoints `/ValueSet` and `/ValueSet/{valueSetId}` and corresponding operati
 All value sets accessible via the `/ValueSet` endpoints can be _expanded_.
 The in-parameters are not yet supported.
 
+### $validate-code
+
+Codes can be validated against a given Value Set specified by the value set's logical id.  In terms of Snow Owl terminology components, codes are validated against:
+
+* SNOMED CT Simple Type Reference Sets with Concepts are referenced components.
+* SNOMED CT Query Type Reference Sets with ECL expressions (each member is a Value Set)
+* Snow Owl's generic Value Sets
+
+Validation performs the following checks: 
+ * The existence of the given Value Set (__error__ if not found)
+ * The existence of the reference in the existing Value Set to the given code (__error__ if not found)
+ * The existence of the given code in the system (__error__ if not found)
+ * Potential version mismatch (__error_ if the reference points to a version that is different to the code's version) 
+ * The status of the given code and reference (__warning__ if code is inactive while reference is active)
 
 ## ConceptMap
 
