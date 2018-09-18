@@ -18,13 +18,17 @@ package com.b2international.snowowl.snomed.fhir;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -63,10 +67,12 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -129,6 +135,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			
 			return SnomedRequests.prepareSearchMember()
 				.one()
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.filterByActive(true)
 				.filterById(logicalId.getMemberId())
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
@@ -162,6 +169,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			return SnomedRequests.prepareSearchMember()
 				.one()
 				.filterById(logicalId.getMemberId())
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
@@ -245,54 +253,142 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId valueSetLogicalId) {
 		
 		System.err.println("Logical ID:" + valueSetLogicalId);
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
+		
+		//simple type reference
 		if (!valueSetLogicalId.isMemberId()) {
-			CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
+			return validateSimpleTypReferenceSet(valueSetLogicalId, codeSystemVersion.getParentBranchPath(), validateCodeRequest);
+		} 
+		
+		//query type refset
+		else {
+			//Query type reference set member
+			Optional<SnomedReferenceSetMember> optionalRefsetMember = SnomedRequests.prepareSearchMember()
+				.one()
+				.filterById(valueSetLogicalId.getMemberId())
+				.filterByActive(true)
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("referencedComponent(expand(pt()))")
+				.build(repositoryId, valueSetLogicalId.getBranchPath())
+				.execute(getBus())
+				.getSync()
+				.stream()
+				.findFirst();
 			
-			//simple type refset
-			SnomedRefSetSearchRequestBuilder requestBuilder = getSimpleTypeRefsetSearchRequestBuilder(valueSetLogicalId.getComponentId());
-			SnomedReferenceSets snomedRefsets = requestBuilder.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
-				.build(repositoryId, codeSystemVersion.getPath())
+			if (!optionalRefsetMember.isPresent()) {
+				return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+			}
+			
+			SnomedReferenceSetMember referenceSetMember = optionalRefsetMember.get();
+			String eclExpression = (String) referenceSetMember.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
+			
+			//evaluate the ECL expression
+			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEcl(eclExpression)
+				.filterByActive(true)
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("pt()")
+				.build(repositoryId, valueSetLogicalId.getBranchPath())
 				.execute(getBus())
 				.getSync();
 			
-			//value set not found
-			if (!snomedRefsets.first().isPresent()) {
-				return ValidateCodeResult.builder().result(false).valueSetNotFoundMessage(valueSetLogicalId).build();
+			
+			String componentId = validateCodeRequest.getCode();
+			Optional<SnomedConcept> optionalConcept = snomedConcepts.stream().filter(c -> c.getId().equals(componentId)).findFirst();
+			if (!optionalConcept.isPresent()) {
+				return ValidateCodeResult.builder().valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode()).build();
 			}
 			
-		} 
-		
-		/*
-		else {
-			
-			CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
-			
-			//Query type reference set member
-			return SnomedRequests.prepareSearchMember()
-				.one()
-				.filterById(logicalId.getMemberId())
-				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, logicalId.getBranchPath())
-				.execute(getBus())
-				.then(members -> {
-					return members.stream()
-						.map(member -> buildExpandedQueryTypeValueSet(member, (SnomedConcept) member.getReferencedComponent(), codeSystemVersion, displayLanguage))
-						.map(ValueSet.Builder::build)
-						.collect(Collectors.toList());
-				})
-				.getSync()
-				.stream()
-				.findFirst()
-				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
+			SnomedConcept concept = optionalConcept.get();
+			if (!concept.isActive()) {
+				return ValidateCodeResult.builder().result(false).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+			}
 		}
-		*/
-		
 
 		//All good
-		return ValidateCodeResult.builder().result(true).okMessage().build();
+		return ValidateCodeResult.builder().okResult(validateCodeRequest.getCode()).build();
 	}
 	
+	/**
+	 * @param validateCodeRequest 
+	 * @return
+	 */
+	private ValidateCodeResult validateSimpleTypReferenceSet(LogicalId valueSetLogicalId, String branchPath, ValidateCodeRequest validateCodeRequest) {
+		
+		String componentId = validateCodeRequest.getCode();
+		String codeSystem = validateCodeRequest.getSystem();
+		
+		//only SNOMED CT components can be present in a SNOMED CT reference set
+		if (!codeSystem.startsWith("http://snomed.info/sct")) {
+			return ValidateCodeResult.builder()
+					.result(false)
+					.message(String.format("SNOMED CT reference sets can reference SNOMED CT components only. Referenced component is %s.", codeSystem))
+					.build();
+		}
+		
+		//fetch the simple type refset
+		SnomedReferenceSets snomedReferenceSets = SnomedRequests.prepareSearchRefSet()
+			.filterByActive(true)
+			.filterById(componentId)
+			.filterByType(SnomedRefSetType.SIMPLE)
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
+			.build(repositoryId, branchPath)
+			.execute(getBus())
+			.getSync();
+		
+		//Reference set not found
+		if (!snomedReferenceSets.first().isPresent()) {
+			return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+		} 
+		
+		//Refset is found, how about the concept as as member?
+		Optional<SnomedReferenceSetMember> refsetMemberOptional = snomedReferenceSets.first().get().getMembers().stream().filter(m-> m.getReferencedComponent().getId().equals(componentId)).findFirst();
+		if (!refsetMemberOptional.isPresent()) {
+			return ValidateCodeResult.builder().valueSetMemberNotFoundResult(codeSystem, componentId).build();
+		}
+		
+		SnomedReferenceSetMember snomedReferenceSetMember = refsetMemberOptional.get();
+		SnomedConcept concept = (SnomedConcept) snomedReferenceSetMember.getReferencedComponent();
+		if (snomedReferenceSetMember.isActive() && !snomedReferenceSetMember.getReferencedComponent().isActive()) {
+			return ValidateCodeResult.builder().result(true).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+		}
+		return ValidateCodeResult.builder().okMessage().display(concept.getPt().getTerm()).build();
+	}
+	
+	/**
+	 * Returns a SNOMED CT code system version that matches the provided effective date
+	 * @param versionEffectiveDate
+	 * @return code system version with the effective date
+	 */
+	private CodeSystemVersionEntry getSnomedCodeSystemVersion(String versionEffectiveDate) {
+		
+		if (versionEffectiveDate == null) {
+			//get the last version
+			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByCodeSystemShortName("SNOMEDCT")
+				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.build("snomedStore")
+				.execute(getBus())
+				.getSync()
+				.first()
+				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'",getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
+		} else {
+			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
+				.filterByCodeSystemShortName("SNOMEDCT")
+				.build("snomedStore")
+				.execute(getBus())
+				.getSync()
+				.first()
+				.orElseThrow(() -> new BadRequestException(String.format("Could not find code system for %s version '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
+		}
+	}
+
 	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {
 		
 		int all = Integer.MAX_VALUE;

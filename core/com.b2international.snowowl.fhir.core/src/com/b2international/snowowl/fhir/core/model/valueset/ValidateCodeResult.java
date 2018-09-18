@@ -89,22 +89,37 @@ public class ValidateCodeResult {
 		}
 
 		/**
-		 * Builds a message for errors when value set is not found
+		 * Builds a result for errors when value set is not found
 		 * @param logicalId
 		 * @return
 		 */
-		public Builder valueSetNotFoundMessage(LogicalId logicalId) {
+		public Builder valueSetNotFoundResult(LogicalId logicalId) {
+			this.result = false;
 			this.message("Could not find a valueset to check against: " + logicalId);
 			return this;
 		}
 
 		/**
-		 * Builds a message for errors when value set member is not found
+		 * Builds a result for errors when value set member is not found
 		 * @param logicalId
 		 * @return
 		 */
-		public Builder valueSetMemberNotFoundMessage(String system, String componentId) {
+		public Builder valueSetMemberNotFoundResult(String system, String componentId) {
+			this.result = false;
 			this.message("Could not find a valueset member for: " + system + ":" + componentId);
+			this.display = componentId;
+			return this;
+		}
+		
+		/**
+		 * Builds an OK result
+		 * @param logicalId
+		 * @return
+		 */
+		public Builder okResult(String display) {
+			this.result = true;
+			this.message("OK");
+			this.display = display;
 			return this;
 		}
 		
