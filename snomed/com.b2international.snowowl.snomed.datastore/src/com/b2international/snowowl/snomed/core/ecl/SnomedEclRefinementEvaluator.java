@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
@@ -43,9 +44,6 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
@@ -77,8 +75,6 @@ import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -124,32 +120,26 @@ final class SnomedEclRefinementEvaluator {
 	 */
 	protected Promise<Expression> eval(final BranchContext context, final AttributeConstraint refinement) {
 		return evalRefinement(context, refinement, false, ANY_GROUP)
-				.thenWith(new Function<Collection<Property>, Promise<Expression>>() {
-					@Override
-					public Promise<Expression> apply(Collection<Property> input) {
-						final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-						final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
-						// two cases here, one is the [1..x] the other is [0..x]
-						final Cardinality cardinality = refinement.getCardinality();
-						if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
-							// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
-							return focusConcepts.resolveToExclusionExpression(context, matchingIds);
-						} else {
-							return focusConcepts.resolveToAndExpression(context, matchingIds);
-						}
+				.thenWith(input -> {
+					final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+					final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
+					// two cases here, one is the [1..x] the other is [0..x]
+					final Cardinality cardinality = refinement.getCardinality();
+					if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
+						// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
+						return focusConcepts.resolveToExclusionExpression(context, matchingIds);
+					} else {
+						return focusConcepts.resolveToAndExpression(context, matchingIds);
 					}
 				})
-				.failWith(new Function<Throwable, Promise<Expression>>() {
-					@Override
-					public Promise<Expression> apply(Throwable throwable) {
-						if (throwable instanceof MatchAll) {
-							return focusConcepts.resolveToExpression(context);
-						}
-						if (throwable instanceof RuntimeException) {
-							throw (RuntimeException) throwable;
-						} else {
-							throw new SnowowlRuntimeException(throwable);
-						}
+				.failWith(throwable -> {
+					if (throwable instanceof MatchAll) {
+						return focusConcepts.resolveToExpression(context);
+					}
+					if (throwable instanceof RuntimeException) {
+						throw (RuntimeException) throwable;
+					} else {
+						throw new SnowowlRuntimeException(throwable);
 					}
 				});
 	}
@@ -160,13 +150,10 @@ final class SnomedEclRefinementEvaluator {
 	 */
 	protected Promise<Expression> eval(final BranchContext context, AndRefinement and) {
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> input) {
-						final Expression left = (Expression) input.get(0);
-						final Expression right = (Expression) input.get(1);
-						return Expressions.builder().filter(left).filter(right).build();
-					}
+				.then(input -> {
+					final Expression left = (Expression) input.get(0);
+					final Expression right = (Expression) input.get(1);
+					return Expressions.builder().filter(left).filter(right).build();
 				});
 	}
 	
@@ -176,13 +163,10 @@ final class SnomedEclRefinementEvaluator {
 	 */
 	protected Promise<Expression> eval(final BranchContext context, OrRefinement or) {
 		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> input) {
-						final Expression left = (Expression) input.get(0);
-						final Expression right = (Expression) input.get(1);
-						return Expressions.builder().should(left).should(right).build();
-					}
+				.then(input -> {
+					final Expression left = (Expression) input.get(0);
+					final Expression right = (Expression) input.get(1);
+					return Expressions.builder().should(left).should(right).build();
 				});
 	}
 	
@@ -210,12 +194,9 @@ final class SnomedEclRefinementEvaluator {
 			} else {
 				final Range<Long> exclusionRange = Range.closed(max + 1, Long.MAX_VALUE);
 				return evaluateGroup(context, exclusionRange, group.getRefinement())
-						.thenWith(new Function<Collection<Property>, Promise<Expression>>() {
-							@Override
-							public Promise<Expression> apply(Collection<Property> input) {
-								final Set<String> excludedMatches = FluentIterable.from(input).transform(Property::getObjectId).toSet();
-								return focusConcepts.resolveToExclusionExpression(context, excludedMatches);
-							}
+						.thenWith(input -> {
+							final Set<String> excludedMatches = FluentIterable.from(input).transform(Property::getObjectId).toSet();
+							return focusConcepts.resolveToExclusionExpression(context, excludedMatches);
 						});
 			}
 		} else {
@@ -246,54 +227,48 @@ final class SnomedEclRefinementEvaluator {
 			throw new BadRequestException("Reversed attributes are not supported in group refinements");
 		} else {
 			return evalRefinement(context, refinement, true, groupCardinality)
-					.thenWith(new Function<Collection<Property>, Promise<Collection<Property>>>() {
-						@Override
-						public Promise<Collection<Property>> apply(Collection<Property> input) {
-							final Cardinality cardinality = refinement.getCardinality();
-							// two cases here, one is the [1..x] the other is [0..x]
-							if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
-								// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
-								final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+					.thenWith(input -> {
+						final Cardinality cardinality = refinement.getCardinality();
+						// two cases here, one is the [1..x] the other is [0..x]
+						if (cardinality != null && cardinality.getMin() == 0 && cardinality.getMax() != UNBOUNDED_CARDINALITY) {
+							// XXX internal evaluation returns negative matches, that should be excluded from the focusConcept set
+							final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
+						
 							
-								
-								final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
-								return focusConcepts.resolveToConceptsWithGroups(context)
-										.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
-											@Override
-											public Collection<Property> apply(Multimap<String, Integer> groupsById) {
-												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
-												for (Entry<String, Integer> entry : groupsById.entries()) {
-													final String id = entry.getKey();
-													if (!matchingIds.contains(id)) {
-														matchingProperties.add(new Property(id, entry.getValue()));
-													}
+							final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
+							return focusConcepts.resolveToConceptsWithGroups(context)
+									.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
+										@Override
+										public Collection<Property> apply(Multimap<String, Integer> groupsById) {
+											final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
+											for (Entry<String, Integer> entry : groupsById.entries()) {
+												final String id = entry.getKey();
+												if (!matchingIds.contains(id)) {
+													matchingProperties.add(new Property(id, entry.getValue()));
 												}
-												return matchingProperties;
 											}
-										});
-							} else {
-								return Promise.immediate(input);
-							}
+											return matchingProperties;
+										}
+									});
+						} else {
+							return Promise.immediate(input);
 						}
 					})
-					.failWith(new Function<Throwable, Promise<Collection<Property>>>() {
-						@Override
-						public Promise<Collection<Property>> apply(Throwable throwable) {
-							if (throwable instanceof MatchAll) {
-								return focusConcepts.resolveToConceptsWithGroups(context)
-										.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
-											@Override
-											public Collection<Property> apply(Multimap<String, Integer> groupsById) {
-												final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size());
-												for (Entry<String, Integer> entry : groupsById.entries()) {
-													matchingProperties.add(new Property(entry.getKey(), entry.getValue()));
-												}
-												return matchingProperties;
+					.failWith(throwable -> {
+						if (throwable instanceof MatchAll) {
+							return focusConcepts.resolveToConceptsWithGroups(context)
+									.then(new Function<Multimap<String, Integer>, Collection<Property>>() {
+										@Override
+										public Collection<Property> apply(Multimap<String, Integer> groupsById) {
+											final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size());
+											for (Entry<String, Integer> entry : groupsById.entries()) {
+												matchingProperties.add(new Property(entry.getKey(), entry.getValue()));
 											}
-										});
-							}
-							throw new SnowowlRuntimeException(throwable);
+											return matchingProperties;
+										}
+									});
 						}
+						throw new SnowowlRuntimeException(throwable);
 					});
 		}
 	}
@@ -328,39 +303,36 @@ final class SnomedEclRefinementEvaluator {
 	 * @return a function that will can be chained via {@link Promise#then(Function)} to evaluate partial results when they are available
 	 */
 	private Function<List<Object>, Collection<Property>> evalParts(final Range<Long> groupCardinality, BinaryOperator<Set<Integer>> groupOperator) {
-		return new Function<List<Object>, Collection<Property>>() {
-			@Override
-			public Collection<Property> apply(List<Object> input) {
-				final Collection<Property> left = (Collection<Property>) input.get(0);
-				final Collection<Property> right = (Collection<Property>) input.get(1);
+		return input -> {
+			final Collection<Property> left = (Collection<Property>) input.get(0);
+			final Collection<Property> right = (Collection<Property>) input.get(1);
+			
+			final Collection<Property> matchingAttributes = newHashSet();
+			
+			// group left and right side by source ID
+			final Multimap<String, Property> leftRelationshipsBySource = Multimaps.index(left, Property::getObjectId);
+			final Multimap<String, Property> rightRelationshipsBySource = Multimaps.index(right, Property::getObjectId);
+			
+			// check that each ID has the required number of groups with left and right relationships
+			for (String sourceConcept : Iterables.concat(leftRelationshipsBySource.keySet(), rightRelationshipsBySource.keySet())) {
+				final Multimap<Integer, Property> validGroups = ArrayListMultimap.create();
 				
-				final Collection<Property> matchingAttributes = newHashSet();
+				final Collection<Property> leftSourceRelationships = leftRelationshipsBySource.get(sourceConcept);
+				final Collection<Property> rightSourceRelationships = rightRelationshipsBySource.get(sourceConcept);
 				
-				// group left and right side by source ID
-				final Multimap<String, Property> leftRelationshipsBySource = Multimaps.index(left, Property::getObjectId);
-				final Multimap<String, Property> rightRelationshipsBySource = Multimaps.index(right, Property::getObjectId);
+				final Multimap<Integer, Property> leftRelationshipsByGroup = Multimaps.index(leftSourceRelationships, Property::getGroup);
+				final Multimap<Integer, Property> rightRelationshipsByGroup = Multimaps.index(rightSourceRelationships, Property::getGroup);
 				
-				// check that each ID has the required number of groups with left and right relationships
-				for (String sourceConcept : Iterables.concat(leftRelationshipsBySource.keySet(), rightRelationshipsBySource.keySet())) {
-					final Multimap<Integer, Property> validGroups = ArrayListMultimap.create();
-					
-					final Collection<Property> leftSourceRelationships = leftRelationshipsBySource.get(sourceConcept);
-					final Collection<Property> rightSourceRelationships = rightRelationshipsBySource.get(sourceConcept);
-					
-					final Multimap<Integer, Property> leftRelationshipsByGroup = Multimaps.index(leftSourceRelationships, Property::getGroup);
-					final Multimap<Integer, Property> rightRelationshipsByGroup = Multimaps.index(rightSourceRelationships, Property::getGroup);
-					
-					for (Integer group : groupOperator.apply(leftRelationshipsByGroup.keySet(), rightRelationshipsByGroup.keySet())) {
-						validGroups.get(group).addAll(leftRelationshipsByGroup.get(group));
-						validGroups.get(group).addAll(rightRelationshipsByGroup.get(group));
-					}
-					
-					if (groupCardinality.contains((long) validGroups.keySet().size())) {
-						matchingAttributes.addAll(validGroups.values());
-					}
+				for (Integer group : groupOperator.apply(leftRelationshipsByGroup.keySet(), rightRelationshipsByGroup.keySet())) {
+					validGroups.get(group).addAll(leftRelationshipsByGroup.get(group));
+					validGroups.get(group).addAll(rightRelationshipsByGroup.get(group));
 				}
-				return matchingAttributes;
+				
+				if (groupCardinality.contains((long) validGroups.keySet().size())) {
+					matchingAttributes.addAll(validGroups.values());
+				}
 			}
+			return matchingAttributes;
 		};
 	}
 
@@ -504,21 +476,15 @@ final class SnomedEclRefinementEvaluator {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
 		return evalMembers(context, attributeNames, type, value, operator)
-				.then(new Function<SnomedReferenceSetMembers, Collection<Property>>() {
-					@Override
-					public Collection<Property> apply(SnomedReferenceSetMembers matchingMembers) {
-						return FluentIterable.from(matchingMembers).transform(new Function<SnomedReferenceSetMember, Property>() {
-							@Override
-							public Property apply(SnomedReferenceSetMember input) {
-								return new Property(input.getId(), 
-										input.getReferencedComponent().getId(), 
-										(String) input.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME),
-										input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
-										0 /*groups are not supported, all members considered ungrouped*/);
-							}
-						}).toSet();
-					}
-				});
+				.then(matchingMembers -> FluentIterable.from(matchingMembers)
+					.transform(input -> 
+						new Property(input.getId(), 
+							input.getReferencedComponent().getId(), 
+							(String) input.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME),
+							input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
+							0 /*groups are not supported, all members considered ungrouped*/)
+					).toSet()
+				);
 	}
 
 	private Promise<SnomedReferenceSetMembers> evalMembers(
@@ -544,57 +510,54 @@ final class SnomedEclRefinementEvaluator {
 	}
 
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {
-		return new Function<Collection<Property>, Collection<Property>>() {
-			@Override
-			public Collection<Property> apply(Collection<Property> matchingProperties) {
-				final Multimap<Object, Property> propertiesByMatchingIds = Multimaps.index(matchingProperties, idProvider);
-				final Collection<Property> properties = newHashSet();
-				
-				final Range<Long> allowedRelationshipCardinality;
-				if (grouped) {
-					final long minRelationships = groupCardinality.lowerEndpoint() == 0 ? cardinality.lowerEndpoint() : groupCardinality.lowerEndpoint() * cardinality.lowerEndpoint();  
-					final long maxRelationships;
-					if (groupCardinality.hasUpperBound() && cardinality.hasUpperBound()) {
-						if (groupCardinality.upperEndpoint() == Long.MAX_VALUE || cardinality.upperEndpoint() == Long.MAX_VALUE) {
-							maxRelationships = Long.MAX_VALUE;
-						} else {
-							maxRelationships = groupCardinality.upperEndpoint() * cardinality.upperEndpoint();
+		return matchingProperties -> {
+			final Multimap<Object, Property> propertiesByMatchingIds = Multimaps.index(matchingProperties, idProvider);
+			final Collection<Property> properties = newHashSet();
+			
+			final Range<Long> allowedRelationshipCardinality;
+			if (grouped) {
+				final long minRelationships = groupCardinality.lowerEndpoint() == 0 ? cardinality.lowerEndpoint() : groupCardinality.lowerEndpoint() * cardinality.lowerEndpoint();  
+				final long maxRelationships;
+				if (groupCardinality.hasUpperBound() && cardinality.hasUpperBound()) {
+					if (groupCardinality.upperEndpoint() == Long.MAX_VALUE || cardinality.upperEndpoint() == Long.MAX_VALUE) {
+						maxRelationships = Long.MAX_VALUE;
+					} else {
+						maxRelationships = groupCardinality.upperEndpoint() * cardinality.upperEndpoint();
+					}
+				} else {
+					// group and relationship cardinalities are unbounded
+					maxRelationships = Long.MAX_VALUE;
+				}
+				allowedRelationshipCardinality = Range.closed(minRelationships, maxRelationships);
+			} else {
+				allowedRelationshipCardinality = cardinality;
+			}
+			
+			for (Object matchingConceptId : propertiesByMatchingIds.keySet()) {
+				final Collection<Property> propertiesOfConcept = propertiesByMatchingIds.get(matchingConceptId);
+				if (allowedRelationshipCardinality.contains((long) propertiesOfConcept.size())) {
+					if (grouped) {
+						final Multimap<Integer, Property> indexedByGroup = FluentIterable.from(propertiesOfConcept).index(Property::getGroup);
+						// if groups should be considered as well, then check group numbers in the matching sets
+						// check that the concept has at least the right amount of groups
+						final Multimap<Integer, Property> validGroups = ArrayListMultimap.create();
+						
+						for (Integer group : indexedByGroup.keySet()) {
+							final Collection<Property> groupedRelationships = indexedByGroup.get(group);
+							if (cardinality.contains((long) groupedRelationships.size())) {
+								validGroups.putAll(group, groupedRelationships);
+							}
+						}
+						
+						if (groupCardinality.contains((long) validGroups.keySet().size())) {
+							properties.addAll(validGroups.values());
 						}
 					} else {
-						// group and relationship cardinalities are unbounded
-						maxRelationships = Long.MAX_VALUE;
-					}
-					allowedRelationshipCardinality = Range.closed(minRelationships, maxRelationships);
-				} else {
-					allowedRelationshipCardinality = cardinality;
-				}
-				
-				for (Object matchingConceptId : propertiesByMatchingIds.keySet()) {
-					final Collection<Property> propertiesOfConcept = propertiesByMatchingIds.get(matchingConceptId);
-					if (allowedRelationshipCardinality.contains((long) propertiesOfConcept.size())) {
-						if (grouped) {
-							final Multimap<Integer, Property> indexedByGroup = FluentIterable.from(propertiesOfConcept).index(Property::getGroup);
-							// if groups should be considered as well, then check group numbers in the matching sets
-							// check that the concept has at least the right amount of groups
-							final Multimap<Integer, Property> validGroups = ArrayListMultimap.create();
-							
-							for (Integer group : indexedByGroup.keySet()) {
-								final Collection<Property> groupedRelationships = indexedByGroup.get(group);
-								if (cardinality.contains((long) groupedRelationships.size())) {
-									validGroups.putAll(group, groupedRelationships);
-								}
-							}
-							
-							if (groupCardinality.contains((long) validGroups.keySet().size())) {
-								properties.addAll(validGroups.values());
-							}
-						} else {
-							properties.addAll(propertiesOfConcept);
-						}
+						properties.addAll(propertiesOfConcept);
 					}
 				}
-				return properties;
 			}
+			return properties;
 		};
 	}
 
@@ -624,34 +587,11 @@ final class SnomedEclRefinementEvaluator {
 		final SnomedRelationshipSearchRequestBuilder req = SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true) 
+				.filterBySource(sourceFilter)
 				.filterByType(typeFilter)
+				.filterByDestination(destinationFilter)
 				.filterByCharacteristicTypes(ALLOWED_CHARACTERISTIC_TYPES)
 				.setFields(fieldsToLoad.build());
-		
-		// XXX more than 1000 IDs will be filtered using Java instead of in the query to gain performance
-		final Predicate<SnomedRelationship> sourcePredicate;
-		if (sourceFilter != null) {
-			if (sourceFilter.size() < 10000) {
-				req.filterBySource(sourceFilter);
-				sourcePredicate = Predicates.alwaysTrue();
-			} else {
-				sourcePredicate = relationship -> sourceFilter.contains(relationship.getSourceId());
-			}
-		} else {
-			sourcePredicate = Predicates.alwaysTrue();
-		}
-		
-		final Predicate<SnomedRelationship> destinationPredicate;
-		if (destinationFilter != null) {
-			if (destinationFilter.size() < 10000) {
-				req.filterByDestination(destinationFilter);
-				destinationPredicate = Predicates.alwaysTrue();
-			} else {
-				destinationPredicate = relationship -> destinationFilter.contains(relationship.getDestinationId());
-			}
-		} else {
-			destinationPredicate = Predicates.alwaysTrue();
-		}
 		
 		// if a grouping refinement, then filter relationships with group >= 1
 		if (groupedRelationshipsOnly) {
@@ -661,17 +601,7 @@ final class SnomedEclRefinementEvaluator {
 		return req
 				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))
-				.then(new Function<SnomedRelationships, Collection<Property>>() {
-					@Override
-					public Collection<Property> apply(SnomedRelationships input) {
-						return FluentIterable.from(input).filter(Predicates.and(sourcePredicate, destinationPredicate)).transform(new Function<SnomedRelationship, Property>() {
-							@Override
-							public Property apply(SnomedRelationship input) {
-								return new Property(input.getId(), input.getSourceId(), input.getTypeId(), input.getDestinationId(), input.getGroup());
-							}
-						}).toSet();
-					}
-				});
+				.then(input -> input.stream().map(r -> new Property(r.getId(), r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
 	}
 	
 	// Helper Throwable class to quickly return from attribute constraint evaluation when all matches are valid
