@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -216,7 +217,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
-		if (snomedUri.hasQueryPart()) {
+		if (!snomedUri.hasQueryPart()) {
+			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
+		} else {
 			QueryPart queryPart = snomedUri.getQueryPart();
 			if (!queryPart.isValueSetQuery()) {
 				throw new BadRequestException(String.format("Invalid query part '%s' for value sets.", queryPart.getQueryParameter()), locationName);
@@ -239,8 +242,67 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
 				}
 			}
+		}
+	}
+	
+	/*
+	 * Implicit value set validation
+	 */
+	//url=http://snomed.info/sct?fhir_vs=isa/SCT_ID for SNOMED CT
+	@Override
+	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest) {
+		
+		String locationName = "$validate-code.url";
+		if (validateCodeRequest.getUrl() == null) {
+			throw new BadRequestException("URL is missing for value set.", locationName);
+		}
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(validateCodeRequest.getUrl().getUriValue(), locationName);
+		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		String componentId = validateCodeRequest.getCode();
+
+		if (!snomedUri.hasQueryPart()) {
+			throw new BadRequestException("Query part is missing for value set code validation.", locationName);
 		} else {
-			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
+			QueryPart queryPart = snomedUri.getQueryPart();
+			if (!queryPart.isValueSetQuery()) {
+				throw new BadRequestException(String.format("Invalid query part '%s' for value sets.", queryPart.getQueryParameter()), locationName);
+			} else {
+				QueryPartDefinition queryPartDefinition = queryPart.getQueryPartDefinition();
+				switch (queryPartDefinition) {
+				
+				case NONE:
+					//Entire SNOMED CT, makes no real sense
+					Optional<SnomedConcept> validatedConceptOptional = SnomedRequests.prepareSearchConcept()
+						.filterById(componentId)
+						.filterByActive(true)
+						.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+						.setExpand("pt()")
+						.build(getRepositoryId(), codeSystemVersion.getPath())
+						.execute(getBus())
+						.getSync()
+						.first();
+						
+					if (!validatedConceptOptional.isPresent()) {
+						return ValidateCodeResult.builder().valueSetMemberNotFoundResult(snomedUri.toString(), componentId, "<<SNOMED CT").build();
+					}
+					return ValidateCodeResult.builder().okResult(validatedConceptOptional.get().getPt().getTerm()).build();
+					
+				case REFSET:
+					//return buildSimpleTypeRefsetValueSet(queryPart.getQueryValue(), codeSystemVersion);
+					//return null;
+				case REFSETS:
+					//All simple type refsets
+					//return buildSimpleTypeRefsetValueSets(codeSystemVersion);
+					return null;
+				case ISA:
+					//return buildSubsumptionValueSet(queryPart.getQueryValue(), codeSystemVersion, true);
+					return null;
+				default:
+					//should not happen
+					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
+				}
+			}
 		}
 	}
 	

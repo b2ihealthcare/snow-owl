@@ -40,8 +40,11 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonPropertyOrder({"url", "context", "valueSet", "code", "system", "version", "display", "coding", "codeableConcept", "date", "abstract", "displayLanguage"})
 public class ValidateCodeRequest {
 	
+	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server
 	private final Uri url;
+	
 	private final Uri context;
+	
 	private final ValueSet valueSet;
 	
 	// The code that is to be validated. If a code is provided, a system must be provided (0..1)
@@ -187,6 +190,11 @@ public class ValidateCodeRequest {
 		
 		public Builder url(final Uri url) {
 			this.url = url;
+			return this;
+		}
+		
+		public Builder url(final String urlString) {
+			this.url = new Uri(urlString);
 			return this;
 		}
 		

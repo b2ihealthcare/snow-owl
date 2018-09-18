@@ -115,8 +115,15 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	 * Validates a code against a provided value set
 	 * @param validateCodeRequest code to validate
 	 * @param logicalId logical id of the value set to validate the code against
-	 * @return
+	 * @return validation result
 	 */
 	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId logicalId);
+
+	/**
+	 * Validates a code against a provided value set defined by its canonical URL
+	 * @param validateCodeRequest
+	 * @return validation result
+	 */
+	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest);
 
 }

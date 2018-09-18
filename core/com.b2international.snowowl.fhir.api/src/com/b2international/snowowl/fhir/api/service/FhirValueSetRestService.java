@@ -190,6 +190,10 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
 	 * The value set is identified by its Value Set ID
 	 * @param valueSetId the logical ID of the valueSet
+	 * @param code code to validate
+	 * @param system the code system of the code to validate
+	 * @param version the optional version of the code to validate
+	 *
 	 * @return validation results as {@link OperationOutcome}
 	 */
 	@ApiOperation(
@@ -206,8 +210,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			@ApiParam(value="The id of the value set to validate") @PathVariable("valueSetId") String valueSetId, 
 			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version)
-	{
+			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		
@@ -219,6 +222,46 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
 		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, logicalId);
+		return toResponse(validateCodeResult);
+	}
+	
+	/**
+	 * HTTP Get request to validate that a coded value is in the set of codes allowed by a value set.
+	 * The value set is identified by its canonical URL (SNOMED CT for example)
+	 
+	 * @param url the canonical URL of the value set to validate the code against
+	 * @param code code to validate
+	 * @param system the code system of the code to validate
+	 * @param version the optional version of the code to validate
+	 * @return validation results as {@link OperationOutcome}
+	 */
+	@ApiOperation(
+			response=ValueSet.class,
+			value="Validate a code in a value set defined by its URL",
+			notes="Validate that a coded value is in the set of codes allowed by a value set.")
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$validate-code", method=RequestMethod.GET)
+	public Parameters.Fhir validateCodeByURL(
+			@ApiParam(value="Canonical URL of the value set") @RequestParam(value="url") final String url,
+			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
+			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
+			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String version) {
+		
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
+		
+		
+		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
+			.url(url)
+			.code(code)
+			.system(system)
+			.version(version)
+			.build();
+		
+		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest);
 		return toResponse(validateCodeResult);
 	}
 	
