@@ -24,11 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -67,7 +63,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -358,37 +353,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		return ValidateCodeResult.builder().okMessage().display(concept.getPt().getTerm()).build();
 	}
 	
-	/**
-	 * Returns a SNOMED CT code system version that matches the provided effective date
-	 * @param versionEffectiveDate
-	 * @return code system version with the effective date
-	 */
-	private CodeSystemVersionEntry getSnomedCodeSystemVersion(String versionEffectiveDate) {
-		
-		if (versionEffectiveDate == null) {
-			//get the last version
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName("SNOMEDCT")
-				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
-				.build("snomedStore")
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'",getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
-		} else {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
-				.filterByCodeSystemShortName("SNOMEDCT")
-				.build("snomedStore")
-				.execute(getBus())
-				.getSync()
-				.first()
-				.orElseThrow(() -> new BadRequestException(String.format("Could not find code system for %s version '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
-		}
-	}
-
 	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {
 		
 		int all = Integer.MAX_VALUE;
