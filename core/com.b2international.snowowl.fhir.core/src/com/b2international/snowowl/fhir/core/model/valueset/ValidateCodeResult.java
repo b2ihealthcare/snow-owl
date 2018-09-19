@@ -98,6 +98,17 @@ public class ValidateCodeResult {
 			this.message("Could not find a valueset to check against: " + logicalId);
 			return this;
 		}
+		
+		/**
+		 * Builds a result for errors when value set is not found
+		 * @param valueSetUrl
+		 * @return
+		 */
+		public Builder valueSetNotFoundResult(String valueSetUrl) {
+			this.result = false;
+			this.message("Could not find a valueset to check against: " + valueSetUrl);
+			return this;
+		}
 
 		/**
 		 * Builds a result for errors when value set member is not found
