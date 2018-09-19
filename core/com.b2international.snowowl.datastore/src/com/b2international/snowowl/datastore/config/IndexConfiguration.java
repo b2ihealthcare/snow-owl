@@ -56,6 +56,8 @@ public class IndexConfiguration {
 	private int connectTimeout = IndexClientFactory.DEFAULT_CONNECT_TIMEOUT;
 	@Min(1_000)
 	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
+	@Min(2_001)
+	private int clusterHealthTimeout = IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -195,5 +197,15 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
+	}
+
+	@JsonProperty
+	public int getClusterHealthTimeout() {
+		return clusterHealthTimeout;
+	}
+	
+	@JsonProperty
+	public void setClusterHealthTimeout(int clusterHealthTimeout) {
+		this.clusterHealthTimeout = clusterHealthTimeout;
 	}
 }
