@@ -201,6 +201,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 			 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html 
 			 * for the low-level structure of the cluster health request.
 			 */
+			final Object clusterTimeoutSetting = settings.getOrDefault(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT);
+			final Object socketTimeoutSetting = settings.getOrDefault(IndexClientFactory.SOCKET_TIMEOUT, IndexClientFactory.DEFAULT_SOCKET_TIMEOUT);
+			final int clusterTimeout = clusterTimeoutSetting instanceof Integer ? (int) clusterTimeoutSetting : Integer.parseInt((String) clusterTimeoutSetting);
+			final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
+			final int pollTimeout = socketTimeout / 2;
 			
 			// GET /_cluster/health/test1,test2
 			final String endpoint = new EsClient.EndpointBuilder()
@@ -211,24 +216,44 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
 			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-					.put("wait_for_status", "yellow")
-					.put("timeout", "3m") // wait 3 minutes for yellow status
+					.put("level", "indices") // Detail level should be concerned with the indices in the path
+					.put("wait_for_status", "yellow") // Wait until yellow status is reached
+					.put("timeout", String.format("%sms", pollTimeout)) // Poll interval is half the socket timeout
+					.put("ignore", "408") // This parameter is not sent to ES; it makes server 408 responses not throw an exception
 					.build(); 
+		
+			final long startTime = System.currentTimeMillis();
+			final long endTime = startTime + clusterTimeout; // Polling finishes when the cluster timeout is reached
+			long currentTime = startTime; 
+			JsonNode responseNode = null;
 			
-			try {
+			do {
 				
-				final Response clusterHealthResponse = client().getLowLevelClient()
-						.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
-				final InputStream responseStream = clusterHealthResponse.getEntity()
-						.getContent();
-				final JsonNode responseNode = mapper.readTree(responseStream);
-				
-				if (responseNode.get("timed_out").asBoolean()) {
-					throw new IndexException("Request timed out waiting for yellow health status of index " + name, null);
+				try {
+					
+					final Response clusterHealthResponse = client().getLowLevelClient()
+							.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
+					final InputStream responseStream = clusterHealthResponse.getEntity()
+							.getContent();
+					responseNode = mapper.readTree(responseStream);
+					
+					if (!responseNode.get("timed_out").asBoolean()) {
+						currentTime = System.currentTimeMillis();
+						break; 
+					}
+					
+				} catch (IOException e) {
+					throw new IndexException("Couldn't retrieve cluster health for index " + name, e);
 				}
 				
-			} catch (IOException e) {
-				throw new IndexException("Couldn't retrieve cluster health for index " + name, e);
+				currentTime = System.currentTimeMillis();
+			
+			} while (currentTime < endTime);
+			
+			if (responseNode == null || responseNode.get("timed_out").asBoolean()) {
+				throw new IndexException(String.format("Cluster health did not reach yellow status for '%s' indexes after %s ms.", name, currentTime - startTime), null);
+			} else {
+				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, responseNode.get("status").asText(), currentTime - startTime);
 			}
 		}
 	}

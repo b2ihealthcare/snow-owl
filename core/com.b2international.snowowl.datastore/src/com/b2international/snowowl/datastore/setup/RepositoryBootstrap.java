@@ -69,7 +69,15 @@ public class RepositoryBootstrap extends DefaultBootstrapFragment {
 		builder.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, indexConfig.getCommitInterval());
 		builder.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, indexConfig.getCommitConcurrencyLevel());
 		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
+		
+		if (indexConfig.getClusterHealthTimeout() <= indexConfig.getSocketTimeout()) {
+			throw new IllegalStateException(String.format("Cluster health timeout (%s ms) must be greater than the socket timeout (%s ms).", 
+					indexConfig.getClusterHealthTimeout(),
+					indexConfig.getSocketTimeout()));
+		}
+		
 		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
+		builder.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, indexConfig.getClusterHealthTimeout());
 		
 		final SlowLogConfig slowLog = createSlowLogConfig(indexConfig);
 		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);

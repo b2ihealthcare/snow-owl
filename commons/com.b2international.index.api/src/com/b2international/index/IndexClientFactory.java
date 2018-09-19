@@ -97,6 +97,12 @@ public interface IndexClientFactory {
 	 */
 	String SOCKET_TIMEOUT = "socketTimeout";
 	
+	/**
+	 * Configuration key to specify the time to wait until yellow cluster health state is reached in milliseconds.
+	 */
+	String CLUSTER_HEALTH_TIMEOUT = "clusterHealthTimeout";
+
+	
 	//
 	// Default values
 	//
@@ -136,6 +142,11 @@ public interface IndexClientFactory {
 	 * The default socket timeout (sending requests, waiting for a response) is 30s
 	 */
 	int DEFAULT_SOCKET_TIMEOUT = 30_000;
+
+	/**
+	 * The default timeout for waiting until yellow cluster health is reached is 5 minutes
+	 */
+	int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 300_000;
 	
 	/**
 	 * Create a new {@link IndexClient} with the given name.
