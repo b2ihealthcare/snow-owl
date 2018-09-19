@@ -52,7 +52,6 @@ import io.swagger.annotations.ApiModel;
  * @since 6.4
  */
 @ApiModel("ConceptMap")
-
 public class ConceptMap extends TerminologyResource {
 	
 	//FHIR header "resourceType" : "ConceptMap",
@@ -116,7 +115,7 @@ public class ConceptMap extends TerminologyResource {
 	}
 	
 
-	@AssertTrue(message = "Either URI or Reference should be set for the 'source' and 'target' fields")
+	@AssertTrue(message = "Both URI and Reference cannot be set for the 'source' and 'target' fields")
 	private boolean isValid() {
 
 		if (sourceUri != null && sourceReference != null) {
@@ -140,7 +139,6 @@ public class ConceptMap extends TerminologyResource {
 		private Uri targetUri;
 		private Reference targetReference;
 		private final Collection<Group> groups = Lists.newArrayList();
-		
 		
 		public Builder(String conceptMapId) {
 			super(conceptMapId);
@@ -180,8 +178,6 @@ public class ConceptMap extends TerminologyResource {
 			
 			return new ConceptMap(id, meta, implicitRules, language, text, sourceUri, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright, sourceUri, sourceReference, targetUri, targetReference, groups);
 		}
-		
-		
 		
 	}
 		
