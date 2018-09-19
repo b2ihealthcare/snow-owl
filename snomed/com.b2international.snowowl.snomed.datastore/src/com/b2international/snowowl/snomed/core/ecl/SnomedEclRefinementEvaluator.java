@@ -365,28 +365,18 @@ final class SnomedEclRefinementEvaluator {
 			propertyCardinality = Range.closed(min, max);
 		}
 		final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
-//		final Promise<Set<String>> focusConceptIds = focusConcepts.isAnyExpression() 
-//				? Promise.immediate(Collections.emptySet()) 
-////				: grouped ? focusConcepts.resolveToConceptsWithGroups(context) : focusConcepts.resolve(context);
-		return evalRefinement(context, refinement, grouped)
+		final Set<String> focusConceptIds = focusConcepts.isAnyExpression() 
+				? Collections.emptySet() 
+				: grouped ? focusConcepts.resolveToConceptsWithGroups(context).getSync().keySet() : focusConcepts.resolve(context).getSync();
+		return evalRefinement(context, refinement, grouped, focusConceptIds)
 				.then(filterByCardinality(grouped, groupCardinality, propertyCardinality, idProvider));
-//		return focusConceptIds
-//				.thenWith(new Function<Set<String>, Promise<Collection<Property>>>() {
-//					@Override
-//					public Promise<Collection<Property>> apply(Set<String> focusConceptIds) {
-						// if resolved IDs are empty in case of non-* expression return empty props
-//						if (focusConceptIds.isEmpty() && !focusConcepts.isAnyExpression()) {
-//							return Promise.immediate(Collections.emptySet());
-//						}
-//					}
-//				});
 	}
 	
 	/**
 	 * Evaluates an {@link AttributeConstraint} refinement on the given focusConceptId set on the given {@link BranchContext}.
 	 * Grouped parameter can  
 	 */
-	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final boolean grouped) {
+	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final boolean grouped, final Set<String> focusConceptIds) {
 		final Comparison comparison = refinement.getComparison();
 		final EclSerializer serializer = context.service(EclSerializer.class);
 		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(refinement.getAttribute()));
@@ -396,8 +386,8 @@ final class SnomedEclRefinementEvaluator {
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
 			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(((AttributeComparison) comparison).getConstraint()));
-			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : null;
-			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConcepts.resolve(context).getSync() : destinationConceptFilter;
+			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
+			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
 		} else if (comparison instanceof DataTypeComparison) {
 			if (grouped) {
@@ -405,14 +395,14 @@ final class SnomedEclRefinementEvaluator {
 			} else if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
 			} else {
-				return evalMembers(context, typeConceptFilter, (DataTypeComparison) comparison);
+				return evalMembers(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
 			}
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
 	}
 		
-	private Promise<Collection<Property>> evalMembers(BranchContext context, Collection<String> attributeNames, DataTypeComparison comparison) {
+	private Promise<Collection<Property>> evalMembers(BranchContext context, Set<String> focusConceptIds, Collection<String> attributeNames, DataTypeComparison comparison) {
 		final Object value;
 		final DataType type;
 		final SearchResourceRequest.Operator operator;
@@ -475,7 +465,7 @@ final class SnomedEclRefinementEvaluator {
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
-		return evalMembers(context, attributeNames, type, value, operator)
+		return evalMembers(context, focusConceptIds, attributeNames, type, value, operator)
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
 					.transform(input -> 
 						new Property(input.getId(), 
@@ -489,6 +479,7 @@ final class SnomedEclRefinementEvaluator {
 
 	private Promise<SnomedReferenceSetMembers> evalMembers(
 			final BranchContext context, 
+			final Set<String> focusConceptIds,
 			final Collection<String> attributeNames, 
 			final DataType type, 
 			final Object value, 
@@ -503,6 +494,7 @@ final class SnomedEclRefinementEvaluator {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
+			.filterByReferencedComponent(focusConceptIds)
 			.filterByRefSetType(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE))
 			.filterByProps(propFilter)
 			.build(context.id(), context.branchPath())
