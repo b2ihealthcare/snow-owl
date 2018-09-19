@@ -18,12 +18,14 @@ package com.b2international.snowowl.snomed.fhir;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -35,6 +37,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
+import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
@@ -52,6 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
@@ -63,6 +68,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -125,6 +131,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			
 			return SnomedRequests.prepareSearchMember()
 				.one()
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.filterByActive(true)
 				.filterById(logicalId.getMemberId())
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
@@ -148,18 +155,17 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 	@Override
 	public ValueSet expandValueSet(LogicalId logicalId) {
 		
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+
 		if (!logicalId.isMemberId()) {
-			CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
 			return buildSimpleTypeRefsetValueSet(logicalId.getComponentId(), codeSystemVersion);
 		} 
 		else {
-			
-			CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
-			
 			//Query type reference set member
 			return SnomedRequests.prepareSearchMember()
 				.one()
 				.filterById(logicalId.getMemberId())
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 				.setExpand("referencedComponent(expand(pt()))")
 				.build(repositoryId, logicalId.getBranchPath())
@@ -211,7 +217,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
-		if (snomedUri.hasQueryPart()) {
+		if (!snomedUri.hasQueryPart()) {
+			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
+		} else {
 			QueryPart queryPart = snomedUri.getQueryPart();
 			if (!queryPart.isValueSetQuery()) {
 				throw new BadRequestException(String.format("Invalid query part '%s' for value sets.", queryPart.getQueryParameter()), locationName);
@@ -234,9 +242,181 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
 				}
 			}
-		} else {
-			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
 		}
+	}
+	
+	/*
+	 * Implicit value set validation
+	 */
+	//url=http://snomed.info/sct?fhir_vs=isa/SCT_ID for SNOMED CT
+	@Override
+	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest) {
+		
+		String locationName = "$validate-code.url";
+		if (validateCodeRequest.getUrl() == null) {
+			throw new BadRequestException("URL is missing for value set.", locationName);
+		}
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(validateCodeRequest.getUrl().getUriValue(), locationName);
+		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		String componentId = validateCodeRequest.getCode();
+
+		if (!snomedUri.hasQueryPart()) {
+			throw new BadRequestException("Query part is missing for value set code validation.", locationName);
+		} else {
+			QueryPart queryPart = snomedUri.getQueryPart();
+			if (!queryPart.isValueSetQuery()) {
+				throw new BadRequestException(String.format("Invalid query part '%s' for value sets.", queryPart.getQueryParameter()), locationName);
+			} else {
+				QueryPartDefinition queryPartDefinition = queryPart.getQueryPartDefinition();
+				switch (queryPartDefinition) {
+				
+				case NONE:
+					//Entire SNOMED CT, makes no real sense
+					Optional<SnomedConcept> validatedConceptOptional = SnomedRequests.prepareSearchConcept()
+						.filterById(componentId)
+						.filterByActive(true)
+						.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+						.setExpand("pt()")
+						.build(getRepositoryId(), codeSystemVersion.getPath())
+						.execute(getBus())
+						.getSync()
+						.first();
+						
+					if (!validatedConceptOptional.isPresent()) {
+						return ValidateCodeResult.builder().valueSetMemberNotFoundResult(snomedUri.toString(), componentId, "<<SNOMED CT").build();
+					}
+					return ValidateCodeResult.builder().okResult(validatedConceptOptional.get().getPt().getTerm()).build();
+					
+				case REFSET:
+					//return buildSimpleTypeRefsetValueSet(queryPart.getQueryValue(), codeSystemVersion);
+					//return null;
+				case REFSETS:
+					//All simple type refsets
+					//return buildSimpleTypeRefsetValueSets(codeSystemVersion);
+					return null;
+				case ISA:
+					//return buildSubsumptionValueSet(queryPart.getQueryValue(), codeSystemVersion, true);
+					return null;
+				default:
+					//should not happen
+					throw new BadRequestException("Unknown query part definition '" + queryPartDefinition + "'.", locationName);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId valueSetLogicalId) {
+		
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
+		
+		//simple type reference
+		if (!valueSetLogicalId.isMemberId()) {
+			return validateSimpleTypReferenceSet(valueSetLogicalId, codeSystemVersion.getParentBranchPath(), validateCodeRequest);
+		} 
+		
+		//query type refset
+		else {
+			//Query type reference set member
+			Optional<SnomedReferenceSetMember> optionalRefsetMember = SnomedRequests.prepareSearchMember()
+				.one()
+				.filterById(valueSetLogicalId.getMemberId())
+				.filterByActive(true)
+				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("referencedComponent(expand(pt()))")
+				.build(repositoryId, valueSetLogicalId.getBranchPath())
+				.execute(getBus())
+				.getSync()
+				.stream()
+				.findFirst();
+			
+			if (!optionalRefsetMember.isPresent()) {
+				return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+			}
+			
+			SnomedReferenceSetMember referenceSetMember = optionalRefsetMember.get();
+			String eclExpression = (String) referenceSetMember.getProperties().get(SnomedRf2Headers.FIELD_QUERY);
+			
+			//evaluate the ECL expression
+			SnomedConcepts snomedConcepts = SnomedRequests.prepareSearchConcept()
+				.all()
+				.filterByEcl(eclExpression)
+				.filterByActive(true)
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.setExpand("pt()")
+				.build(repositoryId, valueSetLogicalId.getBranchPath())
+				.execute(getBus())
+				.getSync();
+			
+			
+			String componentId = validateCodeRequest.getCode();
+			Optional<SnomedConcept> optionalConcept = snomedConcepts.stream().filter(c -> c.getId().equals(componentId)).findFirst();
+			if (!optionalConcept.isPresent()) {
+				return ValidateCodeResult.builder()
+					.valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode(), valueSetLogicalId.toString())
+					.build();
+			}
+			
+			SnomedConcept concept = optionalConcept.get();
+			if (!concept.isActive()) {
+				return ValidateCodeResult.builder().result(false).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+			}
+		}
+
+		//All good
+		return ValidateCodeResult.builder().okResult(validateCodeRequest.getCode()).build();
+	}
+	
+	/**
+	 * @param validateCodeRequest 
+	 * @return
+	 */
+	private ValidateCodeResult validateSimpleTypReferenceSet(LogicalId valueSetLogicalId, String branchPath, ValidateCodeRequest validateCodeRequest) {
+		
+		String componentId = validateCodeRequest.getCode();
+		String codeSystem = validateCodeRequest.getSystem();
+		
+		//only SNOMED CT components can be present in a SNOMED CT reference set
+		if (!codeSystem.startsWith("http://snomed.info/sct")) {
+			return ValidateCodeResult.builder()
+					.result(false)
+					.message(String.format("SNOMED CT reference sets can reference SNOMED CT components only. Referenced component is %s.", codeSystem))
+					.build();
+		}
+		
+		//fetch the simple type refset
+		String refsetId = valueSetLogicalId.getComponentId();
+		SnomedReferenceSets snomedReferenceSets = SnomedRequests.prepareSearchRefSet()
+			.filterByActive(true)
+			.filterById(refsetId)
+			.filterByType(SnomedRefSetType.SIMPLE)
+			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
+			.build(repositoryId, branchPath)
+			.execute(getBus())
+			.getSync();
+		
+		//Reference set not found
+		if (!snomedReferenceSets.first().isPresent()) {
+			return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+		} 
+		
+		//Refset is found, how about the concept as as member?
+		Optional<SnomedReferenceSetMember> refsetMemberOptional = snomedReferenceSets.first().get().getMembers().stream()
+				.filter(m-> m.getReferencedComponent().getId().equals(componentId)).findFirst();
+		
+		if (!refsetMemberOptional.isPresent()) {
+			return ValidateCodeResult.builder().valueSetMemberNotFoundResult(codeSystem, componentId, refsetId).build();
+		}
+		
+		SnomedReferenceSetMember snomedReferenceSetMember = refsetMemberOptional.get();
+		SnomedConcept concept = (SnomedConcept) snomedReferenceSetMember.getReferencedComponent();
+		if (snomedReferenceSetMember.isActive() && !snomedReferenceSetMember.getReferencedComponent().isActive()) {
+			return ValidateCodeResult.builder().result(true).message("Active members is pointing to an inactive concept.").display(concept.getPt().getTerm()).build();
+		}
+		return ValidateCodeResult.builder().okResult(concept.getPt().getTerm()).build();
 	}
 	
 	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {

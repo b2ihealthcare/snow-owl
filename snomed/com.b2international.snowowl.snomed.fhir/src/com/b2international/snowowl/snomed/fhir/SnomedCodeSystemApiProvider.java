@@ -70,7 +70,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
-	private static final String URI_BASE = "http://snomed.info";
+	private static final String URI_BASE = "http://snomed.info/sct";
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,

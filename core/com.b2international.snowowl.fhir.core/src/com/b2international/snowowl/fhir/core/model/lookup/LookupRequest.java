@@ -16,7 +16,6 @@
 package com.b2international.snowowl.fhir.core.model.lookup;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 

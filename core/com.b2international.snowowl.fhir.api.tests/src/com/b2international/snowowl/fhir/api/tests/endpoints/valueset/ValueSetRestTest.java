@@ -26,31 +26,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * Generic ValueSet REST end-point test cases for Snow Owl Value sets
  * @since 6.7
  */
-public class ValueSetRestTest extends FhirTest {
+public class ValueSetRestTest extends FhirRestTest {
 	
 	private static final String VALUE_SET_VERSION = "VALUE_SET_VERSION"; //$NON-NLS-N$
 	private static final String VALUE_SET_NAME = "FHIR Automated Value Set"; //$NON-NLS-N$
 	private static String valueSetId;
 	
 	@BeforeClass
-	public static void setupSpec() {
-		
+	public static void setupValueSets() {
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		valueSetId = TestArtifactCreator.createValueSet(mainBranch, VALUE_SET_NAME, VALUE_SET_VERSION);
-
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
 	}
 	
 	@Test

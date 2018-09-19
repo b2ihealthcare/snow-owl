@@ -218,8 +218,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody
-			Parameters.Fhir in) {
+			@RequestBody Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 

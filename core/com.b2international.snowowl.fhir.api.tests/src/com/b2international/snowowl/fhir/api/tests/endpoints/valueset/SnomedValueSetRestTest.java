@@ -20,31 +20,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.hamcrest.core.StringStartsWith;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * Generic ValueSet REST end-point test cases for SNOMED 'valuesets'
  * @since 6.7
  */
-public class SnomedValueSetRestTest extends FhirTest {
+public class SnomedValueSetRestTest extends FhirRestTest {
 	
 	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION";
-	
-	@BeforeClass
-	public static void setupSpec() {
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-	}
 	
 	//@Test
 	public void printValueSets() throws Exception {

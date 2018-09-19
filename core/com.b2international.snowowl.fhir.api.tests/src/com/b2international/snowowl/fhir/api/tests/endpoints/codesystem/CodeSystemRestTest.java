@@ -23,35 +23,17 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 
 /**
  * CodeSystem REST end-point test cases
  * @since 6.6
  */
-public class CodeSystemRestTest extends FhirTest {
+public class CodeSystemRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
-	
-	@BeforeClass
-	public static void setupSpec() {
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-		//config.httpClient(HttpClientConfig.httpClientConfig().dontReuseHttpClientInstance());
-		
-		//ResponseSpecBuilder builder = new ResponseSpecBuilder();
-		//builder.expectStatusCode(200);
-		//builder.expectBody("x.y.size()", is(2));
-		//ResponseSpecification responseSpec = builder.build();
-	}
 	
 	//@Test
 	public void pingTest() {

@@ -19,35 +19,23 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.api.service.BaseFhirResourceRestService;
-import com.b2international.snowowl.fhir.api.tests.FhirTest;
+import com.b2international.snowowl.fhir.api.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.lookup.LookupRequest;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
 
 /**
  * CodeSystem $lookup operation for FHIR code systems REST end-point test cases
  * 
  * @since 6.6
  */
-public class LookupFhirCodeSystemRestTest extends FhirTest {
+public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
-	
-	@BeforeClass
-	public static void setupSpec() {
-		
-		RestAssuredConfig config = RestAssured.config();
-		LogConfig logConfig = LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails();
-		RestAssured.given().config(config.logConfig(logConfig));
-	}
 	
 	//GET FHIR with parameters
 	@Test
