@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.Annotatable;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
@@ -31,24 +30,18 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
  */
 public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder, SnomedConcreteDataTypeRefSetMember> {
 
-	private String uomId;
-	private String operatorId = Concepts.CD_EQUAL;
-	private String attributeLabel;
+	private int group;
+	private String typeId;
 	private String serializedValue;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withUom(String uomId) {
-		this.uomId = uomId;
+	public SnomedConcreteDomainReferenceSetMemberBuilder withGroup(int group) {
+		this.group = group;
 		return getSelf();
 	}
 	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withOperatorId(String operatorId) {
-		this.operatorId = operatorId;
-		return getSelf();
-	}
-	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withAttributeLabel(String label) {
-		this.attributeLabel = label;
+	public SnomedConcreteDomainReferenceSetMemberBuilder withTypeId(String typeId) {
+		this.typeId = typeId;
 		return getSelf();
 	}
 	
@@ -70,9 +63,8 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	@Override
 	public void init(SnomedConcreteDataTypeRefSetMember component, TransactionContext context) {
 		super.init(component, context);
-		component.setUomComponentId(uomId);
-		component.setOperatorComponentId(operatorId);
-		component.setLabel(attributeLabel);
+		component.setGroup(group);
+		component.setTypeId(typeId);
 		component.setSerializedValue(serializedValue);
 		component.setCharacteristicTypeId(characteristicType.getConceptId());
 	}
@@ -93,5 +85,4 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 			throw new IllegalStateException("Unexpected referenced component type '" + referencedComponentType + "'.");
 		}
 	}
-	
 }

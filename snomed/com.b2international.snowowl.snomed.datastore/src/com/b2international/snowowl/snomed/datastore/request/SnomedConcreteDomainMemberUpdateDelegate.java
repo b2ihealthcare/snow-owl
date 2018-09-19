@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,25 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 	@Override
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedConcreteDataTypeRefSetMember concreteDomainMember = (SnomedConcreteDataTypeRefSetMember) member;
-		String newAttributeName = getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
-		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		String newValue = getProperty(SnomedRf2Headers.FIELD_VALUE);
-		String newOperatorId = getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID);
-		String newUnitId = getComponentId(SnomedRf2Headers.FIELD_UNIT_ID);
+		int newGroup = getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class);
+		String newTypeId = getComponentId(SnomedRf2Headers.FIELD_TYPE_ID);
+		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
 		boolean changed = false;
 
-		if (newAttributeName != null && !newAttributeName.equals(concreteDomainMember.getLabel())) {
-			concreteDomainMember.setLabel(newAttributeName);
+		if (newValue != null && !newValue.equals(concreteDomainMember.getSerializedValue())) {
+			concreteDomainMember.setSerializedValue(newValue);
+			changed |= true;
+		}
+
+		if (newGroup != concreteDomainMember.getGroup()) {
+			concreteDomainMember.setGroup(newGroup);
+			changed |= true;
+		}
+
+		if (newTypeId != null && !newTypeId.equals(concreteDomainMember.getTypeId())) {
+			concreteDomainMember.setTypeId(newTypeId);
 			changed |= true;
 		}
 
@@ -50,22 +59,6 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 			changed |= true;
 		}
 
-		if (newValue != null && !newValue.equals(concreteDomainMember.getSerializedValue())) {
-			concreteDomainMember.setSerializedValue(newValue);
-			changed |= true;
-		}
-
-		if (newOperatorId != null && !newOperatorId.equals(concreteDomainMember.getOperatorComponentId())) {
-			concreteDomainMember.setOperatorComponentId(newOperatorId);
-			changed |= true;
-		}
-
-		if (newUnitId != null && !newUnitId.equals(concreteDomainMember.getUomComponentId())) {
-			concreteDomainMember.setUomComponentId(newUnitId);
-			changed |= true;
-		}
-
 		return changed;
 	}
-
 }
