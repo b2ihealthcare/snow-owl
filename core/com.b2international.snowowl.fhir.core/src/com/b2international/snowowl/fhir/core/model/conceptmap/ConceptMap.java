@@ -128,8 +128,8 @@ public class ConceptMap extends TerminologyResource {
 		return true;
 	}
 	
-	public static Builder builder(String valueSetId) {
-		return new Builder(valueSetId);
+	public static Builder builder(String conceptMapId) {
+		return new Builder(conceptMapId);
 	}
 	
 	public static class Builder extends TerminologyResource.Builder<Builder, ConceptMap> {
