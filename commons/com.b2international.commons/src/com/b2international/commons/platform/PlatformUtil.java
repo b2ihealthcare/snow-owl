@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.prefs.PreferencesService;
 
+import com.b2international.commons.CommonsActivator;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 
@@ -42,6 +43,13 @@ public class PlatformUtil {
 	public static final String UNQUALIFIED = "qualifier";
 
 	private PlatformUtil() {
+	}
+	
+	/**
+	 * @return <code>true</code> if the platform is running in dev mode, otherwise <code>false</code>.
+	 */
+	public static final boolean isDevVersion() {
+		return isDevVersion(CommonsActivator.PLUGIN_ID);
 	}
 
 	/**
