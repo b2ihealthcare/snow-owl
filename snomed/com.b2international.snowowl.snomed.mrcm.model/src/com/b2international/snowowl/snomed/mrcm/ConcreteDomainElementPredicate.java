@@ -29,9 +29,8 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getName <em>Name</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getLabel <em>Label</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getType <em>Type</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getAttribute <em>Attribute</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getRange <em>Range</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getCharacteristicTypeConceptId <em>Characteristic Type Concept Id</em>}</li>
  * </ul>
  *
@@ -41,83 +40,56 @@ import com.b2international.snowowl.snomed.snomedrefset.DataType;
  */
 public interface ConcreteDomainElementPredicate extends ConceptModelPredicate {
 	/**
-	 * Returns the value of the '<em><b>Name</b></em>' attribute.
+	 * Returns the value of the '<em><b>Attribute</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Name</em>' attribute isn't clear,
+	 * If the meaning of the '<em>Attribute</em>' containment reference isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Name</em>' attribute.
-	 * @see #setName(String)
-	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConcreteDomainElementPredicate_Name()
-	 * @model required="true"
+	 * @return the value of the '<em>Attribute</em>' containment reference.
+	 * @see #setAttribute(ConceptSetDefinition)
+	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConcreteDomainElementPredicate_Attribute()
+	 * @model containment="true" required="true"
 	 * @generated
 	 */
-	String getName();
+	ConceptSetDefinition getAttribute();
 
 	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getName <em>Name</em>}' attribute.
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getAttribute <em>Attribute</em>}' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Name</em>' attribute.
-	 * @see #getName()
+	 * @param value the new value of the '<em>Attribute</em>' containment reference.
+	 * @see #getAttribute()
 	 * @generated
 	 */
-	void setName(String value);
+	void setAttribute(ConceptSetDefinition value);
 
 	/**
-	 * Returns the value of the '<em><b>Label</b></em>' attribute.
-	 * The default value is <code>""</code>.
+	 * Returns the value of the '<em><b>Range</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of the '<em>Label</em>' attribute isn't clear,
+	 * If the meaning of the '<em>Range</em>' attribute isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Label</em>' attribute.
-	 * @see #setLabel(String)
-	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConcreteDomainElementPredicate_Label()
-	 * @model default="" required="true"
-	 * @generated
-	 */
-	String getLabel();
-
-	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getLabel <em>Label</em>}' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Label</em>' attribute.
-	 * @see #getLabel()
-	 * @generated
-	 */
-	void setLabel(String value);
-
-	/**
-	 * Returns the value of the '<em><b>Type</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <p>
-	 * If the meaning of the '<em>Type</em>' attribute isn't clear,
-	 * there really should be more of a description here...
-	 * </p>
-	 * <!-- end-user-doc -->
-	 * @return the value of the '<em>Type</em>' attribute.
-	 * @see #setType(DataType)
-	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConcreteDomainElementPredicate_Type()
+	 * @return the value of the '<em>Range</em>' attribute.
+	 * @see #setRange(DataType)
+	 * @see com.b2international.snowowl.snomed.mrcm.MrcmPackage#getConcreteDomainElementPredicate_Range()
 	 * @model dataType="com.b2international.snowowl.snomed.mrcm.DataType" required="true"
 	 * @generated
 	 */
-	DataType getType();
+	DataType getRange();
 
 	/**
-	 * Sets the value of the '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getType <em>Type</em>}' attribute.
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getRange <em>Range</em>}' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @param value the new value of the '<em>Type</em>' attribute.
-	 * @see #getType()
+	 * @param value the new value of the '<em>Range</em>' attribute.
+	 * @see #getRange()
 	 * @generated
 	 */
-	void setType(DataType value);
+	void setRange(DataType value);
 
 	/**
 	 * Returns the value of the '<em><b>Characteristic Type Concept Id</b></em>' attribute.
