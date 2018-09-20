@@ -60,9 +60,8 @@
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference mrcm.ecore#//CardinalityPredicate/predicate"/>
     </genClasses>
     <genClasses ecoreClass="mrcm.ecore#//ConcreteDomainElementPredicate">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//ConcreteDomainElementPredicate/name"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//ConcreteDomainElementPredicate/label"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//ConcreteDomainElementPredicate/type"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference mrcm.ecore#//ConcreteDomainElementPredicate/attribute"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//ConcreteDomainElementPredicate/range"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute mrcm.ecore#//ConcreteDomainElementPredicate/characteristicTypeConceptId"/>
     </genClasses>
     <genClasses ecoreClass="mrcm.ecore#//DependencyPredicate">
