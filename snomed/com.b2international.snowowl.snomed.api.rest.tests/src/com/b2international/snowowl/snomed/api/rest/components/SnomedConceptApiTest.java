@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -605,6 +605,66 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 			.getSync();
 		
+	}
+	
+	@Test
+	public void testConceptSearchRequestWithInboundRelationshipExpand() {
+		final String conceptId = createNewConcept(branchPath);
+		
+		final String inboundRelationshipId = createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		
+		final SnomedConcept conceptWithInboundRelationship = SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterById(conceptId)
+			.setExpand("inboundRelationships()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.stream().findFirst().get();
+		 
+		 assertNotNull(conceptWithInboundRelationship.getInboundRelationships());
+		 assertEquals(1, conceptWithInboundRelationship.getInboundRelationships().getItems().size());
+		 final SnomedRelationship expandedInboundRelationship = Iterables.getOnlyElement(conceptWithInboundRelationship.getInboundRelationships());
+		 assertEquals(inboundRelationshipId, expandedInboundRelationship.getId());
+	}
+	
+	@Test
+	public void testConceptSearchRequestWithInboundRelationshipExpandWithLimit() {
+	final String conceptId = createNewConcept(branchPath);
+		
+		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		
+		final SnomedConcept conceptWithInboundRelationships = SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterById(conceptId)
+			.setExpand("inboundRelationships(limit:1)")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.stream().findFirst().get();
+		 
+		 assertNotNull(conceptWithInboundRelationships.getInboundRelationships());
+		 assertEquals(2, conceptWithInboundRelationships.getInboundRelationships().getTotal());
+		 assertEquals(1, conceptWithInboundRelationships.getInboundRelationships().getItems().size());
+	}
+	
+	@Test
+	public void testConceptGetRequestWithNinboundRelationshipExpand() {
+		final String conceptId = createNewConcept(branchPath);
+		
+		final String inboundRelationshipId = createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		
+		final SnomedConcept conceptWithInboundRelationship = SnomedRequests.prepareGetConcept(conceptId)
+			.setExpand("inboundRelationships()")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync();
+		 
+		 assertNotNull(conceptWithInboundRelationship.getInboundRelationships());
+		 assertEquals(1, conceptWithInboundRelationship.getInboundRelationships().getItems().size());
+		 final SnomedRelationship expandedInboundRelationship = Iterables.getOnlyElement(conceptWithInboundRelationship.getInboundRelationships());
+		 assertEquals(inboundRelationshipId, expandedInboundRelationship.getId());
 	}
 	
 }

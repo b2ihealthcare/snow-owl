@@ -165,6 +165,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		expandDescriptions(results, conceptIds);
 		
 		expandRelationships(results, conceptIds);
+		expandInboundRelationships(results, conceptIds);
 		
 		expandDescendants(results, conceptIds, SnomedConcept.Expand.DESCENDANTS, false);
 		expandDescendants(results, conceptIds, SnomedConcept.Expand.STATED_DESCENDANTS, true);
@@ -309,6 +310,33 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		for (SnomedConcept concept : results) {
 			final List<SnomedRelationship> conceptRelationships = relationshipsByConceptId.get(concept.getId());
 			concept.setRelationships(new SnomedRelationships(conceptRelationships, null, null, conceptRelationships.size(), conceptRelationships.size()));
+		}
+	}
+	
+	private void expandInboundRelationships(List<SnomedConcept> results, final Set<String> conceptIds) {
+		if (!expand().containsKey(SnomedConcept.Expand.INBOUND_RELATIONSHIPS)) {
+			return;
+		}
+		
+		final Options expandOptions = expand().get(SnomedConcept.Expand.INBOUND_RELATIONSHIPS, Options.class);
+		final int relationshipSearchLimit = getLimit(expandOptions);
+		
+		final SnomedRelationships inboundRelationships = SnomedRequests.prepareSearchRelationship()
+			.setLimit(relationshipSearchLimit)
+			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
+			.filterByCharacteristicType(expandOptions.containsKey("characteristicType") ? expandOptions.getString("characteristicType") : null)
+			.filterByDestination(conceptIds)
+			.setExpand(expandOptions.get("expand", Options.class))
+			.setLocales(locales())
+			.build()
+			.execute(context());
+		
+		final ListMultimap<String, SnomedRelationship> inboundRelationshipsByConceptId = Multimaps.index(inboundRelationships,
+				inboundRelationship -> inboundRelationship.getDestinationId());
+		
+		for (SnomedConcept concept : results) {
+			final List<SnomedRelationship> conceptInboundRelationships = inboundRelationshipsByConceptId.get(concept.getId());
+			concept.setInboundRelationships(new SnomedRelationships(conceptInboundRelationships, null, null, conceptInboundRelationships.size(), conceptInboundRelationships.size()));
 		}
 	}
 
