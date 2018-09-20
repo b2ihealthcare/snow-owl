@@ -25,53 +25,46 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
 public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
-	public static final String PROP_DATA_TYPE = "dataType";
-	public static final String PROP_NAME = "name";
-	public static final String PROP_LABEL = "label";
+	public static final String PROP_ATTRIBUTE = "attribute";
+	public static final String PROP_RANGE = "range";
 	public static final String PROP_CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
 
-	private String label; // "Vaccine"
-	private String name; // "canBeTaggedWithVaccine"
-	private DataType dataType;
+	private SnomedConceptSetDefinition attribute;
+	private DataType range;
 	private String characteristicTypeId;
 
-	public String getLabel() {
-		return label;
+	public SnomedConceptSetDefinition getAttribute() {
+		return attribute;
+	}
+	
+	public void setAttribute(final SnomedConceptSetDefinition attribute) {
+		this.attribute = attribute;
+	}
+	
+	public DataType getRange() {
+		return range;
 	}
 
-	public void setLabel(final String label) {
-		this.label = label;
+	public void setRange(final DataType range) {
+		this.range = range;
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(final String name) {
-		this.name = name;
-	}
-
-	public DataType getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(final DataType dataType) {
-		this.dataType = dataType;
-	}
-
+	
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
 	}
 
 	public void setCharacteristicTypeId(final String characteristicTypeId) {
 		this.characteristicTypeId = characteristicTypeId;
+	}
+
+	public String getAttributeExpression() {
+		return attribute.toEcl();
 	}
 
 	@Override
@@ -81,20 +74,19 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
 	@Override
 	public ConcreteDomainElementPredicate applyChangesTo(final ConceptModelComponent existingModel) {
-		final ConcreteDomainElementPredicate updateModel = (existingModel instanceof ConcreteDomainElementPredicate)
+		final ConcreteDomainElementPredicate updatedModel = (existingModel instanceof ConcreteDomainElementPredicate)
 				? (ConcreteDomainElementPredicate) existingModel
 				: createModel();
 
-		updateModel.setActive(isActive());
-		updateModel.setAuthor(getAuthor());
-		updateModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
-		updateModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
-		updateModel.setLabel(getLabel());
-		updateModel.setName(getName());
-		updateModel.setType(getDataType());
-		updateModel.setUuid(getId());
+		updatedModel.setActive(isActive());
+		updatedModel.setAuthor(getAuthor());
+		updatedModel.setCharacteristicTypeConceptId(getCharacteristicTypeId());
+		updatedModel.setEffectiveTime(EffectiveTimes.toDate(getEffectiveTime()));
+		updatedModel.setAttribute(getAttribute().applyChangesTo(updatedModel.getAttribute()));
+		updatedModel.setRange(getRange());
+		updatedModel.setUuid(getId());
 
-		return updateModel;
+		return updatedModel;
 	}
 
 	@Override
@@ -102,13 +94,12 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 		final SnomedConcreteDomainPredicate copy = new SnomedConcreteDomainPredicate();
 
 		copy.setActive(isActive());
+		copy.setAttribute(getAttribute());
 		copy.setAuthor(userName);
 		copy.setCharacteristicTypeId(getCharacteristicTypeId());
-		copy.setDataType(getDataType());
+		copy.setRange(getRange());
 		copy.setEffectiveTime(date.getTime());
 		copy.setId(UUID.randomUUID().toString());
-		copy.setLabel(getLabel());
-		copy.setName(getName());
 
 		return copy;
 	}
@@ -126,15 +117,15 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 			return parentMessage;
 		}
 
-		if (Strings.isNullOrEmpty(getName())) { return String.format("Concrete domain name should be set on %s with UUID %s.", displayName(), getId()); }
-		if (getDataType() == null) { return String.format("Concrete domain type should be specified for %s with UUID %s.", displayName(), getId()); }
+		if (getAttribute() == null) { return String.format("Concrete domain attribute should be set on %s with UUID %s.", displayName(), getId()); }
+		if (getRange() == null) { return String.format("Concrete domain range should be specified for %s with UUID %s.", displayName(), getId()); }
 
 		return null;
 	}
 
 	@Override
 	public int structuralHashCode() {
-		return 31 * super.structuralHashCode() + structuralHashCode(characteristicTypeId, dataType, label, name);
+		return 31 * super.structuralHashCode() + structuralHashCode(characteristicTypeId, range, attribute);
 	}
 
 	@Override
@@ -146,9 +137,8 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 		final SnomedConcreteDomainPredicate other = (SnomedConcreteDomainPredicate) obj;
 
 		if (!Objects.equals(characteristicTypeId, other.characteristicTypeId)) { return false; }
-		if (dataType != other.dataType) { return false; }
-		if (!Objects.equals(label, other.label)) { return false; }
-		if (!Objects.equals(name, other.name)) { return false; }
+		if (range != other.range) { return false; }
+		if (!Objects.equals(attribute, other.attribute)) { return false; }
 		return true;
 	}
 }
