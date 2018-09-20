@@ -141,8 +141,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								.getItems();
 						
 						
-						final Set<ComponentIdentifier> existingComponentIdentifiers = existingRuleIssues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet());
-						
 						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = existingRuleIssues.stream().collect(Collectors.toMap(ValidationIssue::getAffectedComponent, Function.identity()));
 						
 						// remove all processed whitelist entries 
@@ -150,7 +148,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 						final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
 						for (ComponentIdentifier componentIdentifier : ruleIssues.affectedComponentIds) {
 							
-							if (!existingComponentIdentifiers.remove(componentIdentifier)) {
+							if (!existingIsssuesByComponentIdentifier.containsKey(componentIdentifier)) {
 								final ValidationIssue validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
@@ -173,12 +171,13 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
+								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
 						}
 						
 						final Set<String> issueIdsToDelete = existingRuleIssues
 								.stream()
-								.filter(issue -> existingComponentIdentifiers.contains(issue.getAffectedComponent()))
+								.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
 								.map(ValidationIssue::getId)
 								.collect(Collectors.toSet());
 						
