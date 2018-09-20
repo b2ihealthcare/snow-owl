@@ -55,7 +55,7 @@
                   Implementation for the concept map specific FHIR API provider.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.fhir.core.service.IConceptMapApiProvider"/>
+                  <meta.attribute kind="java" basedOn=":com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider"/>
                </appinfo>
             </annotation>
          </attribute>
