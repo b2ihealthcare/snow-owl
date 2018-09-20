@@ -650,7 +650,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void testConceptGetRequestWithNinboundRelationshipExpand() {
+	public void testConceptGetRequestWithInboundRelationshipExpand() {
 		final String conceptId = createNewConcept(branchPath);
 		
 		final String inboundRelationshipId = createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
