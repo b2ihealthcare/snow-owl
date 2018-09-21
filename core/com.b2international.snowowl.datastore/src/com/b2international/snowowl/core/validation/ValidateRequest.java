@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.options.Options;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -51,6 +50,8 @@ import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -65,7 +66,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	Collection<String> ruleIds;
 
-	private Options filterOptions;
+	private Map<String, Object> filterOptions;
 	
 	ValidateRequest() {}
 	
@@ -76,12 +77,19 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
-		
+
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
 		}
+		
+		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("ctx", context);
+		if (filterOptions != null && !filterOptions.isEmpty()) {
+			paramsBuilder.putAll(filterOptions);
+		}
+		
+		final Map<String, Object> params = paramsBuilder.build();
 		
 		final ValidationRules rules = req
 				.all()
@@ -89,10 +97,9 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.execute(context);
 		
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
-		
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
-		// evaluate selected rules
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
+		// evaluate selected rules
 		for (ValidationRule rule : rules) {
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
@@ -102,7 +109,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, filterOptions);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(rule, params);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -219,7 +226,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		this.ruleIds = ruleIds;
 	}
 	
-	public void setFilterOptions(Options filterOptions) {
+	public void setFilterOptions(Map<String, Object> filterOptions) {
 		this.filterOptions = filterOptions;
 	}
 	

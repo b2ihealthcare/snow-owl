@@ -9,6 +9,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
+import com.b2international.snowowl.core.domain.BranchContext
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
@@ -17,6 +18,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
+
+BranchContext ctx = params.get("ctx");
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
@@ -38,32 +41,23 @@ ExpressionBuilder activeFsnExpression = Expressions.builder()
 		.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds))
 
-long effectiveTimeFilterValue = options.get(SnomedRf2Headers.FIELD_EFFECTIVE_TIME)
-if (effectiveTimeFilterValue == 1) {
-	activeFsnExpression.mustNot(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+if (params.containsKey(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+	activeFsnExpression.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
-Aggregation<String[]> activeDescriptionsByOriginalTerm = searcher
-		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String[].class, SnomedDescriptionIndexEntry.class)
+Aggregation<String> activeDescriptionsByOriginalTerm = searcher
+		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String.class, SnomedDescriptionIndexEntry.class)
 		.query(activeFsnExpression.build())
 		.onFieldValue(SnomedDescriptionIndexEntry.Fields.ORIGINAL_TERM)
-		.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.EFFECTIVE_TIME)
+		.fields(SnomedDescriptionIndexEntry.Fields.ID)
 		.minBucketSize(2))
 
 		
 List<ComponentIdentifier> issues = Lists.newArrayList()
 
 activeDescriptionsByOriginalTerm.getBuckets().values().each({ bucket ->
-	bucket.each({ hit ->
-		
-		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == effectiveTimeFilterValue) {
-			if (EffectiveTimes.UNSET_EFFECTIVE_TIME == Long.parseLong(hit[1])) {
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit[0]))
-			}
-		} else {
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit[0]))
-		}
-		
+	bucket.each({ id ->
+		issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
 	})
 })
 

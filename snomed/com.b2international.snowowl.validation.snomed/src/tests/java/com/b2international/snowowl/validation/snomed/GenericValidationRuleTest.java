@@ -16,9 +16,6 @@
 package com.b2international.snowowl.validation.snomed;
 
 
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.description;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
@@ -59,22 +56,18 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, nextStorageKey(), activeConcept);
 		
 		SnomedRelationshipIndexEntry invalidSourceRelationship = relationship(inactiveSourceConcept.getId(), Concepts.IS_A, activeConcept.getId())
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidSourceRelationship);
 		
 		SnomedRelationshipIndexEntry invalidDestinationRelationship = relationship(activeConcept.getId(), Concepts.IS_A, inactiveDestinationConcept.getId())
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidDestinationRelationship);
 		
 		SnomedRelationshipIndexEntry invalidTypeRelationship = relationship(activeConcept.getId(), inactiveTypeConcept.getId(), Concepts.FINDING_SITE)
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidTypeRelationship);
 		
 		SnomedRelationshipIndexEntry validRelationship = relationship(activeConcept.getId(), Concepts.IS_A, Concepts.FINDING_SITE)
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), validRelationship);
 		
@@ -97,7 +90,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, nextStorageKey(), c1);
 		SnomedDescriptionIndexEntry d1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!")
 				.conceptId(c1.getId())
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), d1);
 
@@ -105,7 +97,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, nextStorageKey(), c2);
 		SnomedDescriptionIndexEntry d2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!")
 				.conceptId(c2.getId())
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), d2);
 
@@ -113,7 +104,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, nextStorageKey(), c3);
 		SnomedDescriptionIndexEntry d3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel World!")
 				.conceptId(c3.getId())
-				.effectiveTime(effectiveTime)
 				.build();
 		indexRevision(MAIN, nextStorageKey(), d3);
 

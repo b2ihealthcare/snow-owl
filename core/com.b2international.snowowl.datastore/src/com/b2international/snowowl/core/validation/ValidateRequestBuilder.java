@@ -16,8 +16,8 @@
 package com.b2international.snowowl.core.validation;
 
 import java.util.Collection;
+import java.util.Map;
 
-import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -34,14 +34,14 @@ public final class ValidateRequestBuilder
 	
 	private Collection<String> ruleIds;
 	
-	private Options filterOptions;
+	private Map<String, Object> filterOptions;
 	
 	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
 		return getSelf();
 	}
 	
-	public ValidateRequestBuilder setFilterOptions(Options filterOptions) {
+	public ValidateRequestBuilder setFilterOptions(Map<String, Object> filterOptions) {
 		this.filterOptions = filterOptions;
 		return getSelf();
 	}
