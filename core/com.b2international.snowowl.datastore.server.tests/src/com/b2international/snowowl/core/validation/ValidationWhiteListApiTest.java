@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteLists;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
@@ -49,7 +50,7 @@ public class ValidationWhiteListApiTest {
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationWhiteList.class));
+		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationWhiteList.class, ValidationIssue.class));
 		index.admin().create();
 		final ValidationRepository repository = new ValidationRepository(index);
 		context = ServiceProvider.EMPTY.inject()
