@@ -6,6 +6,6 @@
 		<artifactId>commons-parent</artifactId>
 		<version>6.9.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>com.b2international.index.api.tests.tools</artifactId>
+	<artifactId>com.b2international.index.tests.tools</artifactId>
 	<packaging>eclipse-plugin</packaging>
 </project>

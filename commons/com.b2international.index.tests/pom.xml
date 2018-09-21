@@ -6,7 +6,7 @@
 		<artifactId>commons-parent</artifactId>
 		<version>6.9.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>com.b2international.index.api.tests</artifactId>
+	<artifactId>com.b2international.index.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 
 	<build>
@@ -36,11 +36,6 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>com.b2international.snowowl.logging.logbackconfiguration</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>com.b2international.index.es</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
