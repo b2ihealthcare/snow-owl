@@ -34,7 +34,7 @@ Visit us at http://b2i.sg
          version="0.0.0"/>
 
    <plugin
-         id="com.b2international.index.api.tests.tools"
+         id="com.b2international.index.tests.tools"
          download-size="0"
          install-size="0"
          version="0.0.0"
