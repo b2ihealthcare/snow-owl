@@ -70,7 +70,6 @@
 							<includeArtifactIds>
 								byte-buddy,
 								classmate,
-								commons-logging,
 								javassist,
 								mapstruct,
 								reflections,

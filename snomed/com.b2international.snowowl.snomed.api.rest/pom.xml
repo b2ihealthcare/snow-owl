@@ -18,7 +18,7 @@
 		<springfox.version>2.8.0</springfox.version>
 	</properties>
 
-	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
+	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -70,7 +70,6 @@
 							<includeArtifactIds>
 								byte-buddy,
 								classmate,
-								commons-logging,
 								javassist,
 								mapstruct,
 								reflections,
