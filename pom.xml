@@ -128,48 +128,6 @@
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-core</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-jvm</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-json</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-logback</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-servlet</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-annotation</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-healthchecks</artifactId>
-				<version>3.0.2</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
 				<groupId>com.thoughtworks.xstream</groupId>
 				<artifactId>xstream</artifactId>
 				<version>1.4.7</version>
@@ -827,34 +785,6 @@
 				<dependency>
 					<groupId>com.fasterxml.jackson.datatype</groupId>
 					<artifactId>jackson-datatype-guava</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-core</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-jvm</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-json</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-logback</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-servlet</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-annotation</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>com.codahale.metrics</groupId>
-					<artifactId>metrics-healthchecks</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>com.thoughtworks.xstream</groupId>
