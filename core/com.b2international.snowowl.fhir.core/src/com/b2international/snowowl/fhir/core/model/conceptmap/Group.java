@@ -18,7 +18,8 @@ package com.b2international.snowowl.fhir.core.model.conceptmap;
 import java.util.Collection;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -29,7 +30,7 @@ import com.google.common.collect.Sets;
 /**
  * FHIR Concept map group backbone element
  * 
- * @since 6.4
+ * @since 6.10
  */
 public class Group {
 	
@@ -50,7 +51,7 @@ public class Group {
 	private final String targetVersion;
 	
 	@Valid
-	@NotNull
+	@NotEmpty
 	@JsonProperty("element")
 	private final Collection<ConceptMapElement> elements;
 	
@@ -86,6 +87,11 @@ public class Group {
 			return this;
 		}
 
+		public Builder source(final String sourceString) {
+			this.source = new Uri(sourceString);
+			return this;
+		}
+		
 		public Builder sourceVersion(final String sourceVersion) {
 			this.sourceVersion = sourceVersion;
 			return this;
@@ -96,11 +102,16 @@ public class Group {
 			return this;
 		}
 		
+		public Builder target(final String targetString) {
+			this.target = new Uri(targetString);
+			return this;
+		}
+		
 		public Builder targetVersion(final String targetVersion) {
 			this.targetVersion = targetVersion;
 			return this;
 		}
-		public Builder addConceptMapElement(final ConceptMapElement element) {
+		public Builder addElement(final ConceptMapElement element) {
 			this.elements.add(element);
 			return this;
 		}

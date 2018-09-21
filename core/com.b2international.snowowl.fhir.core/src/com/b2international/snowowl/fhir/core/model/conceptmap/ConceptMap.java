@@ -49,7 +49,7 @@ import io.swagger.annotations.ApiModel;
  * </ul>
  * 
  * @see <a href="https://www.hl7.org/fhir/conceptmap.html">FHIR:ConceptMap</a>
- * @since 6.4
+ * @since 6.10
  */
 @ApiModel("ConceptMap")
 public class ConceptMap extends TerminologyResource {
@@ -149,6 +149,11 @@ public class ConceptMap extends TerminologyResource {
 			return getSelf();
 		}
 		
+		public Builder sourceUri(String sourceUriString) {
+			this.sourceUri = new Uri(sourceUriString);
+			return getSelf();
+		}
+		
 		public Builder sourceUri(Reference sourceReference) {
 			this.sourceReference = sourceReference;
 			return getSelf();
@@ -156,6 +161,11 @@ public class ConceptMap extends TerminologyResource {
 		
 		public Builder targetUri(Uri targetUri) {
 			this.targetUri = targetUri;
+			return getSelf();
+		}
+		
+		public Builder targetUri(String targetUriString) {
+			this.targetUri = new Uri(targetUriString);
 			return getSelf();
 		}
 		
@@ -176,7 +186,7 @@ public class ConceptMap extends TerminologyResource {
 		@Override
 		protected ConceptMap doBuild() {
 			
-			return new ConceptMap(id, meta, implicitRules, language, text, sourceUri, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright, sourceUri, sourceReference, targetUri, targetReference, groups);
+			return new ConceptMap(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright, sourceUri, sourceReference, targetUri, targetReference, groups);
 		}
 		
 	}

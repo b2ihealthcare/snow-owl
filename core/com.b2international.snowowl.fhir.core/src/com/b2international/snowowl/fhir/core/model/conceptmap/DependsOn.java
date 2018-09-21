@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * FHIR Concept map dependsOn backbone element
  * <br> Other elements required for the mapping (from context)
- * @since 6.4
+ * @since 6.10
  */
 public class DependsOn {
 
@@ -75,13 +75,28 @@ public static class Builder extends ValidatingBuilder<DependsOn> {
 			return this;
 		}
 		
+		public Builder property(final String propertyString) {
+			this.property = new Uri(propertyString);
+			return this;
+		}
+		
 		public Builder system(final Uri system) {
 			this.system = system;
 			return this;
 		}
 		
+		public Builder system(final String systemString) {
+			this.system = new Uri(systemString);
+			return this;
+		}
+		
 		public Builder code(final Code code) {
 			this.code = code;
+			return this;
+		}
+		
+		public Builder code(final String codeString) {
+			this.code = new Code(codeString);
 			return this;
 		}
 		

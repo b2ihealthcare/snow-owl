@@ -76,6 +76,11 @@ public class UnMapped {
 			return this;
 		}
 
+		public Builder url(final String urlString) {
+			this.url = new Uri(urlString);
+			return this;
+		}
+		
 		public Builder display(final String display) {
 			this.display = display;
 			return this;
@@ -85,9 +90,19 @@ public class UnMapped {
 			this.code = code;
 			return this;
 		}
+		
+		public Builder code(final String codeString) {
+			this.code = new Code(codeString);
+			return this;
+		}
 
 		public Builder mode(final Code mode) {
-			this.code = mode;
+			this.mode = mode;
+			return this;
+		}
+		
+		public Builder mode(final String modeString) {
+			this.mode = new Code(modeString);
 			return this;
 		}
 

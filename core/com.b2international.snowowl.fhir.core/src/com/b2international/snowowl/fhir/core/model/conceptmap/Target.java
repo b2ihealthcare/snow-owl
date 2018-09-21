@@ -28,7 +28,7 @@ import com.google.common.collect.Sets;
 /**
  * FHIR Concept map target backbone element
  * <br> Concept in target system for element
- * @since 6.4
+ * @since 6.10
  */
 public class Target {
 
@@ -85,22 +85,33 @@ public class Target {
 			return this;
 		}
 		
+		public Builder code(final String codeString) {
+			this.code = new Code(codeString);
+			return this;
+		}
+		
 		public Builder display(final String display) {
 			this.display = display;
 			return this;
 		}
 
-		public Builder mode(final Code equivalence) {
+		public Builder equivalence(final Code equivalence) {
 			this.equivalence = equivalence;
 			return this;
 		}
+		
+		public Builder equivalence(final String equivalenceString) {
+			this.equivalence = new Code(equivalenceString);
+			return this;
+		}
+		
 		
 		public Builder comment(final String comment) {
 			this.comment = comment;
 			return this;
 		}
 		
-		public Builder addDependsOnElement(final DependsOn dependsOn) {
+		public Builder addDependsOn(final DependsOn dependsOn) {
 			this.dependsOnElements.add(dependsOn);
 			return this;
 		}

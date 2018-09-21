@@ -28,7 +28,7 @@ import com.google.common.collect.Sets;
 /**
  * FHIR Concept map element backbone element
  * <br> Mappings for a concept from the source set
- * @since 6.4
+ * @since 6.10
  */
 public class ConceptMapElement {
 
@@ -66,7 +66,12 @@ public static class Builder extends ValidatingBuilder<ConceptMapElement> {
 			this.code = code;
 			return this;
 		}
-
+		
+		public Builder code(final String codeString) {
+			this.code = new Code(codeString);
+			return this;
+		}
+		
 		public Builder display(final String display) {
 			this.display = display;
 			return this;
