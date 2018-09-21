@@ -35,6 +35,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
 import picocli.CommandLine;
+import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
 
 /**
@@ -62,7 +63,6 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 			args.add(arg);
 		}
 		final List<CommandLine> commands = cli().parse(args.toArray(new String[]{}));
-
 		
 		try (InterpreterStream out = new InterpreterStream(interpreter)) {
 			// print help if requested for any command
@@ -75,21 +75,12 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 			if (cli == null) {
 				return;
 			}
-			
-			final Object cmd = cli.getCommand();
-			
-			// print version if requested
-			if (cli.isVersionHelpRequested()) {
-				interpreter.println(RepositoryRequests.prepareGetServerInfo()
-						.buildAsync()
-						.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-						.getSync()
-						.version());
-			} else {
-				// otherwise we should get an executable Snow Owl Command, execute it
-				((BaseCommand) cmd).run(out);
-			}
-		}
+			// we should get an executable Snow Owl Command, so execute it
+			((BaseCommand) cli.getCommand()).run(out);
+		} catch (Exception e) {
+			interpreter.println("Unknown error occured");
+			interpreter.printStackTrace(e);
+		} 
 	}
 	
 	private String getHelp(CommandLine cmd) {
@@ -118,7 +109,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 	}
 	
 	@CommandLine.Command(
-		name = "snowowl"
+		name = "snowowl", 
+		versionProvider = SnowOwlVersionProvider.class
+		
 	)
 	private final class SnowOwlCommand extends BaseCommand {
 		
@@ -131,6 +124,21 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		@Override
 		public void run(CommandLineStream out) {
 			out.println(usage);
+		}
+		
+	}
+	
+	private static final class SnowOwlVersionProvider implements IVersionProvider {
+		
+		@Override
+		public String[] getVersion() throws Exception {
+			return new String[] {
+				RepositoryRequests.prepareGetServerInfo()
+					.buildAsync()
+					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+					.getSync()
+					.version()
+			};
 		}
 		
 	}
