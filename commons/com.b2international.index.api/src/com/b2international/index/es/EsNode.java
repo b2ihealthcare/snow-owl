@@ -32,7 +32,7 @@ import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.org.apache.lucene.Activator;
+import com.b2international.index.Activator;
 import com.google.common.collect.ImmutableList;
 
 /**

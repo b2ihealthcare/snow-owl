@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.query;
+package com.b2international.index.es.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
@@ -37,6 +37,34 @@ import org.elasticsearch.script.ScriptType;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.BoolExpression;
+import com.b2international.index.query.BooleanPredicate;
+import com.b2international.index.query.BoostPredicate;
+import com.b2international.index.query.DecimalPredicate;
+import com.b2international.index.query.DecimalRangePredicate;
+import com.b2international.index.query.DecimalSetPredicate;
+import com.b2international.index.query.DisMaxPredicate;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.HasParentPredicate;
+import com.b2international.index.query.IntPredicate;
+import com.b2international.index.query.IntRangePredicate;
+import com.b2international.index.query.IntSetPredicate;
+import com.b2international.index.query.LongPredicate;
+import com.b2international.index.query.LongRangePredicate;
+import com.b2international.index.query.LongSetPredicate;
+import com.b2international.index.query.MatchAll;
+import com.b2international.index.query.MatchNone;
+import com.b2international.index.query.NestedPredicate;
+import com.b2international.index.query.Predicate;
+import com.b2international.index.query.PrefixPredicate;
+import com.b2international.index.query.RangePredicate;
+import com.b2international.index.query.ScriptScoreExpression;
+import com.b2international.index.query.SetPredicate;
+import com.b2international.index.query.SingleArgumentPredicate;
+import com.b2international.index.query.StringPredicate;
+import com.b2international.index.query.StringRangePredicate;
+import com.b2international.index.query.StringSetPredicate;
+import com.b2international.index.query.TextPredicate;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
 import com.google.common.collect.ImmutableMap;

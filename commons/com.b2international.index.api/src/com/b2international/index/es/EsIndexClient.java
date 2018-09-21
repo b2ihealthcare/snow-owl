@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.es;
 
-import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.DocSearcher;
+import com.b2international.index.IndexClient;
+import com.b2international.index.Writer;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.es.admin.EsIndexAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

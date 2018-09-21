@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.es;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
@@ -54,10 +54,14 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 
-import com.b2international.index.admin.EsIndexAdmin;
-import com.b2international.index.es.EsClient;
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.DocSearcher;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexException;
+import com.b2international.index.Writer;
+import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.EsQueryBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;

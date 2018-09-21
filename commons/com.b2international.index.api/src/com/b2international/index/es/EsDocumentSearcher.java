@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.es;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
@@ -51,13 +51,19 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.collections.PrimitiveCollection;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.admin.EsIndexAdmin;
+import com.b2international.index.DocSearcher;
+import com.b2international.index.Hits;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexException;
+import com.b2international.index.Scroll;
+import com.b2international.index.WithId;
+import com.b2international.index.WithScore;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
-import com.b2international.index.es.EsClient;
+import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.query.EsQueryBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;

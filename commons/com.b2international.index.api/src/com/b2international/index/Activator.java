@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.org.apache.lucene;
+package com.b2international.index;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

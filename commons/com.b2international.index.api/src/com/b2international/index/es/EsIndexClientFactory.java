@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.es;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,10 +21,9 @@ import java.util.Map;
 
 import org.apache.http.HttpHost;
 
-import com.b2international.index.admin.EsIndexAdmin;
-import com.b2international.index.es.EsClient;
-import com.b2international.index.es.EsClientConfiguration;
-import com.b2international.index.es.EsNode;
+import com.b2international.index.IndexClient;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
