@@ -1,9 +1,0 @@
-243796009 | Situation with explicit context | :
-{ 363589002 | associated procedure | =18557009 | Closure by suture |
-, 408730004 | procedure context |
-= ( (398166005 | Performed | )
-OR (385660001 | Not done | )
-)
-, 408731000 | temporal context | = <<410584005 | Current - specified |
-, 408732007 | subject relationship context | =410604004 | Subject of record |
-}
