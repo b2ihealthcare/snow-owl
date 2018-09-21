@@ -69,7 +69,7 @@ public final class Rf2ValidationIssueReporter {
 	}
 
 	public void logWarnings(Logger log) {
-		getWarnings().forEach(log::warn);;
+		getWarnings().forEach(log::warn);
 	}
 	
 	public void logErrors(Logger log) {

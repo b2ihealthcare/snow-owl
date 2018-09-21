@@ -61,7 +61,7 @@ final class Rf2AttributeValueRefSetContentType implements Rf2RefSetContentType {
 	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
 		final String valueId = values[6];
 		
-		validateConceptIds(reporter, valueId);
+		validateId(valueId, reporter);
 	}
 
 	

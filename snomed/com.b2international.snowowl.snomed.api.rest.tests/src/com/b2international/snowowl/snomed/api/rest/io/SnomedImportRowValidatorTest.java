@@ -47,6 +47,8 @@ import com.google.common.collect.Iterables;
  */
 public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	
+	// TODO: Implement tests for every reference set type
+	
 	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	private static String codeSystemShortName;
 	private UUID archiveId;
@@ -60,7 +62,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	@Before
 	public void init() {
 		archiveId = UUID.randomUUID();
-		createCodeSystemIfNotExists("valami-699");
+		createCodeSystemIfNotExists();
 	}
 	
 	@Test
@@ -133,7 +135,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		assertEquals(ImportStatus.FAILED, response.getStatus());
 	}
 	
-	private void createCodeSystemIfNotExists(final String oid) {
+	private void createCodeSystemIfNotExists() {
 		try {
 			CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
 				.build(REPOSITORY_ID)
@@ -143,8 +145,8 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 		} catch (NotFoundException e) {
 			CodeSystemRequests.prepareNewCodeSystem()
 				.setShortName(codeSystemShortName)
-				.setOid(oid)
-				.setName(String.format("%s - %s", codeSystemShortName, oid))
+				.setOid("oid")
+				.setName(String.format("%s - %s", codeSystemShortName, "oid"))
 				.setLanguage("en")
 				.setBranchPath(branchPath.getPath())
 				.setCitation("citation")
