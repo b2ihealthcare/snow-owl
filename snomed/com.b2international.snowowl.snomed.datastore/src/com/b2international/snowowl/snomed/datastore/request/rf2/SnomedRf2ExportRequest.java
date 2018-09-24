@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -516,16 +515,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			.first();
 		
 		return moduleDependencyMember.map(m -> {
-			try {
-				String sourceEffectiveTime = (String) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			} catch (SnowowlRuntimeException e) {
-				if (e.getCause() instanceof ParseException) {
-					return null;
-				} else {
-					throw e;
-				}
-			}
+			return (Date) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 		});
 	}
 

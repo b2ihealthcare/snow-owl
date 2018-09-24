@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.Principal;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -188,9 +187,11 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 
 		try {
 			Dates.parse(transientEffectiveTime, DateFormats.SHORT);
-		} catch (Exception e) {
-			if (e.getCause() instanceof ParseException) {
+		} catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Error while parsing date")) {
 				throw new BadRequestException("Transient effective time '%s' was not empty, 'NOW' or a date in the expected format.", transientEffectiveTime);
+			} else {
+				throw e;
 			}
 		}
 	}
