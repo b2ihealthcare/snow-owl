@@ -77,12 +77,12 @@ public class ValueSet extends TerminologyResource {
 	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
 			
 			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
-			final ContactDetail contact, String description, final Collection<UsageContext> usageContexts,
-			final CodeableConcept jurisdiction, final Boolean immutable, final String purpose, final String copyright,
+			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
+			final Collection<CodeableConcept> jurisdictions, final Boolean immutable, final String purpose, final String copyright,
 			final Boolean extensible, final Collection<Compose> composeParts, final Expansion expansion) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contact,
-				description, usageContexts, jurisdiction, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts,
+				description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.immutable = immutable;
 		this.extensible = extensible;
@@ -139,7 +139,7 @@ public class ValueSet extends TerminologyResource {
 			//}
 			
 			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contact, description, usageContexts, jurisdiction, immutable, 
+					title, status, date, publisher, contacts, description, usageContexts, jurisdictions, immutable, 
 					purpose, copyright, extensible, composeParts, expansion);
 		}
 	}

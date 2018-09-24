@@ -192,7 +192,7 @@ public class ValueSetSerializationTest extends FhirTest {
 			.status(PublicationStatus.ACTIVE)
 			.date(TEST_DATE_STRING)
 			.publisher("b2i")
-			.contact(ContactDetail.builder()
+			.addContact(ContactDetail.builder()
 					.addContactPoint(ContactPoint.builder()
 						.id("contactPointId")
 						.build())

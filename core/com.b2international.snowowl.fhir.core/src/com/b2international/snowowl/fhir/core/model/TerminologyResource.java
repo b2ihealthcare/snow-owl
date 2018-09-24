@@ -39,6 +39,7 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR terminology resource with common properties.
@@ -83,8 +84,8 @@ public abstract class TerminologyResource extends DomainResource {
 	private String publisher;
 	
 	@Summary
-	@JsonProperty
-	private ContactDetail contact;
+	@JsonProperty("contact")
+	private Collection<ContactDetail> contacts;
 
 	@JsonProperty
 	private String description;
@@ -96,8 +97,8 @@ public abstract class TerminologyResource extends DomainResource {
 	
 	@Valid
 	@Summary
-	@JsonProperty
-	private CodeableConcept jurisdiction;
+	@JsonProperty("jurisdiction")
+	private Collection<CodeableConcept> jurisdictions;
 	
 	@JsonProperty
 	private String purpose;
@@ -113,8 +114,8 @@ public abstract class TerminologyResource extends DomainResource {
 	@SuppressWarnings("rawtypes")
 	public TerminologyResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date,  final String publisher, final ContactDetail contact, final String description, 
-			final Collection<UsageContext> usageContexts, final CodeableConcept jurisdiction, final String purpose, final String copyright) {
+			String name, String title, Code status, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
+			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {
 		
 		super(id, meta, impliciteRules, language, text);
 		
@@ -125,11 +126,11 @@ public abstract class TerminologyResource extends DomainResource {
 		this.title = title;
 		this.status = status;
 		this.date = date;
-		this.contact = contact;
+		this.contacts = contacts;
 		this.publisher = publisher;
 		this.description = description;
 		this.usageContexts = usageContexts;
-		this.jurisdiction = jurisdiction;
+		this.jurisdictions = jurisdictions;
 		this.purpose = purpose;
 		this.copyright = copyright;
 	}
@@ -156,14 +157,14 @@ public abstract class TerminologyResource extends DomainResource {
 		
 		protected String publisher;
 
-		protected ContactDetail contact;
+		protected Collection<ContactDetail> contacts = Sets.newHashSet();
 		
 		protected String description;
 		
 		@SuppressWarnings("rawtypes")
 		protected Collection<UsageContext> usageContexts = Lists.newArrayList(); 
 
-		protected CodeableConcept jurisdiction;
+		protected Collection<CodeableConcept> jurisdictions = Sets.newHashSet();
 		
 		protected String purpose;
 		
@@ -234,8 +235,8 @@ public abstract class TerminologyResource extends DomainResource {
 			return getSelf();
 		}
 
-		public B contact(ContactDetail contact) {
-			this.contact = contact;
+		public B addContact(ContactDetail contact) {
+			contacts.add(contact);
 			return getSelf();
 		}
 		
@@ -250,8 +251,8 @@ public abstract class TerminologyResource extends DomainResource {
 			return getSelf();
 		}
 		
-		public B jurisdiction(final CodeableConcept jurisdiction) {
-			this.jurisdiction = jurisdiction;
+		public B addJurisdiction(final CodeableConcept jurisdiction) {
+			jurisdictions.add(jurisdiction);
 			return getSelf();
 		}
 		

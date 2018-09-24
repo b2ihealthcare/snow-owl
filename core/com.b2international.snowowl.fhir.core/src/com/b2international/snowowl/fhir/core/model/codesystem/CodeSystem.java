@@ -126,16 +126,16 @@ public class CodeSystem extends TerminologyResource {
 	@SuppressWarnings("rawtypes")
 	public CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final Date date, final String publisher, final ContactDetail contact, final String description, final Collection<UsageContext> usageContexts, 
-			final CodeableConcept jurisdiction, final String purpose, final String copyright,
+			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
 			
 			//CodeSystem only
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
 			final Code content, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
-				description, usageContexts, jurisdiction, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
+				description, usageContexts, jurisdictions, purpose, copyright);
 
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
@@ -251,8 +251,8 @@ public class CodeSystem extends TerminologyResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, 
-				description, usageContexts, jurisdiction, purpose, copyright,
+			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
+				description, usageContexts, jurisdictions, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, count, filters, properties, concepts);
 		}

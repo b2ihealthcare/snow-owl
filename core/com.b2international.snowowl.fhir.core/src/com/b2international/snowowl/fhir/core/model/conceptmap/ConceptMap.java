@@ -102,11 +102,11 @@ public class ConceptMap extends TerminologyResource {
 	@SuppressWarnings("rawtypes")
 	public ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
 			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
-			ContactDetail contact, String description, Collection<UsageContext> usageContexts,
-			CodeableConcept jurisdiction, String purpose, String copyright, Uri sourceUri, Reference sourceReference,
+			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
+			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, Uri sourceUri, Reference sourceReference,
 			Uri targetUri, Reference targetReference, Collection<Group> groups) {
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
-				contact, description, usageContexts, jurisdiction, purpose, copyright);
+				contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		this.sourceUri = sourceUri;
 		this.sourceReference = sourceReference;
 		this.targetUri = targetUri;
@@ -186,7 +186,9 @@ public class ConceptMap extends TerminologyResource {
 		@Override
 		protected ConceptMap doBuild() {
 			
-			return new ConceptMap(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contact, description, usageContexts, jurisdiction, purpose, copyright, sourceUri, sourceReference, targetUri, targetReference, groups);
+			return new ConceptMap(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, 
+					contacts, description, usageContexts, jurisdictions, purpose, copyright, sourceUri, sourceReference, 
+					targetUri, targetReference, groups);
 		}
 		
 	}
