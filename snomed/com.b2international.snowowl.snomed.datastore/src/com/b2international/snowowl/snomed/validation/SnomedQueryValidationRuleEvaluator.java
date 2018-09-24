@@ -91,7 +91,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
 
-		if (params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY)) {
+		if (params != null && params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY)) {
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		}
 		
