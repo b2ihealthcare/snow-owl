@@ -41,7 +41,7 @@ public final class ValidateRequestBuilder
 		return getSelf();
 	}
 	
-	ValidateRequestBuilder setFilterOptions(Map<String, Object> ruleParameters) {
+	public ValidateRequestBuilder setFilterOptions(Map<String, Object> ruleParameters) {
 		this.ruleParameters = ruleParameters;
 		return getSelf();
 	}

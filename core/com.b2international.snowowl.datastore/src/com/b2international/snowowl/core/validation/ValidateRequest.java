@@ -214,11 +214,11 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return whiteListedEntries;
 	}
 	
-	public void setRuleIds(Collection<String> ruleIds) {
+	void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
 	}
 	
-	public void setFilterOptions(Map<String, Object> filterOptions) {
+	void setFilterOptions(Map<String, Object> filterOptions) {
 		this.filterOptions = filterOptions;
 	}
 	
