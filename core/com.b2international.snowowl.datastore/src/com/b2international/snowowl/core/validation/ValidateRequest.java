@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -51,6 +53,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Queues;
 
@@ -137,13 +140,15 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								.execute(context)
 								.getItems();
 						
-						final Set<ComponentIdentifier> existingComponentIdentifiers = existingRuleIssues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet());
+						
+						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = existingRuleIssues.stream().collect(Collectors.toMap(ValidationIssue::getAffectedComponent, Function.identity()));
+						
 						// remove all processed whitelist entries 
 						final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
 						final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
 						for (ComponentIdentifier componentIdentifier : ruleIssues.affectedComponentIds) {
 							
-							if (!existingComponentIdentifiers.remove(componentIdentifier)) {
+							if (!existingIsssuesByComponentIdentifier.containsKey(componentIdentifier)) {
 								final ValidationIssue validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
@@ -153,12 +158,26 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
+							} else {
+								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
+								
+								final ValidationIssue validationIssue = new ValidationIssue(
+									issueToCopy.getId(),
+									issueToCopy.getRuleId(),
+									issueToCopy.getBranchPath(),
+									issueToCopy.getAffectedComponent(),
+									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));
+								validationIssue.setDetails(Maps.newHashMap());
+								
+								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
+								persistedIssues++; 
+								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
 						}
 						
 						final Set<String> issueIdsToDelete = existingRuleIssues
 								.stream()
-								.filter(issue -> existingComponentIdentifiers.contains(issue.getAffectedComponent()))
+								.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
 								.map(ValidationIssue::getId)
 								.collect(Collectors.toSet());
 						
