@@ -73,7 +73,7 @@ public class DatasetBootstrap extends Plugin {
 		}
 		// delete resource directory first
 
-		final File resourceDirectory = new File(configuration.getResourceDirectory());
+		final File resourceDirectory = env.getDataPath().toFile();
 		LOG.info("Deleting content of {}", resourceDirectory);
 		FileUtils.cleanDirectory(resourceDirectory);
 		LOG.info("Extracting dataset from {} to {}", datasetFile, resourceDirectory);

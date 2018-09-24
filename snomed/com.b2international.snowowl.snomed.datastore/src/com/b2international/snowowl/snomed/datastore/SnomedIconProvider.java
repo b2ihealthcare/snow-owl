@@ -61,7 +61,7 @@ public final class SnomedIconProvider {
 	 * @return the file instance describing the folder containing the icons for the components.
 	 */
 	private File getIconDirectory() {
-		return new File(ApplicationContext.getServiceForClass(Environment.class).getDataDirectory(), SNOMEDICONS_FOLDER);
+		return ApplicationContext.getServiceForClass(Environment.class).getDataPath().resolve(SNOMEDICONS_FOLDER).toFile();
 	}
 	
 	/**

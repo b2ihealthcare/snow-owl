@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -39,7 +41,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 	
 	private final FileBasedConfigurationPreferences preferences;
 
-	public FileBasedPreferencesService(File configDir) {
+	public FileBasedPreferencesService(Path configDir) {
 		this.preferences = new FileBasedConfigurationPreferences(configDir);
 	}
 	
@@ -58,11 +60,6 @@ public class FileBasedPreferencesService implements PreferencesService {
 		return new String[0];
 	}
 	
-	public File getConfigurationDirectory(){
-		return preferences.getConfigDir();
-	}
-	
-	
 	/**
 	 * 
 	 * Custom {@link Preferences} implementation to store configuration preferences in a property file.
@@ -77,7 +74,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 		private FileBasedConfigurationPreferences parent;
 		private Map<String, FileBasedConfigurationPreferences> children;
 		private String name;
-		private File configDir;
+		private Path configDir;
 		
 		private static final String ROOT_SNOWOWL_CONFIG_NODE_NAME = "SNOWOWL_CONFIG_ROOT";
 		
@@ -85,9 +82,8 @@ public class FileBasedPreferencesService implements PreferencesService {
 		 * Constructor to create the root preferences node, does not contain preferences, it is the root of the preferences tree
 		 * @param configDirectory
 		 */
-		private FileBasedConfigurationPreferences(File configDir)  {
-			
-			if(!configDir.isDirectory()){
+		private FileBasedConfigurationPreferences(Path configDir)  {
+			if (!Files.isDirectory(configDir)){
 				throw new IllegalArgumentException("Provided directory does not exist or it is not a directory.");
 			}
 			
@@ -113,7 +109,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 			
 			this.parent = parent;
 			this.name = nodeName;
-			this.file = new File(parent.getConfigDir(), getFilePath(nodeName));
+			this.file = parent.getConfigDir().resolve(getFilePath(nodeName)).toFile();
 						
 			try {				
 				if(!file.exists()){
@@ -283,7 +279,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 
 		@Override
 		public String absolutePath() {
-			return getConfigDir().getAbsolutePath()+File.separatorChar+getFilePath(name);
+			return getConfigDir().resolve(getFilePath(name)).toString();
 		}
 
 		@Override
@@ -304,7 +300,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 			return parent() == null;
 		}
 		
-		public File getConfigDir() {			
+		public Path getConfigDir() {			
 			return isRoot() ? configDir : parent.getConfigDir();
 		}
 		

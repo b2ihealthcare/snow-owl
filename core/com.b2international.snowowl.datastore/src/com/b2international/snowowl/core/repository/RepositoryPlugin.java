@@ -118,8 +118,8 @@ public final class RepositoryPlugin extends Plugin {
 	
 	private Map<String, Object> initIndexSettings(Environment env) {
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataDirectory().toPath().resolve("indexes").toString());
-		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigDirectory().toPath().toString());
+		builder.put(IndexClientFactory.DATA_DIRECTORY, env.getDataPath().resolve("indexes").toString());
+		builder.put(IndexClientFactory.CONFIG_DIRECTORY, env.getConfigPath().toString());
 		
 		final RepositoryConfiguration repositoryConfig = env.service(SnowOwlConfiguration.class)
 				.getModuleConfig(RepositoryConfiguration.class);

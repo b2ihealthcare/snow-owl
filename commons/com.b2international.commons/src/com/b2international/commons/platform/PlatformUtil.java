@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.core.net.proxy.IProxyService;
@@ -145,7 +146,7 @@ public class PlatformUtil {
 	 * @throws RuntimeException
 	 *             - if something happens during conversion.
 	 */
-	public static String toAbsolutePath(Class<?> contextClass, String resourceClassPathLocation) {
+	public static Path toAbsolutePath(Class<?> contextClass, String resourceClassPathLocation) {
 		return toAbsolutePath(toFileURL(contextClass, resourceClassPathLocation));
 	}
 
@@ -155,10 +156,10 @@ public class PlatformUtil {
 	 * @param fileURL
 	 * @return
 	 */
-	public static String toAbsolutePath(URL fileURL) {
+	public static Path toAbsolutePath(URL fileURL) {
 		try {
 			fileURL = new URL(fileURL.toString().replaceAll(" ", "%20"));
-			return Paths.get(fileURL.toURI()).toString();
+			return Paths.get(fileURL.toURI());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -168,7 +169,7 @@ public class PlatformUtil {
 	 * @param url
 	 * @return
 	 */
-	public static String toAbsoluteBundlePath(URL bundleUrl) {
+	public static Path toAbsoluteBundlePath(URL bundleUrl) {
 		return toAbsolutePath(getBundleFileURL(bundleUrl));
 	}
 
@@ -180,7 +181,7 @@ public class PlatformUtil {
 	 * @param path
 	 * @return
 	 */
-	public static String toAbsolutePathBundleEntry(Class<?> contextClass, String path) {
+	public static Path toAbsolutePathBundleEntry(Class<?> contextClass, String path) {
 		final Bundle bundle = checkNotNull(FrameworkUtil.getBundle(contextClass), "Bundle not found for %s", contextClass);
 		return toAbsoluteBundlePath(checkNotNull(bundle.getEntry(path), "Bundle entry not found at %s in bundle %s", path, bundle.getSymbolicName()));
 	}

@@ -27,7 +27,6 @@ import com.jayway.restassured.RestAssured
 import com.jayway.restassured.http.ContentType
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
-import java.io.File
 import java.util.List
 import java.util.Map
 import java.util.concurrent.atomic.AtomicBoolean
@@ -169,7 +168,7 @@ class RestExtensions {
 	}
 	
 	def static RequestSpecification withFile(RequestSpecification it, String file, Class<?> cp) {
-		multiPart(new File(PlatformUtil.toAbsolutePath(cp, file)))
+		multiPart(PlatformUtil.toAbsolutePath(cp, file).toFile())
 	}
 	
 	// Simple REST operations

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,20 @@
  */
 package com.b2international.snowowl.core.config;
 
-import java.io.File;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.b2international.commons.config.Configuration;
 import com.b2international.commons.config.ConfigurationFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Snow Owl Application configuration class. The configuration can be manually
- * constructed or it can be constructed from a JSON file using a
+ * constructed or it can be constructed from a YAML file using a
  * {@link ConfigurationFactory}.
  * 
  * @since 3.3
  */
 public class SnowOwlConfiguration extends Configuration {
 
-	private transient String installationDirectory = "";
-	
-	@NotEmpty
-	private String configurationDirectory = "configuration";
-	
-	@NotEmpty
-	private String resourceDirectory = "resources";
+	private String dataPath;
 	
 	private boolean systemUserNeeded = false;
 	
@@ -57,23 +47,13 @@ public class SnowOwlConfiguration extends Configuration {
 	}
 	
 	@JsonProperty
-	public String getConfigurationDirectory() {
-		return configurationDirectory;
+	public String getDataPath() {
+		return dataPath;
 	}
 
 	@JsonProperty
-	public String getResourceDirectory() {
-		return resourceDirectory;
-	}
-
-	@JsonProperty
-	public void setConfigurationDirectory(String configurationDirectory) {
-		this.configurationDirectory = configurationDirectory;
-	}
-
-	@JsonProperty
-	public void setResourceDirectory(String resourceDirectory) {
-		this.resourceDirectory = resourceDirectory;
+	public void setDataPath(String dataPath) {
+		this.dataPath = dataPath;
 	}
 
 	@JsonProperty("systemUser")
@@ -96,21 +76,4 @@ public class SnowOwlConfiguration extends Configuration {
 		this.gzip = gzip;
 	}
 	
-	/**
-	 * @param installationDirectory the installationDirectory to set
-	 */
-	public void setInstallationDirectory(String installationDirectory) {
-		this.installationDirectory = installationDirectory;
-	}
-	
-	/**
-	 * Returns the sub directory under the current installation directory.
-	 * 
-	 * @param subDirectory
-	 * @return
-	 */
-	public File getInstallationSubDirectory(String subDirectory) {
-		return new File(installationDirectory, subDirectory);
-	}
-
 }

@@ -111,13 +111,13 @@ public final class Plugins {
 	}
 
 	/**
-	 * Computes a fieldName to Configuration class {@link Map} and returns it based on the currently configured and registered {@link ModuleConfig}
-	 * annotations.
+	 * Collects all plugin configuration contributions and returns them in a {@link Map} where the key is the desired property name of the
+	 * configuration node and the value is the {@link Class} of the actual configuration node.
 	 * 
 	 * @return
 	 * @since 3.4
 	 */
-	public Map<String, Class<?>> getModuleConfigurations() {
+	public Map<String, Class<?>> getPluginConfigurations() {
 		final Map<String, Class<?>> moduleConfigMap = newHashMap();
 		for (Plugin plugin : getPlugins()) {
 			plugin.addConfigurations(new ConfigurationRegistry() {

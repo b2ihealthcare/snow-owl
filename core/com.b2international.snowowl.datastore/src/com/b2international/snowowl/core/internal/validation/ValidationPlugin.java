@@ -80,7 +80,7 @@ public final class ValidationPlugin extends Plugin {
 			env.services().registerService(ValidationRepository.class, repository);
 			
 			// register always available validation rule evaluators
-			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigDirectory().toPath()));
+			ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(env.getConfigPath()));
 			
 			// initialize validation thread pool
 			final ValidationConfiguration validationConfig = configuration.getModuleConfig(ValidationConfiguration.class);
@@ -93,7 +93,7 @@ public final class ValidationPlugin extends Plugin {
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
 
 			
-			final List<File> listOfFiles = Arrays.asList(env.getConfigDirectory().listFiles());
+			final List<File> listOfFiles = Arrays.asList(env.getConfigPath().toFile().listFiles());
 			final Set<File> validationRuleFiles = Sets.newHashSet();
 			final Pattern validationFilenamePattern = Pattern.compile("(validation-rules)-(\\w+).(json)");
 			for (File file : listOfFiles) {

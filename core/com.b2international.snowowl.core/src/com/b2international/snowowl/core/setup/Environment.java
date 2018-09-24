@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.setup;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
 import com.b2international.snowowl.core.config.ClientPreferences;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.google.inject.Provider;
 
 /**
@@ -37,104 +36,68 @@ public final class Environment implements ServiceProvider {
 
 	private final ApplicationContext context = ApplicationContext.getInstance();
 	private final IManagedContainer container = IPluginContainer.INSTANCE;
-	private final File homeDirectory;
-	private final Plugins plugins;
 	
-	private File configDirectory;
-	private File resourcesDirectory;
-
-	public Environment(final Plugins plugins, File homeDirectory, final SnowOwlConfiguration configuration) throws Exception {
-		this.plugins = plugins;
-		this.homeDirectory = homeDirectory;
-		initializeEnvironmentDirectories(configuration);
+	private final Path homePath;
+	private final Path configPath;
+	private final Path dataPath;
+	
+	public Environment(final Path homePath, final Path configPath, final Path dataPath) throws Exception {
+		this.homePath = homePath;
+		this.configPath = configPath;
+		this.dataPath = dataPath; 
+		// intialize global services based on the environment
 		final PreferencesService preferences = PlatformUtil.getPreferencesService(CoreActivator.getContext());
 		services().registerService(PreferencesService.class, preferences);
-		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(getConfigDirectory()));
-		services().registerService(SnowOwlConfiguration.class, configuration);
+		services().registerService(FileBasedPreferencesService.class, new FileBasedPreferencesService(configPath));
 		final ClientPreferences cdoClientConfiguration = new ClientPreferences(preferences);
 		services().registerService(ClientPreferences.class, cdoClientConfiguration);
-		services().registerService(Plugins.class, plugins);
 		services().registerService(Environment.class, this);
 	}
 	
-	private void initializeEnvironmentDirectories(SnowOwlConfiguration configuration) throws Exception {
-		// TODO check if the configuration uses an absolute path
-		this.configDirectory = createDirectory(homeDirectory, configuration.getConfigurationDirectory());
-		this.resourcesDirectory = createDirectory(homeDirectory, configuration.getResourceDirectory());
-		// set resolved directory paths to configuration
-		configuration.setInstallationDirectory(this.homeDirectory.getAbsolutePath());
-		configuration.setConfigurationDirectory(this.configDirectory.getAbsolutePath());
-		configuration.setResourceDirectory(this.resourcesDirectory.getAbsolutePath());
-	}
-
 	/**
-	 * Returns the currently loaded list of {@link Plugin}s via a {@link Plugins} instance. 
-	 * @return
+	 * @return the currently loaded list of {@link Plugin}s via a {@link Plugins} instance
 	 */
 	public Plugins plugins() {
-		return plugins;
+		return service(Plugins.class);
 	}
 	
 	/**
-	 * Returns the {@link ApplicationContext} instance to register/retrieve
-	 * services.
-	 * 
-	 * @return
+	 * @return the {@link ApplicationContext} instance to register/retrieve services.
 	 */
 	public ApplicationContext services() {
 		return context;
 	}
 
 	/**
-	 * Returns the {@link IManagedContainer} to register Net4J and CDO services.
-	 * 
-	 * @return
+	 * @return the {@link IManagedContainer} to register Net4J and CDO services.
 	 */
 	public IManagedContainer container() {
 		return container;
 	}
 
 	/**
-	 * Returns the global {@link FileBasedPreferencesService}.
-	 * 
-	 * @return
+	 * @return the home directory path.
 	 */
-	public FileBasedPreferencesService filePreferences() {
-		return service(FileBasedPreferencesService.class);
+	public Path getHomePath() {
+		return homePath;
+	}
+	
+	/**
+	 * @return the configuration directory path.
+	 */
+	public Path getConfigPath() {
+		return configPath;
 	}
 
 	/**
-	 * Returns the current installation directory.
-	 * 
-	 * @return
+	 * @return the data directory path.
 	 */
-	public File getHomeDirectory() {
-		return homeDirectory;
+	public Path getDataPath() {
+		return dataPath;
 	}
 
 	/**
-	 * Returns the config directory location.
-	 * 
-	 * @return
-	 */
-	public File getConfigDirectory() {
-		return configDirectory;
-	}
-
-	/**
-	 * Returns the data directory location.
-	 * 
-	 * @return
-	 */
-	public File getDataDirectory() {
-		return resourcesDirectory;
-	}
-
-	/**
-	 * Returns the {@link PreferencesService} from the
-	 * {@link ApplicationContext}.
-	 * 
-	 * @return
+	 * @return the {@link PreferencesService} from the {@link ApplicationContext}.
 	 */
 	public PreferencesService preferences() {
 		return services().getServiceChecked(PreferencesService.class);
@@ -180,17 +143,6 @@ public final class Environment implements ServiceProvider {
 	 */
 	public boolean isServer() {
 		return services().isServerMode();
-	}
-
-	private File createDirectory(File parent, String path) throws Exception {
-		return createDirectory(new File(parent, path));
-	}
-	
-	private File createDirectory(File directory) {
-		if (!directory.exists()) {
-			directory.mkdirs();
-		}
-		return directory;
 	}
 
 }

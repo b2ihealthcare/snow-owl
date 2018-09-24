@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -37,8 +37,8 @@ public class AllGenericValidationTests {
 	@BeforeClass
 	public static void init() {
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
-		String resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
-		ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(Paths.get(resourcesDir)));
+		Path resourcesDir = PlatformUtil.toAbsoluteBundlePath(BaseGenericValidationRuleTest.class.getClassLoader().getResource("src/main/resources"));
+		ValidationRuleEvaluator.Registry.register(new GroovyScriptValidationRuleEvaluator(resourcesDir));
 	}
 
 }

@@ -16,20 +16,15 @@
 package com.b2international.snowowl.test.commons;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.google.common.base.Strings;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 
 /**
  * Bootstraps a {@link SnowOwl} and runs it before test method execution. After all test execution finished, shuts the application down.
@@ -64,32 +59,31 @@ import ch.qos.logback.classic.LoggerContext;
  */
 public class SnowOwlAppRule extends ExternalResource {
 
-	private final static Logger LOGGER = LoggerFactory.getLogger(SnowOwlAppRule.class);
+//	private final static Logger LOGGER = LogManager.getLogger(SnowOwlAppRule.class);
 	
-	private String configPath;
+	private Path configPath;
 	private boolean clearResources = false;
 	private Plugin[] plugins;
 	private SnowOwl snowowl;
 
 	private SnowOwlAppRule() {
-		
-		String requestLoggerLevelProperty = System.getProperty("request.logger.level");
-		if (!Strings.isNullOrEmpty(requestLoggerLevelProperty)) {
-			LOGGER.info("Using the system property 'request.logger.level' to set the request logger level to {}. Default level is INFO.", requestLoggerLevelProperty);
-			Level requestLoggerLevel = Level.toLevel(requestLoggerLevelProperty, Level.INFO);
-			
-			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-			ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("request");
-			rootLogger.setLevel(requestLoggerLevel);
-		}
+//		String requestLoggerLevelProperty = System.getProperty("request.logger.level");
+//		if (!Strings.isNullOrEmpty(requestLoggerLevelProperty)) {
+//			LOGGER.info("Using the system property 'request.logger.level' to set the request logger level to {}. Default level is INFO.", requestLoggerLevelProperty);
+//			Level requestLoggerLevel = Level.toLevel(requestLoggerLevelProperty, Level.INFO);
+//			
+//			LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+//			ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("request");
+//			rootLogger.setLevel(requestLoggerLevel);
+//		}
 	}
 
 	/**
-	 * Sets the absolute configuration path to the given argument.
+	 * Sets the absolute configuration directory path to the given argument.
 	 *
 	 * @param configPath
 	 */
-	public SnowOwlAppRule config(String configPath) {
+	public SnowOwlAppRule config(Path configPath) {
 		this.configPath = configPath;
 		return this;
 	}
@@ -117,9 +111,12 @@ public class SnowOwlAppRule extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		snowowl = SnowOwl.create(configPath, this.plugins);
+		
+		System.setProperty(SnowOwl.SO_PATH_CONF, configPath.toString());
+		
+		snowowl = SnowOwl.create(this.plugins);
 		if (clearResources) {
-			final File resourceDirectory = new File(snowowl.getConfiguration().getResourceDirectory());
+			final File resourceDirectory = snowowl.getEnviroment().getDataPath().toFile();
 			FileUtils.cleanDirectory(resourceDirectory);
 		}
 		snowowl.bootstrap();

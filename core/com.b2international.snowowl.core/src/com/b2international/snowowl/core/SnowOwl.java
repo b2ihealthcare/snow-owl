@@ -18,15 +18,17 @@ package com.b2international.snowowl.core;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 
 import javax.validation.Validator;
 
@@ -40,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.FileConfigurationSourceProvider;
 import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.setup.Environment;
@@ -49,18 +52,33 @@ import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
+
 /**
  * @since 3.3
  */
 public final class SnowOwl {
 
 	private static final String NEW_LINE = "\r\n"; //$NON-NLS-1$
-	private static final String DEFAULT_CONFIGURATION_FILE_NAME = "snowowl_config"; //$NON-NLS-1$
-	private static final String SUPPORTED_CONFIG_EXTENSION = "yml";
-	private static final String SNOWOWL_HOME = "snowowl.home";
-	private static final String OSGI_INSTALL_AREA = "osgi.install.area";
 	
-	private static final Logger LOG = LoggerFactory.getLogger("snowowl");
+	// available configurable paths
+	// via System Properties/JVM args
+	public static final String SO_PATH_HOME = "so.path.home"; //$NON-NLS-1$
+	public static final String SO_PATH_CONF = "so.path.conf"; //$NON-NLS-1$
+	// via ENV variables 
+	public static final String SO_PATH_HOME_ENV = "SO_PATH_HOME"; //$NON-NLS-1$
+	public static final String SO_PATH_CONF_ENV = "SO_PATH_CONF"; //$NON-NLS-1$
+	
+	// default folders and files
+	private static final String OSGI_INSTALL_AREA = "osgi.install.area"; //$NON-NLS-1$
+	private static final String DEFAULT_CONF_PATH = "configuration"; //$NON-NLS-1$
+	private static final String CONFIGURATION_FILE = "snowowl.yml"; //$NON-NLS-1$
+	private static final String DEFAULT_DATA_PATH = "resources"; //$NON-NLS-1$
+	
+	private final Logger log;
 	
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
@@ -69,53 +87,113 @@ public final class SnowOwl {
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
 
-	private SnowOwl(String configPath, Plugin...additionalPlugins) throws Exception {
-		final File homeDirectory = getHomeDirectory();		
-		checkArgument(homeDirectory.exists() && homeDirectory.isDirectory(), "Snow Owl HOME directory at '%s' must be an existing directory.", homeDirectory);
-		LOG.info("Scanning plugins...");
+	private SnowOwl(Plugin...additionalPlugins) throws Exception {
+		final Path homePath = getHomePath();
+		final Path confPath = getConfPath(homePath);
+		
+		configureLoggers();
+		// initialize the logging system and the first logger instance after we've loaded all necessary stuff
+		log = LoggerFactory.getLogger("snowowl");
+		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()
 			.addAll(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class))
 			.add(additionalPlugins != null ? additionalPlugins : new Plugin[]{})
 			.build();
 		this.plugins = new Plugins(plugins);
-		this.plugins.getPlugins().forEach(plugin -> LOG.info("loaded plugin [{}]", plugin));
-		this.configuration = createConfiguration(this.plugins, homeDirectory, configPath);
-		this.environment = new Environment(this.plugins, homeDirectory, configuration);
+		this.configuration = createConfiguration(confPath, this.plugins);
+		
+		final Path dataPath = getDataPath(homePath, configuration.getDataPath());
+		this.environment = new Environment(homePath, confPath, dataPath);
+		
+		this.environment.services().registerService(SnowOwlConfiguration.class, this.configuration);
+		this.environment.services().registerService(Plugins.class, this.plugins);
+		// log environment and setting info
 		logEnvironment();
+		this.plugins.getPlugins().forEach(plugin -> log.info("loaded plugin [{}]", plugin));
 	}
 	
-	private static File getHomeDirectory() {
-		String homeDirectory = System.getProperty(SNOWOWL_HOME);
-		if (Strings.isNullOrEmpty(homeDirectory)) {
-			String installArea = CoreActivator.getContext().getProperty(OSGI_INSTALL_AREA);
-			try {
-				return URIUtil.toFile(URIUtil.fromString(installArea));
-			} catch (URISyntaxException e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			return new File(homeDirectory);
+	private void configureLoggers() {
+		if (PlatformUtil.isDevVersion()) {
+			LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+			PatternLayoutEncoder ple = new PatternLayoutEncoder();
+			ple.setPattern("[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] [%thread] %-5level %logger{35} - %msg %n");
+			ple.setContext(lc);
+			ple.start();
+			ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
+			consoleAppender.setName("STDOUT");
+			consoleAppender.setEncoder(ple);
+			consoleAppender.setContext(lc);
+			consoleAppender.start();
+			ch.qos.logback.classic.Logger logbackLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+			logbackLogger.addAppender(consoleAppender);
 		}
+	}
+
+	private Path getHomePath() {
+		// check ENV variable
+		String homePath = System.getenv(SO_PATH_HOME_ENV);
+		if (!Strings.isNullOrEmpty(homePath)) {
+			return createPath(SO_PATH_HOME_ENV, homePath);
+		}
+		
+		// check System property
+		homePath = System.getProperty(SO_PATH_HOME);
+		if (!Strings.isNullOrEmpty(homePath)) {
+			return createPath(SO_PATH_HOME, homePath);
+		}
+		
+		// as last resort, use the current install area for homePath
+		try {
+			final String installArea = CoreActivator.getContext().getProperty(OSGI_INSTALL_AREA);
+			return URIUtil.toFile(URIUtil.fromString(installArea)).toPath();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private Path getConfPath(Path homePath) {
+		// check ENV variable
+		String confPath = System.getenv(SO_PATH_CONF_ENV);
+		if (!Strings.isNullOrEmpty(confPath)) {
+			return createPath(SO_PATH_CONF_ENV, confPath);
+		}
+		
+		// check System property
+		confPath = System.getProperty(SO_PATH_CONF);
+		if (!Strings.isNullOrEmpty(confPath)) {
+			return createPath(SO_PATH_CONF, confPath);
+		}
+		
+		// as last resort, fall back to the default configuration folder SO_HOME/configuration
+		return homePath.resolve(DEFAULT_CONF_PATH);
+	}
+
+	private Path getDataPath(Path homePath, String configurationDataPath) throws IOException {
+		if (!Strings.isNullOrEmpty(configurationDataPath)) {
+			return createPath("dataPath", configurationDataPath);
+		}
+		
+		Path defaultDataPath = homePath.resolve(DEFAULT_DATA_PATH);
+		if (Files.exists(defaultDataPath)) {
+			Files.createDirectories(defaultDataPath);
+		}
+		return defaultDataPath;
+	}
+	
+	private Path createPath(String variable, String path) {
+		final Path p = Paths.get(path);
+		checkArgument(Files.isDirectory(p), "%s should point to a directory. Got: %s", variable, path);
+		return p;
 	}
 
 	/**
 	 * Creates a new Snow Owl application ready to be initialized via {@link #bootstrap()} and started via {@link #run()}.
-	 * @throws Exception 
-	 */
-	public static SnowOwl create() throws Exception {
-		return create(null);
-	}
-	
-	/**
-	 * Creates a new Snow Owl application ready to be initialized via {@link #bootstrap()} and started via {@link #run()}.
 	 * 
-	 * @param configPath
-	 *            - the configuration file path to use
 	 * @param additionalPlugins - additional {@link Plugin} instances to use during initialization
 	 * @throws Exception 
 	 */
-	public static SnowOwl create(String configPath, Plugin...additionalPlugins) throws Exception {
-		return new SnowOwl(configPath, additionalPlugins);
+	public static SnowOwl create(Plugin...additionalPlugins) throws Exception {
+		return new SnowOwl(additionalPlugins);
 	}
 
 	/**
@@ -146,35 +224,26 @@ public final class SnowOwl {
 	 */
 	public SnowOwl bootstrap() throws Exception {
 		if (!isRunning()) {
-			LOG.info("Initializing...");
+			log.info("Initializing...");
 			this.plugins.init(this.configuration, this.environment);
 		}
 		return this;
 	}
 
-	private SnowOwlConfiguration createConfiguration(Plugins bootstrap, File homeDirectory, String configPath) throws Exception {
-		if (Strings.isNullOrEmpty(configPath)) {
-			configPath = getDefaultConfigPath(homeDirectory);
-		}
+	private SnowOwlConfiguration createConfiguration(Path configPath, Plugins plugins) throws Exception {
 		final Validator validator = ValidationUtil.getValidator();
 		final ConfigurationFactory<SnowOwlConfiguration> factory = new ConfigurationFactory<SnowOwlConfiguration>(SnowOwlConfiguration.class, validator);
-		factory.setAdditionalModules(bootstrap.getModuleConfigurations());
-		return configPath != null ? factory.build(new FileConfigurationSourceProvider(), configPath) : factory.build();
+		factory.setAdditionalModules(plugins.getPluginConfigurations());
+		
+		final Path configFile = configPath.resolve(CONFIGURATION_FILE);
+		return configFile != null ? factory.build(new FileConfigurationSourceProvider(), configFile.toString()) : factory.build();
 	}
 	
-	private String getDefaultConfigPath(File homeDirectory) {
-		final File configFile = new File(homeDirectory, String.format("%s.%s", DEFAULT_CONFIGURATION_FILE_NAME, SUPPORTED_CONFIG_EXTENSION));
-		if (configFile.exists()) {
-			return configFile.getAbsolutePath();
-		} else {
-			return null;
-		}
-	}
-
 	private void logEnvironment() {
-		LOG.info(String.format("Home directory: %s", this.environment.getHomeDirectory()));
-		LOG.info(String.format("Config directory: %s", this.environment.getConfigDirectory()));
-		LOG.info(String.format("Data directory: %s", this.environment.getDataDirectory()));
+		log.info(String.format("Home path: %s", this.environment.getHomePath()));
+		log.info(String.format("Config path: %s", this.environment.getConfigPath()));
+		log.info(String.format("Data path: %s", this.environment.getDataPath()));
+		log.info(String.format("Logs path: TODO"));
 	}
 
 	/**
@@ -224,14 +293,14 @@ public final class SnowOwl {
 			if (preRunRunnable != null) {
 				preRunRunnable.run();
 			}
-			LOG.info("Preparing to run Snow Owl...");
+			log.info("Preparing to run Snow Owl...");
 			this.plugins.run(configuration, environment);
 			checkApplicationState();
 			running.set(true);
 			this.plugins.postRun(configuration, environment);
-			LOG.info("Snow Owl successfully started.");
+			log.info("Snow Owl successfully started.");
 		} else {
-			LOG.info("Snow Owl is already running.");
+			log.info("Snow Owl is already running.");
 		}
 		return this;
 	}
@@ -269,7 +338,7 @@ public final class SnowOwl {
 	 */
 	public void shutdown() {
 		if (isRunning()) {
-			LOG.info("Snow Owl is shutting down.");
+			log.info("Snow Owl is shutting down.");
 			this.environment.services().dispose();
 			LifecycleUtil.deactivate(environment.container());
 			running.set(false);
@@ -316,10 +385,10 @@ public final class SnowOwl {
 	 * the overwhelming INFO logs from the apache CXF stack.
 	 */
 	static {
-		final Enumeration<String> loggerNames = LogManager.getLogManager().getLoggerNames();
+		final Enumeration<String> loggerNames = java.util.logging.LogManager.getLogManager().getLoggerNames();
 		while (loggerNames.hasMoreElements()) {
 			final String name = loggerNames.nextElement();
-			final java.util.logging.Logger javaLogger = LogManager.getLogManager().getLogger(name);
+			final java.util.logging.Logger javaLogger = java.util.logging.LogManager.getLogManager().getLogger(name);
 			if (javaLogger != null) {
 				javaLogger.setLevel(Level.SEVERE);
 			}

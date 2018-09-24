@@ -53,7 +53,7 @@ public class MrcmImportExportTest {
 	public void _01_importTest() throws Exception {
 		// default/old MRCM import file contains 58 rules
 		final IBranchPath branch = BranchPathUtils.createMainPath();
-		final Path path = Paths.get(PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json"));
+		final Path path = PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json");
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
 			Services.service(MrcmImporter.class).doImport("test", stream);

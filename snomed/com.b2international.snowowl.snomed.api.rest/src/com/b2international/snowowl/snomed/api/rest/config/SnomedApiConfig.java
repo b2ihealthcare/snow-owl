@@ -162,7 +162,7 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 
 	private String readApiDescription() {
 		try {
-			final File apiDesc = new File(PlatformUtil.toAbsolutePath(SnomedApiConfig.class, "api-description.mkd"));
+			final File apiDesc = PlatformUtil.toAbsolutePath(SnomedApiConfig.class, "api-description.mkd").toFile();
 			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read api-description.html file", e);

@@ -37,7 +37,7 @@ public final class AttachmentPlugin extends Plugin {
 			env.services().registerService(AttachmentRegistry.class, RpcUtil.createProxy(env.container(), AttachmentRegistry.class));
 		}
 		if (env.isServer() || env.isEmbedded()) {
-			env.services().registerService(AttachmentRegistry.class, new DefaultAttachmentRegistry(env.getDataDirectory().toPath().resolve(ATTACHMENTS_FOLDER)));
+			env.services().registerService(AttachmentRegistry.class, new DefaultAttachmentRegistry(env.getDataPath().resolve(ATTACHMENTS_FOLDER)));
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
 			session.registerClassLoader(AttachmentRegistry.class, DefaultAttachmentRegistry.class.getClassLoader());
 		}
