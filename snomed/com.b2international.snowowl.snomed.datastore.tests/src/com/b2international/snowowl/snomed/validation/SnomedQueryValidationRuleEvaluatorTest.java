@@ -86,7 +86,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 		public void prepareQuery(ExpressionBuilder queryBuilder, Options options) {}
 
 		@Override
-		public void extendIssuesWithDetails(BranchContext context, Collection<ValidationIssue> issue) {}
+		public void extendIssues(BranchContext context, Collection<ValidationIssue> issue) {}
 
 		@Override
 		public String getToolingId() { 

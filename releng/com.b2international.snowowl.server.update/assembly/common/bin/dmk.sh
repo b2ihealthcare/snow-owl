@@ -198,7 +198,8 @@ then
                     -Djavax.xml.parsers.SAXParserFactory=com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl \
                     -Djava.awt.headless=true \
                     -XX:+AlwaysLockClassLoader \
-                    -Dosgi.classloader.type=nonparallel" 
+                    -Dosgi.classloader.type=nonparallel \
+                    -Djdk.security.defaultKeySize=DSA:1024"
 
 		cd "$KERNEL_HOME"; exec $JAVA_EXECUTABLE \
 			$JAVA_OPTS \

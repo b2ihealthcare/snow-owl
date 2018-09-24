@@ -14,7 +14,6 @@
 	
 	<modules>
 		<module>com.b2international.snowowl.hibernate.validator</module>
-		<module>com.b2international.org.apache.lucene</module>
 		<module>org.eclipse.net4j</module>
 		<module>org.eclipse.net4j.util</module>
 		<module>org.supercsv</module>

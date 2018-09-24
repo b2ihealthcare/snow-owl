@@ -252,11 +252,35 @@ repository:
 
 |numberOfShards
 |`3`
-|Number of shards to use for terminology repositories when using the Elasticsearch based index module.
+|Number of shards to use for terminology repositories.
 
 |commitConcurrencyLevel
 |`Number of cores / 4 by default, min 1`
 |Number of concurrent requests when executing bulk commit operations against a terminology repository index.
+
+|clusterUrl
+|
+|Remote Elasticsearch cluster to connect to and use for terminology repository indexes.
+
+|clusterUsername
+|
+|Username to use when connecting to a remote Elasticsearch cluster that requires Basic authentication credentials. `clusterUrl` is required for this option.
+
+|clusterPassword
+|
+|Password to use when connecting to a remote Elasticsearch cluster that requires Basic authentication credentials. `clusterUrl` is required for this option.
+
+|connectTimeout
+|`1000`
+|Determines how long should an Elasticsearch request wait for the HTTP connection to be established before failing the request.
+
+|socketTimeout
+|`30000`
+|Determines how long should an Elasticsearch request wait for a response failing the request.
+
+|clusterHealthTimeout
+|`300000`
+|Determines how long should the initialization of the embedded Elasticsearch wait for at least yellow cluster health state.
 |===
 
 --------------------------

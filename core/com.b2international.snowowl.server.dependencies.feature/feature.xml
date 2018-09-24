@@ -830,12 +830,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.org.apache.lucene"
-         download-size="0"
-         install-size="0"
-         version="7.3.1.201808151052-b2i"/>
-
-   <plugin
          id="io.netty.buffer"
          download-size="0"
          install-size="0"

@@ -93,6 +93,7 @@ public class PageableCollectionResource<T> extends CollectionResource<T> {
 		return MoreObjects.toStringHelper(PageableCollectionResource.class)
 				.add("items", StringUtils.limitedToString(getItems(), 10))
 				.add("scrollId", scrollId)
+				.add("searchAfter", searchAfter)
 				.add("limit", limit)
 				.add("total", total).toString();
 	}
