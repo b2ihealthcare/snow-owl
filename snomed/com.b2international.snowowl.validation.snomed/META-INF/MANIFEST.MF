@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.assertj.core;bundle-version="1.7.1",
  com.b2international.snowowl.snomed.ecl,
  com.b2international.snowowl.snomed.datastore,
- com.b2international.index.api.tests.tools,
+ com.b2international.index.tests.tools,
  com.b2international.collections.jackson,
  com.b2international.snowowl.test.commons,
  com.b2international.snowowl.snomed.datastore.server
