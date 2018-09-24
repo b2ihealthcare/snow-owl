@@ -45,7 +45,7 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
 		
-		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourceDir", validationResourcesDirectory);
+		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", validationResourcesDirectory);
 		
 		if (filterParams != null && !filterParams.isEmpty()) {
 			paramsBuilder.putAll(filterParams);
