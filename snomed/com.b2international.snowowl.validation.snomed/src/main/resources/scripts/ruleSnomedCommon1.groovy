@@ -15,8 +15,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Lists
 
-BranchContext ctx = params.get("ctx");
-
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
 Iterable<Hits<String>> inactiveConceptBatches = searcher.scroll(Query.select(String.class)
@@ -37,7 +35,7 @@ inactiveConceptBatches.each({ conceptBatch ->
 			.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
 			.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
 			
-	if (params.containsKey(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+	if (params.isUnpublishedOnly) {
 		invalidRelationshipExpression.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 	}
 	

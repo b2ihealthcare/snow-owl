@@ -19,8 +19,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 
-BranchContext ctx = params.get("ctx");
-
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
 Iterable<Hits<String>> activeConceptBatches = searcher.scroll(Query.select(String.class)
@@ -41,7 +39,7 @@ ExpressionBuilder activeFsnExpression = Expressions.builder()
 		.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds))
 
-if (params.containsKey(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+if (params.isUnpublishedOnly) {
 	activeFsnExpression.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 }
 
