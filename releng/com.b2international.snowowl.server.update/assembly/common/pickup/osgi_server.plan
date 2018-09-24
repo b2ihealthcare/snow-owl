@@ -12,9 +12,7 @@
 		<artifact type="bundle" name="com.b2international.collections.api" version="0.0.0"/>
 		<artifact type="bundle" name="com.b2international.collections.fastutil" version="0.0.0"/>
 		
-		<artifact type="bundle" name="com.b2international.index.api" version="0.0.0"/>
-		<artifact type="bundle" name="com.b2international.index.es" version="0.0.0"/>
-        <artifact type="bundle" name="com.b2international.org.apache.lucene" version="0.0.0"/>
+		<artifact type="bundle" name="com.b2international.index" version="0.0.0"/>
         
         <artifact type="bundle" name="com.b2international.scripting.api" version="0.0.0"/>
 		<artifact type="bundle" name="com.b2international.scripting.groovy" version="0.0.0"/>
