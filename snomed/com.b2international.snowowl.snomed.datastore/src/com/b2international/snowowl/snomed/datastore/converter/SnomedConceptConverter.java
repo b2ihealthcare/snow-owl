@@ -298,6 +298,8 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				.all()
 				.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
 				.filterByCharacteristicType(expandOptions.containsKey("characteristicType") ? expandOptions.getString("characteristicType") : null)
+				.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
+				.filterByDestination(expandOptions.containsKey("destinationId") ? expandOptions.getCollection("destinationId", String.class) : null)
 				.filterBySource(conceptIds)
 				.setExpand(expandOptions.get("expand", Options.class))
 				.setLocales(locales())
@@ -319,10 +321,13 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		}
 		
 		final Options expandOptions = expand().get(SnomedConcept.Expand.INBOUND_RELATIONSHIPS, Options.class);
+		
 		final int relationshipSearchLimit = getLimit(expandOptions);
 		
 		final SnomedRelationships inboundRelationships = SnomedRequests.prepareSearchRelationship()
 			.setLimit(relationshipSearchLimit)
+			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getCollection("typeId", String.class) : null)
+			.filterBySource(expandOptions.containsKey("sourceId") ? expandOptions.getCollection("sourceId", String.class) : null)
 			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
 			.filterByCharacteristicType(expandOptions.containsKey("characteristicType") ? expandOptions.getString("characteristicType") : null)
 			.filterByDestination(conceptIds)

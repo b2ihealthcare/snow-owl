@@ -650,6 +650,27 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void testConceptSearchRequestWithInboundRelationshipExpandSource() {
+	final String conceptId = createNewConcept(branchPath);
+		
+		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		createNewRelationship(branchPath, Concepts.NAMESPACE_ROOT, Concepts.IS_A, conceptId);
+		
+		final SnomedConcept conceptWithInboundRelationshipsSourceIdExpanded = SnomedRequests.prepareSearchConcept()
+			.all()
+			.filterById(conceptId)
+			.setExpand("inboundRelationships(souzceId:370136006)")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.stream().findFirst().get();
+		 
+		 assertNotNull(conceptWithInboundRelationshipsSourceIdExpanded.getInboundRelationships());
+		 assertEquals(2, conceptWithInboundRelationshipsSourceIdExpanded.getInboundRelationships().getTotal());
+		 assertEquals(1, conceptWithInboundRelationshipsSourceIdExpanded.getInboundRelationships().getItems().size());
+	}
+	
+	@Test
 	public void testConceptGetRequestWithInboundRelationshipExpand() {
 		final String conceptId = createNewConcept(branchPath);
 		
