@@ -50,10 +50,9 @@ import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Queues;
 
@@ -66,7 +65,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	Collection<String> ruleIds;
 
-	private Map<String, Object> filterOptions;
+	private Map<String, Object> filterOptions = Maps.newHashMap();
 	
 	ValidateRequest() {}
 	
@@ -83,13 +82,6 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
 		}
-		
-		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("ctx", context);
-		if (filterOptions != null && !filterOptions.isEmpty()) {
-			paramsBuilder.putAll(filterOptions);
-		}
-		
-		final Map<String, Object> params = paramsBuilder.build();
 		
 		final ValidationRules rules = req
 				.all()
@@ -109,7 +101,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(rule, params);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, filterOptions);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule

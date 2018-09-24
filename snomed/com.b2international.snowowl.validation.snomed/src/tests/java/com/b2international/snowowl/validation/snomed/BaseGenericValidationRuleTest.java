@@ -37,6 +37,7 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
@@ -175,7 +176,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	protected final ValidationIssues validate(String ruleId) {
 		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests.prepareValidate();
 		if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-			final Map<String, Object> filterOptions = ImmutableMap.of(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL, Boolean.TRUE);
+			final Map<String, Object> filterOptions = ImmutableMap.of(ValidationConfiguration.IS_UNPUBLISHED_ONLY, Boolean.TRUE);
 			validateRequestBuilder.setFilterOptions(filterOptions);
 		}
 		

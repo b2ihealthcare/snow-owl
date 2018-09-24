@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.datastore.request.SearchIndexResourceRequest;
@@ -78,9 +79,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 	private static final TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>> TYPE_REF = new TypeReference<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>() {};
 
 	@Override
-	public List<ComponentIdentifier> eval(ValidationRule rule, Map<String, Object> params) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Map<String, Object> params) throws Exception {
 		checkArgument(type().equals(rule.getType()), "'%s' is not recognizable by this evaluator (accepts: %s)", rule, type());
-		BranchContext context = (BranchContext) params.get("ctx");
 		SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent> validationQuery = context.service(ObjectMapper.class)
 				.<SnomedComponentValidationQuery<?, PageableCollectionResource<SnomedComponent>, SnomedComponent>>readValue(rule.getImplementation(), TYPE_REF);
 		
@@ -91,7 +91,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
 
-		if (params.containsKey(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL)) {
+		if (params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY)) {
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		}
 		

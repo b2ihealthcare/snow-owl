@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 6.1
@@ -39,15 +40,21 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public List<ComponentIdentifier> eval(ValidationRule rule, Map<String, Object> params) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws Exception {
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
-		final BranchContext context = (BranchContext) params.get("ctx");
+		
+		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourceDir", validationResourcesDirectory);
+		
+		if (filterParams != null && !filterParams.isEmpty()) {
+			paramsBuilder.putAll(filterParams);
+		}
+		
 		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
 			ImmutableMap.<String, Object>of(
-				"params", params,
-				"resourcesDir", validationResourcesDirectory
+				"ctx", context,
+				"params", paramsBuilder.build()
 			)
 		);
 	}
