@@ -160,7 +160,7 @@ public abstract class Dates {
 		try {
 			return getDateFormatter(getGmtTimeZone()).parse(date, datePattern);
 		} catch (final ParseException e) {
-			throw new SnowowlRuntimeException("Error while parsing date '" + date + "' with pattern: '" + datePattern + "'.", e);
+			throw new IllegalArgumentException("Error while parsing date '" + date + "' with pattern: '" + datePattern + "'.", e);
 		}
 	}
 
