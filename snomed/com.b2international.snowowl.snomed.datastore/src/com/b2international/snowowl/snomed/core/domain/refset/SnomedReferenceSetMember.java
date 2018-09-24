@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -24,11 +26,18 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 
 /**
@@ -102,9 +111,29 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	 * 
 	 * @return
 	 */
-	@JsonAnyGetter
+	@JsonIgnore
 	public Map<String, Object> getProperties() {
 		return properties;
+	}
+	
+	@JsonAnyGetter
+	private Map<String, Object> getPropertiesJson() {
+		HashMap<String, Object> jsonMap = newHashMap(properties);
+		jsonMap.remove(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+		jsonMap.remove(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+		return jsonMap;
+	}
+	
+	@JsonProperty
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
+	private Date getSourceEffectiveTime() {
+		return (Date) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+	}
+	
+	@JsonProperty
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
+	private Date getTargetEffectiveTime() {
+		return (Date) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 	}
 	
 	public void setType(SnomedRefSetType type) {

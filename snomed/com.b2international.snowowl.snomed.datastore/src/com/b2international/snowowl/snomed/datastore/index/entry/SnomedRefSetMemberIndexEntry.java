@@ -27,11 +27,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
@@ -382,12 +380,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		switch (rf2Field) {
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
-			if (value instanceof String && !StringUtils.isEmpty((String) value)) {
-				Date parsedDate = EffectiveTimes.parse((String) value, DateFormats.SHORT);
-				return EffectiveTimes.getEffectiveTime(parsedDate);
-			} else {
-				return EffectiveTimes.UNSET_EFFECTIVE_TIME;
-			}
+			return EffectiveTimes.getEffectiveTime(value);
 		default: 
 			return value;
 		}

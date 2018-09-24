@@ -23,8 +23,6 @@ import java.util.Map;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -194,7 +192,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		final SnomedReferenceSetMember member = new SnomedReferenceSetMember();
 		member.setStorageKey(entry.getStorageKey());
 		member.setId(entry.getId());
-		member.setEffectiveTime(EffectiveTimes.toDate(entry.getEffectiveTime()));
+		member.setEffectiveTime(toEffectiveTime(entry.getEffectiveTime()));
 		member.setReleased(entry.isReleased());
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
@@ -213,8 +211,8 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 				break;
 			case MODULE_DEPENDENCY:
 				// convert stored long values to short date format
-				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.format(entry.getSourceEffectiveTime(), DateFormats.SHORT));
-				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.format(entry.getTargetEffectiveTime(), DateFormats.SHORT));
+				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, entry.getSourceEffectiveTime() == null ? null : toEffectiveTime(entry.getSourceEffectiveTime()));
+				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, entry.getTargetEffectiveTime() == null ? null : toEffectiveTime(entry.getTargetEffectiveTime()));
 				break;
 			case CONCRETE_DATA_TYPE:
 				// convert concrete domain value to serialized String format
