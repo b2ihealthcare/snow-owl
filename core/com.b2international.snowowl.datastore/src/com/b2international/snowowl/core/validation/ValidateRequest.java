@@ -65,7 +65,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	Collection<String> ruleIds;
 
-	private Map<String, Object> filterOptions = Maps.newHashMap();
+	private Map<String, Object> ruleParameters = Maps.newHashMap();
 	
 	ValidateRequest() {}
 	
@@ -101,7 +101,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, filterOptions);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -218,8 +218,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		this.ruleIds = ruleIds;
 	}
 	
-	void setFilterOptions(Map<String, Object> filterOptions) {
-		this.filterOptions = filterOptions;
+	void setRuleParameters(Map<String, Object> ruleParameters) {
+		this.ruleParameters = ruleParameters;
 	}
 	
 	private static final class IssuesToPersist {

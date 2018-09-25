@@ -177,7 +177,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests.prepareValidate();
 		if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 			final Map<String, Object> filterOptions = ImmutableMap.of(ValidationConfiguration.IS_UNPUBLISHED_ONLY, Boolean.TRUE);
-			validateRequestBuilder.setFilterOptions(filterOptions);
+			validateRequestBuilder.setRuleParameters(filterOptions);
 		}
 		
 		new RevisionIndexReadRequest<>(validateRequestBuilder.build()).execute(context);

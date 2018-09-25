@@ -41,7 +41,7 @@ public final class ValidateRequestBuilder
 		return getSelf();
 	}
 	
-	public ValidateRequestBuilder setFilterOptions(Map<String, Object> ruleParameters) {
+	public ValidateRequestBuilder setRuleParameters(Map<String, Object> ruleParameters) {
 		this.ruleParameters = ruleParameters;
 		return getSelf();
 	}
@@ -50,7 +50,7 @@ public final class ValidateRequestBuilder
 	protected Request<BranchContext, ValidationResult> doBuild() {
 		ValidateRequest validateRequest = new ValidateRequest();
 		validateRequest.setRuleIds(ruleIds);
-		validateRequest.setFilterOptions(ruleParameters);
+		validateRequest.setRuleParameters(ruleParameters);
 		return validateRequest;
 	}
 
