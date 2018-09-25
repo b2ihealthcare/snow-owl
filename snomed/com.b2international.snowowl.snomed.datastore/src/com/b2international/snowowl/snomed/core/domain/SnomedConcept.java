@@ -207,8 +207,6 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	}
 	
 	/**
-	 * 
-	 *  
 	 * @return the inbound relationships of the SNOMED CT Concept.
 	 */
 	public SnomedRelationships getInboundRelationships() {
