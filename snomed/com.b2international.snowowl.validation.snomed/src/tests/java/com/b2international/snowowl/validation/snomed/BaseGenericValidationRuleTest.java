@@ -15,26 +15,32 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -52,11 +58,13 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
 /**
@@ -77,6 +85,14 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 	private BranchContext context;
 
+	@Parameter
+	public long effectiveTime;
+	
+	@Parameters(name = "EffectiveTime: {0}")
+	public static Iterable<? extends Object> data() {
+	    return Arrays.asList(-1, 1);
+	}
+	
 	@Override
 	public void setup() {
 		super.setup();
@@ -88,8 +104,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
 				.with(ClassLoader.class, SnomedDatastoreServerActivator.class.getClassLoader())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
+		
 		// index common required SNOMED CT Concepts
-
 		index().write(MAIN, 1L, writer -> {
 			writer.put(nextStorageKey(), concept(Concepts.ROOT_CONCEPT).build());
 			// Attributes
@@ -124,6 +140,26 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		});
 
 	}
+	
+	protected final SnomedConceptDocument.Builder concept(final String id) {
+		return DocumentBuilders.concept(id).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
+		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
+		return DocumentBuilders.relationship(source, type, destination).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination, String characteristicTypeId) {
+		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
+		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
+	}
 
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
@@ -138,7 +174,13 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	}
 
 	protected final ValidationIssues validate(String ruleId) {
-		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
+		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests.prepareValidate();
+		if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+			final Map<String, Object> filterOptions = ImmutableMap.of(ValidationConfiguration.IS_UNPUBLISHED_ONLY, Boolean.TRUE);
+			validateRequestBuilder.setRuleParameters(filterOptions);
+		}
+		
+		new RevisionIndexReadRequest<>(validateRequestBuilder.build()).execute(context);
 		return ValidationRequests.issues().prepareSearch().all().filterByRule(ruleId).build().execute(context);
 	}
 
