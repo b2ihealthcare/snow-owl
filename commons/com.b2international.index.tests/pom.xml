@@ -42,6 +42,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
+					<argLine>-Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 					<failIfNoTests>false</failIfNoTests>
 					<includes>
 						<include>**/*Test.java</include>
