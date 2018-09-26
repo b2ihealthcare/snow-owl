@@ -57,6 +57,14 @@ public class Include {
 		this.valueSets = valueSets;
 	}
 	
+	public Collection<ValueSetFilter> getFilters() {
+		return filters;
+	}
+	
+	public Collection<Uri> getValueSets() {
+		return valueSets;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

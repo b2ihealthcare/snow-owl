@@ -26,6 +26,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,12 +34,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -154,8 +157,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
-	public ValueSet expand(
-			@ApiParam(value="The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
+	public ValueSet expand(@ApiParam(value="The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		
@@ -183,6 +185,47 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
 		ValueSet valueSet = valueSetProvider.expandValueSet(url);
+		return valueSet;
+	}
+	
+	/**
+	 * HTTP Post request to expand a value set
+	 * @param url
+	 * @return expanded {@link ValueSet}
+	 */
+	@ApiOperation(
+			value="Expand a value set",
+			notes="Expand a value set specified by a request body.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/$expand", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+	public ValueSet expandBodyRequest(@ApiParam(name = "body", value = "The lookup request parameters")
+		@RequestBody Parameters.Fhir in) {
+		
+		final ExpandValueSetRequest request = toRequest(in, ExpandValueSetRequest.class);
+		
+		if (request.getUrl() == null && request.getValueSet() == null) {
+			throw new BadRequestException("Both URL and ValueSet parameters are null.", "ExpandValueSetRequest");
+		}
+
+		if (request.getUrl() == null || request.getUrl().getUriValue() == null) {
+			throw new BadRequestException("Expand request URL is not defined.", "ExpandValueSetRequest");
+		}
+		
+		if (request.getUrl() != null && 
+				request.getValueSet() != null && 
+				request.getUrl().getUriValue() != null &&
+				request.getValueSet().getUrl().getUriValue() != null &&
+				!request.getUrl().getUriValue().equals(request.getValueSet().getUrl().getUriValue())) {
+			throw new BadRequestException("URL and ValueSet.URL parameters are different.", "ExpandValueSetRequest");
+		}
+		
+		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(request.getUrl().getUriValue());
+		ValueSet valueSet = valueSetProvider.expandValueSet(request);
+		
 		return valueSet;
 	}
 	

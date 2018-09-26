@@ -55,6 +55,14 @@ public class Compose {
 		this.excludes = excludes;
 	}
 	
+	public Collection<Include> getIncludes() {
+		return includes;
+	}
+	
+	public Collection<Include> getExcludes() {
+		return excludes;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

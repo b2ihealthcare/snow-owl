@@ -51,6 +51,18 @@ public class ValueSetFilter {
 		this.value = value;
 	}
 	
+	public Code getProperty() {
+		return property;
+	}
+	
+	public Code getOperator() {
+		return operator;
+	}
+	
+	public Code getValue() {
+		return value;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

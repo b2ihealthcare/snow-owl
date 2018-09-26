@@ -21,6 +21,7 @@ import com.b2international.commons.platform.Extensions;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
@@ -112,6 +113,14 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	ValueSet expandValueSet(String url);
 	
 	/**
+	 * Returns the expanded value set for the passed in request
+	 * @param request body
+	 * @return expanded {@link ValueSet}
+	 * @throws BadRequestException if the value set is not supported by this provider
+	 */
+	ValueSet expandValueSet(ExpandValueSetRequest request);
+	
+	/**
 	 * Validates a code against a provided value set
 	 * @param validateCodeRequest code to validate
 	 * @param logicalId logical id of the value set to validate the code against
@@ -125,5 +134,6 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	 * @return validation result
 	 */
 	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest);
+
 
 }

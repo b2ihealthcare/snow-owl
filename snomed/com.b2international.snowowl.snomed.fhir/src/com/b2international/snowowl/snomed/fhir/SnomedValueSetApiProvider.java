@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -35,6 +36,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
+import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
@@ -243,6 +245,34 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				}
 			}
 		}
+	}
+	
+	@Override
+	public ValueSet expandValueSet(ExpandValueSetRequest request) {
+		
+		//same as the GET url parameter
+		if (request.getValueSet() == null) {
+			return expandValueSet(request.getUrl().getUriValue());
+		}
+		
+		//valueset is sent for expansion
+		ValueSet valueSet = request.getValueSet();
+		Collection<Compose> composeParts = valueSet.getComposeParts();
+		if (composeParts == null || composeParts.isEmpty()) {
+			throw new BadRequestException("Compose is null or empty. Nothing to expand", "$expand.valueSet.compose[]");
+		}
+		
+		for (Compose compose : composeParts) {
+			Collection<Include> includes = compose.getIncludes();
+			for (Include include : includes) {
+				Collection<ValueSetFilter> filters = include.getFilters();
+				for (ValueSetFilter valueSetFilter : filters) {
+					//TODO:
+				}
+			}
+		}
+		
+		throw new NotImplementedException();
 	}
 	
 	/*

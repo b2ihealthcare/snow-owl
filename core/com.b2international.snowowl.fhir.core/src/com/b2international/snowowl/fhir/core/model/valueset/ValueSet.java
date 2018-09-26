@@ -90,6 +90,10 @@ public class ValueSet extends TerminologyResource {
 		this.expansion = expansion;
 	}
 	
+	public Collection<Compose> getComposeParts() {
+		return composeParts;
+	}
+	
 	public static Builder builder(String valueSetId) {
 		return new Builder(valueSetId);
 	}
