@@ -1,0 +1,30 @@
+<configuration debug="true">
+
+	<jmxConfigurator />
+
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %msg %ex%n</pattern>
+	    </encoder>
+	</appender>
+	
+	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>serviceability/logs/snow-owl/log.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>serviceability/logs/snow-owl/log_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!-- keep 90 days' worth of history -->
+      		<maxHistory>90</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-28.28thread %-64.64logger{64} %msg %ex%n</pattern>
+		</encoder>
+	</appender>
+	
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="LOG_FILE" />
+	</root>
+
+</configuration> 
