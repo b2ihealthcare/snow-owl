@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.semanticengine.normalform.test.AttributeNormalizerTest;
 import com.b2international.snowowl.semanticengine.normalform.test.ConceptDefinitionAttributeRedundancyFilterTest;
 import com.b2international.snowowl.semanticengine.normalform.test.ConceptDefinitionMergerTest;
@@ -60,6 +59,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 public class AllSemanticEngineTests {
 
 	@ClassRule
-	public static final SnowOwlAppRule appRule = SnowOwlAppRule.snowOwl().config(PlatformUtil.toAbsolutePath(AllSemanticEngineTests.class, "semanticengine-tests.json"));
+	public static final SnowOwlAppRule appRule = SnowOwlAppRule.snowOwl(AllSemanticEngineTests.class);
 	
 }

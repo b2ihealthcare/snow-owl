@@ -1,7 +1,0 @@
-/*******************************************************************************
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
- ******************************************************************************/
-{
-	"configurationDirectory" : "testing/semanticengine_simpleast/configuration",
-	"systemUser": true
-}
