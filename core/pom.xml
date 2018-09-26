@@ -36,6 +36,7 @@
 		
 		<!-- Product modules -->
 		<module>com.b2international.snowowl.server.product</module>
+		<module>com.b2international.snowowl.logback.config</module>
 		
 		<!-- Core Features -->
 		<module>com.b2international.snowowl.server.core.feature</module>
