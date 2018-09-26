@@ -63,28 +63,11 @@
 									<directory>../com.b2international.snowowl.server.update/assembly/common/configuration</directory>
 									<includes>
 										<include>users</include>
+										<include>snowowl.yml</include>
 									</includes>
 								</resource>
 							</resources>
 							<outputDirectory>${basedir}/configuration</outputDirectory>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-snow-owl-config</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>../com.b2international.snowowl.server.update/assembly/h2</directory>
-									<includes>
-										<include>snowowl_config.yml</include>
-									</includes>
-								</resource>
-							</resources>
-							<outputDirectory>${basedir}</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
