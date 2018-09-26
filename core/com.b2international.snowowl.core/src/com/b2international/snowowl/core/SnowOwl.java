@@ -150,7 +150,7 @@ public final class SnowOwl {
 		}
 		
 		Path defaultDataPath = homePath.resolve(DEFAULT_DATA_PATH);
-		if (Files.exists(defaultDataPath)) {
+		if (!Files.exists(defaultDataPath)) {
 			Files.createDirectories(defaultDataPath);
 		}
 		return defaultDataPath;
