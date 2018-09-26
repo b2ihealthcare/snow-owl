@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.b2international.snowowl.rpc.RpcSession;
 
 public final class LogListener extends SessionEventListener {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(LogListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger("snowowl.session");
 	
 	/*
 	 * (non-Javadoc)
@@ -32,7 +32,7 @@ public final class LogListener extends SessionEventListener {
 	 */
 	@Override
 	protected void onLogin(final IApplicationSessionManager manager, final RpcSession session) {
-		LOGGER.info("RPC session login: " + session.get(IApplicationSessionManager.KEY_USER_ID));
+		LOGGER.trace("RPC session login: {}", session.get(IApplicationSessionManager.KEY_USER_ID));
 	}
 
 	/*
@@ -42,6 +42,6 @@ public final class LogListener extends SessionEventListener {
 	 */
 	@Override
 	protected void onLogout(final IApplicationSessionManager manager, final RpcSession session) {
-		LOGGER.info("RPC session logout: " + session.get(IApplicationSessionManager.KEY_USER_ID));
+		LOGGER.trace("RPC session logout: {}", session.get(IApplicationSessionManager.KEY_USER_ID));
 	}
 }
