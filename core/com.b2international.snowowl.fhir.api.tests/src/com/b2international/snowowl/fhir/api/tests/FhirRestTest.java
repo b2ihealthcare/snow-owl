@@ -28,6 +28,8 @@ import com.jayway.restassured.config.RestAssuredConfig;
 public class FhirRestTest extends FhirTest {
 	
 	protected static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
+	
+	protected static final String SNOMED_VERSION = "2018-07-31";
 
 	@BeforeClass
 	public static void setupSpec() {

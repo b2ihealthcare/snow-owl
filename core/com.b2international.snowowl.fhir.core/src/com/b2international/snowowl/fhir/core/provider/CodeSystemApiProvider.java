@@ -117,6 +117,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.getSync()
 				.first();
 			
+			//could not find code system + version
+			if (!csve.isPresent()) {
+				throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
+			}
 			CodeSystemVersionEntry codeSystemVersionEntry = csve.get();
 
 			CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())

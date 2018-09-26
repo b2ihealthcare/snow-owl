@@ -40,17 +40,17 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
+	SnomedValueSetRestTest.class,
 	/*
 	CodeSystemRestTest.class,
-	SnomedValueSetRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
 	LookupSnomedRestTest.class,
 	SubsumesSnomedRestTest.class,
 	ExpandSnomedRestTest.class,
-	ValueSetRestTest.class,
-	LcsCodeSystemRestTest.class
 	 */
-	ValidateValueSetRestTest.class
+	//ValueSetRestTest.class,
+	//LcsCodeSystemRestTest.class
+	//ValidateValueSetRestTest.class
 	
 	//SandBoxRestTest.class,
 })

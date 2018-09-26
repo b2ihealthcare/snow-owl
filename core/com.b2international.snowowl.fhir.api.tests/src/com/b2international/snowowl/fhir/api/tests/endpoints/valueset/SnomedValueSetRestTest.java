@@ -53,15 +53,15 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 		.body("total", notNullValue())
 		
 		//SNOMED CT
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-01-31:723264001'}")
+		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-07-31:723264001'}")
 		.body("resource.resourceType", equalTo("ValueSet"))
-		.body("resource.id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
-		.body("resource.url", equalTo("http://snomed.info/sct/version/20180131"))
-		.body("resource.version", equalTo("2018-01-31"))
+		.body("resource.id", equalTo("snomedStore:MAIN/2018-07-31:723264001"))
+		.body("resource.url", equalTo("http://snomed.info/sct/version/20180731"))
+		.body("resource.version", equalTo("2018-07-31"))
 		.body("resource.title", equalTo("Lateralizable body structure reference set"))
 		.body("resource.name", equalTo("Lateralizable body structure reference set"))
 		.body("resource.status", equalTo("active"))
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-01-31:723264001'}.resource.compose[0].include[0]")
+		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-07-31:723264001'}.resource.compose[0].include[0]")
 		.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
 		.body("filter.size()", equalTo(1))
 		.body("filter[0].property", equalTo("expression"))
@@ -82,10 +82,10 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 		.body("total", notNullValue())
 		
 		//SNOMED CT
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-01-31:723264001'}")
+		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/2018-07-31:723264001'}")
 		.body("resource.resourceType", equalTo("ValueSet"))
 		.body("resource.id", equalTo("snomedStore:MAIN/2018-01-31:723264001"))
-		.body("resource.url", equalTo("http://snomed.info/sct/version/20180131"))
+		.body("resource.url", equalTo("http://snomed.info/sct/version/20180731"))
 		.body("resource.version", equalTo("2018-01-31"))
 		.body("resource.title", equalTo("Lateralizable body structure reference set"))
 		.body("resource.name", equalTo("Lateralizable body structure reference set"))
@@ -127,7 +127,7 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 	//@Test
 	public void getSingleSnomedValueSetTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/2018-01-31:723264001") 
+		 	.pathParam("id", "snomedStore:MAIN/2018-07-31:723264001") 
 			.when().get("/ValueSet/{id}")
 			.prettyPrint();
 	}
