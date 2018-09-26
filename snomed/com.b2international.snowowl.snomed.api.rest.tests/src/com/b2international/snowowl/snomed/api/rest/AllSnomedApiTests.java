@@ -110,7 +110,7 @@ public class AllSnomedApiTests {
 
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "com.b2international.snowowl.api.rest")))
+			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class).clearResources(true))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
 			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))

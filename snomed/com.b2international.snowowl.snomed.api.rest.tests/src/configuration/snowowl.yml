@@ -2,12 +2,6 @@
 # Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 
-# Redirects configuration directory to a random directory under OSGI installation directory
-configurationDirectory: testing/rest/configuration
-
-# Redirects resources directory to have a clean H2 content
-resourceDirectory: testing/rest/resources
-
 # necessary to connect one user to the system otherwise Snow Owl startup fails
 systemUser: true
 

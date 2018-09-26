@@ -61,7 +61,6 @@ public class SnowOwlAppRule extends ExternalResource {
 
 //	private final static Logger LOGGER = LogManager.getLogger(SnowOwlAppRule.class);
 	
-	private Path configPath;
 	private boolean clearResources = false;
 	private Plugin[] plugins;
 	private SnowOwl snowowl;
@@ -79,12 +78,28 @@ public class SnowOwlAppRule extends ExternalResource {
 	}
 
 	/**
+	 * Sets Snow Owl's HOME variable to the given absolute path.
+	 * 
+	 * @param homePath
+	 * @return
+	 */
+	public SnowOwlAppRule home(Path homePath) {
+		if (homePath != null) {
+			System.setProperty(SnowOwl.SO_PATH_HOME, homePath.toString());
+		}
+		return this;
+	}
+	
+	/**
 	 * Sets the absolute configuration directory path to the given argument.
 	 *
 	 * @param configPath
+	 * @return
 	 */
 	public SnowOwlAppRule config(Path configPath) {
-		this.configPath = configPath;
+		if (configPath != null) {
+			System.setProperty(SnowOwl.SO_PATH_CONF, configPath.toString());
+		}
 		return this;
 	}
 
@@ -92,6 +107,7 @@ public class SnowOwlAppRule extends ExternalResource {
 	 * Set whether to clear the {@link SnowOwlConfiguration#getResourceDirectory()} or not.
 	 *
 	 * @param clearResources
+	 * @return
 	 */
 	public SnowOwlAppRule clearResources(boolean clearResources) {
 		this.clearResources = clearResources;
@@ -100,20 +116,17 @@ public class SnowOwlAppRule extends ExternalResource {
 
 	/**
 	 * Defines additional {@link Plugin} instances to be part of the setup process.
-	 * @param fragments
+	 * @param plugins
 	 * @return
 	 */
-	public SnowOwlAppRule fragments(Plugin...fragments) {
-		this.plugins = fragments;
+	public SnowOwlAppRule plugins(Plugin...plugins) {
+		this.plugins = plugins;
 		return this;
 	}
 
 	@Override
 	protected void before() throws Throwable {
 		super.before();
-		
-		System.setProperty(SnowOwl.SO_PATH_CONF, configPath.toString());
-		
 		snowowl = SnowOwl.create(this.plugins);
 		if (clearResources) {
 			final File resourceDirectory = snowowl.getEnviroment().getDataPath().toFile();
@@ -135,7 +148,12 @@ public class SnowOwlAppRule extends ExternalResource {
 	 * @return
 	 */
 	public static SnowOwlAppRule snowOwl() {
-		return new SnowOwlAppRule();
+		return snowOwl(null);
+	}
+	
+	public static SnowOwlAppRule snowOwl(Class<?> testSuiteClass) {
+		final Path configPath = testSuiteClass != null ? PlatformUtil.toAbsolutePath(testSuiteClass, "/configuration") : null;
+		return new SnowOwlAppRule().config(configPath);
 	}
 
 }
