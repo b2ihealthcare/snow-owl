@@ -38,6 +38,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -110,6 +111,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -657,6 +659,11 @@ public final class EsClient {
         return ContentType.create(xContentType.mediaTypeWithoutParameters(), (Charset) null);
     }
     
+    static Request clearScroll(ClearScrollRequest clearScrollRequest) throws IOException {
+        HttpEntity entity = createEntity(clearScrollRequest, XContentType.JSON);
+        return new Request(HttpDelete.METHOD_NAME, "/_search/scroll", ImmutableMap.of("ignore", "404"), entity);
+    }
+    
 	//
 	// Delegate methods are unmodified below
 	//
@@ -748,12 +755,12 @@ public final class EsClient {
 
 	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, Header... headers)
 			throws IOException {
-		return client.clearScroll(clearScrollRequest, headers);
+		return performRequestAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, headers);
 	}
 
 	public final void clearScrollAsync(ClearScrollRequest clearScrollRequest,
 			ActionListener<ClearScrollResponse> listener, Header... headers) {
-		client.clearScrollAsync(clearScrollRequest, listener, headers);
+		performRequestAsyncAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, listener, headers);
 	}
 
 	public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, Header... headers) throws IOException {
