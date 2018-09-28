@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>com.b2international.snowowl.fhir.api.tests</name>
+	<name>com.b2international.snowowl.fhir.tests</name>
 	<comment></comment>
 	<projects>
 	</projects>
