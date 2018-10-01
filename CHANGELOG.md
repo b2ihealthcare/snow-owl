@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.9.0
+
+### Added
+- Support for unpublished component only validation (#271)
+- Inbound relationship expand for SNOMED CT Concept search and get requests (#267)
+- Configuration option for Elasticsearch cluster health request timeout (2819c8c)
+
+### Changed
+- Consider additional relationship types as well when computing MRCM rules for a concept (110f2e3)
+- `sourceEffectiveTime` and `targetEffectiveTime` reference set member properties serialized as effective time instead of dates (8e0e830) 
+
+### Removed
+- Merged `com.b2international.snowowl.index.api`, `com.b2international.snowowl.index.es` and `com.b2international.org.apache.lucene` bundles into a single `com.b2international.snowowl.index` module (#269)
+
+### Performance
+- Improve evaluation of ECL queries targeting large set of focus concepts (c73fd72, 35e1380)
+- Improve execution of Concept search requests with both ECL and TERM filters (530eb15)  
+
+### Bugs
+- Fix FUZZY + TERM filter bug when the term consist only of escaped characters (0cc2c4c) 
+- Fix NSEE when attempting to export an RF2 package with no SNOMED CT versions yet in the system (c79dc21)
+- Fix server startup issue due to a bug in startup script (2530f67)
+- Ignore 404 responses thrown by Elasticsearch REST client (c6be1d2)
+
 ## 6.8.0
 
 ### Added
