@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,21 @@
  */
 package com.b2international.snowowl.snomed.exporter.server.dsv;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static java.util.Optional.ofNullable;
 
-import java.io.DataOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
@@ -40,78 +41,79 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 
 /**
- * This class implements the export process of the DSV export for simple type reference sets. 
- * Used by the SnomedSimpleTypeRefSetExportServerIndication class.
- * 
- * 
+ * Implements the export process of the DSV export for simple type reference sets. 
  */
-
 public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
+	private static final String HEADER_EXPAND = "descriptions(active:true),"
+			+ "relationships(active:true),"
+			+ "members()";
+	
+	private static final String DATA_EXPAND = "pt(),"
+			+ "descriptions(active:true),"
+			+ "relationships(active:true,destination(expand(pt())))),"
+			+ "members()";
+
+	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
+	
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
 	private boolean includeInactiveMembers;
 	private Collection<AbstractSnomedDsvExportItem> exportItems;
-	private Collection<AbstractSnomedDsvExportItem> groupedOnlyItems;
-	private IBranchPath branchPath;
-	private String delimiter;
-
-	private Map<Integer, LinkedHashMap<String, Integer>> groupedRelationships;
-	private Map<String, Integer> exportItemOccurences;
-	private Collection<String> headerList;
-	private Collection<String> metaHeaderList;
-
 	private List<ExtendedLocale> locales;
+	private IBranchPath branchPath;
 	private String exportPath;
+	private Joiner joiner;
+	private String lineSeparator;
+	
+	private Map<String, Integer> descriptionCount; // maximum number of descriptions by type
+	private Map<Integer, Map<String, Integer>> propertyCount; // maximum number of properties by group and type
 
 	/**
-	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
+	 * Creates a new instance with the export parameters.
 	 * 
 	 * @param exportSetting
 	 */
-
 	public SnomedSimpleTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
-
-		this.refSetId = exportSetting.getRefSetId();
-		this.includeDescriptionId = exportSetting.includeDescriptionId();
-		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
-		this.includeInactiveMembers = exportSetting.includeInactiveMembers();
-		this.exportItems = exportSetting.getExportItems();
-		this.locales = exportSetting.getLocales();
-		this.delimiter = exportSetting.getDelimiter();
-		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
+		refSetId = exportSetting.getRefSetId();
+		includeDescriptionId = exportSetting.includeDescriptionId();
+		includeRelationshipId = exportSetting.includeRelationshipTargetId();
+		includeInactiveMembers = exportSetting.includeInactiveMembers();
+		exportItems = exportSetting.getExportItems();
+		locales = exportSetting.getLocales();
+		branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 		exportPath = exportSetting.getExportPath();
-		groupedRelationships = Maps.newTreeMap();
-		groupedOnlyItems = Lists.newArrayList();
+		
+		joiner = Joiner.on(exportSetting.getDelimiter());
+		lineSeparator = System.getProperty("line.separator");
 	}
 
 	/**
@@ -127,8 +129,33 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		monitor.begin(100);
 		Async async = monitor.forkAsync(80);
 		OMMonitor remainderMonitor = null;
+		Path exportPath = getExportPath();
 		
-		SnomedDescription pt = SnomedRequests.prepareGetConcept(refSetId)
+		try (BufferedWriter writer = Files.newBufferedWriter(exportPath, Charsets.UTF_8)) {
+			
+			computeHeader();
+			writeHeader(writer);
+			async.stop();
+			async = null;
+			
+			remainderMonitor = monitor.fork(20);
+			writeValues(remainderMonitor, writer);
+			
+			File zipFile = FileUtils.createZipArchive(exportPath.getParent().toFile(), Files.createTempFile("export", ".zip").toFile());
+			return zipFile;
+			
+		} catch (Exception e) {
+			throw new SnowowlServiceException(e);
+		} finally {
+			if (exportPath != null) { Files.deleteIfExists(exportPath); }
+			if (null != async) { async.stop(); }
+			if (null != remainderMonitor) { remainderMonitor.done(); }
+			if (null != monitor) { monitor.done(); }
+		}
+	}
+
+	private Path getExportPath() {
+		SnomedDescription refSetPreferredTerm = SnomedRequests.prepareGetConcept(refSetId)
 			.setLocales(locales)
 			.setExpand("pt()")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
@@ -136,606 +163,516 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			.getSync()
 			.getPt();
 			
-		String fileName = pt == null ? refSetId : pt.getTerm();
-	
-		File file = new File(exportPath, fileName + ".csv");
-		try (final DataOutputStream os = new DataOutputStream(new FileOutputStream(file)) ) {
-
-			file.createNewFile();
-
-			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId,includeInactiveMembers);
-			createHeaderList(referencedComponents);
-
-			// write the header to the file
-			StringBuffer sb = new StringBuffer();
-			for (String metaHeaderListElement : metaHeaderList) {
-				if (sb.length() > 0) {
-					sb.append(delimiter);
-				}
-				sb.append(metaHeaderListElement);
-			}
-
-			if (includeDescriptionId || includeRelationshipId || includeInactiveMembers) {
-				sb.append(System.getProperty("line.separator"));
-				// sb.length > 0 works not, because the first element of the meta header can be empty string.
-				boolean fistElement = true;
-
-				for (String headerListElement : headerList) {
-					if (fistElement) {
-						fistElement = false;
-					} else {
-						sb.append(delimiter);
-					}
-					sb.append(headerListElement);
-				}
-			}
-			sb.append(System.getProperty("line.separator"));
-			os.writeBytes(sb.toString());
-
-			async.stop();
-			async = null;
-			remainderMonitor = monitor.fork(20);
-			remainderMonitor.begin(referencedComponents.getTotal());
-			// write data to the file row by row
-			LinkedHashMap<String, Integer> groupZeroCounts = groupedRelationships.getOrDefault(0, new LinkedHashMap<>());
-			
-			for (SnomedConcept referencedComponent : referencedComponents) {
-				StringBuffer stringBuffer = new StringBuffer();
-
-				for (AbstractSnomedDsvExportItem exportItem : exportItems) {
-					if (stringBuffer.length() > 0) {
-						stringBuffer.append(delimiter);
-					}
-					
-					switch (exportItem.getType()) {
-						
-						case DESCRIPTION:
-							final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
-							final String descriptionTypeId = descriptionItem.getComponentId();
-							final int descriptionOccurrences = exportItemOccurences.get(descriptionTypeId);
-							final Collection<String> descriptions = getDescriptionTokens(referencedComponent, descriptionTypeId);
-							stringBuffer.append(joinResultsWithDelimiters(descriptions, descriptionOccurrences, delimiter, includeDescriptionId));
-							break;
-
-						case RELATIONSHIP:
-							final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-							final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
-							// Use groupZeroCounts instead of exportItemOccurences here
-							int relationshipOccurrences = groupZeroCounts.get(relationshipTypeId);
-							final Collection<String> relationships = getRelationshipTokens(referencedComponent, relationshipTypeId, 0);
-							stringBuffer.append(joinResultsWithDelimiters(relationships, relationshipOccurrences, delimiter, includeRelationshipId));
-							break;
-
-						case DATAYPE:
-							final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
-							final String datatypeName = exportItem.getDisplayName();
-							final int datatypeOccurrences = exportItemOccurences.get(datatypeName);
-							final Collection<String> datatypes = getDatatypeTokens(referencedComponent, datatypeName);
-							final Collection<String> formattedDatatypeTerms = new ArrayList<String>();
-							
-							for (final String dataTypeTerm : datatypes) {
-								
-								if (!datatypeItem.isBooleanDatatype()) {
-									formattedDatatypeTerms.add(dataTypeTerm);
-									// XXX: add continue here? or else it could be added twice to the list 
-								}
-								
-								if ("0".equals(dataTypeTerm)) {
-									formattedDatatypeTerms.add("No");
-								} else if ("1".equals(dataTypeTerm)) {
-									formattedDatatypeTerms.add("Yes");
-								} else {
-									formattedDatatypeTerms.add(dataTypeTerm);
-								}
-							}
-
-							stringBuffer.append(joinResultsWithDelimiters(formattedDatatypeTerms, datatypeOccurrences, delimiter, false));
-							break;
-
-						case PREFERRED_TERM:
-							stringBuffer.append(getPreferredTerm(referencedComponent, includeDescriptionId));
-							break;
-
-						case CONCEPT_ID:
-							stringBuffer.append(referencedComponent.getId());
-							break;
-
-						case MODULE: 
-							stringBuffer.append(referencedComponent.getModuleId());
-							break;
-
-						case EFFECTIVE_TIME:
-							stringBuffer.append(Dates.formatByGmt(referencedComponent.getEffectiveTime()));
-							break;
-
-						case STATUS_LABEL:
-							stringBuffer.append(referencedComponent.isActive() ? "Active" : "Inactive");
-							break;
-
-						case DEFINITION_STATUS: 
-							stringBuffer.append(referencedComponent.getDefinitionStatus());
-							break;
-
-						default:
-							break;
-					}
-				}
-				
-				for (Integer groupId : groupedRelationships.keySet()) {
-					if (groupId == 0) {
-						continue;
-					}
-					
-					for (String relationshipId : groupedRelationships.get(groupId).keySet()) {
-						stringBuffer.append(delimiter);
-						TreeSet<String> relationships = Sets.newTreeSet();
-						relationships.addAll(getRelationshipTokens(referencedComponent, relationshipId, groupId));
-						stringBuffer.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, includeRelationshipId));
-					}
-				}
-				stringBuffer.append(System.getProperty("line.separator"));
-				os.writeBytes(stringBuffer.toString());
-				remainderMonitor.worked(1);
-			}
-			File zipFile = FileUtils.createZipArchive(file.getParentFile(), Files.createTempFile("export", ".zip").toFile());
-			return zipFile;
-		} catch (Exception e) {
-			throw new SnowowlServiceException(e);
-		} finally {
-			if (file != null) {
-				file.delete();
-			}
-			if (null != async) {
-				async.stop();
-			}
-			if (null != remainderMonitor) {
-				remainderMonitor.done();
-			}
-			if (null != monitor) {
-				monitor.done();
-			}
-		}
+		String fileName = (refSetPreferredTerm == null) ? refSetId : refSetPreferredTerm.getTerm();
+		return Paths.get(exportPath, fileName + ".csv");
 	}
 
-	private String getPreferredTerm(SnomedConcept concept, boolean includeDescriptionId) {
-		SnomedDescription pt = concept.getPt();
-		if (pt == null) {
-			return includeDescriptionId ? "" + delimiter + "" : "";
-		} else {
-			return includeDescriptionId ? pt.getId() + delimiter + pt.getTerm() : pt.getTerm();
-		}
-	}
-
-	private Collection<String> getDatatypeTokens(SnomedConcept referencedComponent, String datatypeName) {
-		Collection<String> result = Lists.newArrayList();
-		List<SnomedRelationship> items = referencedComponent.getRelationships().getItems();
-		for (SnomedRelationship snomedRelationship : items) {
-			List<SnomedReferenceSetMember> cdMembers = snomedRelationship.getMembers().getItems();
-			for (SnomedReferenceSetMember cdMember : cdMembers) {
-				Map<String, Object> properties = cdMember.getProperties();
-				if (properties.containsKey(Fields.ATTRIBUTE_NAME) && properties.get(Fields.ATTRIBUTE_NAME).equals(datatypeName)) {
-					result.add(properties.get(SnomedRf2Headers.FIELD_VALUE).toString());
-				}
-			}
-		}
-		
-		return result;
-	}
-
-	private List<String> getRelationshipTokens(SnomedConcept referencedComponent, String relationshipTypeId, int groupNumber) {
-		List<String> result = Lists.newArrayList();
-		List<SnomedRelationship> relationships = referencedComponent.getRelationships().getItems();
-		relationships.stream()
-						.filter(relationship -> relationship.getTypeId().equals(relationshipTypeId) )
-						.filter(relationship -> relationship.getGroup().equals(groupNumber))
-						.forEach(relationship -> {
-							SnomedConcept destination = relationship.getDestination();
-							StringBuilder sb = new StringBuilder();
-							if (includeRelationshipId) {
-								sb.append(destination.getId()).append(delimiter);
-							} 
-							SnomedDescription pt = destination.getPt();
-							result.add(sb.append( (pt == null) ? "" : pt.getTerm()).toString());
-						});
-		return result;
-	}
-
-	private List<String> getDescriptionTokens(SnomedConcept referencedComponent, String descriptionTypeId) {
-		List<String> result = Lists.newArrayList();
-		List<SnomedDescription> descriptions = referencedComponent.getDescriptions().getItems();
-		descriptions.stream()
-			.filter(description -> description.getTypeId().equals(descriptionTypeId))
-			.forEach(description -> {
-				StringBuilder sb = new StringBuilder();
-				if (includeDescriptionId) {
-					sb.append(description.getId()).append(delimiter);
-				}
-				result.add(sb.append(description.getTerm()).toString());
-			});
-		return result;
-	}
-
-	/**
-	 * Searches for the maximum presence of the description, relationship or concrete data types. 
-	 * Separated grouped and ungrouped relationships, generates the header strings and
-	 * initializes the row descriptor object.
-	 * @param refset 
-	 * 
-	 * @return with one or two header row in a collection. If there are two rows than the collection contains a new line character after the elements of the first row.
+	/*
+	 * Fetches members of the specified reference set, ignoring items where the referenced concept is inactive.
 	 */
-	private void createHeaderList(SnomedConcepts referencedComponents) {
+	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
+		
+		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
+			.setExpand(DATA_EXPAND)
+			.filterByActive(true)
+			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+			.setScroll("15m")
+			.setLimit(10_000);
+		
+		if (includeInactiveMembers) {
+			builder.isMemberOf(refSetId);
+		} else {
+			builder.isActiveMemberOf(refSetId);
+		}
+		
+		return new SearchResourceRequestIterator<>(builder, 
+				b -> b.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+					.execute(getEventBus())
+					.getSync());
+	}
 
-		headerList = new ArrayList<String>();
-		metaHeaderList = new ArrayList<String>();
+	/*
+	 * Finds the maximum number of occurrences for each description, relationship and concrete data type; generates headers. 
+	 */
+	private void computeHeader() {
+		descriptionCount = newHashMap();
+		propertyCount = newHashMap();
+		
+		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(HEADER_EXPAND);
+		while (conceptIterator.hasNext()) {
+			computeHeader(conceptIterator.next());
+		}
+	}
+	
+	private void computeHeader(SnomedConcepts chunk) {
+		for (SnomedConcept concept : chunk) {
+			for (AbstractSnomedDsvExportItem exportItem : exportItems) {
+				switch (exportItem.getType()) {
+					case DESCRIPTION:
+						ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						String descriptionTypeId = descriptionItem.getComponentId();
+						Integer matchingDescriptions = concept.getDescriptions()
+								.stream()
+								.filter(d -> descriptionTypeId.equals(d.getTypeId()))
+								.collect(Collectors.reducing(0, description -> 1, Integer::sum));
+						
+						descriptionCount.merge(descriptionTypeId, matchingDescriptions, Math::max);
+						break;
+					case RELATIONSHIP:
+						ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						String relationshipTypeId = relationshipItem.getComponentId();
+						
+						Map<Integer, Integer> matchingRelationships = concept.getRelationships()
+								.stream()
+								.filter(r -> relationshipTypeId.equals(r.getTypeId()) 
+										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
+										|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+								.collect(Collectors.groupingBy(
+										SnomedRelationship::getGroup,
+										Collectors.reducing(0, relationship -> 1, Integer::sum)));
 
-		Map<String, String> descriptionTypeIdToTermMap = SnomedRequests.prepareSearchConcept()
-			.all()
-			.setLocales(locales)
-			.filterByAncestor(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT)
-			.setExpand("pt()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getEventBus())
-			.then(concepts -> toTypeIdTermMap(concepts))
-			.getSync();
+						matchingRelationships.entrySet()
+								.stream()
+								.forEach(entry -> {
+									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
+										propertyCountForGroup.merge(relationshipTypeId, entry.getValue(), Math::max);
+										return propertyCountForGroup;
+									});
+								});
+						break;
+					case DATAYPE:
+						ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						String dataTypeId = dataTypeItem.getComponentId();
+						
+						Map<Integer, Integer> matchingMembers = concept.getMembers()
+								.stream()
+								.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
+										&& m.isActive()
+										&& dataTypeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID)) 
+										&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
+										|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
+								.collect(Collectors.groupingBy(
+										m -> (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP),
+										Collectors.reducing(0, relationship -> 1, Integer::sum)));
+
+						matchingMembers.entrySet()
+								.stream()
+								.forEach(entry -> {
+									propertyCount.compute(entry.getKey(), (key, oldValue) -> {
+										Map<String, Integer> propertyCountForGroup = ofNullable(oldValue).orElseGet(HashMap::new);
+										propertyCountForGroup.merge(dataTypeId, entry.getValue(), Math::max);
+										return propertyCountForGroup;
+									});
+								});
+						break;
+					default:
+						// Single-use fields don't need to be counted in advance
+						break;
+				}
+			}
+		}
+	}
+	
+	private void writeHeader(BufferedWriter writer) throws IOException {
 		
-		Map<String, String> relationsshipTypeIdToTermMap = SnomedRequests.prepareSearchConcept()
-				.all()
-				.setLocales(locales)
-				.filterByAncestor(Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.setExpand("pt()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(getEventBus())
-				.then(concepts -> toTypeIdTermMap(concepts))
-				.getSync();
-		
-		
-		exportItemOccurences = initOccurrenceMap(referencedComponents, exportItems);
+		Map<String, String> descriptionTypeIdMap = createTypeIdMap(Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT);
+		Map<String, String> propertyTypeIdMap = createTypeIdMap(Concepts.CONCEPT_MODEL_ATTRIBUTE); // includes object and data attributes
+		List<String> propertyHeader = newArrayList();
+		List<String> detailHeader = newArrayList();
 		
 		for (AbstractSnomedDsvExportItem exportItem : exportItems) {
 			switch (exportItem.getType()) {
-				
-				case DESCRIPTION:
-					final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
-					final String descriptionTypeId = descriptionItem.getComponentId();
-					int descriptionOccurrences = exportItemOccurences.get(descriptionTypeId);
-					final String descriptionDisplayName = descriptionTypeIdToTermMap.getOrDefault(descriptionTypeId, descriptionItem.getDisplayName());
+				case DESCRIPTION: {
+					ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
+					String typeId = descriptionItem.getComponentId();
+					String displayName = descriptionTypeIdMap.getOrDefault(typeId, descriptionItem.getDisplayName());
+					int occurrences = descriptionCount.get(typeId);
 					
-					// only one result
-					if (2 > descriptionOccurrences) {
+					if (occurrences < 2) {
 						if (includeDescriptionId) {
-							metaHeaderList.add(descriptionDisplayName);
-							metaHeaderList.add(descriptionDisplayName);
-							headerList.add("descriptionId");
-							headerList.add("term");
+							propertyHeader.add(displayName);
+							propertyHeader.add(displayName);
+							detailHeader.add("ID");
+							detailHeader.add("Term");
 						} else {
-							metaHeaderList.add(descriptionDisplayName);
-							headerList.add("");
+							propertyHeader.add(displayName);
+							detailHeader.add("");
 						}
-						// zero or more than one result
 					} else {
-						for (int j = 1; j <= descriptionOccurrences; j++) {
+						for (int j = 1; j <= occurrences; j++) {
+							String numberedDisplayName = String.format("%s (%s)", displayName, j);
 							if (includeDescriptionId) {
-								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
-								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
-								headerList.add("descriptionId");
-								headerList.add("term");
+								propertyHeader.add(numberedDisplayName);
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("ID");
+								detailHeader.add("Term");
 							} else {
-								metaHeaderList.add(descriptionDisplayName + " (" + j + ")");
-								headerList.add("");
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("");
 							}
-
 						}
 					}
 					break;
+				}
 					
-				case RELATIONSHIP:
-					final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
-					final String relationshipTypeId = String.valueOf(relationshipItem.getComponentId());
-					final String relationshipDisplayName = relationsshipTypeIdToTermMap.getOrDefault(relationshipTypeId, relationshipItem.getDisplayName());
-					
-					// if the relationship occurs as an ungrouped relationship.
-					sortToRelationshipGroups(referencedComponents, relationshipTypeId);
-					
-					LinkedHashMap<String, Integer> groupZeroCounts = groupedRelationships.getOrDefault(0, new LinkedHashMap<>());
-					final int relationshipOccurrences = groupZeroCounts.getOrDefault(relationshipTypeId, 0);
-					if (relationshipOccurrences > 0) {
+				case RELATIONSHIP: {
+					ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
+					String typeId = relationshipItem.getComponentId();
+					String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
+
+					// Relationship groups will be added to the end, so only consider occurrences in group 0
+					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
+					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+					if (occurrences < 1) {
+						continue;
+					}
 						
-						// only one result
-						if (2 > relationshipOccurrences) {
-							if (includeRelationshipId) {
-								metaHeaderList.add(relationshipDisplayName);
-								metaHeaderList.add(relationshipDisplayName);
-								headerList.add("Id");
-								headerList.add("Name");
-							} else {
-								metaHeaderList.add(relationshipDisplayName);
-								headerList.add("");
-							}
-							// zero or more than one result
+					if (occurrences < 2) {
+						if (includeRelationshipId) {
+							propertyHeader.add(displayName);
+							propertyHeader.add(displayName);
+							detailHeader.add("ID");
+							detailHeader.add("Destination");
 						} else {
-							for (int j = 1; j <= relationshipOccurrences; j++) {
-								if (includeRelationshipId) {
-									metaHeaderList.add(relationshipDisplayName + " (" + j + ")");
-									metaHeaderList.add(relationshipDisplayName + " (" + j + ")");
-									headerList.add("Id");
-									headerList.add("Name");
-								} else {
-									metaHeaderList.add(relationshipDisplayName + " (" + j + ")");
-									headerList.add("");
-								}
+							propertyHeader.add(displayName);
+							detailHeader.add("");
+						}
+					} else {
+						for (int j = 1; j <= occurrences; j++) {
+							String numberedDisplayName = String.format("%s (%s)", displayName, j);
+							if (includeRelationshipId) {
+								propertyHeader.add(numberedDisplayName);
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("ID");
+								detailHeader.add("Destination");
+							} else {
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("");
 							}
 						}
-						// if the relationship occurs only as a grouped
-						// relationship, collect it in an other collection.
-					} else {
-						groupedOnlyItems.add(exportItem);
 					}
-					
 					break;
-				
-				case DATAYPE:
-					final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
-					final String datatypeDisplayName = datatypeItem.getDisplayName();
-					final int datatypeOccurrences = exportItemOccurences.get(datatypeDisplayName);
+				}
+					
+				case DATAYPE: {
+					ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
+					String typeId = dataTypeItem.getComponentId();
+					String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
 
-					// only one result
-					if (2 > datatypeOccurrences) {
-						metaHeaderList.add(datatypeDisplayName);
-						headerList.add("");
-						// zero or more than one result
+					// Relationship groups will be added to the end, so only consider occurrences in group 0
+					Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(0, NO_OCCURRENCES);
+					int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+					if (occurrences < 1) {
+						continue;
+					}
+						
+					if (occurrences < 2) {
+						propertyHeader.add(displayName);
+						detailHeader.add("");
 					} else {
-						for (int j = 1; j <= datatypeOccurrences; j++) {
-							metaHeaderList.add(datatypeDisplayName + " (" + j + ")");
-							headerList.add("");
+						for (int j = 1; j <= occurrences; j++) {
+							String numberedDisplayName = String.format("%s (%s)", displayName, j);
+							propertyHeader.add(numberedDisplayName);
+							detailHeader.add("");
 						}
 					}
-					
 					break;
-
+				}
+					
 				case PREFERRED_TERM:
 					if (includeDescriptionId) {
-						metaHeaderList.add(exportItem.getDisplayName());
-						metaHeaderList.add(exportItem.getDisplayName());
-						headerList.add("descriptionId");
-						headerList.add("term");
+						propertyHeader.add(exportItem.getDisplayName());
+						propertyHeader.add(exportItem.getDisplayName());
+						detailHeader.add("ID");
+						detailHeader.add("Term");
 					} else {
-						metaHeaderList.add(exportItem.getDisplayName());
-						headerList.add("");
+						propertyHeader.add(exportItem.getDisplayName());
+						detailHeader.add("");
 					}
-					
 					break;
-
+	
 				default:
-					metaHeaderList.add(exportItem.getDisplayName());
-					headerList.add("");
+					propertyHeader.add(exportItem.getDisplayName());
+					detailHeader.add("");
+					break;
 			}
 		}
 		
-		// add the property group columns to the header
-		for (Integer groupId : groupedRelationships.keySet()) {
+		// Revisit non-zero property groups
+		for (Integer groupId : propertyCount.keySet()) {
 			if (groupId == 0) {
 				continue;
 			}
 			
-			for (String relationshipTypeId : groupedRelationships.get(groupId).keySet()) {
-				String relationshipName = relationsshipTypeIdToTermMap.get(relationshipTypeId);
-				if (1 == groupedRelationships.get(groupId).get(relationshipTypeId)) {
-					if (includeRelationshipId) {
-						metaHeaderList.add(relationshipName + " (AG" + groupId + ")");
-						metaHeaderList.add(relationshipName + " (AG" + groupId + ")");
-						headerList.add("Id");
-						headerList.add("Name");
-					} else {
-						metaHeaderList.add(relationshipName + " (AG" + groupId + ")");
-						headerList.add("");
-					}
-				} else {
-					for (int j = 1; j <= groupedRelationships.get(groupId).get(relationshipTypeId); j++) {
-						if (includeRelationshipId) {
-							metaHeaderList.add(relationshipName + " (" + j + ") " + " (AG" + groupId + ")");
-							metaHeaderList.add(relationshipName + " (" + j + ") " + " (AG" + groupId + ")");
-							headerList.add("Id");
-							headerList.add("Name");
-						} else {
-							metaHeaderList.add(relationshipName + " (" + j + ") " + " (AG" + groupId + ")");
-							headerList.add("");
+			for (AbstractSnomedDsvExportItem exportItem : exportItems) {
+				switch (exportItem.getType()) {
+					case RELATIONSHIP: {
+						ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						String typeId = relationshipItem.getComponentId();
+						String displayName = propertyTypeIdMap.getOrDefault(typeId, relationshipItem.getDisplayName());
+	
+						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
 						}
+							
+						if (occurrences < 2) {
+							if (includeRelationshipId) {
+								String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
+								propertyHeader.add(groupedDisplayName);
+								propertyHeader.add(groupedDisplayName);
+								detailHeader.add("ID");
+								detailHeader.add("Destination");
+							} else {
+								propertyHeader.add(displayName);
+								detailHeader.add("");
+							}
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
+								if (includeRelationshipId) {
+									propertyHeader.add(numberedDisplayName);
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("ID");
+									detailHeader.add("Destination");
+								} else {
+									propertyHeader.add(numberedDisplayName);
+									detailHeader.add("");
+								}
+							}
+						}
+						break;
 					}
-				}
-			}
-		}
-		// remove the only grouped relationships from the export items, because
-		// they will be exported particularly by groups.
-		exportItems.removeAll(groupedOnlyItems);
-	}
-
-	private Map<String, String> toTypeIdTermMap(SnomedConcepts concepts) {
-		return concepts.getItems()
-					.stream()
-					.collect(Collectors.toMap(concept -> concept.getId(), concept -> {
-							SnomedDescription pt = concept.getPt();
-							return pt == null ? concept.getId() : pt.getTerm();
-						}));
-	}
-
-	private void sortToRelationshipGroups(SnomedConcepts referencedComponents, String relationshipTypeId) {
-		
-		Map<Integer, Integer> groupedRelationshipsForConcept = Maps.newHashMap();
-		for (SnomedConcept concept : referencedComponents) {
-			groupedRelationshipsForConcept.clear();
-			concept.getRelationships().getItems().stream()
-				.filter(relationship -> relationship.getType().getId().equals(relationshipTypeId))
-				.forEach(relationship -> {
-					groupedRelationshipsForConcept.merge(relationship.getGroup(), 1, (oldValue, newValue) -> oldValue + newValue);
-				});
-				
-		groupedRelationshipsForConcept.entrySet().stream().forEach(entry -> {
-			groupedRelationships.compute(entry.getKey(), (key, oldValue) -> {
-				LinkedHashMap<String, Integer> relationshipTypeOccurence = ofNullable(oldValue).orElseGet(LinkedHashMap::new);
-				relationshipTypeOccurence.merge(relationshipTypeId, entry.getValue(), Math::max);
-				return relationshipTypeOccurence;
-			});
-		});
-		}
-	}
-
-	private Map<String, Integer> initOccurrenceMap(SnomedConcepts referencedComponents, Collection<AbstractSnomedDsvExportItem> exportColumns) {
-		Map<String, Integer> result = Maps.newHashMap();
-		for (AbstractSnomedDsvExportItem column : exportColumns) {
-			for (SnomedConcept concept : referencedComponents.getItems()) {
-				switch (column.getType()) {
-				case DESCRIPTION: {
-					ComponentIdSnomedDsvExportItem item = (ComponentIdSnomedDsvExportItem) column;
-					Integer count = (int) concept.getDescriptions()
-							.getItems().stream()
-							.filter(description -> description.getTypeId().equals(item.getComponentId()))
-							.count();
-					result.merge(item.getComponentId(), count,  Math::max);
-					break;
-				}
-				case RELATIONSHIP: {
-					// Will keep track of occurrences by group and relationship type ID in groupedRelationships (including group 0)
-					break;
-				}
-				case DATAYPE: {
-					DatatypeSnomedDsvExportItem item = (DatatypeSnomedDsvExportItem) column;
+						
+					case DATAYPE: {
+						ComponentIdSnomedDsvExportItem dataTypeItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						String typeId = dataTypeItem.getComponentId();
+						String displayName = propertyTypeIdMap.getOrDefault(typeId, dataTypeItem.getDisplayName());
+	
+						Map<String, Integer> occurrencesByType = propertyCount.getOrDefault(groupId, NO_OCCURRENCES);
+						int occurrences = occurrencesByType.getOrDefault(typeId, 0);
+						if (occurrences < 1) {
+							continue;
+						}
+							
+						if (occurrences < 2) {
+							String groupedDisplayName = String.format("%s (AG%s)", displayName, groupId);
+							propertyHeader.add(groupedDisplayName);
+							detailHeader.add("");
+						} else {
+							for (int j = 1; j <= occurrences; j++) {
+								String numberedDisplayName = String.format("%s (%s) (AG%s)", displayName, j, groupId);
+								propertyHeader.add(numberedDisplayName);
+								detailHeader.add("");
+							}
+						}
+						break;
+					}
 					
-					Integer count = (int) concept.getRelationships()
-									.getItems().stream()
-									.flatMap(relationship -> relationship.getMembers().getItems().stream())
-									.filter(cdMember -> cdMember.getProperties().get(Fields.ATTRIBUTE_NAME).toString().contains(item.getDisplayName()))
-									.count();
-					result.merge(item.getDisplayName(), count, Math::max);
-					break;
-				}
-				default: break;
+					default:
+						break;
 				}
 			}
 		}
 
-		return result;
-	}
-
-	private String joinResultsWithDelimiters(Collection<String> results, int max, String delimiter, boolean includeComponentId) {
-		StringBuffer sb = new StringBuffer();
-		sb.append(Joiner.on(delimiter).join(results));
-
-		int start = 0;
-
-		if (sb.length() == 0) {
-			if (includeComponentId) {
-				sb.append(delimiter);
-			}
-			start = results.size() + 1;
-		} else {
-			start = results.size();
-		}
-
-		// fill the remaining slots with delimiters
-		for (int j = start; j < max; j++) {
-			sb.append(delimiter);
-			if (includeComponentId) {
-				sb.append(delimiter);
-			}
-		}
-		return sb.toString();
-	}
-
-	/*
-	 * Fetch members of the specified refset identifier.
-	 * Don't include members that are active BUT their identified component are inactive.
-	 * @param refSetId
-	 * @param includeInactive
-	 * @return
-	 */
-	private SnomedConcepts getReferencedComponentConcepts(String refSetId, boolean includeInactive) {
+		// write the header to the file
+		writer.write(joiner.join(propertyHeader));
+		writer.write(lineSeparator);
 		
-		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
+		if (includeDescriptionId || includeRelationshipId) {
+			writer.write(joiner.join(detailHeader));
+			writer.write(lineSeparator);
+		}
+	}
+
+	private Map<String, String> createTypeIdMap(String ancestorId) {
+		return SnomedRequests.prepareSearchConcept()
 			.all()
-			.filterByRefSet(refSetId);
-		
-		if(!includeInactive) {
-			requestBuilder.filterByActive(true);
-		}
-		
-		return requestBuilder
+			.setLocales(locales)
+			.filterByAncestor(ancestorId)
+			.setExpand("pt()")
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getEventBus())
-			.then(members ->  members.getItems().stream().map(m -> m.getReferencedComponent().getId()).collect(Collectors.toSet()))
-			.then(this::getReferencedConcepts)
+			.then(concepts -> createTypeIdMap(concepts))
 			.getSync();
 	}
+
+	private Map<String, String> createTypeIdMap(SnomedConcepts concepts) {
+		return concepts.stream()
+			.collect(Collectors.toMap(
+				SnomedConcept::getId, 
+				c -> getPreferredTerm(c)));
+	}
+
+	private void writeValues(OMMonitor monitor, BufferedWriter writer) throws IOException {
+		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(DATA_EXPAND);
+		
+		while (conceptIterator.hasNext()) {
+			SnomedConcepts chunk = conceptIterator.next();
+			if (!monitor.hasBegun()) {
+				monitor.begin(chunk.getTotal());
+			}
+			
+			writeValues(writer, chunk);
+			monitor.worked(chunk.getItems().size());
+		}
+	}
+		
+	private void writeValues(BufferedWriter writer, SnomedConcepts chunk) throws IOException {
+		List<String> dataRow = newArrayList();
+		Map<String, Integer> zeroGroupOccurrences = propertyCount.getOrDefault(0, NO_OCCURRENCES);
+		
+		for (SnomedConcept concept : chunk) {
+			dataRow.clear();
+
+			for (AbstractSnomedDsvExportItem exportItem : exportItems) {
+				switch (exportItem.getType()) {
+					case DESCRIPTION: {
+						final ComponentIdSnomedDsvExportItem descriptionItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						final String typeId = descriptionItem.getComponentId();
+						int occurrences = descriptionCount.get(typeId);
+						
+						final Map<String, String> termsById = concept.getDescriptions()
+								.stream()
+								.filter(d -> typeId.equals(d.getTypeId()))
+								.collect(Collectors.toMap(
+										SnomedDescription::getId, 
+										SnomedDescription::getTerm));
+						
+						addCells(dataRow, occurrences, includeDescriptionId, termsById);
+						break;
+					}
+
+					case RELATIONSHIP: {
+						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
+						final String typeId = relationshipItem.getComponentId();
+						int occurrences = zeroGroupOccurrences.get(typeId);
+						
+						final Map<String, String> destinationsById = concept.getRelationships()
+								.stream()
+								.filter(r -> typeId.equals(r.getTypeId())
+										&& r.getGroup() == 0
+										&& (CharacteristicType.INFERRED_RELATIONSHIP.equals(r.getCharacteristicType()) 
+										|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+								.collect(Collectors.toMap(
+										SnomedRelationship::getId, 
+										r -> getPreferredTerm(r.getDestination())));
+
+						addCells(dataRow, occurrences, includeRelationshipId, destinationsById);
+						break;
+					}
+
+					case DATAYPE: {
+						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
+						final String typeId = datatypeItem.getComponentId();
+						int occurrences = zeroGroupOccurrences.get(typeId);
+						
+						final List<String> properties = concept.getMembers()
+								.stream()
+								.filter(m -> SnomedRefSetType.CONCRETE_DATA_TYPE.equals(m.type())
+										&& m.isActive()
+										&& typeId.equals(m.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID))
+										&& (Integer) m.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP) == 0 
+										&& (Concepts.INFERRED_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)) 
+										|| Concepts.ADDITIONAL_RELATIONSHIP.equals(m.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))))
+								.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
+								.map(p -> {
+									if (datatypeItem.isBooleanDatatype()) {
+										return ((Boolean) p) ? "Yes" : "No";
+									} else {
+										return p.toString();
+									}
+								})
+								.sorted()
+								.collect(Collectors.toList());
+
+						for (String value : properties) {
+							dataRow.add(value);
+							occurrences--;
+						}
+						while (occurrences > 0) {
+							dataRow.add("");
+							occurrences--;
+						}
+						break;
+					}
+					
+					case PREFERRED_TERM:
+						if (includeDescriptionId) {
+							dataRow.add(getPreferredTermId(concept));
+							dataRow.add(getPreferredTerm(concept));
+						} else {
+							dataRow.add(getPreferredTerm(concept));
+						}
+						break;
+
+					case CONCEPT_ID:
+						dataRow.add(concept.getId());
+						break;
+
+					case MODULE: 
+						dataRow.add(concept.getModuleId());
+						break;
+
+					case EFFECTIVE_TIME:
+						dataRow.add(Dates.formatByGmt(concept.getEffectiveTime()));
+						break;
+
+					case STATUS_LABEL:
+						dataRow.add(concept.isActive() ? "Active" : "Inactive");
+						break;
+
+					case DEFINITION_STATUS: 
+						dataRow.add(concept.getDefinitionStatus().toString());
+						break;
+
+					default:
+						break;
+				}
+			}
+			
+			writer.write(joiner.join(dataRow));
+			writer.write(lineSeparator);
+		}
+	}
+
+	private void addCells(List<String> dataRow, int occurrences, boolean includeIds, Map<String, String> idValuePairs) {
+		if (includeIds) {
+			SortedSet<String> sortedIds = ImmutableSortedSet.copyOf(idValuePairs.keySet());
+			for (String id : sortedIds) {
+				dataRow.add(id);
+				dataRow.add(idValuePairs.get(id));
+				occurrences--;
+			}
+			while (occurrences > 0) {
+				dataRow.add("");
+				dataRow.add("");
+				occurrences--;
+			}
+		} else {
+			List<String> sortedValues = Ordering.natural().sortedCopy(idValuePairs.values());
+			for (String value : sortedValues) {
+				dataRow.add(value);
+				occurrences--;
+			}
+			while (occurrences > 0) {
+				dataRow.add("");
+				occurrences--;
+			}
+		}
+	}
+
+	private String getPreferredTerm(SnomedConcept concept) {
+		return (concept.getPt() == null) ? "" : concept.getPt().getTerm();
+	}
 	
-	private SnomedConcepts getReferencedConcepts(Set<String> conceptIds) {
-		return SnomedRequests.prepareSearchConcept()
-				.all()
-				.filterByIds(conceptIds)
-				.filterByActive(true)
-				.setExpand("pt()")
-				.setLocales(locales)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-				.execute(getEventBus())
-				.then(concepts -> expandDescriptions(concepts))
-				.then(concepts -> expandRelationships(concepts))
-				.getSync();
-	}
-	
-	private SnomedConcepts expandRelationships(SnomedConcepts concepts) {
-		SnomedRequests.prepareSearchRelationship()
-						.all()
-						.filterByActive(true)
-						.filterBySource(conceptIds(concepts))
-						.filterByCharacteristicTypes(Sets.newHashSet(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP))
-						.setExpand("source(),destination(expand(pt())),type(expand(pt())),members(expand(pt()))")
-						.setLocales(locales)
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-						.execute(getEventBus())
-						.then(relationships -> mapToSourceConcepts(relationships, concepts))
-						.getSync();
-		
-		return concepts;
+	private String getPreferredTermId(SnomedConcept concept) {
+		return (concept.getPt() == null) ? "" : concept.getPt().getId();
 	}
 
-	private SnomedRelationships mapToSourceConcepts(SnomedRelationships relationships, SnomedConcepts concepts) {
-		ImmutableListMultimap<String, SnomedRelationship> relationshipsBySourceId = Multimaps.index(relationships.getItems(), (relationship) -> relationship.getSourceId());
-		concepts.forEach(concept -> {
-			List<SnomedRelationship> collection = relationshipsBySourceId.get(concept.getId());
-			concept.setRelationships(new SnomedRelationships(collection, null, null, collection.size(), collection.size()));
-		});
-		return relationships;
-	}
-
-	private List<String> conceptIds(SnomedConcepts concepts) {
-		return Lists.transform(concepts.getItems(), IComponent.ID_FUNCTION);
-	}
-
-	private SnomedConcepts expandDescriptions(SnomedConcepts concepts) {
-		SnomedRequests.prepareSearchDescription()
-						.all()
-						.filterByActive(true)
-						.filterByConceptId(conceptIds(concepts))
-						.setLocales(locales)
-						.setExpand("concept(),type(expand(pt())),members(expand(pt()))"/* expanding each description's language refset members */)
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-						.execute(getEventBus())
-						.then(resultDescriptions -> mapToConcepts(concepts, resultDescriptions))
-						.getSync();
-		
-		return concepts;
-	}
-
-	private SnomedDescriptions mapToConcepts(SnomedConcepts concepts, SnomedDescriptions resultDescriptions) {
-		ImmutableListMultimap<String, SnomedDescription> descriptionsByOwnerConceptId = Multimaps.index(resultDescriptions.getItems(), description -> description.getConceptId());
-		
-		concepts.forEach(concept -> {
-			List<SnomedDescription> descriptions = descriptionsByOwnerConceptId.get(concept.getId());
-			concept.setDescriptions(new SnomedDescriptions(descriptions, null, null, descriptions.size(), descriptions.size()));
-		});
-		
-		return resultDescriptions;
-	}
-
-	private IEventBus getEventBus() {
+	private static IEventBus getEventBus() {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 }

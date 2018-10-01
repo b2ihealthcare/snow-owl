@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,13 @@ import java.io.IOException;
 /**
  * @since 1.0
  */
-public final class DatatypeSnomedDsvExportItem extends AbstractSnomedDsvExportItem {
+public final class DatatypeSnomedDsvExportItem extends ComponentIdSnomedDsvExportItem {
 
-	private final String datatypeLabel;
 	private final boolean booleanDatatype;
 
-	public DatatypeSnomedDsvExportItem(final SnomedDsvExportItemType type, final String datatypeLabel, final boolean booleanDatatype) {
-		super(type);
-		this.datatypeLabel = datatypeLabel;
+	public DatatypeSnomedDsvExportItem(final SnomedDsvExportItemType type, final String componentId, final String componentLabel, final boolean booleanDatatype) {
+		super(type, componentId, componentLabel);
 		this.booleanDatatype = booleanDatatype;
-	}
-	
-	public String getDatatypeLabel() {
-		return datatypeLabel;
 	}
 	
 	public boolean isBooleanDatatype() {
@@ -43,12 +37,6 @@ public final class DatatypeSnomedDsvExportItem extends AbstractSnomedDsvExportIt
 	@Override
 	public void writeToOutputStream(final DataOutputStream outputStream) throws IOException {
 		super.writeToOutputStream(outputStream);
-		outputStream.writeUTF(datatypeLabel);
 		outputStream.writeBoolean(booleanDatatype);
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return getDatatypeLabel();
 	}
 }
