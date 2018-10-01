@@ -838,15 +838,20 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private Set<SnomedRefSetMember> getMembersByProps(Iterable<String> deletedIds) {
 		return RepositoryRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
-						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.CORRELATION_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT)) // association
+						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID)) // attribute value
+						.add(getReferringMembersByProps(deletedIds, Fields.UNIT_ID)) // cd
+						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID)) // cd
+						.add(getReferringMembersByProps(deletedIds, Fields.OPERATOR_ID)) // cd
 						.add(getReferringMembersByProps(deletedIds, Fields.DESCRIPTION_FORMAT))
-						.add(getReferringMembersByProps(deletedIds, Fields.MAP_CATEGORY_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.OPERATOR_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT))
-						.add(getReferringMembersByProps(deletedIds, Fields.UNIT_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID)) // language
+						.add(getReferringMembersByProps(deletedIds, Fields.MAP_TARGET)) // simple map
+						.add(getReferringMembersByProps(deletedIds, Fields.CORRELATION_ID)) // complex map
+						.add(getReferringMembersByProps(deletedIds, Fields.MAP_CATEGORY_ID)) // extended map
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_DOMAIN_ID)) // MRCM attr domain
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_RULE_STRENGTH_ID)) // MRCM attr domain/range
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_CONTENT_TYPE_ID)) // MRCM attr domain/range
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_RULE_REFSET_ID)) // MRCM module scope
 						)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
