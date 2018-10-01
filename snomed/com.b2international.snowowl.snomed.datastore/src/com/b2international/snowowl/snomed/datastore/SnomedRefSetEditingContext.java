@@ -521,13 +521,10 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			
 			for (final SnomedRefSetMember member : newMembers) {
 				
-				if (id.equals(member.getReferencedComponentId())) {
+				if (id.equals(member.getReferencedComponentId()) || isReferredBy(member, id)) {
 					referringMembers.add(member);
 				}
 				
-				if (isReferredBy(member, id)) {
-					referringMembers.add(member);
-				}
 			}
 		// persistent component. check for referring members in index
 		} else {
@@ -636,7 +633,6 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		return SnomedDatastoreActivator.REFSET_ROOT_RESOURCE_NAME;
 	}
 	
-	@Nullable
 	private boolean isReferredBy(final SnomedRefSetMember member, String componentId) {
 		
 		if (member instanceof SnomedAttributeValueRefSetMember) {

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.api.rest.components;
 
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.executeMemberAction;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
@@ -344,6 +345,275 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.build();
 		
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
+	}
+	
+	@Test
+	public void deleteReferringOwlAxiomRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_AXIOM));
+		createNewRefSet(branchPath, SnomedRefSetType.OWL_AXIOM, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+		
+	}
+	
+	@Test
+	public void deleteReferringOwlOntologyRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_ONTOLOGY));
+		createNewRefSet(branchPath, SnomedRefSetType.OWL_ONTOLOGY, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "owl expression")
+				.put("commitComment", "Created new OWL Ontology reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+		
+	}
+	
+	@Test
+	public void deleteReferringMRCMDomainRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_DOMAIN, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
+				.put("commitComment", "Created new MRCM domain reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
+		
+	}
+	
+	@Test
+	public void deleteReferringMRCMAttributeDomainRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		// create member where the referenced component is the concept
+		Map<?, ?> requestBody1 = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM attribute domain reference set member")
+				.build();
+
+		String memberId1 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody1)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(200);
+
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM attribute domain reference set member")
+				.build();
+		
+		String memberId2 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(200);
+		
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody3 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM attribute domain reference set member")
+				.build();
+
+		String memberId3 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody3)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId3).statusCode(200);
+		
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody4 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, conceptId)
+				.put("commitComment", "Created new MRCM attribute domain reference set member")
+				.build();
+
+		String memberId4 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody4)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId4).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId3).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId4).statusCode(404);
+		
+	}
+	
+	@Test
+	public void deleteReferringMRCMAttributeRangeRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		// create member where the referenced component is the concept
+		Map<?, ?> requestBody1 = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM attribute range reference set member")
+				.build();
+
+		String memberId1 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody1)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(200);
+
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM attribute range reference set member")
+				.build();
+
+		String memberId2 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(200);
+		
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody3 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint")
+				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule")
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, conceptId)
+				.put("commitComment", "Created new MRCM attribute range reference set member")
+				.build();
+
+		String memberId3 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody3)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId3).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId3).statusCode(404);
+		
+	}
+	
+	@Test
+	public void deleteReferringMRCMModuleScopeRefsetMember() {
+		
+		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
+		createNewRefSet(branchPath, SnomedRefSetType.MRCM_MODULE_SCOPE, newIdentifierConceptId);
+		
+		String conceptId = createNewConcept(branchPath);
+		
+		// create member where the referenced component is the concept
+		Map<?, ?> requestBody1 = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, Concepts.ROOT_CONCEPT)
+				.put("commitComment", "Created new MRCM module scope reference set member")
+				.build();
+
+		String memberId1 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody1)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(200);
+
+		// create member where the concept is referenced in custom field
+		Map<?, ?> requestBody2 = createRefSetMemberRequestBody(newIdentifierConceptId, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, conceptId)
+				.put("commitComment", "Created new MRCM module scope reference set member")
+				.build();
+
+		String memberId2 = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2)
+				.statusCode(201)
+				.extract().header("Location"));
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(200);
+		
+		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(404);
+		
 	}
 	
 	@Test
