@@ -1,0 +1,13 @@
+{
+  "name": "snow-owl-docs",
+  "description": "Snow Owl Documentation",
+  "authors": "B2i Healthcare",
+  "version": "7.0.0",
+  "scripts": {
+    "build": "gitbook build",
+    "start": "gitbook install && gitbook serve"
+  },
+  "devDependencies": {
+    "gitbook-cli": "^2.3.2"
+  }
+}
