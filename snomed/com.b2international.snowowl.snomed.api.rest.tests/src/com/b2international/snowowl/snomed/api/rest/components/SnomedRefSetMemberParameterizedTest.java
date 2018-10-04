@@ -437,6 +437,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		case MODULE_DEPENDENCY:
 			return ImmutableMap.<String, Object>builder()
 					.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20170224")
+					.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20170225")
 					.build();
 		case SIMPLE:
 			return ImmutableMap.of();

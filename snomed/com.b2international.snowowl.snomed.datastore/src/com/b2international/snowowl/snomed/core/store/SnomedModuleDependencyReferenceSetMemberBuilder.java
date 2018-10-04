@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.store;
 
 import java.util.Date;
 
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
@@ -27,8 +26,8 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
  */
 public final class SnomedModuleDependencyReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedModuleDependencyReferenceSetMemberBuilder, SnomedModuleDependencyRefSetMember> {
 
-	private Date sourceEffectiveTime = new Date(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-	private Date targetEffectiveTime = new Date(EffectiveTimes.UNSET_EFFECTIVE_TIME);
+	private Date sourceEffectiveTime;
+	private Date targetEffectiveTime;
 
 	public SnomedModuleDependencyReferenceSetMemberBuilder withSourceEffectiveTime(Date sourceEffectiveTime) {
 		this.sourceEffectiveTime = sourceEffectiveTime;

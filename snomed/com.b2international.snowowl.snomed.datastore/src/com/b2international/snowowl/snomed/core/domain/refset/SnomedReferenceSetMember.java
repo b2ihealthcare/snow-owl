@@ -17,10 +17,11 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 
 import static com.google.common.collect.Maps.newHashMap;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -34,11 +35,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set Member.
@@ -119,21 +118,9 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	@JsonAnyGetter
 	private Map<String, Object> getPropertiesJson() {
 		HashMap<String, Object> jsonMap = newHashMap(properties);
-		jsonMap.remove(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-		jsonMap.remove(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+		jsonMap.computeIfPresent(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, (k,v) -> EffectiveTimes.format(v, DateFormats.SHORT, ""));
+		jsonMap.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, (k,v) -> EffectiveTimes.format(v, DateFormats.SHORT, ""));
 		return jsonMap;
-	}
-	
-	@JsonProperty
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	private Date getSourceEffectiveTime() {
-		return (Date) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-	}
-	
-	@JsonProperty
-	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	private Date getTargetEffectiveTime() {
-		return (Date) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 	}
 	
 	public void setType(SnomedRefSetType type) {
@@ -153,8 +140,15 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	}
 	
 	@JsonAnySetter
-	public void setProperties(String key, Object value) {
-		this.properties.put(key, value);
+	private void setPropertiesJson(String key, Object value) {
+		switch (key) {
+			case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME: //$FALL-THROUGH$
+			case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
+				properties.put(key, Strings.isNullOrEmpty((String) value) ? null : EffectiveTimes.parse((String) value, DateFormats.SHORT));
+				break;
+			default:
+				properties.put(key, value);
+		}
 	}
 	
 	@Override

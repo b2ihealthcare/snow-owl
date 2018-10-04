@@ -31,6 +31,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -40,6 +41,8 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -50,6 +53,7 @@ import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -613,6 +617,115 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId1).statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId2).statusCode(404);
+		
+	}
+	
+	@Test
+	public void createAndUpdateModuleDependencyMemberWithEffectiveTime() {
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20181001")
+				.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20181001")
+				.put("commitComment", "Created new module dependency reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedReferenceSetMember member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertEquals(Dates.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(Dates.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "")
+				.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "")
+				.put("commitComment", "Updated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
+		
+		SnomedReferenceSetMember updatedMember = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertNull(updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertNull(updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		
+	}
+	
+	@Test
+	public void createAndUpdateUnpublishedModuleDependencyMembers() {
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "")
+				.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "")
+				.put("commitComment", "Created new module dependency reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedReferenceSetMember member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertNull(member.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertNull(member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20181002")
+				.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20181002")
+				.put("commitComment", "Updated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
+		
+		SnomedReferenceSetMember updatedMember = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		
+	}
+	
+	@Test
+	public void createAndUpdateNewModuleDependencyMembers() {
+		
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.put("commitComment", "Created new module dependency reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		SnomedReferenceSetMember member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertNull(member.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertNull(member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		
+		Map<?, ?> updateRequest = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20181002")
+				.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20181002")
+				.put("commitComment", "Updated reference set member")
+				.build();
+
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
+		
+		SnomedReferenceSetMember updatedMember = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+				.statusCode(200)
+				.extract().as(SnomedReferenceSetMember.class);
+		
+		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
 		
 	}
 	

@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.core.store.SnomedModuleDependencyReferenceSetMemberBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.0
@@ -52,7 +53,8 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 		try {
 			
 			if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
-				builder.withSourceEffectiveTime(EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT));
+				String sourceEffectiveTime = getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+				builder.withSourceEffectiveTime(Strings.isNullOrEmpty(sourceEffectiveTime) ? null : EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT));
 			}
 			
 		} catch (IllegalArgumentException e) {
@@ -65,7 +67,8 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 		try {
 			
 			if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
-				builder.withTargetEffectiveTime(EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT));
+				String targetEffectiveTime = getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+				builder.withTargetEffectiveTime(Strings.isNullOrEmpty(targetEffectiveTime) ? null : EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT));
 			}
 			
 		} catch (IllegalArgumentException e) {
