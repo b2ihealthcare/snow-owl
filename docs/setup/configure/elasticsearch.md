@@ -1,0 +1,1 @@
+# Embedded Elasticsearch configuration

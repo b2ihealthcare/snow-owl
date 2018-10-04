@@ -1,8 +1,8 @@
-= Available APIs
+# Available APIs
 
 Now that we have our instance up and running, the next step is to understand how to communicate with it. Fortunately, Snow Owl provides very comprehensive and powerful APIs to interact with your instance.
 
-== REST API
+## REST API
 
 Among the few things that can be done with the API are as follows:
 
