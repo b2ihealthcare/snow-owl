@@ -60,10 +60,11 @@ public final class SnowOwl {
 	
 	// available configurable paths
 	// via System Properties/JVM args
-	public static final String SO_PATH_HOME = "so.path.home"; //$NON-NLS-1$
+	public static final String SO_PATH_HOME = "so.home"; //$NON-NLS-1$
 	public static final String SO_PATH_CONF = "so.path.conf"; //$NON-NLS-1$
+	public static final String SO_PATH_DATA = "so.path.data"; //$NON-NLS-1$
 	// via ENV variables 
-	public static final String SO_PATH_HOME_ENV = "SO_PATH_HOME"; //$NON-NLS-1$
+	public static final String SO_PATH_HOME_ENV = "SO_HOME"; //$NON-NLS-1$
 	public static final String SO_PATH_CONF_ENV = "SO_PATH_CONF"; //$NON-NLS-1$
 	
 	// default folders and files
@@ -95,7 +96,7 @@ public final class SnowOwl {
 		this.plugins = new Plugins(plugins);
 		this.configuration = createConfiguration(confPath, this.plugins);
 		
-		final Path dataPath = getDataPath(homePath, configuration.getDataPath());
+		final Path dataPath = getDataPath(homePath, configuration.getPaths().getData());
 		this.environment = new Environment(homePath, confPath, dataPath);
 		
 		this.environment.services().registerService(SnowOwlConfiguration.class, this.configuration);
@@ -146,7 +147,7 @@ public final class SnowOwl {
 
 	private Path getDataPath(Path homePath, String configurationDataPath) throws IOException {
 		if (!Strings.isNullOrEmpty(configurationDataPath)) {
-			return createPath("dataPath", configurationDataPath);
+			return createPath(SO_PATH_DATA, configurationDataPath);
 		}
 		
 		Path defaultDataPath = homePath.resolve(DEFAULT_DATA_PATH);

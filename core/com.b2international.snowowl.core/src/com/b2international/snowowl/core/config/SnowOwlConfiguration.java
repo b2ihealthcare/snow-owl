@@ -28,34 +28,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SnowOwlConfiguration extends Configuration {
 
-	private String dataPath;
-	
 	private boolean systemUserNeeded = false;
 	
 	private String description = "You Know, for Terminologies";
 
 	private boolean gzip = true;
-
-	@JsonProperty
+	
+	private Paths paths = new Paths();
+	
 	public String getDescription() {
 		return description;
 	}
 	
-	@JsonProperty
 	public void setDescription(String description) {
 		this.description = description;
 	}
 	
-	@JsonProperty
-	public String getDataPath() {
-		return dataPath;
-	}
-
-	@JsonProperty
-	public void setDataPath(String dataPath) {
-		this.dataPath = dataPath;
-	}
-
 	@JsonProperty("systemUser")
 	public boolean isSystemUserNeeded() {
 		return systemUserNeeded;
@@ -66,14 +54,36 @@ public class SnowOwlConfiguration extends Configuration {
 		this.systemUserNeeded = systemUserNeeded;
 	}
 	
-	@JsonProperty
 	public boolean isGzip() {
 		return gzip;
 	}
 	
-	@JsonProperty
 	public void setGzip(boolean gzip) {
 		this.gzip = gzip;
+	}
+	
+	@JsonProperty("path")
+	public Paths getPaths() {
+		return paths;
+	}
+	
+	@JsonProperty("path")
+	public void setPaths(Paths paths) {
+		this.paths = paths;
+	}
+	
+	public static final class Paths {
+		
+		private String data;
+		
+		public String getData() {
+			return data;
+		}
+		
+		public void setData(String data) {
+			this.data = data;
+		}
+		
 	}
 	
 }

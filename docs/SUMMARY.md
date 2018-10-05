@@ -16,3 +16,5 @@
         * [Setting JVM options](setup/configure/jvm.md)
         * [Logging configuration](setup/configure/logging.md)
         * [Elasticsearch configuration](setup/configure/elasticsearch.md)
+    * [Important Snow Owl configuration](setup/configure/important-settings.md)
+    * [Important System configuration](setup/configure/system-settings.md)
