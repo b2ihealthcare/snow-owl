@@ -18,3 +18,5 @@
         * [Elasticsearch configuration](setup/configure/elasticsearch.md)
     * [Important Snow Owl configuration](setup/configure/important-settings.md)
     * [Important System configuration](setup/configure/system-settings.md)
+        * [Disable swapping](setup/configure/disable-swap.md)
+        * [File descriptors](setup/configure/file-descriptors.md)

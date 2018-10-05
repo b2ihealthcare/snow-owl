@@ -1,4 +1,15 @@
-# Configuring system settingst
+# Important System Configuration
+
+Ideally, Snow Owl should run alone on a server and use all of the resources available to it. In order to do so, you need to configure your operating system to allow the user running Snow Owl to access more resources than allowed by default.
+
+The following settings **must** be considered before going to production:
+
+* [Disable swapping](disable-swap.md)
+* [Increase file descriptors](file-descriptors.md)
+* Ensure sufficient virtual memory
+* Ensure sufficient threads
+
+## Configuring system settings
 
 Where to configure systems settings depends on which package you have used to install Snow Owl, and which operating system you are using.
 
@@ -72,36 +83,8 @@ Once finished, run the following command to reload units:
 sudo systemctl daemon-reload
 ```
 
-
-TODO to migrate
-
-## Network settings
-
-8080/TCP:: Used by Snow Owl Server's REST API
-2036/TCP:: Used by the Net4J binary protocol connecting Snow Owl clients to the server
-
-For optimal indexing and searching performance, consult the "Important system configuration" section of 
-https://www.elastic.co/guide/en/elasticsearch/reference/6.3/system-config.html[Elasticsearch: Reference Guide].
-In particular, the following settings are applicable to an installation of the terminology server:
-
-sysctl settings, to be added to /etc/sysctl.conf or equivalent
-
-```
-vm.swappiness = 1
-vm.max_map_count = 262144
-```
-
 # "noop" I/O scheduler, should be set in eg. /etc/rc.local for solid state disks:
 
 ```
 echo noop > /sys/block/sdX/queue/scheduler
-```
-
-# increase the maximum limit of available file descriptors and threads in /etc/security/limits.conf
-
-```
-*    soft    nofile 65536
-*    hard    nofile 65536  
-*    soft    nproc  4096
-*    hard    nproc  4096 
 ```
