@@ -11,7 +11,6 @@ and are the easiest choice for getting started with Snow Owl on most systems.
   
   </dd>
   
-
   <dt><code>rpm</code></dt>
   <dd>
   The <code>rpm</code> package is suitable for installation on Red Hat, Centos, SLES, OpenSuSE and other RPM-based systems. RPMs may be downloaded from the Downloads section. 
