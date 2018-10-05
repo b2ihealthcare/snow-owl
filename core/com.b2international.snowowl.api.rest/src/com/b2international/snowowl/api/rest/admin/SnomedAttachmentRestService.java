@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.api.rest;
+package com.b2international.snowowl.api.rest.admin;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.snomed.api.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 
 import io.swagger.annotations.Api;
@@ -80,8 +81,6 @@ public class SnomedAttachmentRestService {
 			@ApiParam(value="Attachment file")
 			@RequestPart("file") 
 			final MultipartFile file) {
-		
-		checkNotNull(file, "Attachment file should be specified.");
 		
 		try {
 			attachmentRegistry.upload(attachmentId, file.getInputStream());
@@ -135,4 +134,6 @@ public class SnomedAttachmentRestService {
 	public void setAttachmentRegistry(AttachmentRegistry registry) {
 		this.attachmentRegistry = registry;
 	}
+	// TODO: MOVE TO SNOWOWL rest package
+	
 }

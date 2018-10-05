@@ -107,12 +107,8 @@ public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
 		uploadAttachment(attachmentId, fileName).statusCode(204);
 		
 		getAttachment(attachmentId).statusCode(200);
-		try {
 			final String nonExistantAttachmentId = UUID.randomUUID().toString();
 			deleteAttachment(nonExistantAttachmentId).statusCode(404);
-		} catch (NotFoundException e) {
-			
-		}
 		
 		fail();
 	}
