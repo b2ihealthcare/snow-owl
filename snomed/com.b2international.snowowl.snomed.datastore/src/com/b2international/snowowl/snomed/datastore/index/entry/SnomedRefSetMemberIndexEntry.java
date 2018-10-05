@@ -285,6 +285,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			@Override
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
 				return builder
+						.field(Fields.DATA_TYPE, concreteDataTypeMember.getDataType())
 						.field(Fields.SERIALIZED_VALUE, concreteDataTypeMember.getSerializedValue())
 						.field(Fields.RELATIONSHIP_GROUP, concreteDataTypeMember.getGroup())
 						.field(Fields.TYPE_ID, concreteDataTypeMember.getTypeId())
