@@ -60,16 +60,14 @@
 				<version>2.3</version>
 				<executions>
 					<execution>
-						<id>package-dist</id>
+						<id>package-oss</id>
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
-							<workDirectory>${project.build.directory}/assembly/dist</workDirectory>
-							<descriptor>${basedir}/assembly/dist.xml</descriptor>
-							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
+							<descriptor>${basedir}/assembly/oss.xml</descriptor>
 						</configuration>
 					</execution>
 				</executions>
@@ -87,7 +85,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<targetDir>${project.build.directory}/dist</targetDir>
+					<targetDir>${project.build.directory}</targetDir>
 					<attach>true</attach>
 					<group>Unspecified</group>
 					<packageName>snowowl</packageName>
@@ -139,7 +137,7 @@
 							<name>/opt/snowowl</name>
 							<ruleset>rpm-default</ruleset>
 							<collect>
-								<from>${project.build.directory}/dist/${project.build.finalName}/${project.build.finalName}</from>
+								<from>${project.build.directory}/${project.build.finalName}-oss/${project.build.finalName}</from>
 							</collect>
 						</entry>
 					</entries>
