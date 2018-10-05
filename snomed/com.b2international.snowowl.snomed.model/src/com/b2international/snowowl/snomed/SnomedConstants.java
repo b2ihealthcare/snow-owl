@@ -307,8 +307,12 @@ public abstract class SnomedConstants {
 		public static final String ICD_10_REFERENCE_SET_ID = "447562003";
 		public static final String ICD_10_CM_COMPLEX_MAP_REFERENCE_SET_ID = "6011000124106";
 
-		// Concepts that require special care when classifying
+		// Concept model attribute hierarchy
 		public static final String CONCEPT_MODEL_ATTRIBUTE = "410662002";
+		public static final String CONCEPT_MODEL_OBJECT_ATTRIBUTE = "762705008";
+		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
+		
+		// Concepts that require special care when classifying
 		public static final String PART_OF = "123005000";
 		public static final String LATERALITY = "272741003";
 		public static final String HAS_ACTIVE_INGREDIENT = "127489000";
