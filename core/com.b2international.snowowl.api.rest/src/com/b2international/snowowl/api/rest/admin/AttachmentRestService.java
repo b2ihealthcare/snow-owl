@@ -15,15 +15,12 @@
  */
 package com.b2international.snowowl.api.rest.admin;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -42,12 +39,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.api.rest.AbstractRestService;
+import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.snomed.api.rest.AbstractRestService;
-import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -61,7 +59,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Attachments", description="attachments", tags = { "attachments" })
 @Controller
 @RequestMapping(value = "/attachments")
-public class SnomedAttachmentRestService {
+public class AttachmentRestService {
 	
 	@Autowired
 	private AttachmentRegistry attachmentRegistry;
@@ -69,6 +67,7 @@ public class SnomedAttachmentRestService {
 	@ApiOperation(value = "Upload attachment to the registry.") 
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
 		@ApiResponse(code = 404, message = "The attachment's id is malformed or is not of the correct type", response = RestApiError.class),
 	})
 	@PostMapping(value="/{attachmentId}", consumes = { AbstractRestService.MULTIPART_MEDIA_TYPE })
@@ -76,14 +75,14 @@ public class SnomedAttachmentRestService {
 	public void uploadAttachment(
 			@ApiParam(value="The attachment ID")
 			@PathVariable(value="attachmentId") 
-			final UUID attachmentId,
+			final String attachmentId,
 			
 			@ApiParam(value="Attachment file")
 			@RequestPart("file") 
 			final MultipartFile file) {
 		
 		try {
-			attachmentRegistry.upload(attachmentId, file.getInputStream());
+			attachmentRegistry.upload(convertAttachmentId(attachmentId), file.getInputStream());
 		} catch (IOException e) {
 			throw new RuntimeException("Error while reading the content of the provided attachment");
 		}
@@ -92,18 +91,19 @@ public class SnomedAttachmentRestService {
 	@ApiOperation(value="Retrieve attachment from the registry.") 
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
 		@ApiResponse(code = 404, message = "Attachment was not found in the registry", response = RestApiError.class)
 	})
 	@GetMapping(value="/{attachmentId}", produces = { AbstractRestService.OCTET_STREAM_MEDIA_TYPE })
 	public @ResponseBody ResponseEntity<?> getAttachment(
 			@ApiParam(value="Attachment ID")
 			@PathVariable(value="attachmentId")
-			final UUID attachmentId,
+			final String attachmentId,
 			
 			@RequestHeader
 			final HttpHeaders headers) {
 		
-		final File file = ((InternalAttachmentRegistry) attachmentRegistry).getAttachment(attachmentId);
+		final File file = ((InternalAttachmentRegistry) attachmentRegistry).getAttachment(convertAttachmentId(attachmentId));
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
@@ -117,23 +117,27 @@ public class SnomedAttachmentRestService {
 	
 	@ApiOperation(value = "Delete attachment from the registry.", notes = "Removes an attachment from the server if it exists.")
 	@ApiResponses({
-		@ApiResponse(code=204, message="Delete was successfull"),
-		@ApiResponse(code=404, message="Attachment with the given id was not found"),
+		@ApiResponse(code = 204, message = "Delete was successfull"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
+		@ApiResponse(code = 404, message = "Attachment with the given id was not found"),
 	})
 	@DeleteMapping(value="/{attachmentId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteAttachment(
 			@ApiParam(value = "Attachment ID")
 			@PathVariable(value = "attachmentId")
-			final UUID attachmentId) {
-		
-		attachmentRegistry.delete(attachmentId);
+			final String attachmentId) {
+		final UUID convertedId = convertAttachmentId(attachmentId);
+		attachmentRegistry.delete(convertedId);
 	}
 	
-	@Qualifier("fileRegistry")
-	public void setAttachmentRegistry(AttachmentRegistry registry) {
-		this.attachmentRegistry = registry;
+	private UUID convertAttachmentId(String attachmentId) {
+		try {
+			return UUID.fromString(attachmentId);
+		} catch (IllegalArgumentException e) {
+			// convert IllegalArugmentException to BadRequestException
+			throw new BadRequestException("Couldn't convert " + attachmentId + " to UUID");
+		}
 	}
-	// TODO: MOVE TO SNOWOWL rest package
 	
 }

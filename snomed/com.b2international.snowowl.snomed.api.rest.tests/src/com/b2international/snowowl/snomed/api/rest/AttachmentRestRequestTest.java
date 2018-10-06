@@ -16,16 +16,12 @@
 package com.b2international.snowowl.snomed.api.rest;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.UUID;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
 import com.jayway.restassured.response.ValidatableResponse;
@@ -33,7 +29,7 @@ import com.jayway.restassured.response.ValidatableResponse;
 /**
  * @since 7.0
  */
-public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
+public class AttachmentRestRequestTest extends AbstractSnomedApiTest {
 	
 	private final String fileName = "SnomedCT_Release_INT_20150131_index_init_bug.zip";
 	
@@ -46,13 +42,7 @@ public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
 	@Test
 	public void testFileUploadWithInvalidId() throws IllegalArgumentException {
 		final String attachmentId = "20";
-		try {
-			uploadAttachment(attachmentId, fileName).statusCode(404);
-		} catch (IllegalArgumentException e) {
-			
-		}
-		
-		fail();
+		uploadAttachment(attachmentId, fileName).statusCode(400);
 	}
 	
 	@Test
@@ -65,13 +55,7 @@ public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
 	@Test
 	public void testRetrievalOfUploadedAttachmentWithErroneousId() throws IllegalArgumentException {
 		final String attachmentId = "30";
-		try {
-			getAttachment(attachmentId).statusCode(404);
-		} catch (IllegalArgumentException e) {
-			
-		}
-		// exception should be thrown
-		fail();
+		getAttachment(attachmentId).statusCode(400);
 	}
 	
 	@Test
@@ -79,16 +63,8 @@ public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
 		final String attachmentId = UUID.randomUUID().toString();
 		uploadAttachment(attachmentId, fileName).statusCode(204);
 		
-		try {
-			final String nonExistantAttachmentId = UUID.randomUUID().toString();
-			
-			getAttachment(nonExistantAttachmentId).statusCode(404);
-			
-		} catch (NotFoundException e) {
-			
-		}
-		
-		fail();
+		final String nonExistantAttachmentId = UUID.randomUUID().toString();
+		getAttachment(nonExistantAttachmentId).statusCode(204);
 	}
 	
 	@Test
@@ -107,27 +83,25 @@ public class SnomedAttachmentRestRequestTest extends AbstractSnomedApiTest {
 		uploadAttachment(attachmentId, fileName).statusCode(204);
 		
 		getAttachment(attachmentId).statusCode(200);
-			final String nonExistantAttachmentId = UUID.randomUUID().toString();
-			deleteAttachment(nonExistantAttachmentId).statusCode(404);
-		
-		fail();
+		final String nonExistantAttachmentId = UUID.randomUUID().toString();
+		deleteAttachment(nonExistantAttachmentId).statusCode(404);
 	}
 	
 	private ValidatableResponse uploadAttachment(String attachmentId, String fileName) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.multiPart(new File(PlatformUtil.toAbsolutePath(SnomedImportApiTest.class, fileName)))
 				.post("/attachments/{attachmentId}", attachmentId)
 				.then();
 	}
 	
 	private ValidatableResponse getAttachment(String attachmentId) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.get("/attachments/{attachmentId}", attachmentId)
 				.then();
 	}
 	
 	private ValidatableResponse deleteAttachment(String attachmentId) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.delete("/attachments/{attachmentId}", attachmentId)
 				.then();
 	}

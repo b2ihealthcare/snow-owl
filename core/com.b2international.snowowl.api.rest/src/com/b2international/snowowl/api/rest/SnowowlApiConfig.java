@@ -52,6 +52,7 @@ import com.b2international.snowowl.api.impl.admin.RepositoryServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
+import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -130,6 +131,11 @@ public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public IEventBus eventBus() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	}
+
+	@Bean
+	public AttachmentRegistry attachmentRegistry() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(AttachmentRegistry.class);
 	}
 	
 	@Bean
