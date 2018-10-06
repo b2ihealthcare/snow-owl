@@ -35,6 +35,16 @@ public abstract class AbstractRestService {
 	 */
 	public static final String TEXT_MEDIA_TYPE = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8";
 	
+	/**
+	 * The media type produced and accepted by Snow Owl's RESTful API for byte streams.
+	 */
+	public static final String OCTET_STREAM_MEDIA_TYPE = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+	
+	/**
+	 * The media type produced and accepted by Snow Owl's RESTful API for multipart form data (file uploads).
+	 */
+	public static final String MULTIPART_MEDIA_TYPE = MediaType.MULTIPART_FORM_DATA_VALUE;
+	
 	@Autowired
 	protected IEventBus bus;
 }
