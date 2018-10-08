@@ -63,58 +63,58 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	// High-level issue test cases, Java API test cases
-//	IssueSO2503RemoteJobDynamicMappingFix.class,
-//	Issue3019FixDeletionOfReferringMembersTest.class,
-//	EclSerializerTest.class,
-//	// RESTful API test cases
-//	// Branch API tests
-//	SnomedBranchRequestTest.class,
-//	BranchCompareRequestTest.class,
-//	SnomedCompareRestRequestTest.class,
-//	SnomedBranchingApiTest.class,
-//	// Component API test cases
-//	SnomedIdentifierApiTest.class,
-//	SnomedConceptApiTest.class,
-//	SnomedDescriptionApiTest.class,
-//	SnomedRelationshipApiTest.class,
-//	SnomedRefSetApiTest.class,
-//	SnomedRefSetParameterizedTest.class,
-//	SnomedRefSetMemberParameterizedTest.class,
-//	SnomedRefSetMemberApiTest.class,
-//	SnomedRefSetBulkApiTest.class,
-//	SnomedBrowserApiTest.class,
-//	// Merge, Review test cases
-//	SnomedMergeApiTest.class,
-//	SnomedMergeConflictTest.class,
-//	SnomedReviewApiTest.class,
-//	// Import-Export-Versioning-Classification
-//	SnomedClassificationApiTest.class,
-//	SnomedImportApiTest.class,
-//	SnomedExportApiTest.class,
-//	SnomedRefSetDSVExportTest.class,
-//	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
-//	SnomedModuleDependencyRefsetTest.class,
-//	SnomedVersioningApiTest.class,
-//	// Extension test cases - 7.0.preview version currently does not support extension upgrade
-////	SnomedExtensionUpgradeTest.class, 
-////	SnomedExtensionDowngradeTest.class,
-////	SnomedExtensionVersioningTest.class,
+	IssueSO2503RemoteJobDynamicMappingFix.class,
+	Issue3019FixDeletionOfReferringMembersTest.class,
+	EclSerializerTest.class,
+	// RESTful API test cases
+	// Branch API tests
+	SnomedBranchRequestTest.class,
+	BranchCompareRequestTest.class,
+	SnomedCompareRestRequestTest.class,
+	SnomedBranchingApiTest.class,
+	// Component API test cases
+	SnomedIdentifierApiTest.class,
+	SnomedConceptApiTest.class,
+	SnomedDescriptionApiTest.class,
+	SnomedRelationshipApiTest.class,
+	SnomedRefSetApiTest.class,
+	SnomedRefSetParameterizedTest.class,
+	SnomedRefSetMemberParameterizedTest.class,
+	SnomedRefSetMemberApiTest.class,
+	SnomedRefSetBulkApiTest.class,
+	SnomedBrowserApiTest.class,
+	// Merge, Review test cases
+	SnomedMergeApiTest.class,
+	SnomedMergeConflictTest.class,
+	SnomedReviewApiTest.class,
+	// Import-Export-Versioning-Classification
+	SnomedClassificationApiTest.class,
+	SnomedImportApiTest.class,
+	SnomedExportApiTest.class,
+	SnomedRefSetDSVExportTest.class,
+	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
+	SnomedModuleDependencyRefsetTest.class,
+	SnomedVersioningApiTest.class,
+	// Extension test cases - 7.0.preview version currently does not support extension upgrade
+//	SnomedExtensionUpgradeTest.class, 
+//	SnomedExtensionDowngradeTest.class,
+//	SnomedExtensionVersioningTest.class,
 //	 MRCM export/import
-//	MrcmImportExportTest.class,
-	// Attachment
-	SnomedAttachmentRestRequestTest.class
-//	// Performance test cases
-//	SnomedConceptCreatePerformanceTest.class,
-//	SnomedMergePerformanceTest.class,
+	MrcmImportExportTest.class,
+//	 Attachment
+	AttachmentRestRequestTest.class,
+	// Performance test cases
+	SnomedConceptCreatePerformanceTest.class,
+	SnomedMergePerformanceTest.class,
 })
 public class AllSnomedApiTests {
 
 	@ClassRule
 	public static final RuleChain appRule = RuleChain
-			.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "snomed-api-test-config.yml")))
+			.outerRule(SnowOwlAppRule.snowOwl().clearResources(true).config(PlatformUtil.toAbsolutePath(AllSnomedApiTests.class, "snomed-api-test-config.yml")))
 			.around(new BundleStartRule("com.b2international.snowowl.api.rest"))
-			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"));
-//			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-//			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, SnomedApiTestConstants.EXTENSION_PATH, Resources.Snomed.MINI_RF2_EXT, Rf2ReleaseType.DELTA));
+			.around(new BundleStartRule("com.b2international.snowowl.snomed.api.rest"))
+			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
+			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, SnomedApiTestConstants.EXTENSION_PATH, Resources.Snomed.MINI_RF2_EXT, Rf2ReleaseType.DELTA));
 
 }

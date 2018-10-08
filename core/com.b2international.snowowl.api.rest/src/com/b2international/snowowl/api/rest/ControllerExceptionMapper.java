@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,15 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 	
+	/**
+	 * Exception handler to return <b>Request Timeout</b> when an {@link RequestTimeoutException} is thrown from the underlying system.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
-	public @ResponseBody RestApiError handle(RequestTimeoutException ex) {
+	public @ResponseBody RestApiError handle(final RequestTimeoutException ex) {
 		LOG.error("Timeout during request processing", ex);
 		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
@@ -72,7 +78,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handle(HttpMessageNotReadableException ex) {
+	public @ResponseBody RestApiError handle(final HttpMessageNotReadableException ex) {
 		LOG.error("Exception during processing of a JSON document", ex);
 		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
@@ -104,7 +110,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody RestApiError handle(NotImplementedException ex) {
+	public @ResponseBody RestApiError handle(final NotImplementedException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 
@@ -118,6 +124,19 @@ public class ControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final BadRequestException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	/**
+	 * Exception handler to return <b>Bad Request</b> when an {@link IllegalArgumentException} is thrown from the underlying system.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
+		ex.printStackTrace();
+		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	/**

@@ -104,7 +104,7 @@ public class ControllerExceptionMapper {
 	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
-	public @ResponseBody RestApiError handle(NotImplementedException ex) {
+	public @ResponseBody RestApiError handle(final NotImplementedException ex) {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.NOT_IMPLEMENTED.value());
 	}
 
@@ -120,6 +120,12 @@ public class ControllerExceptionMapper {
 		return RestApiError.of(ex.toApiError()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
+	/**
+	 * Exception handler to return <b>Bad Request</b> when an {@link IllegalArgumentException} is thrown from the underlying system.
+	 * 
+	 * @param ex
+	 * @return {@link RestApiError} instance with detailed messages
+	 */
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public @ResponseBody RestApiError handle(final IllegalArgumentException ex) {
