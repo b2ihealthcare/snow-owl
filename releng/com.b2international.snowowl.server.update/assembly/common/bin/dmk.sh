@@ -178,9 +178,8 @@ then
 		mkdir -p "$TMP_DIR"
 		
 		#Added awt.headless - http://mail-archives.apache.org/mod_mbox/poi-user/200705.mbox/%3C15719338671.20070504144714@dinom.ru%3E
-        JAVA_OPTS="	$JAVA_OPTS \
-        			-Xms12g \
-       		        -Xmx12g \
+        SO_JAVA_OPTS="-Xms2g \
+       		        -Xmx2g \
                     -XX:+AlwaysPreTouch \
                     -Xss1m \
                     -Xloggc:$KERNEL_HOME/`date +%F_%H%M-%S`-gc.log \
@@ -199,10 +198,11 @@ then
                     -Djava.awt.headless=true \
                     -XX:+AlwaysLockClassLoader \
                     -Dosgi.classloader.type=nonparallel \
-                    -Djdk.security.defaultKeySize=DSA:1024"
+                    -Djdk.security.defaultKeySize=DSA:1024 \
+                    $SO_JAVA_OPTS"
 
 		cd "$KERNEL_HOME"; exec $JAVA_EXECUTABLE \
-			$JAVA_OPTS \
+			$SO_JAVA_OPTS \
 			$DEBUG_OPTS \
 			$JMX_OPTS \
 			-XX:+HeapDumpOnOutOfMemoryError \
@@ -292,7 +292,7 @@ then
     fi
 
 	exec $JAVA_EXECUTABLE \
-	     $JAVA_OPTS \
+	     $SO_JAVA_OPTS \
 	     $JMX_OPTS \
 		-classpath "$CLASSPATH" \
 		-Djavax.net.ssl.trustStore="$TRUSTSTORE_PATH" \

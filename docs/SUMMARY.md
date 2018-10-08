@@ -29,3 +29,7 @@
         * [Configuring a file realm](setup/security/file.md)
         * [Configuring an LDAP realm](setup/security/ldap.md)
     * [Configuring monitoring](setup/monitoring.md)
+* [Admin APIs](api/admin.md)
+* [SNOMED CT APIs](api/snomed.md)
+* [FHIR APIs](api/fhir.md)
+* [Backup and Restore](setup/backup-restore.md)
