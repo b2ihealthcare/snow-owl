@@ -17,6 +17,7 @@ package com.b2international.snowowl.api.rest.admin;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.UUID;
 
@@ -39,7 +40,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -67,7 +67,7 @@ public class AttachmentRestService {
 	@ApiOperation(value = "Upload attachment to the registry.") 
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "The attachment's id is malformed or is not of the correct type", response = RestApiError.class),
 	})
 	@PostMapping(value="/{attachmentId}", consumes = { AbstractRestService.MULTIPART_MEDIA_TYPE })
@@ -75,15 +75,15 @@ public class AttachmentRestService {
 	public void uploadAttachment(
 			@ApiParam(value="The attachment ID")
 			@PathVariable(value="attachmentId") 
-			final String attachmentId,
+			final UUID attachmentId,
 			
 			@ApiParam(value="Attachment file")
 			@RequestPart("file") 
 			final MultipartFile file) {
 		
-		try {
-			attachmentRegistry.upload(convertAttachmentId(attachmentId), file.getInputStream());
-		} catch (IOException e) {
+		try (final InputStream is = file.getInputStream()) {
+			attachmentRegistry.upload(attachmentId, is);
+		} catch (final IOException e) {
 			throw new RuntimeException("Error while reading the content of the provided attachment");
 		}
 	}
@@ -91,20 +91,20 @@ public class AttachmentRestService {
 	@ApiOperation(value="Retrieve attachment from the registry.") 
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Attachment was not found in the registry", response = RestApiError.class)
 	})
 	@GetMapping(value="/{attachmentId}", produces = { AbstractRestService.OCTET_STREAM_MEDIA_TYPE })
 	public @ResponseBody ResponseEntity<?> getAttachment(
 			@ApiParam(value="Attachment ID")
 			@PathVariable(value="attachmentId")
-			final String attachmentId,
+			final UUID attachmentId,
 			
 			@RequestHeader
 			final HttpHeaders headers) {
 		
-		final File file = ((InternalAttachmentRegistry) attachmentRegistry).getAttachment(convertAttachmentId(attachmentId));
-		final Resource exportZipResource = new FileSystemResource(file);
+		final File file = ((InternalAttachmentRegistry) attachmentRegistry).getAttachment(attachmentId);
+		final Resource attachmentZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
@@ -112,32 +112,21 @@ public class AttachmentRestService {
 		final String attachmentFileName = String.format("\"attachment_%s_%s.zip\"", attachmentId, Dates.formatByHostTimeZone(new Date(), DateFormats.COMPACT_LONG)); 
 		httpHeaders.set("Content-Disposition", "attachment; filename=" + attachmentFileName);
 		file.deleteOnExit();
-		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(attachmentZipResource, httpHeaders, HttpStatus.OK);
 	}
 	
 	@ApiOperation(value = "Delete attachment from the registry.", notes = "Removes an attachment from the server if it exists.")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Delete was successfull"),
-		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID"),
-		@ApiResponse(code = 404, message = "Attachment with the given id was not found"),
+		@ApiResponse(code = 400, message = "AttachmentId couldn't be converted to UUID", response = RestApiError.class)
 	})
 	@DeleteMapping(value="/{attachmentId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteAttachment(
 			@ApiParam(value = "Attachment ID")
 			@PathVariable(value = "attachmentId")
-			final String attachmentId) {
-		final UUID convertedId = convertAttachmentId(attachmentId);
-		attachmentRegistry.delete(convertedId);
-	}
-	
-	private UUID convertAttachmentId(String attachmentId) {
-		try {
-			return UUID.fromString(attachmentId);
-		} catch (IllegalArgumentException e) {
-			// convert IllegalArugmentException to BadRequestException
-			throw new BadRequestException("Couldn't convert " + attachmentId + " to UUID");
-		}
+			final UUID attachmentId) {
+		attachmentRegistry.delete(attachmentId);
 	}
 	
 }
