@@ -25,7 +25,7 @@ You need to have a recent version of Java installed (Java 8 update 171 or newer)
 
 ## Installation
 
-* Download (Coming soon!) and unzip the official Snow Owl distribution (or use the official Docker image)
+* Download and unzip the official Snow Owl distribution from the [Releases](https://github.com/b2ihealthcare/snow-owl/releases) page (or use the official Docker image)
 * Run `bin/startup` on unix, or `bin/startup.bat` on windows
 * Run `curl http://localhost:8080/snowowl/admin/info`
 * See [REST API docs](http://localhost:8080/snowowl/snomed-ct/v3), [FHIR API docs](http://localhost:8080/snowowl/fhir)
