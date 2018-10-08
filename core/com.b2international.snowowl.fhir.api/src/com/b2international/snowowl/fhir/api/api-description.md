@@ -32,11 +32,11 @@ Both _GET_ as well as _POST_ HTTP methods are supported. Subsumption testing is
  
 The endpoints `/ValueSet` and `/ValueSet/{valueSetId}` and corresponding operations expose the following types of terminology resources:
 
-* SNOMED CT Simple Type Reference Sets with Concepts are referenced components.
+* SNOMED CT Simple Type Reference Sets with Concepts as referenced components.
 * SNOMED CT Query Type Reference Sets with ECL expressions (each member is a Value Set)
 * Snow Owl's generic Value Sets
  
-`Delete` and `create` operations are not yet implemented.
+`Delete` and `create` operations are not implemented.
 
 ### $expand
 
@@ -55,7 +55,7 @@ The in-parameters are not yet supported.
 
 Codes can be validated against a given Value Set specified by the value set's logical id or canonical URL.  In terms of Snow Owl terminology components, codes are validated against:
 
-* SNOMED CT Simple Type Reference Sets with Concepts are referenced components.
+* SNOMED CT Simple Type Reference Sets with Concepts as referenced components.
 * SNOMED CT Query Type Reference Sets with ECL expressions (each member is a Value Set)
 * Snow Owl's generic Value Sets
 
@@ -75,7 +75,13 @@ For SNOMED CT URIs, implicit value sets are supported:
 
 ## ConceptMap
 
-The _ConceptMap_ resource is not yet implemented.
+The endpoints `/ConceptMap` and `/ConceptMap/{conceptMapId}` and corresponding operations expose the following types of terminology resources:
+
+* SNOMED CT Simple Map Reference Sets with Concepts as referenced components.
+* SNOMED CT Complex Map Reference Sets
+* SNOMED CT Extended Map Reference Sets
+* SNOMED CT Map Block Type Reference Sets
+* Snow Owl's generic Mapping Sets
 
 #Implementation
 
@@ -145,6 +151,14 @@ Our logical id has been extended to cover individual Reference Set members as we
 where
 * 98403008 is the Reference Set ID
 * 98484f56f72-9f8b-423d-98b8-25961811393c03008 is the reference set member
+
+# Snow Owl's extension API
+
+Snow Owl exposes a comprehensive REST API to support areas such as:
+ * Syndication - content provisioning between servers or between the Snow Owl Authoring platform and servers 
+ * Administration (repository and revision control management) 
+ * Auditing
+ * SNOMED CT specific browsing and authoring API 
 
 ## REST API
 
