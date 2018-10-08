@@ -83,7 +83,6 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	
 	/**
 	 * Returns the value sets supported by this provider.
-	 * TODO: move this to a different extension. (probably an extension definition per resource)
 	 * @return collection of value sets supported
 	 */
 	Collection<ValueSet> getValueSets();

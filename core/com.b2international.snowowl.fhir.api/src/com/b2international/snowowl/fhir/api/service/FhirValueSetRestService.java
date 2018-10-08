@@ -38,7 +38,6 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
@@ -118,13 +117,13 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * @return
 	 */
 	@ApiOperation(
-			response=CodeSystem.class,
+			response=ValueSet.class,
 			value="Retrieve the value set by id",
 			notes="Retrieves the value set specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{valueSetId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
