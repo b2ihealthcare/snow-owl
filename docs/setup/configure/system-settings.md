@@ -6,8 +6,9 @@ The following settings **must** be considered before going to production:
 
 * [Disable swapping](disable-swap.md)
 * [Increase file descriptors](file-descriptors.md)
-* Ensure sufficient virtual memory
-* Ensure sufficient threads
+* [Ensure sufficient virtual memory](virtual-mem.md)
+* [Ensure sufficient threads](nthreads.md)
+* [Tweaking for performance](tweaking.md)
 
 ## Configuring system settings
 
@@ -81,10 +82,4 @@ Once finished, run the following command to reload units:
 
 ```
 sudo systemctl daemon-reload
-```
-
-# "noop" I/O scheduler, should be set in eg. /etc/rc.local for solid state disks:
-
-```
-echo noop > /sys/block/sdX/queue/scheduler
 ```

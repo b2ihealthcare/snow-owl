@@ -4,10 +4,6 @@ While Snow Owl requires very little configuration, there are a number of setting
 
 The following settings **must** be considered before going to production:
 
-* Path settings
-* Network settings
-* Heap size
-
 ## Path settings
 
 If you are using the `.zip` or `.tar.gz` archives, the data and logs directories are sub-folders of `$SO_HOME`. If these important folders are left in their default locations, there is a high risk of them being deleted while upgrading Snow Owl to a new version.
@@ -24,7 +20,10 @@ The RPM and Debian distributions already use custom paths for data and logs.
 
 ## Network settings
 
-TODO
+To allow clients to connect to Snow Owl, make sure you open access to the following ports:
+* 8080/TCP:: Used by Snow Owl Server's REST API for HTTP access
+* 8443/TCP:: Used by Snow Owl Server's REST API for HTTPS access
+* 2036/TCP:: Used by the Net4J binary protocol connecting Snow Owl clients to the server
 
 ## Setting the heap size
 
@@ -33,7 +32,8 @@ By default, Snow Owl tells the JVM to use a heap with a minimum and maximum size
 To configure the heap size settings, change the `-Xms` and `-Xmx` settings in the `SO_JAVA_OPTS` environment variable.
 
 ```bash
-SO_JAVA_OPTS="-Xms12g -Xmx12g" ./bin/startup # Set the minimum and maximum heap size to 12 GB.
+# Set the minimum and maximum heap size to 12 GB.
+SO_JAVA_OPTS="-Xms12g -Xmx12g" ./bin/startup
 ```
 
 The value for these setting depends on the amount of RAM available on your server. Good rules of thumb are:
