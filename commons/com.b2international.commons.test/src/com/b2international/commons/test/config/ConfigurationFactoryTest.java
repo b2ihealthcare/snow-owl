@@ -26,8 +26,10 @@ import java.util.Map;
 
 import javax.validation.Validator;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -47,9 +49,15 @@ import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigurationFactoryTest {
 	
+	private static final String SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE = "SOME_ATTRIBUTE";
+	private static final String SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE = "value";
+
 	@Mock
 	private Validator validator;
-
+	
+	@Rule
+	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+	
 	@Test
 	public void build_WithoutSource_ShouldReturnADefaultInstance() throws Exception {
 		final TestConfig config = parse(TestConfig.class);
@@ -84,6 +92,26 @@ public class ConfigurationFactoryTest {
 		assertEquals("Test", config.getGlobalParameter());
 		assertEquals("SomeAttr", config.getNestedConfig().getAttribute());
 		assertTrue(config.getNestedConfig().isValid());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractEnvVariable() throws Exception {
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE);
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("moduleConfig1", ModuleConfig1.class);
+		modules.put("moduleConfig2", ModuleConfig2.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-envVar.yml", validator, modules);
+		final ModuleConfig1 config1 = config.getModuleConfig(ModuleConfig1.class);
+		final ModuleConfig2 config2 = config.getModuleConfig(ModuleConfig2.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertTrue(config1.isAttribute1_1());
+		assertTrue(config2.isAttribute2_2());
+		
+		assertEquals(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE, config1.getAttribute1_2());
+		assertEquals("config2", config2.getAttribute2_1());
 	}
 	
 	@Test(expected = ConfigurationValidationException.class)
@@ -148,5 +176,5 @@ public class ConfigurationFactoryTest {
 		final URL resource = TestConfig.class.getResource(configFile);
 		return new ConfigurationFactory<T>(klass, validator).setAdditionalModules(modules).build(resource);
 	}
-	
+
 }
