@@ -63,6 +63,15 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Charsets;
 
+import io.micrometer.core.instrument.binder.jetty.JettyStatisticsMetrics;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
@@ -76,7 +85,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableWebMvc
 @EnableSwagger2
 @Configuration
-@ComponentScan
+@ComponentScan("com.b2international.snowowl.api.rest")
 @Import({ SnowowlSecurityConfig.class })
 @PropertySource(value="classpath:com/b2international/snowowl/api/rest/service_configuration.properties")
 public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
@@ -130,6 +139,20 @@ public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public IEventBus eventBus() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IEventBus.class);
+	}
+	
+	@Bean
+	public PrometheusMeterRegistry registry() {
+		final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+		registry.config().commonTags("application", "Snow Owl");
+		new ClassLoaderMetrics().bindTo(registry);
+		new JvmGcMetrics().bindTo(registry);
+		new JvmMemoryMetrics().bindTo(registry);
+		new JvmThreadMetrics().bindTo(registry);
+		new UptimeMetrics().bindTo(registry);
+		new ProcessorMetrics().bindTo(registry);
+		
+		return registry;
 	}
 	
 	@Bean
