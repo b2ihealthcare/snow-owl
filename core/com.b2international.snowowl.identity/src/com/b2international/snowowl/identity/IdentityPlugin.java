@@ -29,7 +29,7 @@ import com.google.common.collect.Iterables;
  * @since 5.11
  */
 @Component
-public final class IdentityBootstrap extends Plugin {
+public final class IdentityPlugin extends Plugin {
 
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
@@ -43,7 +43,7 @@ public final class IdentityBootstrap extends Plugin {
 		
 		IdentityProvider identityProvider = null; 
 		if (providers.isEmpty()) {
-			throw new SnowOwl.InitializationException("No identity provider configured");
+			identityProvider = IdentityProvider.NOOP;
 		} else if (providers.size() == 1) {
 			identityProvider = Iterables.getOnlyElement(providers);
 		} else {

@@ -41,6 +41,28 @@ public interface IdentityProvider {
 	Logger LOG = LoggerFactory.getLogger("identity");
 	
 	/**
+	 * @since 7.0 
+	 */
+	IdentityProvider NOOP = new IdentityProvider() {
+		
+		@Override
+		public boolean auth(String username, String token) {
+			return true;
+		}
+		
+		@Override
+		public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
+			return Promise.immediate(new Users(0, 0));
+		}
+		
+		@Override
+		public String getInfo() {
+			return "unprotected";
+		}
+		
+	};
+	
+	/**
 	 * @since 5.11
 	 */
 	final class Factory {
