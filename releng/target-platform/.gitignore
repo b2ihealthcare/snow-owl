@@ -7,4 +7,5 @@
 !pom.xml
 !target-platform.target
 !.launch
+!.launch/snow-owl-oss.launch
 !.classpath
