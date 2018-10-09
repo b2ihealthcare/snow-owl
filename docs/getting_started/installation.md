@@ -7,7 +7,7 @@ java -version
 echo $JAVA_HOME
 ```
 
-Once we have Java set up, we can then download and run Snow Owl. The binaries are available at `TODO dist site link`. For each release, you have a choice among a zip or tar archive, a DEB or RPM package.
+Once we have Java set up, we can then download and run Snow Owl. The binaries are available at the [Releases](https://github.com/b2ihealthcare/snow-owl/releases) pages. For each release, you have a choice among a zip or tar archive, a DEB or RPM package.
 
 ## Installation example with zip
 
@@ -16,20 +16,19 @@ For simplicity, let's use a zip file.
 Let's download the most recent Snow Owl release as follows:
 
 ```
-curl -L -O https://bintray.com/b2ihealthcare/releases/snow-owl-7.0.0.zip
+curl -L -O https://github.com/b2ihealthcare/snow-owl/releases/download/<version>/snow-owl-oss-<version>.zip
 ```
 
 Then extract it as follows:
 
 ```
-unzip snow-owl-7.0.0.zip
+unzip snow-owl-oss-<version>.zip
 ```
-
 
 It will then create a bunch of files and folders in your current directory. We then go into the bin directory as follows:
 
 ```
-cd snow-owl-7.0.0/bin
+cd snow-owl-oss-<version>/bin
 ```
 
 And now we are ready to start the instance:
@@ -42,4 +41,6 @@ And now we are ready to start the instance:
 
 If everything goes well with the installation, you should see a bunch of log messages that look like below:
 
-TODO example log message output
+```
+TODO example output
+```

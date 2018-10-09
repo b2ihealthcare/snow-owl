@@ -1,6 +1,6 @@
 # Getting Started
 
-Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server and collaborative authoring platform. It allows you to store, search and author big volumes of terminology artifacts quickly and efficiently. 
+Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server and collaborative authoring platform. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently. 
 
 Here are a few use-cases that Snow Owl could be used for:
 
