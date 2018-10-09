@@ -65,6 +65,10 @@ import com.google.common.base.Strings;
 public class ConfigurationFactory<T> {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ConfigurationFactory.class);
+	
+	// match ${ENV_VAR_NAME}
+	private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{(\\w+)\\}");
+	
 	private Class<T> klass;
 	private ObjectMapper mapper;
 	private Validator validator;
@@ -211,13 +215,11 @@ public class ConfigurationFactory<T> {
 			final String fieldName = field.getKey();
 			final String textValue = field.getValue().textValue();
 			if (!Strings.isNullOrEmpty(textValue)) {
-				// match ${ENV_VAR_NAME}
-				final Pattern pattern = Pattern.compile("\\$\\{(\\w+)\\}");
-				final Matcher matcher = pattern.matcher(textValue); 
-				if (matcher.find()) {
-					final String envVariableName = matcher.group(1) == null ? matcher.group(2) : matcher.group(1);
-					final String envVariableValue = System.getenv(envVariableName);
-					if (!Strings.isNullOrEmpty(envVariableValue)) {
+				final Matcher matcher = ENV_VAR_PATTERN.matcher(textValue); 
+				if (matcher.matches()) {
+					final String envVariableName = matcher.group(1);
+					if (System.getenv().containsKey(envVariableName)) {
+						final String envVariableValue = System.getenv(envVariableName);
 						((ObjectNode) node).put(fieldName, envVariableValue);
 					}
 				}
