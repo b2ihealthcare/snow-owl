@@ -6,7 +6,26 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 
 ## Download Snow Owl
 
-[GitHub Releases](https://github.com/b2ihealthcare/snow-owl/releases)
+Version: 7.0.0
+
+Release date: October 12, 2018
+
+License: [Apache 2.0](https://github.com/b2ihealthcare/snow-owl/blob/v7.0.0/LICENSE)
+
+Downloads:
+
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm.sha512)
+* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.deb.sha512)
+
+{% hint style="info" %}
+This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
+{% endhint %}
+
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.0.0).
+
+Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
 ## Learn Snow Owl
 
