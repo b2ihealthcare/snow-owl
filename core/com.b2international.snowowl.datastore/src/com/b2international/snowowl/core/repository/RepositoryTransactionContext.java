@@ -221,7 +221,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@Override
 	public void close() throws Exception {
 		// TODO is it always okay to clear when closing tx???
-		resolvedObjectsById.clear();
+		clear();
 	}
 
 	@Override
@@ -260,7 +260,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 						Collections.emptyList(),
 						Collections.emptyList()).publish(service(IEventBus.class));
 			}
+			clear();
 		}
+	}
+
+	private void clear() {
+		resolvedObjectsById.clear();
 	}
 
 	private void acquireLock(IOperationLockManager<DatastoreLockContext> locks, DatastoreLockContext lockContext, IOperationLockTarget lockTarget) {
