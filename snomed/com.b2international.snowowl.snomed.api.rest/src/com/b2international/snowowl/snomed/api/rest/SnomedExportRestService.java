@@ -53,7 +53,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import com.wordnik.swagger.annotations.Api;
@@ -91,12 +90,6 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			final SnomedExportRestConfiguration configuration) throws IOException {
 
 		ApiValidation.checkInput(configuration);
-		
-		if (!Rf2ReleaseType.DELTA.equals(configuration.getType())) {
-			if (configuration.getDeltaStartEffectiveTime() != null || configuration.getDeltaEndEffectiveTime() != null) {
-				throw new BadRequestException("Export date ranges can only be set if the export mode is set to DELTA.");
-			}
-		}
 		
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
 		validateTransientEffectiveTime(transientEffectiveTime);

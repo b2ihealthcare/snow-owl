@@ -38,7 +38,6 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
@@ -61,8 +60,6 @@ import com.google.common.primitives.Longs;
  *
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
-
-	private static final long THRESHOLD_DATE = Dates.parse("20180103", DateFormats.SHORT).getTime();
 
 	private SnomedSubExporter subExporter;
 	
@@ -221,14 +218,12 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		final BooleanQuery query = new BooleanQuery(true);
 		query.add(getSnapshotQuery(), MUST);
 		
-		final String effectiveTimeField = SnomedMappings.effectiveTime().fieldName();
-		
 		final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
 		effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
 		
 		if (!BranchPathUtils.isMain(branchPath)) {
 			Long versionBranchEffectiveDate = branchesToEffectiveTimeMap.get(BranchPathUtils.createPath(branchPath.getPath()));
-			effectiveTimeQuery.add(newLongRange(effectiveTimeField, versionBranchEffectiveDate, null, true, true), SHOULD);
+			effectiveTimeQuery.add(newLongRange(SnomedMappings.effectiveTime().fieldName(), versionBranchEffectiveDate, null, true, true), SHOULD);
 		}
 
 		query.add(effectiveTimeQuery, MUST);
@@ -284,8 +279,13 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		
-		for (final ICodeSystemVersion version : getAllVersion()) {
-			if (version.getEffectiveDate() > THRESHOLD_DATE) {
+		List<ICodeSystemVersion> allCodeSystemVersions = getAllVersion();
+		
+		long lowerBound = configuration.getDeltaExportStartEffectiveTime() != null ? configuration.getDeltaExportStartEffectiveTime().getTime() : 0L;
+		long upperBound = configuration.getDeltaExportEndEffectiveTime() != null ? configuration.getDeltaExportEndEffectiveTime().getTime() : Long.MAX_VALUE;
+		
+		for (final ICodeSystemVersion version : allCodeSystemVersions) {
+			if (version.getEffectiveDate() > lowerBound && version.getEffectiveDate() < upperBound) {
 				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
 			}
 		}
