@@ -1,13 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.b2international.snowowl</groupId>
-    <artifactId>commons-parent</artifactId>
-    <version>7.0.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>com.b2international.commons</artifactId>
-  <packaging>eclipse-plugin</packaging>
-  
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>7.0.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>com.b2international.commons</artifactId>
+	<packaging>eclipse-plugin</packaging>
+
+	<properties>
+		<micrometer.version>1.0.6</micrometer.version>
+		<typetools.version>0.4.8</typetools.version>
+		<zjsonpatch.version>0.4.4</zjsonpatch.version>
+		<picocli.version>3.5.1</picocli.version>
+		<jsr305.version>1.3.9</jsr305.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+  			<groupId>com.google.code.findbugs</groupId>
+  			<artifactId>jsr305</artifactId>
+  			<version>${jsr305.version}</version>
+		</dependency>
+		<dependency>
+  			<groupId>info.picocli</groupId>
+		  	<artifactId>picocli</artifactId>
+		  	<version>${picocli.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.flipkart.zjsonpatch</groupId>
+			<artifactId>zjsonpatch</artifactId>
+			<version>${zjsonpatch.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>typetools</artifactId>
+			<version>${typetools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
+			<version>${micrometer.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
+							<includeArtifactIds>
+								jsr305,
+								picocli,
+								typetools,
+								zjsonpatch,
+								micrometer-core,
+								micrometer-registry-prometheus,
+								HdrHistogram,
+								LatencyUtils,
+								simpleclient_common,
+								simpleclient
+							</includeArtifactIds>
+							<outputDirectory>${basedir}/lib</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-dependency-plugin
+										</artifactId>
+										<versionRange>
+											[3.1.1,)
+										</versionRange>
+										<goals>
+											<goal>
+												copy-dependencies
+											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute></execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+
 </project>
