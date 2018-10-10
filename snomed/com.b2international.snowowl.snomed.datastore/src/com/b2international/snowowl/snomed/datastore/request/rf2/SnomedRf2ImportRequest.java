@@ -232,8 +232,13 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 				
 				header = false;
 			} else {
-				final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
-				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
+				if (Rf2ReleaseType.SNAPSHOT == type) {
+					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
+				} else {
+					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
+					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
+				}
 			}
 
 		}

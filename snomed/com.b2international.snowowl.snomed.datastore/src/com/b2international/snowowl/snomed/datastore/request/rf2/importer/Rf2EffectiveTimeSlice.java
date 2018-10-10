@@ -68,8 +68,9 @@ import com.google.common.collect.Multimap;
 public final class Rf2EffectiveTimeSlice {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("import");
-
 	private static final int BATCH_SIZE = 5000;
+
+	public static final String SNAPSHOT_SLICE = "snapshot";
 
 	private final Date effectiveDate;
 	private final String effectiveTime;
@@ -83,7 +84,7 @@ public final class Rf2EffectiveTimeSlice {
 	private final boolean loadOnDemand;
 	
 	public Rf2EffectiveTimeSlice(DB db, String effectiveTime, boolean loadOnDemand) {
-		if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime)) {
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime) || SNAPSHOT_SLICE.equals(effectiveTime)) {
 			this.effectiveDate = null;
 			this.effectiveTime = effectiveTime;
 		} else {
@@ -180,7 +181,7 @@ public final class Rf2EffectiveTimeSlice {
 		final Stopwatch w = Stopwatch.createStarted();
 		final String importingMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", effectiveTime);
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
-		final boolean createVersions = importConfig.isCreateVersions();
+		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
 		final String userId = importConfig.getUserId();
 		
 		LOG.info(importingMessage);
@@ -211,7 +212,7 @@ public final class Rf2EffectiveTimeSlice {
 				
 				tx.add(componentsToImport, getDependencies(componentsToImport));
 				
-				if (!isUnpublishedSlice() && createVersions && !importPlan.hasNext()) {
+				if (doCreateVersion && !importPlan.hasNext()) {
 					tx.add(CodeSystemVersionEntry.builder()
 							.codeSystemShortName(importConfig.getCodeSystemShortName())
 							.description("")
@@ -226,7 +227,7 @@ public final class Rf2EffectiveTimeSlice {
 				tx.commit(userId, commitMessage, DatastoreLockContextDescriptions.ROOT);
 			}
 			
-			if (!isUnpublishedSlice() && createVersions) {
+			if (doCreateVersion) {
 				// do actually create a branch with the effective time name
 				RepositoryRequests
 					.branching()
@@ -242,6 +243,10 @@ public final class Rf2EffectiveTimeSlice {
 	
 	private boolean isUnpublishedSlice() {
 		return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime);
+	}
+	
+	private boolean isSnapshotSlice() {
+		return SNAPSHOT_SLICE.equals(effectiveTime);
 	}
 	
 	private Multimap<Class<? extends SnomedDocument>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {
