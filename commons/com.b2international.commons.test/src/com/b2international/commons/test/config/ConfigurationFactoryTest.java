@@ -100,8 +100,18 @@ public class ConfigurationFactoryTest {
 	}
 	
 	@Test
+	public void build_FromYamlFileNoValdidation_ShouldExtractGlobalStringEnvVariable() throws Exception {
+		final String expectedValue = "globalTest";
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, expectedValue);
+		final TestConfig config = parse(TestConfig.class, "conifg-stringEnvVar.yml");
+		assertNotNull(config);
+		assertEquals(expectedValue, config.getAttribute());
+		assertTrue(config.isValid());
+	}
+	
+	@Test
 	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractStringEnvVariable() throws Exception {
-		final String expectedValue = "value";
+		final String expectedValue = "moduleTest";
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, expectedValue);
 		
 		final Map<String, Class<?>> modules = newHashMap();
