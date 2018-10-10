@@ -63,15 +63,11 @@ final class Rf2SimpleMapWithDescriptionContentType implements Rf2RefSetContentTy
 	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
 		final String memberId = values[0];
 		final String mapTarget = values[6];
-		final String mapTargetDescription = values[7];
 		
 		if (Strings.isNullOrEmpty(mapTarget)) {
-			reporter.error(String.format("Map target field was empty for '%s'", memberId));
+			reporter.warning("Simple map target field was empty for '%s'", memberId);
 		}
 		
-		if (Strings.isNullOrEmpty(mapTargetDescription)) {
-			reporter.warning(String.format("Map target description field was empty for '%s'", memberId));
-		}
 	}
 	
 }

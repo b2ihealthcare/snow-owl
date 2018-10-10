@@ -89,23 +89,23 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 		final String mapCategoryId = values[12];
 		
 		if (Strings.isNullOrEmpty(mapGroup)) {
-			reporter.error(String.format("Map group field was empty for '%s' in a release file", memberId));
+			reporter.error("Extended Map group field was empty for '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(mapPriority)) {
-			reporter.error(String.format("Map priority field was empty for '%s' in a release file", memberId));
+			reporter.error("Extended Map priority field was empty for '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(mapRule)) {
-			reporter.error(String.format("Map rule field was empty for '%s' in a release file", memberId));
+			reporter.error("Extended Map rule field was empty for '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(mapAdvice)) {
-			reporter.error(String.format("Map advice field was empty for '%s' in a release file", memberId));
+			reporter.error("Extended Map advice field was empty for '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(mapTarget)) {
-			reporter.error(String.format("Map target field was empty for '%s' in a release file", memberId));
+			reporter.warning("Extended Map target field was empty for '%s'", memberId);
 		}
 				
 		validateConceptIds(reporter, correlationId, mapCategoryId);

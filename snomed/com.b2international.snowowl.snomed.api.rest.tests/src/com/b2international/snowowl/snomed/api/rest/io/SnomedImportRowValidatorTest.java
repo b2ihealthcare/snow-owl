@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.api.rest.io;
 
-import static org.junit.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -163,7 +163,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	}
 	
 	private Rf2ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
-		final File importArchive = new File(PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath));
+		final File importArchive = PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath).toFile();
 		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
 		
 		return SnomedRequests.rf2().prepareImport()

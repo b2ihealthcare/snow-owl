@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
-import java.util.Date;
-
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -35,6 +33,8 @@ import com.google.common.collect.ImmutableMap;
  */
 final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType {
 
+	private static final String EXPECTED_DATE_FORMAT = DateFormats.SHORT;
+
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.MODULE_DEPENDENCY);
@@ -42,8 +42,8 @@ final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		component.setProperties(ImmutableMap.<String, Object>of(
-			SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.parse(values[6], DateFormats.SHORT),
-			SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.parse(values[7], DateFormats.SHORT)
+			SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.parse(values[6], EXPECTED_DATE_FORMAT),
+			SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.parse(values[7], EXPECTED_DATE_FORMAT)
 		));
 	}
 
@@ -76,15 +76,20 @@ final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType
 
 	private void validateEffectiveTimeFields(String memberId, String sourceEffectiveTime, String targetEffectiveTime, Rf2ValidationIssueReporter reporter) {
 		if (Strings.isNullOrEmpty(sourceEffectiveTime) || Strings.isNullOrEmpty(targetEffectiveTime)) {
-			reporter.error(String.format("Source or target effective time field was empty for '%s'", memberId));
+			reporter.error("Source or target effective time field was empty for '%s'", memberId);
 			return;
 		}
 		
 		try {
-			final Date sourceDate = EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			final Date targetDate = EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
+			EffectiveTimes.parse(sourceEffectiveTime, EXPECTED_DATE_FORMAT);
 		} catch (SnowowlRuntimeException e) {
-			reporter.error(String.format("Source or target effective time field date type was in the incorrect format for '%s'", memberId));
+			reporter.error("Incorrect source effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
+		}
+		
+		try {
+			EffectiveTimes.parse(targetEffectiveTime, EXPECTED_DATE_FORMAT);
+		} catch (SnowowlRuntimeException e) {
+			reporter.error("Incorrect target effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
 		}
 	}
 	

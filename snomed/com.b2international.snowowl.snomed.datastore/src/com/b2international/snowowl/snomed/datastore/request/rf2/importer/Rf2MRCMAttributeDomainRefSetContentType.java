@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -89,15 +89,15 @@ public class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContent
 		final String contentTypeId = values[11];
 		
 		if (Strings.isNullOrEmpty(grouped)) {
-			reporter.error(String.format("Grouped field was empty for membwder '%s'", memberId));
+			reporter.error("Grouped field was empty for membwder '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(attributeCardinality)) {
-			reporter.error(String.format("AttributeCardinality field was empty for member '%s'", memberId));
+			reporter.error("AttributeCardinality field was empty for member '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(attributeInGroupCardinality)) {
-			reporter.error(String.format("AttributeInGroupCardinality field was empty for member '%s'", memberId));
+			reporter.error("AttributeInGroupCardinality field was empty for member '%s'", memberId);
 		}
 		
 		validateConceptIds(reporter, domainId, ruleStrenghtId, contentTypeId);

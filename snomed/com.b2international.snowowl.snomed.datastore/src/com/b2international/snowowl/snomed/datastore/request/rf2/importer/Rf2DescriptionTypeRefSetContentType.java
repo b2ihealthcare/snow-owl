@@ -70,7 +70,7 @@ final class Rf2DescriptionTypeRefSetContentType implements Rf2RefSetContentType 
 		final String memberId = values[0];
 		final String descriptionLength = values[7];
 		if (Strings.isNullOrEmpty(descriptionLength)) {
-			reporter.warning(String.format("Reference set member '%s' description length property is empty.", memberId));
+			reporter.warning("Reference set member '%s' description length property is empty.", memberId);
 		}
 		
 	}

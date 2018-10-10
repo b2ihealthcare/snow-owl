@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -81,11 +81,11 @@ public class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentT
 		final String contentTypeId = values[9];
 		
 		if (Strings.isNullOrEmpty(rangeConstraint)) {
-			reporter.error(String.format("Range constraint field was empty for '%s'", memberId));
+			reporter.error("Range constraint field was empty for '%s'", memberId);
 		}
 		
 		if (Strings.isNullOrEmpty(attributeRule)) {
-			reporter.warning(String.format("Attribute Rule field was empty for '%s'", memberId));
+			reporter.warning("Attribute Rule field was empty for '%s'", memberId);
 		}
 		
 		validateConceptIds(reporter, ruleStrenghtId, contentTypeId);

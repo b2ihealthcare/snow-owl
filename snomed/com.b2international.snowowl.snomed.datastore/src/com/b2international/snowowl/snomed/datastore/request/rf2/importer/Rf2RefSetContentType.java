@@ -51,7 +51,7 @@ interface Rf2RefSetContentType extends Rf2ContentType<SnomedReferenceSetMember> 
 		try {
 			UUID.fromString(memberId);
 		} catch (IllegalArgumentException e) {
-			reporter.error(String.format("%s %s", Rf2ValidationDefects.INVALID_UUID.getLabel(), memberId));
+			reporter.error("%s %s", Rf2ValidationDefects.INVALID_UUID, memberId);
 		}
 		
 		validateId(referencedComponentId, reporter);

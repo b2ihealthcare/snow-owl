@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
+final class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -72,7 +72,7 @@ public class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 		final String owlExpression = values[6];
 		
 		if (Strings.isNullOrEmpty(owlExpression)) {
-			reporter.error(String.format("Owl expression field was empty for '%s'", memberId));
+			reporter.error("Owl expression field was empty for '%s'", memberId);
 		}
 	}
 

@@ -63,7 +63,7 @@ final class Rf2SimpleMapRefSetContentType implements Rf2RefSetContentType {
 		final String mapTarget = values[6];
 		
 		if (Strings.isNullOrEmpty(mapTarget)) {
-			reporter.error(String.format("Map target field was empty for '%s'", memberId));
+			reporter.warning("Simple map target field was empty for '%s'", memberId);
 		}
 	}
 

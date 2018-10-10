@@ -89,7 +89,7 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 			try {
 				validateByComponentCategory(id, reporter, ComponentCategory.CONCEPT);
 			} catch (IllegalArgumentException e) {
-				reporter.error(String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
+				reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
 				// ignore exception
 			}
 		}
@@ -107,7 +107,7 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 		try {
 			SnomedIdentifiers.validate(id);
 		} catch (IllegalArgumentException e) {
-			reporter.error(String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
+			reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
 		}
 	}
 	

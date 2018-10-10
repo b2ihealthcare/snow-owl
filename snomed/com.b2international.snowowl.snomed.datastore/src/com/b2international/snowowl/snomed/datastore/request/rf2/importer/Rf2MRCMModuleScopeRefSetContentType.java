@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2MRCMModuleScopeRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMModuleScopeRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {

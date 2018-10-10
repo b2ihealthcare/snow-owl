@@ -29,35 +29,30 @@ public final class Rf2ValidationIssueReporter {
 	
 	private static final int MAX_NUMBER_OF_VALIDATION_PROBLEMS = 100;
 	
-	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create();
+	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create(2, MAX_NUMBER_OF_VALIDATION_PROBLEMS);
 	
-	public Rf2ValidationIssueReporter() {
-
-	}
-	
-	public void error(String validationMessage) {
+	public void error(String message, Object...args) {
 		if (getNumberOfErrors() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
-			validationProblems.put(Rf2ValidationType.ERROR, validationMessage);
+			validationProblems.put(Rf2ValidationType.ERROR, String.format(message, args));
 		}
 	}
 	
-	public void warning(String validationMessage) {
+	public void warning(String message, Object...args) {
 		if (getNumberOfWarnings() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
-			validationProblems.put(Rf2ValidationType.WARNING, validationMessage);
+			validationProblems.put(Rf2ValidationType.WARNING, String.format(message, args));
 		}
 	}
 	
 	public int getNumberOfErrors() {
-		return validationProblems.get(Rf2ValidationType.ERROR).size();
+		return getErrors().size();
 	}
 	
 	public int getNumberOfWarnings() {
-		return validationProblems.get(Rf2ValidationType.WARNING).size();
+		return getWarnings().size();
 	}
 	
 	public Collection<String> getErrors() {
 		return validationProblems.get(Rf2ValidationType.ERROR);
-
 	}
 	
 	public Collection<String> getWarnings() {

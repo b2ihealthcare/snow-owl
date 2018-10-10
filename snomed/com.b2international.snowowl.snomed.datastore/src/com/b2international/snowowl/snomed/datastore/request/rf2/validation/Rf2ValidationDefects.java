@@ -44,4 +44,9 @@ public enum Rf2ValidationDefects {
 		return label;
 	}
 	
+	@Override
+	public String toString() {
+		return getLabel();
+	}
+	
 }

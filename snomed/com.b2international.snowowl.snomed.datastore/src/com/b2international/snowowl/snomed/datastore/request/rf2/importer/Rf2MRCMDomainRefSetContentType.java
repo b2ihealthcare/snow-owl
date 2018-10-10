@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
  */
-public class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
+final class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -86,22 +86,22 @@ public class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 		final String guideURL = values[12];
 
 		if (Strings.isNullOrEmpty(domainConstraint)) {
-			reporter.error(String.format("Domain constraint field was empty for '%s'", memberId));
+			reporter.error("Domain constraint field was empty for '%s'", memberId);
 		}
 
 		if (Strings.isNullOrEmpty(proximalPrimitiveConstraint)) {
-			reporter.error(String.format("Proximal primitive constraint field was empty for '%s'", memberId));
+			reporter.error("Proximal primitive constraint field was empty for '%s'", memberId);
 		}
 		if (Strings.isNullOrEmpty(domainTemplateForPrecoordination)) {
-			reporter.error(String.format("Domain template for precoordination was empty for '%s'", memberId));
+			reporter.error("Domain template for precoordination was empty for '%s'", memberId);
 		}
 
 		if (Strings.isNullOrEmpty(domainTemplateForPostcoordination)) {
-			reporter.error(String.format("Domain template for postcoordination field was empty for '%s'", memberId));
+			reporter.error("Domain template for postcoordination field was empty for '%s'", memberId);
 		}
 
 		if (Strings.isNullOrEmpty(guideURL)) {
-			reporter.warning(String.format("GuideURL field was empty for '%s'", memberId));
+			reporter.warning("GuideURL field was empty for '%s'", memberId);
 		}
 	}
 

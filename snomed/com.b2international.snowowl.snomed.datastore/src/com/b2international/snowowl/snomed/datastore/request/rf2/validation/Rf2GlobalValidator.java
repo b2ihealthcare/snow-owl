@@ -94,11 +94,11 @@ public class Rf2GlobalValidator {
 	}
 
 	public void validateMembers(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
-		final int slices = Iterables.size(orderedEffectiveTimeSlices);
-		for (int i = 0; i < slices; i++) {
-			final Rf2EffectiveTimeSlice slice = Iterables.get(orderedEffectiveTimeSlices, i);
-		}
-	
+//		final int slices = Iterables.size(orderedEffectiveTimeSlices);
+//		for (int i = 0; i < slices; i++) {
+//			final Rf2EffectiveTimeSlice slice = Iterables.get(orderedEffectiveTimeSlices, i);
+//			
+//		}
 	}
 
 	private Set<String> fetchConcepts(BranchContext context, final Set<String> conceptIdsToFetch) {
