@@ -38,6 +38,7 @@ import org.apache.lucene.search.Query;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemService;
@@ -60,6 +61,8 @@ import com.google.common.primitives.Longs;
  *
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
+
+	private static final long THRESHOLD_DATE = Dates.parse("20180103", DateFormats.SHORT).getTime();
 
 	private SnomedSubExporter subExporter;
 	
@@ -282,7 +285,9 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		final Map<IBranchPath, Long> branchPathMap = newLinkedHashMap();
 		
 		for (final ICodeSystemVersion version : getAllVersion()) {
-			branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			if (version.getEffectiveDate() > THRESHOLD_DATE) {
+				branchPathMap.put(createVersionPath(version.getVersionId()), version.getEffectiveDate());
+			}
 		}
 		
 		branchPathMap.put(createMainPath(), UNSET_EFFECTIVE_TIME);
