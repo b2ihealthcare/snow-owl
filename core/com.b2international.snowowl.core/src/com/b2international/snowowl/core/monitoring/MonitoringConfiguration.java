@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,36 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.metrics;
+package com.b2international.snowowl.core.monitoring;
 
 /**
- * @since 5.0
+ * @since 4.5
  */
-public interface Timer extends Metric<Long> {
+public class MonitoringConfiguration {
 
-	Timer NOOP = new Timer() {
-		@Override
-		public void start() {
-		}
-
-		@Override
-		public void stop() {
-		}
-		
-		@Override
-		public Long getValue() {
-			return -1L;
-		}
-	};
-
-	/**
-	 * Starts the timer.
-	 */
-	void start();
-
-	/**
-	 * Stops the timer.
-	 */
-	void stop();
+	private boolean enabled = false;
+	
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
+	public boolean isEnabled() {
+		return enabled;
+	}
 	
 }

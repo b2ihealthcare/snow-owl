@@ -63,15 +63,7 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.base.Charsets;
 
-import io.micrometer.core.instrument.binder.jetty.JettyStatisticsMetrics;
-import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.binder.system.UptimeMetrics;
-import io.micrometer.prometheus.PrometheusConfig;
-import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
 import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
@@ -142,17 +134,8 @@ public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public PrometheusMeterRegistry registry() {
-		final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-		registry.config().commonTags("application", "Snow Owl");
-		new ClassLoaderMetrics().bindTo(registry);
-		new JvmGcMetrics().bindTo(registry);
-		new JvmMemoryMetrics().bindTo(registry);
-		new JvmThreadMetrics().bindTo(registry);
-		new UptimeMetrics().bindTo(registry);
-		new ProcessorMetrics().bindTo(registry);
-		
-		return registry;
+	public MeterRegistry registry() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(MeterRegistry.class);
 	}
 	
 	@Bean

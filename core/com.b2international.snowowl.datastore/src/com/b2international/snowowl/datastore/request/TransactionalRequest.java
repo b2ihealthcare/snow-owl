@@ -25,10 +25,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.MetricsThreadLocal;
-import com.b2international.snowowl.core.events.metrics.Timer;
+import com.b2international.snowowl.core.monitoring.MonitoringThreadLocal;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 /**
  * @since 4.5
@@ -58,8 +59,8 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	@Override
 	public CommitResult execute(BranchContext context) {
-		final Metrics metrics = context.service(Metrics.class);
-		metrics.setExternalValue("preRequest", preRequestPreparationTime);
+//		final Metrics metrics = context.service(Metrics.class);
+//		metrics.setExternalValue("preRequest", preRequestPreparationTime);
 		try (final TransactionContext transaction = context.service(TransactionContextProvider.class).get(context, userId, commitComment, parentContextDescription)) {
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
@@ -71,9 +72,9 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	}
 
 	private CommitResult commit(final TransactionContext context, final Object body) {
-		final Metrics metrics = context.service(Metrics.class);
+		final MeterRegistry metrics = context.service(MeterRegistry.class);
 		final Timer commitTimer = metrics.timer("commit");
-		MetricsThreadLocal.set(metrics);
+		MonitoringThreadLocal.set(metrics);
 		try {
 			commitTimer.start();
 			
@@ -85,12 +86,12 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 			return new CommitResult(commitTimestamp, body);
 		} finally {
 			commitTimer.stop();
-			MetricsThreadLocal.release();
+			MonitoringThreadLocal.release();
 		}
 	}
 	
 	private Object executeNext(TransactionContext context) {
-		final Timer preCommit = context.service(Metrics.class).timer("preCommit");
+		final Timer preCommit = context.service(MeterRegistry.class).timer("preCommit");
 		try {
 			preCommit.start();
 			return next.execute(context);

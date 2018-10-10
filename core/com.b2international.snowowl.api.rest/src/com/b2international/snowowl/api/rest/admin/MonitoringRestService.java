@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.api.rest.AbstractRestService;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,22 +31,26 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 7.0
  */
-@Api(value = "Metrics", description="Metrics", tags = { "metrics" })
+@Api(value = "Monitoring", description="Monitoring", tags = { "monitoring" })
 @RestController
-public class MetricsRestService extends AbstractRestService {
+public class MonitoringRestService extends AbstractRestService {
 	
 	@Autowired
-	private PrometheusMeterRegistry registry;
+	private MeterRegistry registry;
 	
 	@ApiOperation(
-			value="Retrieve metrics data about Snow Owl",
-			notes="Retrive metrics data about Snow Owl which is parsable by the Prometheus monitoring system.")
+			value="Retrieve monitoring data about Snow Owl",
+			notes="Retrive monitoring data about Snow Owl which is parsable by a Prometheus monitoring system.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = String.class),
 	})
 	@GetMapping(value = "/metrics", produces = { AbstractRestService.TEXT_MEDIA_TYPE })
 	public String getMetrics() {
-		return registry.scrape();
+		if (registry instanceof PrometheusMeterRegistry) {
+			return ((PrometheusMeterRegistry) registry).scrape();
+		} else {
+			return "";
+		}
 	}
 
 }

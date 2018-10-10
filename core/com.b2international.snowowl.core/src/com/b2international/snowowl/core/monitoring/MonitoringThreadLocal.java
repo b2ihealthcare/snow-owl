@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.metrics;
+package com.b2international.snowowl.core.monitoring;
+
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * {@link ThreadLocal} based registry for request scoped {@link Metrics} instances.
  * 
  * @since 5.0
  */
-public final class MetricsThreadLocal {
+public final class MonitoringThreadLocal {
 
-	private static final ThreadLocal<Metrics> METRICS = new ThreadLocal<Metrics>() {
+	private static final ThreadLocal<MeterRegistry> REGISTRY = new ThreadLocal<MeterRegistry>() {
 		@Override
-		protected Metrics initialValue() {
-			return Metrics.NOOP;
+		protected MeterRegistry initialValue() {
+			return null;
 		}
 	};
 	
-	public static void set(Metrics metrics) {
-		METRICS.set(metrics);
+	public static void set(MeterRegistry metrics) {
+		REGISTRY.set(metrics);
 	}
 	
-	public static Metrics get() {
-		return METRICS.get();
+	public static MeterRegistry get() {
+		return REGISTRY.get();
 	}
 	
 	public static void release() {
-		METRICS.remove();
+		REGISTRY.remove();
 	}
 	
 }

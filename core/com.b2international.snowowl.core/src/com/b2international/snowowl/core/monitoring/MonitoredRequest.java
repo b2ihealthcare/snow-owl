@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.metrics;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package com.b2international.snowowl.core.monitoring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,31 +21,28 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 /**
  * @since 4.5
  */
-public final class MeteredRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
+public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("request");
 	
-	@JsonProperty
-	private final Metrics metrics;
-
-	MeteredRequest(Metrics metrics, Request<ServiceProvider, R> next) {
+	public MonitoredRequest(Request<ServiceProvider, R> next) {
 		super(next);
-		this.metrics = checkNotNull(metrics, "metrics");
 	}
 	
 	@Override
 	public R execute(ServiceProvider context) {
-		final Timer responseTimer = metrics.timer("responseTime");
+		final Timer responseTimer = context.service(MeterRegistry.class).timer("responseTime");
 		responseTimer.start();
 		try {
-			return next(context.inject().bind(Metrics.class, metrics)
-					.build());
+			return next(context);
 		} finally {
 			responseTimer.stop();
 			LOG.info(getMessage(context));
@@ -57,11 +52,7 @@ public final class MeteredRequest<R> extends DelegatingRequest<ServiceProvider, 
 	private String getMessage(ServiceProvider context) {
 		try {
 			final ObjectMapper mapper = context.service(ObjectMapper.class);
-			if (metrics == Metrics.NOOP) {
-				return mapper.writeValueAsString(next());
-			} else {
-				return mapper.writeValueAsString(this);
-			}
+			return mapper.writeValueAsString(next());
 		} catch (Throwable e) {
 			return "Unable to get request description: " + e.getMessage();
 		}

@@ -35,8 +35,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.Timer;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.datastore.request.TransactionalRequest;
@@ -55,6 +53,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 /**
  * @since 4.5
@@ -96,7 +97,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			final Multimap<ComponentCategory, SnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
 
 			if (!componentCreateRequests.isEmpty()) {
-				final Timer idGenerationTimer = context.service(Metrics.class).timer("idGeneration");
+				final Timer idGenerationTimer = context.service(MeterRegistry.class).timer("idGeneration");
 
 				try {
 					idGenerationTimer.start();

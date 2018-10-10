@@ -21,16 +21,24 @@ import com.b2international.commons.extension.Component;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.events.metrics.DefaultMetricsProvider;
-import com.b2international.snowowl.core.events.metrics.Metrics;
-import com.b2international.snowowl.core.events.metrics.MetricsConfiguration;
-import com.b2international.snowowl.core.events.metrics.MetricsProvider;
 import com.b2international.snowowl.core.ft.FeatureToggles;
 import com.b2international.snowowl.core.login.LoginConfiguration;
+import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 
 /**
  * @since 3.3
@@ -47,12 +55,21 @@ public final class SnowOwlPlugin extends Plugin {
 		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		
-		if (configuration.getModuleConfig(MetricsConfiguration.class).isEnabled()) {
-			env.services().registerService(MetricsProvider.class, new DefaultMetricsProvider());
+		if (configuration.getModuleConfig(MonitoringConfiguration.class).isEnabled()) {
+			final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+			registry.config().commonTags("application", "Snow Owl");
+			// configure default metrics
+			new ClassLoaderMetrics().bindTo(registry);
+			new JvmGcMetrics().bindTo(registry);
+			new JvmMemoryMetrics().bindTo(registry);
+			new JvmThreadMetrics().bindTo(registry);
+			new UptimeMetrics().bindTo(registry);
+			new ProcessorMetrics().bindTo(registry);
+			env.services().registerService(MeterRegistry.class, registry);
 		} else {
-			env.services().registerService(MetricsProvider.class, MetricsProvider.NOOP);
+			// XXX this works like a NOOP registry if you do NOT register any additional registries to it
+			env.services().registerService(MeterRegistry.class, new CompositeMeterRegistry());
 		}
-		env.services().registerService(Metrics.class, Metrics.NOOP);
 		
 		// TODO support initial values for feature toggles
 		env.services().registerService(FeatureToggles.class, new FeatureToggles());
@@ -67,7 +84,7 @@ public final class SnowOwlPlugin extends Plugin {
 	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
-		registry.add("metrics", MetricsConfiguration.class);
+		registry.add("monitoring", MonitoringConfiguration.class);
 	}
 
 }
