@@ -1,5 +1,5 @@
 
 globalParameter: SOME_PARAM
 
-testConfigDouble:
-  attribute: ${SOME_ATTRIBUTE}
+allParams:
+  doubleAttribute: ${SOME_ATTRIBUTE}

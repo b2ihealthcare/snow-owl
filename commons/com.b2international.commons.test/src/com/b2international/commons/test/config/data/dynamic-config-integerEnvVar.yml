@@ -1,5 +1,5 @@
 
 globalParameter: SOME_PARAM
 
-testConfigInteger:
-  attribute: ${SOME_ATTRIBUTE}
+allParams:
+  integerAttribute: ${SOME_ATTRIBUTE}

@@ -1,5 +1,6 @@
 
 globalParameter: SOME_PARAM
 
-testConfigShort:
-  attribute: ${SOME_ATTRIBUTE}
+allParams:
+  shortAttribute: ${SOME_ATTRIBUTE}
+

@@ -1,2 +1,1 @@
-attribute: ${SOME_ATTRIBUTE}
-valid: true
+stringAttribute: ${SOME_ATTRIBUTE}
