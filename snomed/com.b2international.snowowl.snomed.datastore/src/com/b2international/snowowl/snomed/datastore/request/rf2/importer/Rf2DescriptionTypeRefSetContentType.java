@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2DescriptionTypeRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -61,10 +60,20 @@ final class Rf2DescriptionTypeRefSetContentType implements Rf2RefSetContentType 
 			Long.parseLong(values[6])
 		);
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2DescriptionTypeRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String descriptionFormat = values[6];
+		
+		validateConceptIds(reporter, descriptionFormat);
+		
+		final String memberId = values[0];
+		final String descriptionLength = values[7];
+		if (Strings.isNullOrEmpty(descriptionLength)) {
+			reporter.warning(String.format("Reference set member '%s' description length property is empty.", memberId));
+		}
+		
 	}
+	
 	
 }

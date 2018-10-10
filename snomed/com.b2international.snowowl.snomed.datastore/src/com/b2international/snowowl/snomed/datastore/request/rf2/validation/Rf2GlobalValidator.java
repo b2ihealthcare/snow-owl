@@ -40,7 +40,7 @@ import com.google.common.collect.Sets;
  */
 public class Rf2GlobalValidator {
 
-	public void validate(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
 		final int slices = Iterables.size(orderedEffectiveTimeSlices);
 		for (int i = 0; i < slices ; i++) {
 			final Rf2EffectiveTimeSlice currentSlice = Iterables.get(orderedEffectiveTimeSlices, i);
@@ -82,19 +82,26 @@ public class Rf2GlobalValidator {
 				}
 				
 				if (!conceptIdsToFetch.isEmpty()) {
-					final Set<String> existingConceptIds = fetchConcepts(reporter, context, currentSlice, conceptIdsToFetch);
+					final Set<String> existingConceptIds = fetchConcepts(context, conceptIdsToFetch);
+					// the difference between the sets are the ones which don't exist in any of the previous slices, or imported in the system
 					final Set<String> issuesToReport = Sets.difference(conceptIdsToFetch, existingConceptIds);
 					if (!issuesToReport.isEmpty()) {
 						issuesToReport.forEach(id -> reporter.error(String.format("%s %s in effective time %s", Rf2ValidationDefects.MISSING_DEPENDANT_ID.getLabel(), id, currentSlice.getEffectiveTime())));
 					}
 				}
-				
 			}
-			
 		}
 	}
 
-	private Set<String> fetchConcepts(Rf2ValidationIssueReporter reporter, BranchContext context, final Rf2EffectiveTimeSlice currentSlice, final Set<String> conceptIdsToFetch) {
+	public void validateMembers(Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+		final int slices = Iterables.size(orderedEffectiveTimeSlices);
+		for (int i = 0; i < slices; i++) {
+			final Rf2EffectiveTimeSlice slice = Iterables.get(orderedEffectiveTimeSlices, i);
+		}
+	
+	}
+
+	private Set<String> fetchConcepts(BranchContext context, final Set<String> conceptIdsToFetch) {
 		SnomedConceptSearchRequestBuilder conceptRequestBuilder = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(conceptIdsToFetch)

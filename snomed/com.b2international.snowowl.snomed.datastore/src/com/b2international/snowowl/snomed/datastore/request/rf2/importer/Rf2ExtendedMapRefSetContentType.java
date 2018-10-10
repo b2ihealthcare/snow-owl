@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,8 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ExtendedMapRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -77,10 +76,40 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 			Long.parseLong(values[12])
 		);
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2ExtendedMapRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String mapGroup = values[6];
+		final String mapPriority = values[7];
+		final String mapRule = values[8];
+		final String mapAdvice = values[9];
+		final String mapTarget = values[10];
+		final String correlationId = values[11];
+		final String mapCategoryId = values[12];
+		
+		if (Strings.isNullOrEmpty(mapGroup)) {
+			reporter.error(String.format("Map group field was empty for '%s' in a release file", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(mapPriority)) {
+			reporter.error(String.format("Map priority field was empty for '%s' in a release file", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(mapRule)) {
+			reporter.error(String.format("Map rule field was empty for '%s' in a release file", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(mapAdvice)) {
+			reporter.error(String.format("Map advice field was empty for '%s' in a release file", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(mapTarget)) {
+			reporter.error(String.format("Map target field was empty for '%s' in a release file", memberId));
+		}
+				
+		validateConceptIds(reporter, correlationId, mapCategoryId);
 	}
+	
 	
 }

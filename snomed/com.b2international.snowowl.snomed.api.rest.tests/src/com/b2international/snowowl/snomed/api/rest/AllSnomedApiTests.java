@@ -46,6 +46,7 @@ import com.b2international.snowowl.snomed.api.rest.components.SnomedRelationship
 import com.b2international.snowowl.snomed.api.rest.id.SnomedIdentifierApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.api.rest.io.SnomedImportApiTest;
+import com.b2international.snowowl.snomed.api.rest.io.SnomedImportRowValidatorTest;
 import com.b2international.snowowl.snomed.api.rest.perf.SnomedConceptCreatePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.perf.SnomedMergePerformanceTest;
 import com.b2international.snowowl.snomed.api.rest.versioning.SnomedVersioningApiTest;
@@ -90,6 +91,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Import-Export-Versioning-Classification
 	SnomedClassificationApiTest.class,
 	SnomedImportApiTest.class,
+	SnomedImportRowValidatorTest.class,
 	SnomedExportApiTest.class,
 	SnomedRefSetDSVExportTest.class,
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff

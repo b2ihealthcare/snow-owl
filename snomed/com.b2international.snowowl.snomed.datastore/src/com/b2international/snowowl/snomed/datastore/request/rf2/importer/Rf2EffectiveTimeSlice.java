@@ -101,7 +101,11 @@ public final class Rf2EffectiveTimeSlice {
 	public Map<String, String[]> getContent() {
 		return componentsById;
 	}
-
+	
+	public String getEffectiveTime() {
+		return effectiveTime;
+	}
+	
 	private <T extends SnomedComponent> T getComponent(String componentId) {
 		final String[] valuesWithType = componentsById.get(componentId);
 
@@ -121,10 +125,6 @@ public final class Rf2EffectiveTimeSlice {
 		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + valuesWithType);
 	}
 	
-	public String getEffectiveTime() {
-		return effectiveTime;
-	}
-
 	public void register(String containerId, Rf2ContentType<?> type, String[] values, Rf2ValidationIssueReporter reporter) {
 		String[] valuesWithType = new String[values.length + 1];
 		valuesWithType[0] = type.getType();
@@ -145,7 +145,7 @@ public final class Rf2EffectiveTimeSlice {
 			}
 		}
 		
-		type.getValidator(reporter, values).validateRow(type.getHeaderColumns());
+		type.validate(reporter, values);
 		
 		tmpComponentsById.put(componentId, valuesWithType);
 		if (tmpComponentsById.size() >= BATCH_SIZE) {
@@ -243,7 +243,7 @@ public final class Rf2EffectiveTimeSlice {
 	private boolean isUnpublishedSlice() {
 		return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime);
 	}
-
+	
 	private Multimap<Class<? extends SnomedDocument>, String> getDependencies(Collection<SnomedComponent> componentsToImport) {
 		final Multimap<Class<? extends SnomedDocument>, String> dependenciesByComponent = HashMultimap.create();
 		for (SnomedComponent component : componentsToImport) {

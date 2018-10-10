@@ -25,7 +25,7 @@ import com.google.common.collect.Lists;
  */
 public class Rf2ImportResponse {
 
-	private ImportStatus status;
+	private ImportStatus status = ImportStatus.COMPLETED;
 	
 	private Collection<String> issues = Lists.newArrayList();
 

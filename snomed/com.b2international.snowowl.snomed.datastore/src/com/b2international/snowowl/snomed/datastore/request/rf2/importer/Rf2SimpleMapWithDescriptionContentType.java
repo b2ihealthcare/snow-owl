@@ -21,9 +21,8 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2SimpleMapWithDescriptionRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -59,10 +58,20 @@ final class Rf2SimpleMapWithDescriptionContentType implements Rf2RefSetContentTy
 			Long.parseLong(values[4])
 		);
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2SimpleMapWithDescriptionRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String mapTarget = values[6];
+		final String mapTargetDescription = values[7];
+		
+		if (Strings.isNullOrEmpty(mapTarget)) {
+			reporter.error(String.format("Map target field was empty for '%s'", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(mapTargetDescription)) {
+			reporter.warning(String.format("Map target description field was empty for '%s'", memberId));
+		}
 	}
 	
 }

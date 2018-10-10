@@ -29,9 +29,8 @@ import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2MRCMAttributeDomainRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -78,10 +77,30 @@ public class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContent
 	public String[] getHeaderColumns() {
 		return MRCM_ATTRIBUTE_DOMAIN_HEADER;
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2MRCMAttributeDomainRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String grouped = values[7];
+		final String domainId = values[6];
+		final String attributeCardinality = values[8];
+		final String attributeInGroupCardinality = values[9];
+		final String ruleStrenghtId = values[10];
+		final String contentTypeId = values[11];
+		
+		if (Strings.isNullOrEmpty(grouped)) {
+			reporter.error(String.format("Grouped field was empty for membwder '%s'", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(attributeCardinality)) {
+			reporter.error(String.format("AttributeCardinality field was empty for member '%s'", memberId));
+		}
+		
+		if (Strings.isNullOrEmpty(attributeInGroupCardinality)) {
+			reporter.error(String.format("AttributeInGroupCardinality field was empty for member '%s'", memberId));
+		}
+		
+		validateConceptIds(reporter, domainId, ruleStrenghtId, contentTypeId);
 	}
 
 }

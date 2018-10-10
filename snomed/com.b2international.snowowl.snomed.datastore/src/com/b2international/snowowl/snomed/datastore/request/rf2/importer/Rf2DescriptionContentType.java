@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2DescriptionRowValidator;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
@@ -45,7 +46,8 @@ final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescriptio
 
 	@Override
 	public String getContainerId(String[] values) {
-		return values[4];
+		final String conceptId = values[4];
+		return conceptId;
 	}
 
 	@Override
@@ -67,10 +69,25 @@ final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescriptio
 			Long.parseLong(values[8])
 		);
 	}
-	
-	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2DescriptionRowValidator(reporter, values);
-	}
 
+	@Override
+	public void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String descriptionId = values[0];
+		final String conceptId = values[4];
+		final String typeId = values[6];
+		final String caseSignificanceId = values[8];
+		
+		try {
+			SnomedIdentifiers.validate(descriptionId);
+			validateByComponentCategory(descriptionId, reporter, ComponentCategory.DESCRIPTION);
+		} catch (IllegalArgumentException e) {
+			reporter.error(String.format("%s %s", descriptionId, Rf2ValidationDefects.INVALID_ID.getLabel()));
+		}
+		
+		validateConceptIds(reporter, conceptId, typeId, caseSignificanceId);
+		
+	}
+	
+	
+	
 }

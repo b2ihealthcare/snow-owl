@@ -16,17 +16,22 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.Arrays;
+import java.util.List;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
+import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.base.Strings;
 
 /**
+ * Represents the content type found in RF2 files.
+ * 
  * @param <T>
  */
 public interface Rf2ContentType<T extends SnomedComponent> {
@@ -62,6 +67,50 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 		return Arrays.equals(getHeaderColumns(), header);
 	}
 	
+	default void validate(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String isActive = values[2];
+		final String moduleId = values[3];
+		
+		if (values.length != getHeaderColumns().length) {
+			reporter.error(Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
+		}
+		
+		if (Strings.isNullOrEmpty(isActive)) {
+			reporter.error(Rf2ValidationDefects.MISSING_ACTIVE_FLAG.getLabel());
+		}
+		
+		validateConceptIds(reporter, moduleId);
+		validateByContentType(reporter, values);
+	}
+	
+	default void validateConceptIds(Rf2ValidationIssueReporter reporter, String...idsToValidate) {
+		final List<String> ids = Arrays.asList(idsToValidate);
+		for (String id : ids) {
+			try {
+				validateByComponentCategory(id, reporter, ComponentCategory.CONCEPT);
+			} catch (IllegalArgumentException e) {
+				reporter.error(String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
+				// ignore exception
+			}
+		}
+	}
+	
+	default void validateByComponentCategory(String id, Rf2ValidationIssueReporter reporter, ComponentCategory expectedCategory) {
+		validateId(id, reporter);
+		final ComponentCategory componentCategory = SnomedIdentifiers.getComponentCategory(id);
+		if (componentCategory != expectedCategory) {
+			reporter.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
+		}
+	}
+	
+	default void validateId(String id, Rf2ValidationIssueReporter reporter) {
+		try {
+			SnomedIdentifiers.validate(id);
+		} catch (IllegalArgumentException e) {
+			reporter.error(String.format("%s %s", id, Rf2ValidationDefects.INVALID_ID.getLabel()));
+		}
+	}
+	
 	LongSet getDependencies(String[] values);
 	
 	String getType();
@@ -69,11 +118,11 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 	String getContainerId(String[] values);
 
 	void resolve(T component, String[] values);
+	
+	void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values);
 
 	T create();
 
 	String[] getHeaderColumns();
-	
-	AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values);
 	
 }

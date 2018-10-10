@@ -29,9 +29,8 @@ import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.AbstractRf2RowValidator;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2MRCMDomainRefSetRowValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -76,10 +75,34 @@ public class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 	public String[] getHeaderColumns() {
 		return MRCM_DOMAIN_HEADER;
 	}
-	
+
 	@Override
-	public AbstractRf2RowValidator getValidator(Rf2ValidationIssueReporter reporter, String[] values) {
-		return new Rf2MRCMDomainRefSetRowValidator(reporter, values);
+	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+		final String memberId = values[0];
+		final String domainConstraint = values[6];
+		final String proximalPrimitiveConstraint = values[8];
+		final String domainTemplateForPrecoordination = values[10];
+		final String domainTemplateForPostcoordination = values[11];
+		final String guideURL = values[12];
+
+		if (Strings.isNullOrEmpty(domainConstraint)) {
+			reporter.error(String.format("Domain constraint field was empty for '%s'", memberId));
+		}
+
+		if (Strings.isNullOrEmpty(proximalPrimitiveConstraint)) {
+			reporter.error(String.format("Proximal primitive constraint field was empty for '%s'", memberId));
+		}
+		if (Strings.isNullOrEmpty(domainTemplateForPrecoordination)) {
+			reporter.error(String.format("Domain template for precoordination was empty for '%s'", memberId));
+		}
+
+		if (Strings.isNullOrEmpty(domainTemplateForPostcoordination)) {
+			reporter.error(String.format("Domain template for postcoordination field was empty for '%s'", memberId));
+		}
+
+		if (Strings.isNullOrEmpty(guideURL)) {
+			reporter.warning(String.format("GuideURL field was empty for '%s'", memberId));
+		}
 	}
 
 }

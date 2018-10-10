@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
@@ -141,31 +140,35 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 			
 			// log issues with rows
 			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
 			
 			// run global validation
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
 			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator();
-			globalValidator.validate(orderedEffectiveTimeSlices, reporter, context);
+			globalValidator.validateTerminologyComponents(orderedEffectiveTimeSlices, reporter, context);
+			globalValidator.validateMembers(orderedEffectiveTimeSlices, reporter, context);
 			
 			// log global validation issues
 			logValidationIssues(reporter, response);
+			if (response.getStatus().equals(ImportStatus.FAILED)) {
+				return response;
+			}
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(importconfig, context);
 			}
-			// import completed successfully
-			response.setStatus(ImportStatus.COMPLETED);
 		}
 		return response;
 	}
 
 	private void logValidationIssues(final Rf2ValidationIssueReporter reporter, Rf2ImportResponse response) {
 		reporter.logWarnings(LOG);
-		response.getIssues().addAll(reporter.getIssues());
+		response.setIssues(reporter.getIssues());
 		if (reporter.getNumberOfErrors() > 0) {
 			response.setStatus(ImportStatus.FAILED);
 			reporter.logErrors(LOG);
-			throw new BadRequestException(String.format("There were %s validation errors with the RF2 import files", reporter.getNumberOfErrors()));
 		}
 	}
 	
@@ -186,12 +189,16 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 		try (final ZipFile zip = new ZipFile(rf2Archive)) {
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
-				if (fileName.contains(type.toString().toLowerCase()) && fileName.endsWith(TXT_EXT)) {
-					w.reset().start();
-					try (final InputStream in = zip.getInputStream(entry)) {
-						readFile(entry, in, oReader, slices, reporter);
+				if (fileName.endsWith(TXT_EXT)) {
+					if (fileName.contains(type.toString().toLowerCase())) {
+						w.reset().start();
+						try (final InputStream in = zip.getInputStream(entry)) {
+							readFile(entry, in, oReader, slices, reporter);
+						}
+						LOG.info(entry.getName() + " - " + w);
+					} else {
+						reporter.warning(String.format("Unexpected type was found in release archive, expected type: %s", type.toString().toLowerCase()));
 					}
-					LOG.info(entry.getName() + " - " + w);
 				}
 			}
 		} catch (IOException e) {

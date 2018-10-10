@@ -27,6 +27,8 @@ import com.google.common.collect.Multimap;
  */
 public final class Rf2ValidationIssueReporter {
 	
+	private static final int MAX_NUMBER_OF_VALIDATION_PROBLEMS = 100;
+	
 	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create();
 	
 	public Rf2ValidationIssueReporter() {
@@ -34,11 +36,15 @@ public final class Rf2ValidationIssueReporter {
 	}
 	
 	public void error(String validationMessage) {
-		validationProblems.put(Rf2ValidationType.ERROR, validationMessage);
+		if (getNumberOfErrors() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
+			validationProblems.put(Rf2ValidationType.ERROR, validationMessage);
+		}
 	}
 	
 	public void warning(String validationMessage) {
-		validationProblems.put(Rf2ValidationType.WARNING, validationMessage);
+		if (getNumberOfWarnings() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
+			validationProblems.put(Rf2ValidationType.WARNING, validationMessage);
+		}
 	}
 	
 	public int getNumberOfErrors() {
@@ -63,7 +69,7 @@ public final class Rf2ValidationIssueReporter {
 	}
 
 	public void logWarnings(Logger log) {
-		getWarnings().forEach(log::warn);;
+		getWarnings().forEach(log::warn);
 	}
 	
 	public void logErrors(Logger log) {
