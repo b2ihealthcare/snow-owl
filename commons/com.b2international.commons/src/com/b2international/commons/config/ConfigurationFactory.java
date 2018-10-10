@@ -110,6 +110,7 @@ public class ConfigurationFactory<T> {
 				LOG.info("No configuration found at {}, falling back to default configurations", path);
 				return klass.newInstance();
 			}
+			replaceEnvironmentVariables(node);
 			return build(node, path);
 		} catch (RuntimeException e) {
 			throw e;
@@ -193,7 +194,6 @@ public class ConfigurationFactory<T> {
 			final JsonNode moduleConfigNode = config.getModuleConfigurations().get(fieldName);
 			Object moduleConfig = null;
 			if (moduleConfigNode != null) {
-				replaceEnvironmentVariables(moduleConfigNode);
 				moduleConfig = factory.build(moduleConfigNode, fieldName);
 			} else {
 				moduleConfig = factory.build();
