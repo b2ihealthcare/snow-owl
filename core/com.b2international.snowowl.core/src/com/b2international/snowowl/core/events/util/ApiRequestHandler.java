@@ -15,27 +15,42 @@
  */
 package com.b2international.snowowl.core.events.util;
 
+import org.eclipse.emf.common.util.WrappedException;
+
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.monitoring.MonitoredRequest;
+import com.b2international.snowowl.eventbus.IHandler;
+import com.b2international.snowowl.eventbus.IMessage;
 
 /**
  * Generic Request handler class that handles all requests by executing them immediately.
  * 
  * @since 4.5
  */
-public final class ApiRequestHandler extends ApiEventHandler {
+public final class ApiRequestHandler implements IHandler<IMessage> {
 
 	private final ServiceProvider context;
-
+	private final ClassLoader classLoader;
+	
 	public ApiRequestHandler(ServiceProvider context, ClassLoader classLoader) {
-		super(Request.class, classLoader);
 		this.context = context;
+		this.classLoader = classLoader;
 	}
 	
-	@Handler
-	public Object handle(Request<ServiceProvider, Object> req) {
-		return new MonitoredRequest<>(req).execute(context);
+	@Override
+	public final void handle(IMessage message) {
+		try {
+			final Request<ServiceProvider, ?> req = message.body(Request.class, classLoader);
+			message.reply(new MonitoredRequest<>(req).execute(context));
+		} catch (WrappedException e) {
+			message.fail(e.getCause());
+		} catch (ApiException e) {
+			message.fail(e);
+		} catch (Throwable e) {
+			message.fail(e);
+		}
 	}
 	
 }
