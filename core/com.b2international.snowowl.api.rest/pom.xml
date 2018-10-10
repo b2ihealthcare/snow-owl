@@ -16,10 +16,6 @@
 		<spring.security.version>4.2.4.RELEASE</spring.security.version>
 		<spring.hateoas.version>0.24.0.RELEASE</spring.hateoas.version>
 		<springfox.version>2.8.0</springfox.version>
-		<micrometer.version>1.0.6</micrometer.version>
-		<simpleclient.version>0.5.0</simpleclient.version>
-		<latencyutils.version>2.0.3</latencyutils.version>
-		<hdrhistogram.version>2.1.10</hdrhistogram.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
@@ -29,31 +25,6 @@
 			<artifactId>springfox-swagger2</artifactId>
 			<version>${springfox.version}</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-  			<groupId>io.micrometer</groupId>
-  			<artifactId>micrometer-core</artifactId>
-  			<version>${micrometer.version}</version>
-		</dependency>
-		<dependency>
-  			<groupId>io.micrometer</groupId>
-  			<artifactId>micrometer-registry-prometheus</artifactId>
-  			<version>${micrometer.version}</version>
-		</dependency>
-		<dependency>
-   			<groupId>io.prometheus</groupId>
-    		<artifactId>simpleclient_common</artifactId>
-    		<version>${simpleclient.version}</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.latencyutils</groupId>
-    		<artifactId>LatencyUtils</artifactId>
-    		<version>${latencyutils.version}</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.hdrhistogram</groupId>
-    		<artifactId>HdrHistogram</artifactId>
-    		<version>${hdrhistogram.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.springframework</groupId>
@@ -122,13 +93,7 @@
 								springfox-swagger-common,
 								springfox-swagger2,
 								swagger-annotations,
-								swagger-models,
-								micrometer-core,
-								micrometer-registry-prometheus,
-								HdrHistogram,
-								LatencyUtils,
-								simpleclient_common,
-								simpleclient
+								swagger-models
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
