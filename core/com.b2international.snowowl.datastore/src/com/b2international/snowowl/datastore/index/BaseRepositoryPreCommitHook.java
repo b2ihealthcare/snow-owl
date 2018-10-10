@@ -27,7 +27,9 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.monitoring.MonitoringThreadLocal;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 
 /**
  * Base {@link Repository} pre-commit hook. It allows terminology plugin developers to attach custom precommit hooks to the underlying
@@ -45,15 +47,15 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	
 	@Override
 	public void run(StagingArea staging) {
-		final Timer indexTimer = MonitoringThreadLocal.get().timer("pre-commit");
+		final MeterRegistry registry = MonitoringThreadLocal.get();
+		final Sample indexTimerSample = Timer.start(registry);
 		try {
-			indexTimer.start();
 			staging.read(index -> {
 				updateDocuments(staging, index);
 				return null;
 			});
 		} finally {
-			indexTimer.stop();
+			indexTimerSample.stop(registry.timer("preCommitHook", "preCommitHook"));
 		}
 	}
 	

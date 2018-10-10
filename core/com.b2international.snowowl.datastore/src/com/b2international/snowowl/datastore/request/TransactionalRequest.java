@@ -30,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 
 /**
  * @since 4.5
@@ -72,11 +73,10 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	}
 
 	private CommitResult commit(final TransactionContext context, final Object body) {
-		final MeterRegistry metrics = context.service(MeterRegistry.class);
-		final Timer commitTimer = metrics.timer("commit");
-		MonitoringThreadLocal.set(metrics);
+		final MeterRegistry registry = context.service(MeterRegistry.class);
+		final Sample sampleCommitTimer = Timer.start(registry);
+		MonitoringThreadLocal.set(registry);
 		try {
-			commitTimer.start();
 			
 			/*
 			 * FIXME: at this point, the component identifier might have changed even though the input 
@@ -85,18 +85,18 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 			final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
 			return new CommitResult(commitTimestamp, body);
 		} finally {
-			commitTimer.stop();
+			sampleCommitTimer.stop(registry.timer("transactionalRequestCommit", "transactionalRequestCommit"));
 			MonitoringThreadLocal.release();
 		}
 	}
 	
 	private Object executeNext(TransactionContext context) {
-		final Timer preCommit = context.service(MeterRegistry.class).timer("preCommit");
+		final MeterRegistry registry = context.service(MeterRegistry.class);
+		final Sample samplePreCommitTimer = Timer.start(registry);
 		try {
-			preCommit.start();
 			return next.execute(context);
 		} finally {
-			preCommit.stop();
+			samplePreCommitTimer.stop(registry.timer("transactionalRequestPreCommit", "transactionalRequestPreCommit"));
 		}
 	}
 

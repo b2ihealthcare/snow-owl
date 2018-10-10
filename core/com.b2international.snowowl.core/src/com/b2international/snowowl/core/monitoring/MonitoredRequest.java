@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Timer.Sample;
 
 /**
  * @since 4.5
@@ -39,12 +40,12 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 	
 	@Override
 	public R execute(ServiceProvider context) {
-		final Timer responseTimer = context.service(MeterRegistry.class).timer("responseTime");
-		responseTimer.start();
+		final MeterRegistry registry = context.service(MeterRegistry.class);
+		final Sample responseTimeSample = Timer.start(registry);
 		try {
 			return next(context);
 		} finally {
-			responseTimer.stop();
+			responseTimeSample.stop(registry.timer("responseTimer", "responseTimer"));
 			LOG.info(getMessage(context));
 		}
 	}
