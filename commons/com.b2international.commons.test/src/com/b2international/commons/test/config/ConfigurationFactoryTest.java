@@ -17,6 +17,7 @@ package com.b2international.commons.test.config;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -28,8 +29,8 @@ import javax.validation.Validator;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -41,6 +42,11 @@ import com.b2international.commons.test.config.data.ModuleConfig1;
 import com.b2international.commons.test.config.data.ModuleConfig2;
 import com.b2international.commons.test.config.data.NestedConfig;
 import com.b2international.commons.test.config.data.TestConfig;
+import com.b2international.commons.test.config.data.TestConfigDouble;
+import com.b2international.commons.test.config.data.TestConfigFloat;
+import com.b2international.commons.test.config.data.TestConfigInteger;
+import com.b2international.commons.test.config.data.TestConfigLong;
+import com.b2international.commons.test.config.data.TestConfigShort;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 
 /**
@@ -50,7 +56,6 @@ import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 public class ConfigurationFactoryTest {
 	
 	private static final String SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE = "SOME_ATTRIBUTE";
-	private static final String SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE = "value";
 
 	@Mock
 	private Validator validator;
@@ -95,14 +100,15 @@ public class ConfigurationFactoryTest {
 	}
 	
 	@Test
-	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractEnvVariable() throws Exception {
-		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE);
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractStringEnvVariable() throws Exception {
+		final String expectedValue = "value";
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, expectedValue);
 		
 		final Map<String, Class<?>> modules = newHashMap();
 		modules.put("moduleConfig1", ModuleConfig1.class);
 		modules.put("moduleConfig2", ModuleConfig2.class);
 		
-		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-envVar.yml", validator, modules);
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-stringEnvVar.yml", validator, modules);
 		final ModuleConfig1 config1 = config.getModuleConfig(ModuleConfig1.class);
 		final ModuleConfig2 config2 = config.getModuleConfig(ModuleConfig2.class);
 		
@@ -110,8 +116,104 @@ public class ConfigurationFactoryTest {
 		assertTrue(config1.isAttribute1_1());
 		assertTrue(config2.isAttribute2_2());
 		
-		assertEquals(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE_VALUE, config1.getAttribute1_2());
+		assertEquals(expectedValue, config1.getAttribute1_2());
 		assertEquals("config2", config2.getAttribute2_1());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractBooleanEnvVariable() throws Exception {
+		final Boolean expectedValue = Boolean.FALSE;
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Boolean.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("moduleConfig1", ModuleConfig1.class);
+		modules.put("moduleConfig2", ModuleConfig2.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-booleanEnvVar.yml", validator, modules);
+		final ModuleConfig1 config1 = config.getModuleConfig(ModuleConfig1.class);
+		final ModuleConfig2 config2 = config.getModuleConfig(ModuleConfig2.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertFalse(config1.isAttribute1_1());
+		assertTrue(config2.isAttribute2_2());
+		
+		assertEquals("config1", config1.getAttribute1_2());
+		assertEquals("config2", config2.getAttribute2_1());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractIntegerEnvVariable() throws Exception {
+		final Integer expectedValue = new Integer(420);
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Integer.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("testConfigInteger", TestConfigInteger.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-integerEnvVar.yml", validator, modules);
+		final TestConfigInteger integerConfig = config.getModuleConfig(TestConfigInteger.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertEquals(expectedValue, integerConfig.getAttribute());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractShortEnvVariable() throws Exception {
+		final Short expectedValue = new Short((short) 10000);
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Short.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("testConfigShort", TestConfigShort.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-shortEnvVar.yml", validator, modules);
+		final TestConfigShort shortConfig = config.getModuleConfig(TestConfigShort.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertEquals(expectedValue, shortConfig.getAttribute());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractFloatEnvVariable() throws Exception {
+		final Float expectedValue = 3.6f;
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Float.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("testConfigFloat", TestConfigFloat.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-floatEnvVar.yml", validator, modules);
+		final TestConfigFloat floatConfig = config.getModuleConfig(TestConfigFloat.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertEquals(expectedValue, floatConfig.getAttribute());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractLongEnvVariable() throws Exception {
+		final Long expectedValue = 22L;
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Long.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("testConfigLong", TestConfigLong.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-longEnvVar.yml", validator, modules);
+		final TestConfigLong longConfig = config.getModuleConfig(TestConfigLong.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertEquals(expectedValue, longConfig.getAttribute());
+	}
+	
+	@Test
+	public void build_DynamicModuleConfigWithEnvVarNoValidation_ShouldExtractDoubleEnvVariable() throws Exception {
+		final Double expectedValue = 22.1314d;
+		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Double.toString(expectedValue));
+		
+		final Map<String, Class<?>> modules = newHashMap();
+		modules.put("testConfigDouble", TestConfigDouble.class);
+		
+		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-doubleEnvVar.yml", validator, modules);
+		final TestConfigDouble doubleConfig = config.getModuleConfig(TestConfigDouble.class);
+		
+		assertEquals("SOME_PARAM", config.getGlobalParameter());
+		assertEquals(expectedValue, doubleConfig.getAttribute());
 	}
 	
 	@Test(expected = ConfigurationValidationException.class)

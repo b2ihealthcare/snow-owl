@@ -1,0 +1,5 @@
+
+globalParameter: SOME_PARAM
+
+testConfigFloat:
+  attribute: ${SOME_ATTRIBUTE}
