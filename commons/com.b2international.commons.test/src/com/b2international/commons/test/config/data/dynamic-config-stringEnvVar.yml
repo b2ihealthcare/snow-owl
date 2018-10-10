@@ -1,10 +1,5 @@
-
+  
 globalParameter: SOME_PARAM
 
-moduleConfig1:
-  attribute1_1: true
-  attribute1_2: ${SOME_ATTRIBUTE}
-
-moduleConfig2:
-  attribute2_1: config2
-  attribute2_2: true
+allParams:
+  stringAttribute: ${SOME_ATTRIBUTE}

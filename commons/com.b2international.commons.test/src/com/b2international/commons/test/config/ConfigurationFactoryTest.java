@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.b2international.commons.test.config;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -36,17 +36,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.ConfigurationValidationException;
+import com.b2international.commons.test.config.data.AllParamsTestConfig;
 import com.b2international.commons.test.config.data.DefaultSettings;
 import com.b2international.commons.test.config.data.DynamicConfig;
 import com.b2international.commons.test.config.data.ModuleConfig1;
 import com.b2international.commons.test.config.data.ModuleConfig2;
 import com.b2international.commons.test.config.data.NestedConfig;
 import com.b2international.commons.test.config.data.TestConfig;
-import com.b2international.commons.test.config.data.TestConfigDouble;
-import com.b2international.commons.test.config.data.TestConfigFloat;
-import com.b2international.commons.test.config.data.TestConfigInteger;
-import com.b2international.commons.test.config.data.TestConfigLong;
-import com.b2international.commons.test.config.data.TestConfigShort;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 
 /**
@@ -103,10 +99,10 @@ public class ConfigurationFactoryTest {
 	public void build_FromYamlFileNoValdidation_ShouldExtractGlobalStringEnvVariable() throws Exception {
 		final String expectedValue = "globalTest";
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, expectedValue);
-		final TestConfig config = parse(TestConfig.class, "conifg-stringEnvVar.yml");
+		
+		final AllParamsTestConfig config = parse(AllParamsTestConfig.class, "conifg-stringEnvVar.yml");
 		assertNotNull(config);
-		assertEquals(expectedValue, config.getAttribute());
-		assertTrue(config.isValid());
+		assertEquals(expectedValue, config.getStringAttribute());
 	}
 	
 	@Test
@@ -115,19 +111,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, expectedValue);
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("moduleConfig1", ModuleConfig1.class);
-		modules.put("moduleConfig2", ModuleConfig2.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-stringEnvVar.yml", validator, modules);
-		final ModuleConfig1 config1 = config.getModuleConfig(ModuleConfig1.class);
-		final ModuleConfig2 config2 = config.getModuleConfig(ModuleConfig2.class);
+		final AllParamsTestConfig stringConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertTrue(config1.isAttribute1_1());
-		assertTrue(config2.isAttribute2_2());
-		
-		assertEquals(expectedValue, config1.getAttribute1_2());
-		assertEquals("config2", config2.getAttribute2_1());
+		assertEquals(expectedValue, stringConfig.getStringAttribute());
+		assertNull(stringConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -136,19 +127,15 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Boolean.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("moduleConfig1", ModuleConfig1.class);
-		modules.put("moduleConfig2", ModuleConfig2.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-booleanEnvVar.yml", validator, modules);
-		final ModuleConfig1 config1 = config.getModuleConfig(ModuleConfig1.class);
-		final ModuleConfig2 config2 = config.getModuleConfig(ModuleConfig2.class);
+		final AllParamsTestConfig booleanConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertFalse(config1.isAttribute1_1());
-		assertTrue(config2.isAttribute2_2());
 		
-		assertEquals("config1", config1.getAttribute1_2());
-		assertEquals("config2", config2.getAttribute2_1());
+		assertEquals(expectedValue, booleanConfig.getBooleanAttribute());
+		assertNull(booleanConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -157,13 +144,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Integer.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("testConfigInteger", TestConfigInteger.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-integerEnvVar.yml", validator, modules);
-		final TestConfigInteger integerConfig = config.getModuleConfig(TestConfigInteger.class);
+		final AllParamsTestConfig integerConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertEquals(expectedValue, integerConfig.getAttribute());
+		assertEquals(expectedValue, integerConfig.getIntegerAttribute());
+		assertNull(integerConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -172,13 +160,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Short.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("testConfigShort", TestConfigShort.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-shortEnvVar.yml", validator, modules);
-		final TestConfigShort shortConfig = config.getModuleConfig(TestConfigShort.class);
+		final AllParamsTestConfig shortConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertEquals(expectedValue, shortConfig.getAttribute());
+		assertEquals(expectedValue, shortConfig.getShortAttribute());
+		assertNull(shortConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -187,13 +176,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Float.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("testConfigFloat", TestConfigFloat.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-floatEnvVar.yml", validator, modules);
-		final TestConfigFloat floatConfig = config.getModuleConfig(TestConfigFloat.class);
+		final AllParamsTestConfig floatConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertEquals(expectedValue, floatConfig.getAttribute());
+		assertEquals(expectedValue, floatConfig.getFloatAttribute());
+		assertNull(floatConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -202,13 +192,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Long.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("testConfigLong", TestConfigLong.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-longEnvVar.yml", validator, modules);
-		final TestConfigLong longConfig = config.getModuleConfig(TestConfigLong.class);
+		final AllParamsTestConfig longConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertEquals(expectedValue, longConfig.getAttribute());
+		assertEquals(expectedValue, longConfig.getLongAttribute());
+		assertNull(longConfig.getDoubleAttribute());
 	}
 	
 	@Test
@@ -217,13 +208,14 @@ public class ConfigurationFactoryTest {
 		environmentVariables.set(SOME_ATTRIBUTE_ENVIRONMENT_VARIABLE, Double.toString(expectedValue));
 		
 		final Map<String, Class<?>> modules = newHashMap();
-		modules.put("testConfigDouble", TestConfigDouble.class);
+		modules.put("allParams", AllParamsTestConfig.class);
 		
 		final DynamicConfig config = parseWithModules(DynamicConfig.class, "dynamic-config-doubleEnvVar.yml", validator, modules);
-		final TestConfigDouble doubleConfig = config.getModuleConfig(TestConfigDouble.class);
+		final AllParamsTestConfig doubleConfig = config.getModuleConfig(AllParamsTestConfig.class);
 		
 		assertEquals("SOME_PARAM", config.getGlobalParameter());
-		assertEquals(expectedValue, doubleConfig.getAttribute());
+		assertEquals(expectedValue, doubleConfig.getDoubleAttribute());
+		assertNull(doubleConfig.getIntegerAttribute());
 	}
 	
 	@Test(expected = ConfigurationValidationException.class)

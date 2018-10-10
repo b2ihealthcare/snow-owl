@@ -1,5 +1,5 @@
 
 globalParameter: SOME_PARAM
 
-testConfigLong:
-  attribute: ${SOME_ATTRIBUTE}
+allParams:
+  longAttribute: ${SOME_ATTRIBUTE}
