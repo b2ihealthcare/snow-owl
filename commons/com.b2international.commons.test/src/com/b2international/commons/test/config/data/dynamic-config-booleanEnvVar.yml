@@ -1,0 +1,10 @@
+
+globalParameter: SOME_PARAM
+
+moduleConfig1:
+  attribute1_1: ${SOME_ATTRIBUTE}
+  attribute1_2: config1
+
+moduleConfig2:
+  attribute2_1: config2
+  attribute2_2: true
