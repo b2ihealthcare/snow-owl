@@ -17,7 +17,7 @@ snomed:
   ids:
     strategy : EMBEDDED
   
-metrics:
+monitoring:
   enabled: true
   
 repository:
