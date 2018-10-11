@@ -16,13 +16,12 @@
 package com.b2international.snowowl.validation.snomed;
 
 
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.description;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  * 
  * @since 6.4
  */
+@RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test

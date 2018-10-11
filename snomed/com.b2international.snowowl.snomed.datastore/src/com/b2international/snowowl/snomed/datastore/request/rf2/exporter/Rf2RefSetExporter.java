@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -359,6 +360,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return ((SnomedCoreComponent) object).getId();
 		} else if (object instanceof Boolean) {
 			return BooleanUtils.toString((Boolean) object);
+		} else if (object instanceof Date) {
+			return getEffectiveTime((Date) object);
 		} else {
 			return String.valueOf(object);
 		}

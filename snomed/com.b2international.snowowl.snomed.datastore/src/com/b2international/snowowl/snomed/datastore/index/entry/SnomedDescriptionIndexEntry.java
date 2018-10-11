@@ -208,11 +208,14 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 				fuzzyQuery.should(matchTextFuzzy(Fields.TERM, token));
 				++tokenCount;
 			}
-
-			final int minShouldMatch = Math.max(1, tokenCount - 2);
-			fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
 			
-			return fuzzyQuery.build();
+			if (tokenCount == 0) {
+				return com.b2international.index.query.Expressions.matchNone();
+			} else {
+				final int minShouldMatch = Math.max(1, tokenCount - 2);
+				fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
+				return fuzzyQuery.build();
+			}
 		}
 		
 		public static Expression matchEntireTerm(String term) {

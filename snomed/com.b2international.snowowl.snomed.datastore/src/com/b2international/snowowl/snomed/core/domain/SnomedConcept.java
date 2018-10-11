@@ -107,6 +107,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String STATED_DESCENDANTS = "statedDescendants";
 		public static final String DESCENDANTS = "descendants";
 		public static final String RELATIONSHIPS = "relationships";
+		public static final String INBOUND_RELATIONSHIPS = "inboundRelationships";
 		public static final String DESCRIPTIONS = "descriptions";
 		public static final String FULLY_SPECIFIED_NAME = "fsn";
 		public static final String PREFERRED_TERM = "pt";
@@ -143,6 +144,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	private SnomedDescriptions descriptions;
 	private SnomedDescriptions preferredDescriptions;
 	private SnomedRelationships relationships;
+	private SnomedRelationships inboundRelationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
 	private SnomedConcepts statedAncestors;
@@ -223,6 +225,13 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	public SnomedRelationships getRelationships() {
 		return relationships;
+	}
+	
+	/**
+	 * @return the inbound relationships of the SNOMED CT Concept.
+	 */
+	public SnomedRelationships getInboundRelationships() {
+		return inboundRelationships;
 	}
 
 	/**
@@ -325,6 +334,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public void setRelationships(SnomedRelationships relationships) {
 		this.relationships = relationships;
+	}
+	
+	public void setInboundRelationships(SnomedRelationships inboundRelationships) {
+		this.inboundRelationships = inboundRelationships;
 	}
 	
 	public void setFsn(SnomedDescription fsn) {
