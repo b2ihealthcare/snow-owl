@@ -59,15 +59,11 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	public EventBus(String description, int numberOfWorkers) {
-		this(description, numberOfWorkers, new WorkerExecutorServiceFactory());
-	}
-
-	public EventBus(String description, int numberOfWorkers, WorkerExecutorServiceFactory executorServiceFactory) {
 		CheckUtil.checkArg(description, "Description should be specified");
 		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
 		this.description = description;
 		this.numberOfWorkers = numberOfWorkers;
-		this.executorServiceFactory = executorServiceFactory;
+		this.executorServiceFactory = new WorkerExecutorServiceFactory();
 	}
 
 	@Override
@@ -263,7 +259,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 		@Override
 		public Object create(String description) throws ProductCreationException {
 			final String[] values = description.split(":");
-			return new EventBus(values[0], Integer.parseInt(values[1]), new WorkerExecutorServiceFactory());
+			return new EventBus(values[0], Integer.parseInt(values[1]));
 		}
 
 	}
