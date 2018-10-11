@@ -55,8 +55,6 @@ import com.b2international.snowowl.datastore.config.IndexConfiguration;
 import com.b2international.snowowl.datastore.config.IndexSettings;
 import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.connection.RepositoryConnectionConfiguration;
-import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManager;
-import com.b2international.snowowl.datastore.index.SingleDirectoryIndexManagerImpl;
 import com.b2international.snowowl.datastore.internal.RpcServerServiceLookup;
 import com.b2international.snowowl.datastore.internal.session.ApplicationSessionManager;
 import com.b2international.snowowl.datastore.internal.session.InternalApplicationSessionManager;
@@ -73,7 +71,6 @@ import com.b2international.snowowl.rpc.RpcConfiguration;
 import com.b2international.snowowl.rpc.RpcProtocol;
 import com.b2international.snowowl.rpc.RpcUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 
@@ -177,14 +174,13 @@ public final class RepositoryPlugin extends Plugin {
 	@Override
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
-			LOG.debug(">>> Starting server-side datastore bundle.");
-			final MeterRegistry registry = env.services().getService(MeterRegistry.class);
-			final IEventBus eventBus = env.services().getService(IEventBus.class);
-			final ExecutorService executorService = eventBus.getExecutorService();
-			new ExecutorServiceMetrics(executorService, "request", Tags.empty()).bindTo(registry);
+			LOG.debug("Initializing repository plugin.");
+			
+			final MeterRegistry registry = env.service(MeterRegistry.class);
+			final ExecutorService requestExecutorService = env.service(IEventBus.class).getExecutorService();
+			new ExecutorServiceMetrics(requestExecutorService, "request", Tags.empty()).bindTo(registry);
 			
 			final IManagedContainer container = env.container();
-			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
 			RpcUtil.getInitialServerSession(container).registerServiceLookup(new RpcServerServiceLookup());
 			final ApplicationSessionManager manager = new ApplicationSessionManager(env.service(IdentityProvider.class));
@@ -211,17 +207,14 @@ public final class RepositoryPlugin extends Plugin {
 			LOG.info("Listening on {} for connections", hostAndPort);
 			JVMUtil.getAcceptor(container,	Net4jUtils.NET_4_J_CONNECTOR_NAME); // Starts the JVM transport
 			
-			// TODO remove single directory manager
-			env.services().registerService(SingleDirectoryIndexManager.class, new SingleDirectoryIndexManagerImpl());
-
-			final RepositoryManager repositoryManager = new DefaultRepositoryManager();
+				final RepositoryManager repositoryManager = new DefaultRepositoryManager();
 			env.services().registerService(RepositoryManager.class, repositoryManager);
 			env.services().registerService(RepositoryContextProvider.class, repositoryManager);
 			
 			int numberOfWorkers = configuration.getModuleConfig(RepositoryConfiguration.class).getNumberOfWorkers();
 			initializeRequestSupport(env, numberOfWorkers);
 			
-			LOG.debug("<<< Server-side datastore bundle started. [{}]", serverStopwatch);
+			LOG.debug("Initialized repository plugin.");
 		} else {
 			LOG.debug("Snow Owl application is running in remote mode.");
 			LOG.info("Connecting to Snow Owl Terminology Server at {}", env.service(ClientPreferences.class).getCDOUrl());
