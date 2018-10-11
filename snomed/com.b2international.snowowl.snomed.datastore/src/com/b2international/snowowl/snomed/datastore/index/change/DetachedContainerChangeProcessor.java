@@ -22,10 +22,12 @@ import java.util.Set;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.datastore.index.ChangeSetProcessorBase;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -38,6 +40,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  * @since 7.0
  */
 public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBase {
+
+	private static final int PAGE_SIZE = 10_000;
 
 	public DetachedContainerChangeProcessor() {
 		super("referring members");
@@ -90,13 +94,18 @@ public final class DetachedContainerChangeProcessor extends ChangeSetProcessorBa
 		}
 		
 		// deleting core components should delete all referring members as well
+		ExpressionBuilder referringMembersQuery = Expressions.builder()
+				.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
+				.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(deletedCoreComponentIds));
+		
+		SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(memberField -> {
+			referringMembersQuery.should(Expressions.matchAny(memberField, deletedCoreComponentIds));
+		});
+		
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query
 				.select(SnomedRefSetMemberIndexEntry.class)
-				.where(Expressions.builder()
-						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(deletedCoreComponentIds))
-						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(deletedCoreComponentIds))
-						.build())
-				.limit(10_000)
+				.where(referringMembersQuery.build())
+				.limit(PAGE_SIZE)
 				.build()))  {
 			for (SnomedRefSetMemberIndexEntry member : hits) {
 				stageRemove(member);

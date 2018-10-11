@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.store;
 
 import java.util.Date;
 
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -43,8 +44,8 @@ public final class SnomedModuleDependencyReferenceSetMemberBuilder extends Snome
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
 		component
-			.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, sourceEffectiveTime.getTime())
-			.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime.getTime());
+			.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(sourceEffectiveTime))
+			.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(targetEffectiveTime));
 	}
 
 }
