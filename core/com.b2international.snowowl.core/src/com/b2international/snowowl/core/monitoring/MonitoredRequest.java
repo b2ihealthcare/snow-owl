@@ -45,7 +45,7 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 		try {
 			return next(context);
 		} finally {
-			responseTimeSample.stop(registry.timer("responseTimer", "responseTimer"));
+			responseTimeSample.stop(registry.timer("responseTime"));
 			LOG.info(getMessage(context));
 		}
 	}

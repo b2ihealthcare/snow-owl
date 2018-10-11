@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import java.util.List;
+
 import org.osgi.service.prefs.PreferencesService;
 
 import com.b2international.commons.extension.Component;
@@ -28,8 +30,10 @@ import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.google.common.collect.Lists;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
@@ -55,16 +59,9 @@ public final class SnowOwlPlugin extends Plugin {
 		
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		
-		if (configuration.getModuleConfig(MonitoringConfiguration.class).isEnabled()) {
-			final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
-			registry.config().commonTags("application", "Snow Owl");
-			// configure default metrics
-			new ClassLoaderMetrics().bindTo(registry);
-			new JvmGcMetrics().bindTo(registry);
-			new JvmMemoryMetrics().bindTo(registry);
-			new JvmThreadMetrics().bindTo(registry);
-			new UptimeMetrics().bindTo(registry);
-			new ProcessorMetrics().bindTo(registry);
+		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);
+		if (monitoringConfig.isEnabled()) {
+			final PrometheusMeterRegistry registry = createRegistry(monitoringConfig);
 			env.services().registerService(MeterRegistry.class, registry);
 		} else {
 			// XXX this works like a NOOP registry if you do NOT register any additional registries to it
@@ -73,6 +70,31 @@ public final class SnowOwlPlugin extends Plugin {
 		
 		// TODO support initial values for feature toggles
 		env.services().registerService(FeatureToggles.class, new FeatureToggles());
+	}
+
+	private PrometheusMeterRegistry createRegistry(final MonitoringConfiguration monitoringConfig) {
+		final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+		
+		final List<Tag> commonTags = Lists.newArrayList();
+		if (monitoringConfig.getTags().isEmpty()) {
+			// Set default common tags
+			commonTags.add(Tag.of("application", "snow_owl"));
+		} else {
+			monitoringConfig.getTags().entrySet().forEach(entry -> {
+				commonTags.add(Tag.of(entry.getKey(), entry.getKey()));
+			});
+		}
+		registry.config().commonTags(commonTags);
+		
+		// configure default metrics
+		new ClassLoaderMetrics().bindTo(registry);
+		new JvmGcMetrics().bindTo(registry);
+		new JvmMemoryMetrics().bindTo(registry);
+		new JvmThreadMetrics().bindTo(registry);
+		new UptimeMetrics().bindTo(registry);
+		new ProcessorMetrics().bindTo(registry);
+		
+		return registry;
 	}
 
 	@Override

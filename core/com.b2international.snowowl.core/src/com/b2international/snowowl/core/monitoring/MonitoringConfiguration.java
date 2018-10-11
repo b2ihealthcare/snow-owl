@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.monitoring;
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
 /**
  * @since 4.5
  */
@@ -22,12 +26,22 @@ public class MonitoringConfiguration {
 
 	private boolean enabled = false;
 	
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	private Map<String, String> tags = Maps.newHashMap();
+	
+	public void setEnabled(boolean endabled) {
+		this.enabled = endabled;
 	}
 	
 	public boolean isEnabled() {
 		return enabled;
+	}
+
+	public Map<String, String> getTags() {
+		return tags;
+	}
+
+	public void setTags(Map<String, String> tags) {
+		this.tags = tags;
 	}
 	
 }
