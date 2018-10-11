@@ -19,7 +19,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.signal.RequestWithMonitoring;
 import org.eclipse.net4j.signal.SignalProtocol;
 import org.eclipse.net4j.util.io.ExtendedDataInputStream;
@@ -53,8 +52,6 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 		this.branchPath = branchPath;
 		this.userId = userId;
 	}
-	
-	protected abstract EPackage getEPackage();
 	
 	/*
 	 * (non-Javadoc)
