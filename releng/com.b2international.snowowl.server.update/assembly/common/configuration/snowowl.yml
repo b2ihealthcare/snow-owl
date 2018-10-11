@@ -27,7 +27,7 @@ repository:
     socketTimeout: 60000
 
 # Request execution metrics (response-time, detailed information about transactions, etc.)
-metrics:
+monitoring:
   enabled: true
 
 # reviewManager:

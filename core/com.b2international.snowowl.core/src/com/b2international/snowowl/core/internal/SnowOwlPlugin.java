@@ -15,7 +15,11 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.osgi.service.prefs.PreferencesService;
 
@@ -30,7 +34,6 @@ import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.google.common.collect.Lists;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -75,18 +78,21 @@ public final class SnowOwlPlugin extends Plugin {
 	private PrometheusMeterRegistry createRegistry(final MonitoringConfiguration monitoringConfig) {
 		final PrometheusMeterRegistry registry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
 		
-		final List<Tag> commonTags = Lists.newArrayList();
-		if (monitoringConfig.getTags().isEmpty()) {
-			// Set default common tags
-			commonTags.add(Tag.of("application", "snow_owl"));
-		} else {
-			monitoringConfig.getTags().entrySet().forEach(entry -> {
-				commonTags.add(Tag.of(entry.getKey(), entry.getKey()));
-			});
-		}
+		Map<String, String> tags = newHashMapWithExpectedSize(1 + monitoringConfig.getTags().size());
+		// always set the application tag to snow_owl
+		tags.put("application", "snow_owl");
+		// override with tags coming from the config file
+		tags.putAll(monitoringConfig.getTags());
+
+		// configure the tags
+		final List<Tag> commonTags = tags.entrySet()
+				.stream()
+				.map(entry -> Tag.of(entry.getKey(), entry.getKey()))
+				.collect(Collectors.toList());
+		
 		registry.config().commonTags(commonTags);
 		
-		// configure default metrics
+		// configure default JVM and node metrics
 		new ClassLoaderMetrics().bindTo(registry);
 		new JvmGcMetrics().bindTo(registry);
 		new JvmMemoryMetrics().bindTo(registry);
