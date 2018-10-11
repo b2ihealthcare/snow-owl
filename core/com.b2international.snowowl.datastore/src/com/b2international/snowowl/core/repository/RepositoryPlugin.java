@@ -181,8 +181,7 @@ public final class RepositoryPlugin extends Plugin {
 			final MeterRegistry registry = env.services().getService(MeterRegistry.class);
 			final IEventBus eventBus = env.services().getService(IEventBus.class);
 			final ExecutorService executorService = eventBus.getExecutorService();
-			final Tags emptyTags = Tags.of("", "");
-			new ExecutorServiceMetrics(executorService, "request", emptyTags).bindTo(registry);
+			new ExecutorServiceMetrics(executorService, "request", Tags.empty()).bindTo(registry);
 			
 			final IManagedContainer container = env.container();
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();

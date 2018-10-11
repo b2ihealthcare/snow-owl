@@ -89,7 +89,7 @@ public final class SnowOwlPlugin extends Plugin {
 		// configure the tags
 		final List<Tag> commonTags = tags.entrySet()
 				.stream()
-				.map(entry -> Tag.of(entry.getKey(), entry.getKey()))
+				.map(entry -> Tag.of(entry.getKey(), entry.getValue()))
 				.collect(Collectors.toList());
 		
 		registry.config().commonTags(commonTags);
