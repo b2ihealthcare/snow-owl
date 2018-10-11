@@ -28,10 +28,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.monitoring.MonitoringThreadLocal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.Timer.Sample;
-
 /**
  * @since 4.5
  */
@@ -73,9 +69,6 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	}
 
 	private CommitResult commit(final TransactionContext context, final Object body) {
-		final MeterRegistry registry = context.service(MeterRegistry.class);
-		final Sample sampleCommitTimer = Timer.start(registry);
-		MonitoringThreadLocal.set(registry);
 		try {
 			
 			/*
@@ -85,19 +78,12 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 			final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
 			return new CommitResult(commitTimestamp, body);
 		} finally {
-			sampleCommitTimer.stop(registry.timer("transactionalRequestCommit", "transactionalRequestCommit"));
 			MonitoringThreadLocal.release();
 		}
 	}
 	
 	private Object executeNext(TransactionContext context) {
-		final MeterRegistry registry = context.service(MeterRegistry.class);
-		final Sample samplePreCommitTimer = Timer.start(registry);
-		try {
-			return next.execute(context);
-		} finally {
-			samplePreCommitTimer.stop(registry.timer("transactionalRequestPreCommit", "transactionalRequestPreCommit"));
-		}
+		return next.execute(context);
 	}
 
 	/**

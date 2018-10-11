@@ -54,10 +54,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.Timer.Sample;
-
 /**
  * @since 4.5
  */
@@ -98,8 +94,8 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 			final Multimap<ComponentCategory, SnomedComponentCreateRequest> componentCreateRequests = getComponentCreateRequests(next());
 
 			if (!componentCreateRequests.isEmpty()) {
-				final MeterRegistry registry = context.service(MeterRegistry.class);
-				final Sample idGenerationSample = Timer.start(registry);
+//				final MeterRegistry registry = context.service(MeterRegistry.class);
+//				final Sample idGenerationSample = Timer.start(registry);
 
 				try {
 
@@ -143,7 +139,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 					}
 
 				} finally {
-					idGenerationSample.stop(registry.timer("idGeneration", "idGeneration"));
+//					idGenerationSample.stop(registry.timer("idGenerationTime"));
 				}
 			}
 
