@@ -20,7 +20,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>snowowl-${build.version}</finalName>
+		<finalName>snow-owl-oss-${build.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -66,6 +66,7 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
 							<workDirectory>${project.build.directory}/assembly/oss</workDirectory>
 							<descriptor>${basedir}/assembly/oss.xml</descriptor>
 						</configuration>
@@ -86,29 +87,38 @@
 				</executions>
 				<configuration>
 					<targetDir>${project.build.directory}</targetDir>
+					<license>ASL 2.0</license>
 					<attach>true</attach>
-					<group>Unspecified</group>
-					<packageName>snowowl</packageName>
+					<group>Application/Internet</group>
+					<packageName>snow-owl-oss</packageName>
+					<packager>B2i Healthcare</packager>
+					<prefixes>
+						<prefix>/usr</prefix>
+					</prefixes>
 					<architecture>x86_64</architecture>
 					<skipSigning>true</skipSigning>
 					<rulesets>
 						<ruleset>
-							<id>rpm-default</id>
+							<id>config</id>
 							<rules>
 								<rule>
 									<user>snowowl</user>
 									<group>snowowl</group>
-								</rule>
-								<rule>
 									<when>
-										<prefix>/opt/snowowl/snowowl_config.yml</prefix>
 										<type>file</type>
 									</when>
-									<when>
-										<prefix>/opt/snowowl/configuration/</prefix>
-										<type>file</type>
-									</when>
+									<noreplace>true</noreplace>
+									<mode>0660</mode>
 									<configuration>true</configuration>
+								</rule>
+							</rules>
+						</ruleset>
+						<ruleset>
+							<id>install</id>
+							<rules>
+								<rule>
+									<user>snowowl</user>
+									<group>snowowl</group>
 								</rule>
 								<rule>
 									<when>
@@ -124,7 +134,7 @@
 								</rule>
 								<rule>
 									<when>
-										<prefix>/opt/snowowl/bin/</prefix>
+										<prefix>/usr/share/snowowl/bin/</prefix>
 										<type>file</type>
 									</when>
 									<mode>0755</mode>
@@ -134,10 +144,18 @@
 					</rulesets>
 					<entries>
 						<entry>
-							<name>/opt/snowowl</name>
-							<ruleset>rpm-default</ruleset>
+							<name>/etc/snowowl</name>
+							<ruleset>config</ruleset>
 							<collect>
-								<from>${project.build.directory}/${project.build.finalName}-oss/${project.build.finalName}</from>
+								<from>${project.build.directory}/${project.build.finalName}/${project.build.finalName}/configuration</from>
+								<includes>snowowl.yml,elasticsearh.yml,serviceability.xml</includes>
+							</collect>
+						</entry>
+						<entry>
+							<name>/usr/share/snowowl</name>
+							<ruleset>install</ruleset>
+							<collect>
+								<from>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</from>
 							</collect>
 						</entry>
 					</entries>
@@ -148,8 +166,8 @@
 						<script>
 							getent group snowowl >/dev/null || groupadd -r snowowl
 							getent passwd USERNAME >/dev/null || \
-								useradd -r -g snowowl -d /opt/snowowl -s /sbin/nologin \
-    							-c "Snow Owl Server" snowowl
+								useradd -r -g snowowl -d /usr/share/snowowl -s /sbin/nologin \
+    							-c "Snow Owl OSS" snowowl
     						exit 0
 						</script>
 					</beforeInstallation>
