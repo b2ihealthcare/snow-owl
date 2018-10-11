@@ -214,11 +214,13 @@ public class SnomedRefSetDSVExportTest {
 	}
 
 	private Set<String> relationshipKeysOf(SnomedConcepts concepts) {
-		return concepts.getItems().stream()
-				.flatMap(concept -> concept.getRelationships().stream()
-						.map(relationship -> String.format("%s=%s", 
-								relationship.getTypeId(), 
-								relationship.getDestinationId())))
+		return concepts.getItems()
+				.stream()
+				.flatMap(concept -> concept.getRelationships().stream())
+				.filter(r -> r.isActive() && 
+						(CharacteristicType.STATED_RELATIONSHIP.equals(r.getCharacteristicType())
+						|| CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicType())))
+				.map(r -> String.format("%s=%s", r.getTypeId(), r.getDestinationId()))
 				.collect(Collectors.toSet());
 	}
 

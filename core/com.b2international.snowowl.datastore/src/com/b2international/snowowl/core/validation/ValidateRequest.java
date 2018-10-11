@@ -65,6 +65,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	Collection<String> ruleIds;
+
+	private Map<String, Object> ruleParameters = Maps.newHashMap();
 	
 	ValidateRequest() {}
 	
@@ -75,7 +77,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
-		
+
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
 		if (!CompareUtils.isEmpty(ruleIds)) {
@@ -87,12 +89,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.build()
 				.execute(context);
 		
-		
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
-		
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
-		// evaluate selected rules
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
+		// evaluate selected rules
 		for (ValidationRule rule : rules) {
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
@@ -102,7 +102,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -231,8 +231,12 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return whiteListedEntries;
 	}
 	
-	public void setRuleIds(Collection<String> ruleIds) {
+	void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
+	}
+	
+	void setRuleParameters(Map<String, Object> ruleParameters) {
+		this.ruleParameters = ruleParameters;
 	}
 	
 	private static final class IssuesToPersist {

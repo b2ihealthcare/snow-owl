@@ -460,7 +460,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 						.toArray(String[]::new);
 			}
 			
-			log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
+			if (log.isTraceEnabled()) {
+				log.trace("Refreshing indexes '{}'", Arrays.toString(indicesToRefresh));
+			}
 			
 			try {
 				
@@ -468,15 +470,13 @@ public final class EsIndexAdmin implements IndexAdmin {
 				final RefreshResponse refreshResponse = client()
 						.indices()
 						.refresh(refreshRequest);
-				if (RestStatus.OK != refreshResponse.getStatus()) {
+				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
 					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
 			} catch (IOException e) {
 				throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indicesToRefresh)), e);
 			}
-			
-			waitForYellowHealth(indicesToRefresh);
 		}
 	}
 }
