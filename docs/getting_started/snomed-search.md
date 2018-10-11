@@ -1,21 +1,50 @@
 # Search SNOMED CT Content
 
-Now that we have a SNOMED CT Code System, let's take a look at its content. We can query its content using either the [SNOMED CT API](../api/snomed.md) or the [FHIR API](../api/fhir.md). 
-
-For sake of simplicity, let's search for the available concepts using the [SNOMED CT API](../api/snomed.md). For that we will need the branch we would like to query, but fortunately we already know the value from our previous call to the Code Systems API, it was `MAIN`. To list all available concepts in a SNOMED CT Code System, use the following command:
+## GET the ROOT concept:
 
 ```bash
-curl http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts
+curl 'http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts/138875005'
 ```
 
-And the response is:
+And the response:
 
 ```json
 {
-  "items": [],
-  "limit": 50,
-  "total": 0
+  "id": "138875005",
+  "released": true,
+  "active": true,
+  "effectiveTime": "20020131",
+  "moduleId": "900000000000207008",
+  "iconId": "138875005",
+  "definitionStatus": "PRIMITIVE",
+  "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES"
 }
 ```
 
-Which simply means we have no SNOMED CT concepts yet in our instance.
+## Search by ECL:
+
+```bash
+curl 'http://localhost:8080/snowowl/snomed-ct/v3/MAIN/concepts?active=true&ecl=%3C&#33;138875005&limit=1'
+```
+
+And the response:
+
+```json
+{
+  "items": [
+    {
+      "id": "308916002",
+      "released": true,
+      "active": true,
+      "effectiveTime": "20020131",
+      "moduleId": "900000000000207008",
+      "iconId": "138875005",
+      "definitionStatus": "PRIMITIVE",
+      "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES"
+    }
+  ],
+  "searchAfter": "AoE_BWVlYzI3Mjc0LTYyZTctNDg3NS05NmVlLThhNTk3OTcxOTJiNw==",
+  "limit": 1,
+  "total": 19
+}
+```
