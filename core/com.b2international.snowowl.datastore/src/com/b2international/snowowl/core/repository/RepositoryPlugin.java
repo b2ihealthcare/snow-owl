@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.net4j.Net4jUtil;
@@ -75,6 +76,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 
 /**
  * @since 3.3
@@ -173,6 +178,12 @@ public final class RepositoryPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
 			LOG.debug(">>> Starting server-side datastore bundle.");
+			final MeterRegistry registry = env.services().getService(MeterRegistry.class);
+			final IEventBus eventBus = env.services().getService(IEventBus.class);
+			final ExecutorService executorService = eventBus.getExecutorService();
+			final Tags emptyTags = Tags.of("", "");
+			new ExecutorServiceMetrics(executorService, "request", emptyTags).bindTo(registry);
+			
 			final IManagedContainer container = env.container();
 			final Stopwatch serverStopwatch = Stopwatch.createStarted();
 			
