@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.domain;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.ecore.EObject;
-
 import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
@@ -72,14 +70,14 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	void delete(Object obj, boolean force);
 
 	/**
-	 * Commits all changes made to {@link EObject}s into the store.
+	 * Commits all changes made so far using the current userId, default commit comment and no lock context.
 	 * 
-	 * @return
+	 * @return - the timestamp of the successful commit
 	 */
 	long commit();
 	
 	/**
-	 * Commits any changes made to {@link EObject}s into the store.
+	 * Commits all changes made so far.
 	 * 
 	 * @param userId
 	 *            - the owner of the commit
@@ -94,13 +92,13 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	long commit(String userId, String commitComment, String parentContextDescription);
 	
 	/**
-	 * Returns whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
-	 * @return
+	 * @return whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
 	 */
 	boolean isNotificationEnabled();
 	
 	/**
 	 * Enable or disable notification of other services about this commit.
+	 * 
 	 * @param notificationEnabled
 	 */
 	void setNotificationEnabled(boolean notificationEnabled);

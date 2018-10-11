@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.core.monitoring;
 
+import java.util.Collections;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.5
@@ -26,7 +25,7 @@ public class MonitoringConfiguration {
 
 	private boolean enabled = false;
 	
-	private Map<String, String> tags = Maps.newHashMap();
+	private Map<String, String> tags = Collections.emptyMap();
 	
 	public void setEnabled(boolean endabled) {
 		this.enabled = endabled;
