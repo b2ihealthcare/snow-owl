@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Timer.Sample;
 
@@ -45,7 +46,9 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 		try {
 			return next(context);
 		} finally {
-			responseTimeSample.stop(registry.timer("responseTime"));
+			final Tags tags = Tags.of("context", getContextId());
+			tags.and("context", DEFAULT_CONTEXT_ID);
+			responseTimeSample.stop(registry.timer("request_time", tags));
 			LOG.info(getMessage(context));
 		}
 	}
