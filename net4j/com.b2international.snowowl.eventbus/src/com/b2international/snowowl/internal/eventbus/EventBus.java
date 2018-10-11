@@ -49,20 +49,20 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private Set<String> addressBook = new CopyOnWriteArraySet<>();
 	private ConcurrentMap<String, ChoosableList<Handler>> protocolMap = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
-	private ChoosableList<ExecutorService> contexts = new ChoosableList<ExecutorService>();
+	private ExecutorService executorService;
 	private final String description;
 	private final int numberOfWorkers;
-	private final ExecutorServiceFactory executorServiceFactory;
+	private final WorkerExecutorServiceFactory executorServiceFactory;
 
 	public EventBus() {
 		this(EventBusConstants.GLOBAL_BUS, Runtime.getRuntime().availableProcessors());
 	}
 	
 	public EventBus(String description, int numberOfWorkers) {
-		this(description, numberOfWorkers, new DefaultExecutorServiceFactory());
+		this(description, numberOfWorkers, new WorkerExecutorServiceFactory());
 	}
 
-	public EventBus(String description, int numberOfWorkers, ExecutorServiceFactory executorServiceFactory) {
+	public EventBus(String description, int numberOfWorkers, WorkerExecutorServiceFactory executorServiceFactory) {
 		CheckUtil.checkArg(description, "Description should be specified");
 		CheckUtil.checkArg(numberOfWorkers > 0, "Number of workers must be greater than zero");
 		this.description = description;
@@ -73,7 +73,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
-		contexts.list.addAll(executorServiceFactory.createExecutorServices(description, numberOfWorkers));
+		executorService = executorServiceFactory.createExecutorService(description, numberOfWorkers);
 	}
 
 	@Override
@@ -209,7 +209,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 					}
 				}
 			}
-			final Handler h = new Handler(address, handler, contexts.choose(), replyHandler);
+			final Handler h = new Handler(address, handler, executorService, replyHandler);
 			if (!handlers.list.contains(h)) {
 				handlers.list.add(h);
 				LOG.trace("Registered handler {} to address {}", handler, address);
@@ -224,6 +224,11 @@ public class EventBus extends Lifecycle implements IEventBus {
 	@Override
 	public Set<String> getAddressBook() {
 		return new HashSet<String>(addressBook);
+	}
+	
+	@Override
+	public ExecutorService getExecutorService() {
+		return executorService;
 	}
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {
@@ -258,8 +263,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 		@Override
 		public Object create(String description) throws ProductCreationException {
 			final String[] values = description.split(":");
-			final boolean worker = Boolean.parseBoolean(values[2]);
-			return new EventBus(values[0], Integer.parseInt(values[1]), worker ? new WorkerExecutorServiceFactory() : new DefaultExecutorServiceFactory());
+			return new EventBus(values[0], Integer.parseInt(values[1]), new WorkerExecutorServiceFactory());
 		}
 
 	}

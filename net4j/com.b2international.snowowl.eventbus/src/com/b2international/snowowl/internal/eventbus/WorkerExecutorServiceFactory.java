@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.internal.eventbus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -26,12 +24,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * @since 4.5.1
  */
-public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
+public class WorkerExecutorServiceFactory {
 
-	@Override
-	public List<ExecutorService> createExecutorServices(String description, int numberOfWorkers) {
+	public ExecutorService createExecutorService(String description, int numberOfWorkers) {
 		final ThreadGroup group = new ThreadGroup(description);
-		final List<ExecutorService> results = new ArrayList<>();
 
 		ThreadFactory threadFactory = new ThreadFactory() {
 			@Override
@@ -54,7 +50,6 @@ public class WorkerExecutorServiceFactory implements ExecutorServiceFactory {
 			}
 		};
 
-		results.add(context);
-		return results;
+		return context;
 	}
 }
