@@ -1,3 +1,0 @@
-# FHIR API
-
-Coming soon!
