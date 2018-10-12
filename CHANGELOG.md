@@ -1,6 +1,91 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.0.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 7.0.0.
+
+#### Datasets created before 7.0.0
+Snow Owl v7.0.0 does not support indexes created by Snow Owl 6.x stream anymore. 
+Migration from Snow Owl 6.x to 7.x is still work in progress, in the meantime if you would like to try Snow Owl 7.0.0 out, we recommend starting from scratch from an RF2 export from your Snow Owl 6.x instance or by importing an official RF2 distribution. 
+
+#### Database
+MySQL RDBMS software requirement has been removed and Snow Owl no longer requires it for its data source. 
+Instead, Snow Owl requires only a single Elasticsearch cluster to operate on.
+
+#### Documentation
+The new improved and shiny Snow Owl 7.x documentation is available at `https://b2i.gitbook.io/snow-owl/`
+
+### Added
+- FHIR v3.0.1 API support (https://www.hl7.org/fhir/http.html)
+  * New Swagger API endpoint collection is available at `/snowowl/fhir`
+  * It supports read-only capabilities of `/CodeSystem`, `/ValueSet` and `/ConceptMap` concepts
+- APIs
+  * New `/stats` endpoint to scrape [micrometer](http://micrometer.io/) based statistics for [prometheus](https://prometheus.io/)
+  * New `/commits` endpoint to query commits in a repository and for a given component
+  * New `/compare` endpoint to efficiently compare two branches
+  * New `<branch>@<timestamp>` branch path expression support to query a branch at any arbitrary point in time
+  * `UTF-8` encoding to all endpoints
+- SNOMED CT
+  * New `JSON` based MRCM export and import format
+  * Refactored classification services, using Elasticsearch indexes instead of custom Lucene store
+- Configuration
+  * `SO_PATH_CONF` environment variable to configure Snow Owl configuration folder
+  * Environment variable substitution is now supported in `snowowl.yml` configuration file via `${...}` expressions
+  * Added `monitoring.tags` support for tagging metrics with custom tags
+- Packaging
+  * Travis-CI build integration (https://travis-ci.org/b2ihealthcare/snow-owl/)
+  * `tar.gz` packaging for Unix/Linux systems
+  * RPM packaging for RPM based systems (like CentOS, RedHat, etc.)
+- Modules
+  * New plug-in mechanism with the help of classpath scanning to simplify development of third-party modules
+  * `com.b2international.snowowl.fhir.core`
+  * `com.b2international.snowowl.fhir.api`
+  * `com.b2international.snowowl.snomed.fhir`
+- Dependencies
+  * Added zjsonpatch `0.4.4`
+  * Added micrometer `1.0.6`
+  * Added picocli `3.5.1`  
+  * Added fast-classpath-scanner `3.1.6`
+  * Bumped Spring to `4.3.10`
+  * Bumped Protege to `5.0.0-beta21`
+  * Bumped SLF4J to `1.7.13`
+  * Bumped Logback to `1.1.3`
+
+### Changed
+- Revision control features have been rewritten from the ground up to support scaling to billions of revision documents (using IPv6 based addressing)
+- SNOMED CT RF2 importer APIs now use the new RF2 importer implementation
+- Console
+  * Completely rewritten using the awesome `picocli` library with full version, help support, POSIX-style grouped short options and more
+- Configuration
+  * Renamed `snowowl_config.yml` configuration file to `snowowl.yml` and move it inside the `configuration` folder
+  * Renamed `metrics` node to `monitoring`
+
+### Removed
+- SNOMED CT
+  * XMI based MRCM import/export functionality has been removed (remaining options are `CSV` and `JSON`) 
+- Modules
+  * `org.eclipse.emf.cdo.*`
+  * `org.eclipse.net4j.db.mysql`
+  * `com.b2international.snowowl.snomed.model`
+  * `com.b2international.snowowl.snomed.refset.model`
+  * `com.b2international.snowowl.snomed.mrcm.model`
+  * `com.b2international.snowowl.server.console`
+  * `com.b2international.snowowl.datastore.server`
+  * `com.b2international.snowowl.snomed.datastore.server`
+  * `com.b2international.snowowl.snomed.exporter.server`
+  * `com.b2international.snowowl.snomed.reasoner.server`
+  * `com.b2international.snowowl.snomed.importer`
+  * `com.b2international.snowowl.snomed.importer.rf2`
+  * `system.bundle.package.exporter`
+- Configuration
+  * `yaml` and `json` file extension support for `snowowl.yml` configuration file
+  * `resources/defaults` XML configuration folder and support 
+  * Removed `database` configuration options from `repository` node
+  * Removed `revisionCache` configuration option from `repository` node
+
 ## 6.9.0
 
 ### Added
