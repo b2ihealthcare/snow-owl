@@ -11,6 +11,10 @@
 		<version>7.0.0-SNAPSHOT</version>
 	</parent>
 	
+	<properties>
+		<packageFiles>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</packageFiles>
+	</properties>
+	
 	<dependencies>
 		<dependency>
   			<groupId>org.apache.sshd</groupId>
@@ -94,17 +98,39 @@
 				</executions>
 				<configuration>
 					<targetDir>${project.build.directory}</targetDir>
-					<license>ASL 2.0</license>
 					<attach>true</attach>
-					<group>Application/Internet</group>
 					<packageName>snow-owl-oss</packageName>
+					<group>Application/Internet</group>
 					<packager>B2i Healthcare</packager>
+					<license>ASL 2.0</license>
+					<architecture>x86_64</architecture>
+					<skipSigning>true</skipSigning>
 					<prefixes>
 						<prefix>/usr</prefix>
 					</prefixes>
-					<architecture>x86_64</architecture>
-					<skipSigning>true</skipSigning>
 					<rulesets>
+						<ruleset>
+							<id>data</id>
+							<rules>
+								<rule>
+									<user>snowowl</user>
+									<group>snowowl</group>
+								</rule>
+								<rule>
+									<when>
+										<type>file</type>
+									</when>
+									<noreplace>true</noreplace>
+									<mode>0644</mode>
+								</rule>
+								<rule>
+									<when>
+										<type>directory</type>
+									</when>
+									<mode>0750</mode>
+								</rule>
+							</rules>
+						</ruleset>
 						<ruleset>
 							<id>config</id>
 							<rules>
@@ -154,15 +180,22 @@
 							<name>/etc/snowowl</name>
 							<ruleset>config</ruleset>
 							<collect>
-								<from>${project.build.directory}/${project.build.finalName}/${project.build.finalName}/configuration</from>
-								<includes>snowowl.yml,elasticsearh.yml,serviceability.xml</includes>
+								<from>${packageFiles}/configuration</from>
+							</collect>
+						</entry>
+						<entry>
+							<name>/var/lib/snowowl</name>
+							<ruleset>data</ruleset>
+							<collect>
+								<from>${packageFiles}/resources</from>
 							</collect>
 						</entry>
 						<entry>
 							<name>/usr/share/snowowl</name>
 							<ruleset>install</ruleset>
 							<collect>
-								<from>${project.build.directory}/${project.build.finalName}/${project.build.finalName}</from>
+								<from>${packageFiles}</from>
+								<excludes>resources</excludes>
 							</collect>
 						</entry>
 					</entries>
@@ -170,13 +203,7 @@
 						<prererequisite>shadow-utils</prererequisite>
 					</prerequisites>
 					<beforeInstallation>
-						<script>
-							getent group snowowl >/dev/null || groupadd -r snowowl
-							getent passwd USERNAME >/dev/null || \
-								useradd -r -g snowowl -d /usr/share/snowowl -s /sbin/nologin \
-    							-c "Snow Owl OSS" snowowl
-    						exit 0
-						</script>
+						<file>${basedir}/packages/common/scripts/preinst</file>
 					</beforeInstallation>
 				</configuration>
 			</plugin>
