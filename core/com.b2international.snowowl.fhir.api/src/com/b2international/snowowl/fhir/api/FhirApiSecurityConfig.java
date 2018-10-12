@@ -18,17 +18,21 @@ package com.b2international.snowowl.fhir.api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
+import com.b2international.snowowl.identity.IdentityProvider;
+
 /**
- * @since 6.4
+ * @since 7.0
  */
 @Configuration
 @EnableWebSecurity
@@ -37,6 +41,9 @@ public class FhirApiSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AuthenticationProvider authenticationProvider;
 
+	@Autowired
+	private IdentityProvider identityProvider;
+	
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
 	    StrictHttpFirewall firewall = new StrictHttpFirewall();
@@ -46,17 +53,30 @@ public class FhirApiSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+		// common config
 		http
-			.csrf().disable()
-			.authorizeRequests()
-				.antMatchers("/", "/static/**", "/api-docs")
-				.permitAll()
+			.sessionManagement()
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			.authorizeRequests()
+			.csrf().disable();
+		
+		// auth
+		if (IdentityProvider.NOOP == identityProvider) {
+			http.authorizeRequests()
 				.antMatchers("/**")
-				.hasRole("USER")
-			.and()
-				.httpBasic();
+				.permitAll();
+		} else {
+			http
+				.authorizeRequests()
+					.antMatchers("/", "/static/**", "/api-docs")
+					.permitAll()
+				.and()
+				.authorizeRequests()
+					.antMatchers("/**")
+					.hasAuthority("ROLE_USER")
+				.and()
+					.httpBasic();
+		}
 	}
 
 	@Override
@@ -68,6 +88,12 @@ public class FhirApiSecurityConfig extends WebSecurityConfigurerAdapter {
 	public void configure(WebSecurity web) throws Exception {
 		super.configure(web);
 		web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
+	}
+	
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
 	}
 
 }

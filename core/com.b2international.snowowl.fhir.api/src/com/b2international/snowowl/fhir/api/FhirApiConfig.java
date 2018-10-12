@@ -50,6 +50,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,7 +70,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 /**
  * The Spring configuration class for Snow Owl's FHIR REST API.
  * 
- * @since 6.4
+ * @since 7.0
  */
 @EnableWebMvc
 @EnableSwagger2
@@ -100,6 +101,11 @@ public class FhirApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		return new SnowOwlAuthenticationProvider();
+	}
+	
+	@Bean
+	public IdentityProvider identityProvider() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class);
 	}
 	
 	@Bean
