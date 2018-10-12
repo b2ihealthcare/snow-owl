@@ -4,7 +4,7 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/snow-owl/7.x.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/snow-owl)
 
-## Download Snow Owl
+## Download
 
 Version: 7.0.0
 
