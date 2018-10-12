@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Snow Owl FHIR API Web
+Bundle-Name: Snow Owl FHIR API
 Bundle-SymbolicName: com.b2international.snowowl.fhir.api
-Bundle-Version: 6.4.0.qualifier
+Bundle-Version: 7.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.b2international.snowowl.api.codesystem,

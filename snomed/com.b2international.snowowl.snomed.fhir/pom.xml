@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
-		<artifactId>core-parent</artifactId>
+		<artifactId>snomed-parent</artifactId>
 		<version>7.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>com.b2international.snowowl.fhir.core</artifactId>
+	<artifactId>com.b2international.snowowl.snomed.fhir</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
 </project>

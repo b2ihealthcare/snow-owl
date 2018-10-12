@@ -47,6 +47,7 @@
 		<module>com.b2international.snowowl.fhir.core</module>
 		<module>com.b2international.snowowl.fhir.api</module>
 		<module>com.b2international.snowowl.fhir.api.tests</module>
+		<module>com.b2international.snowowl.fhir.api.feature</module>
 		
 	</modules>
 	

@@ -47,6 +47,9 @@
 		
 		<!-- SNOMED CT Generic Validation Rules -->
 		<module>com.b2international.snowowl.validation.snomed</module>
+		
+		<!-- SNOMED CT FHIR API Support -->
+		<module>com.b2international.snowowl.snomed.fhir</module>
 	</modules>
 	
 </project>
