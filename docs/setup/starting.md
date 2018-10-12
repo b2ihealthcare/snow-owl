@@ -34,8 +34,49 @@ Log messages can be found in the `$SO_HOME/serviceability/logs/` directory.
 The startup scripts provided in the RPM and Debian packages take care of starting and stopping the Snow Owl process for you.
 {% endhint %}
 
-## Debian packages (Coming Soon)
+## RPM packages
 
-## RPM packages (Coming Soon)
+Snow Owl is not started automatically after installation. How to start and stop Snow Owl depends on whether your system uses `SysV init` or `systemd` (used by newer distributions). You can tell which is being used by running this command:
+
+```
+ps -p 1
+```
+
+### Running Snow Owl with SysV init
+
+Use the `chkconfig` command to configure Snow Owl to start automatically when the system boots up:
+
+```
+sudo chkconfig --add snowowl
+```
+
+Snow Owl can be started and stopped using the service command:
+
+```
+sudo -i service snowowl start
+sudo -i service snowowl stop
+```
+
+If Snow Owl fails to start for any reason, it will print the reason for failure to STDOUT. Log files can be found in `/var/log/snowowl/`.
+
+### Running Snow Owl with systemd
+
+To configure Snow Owl to start automatically when the system boots up, run the following commands:
+
+```
+sudo /bin/systemctl daemon-reload
+sudo /bin/systemctl enable snowowl.service
+```
+
+Snow Owl can be started and stopped as follows:
+
+```
+sudo systemctl start snowowl.service
+sudo systemctl stop snowowl.service
+```
+
+These commands provide no feedback as to whether Snow Owl was started successfully or not. Instead, this information will be written in the log files located in `/var/log/snowowl/`.
+
+## Debian packages (Coming Soon)
 
 ## Docker images (Coming Soon)
