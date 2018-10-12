@@ -110,43 +110,6 @@
 					</prefixes>
 					<rulesets>
 						<ruleset>
-							<id>data</id>
-							<rules>
-								<rule>
-									<user>snowowl</user>
-									<group>snowowl</group>
-								</rule>
-								<rule>
-									<when>
-										<type>file</type>
-									</when>
-									<noreplace>true</noreplace>
-									<mode>0644</mode>
-								</rule>
-								<rule>
-									<when>
-										<type>directory</type>
-									</when>
-									<mode>0750</mode>
-								</rule>
-							</rules>
-						</ruleset>
-						<ruleset>
-							<id>config</id>
-							<rules>
-								<rule>
-									<user>snowowl</user>
-									<group>snowowl</group>
-									<when>
-										<type>file</type>
-									</when>
-									<noreplace>true</noreplace>
-									<mode>0660</mode>
-									<configuration>true</configuration>
-								</rule>
-							</rules>
-						</ruleset>
-						<ruleset>
 							<id>install</id>
 							<rules>
 								<rule>
@@ -174,15 +137,85 @@
 								</rule>
 							</rules>
 						</ruleset>
+						<ruleset>
+							<id>config</id>
+							<rules>
+								<rule>
+									<user>snowowl</user>
+									<group>snowowl</group>
+								</rule>
+								<rule>
+									<when>
+										<type>file</type>
+									</when>
+									<noreplace>true</noreplace>
+									<configuration>true</configuration>
+									<mode>0660</mode>
+								</rule>
+							</rules>
+						</ruleset>
+						<ruleset>
+							<id>data</id>
+							<rules>
+								<rule>
+									<user>snowowl</user>
+									<group>snowowl</group>
+								</rule>
+								<rule>
+									<when>
+										<type>file</type>
+									</when>
+									<noreplace>true</noreplace>
+									<mode>0644</mode>
+								</rule>
+								<rule>
+									<when>
+										<type>directory</type>
+									</when>
+									<mode>0750</mode>
+								</rule>
+							</rules>
+						</ruleset>
 					</rulesets>
 					<entries>
+						<!-- Installation directory -->
+						<entry>
+							<name>/usr/share/snowowl</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<mode>0755</mode>
+							<directory>true</directory>
+						</entry>
+						<entry>
+							<name>/usr/share/snowowl</name>
+							<ruleset>install</ruleset>
+							<collect>
+								<from>${packageFiles}</from>
+								<excludes>
+									<exclude>serviceability/**</exclude>
+									<exclude>resources/**</exclude>
+									<exclude>.gitignore</exclude>
+								</excludes>
+							</collect>
+						</entry>
+						<!-- Configuration directory -->
 						<entry>
 							<name>/etc/snowowl</name>
 							<ruleset>config</ruleset>
+							<user>snowowl</user>
+							<group>snowowl</group>
 							<collect>
 								<from>${packageFiles}/configuration</from>
 							</collect>
 						</entry>
+						<!-- Data directory -->
+						<entry>
+							<name>/var/lib/snowowl</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<mode>0755</mode>
+							<directory>true</directory>
+						</entry>	
 						<entry>
 							<name>/var/lib/snowowl</name>
 							<ruleset>data</ruleset>
@@ -191,12 +224,46 @@
 							</collect>
 						</entry>
 						<entry>
-							<name>/usr/share/snowowl</name>
-							<ruleset>install</ruleset>
-							<collect>
-								<from>${packageFiles}</from>
-								<excludes>resources</excludes>
-							</collect>
+							<name>/usr/share/snowowl/resources</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<linkTo>/var/lib/snowowl</linkTo>
+						</entry>
+						<!-- Log directory -->
+						<entry>
+							<name>/var/log/snowowl</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<mode>0755</mode>
+							<directory>true</directory>
+						</entry>
+						<entry>
+							<name>/usr/share/snowowl/serviceability</name>
+							<user>snowowl</user>
+							<group>snowowl</group>
+							<linkTo>/var/log/snowowl</linkTo>
+						</entry>
+						<!-- SysV configuration -->
+						<entry>
+							<name>/etc/init.d/snowowl</name>
+							<configuration>true</configuration>
+							<noreplace>true</noreplace>
+							<mode>0750</mode>
+							<file>${basedir}/packages/rpm/init.d/snowowl</file>
+						</entry>
+						<!-- systemd configuration -->
+						<entry>
+							<name>/usr/lib/sysctl.d/snowowl.conf</name>
+							<configuration>true</configuration>
+							<noreplace>true</noreplace>
+							<mode>0644</mode>
+							<file>${basedir}/packages/common/systemd/sysctl/snowowl.conf</file>
+						</entry>
+						<entry>
+							<name>/usr/lib/systemd/system/snowowl.service</name>
+							<noreplace>true</noreplace>
+							<mode>0644</mode>
+							<file>${basedir}/packages/common/systemd/snowowl.service</file>							
 						</entry>
 					</entries>
 					<prerequisites>

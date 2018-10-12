@@ -1,0 +1,53 @@
+[Unit]
+Description=Snow Owl
+Documentation=https://b2i.gitbook.io/snow-owl/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+RuntimeDirectory=snowowl
+PrivateTmp=true
+Environment=SO_HOME=/usr/share/snowowl
+Environment=SO_PATH_CONF=/etc/snowowl
+
+WorkingDirectory=/usr/share/snowowl
+
+User=snowowl
+Group=snowowl
+
+ExecStart=/usr/share/snowowl/bin/startup.sh -configDir=${SO_PATH_CONF}
+
+# StandardOutput is configured to redirect to journalctl. Snow Owl
+# stores its logs in /var/log/snowowl and does not use journalctl.
+StandardOutput=journal
+StandardError=inherit
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+# Specifies the maximum number of processes
+LimitNPROC=4096
+
+# Specifies the maximum size of virtual memory
+LimitAS=infinity
+
+# Specifies the maximum file size
+LimitFSIZE=infinity
+
+# Disable timeout logic and wait until process is stopped
+TimeoutStopSec=0
+
+# SIGTERM signal is used to stop the Java process
+KillSignal=SIGTERM
+
+# Send the signal only to the JVM rather than its control group
+KillMode=process
+
+# Java process is never killed
+SendSIGKILL=no
+
+# When a JVM receives a SIGTERM signal it exits with code 143
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
