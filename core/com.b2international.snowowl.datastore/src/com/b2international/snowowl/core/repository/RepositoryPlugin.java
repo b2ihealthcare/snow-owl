@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.repository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.net4j.Net4jUtil;
@@ -73,10 +72,6 @@ import com.b2international.snowowl.rpc.RpcUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
-
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
-import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 
 /**
  * @since 3.3
@@ -175,10 +170,6 @@ public final class RepositoryPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
 			LOG.debug("Initializing repository plugin.");
-			
-			final MeterRegistry registry = env.service(MeterRegistry.class);
-			final ExecutorService requestExecutorService = env.service(IEventBus.class).getExecutorService();
-			new ExecutorServiceMetrics(requestExecutorService, "request", Tags.empty()).bindTo(registry);
 			
 			final IManagedContainer container = env.container();
 			
