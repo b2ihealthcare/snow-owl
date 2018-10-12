@@ -21,6 +21,8 @@ import com.b2international.commons.options.MetadataHolder;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.events.Request;
+import com.google.common.base.Joiner;
 
 /**
  * Represents a {@link Branch} in a terminology repository. A {@link Branch} can be uniquely identified by using its {@link #path()} and
@@ -50,6 +52,12 @@ public interface Branch extends MetadataHolder, Serializable {
 	 */
 	long branchId();
 	
+	/**
+	 * A singleton {@link Joiner} that can be used to concatenate branch path segments into a fully usable branch path.
+	 * @see #get(String...)
+	 */
+	Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
+
 	/**
 	 * Returns the unique path of this {@link Branch}.
 	 * 
@@ -112,4 +120,12 @@ public interface Branch extends MetadataHolder, Serializable {
 	 */
 	Branches getChildren();
 
+	/**
+	 * @param segments - segments to join into a usable branch path string 
+	 * @return a full absolute branch path that can be used in {@link Request}s and other services  
+	 */
+	static String get(String...segments) {
+		return BRANCH_PATH_JOINER.join(segments);
+	}
+	
 }

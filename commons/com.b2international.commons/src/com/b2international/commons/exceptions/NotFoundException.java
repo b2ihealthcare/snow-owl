@@ -46,7 +46,7 @@ public class NotFoundException extends ApiException {
 	 * 
 	 * @return the type of the missing item
 	 */
-	protected String getType() {
+	public String getType() {
 		return type;
 	}
 
@@ -55,7 +55,7 @@ public class NotFoundException extends ApiException {
 	 * 
 	 * @return the unique key of the missing item
 	 */
-	protected String getKey() {
+	public String getKey() {
 		return key;
 	}
 

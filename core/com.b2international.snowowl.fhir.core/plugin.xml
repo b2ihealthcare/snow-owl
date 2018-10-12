@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+ <extension-point id="codeSystemProvider" name="codeSystemProvider" schema="schema/codeSystemProvider.exsd"/>
+ <extension-point id="valueSetProvider" name="valueSetProvider" schema="schema/valueSetProvider.exsd"/>
+ <extension-point id="conceptMapProvider" name="conceptMapProvider" schema="schema/conceptMapProvider.exsd"/>
+ <extension
+         point="com.b2international.snowowl.fhir.core.codeSystemProvider">
+      <codeSystemApiProvider
+            class="com.b2international.snowowl.fhir.core.provider.FhirCodeSystemApiProvider">
+      </codeSystemApiProvider>
+   </extension>
+</plugin>
