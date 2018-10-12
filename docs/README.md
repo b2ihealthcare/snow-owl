@@ -32,8 +32,9 @@ Not the version you're looking for? View [past releases](https://github.com/b2ih
 * [Getting Started](getting_started/index.md)
 * [Set up Snow Owl](setup/index.md)
 * [Configuring Snow Owl](setup/configure/index.md)
-* [FHIR API](api/fhir.md)
-* [SNOMED CT API](api/snomed.md)
+* [FHIR API](api/fhir/index.md)
+* [SNOMED CT API](api/snomed/index.md)
+* [Admin API](api/admin/index.md)
 
 # Acknowledgements
 
