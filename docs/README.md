@@ -17,7 +17,7 @@ Downloads:
 * [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip.sha512)
 * [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz.sha512) 
 * [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.rpm.sha512)
-* [DEB](Coming soon!)
+* DEB (Coming soon!)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
