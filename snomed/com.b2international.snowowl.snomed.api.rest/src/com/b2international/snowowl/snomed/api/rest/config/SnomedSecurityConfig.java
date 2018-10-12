@@ -29,6 +29,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
+import com.b2international.snowowl.identity.IdentityProvider;
+
 /**
  * @since 7.0
  */
@@ -38,6 +40,9 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private AuthenticationProvider authenticationProvider;
+	
+	@Autowired
+	private IdentityProvider identityProvider;
 	
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
@@ -52,16 +57,25 @@ public class SnomedSecurityConfig extends WebSecurityConfigurerAdapter {
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			.csrf().disable()
-			.authorizeRequests()
-				.antMatchers("/", "/static/**", "/api-docs")
-				.permitAll()
-			.and()
-			.authorizeRequests()
+			.csrf().disable();
+		
+		// auth
+		if (IdentityProvider.NOOP == identityProvider) {
+			http.authorizeRequests()
 				.antMatchers("/**")
-				.hasAuthority("ROLE_USER")
-			.and()
-				.httpBasic();
+				.permitAll();
+		} else {
+			http
+				.authorizeRequests()
+					.antMatchers("/", "/static/**", "/api-docs")
+					.permitAll()
+				.and()
+				.authorizeRequests()
+					.antMatchers("/**")
+					.hasAuthority("ROLE_USER")
+				.and()
+					.httpBasic();
+		}
 	}
 	
 	@Override

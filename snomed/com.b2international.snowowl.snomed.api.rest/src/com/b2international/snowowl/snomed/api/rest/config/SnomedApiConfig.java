@@ -62,6 +62,7 @@ import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.datastore.review.BranchState;
 import com.b2international.snowowl.datastore.review.Review;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.b2international.snowowl.snomed.api.ISnomedExportService;
 import com.b2international.snowowl.snomed.api.ISnomedRf2ImportService;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
@@ -172,6 +173,11 @@ public class SnomedApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		return new SnowOwlAuthenticationProvider();
+	}
+	
+	@Bean
+	public IdentityProvider identityProvider() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class);
 	}
 	
 	@Bean

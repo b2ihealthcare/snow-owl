@@ -53,6 +53,7 @@ import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
 import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
 import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -78,9 +79,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @Configuration
 @ComponentScan("com.b2international.snowowl.api.rest")
-@Import({ SnowowlSecurityConfig.class })
+@Import({ SnowOwlSecurityConfig.class })
 @PropertySource(value="classpath:com/b2international/snowowl/api/rest/service_configuration.properties")
-public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
+public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 
 	@Value("${api.version}")
 	private String apiVersion;
@@ -106,6 +107,11 @@ public class SnowowlApiConfig extends WebMvcConfigurerAdapter {
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		return new SnowOwlAuthenticationProvider();
+	}
+	
+	@Bean
+	public IdentityProvider identityProvider() {
+		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class);
 	}
 	
 	@Bean

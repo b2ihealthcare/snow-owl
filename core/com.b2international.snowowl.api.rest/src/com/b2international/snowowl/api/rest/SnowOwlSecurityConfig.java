@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.api.rest;
 
+import com.b2international.snowowl.identity.IdentityProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,10 +35,13 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
  */
 @Configuration
 @EnableWebSecurity
-public class SnowowlSecurityConfig extends WebSecurityConfigurerAdapter {
+public class SnowOwlSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AuthenticationProvider authenticationProvider;
+	
+	@Autowired
+	private IdentityProvider identityProvider;
 	
 	@Bean
 	public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
@@ -48,20 +52,30 @@ public class SnowowlSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	protected void configure(final HttpSecurity http) throws Exception {
+		// common config
 		http
 			.sessionManagement()
 				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			.csrf().disable()
-			.authorizeRequests()
-				.antMatchers("/", "/static/**", "/api-docs")
-				.permitAll()
-			.and()
-			.authorizeRequests()
+			.csrf().disable();
+		
+		// auth
+		if (IdentityProvider.NOOP == identityProvider) {
+			http.authorizeRequests()
 				.antMatchers("/**")
-				.hasAuthority("ROLE_USER")
-			.and()
-				.httpBasic();
+				.permitAll();
+		} else {
+			http
+				.authorizeRequests()
+					.antMatchers("/", "/static/**", "/api-docs")
+					.permitAll()
+				.and()
+				.authorizeRequests()
+					.antMatchers("/**")
+					.hasAuthority("ROLE_USER")
+				.and()
+					.httpBasic();
+		}
 	}
 	
 	@Override
