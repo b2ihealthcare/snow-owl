@@ -26,7 +26,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;

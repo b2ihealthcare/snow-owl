@@ -23,17 +23,15 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.search,
  com.b2international.snowowl.fhir.core.valueset,
  io.swagger.annotations
-Require-Bundle: com.fasterxml.jackson.core.jackson-databind,
- com.fasterxml.jackson.core.jackson-annotations,
- com.fasterxml.jackson.core.jackson-core,
- com.google.guava,
+Require-Bundle: com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.10",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.8.10",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.10",
+ com.google.guava;bundle-version="18.0.0",
  com.b2international.snowowl.hibernate.validator;bundle-version="5.1.3",
- com.b2international.commons,
- com.b2international.snowowl.core,
  com.b2international.snowowl.datastore
 Bundle-ClassPath: .,
  lib/swagger-annotations-1.5.14.jar
-Import-Package: org.osgi.framework,
- org.osgi.framework.wiring;version="1.2.0"
+Import-Package: org.osgi.framework;version="1.7.0",
+ org.osgi.framework.wiring;version="1.1.0"
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: com.b2international.snowowl.fhir.core.FhirCoreActivator

@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 
-import com.b2international.commons.platform.Extensions;
+import com.b2international.commons.extension.Extensions;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
  * 
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
  * @see 'com.b2international.snowowl.fhir.core.codeSystemProvider' for the extension point definition
- * @since 6.4
+ * @since 7.0
  */
 public interface ICodeSystemApiProvider extends IFhirApiProvider {
 

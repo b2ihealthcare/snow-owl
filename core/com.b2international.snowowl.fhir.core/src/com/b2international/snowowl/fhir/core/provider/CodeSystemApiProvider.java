@@ -23,10 +23,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.index.revision.Revision;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -64,7 +63,7 @@ import com.google.common.collect.Sets;
 /**
  * FHIR provider base class.
  * 
- * @since 6.4
+ * @since 7.0
  */
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
@@ -156,7 +155,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		//fetch all the versions
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
-			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(repositoryId)
 			.execute(getBus())
 			.getSync();

@@ -46,7 +46,7 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
-import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;

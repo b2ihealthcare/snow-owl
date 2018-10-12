@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 
-import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.extension.Extensions;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
  * Extension point interface for value set specific FHIR API support. 
  * 
  * @see 'com.b2international.snowowl.fhir.core.valueSetProvider' for the extension point definition
- * @since 6.4
+ * @since 7.0
  */
 public interface IValueSetApiProvider extends IFhirApiProvider {
 	

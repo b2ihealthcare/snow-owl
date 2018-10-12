@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.b2international.snowowl.core.exceptions.ConflictException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;

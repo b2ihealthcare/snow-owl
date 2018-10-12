@@ -131,7 +131,7 @@ public class FhirApiConfig extends WebMvcConfigurerAdapter {
 	
 	private String readApiDescription() {
 		try {
-			final File apiDesc = new File(PlatformUtil.toAbsolutePath(FhirApiConfig.class, "api-description.md"));
+			final File apiDesc = PlatformUtil.toAbsolutePath(FhirApiConfig.class, "api-description.md").toFile();
 			return Joiner.on("\n").join(Files.readLines(apiDesc, Charsets.UTF_8));
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read api-description.md file", e);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,11 +43,12 @@ import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * RESTful service that exposes the content provisioning capabilities of the Snow Owl server
@@ -59,7 +60,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Controller
 @RequestMapping(
 		value="/exchange/{shortName}", 
-		produces={ AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
+		produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public class ExchangeRestService {
 	
 	@ApiOperation(

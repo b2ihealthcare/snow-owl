@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -38,7 +37,7 @@ import com.google.common.collect.Lists;
 
 /**
  * 
- * @since 6.4
+ * @since 7.0
  */
 public abstract class FhirApiProvider {
 	
@@ -66,7 +65,7 @@ public abstract class FhirApiProvider {
 			Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(getRepositoryId())
 				.execute(getBus())
 				.getSync()
@@ -112,7 +111,7 @@ public abstract class FhirApiProvider {
 			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(getRepositoryId())
 				.execute(getBus())
 				.getSync()
@@ -144,7 +143,7 @@ public abstract class FhirApiProvider {
 		//fetch all the versions
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
-			.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(repositoryId)
 			.execute(getBus())
 			.getSync();
