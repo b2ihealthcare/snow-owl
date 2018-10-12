@@ -51,8 +51,6 @@ public class RepositoryConfiguration {
 	@Max(1000)
 	private int mergeMaxResults = 100;
 
-	private boolean revisionCacheEnabled = true;
-	
 	@Pattern(regexp = "^[a-zA-Z0-9_-]{0,32}$")
 	private String deploymentId = "";
 	
@@ -138,16 +136,6 @@ public class RepositoryConfiguration {
 		this.mergeMaxResults = mergeMaxResults;
 	}
 	
-	@JsonProperty("revisionCache")
-	public boolean isRevisionCacheEnabled() {
-		return revisionCacheEnabled ;
-	}
-	
-	@JsonProperty("revisionCache")
-	public void setRevisionCacheEnabled(boolean revisionCacheEnabled) {
-		this.revisionCacheEnabled = revisionCacheEnabled;
-	}
-
 	@JsonProperty
 	public String getDeploymentId() {
 		return deploymentId;
