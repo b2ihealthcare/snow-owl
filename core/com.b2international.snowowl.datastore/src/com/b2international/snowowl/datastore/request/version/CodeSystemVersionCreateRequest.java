@@ -57,6 +57,7 @@ import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.CharMatcher;
 
 /**
  * @since 5.7
@@ -89,7 +90,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
-
+		
+		
 		// get code system
 		CodeSystemEntry codeSystem = null; 
 		Set<String> repositoryIds = context.service(RepositoryManager.class).repositories().stream().map(Repository::id).collect(Collectors.toSet());
@@ -110,6 +112,10 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
+		
+		// validate new path
+		Branch.BranchNameValidator.DEFAULT.checkName(newVersionPath);
+		
 		try {
 			RepositoryRequests.branching()
 				.prepareGet(newVersionPath)
