@@ -193,6 +193,10 @@ public class SnomedCompositeImporter extends AbstractLoggingImporter {
 		final UncheckedCastFunction<AbstractImportUnit, ComponentImportUnit> castFunction = new UncheckedCastFunction<AbstractImportUnit, ComponentImportUnit>(ComponentImportUnit.class);
 		final List<ComponentImportUnit> units = Lists.newArrayList(Iterables.transform(compositeUnit.getUnits(), castFunction));
 		
+		if (units.size() == 0) {
+			return;
+		}
+		
 		subMonitor.setWorkRemaining(units.size() + 1);
 
 		if (isRefSetImport(units)) {

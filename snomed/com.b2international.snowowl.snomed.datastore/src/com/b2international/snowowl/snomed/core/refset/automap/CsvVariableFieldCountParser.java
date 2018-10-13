@@ -159,7 +159,7 @@ public class CsvVariableFieldCountParser implements ITableParser {
 		 * @see org.ihtsdo.lookup.parser.RecordLexerCallback#handleField(int)
 		 */
 		public void handleField(final int fieldCount, final StringBuilder field) {
-			line.add(field.toString());
+			line.add(field.toString().trim());
 		}
 
 		/*

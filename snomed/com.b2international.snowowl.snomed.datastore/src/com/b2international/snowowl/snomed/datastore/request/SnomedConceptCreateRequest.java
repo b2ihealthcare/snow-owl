@@ -140,9 +140,10 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 
 	private void convertDescriptions(TransactionContext context, final String conceptId) {
+		TransactionContext newContext = context.inject().bind(Synonyms.class, new Synonyms(context)).build();
 		final Set<String> requiredDescriptionTypes = newHashSet(Concepts.FULLY_SPECIFIED_NAME, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED);
 		final Multiset<String> preferredLanguageRefSetIds = HashMultiset.create();
-		final Set<String> synonymAndDescendantIds = context.service(Synonyms.class).get();
+		final Set<String> synonymAndDescendantIds = newContext.service(Synonyms.class).get();
 
 		for (final SnomedDescriptionCreateRequest descriptionRequest : descriptions) {
 
