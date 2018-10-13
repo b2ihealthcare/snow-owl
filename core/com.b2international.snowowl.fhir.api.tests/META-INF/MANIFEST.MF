@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl FHIR API Tests
-Bundle-SymbolicName: com.b2international.snowowl.fhir.tests
+Bundle-SymbolicName: com.b2international.snowowl.fhir.api.tests
 Bundle-Version: 7.0.0
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.fhir.api;bundle-version="7.0.0"

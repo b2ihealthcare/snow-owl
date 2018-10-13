@@ -7,7 +7,19 @@
 		<version>7.0.0</version>
 	</parent>
 
-	<artifactId>com.b2international.snowowl.fhir.tests</artifactId>
+	<artifactId>com.b2international.snowowl.fhir.api.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
