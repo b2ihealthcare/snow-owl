@@ -57,7 +57,6 @@ import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.CharMatcher;
 
 /**
  * @since 5.7
@@ -90,7 +89,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
-		
 		
 		// get code system
 		CodeSystemEntry codeSystem = null; 
