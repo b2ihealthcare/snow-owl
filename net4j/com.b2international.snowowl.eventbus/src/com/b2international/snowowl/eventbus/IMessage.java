@@ -22,9 +22,7 @@ package com.b2international.snowowl.eventbus;
  */
 public interface IMessage {
 
-	public static final String DEFAULT_TAG = "event";
-	public static final String REQUEST_TAG = "request";
-	public static final String NOTIFICATION_TAG = "notification";
+	String DEFAULT_TAG = "event";
 
 	/**
 	 * Returns the body of this {@link IMessage}, can be used for simple types

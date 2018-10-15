@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public final class AsyncRequest<R> {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
 		final ClassLoader classLoader = request.getClassLoader();
-		bus.send(Request.ADDRESS, request, IMessage.REQUEST_TAG, new IHandler<IMessage>() {
+		bus.send(Request.ADDRESS, request, Request.TAG, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
