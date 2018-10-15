@@ -23,6 +23,8 @@ package com.b2international.snowowl.eventbus;
 public interface IMessage {
 
 	String DEFAULT_TAG = "event";
+	
+	String REPLY_TAG = "reply";
 
 	/**
 	 * Returns the body of this {@link IMessage}, can be used for simple types

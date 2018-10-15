@@ -124,7 +124,7 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 	@Override
 	public void reply(Object message) {
 		if (message != null) {
-			sendReply(new BaseMessage(replyAddress, message, tag));
+			sendReply(new BaseMessage(replyAddress, message, IMessage.REPLY_TAG));
 		}
 	}
 
