@@ -151,13 +151,13 @@ public class EventBus extends Lifecycle implements IEventBus {
 					decrementCounter(tag, inQueueMessages);
 					// then increment processing message size by 1
 					incrementCounter(tag, currentlyProcessingMessages);
+					holder.handler.handle(message);
 				} catch (Exception e) {
 					LOG.error("Exception happened while delivering message", e);
 					message.fail(e);
 				} finally {
 					// decrement the number of processing messages
 					decrementCounter(tag, currentlyProcessingMessages);
-					
 					// increment the number of finished messages
 					incrementCounter(tag, finishedMessages);
 					if (holder.isReplyHandler || !LifecycleUtil.isActive(holder.handler)) {
@@ -286,12 +286,12 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 	@Override
 	public long getProcessingMessages(String tag) {
-		return getOrCreateCounter(tag, inQueueMessages).get();
+		return getOrCreateCounter(tag, currentlyProcessingMessages).get();
 	}
 	
 	@Override
 	public long getFinishedMessages(String tag) {
-		return getOrCreateCounter(tag, inQueueMessages).get();
+		return getOrCreateCounter(tag, finishedMessages).get();
 	}
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {

@@ -233,17 +233,14 @@ public final class RepositoryPlugin extends Plugin {
 	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
 		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getFinishedMessages(Request.TAG))
 				.description("The approximate total number of requests that have completed execution")
-				.baseUnit("requests")
 				.register(registry);
 
 		Gauge.builder("requests.processing", eventBus, bus -> bus.getProcessingMessages(Request.TAG))
 				.description("The approximate number of requests that are currently under execution")
-				.baseUnit("requests")
 				.register(registry);
 
 		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
 				.description("The approximate number of requests that are queued for execution")
-				.baseUnit("requests")
 				.register(registry);
 	}
 	
