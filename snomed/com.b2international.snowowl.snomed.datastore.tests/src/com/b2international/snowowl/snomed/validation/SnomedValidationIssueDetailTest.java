@@ -192,8 +192,32 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		assertComponents(issues, issueWithActiveComponent.getAffectedComponent());
 	}
 	
+	@Test
+	public void duplicateIssueWithSameComponentIdTest() throws Exception {
+		final String conceptId = RandomSnomedIdentiferGenerator.generateConceptId();
+
+		final ValidationIssue existingIssue = createIssue(conceptId, Collections.emptyMap());
+		final ValidationIssue existingIssue2 = createIssue(conceptId, Collections.emptyMap());
+		save(existingIssue);
+		save(existingIssue2);
+		
+		ImmutableMap<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+			.put("componentType", "concept")
+			.put("active", true)
+			.build();
+
+		SnomedConceptDocument theConcept = concept(conceptId).active(true).build();
+		indexRevision(MAIN, STORAGE_KEY1, theConcept);
+		
+		createSnomedQueryRule(ruleQuery);
+		
+		final ValidationIssues issues = validate();
+
+		assertThat(issues.getItems().size()).isEqualTo(1);
+	}
+	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
-		final short terminologyShort = 0;
+		final short terminologyShort = 100;
 		final ValidationIssue issue = new ValidationIssue(
 			UUID.randomUUID().toString(),
 			TEST_RULE_ID,
