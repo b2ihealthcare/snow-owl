@@ -73,6 +73,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
+
 /**
  * @since 3.3
  */
@@ -170,6 +175,10 @@ public final class RepositoryPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
 			LOG.debug("Initializing repository plugin.");
+			final MeterRegistry registry = env.services().getService(MeterRegistry.class);
+			final IEventBus eventBus = env.services().getService(IEventBus.class);
+			// Add event bus based request metrics
+			registerRequestMetrics(registry, eventBus);
 			
 			final IManagedContainer container = env.container();
 			
@@ -219,6 +228,27 @@ public final class RepositoryPlugin extends Plugin {
 			}
 		}
 		
+	}
+	
+	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
+		final Tags tags = Tags.of("requests", "requests");
+		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getFinishedMessages(Request.TAG))
+				.tags(tags)
+				.description("The approximate total number of requests that have completed execution")
+				.baseUnit("requests")
+				.register(registry);
+
+		Gauge.builder("requests.processing", eventBus, bus -> bus.getProcessingMessages(Request.TAG))
+				.tags(tags)
+				.description("The approximate number of requests that are currently under execution")
+				.baseUnit("requests")
+				.register(registry);
+
+		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
+				.tags(tags)
+				.description("The approximate number of requests that are queued for execution")
+				.baseUnit("requests")
+				.register(registry);
 	}
 	
 	private void registerCustomProtocols(IManagedContainer container) {
