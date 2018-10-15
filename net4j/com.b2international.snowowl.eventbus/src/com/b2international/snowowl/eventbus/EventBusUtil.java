@@ -60,10 +60,10 @@ public class EventBusUtil {
 	 * @param timeout
 	 * @return
 	 */
-	public static IMessage sendWithResult(IEventBus bus, String address, Object message, long timeout) {
+	public static IMessage sendWithResult(IEventBus bus, String address, Object message, String tag, long timeout) {
 		final AtomicReference<IMessage> result = new AtomicReference<IMessage>();
 		final CountDownLatch latch = new CountDownLatch(1);
-		bus.send(address, message, IMessage.NOTIFICATION_TAG, new IHandler<IMessage>() {
+		bus.send(address, message, tag, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				result.set(message);

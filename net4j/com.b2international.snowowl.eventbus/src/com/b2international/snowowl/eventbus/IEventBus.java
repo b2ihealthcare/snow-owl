@@ -121,25 +121,23 @@ public interface IEventBus {
 	Set<String> getAddressBook();
 	
 	/**
-	 * Returns the currently registered executor service.
-	 * 
-	 * @return executor services
+	 * @return the currently registered executor service
 	 */
 	ExecutorService getExecutorService();
 	
 	/**
-	 * @return the amount of requests that are currently in queue.
+	 * @return the amount of messages that are currently in queue by tag.
 	 */
-	long getInQueueRequests();
+	long getInQueueMessages(String tag);
 	
 	/**
-	 * @return the amount of currently processing requests.
+	 * @return the amount of currently processing messages by tag.
 	 */
-	long getProcessingRequests();
+	long getProcessingMessages(String tag);
 	
 	/**
-	 * @return the amount of requests that are finished.
+	 * @return the amount of messages that are finished by tag.
 	 */
-	long getFinishedRequests();
+	long getFinishedMessages(String tag);
 
 }

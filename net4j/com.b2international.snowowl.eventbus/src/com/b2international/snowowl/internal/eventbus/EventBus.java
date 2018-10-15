@@ -280,21 +280,19 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	@Override
-	public long getInQueueRequests() {
-		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	public long getInQueueMessages(String tag) {
+		return getOrCreateCounter(tag, inQueueMessages).get();
 	}
 
 	@Override
-	public long getProcessingRequests() {
-		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	public long getProcessingMessages(String tag) {
+		return getOrCreateCounter(tag, inQueueMessages).get();
 	}
 	
 	@Override
-	public long getFinishedRequests() {
-		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	public long getFinishedMessages(String tag) {
+		return getOrCreateCounter(tag, inQueueMessages).get();
 	}
-	
-	
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {
 		checkActive();
