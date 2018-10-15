@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.internal.eventbus;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.net4j.util.CheckUtil;
 import org.eclipse.net4j.util.factory.ProductCreationException;
@@ -49,6 +51,9 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private Set<String> addressBook = new CopyOnWriteArraySet<>();
 	private ConcurrentMap<String, ChoosableList<Handler>> protocolMap = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> inQueueMessages = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> currentlyProcessingMessages = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> finishedMessages = new ConcurrentHashMap<>();
 	private ExecutorService executorService;
 	private final String description;
 	private final int numberOfWorkers;
@@ -74,17 +79,32 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 	@Override
 	public IEventBus send(String address, Object message) {
-		return send(address, message, null);
+		return send(address, message, IMessage.DEFAULT_TAG);
+	}
+	
+	@Override
+	public IEventBus send(String address, Object message, String tag) {
+		return send(address, message, tag, null);
 	}
 	
 	@Override
 	public IEventBus send(String address, Object message, IHandler<IMessage> handler) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message), true, handler);
+		return send(address, message, IMessage.DEFAULT_TAG, handler);
+	}
+
+	@Override
+	public IEventBus send(String address, Object message, String tag, IHandler<IMessage> replyHandler) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag), true, replyHandler);
 	}
 	
 	@Override
 	public IEventBus publish(String address, Object message) {
-		return sendMessageInternal(null, MessageFactory.createMessage(address, message), false, null);
+		return publish(address, message, IMessage.DEFAULT_TAG);
+	}
+	
+	@Override
+	public IEventBus publish(String address, Object message, String tag) {
+		return sendMessageInternal(null, MessageFactory.createMessage(address, message, tag), false, null);
 	}
 	
 	@Override
@@ -103,6 +123,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	
 	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
 		LOG.trace("Received message: {}", message);
+		incrementCounter(message.tag(), inQueueMessages);
 		if (handlers != null) {
 			if (message.isSend()) {
 				final Handler handler = handlers.choose();
@@ -121,15 +142,24 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void doReceive(final IMessage message, final Handler holder) {
+		final String tag = message.tag();
 		holder.context.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					holder.handler.handle(message);
+					// decrement in queue message size by 1
+					decrementCounter(tag, inQueueMessages);
+					// then increment processing message size by 1
+					incrementCounter(tag, currentlyProcessingMessages);
 				} catch (Exception e) {
 					LOG.error("Exception happened while delivering message", e);
 					message.fail(e);
 				} finally {
+					// decrement the number of processing messages
+					decrementCounter(tag, currentlyProcessingMessages);
+					
+					// increment the number of finished messages
+					incrementCounter(tag, finishedMessages);
 					if (holder.isReplyHandler || !LifecycleUtil.isActive(holder.handler)) {
 						unregisterHandler(holder.address, holder.handler);
 					}
@@ -181,6 +211,28 @@ public class EventBus extends Lifecycle implements IEventBus {
 		return this;
 	}
 	
+	private void decrementCounter(final String tag, final Map<String, AtomicLong> toDecrement) {
+		final AtomicLong counter = getOrCreateCounter(tag, toDecrement);
+		counter.set(counter.decrementAndGet());
+		toDecrement.put(tag, counter);
+	}
+	
+	private void incrementCounter(final String tag, final Map<String, AtomicLong> toIncrement) {
+		final AtomicLong counter = getOrCreateCounter(tag, toIncrement);
+		counter.set(counter.incrementAndGet());
+		toIncrement.put(tag, counter);
+	}
+	
+	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
+		if (counterMap.containsKey(tag)) {
+			return counterMap.get(tag);
+		} else {
+			final AtomicLong counter = new AtomicLong(0L);
+			counterMap.put(tag, counter);
+			return counter; 
+		}
+	}
+	
 	private void registerHandler(String address, IHandler<IMessage> handler, boolean replyHandler, boolean localOnly) {
 		checkActive();
 		MessageFactory.checkAddress(address);
@@ -226,6 +278,23 @@ public class EventBus extends Lifecycle implements IEventBus {
 	public ExecutorService getExecutorService() {
 		return executorService;
 	}
+	
+	@Override
+	public long getInQueueRequests() {
+		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	}
+
+	@Override
+	public long getProcessingRequests() {
+		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	}
+	
+	@Override
+	public long getFinishedRequests() {
+		return getOrCreateCounter(IMessage.REQUEST_TAG, inQueueMessages).get();
+	}
+	
+	
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {
 		checkActive();
