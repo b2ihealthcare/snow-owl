@@ -33,7 +33,7 @@ public class Pipe implements IHandler<IMessage> {
 		try {
 			final Object body = origin.body();
 			if (origin.isSend()) {
-				target.send(address, body, new IHandler<IMessage>() {
+				target.send(address, body, IMessage.NOTIFICATION_TAG, new IHandler<IMessage>() {
 					@Override
 					public void handle(IMessage inner) {
 						if (inner.isSucceeded()) {

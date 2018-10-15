@@ -41,7 +41,7 @@ public final class AsyncRequest<R> {
 		final Promise<R> promise = new Promise<>();
 		final Class<R> responseType = request.getReturnType();
 		final ClassLoader classLoader = request.getClassLoader();
-		bus.send(Request.ADDRESS, request, new IHandler<IMessage>() {
+		bus.send(Request.ADDRESS, request, IMessage.REQUEST_TAG, new IHandler<IMessage>() {
 			@Override
 			public void handle(IMessage message) {
 				try {
