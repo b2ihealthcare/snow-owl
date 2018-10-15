@@ -22,6 +22,10 @@ package com.b2international.snowowl.eventbus;
  */
 public interface IMessage {
 
+	public static final String DEFAULT_TAG = "event";
+	public static final String REQUEST_TAG = "request";
+	public static final String NOTIFICATION_TAG = "notification";
+
 	/**
 	 * Returns the body of this {@link IMessage}, can be used for simple types
 	 * with explicit cast.
@@ -91,7 +95,12 @@ public interface IMessage {
 	 * @param address
 	 */
 	void setAddress(String address);
-
+	
+	/**
+	 * @return the tag associated with this message.
+	 */
+	String tag();
+	
 	/**
 	 * Returns <code>true</code> if the original message was successfully
 	 * delivered to the address, <code>false</code> if some error happened, in
