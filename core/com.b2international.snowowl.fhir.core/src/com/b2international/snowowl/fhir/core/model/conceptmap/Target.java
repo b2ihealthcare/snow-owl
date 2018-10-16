@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import javax.validation.Valid;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -93,8 +94,8 @@ public class Target {
 			return this;
 		}
 
-		public Builder equivalence(final Code equivalence) {
-			this.equivalence = equivalence;
+		public Builder equivalence(final ConceptMapEquivalence conceptMapEquivalence) {
+			this.equivalence = conceptMapEquivalence.getCode();
 			return this;
 		}
 		

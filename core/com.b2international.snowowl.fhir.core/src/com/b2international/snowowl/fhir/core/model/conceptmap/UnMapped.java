@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.core.model.conceptmap;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptMapGroupUnmappedMode;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -95,8 +96,8 @@ public class UnMapped {
 			return this;
 		}
 
-		public Builder mode(final Code mode) {
-			this.mode = mode;
+		public Builder mode(final ConceptMapGroupUnmappedMode conceptMapGroupUnmappedMode) {
+			this.mode = conceptMapGroupUnmappedMode.getCode();
 			return this;
 		}
 		
