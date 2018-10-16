@@ -224,12 +224,14 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
-		if (counterMap.containsKey(tag)) {
-			return counterMap.get(tag);
-		} else {
-			final AtomicLong counter = new AtomicLong(0L);
-			counterMap.put(tag, counter);
-			return counter; 
+		synchronized (tag) {
+			if (counterMap.containsKey(tag)) {
+				return counterMap.get(tag);
+			} else {
+				final AtomicLong counter = new AtomicLong(0L);
+				counterMap.put(tag, counter);
+				return counter; 
+			}
 		}
 	}
 	
