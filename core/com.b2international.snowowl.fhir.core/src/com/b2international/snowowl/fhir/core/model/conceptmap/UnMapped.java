@@ -70,7 +70,6 @@ public class UnMapped {
 
 		private Code mode;
 
-
 		public Builder url(final Uri url) {
 			this.url = url;
 			return this;
@@ -111,7 +110,6 @@ public class UnMapped {
 
 			return new UnMapped(url, display, code, mode);
 		}
-
 	}
 
 }

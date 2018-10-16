@@ -111,6 +111,7 @@ public class Group {
 			this.targetVersion = targetVersion;
 			return this;
 		}
+		
 		public Builder addElement(final ConceptMapElement element) {
 			this.elements.add(element);
 			return this;

@@ -61,14 +61,12 @@ public class DependsOn {
 		return new Builder();
 	}
 	
-public static class Builder extends ValidatingBuilder<DependsOn> {
+	public static class Builder extends ValidatingBuilder<DependsOn> {
 
-		
 		private Uri property;
 		private Uri system;
 		private Code code;
 		private String display;
-		
 
 		public Builder property(final Uri property) {
 			this.property = property;
@@ -105,14 +103,11 @@ public static class Builder extends ValidatingBuilder<DependsOn> {
 			return this;
 		}
 		
-		
 		@Override
 		protected DependsOn doBuild() {
 			
 			return new DependsOn(property, system, code, display);
 		}
-		
 	}
-	
 	
 }

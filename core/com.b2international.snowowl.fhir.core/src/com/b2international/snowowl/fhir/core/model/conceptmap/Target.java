@@ -71,14 +71,12 @@ public class Target {
 
 	public static class Builder extends ValidatingBuilder<Target> {
 
-
 		private Code code;
 		private String display;
 		private Code equivalence;
 		private String comment;
 		private Collection<DependsOn> dependsOnElements = Sets.newHashSet();
 		private Collection<DependsOn> products = Sets.newHashSet();
-
 	
 		public Builder code(final Code code) {
 			this.code = code;
@@ -123,11 +121,8 @@ public class Target {
 		
 		@Override
 		protected Target doBuild() {
-
 			return new Target(code, display, equivalence, comment, dependsOnElements, products);
 		}
-
 	}
-
 
 }
