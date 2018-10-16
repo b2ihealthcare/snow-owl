@@ -40,6 +40,11 @@ public abstract class BaseEvent implements Event {
 		bus.send(getAddress(), this, tag(), replyHandler);
 	}
 
+	/**
+	 * Returns the tag of this {@link Event}. Never null.
+	 * 
+	 * @return 
+	 */
 	protected String tag() {
 		return IMessage.DEFAULT_TAG;
 	}

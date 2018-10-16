@@ -22,8 +22,14 @@ package com.b2international.snowowl.eventbus;
  */
 public interface IMessage {
 
+	/**
+	 * Default tag for messages.
+	 */
 	String DEFAULT_TAG = "event";
 	
+	/**
+	 * Tag for response messages.
+	 */
 	String REPLY_TAG = "reply";
 
 	/**
