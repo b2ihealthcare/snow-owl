@@ -175,8 +175,8 @@ public final class RepositoryPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
 			LOG.debug("Initializing repository plugin.");
-			final MeterRegistry registry = env.services().getService(MeterRegistry.class);
-			final IEventBus eventBus = env.services().getService(IEventBus.class);
+			final MeterRegistry registry = env.service(MeterRegistry.class);
+			final IEventBus eventBus = env.service(IEventBus.class);
 			// Add event bus based request metrics
 			registerRequestMetrics(registry, eventBus);
 			
@@ -232,15 +232,15 @@ public final class RepositoryPlugin extends Plugin {
 	
 	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
 		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getFinishedMessages(Request.TAG))
-				.description("The approximate total number of requests that have completed execution")
+				.description("The total number of requests that have completed execution")
 				.register(registry);
 
 		Gauge.builder("requests.processing", eventBus, bus -> bus.getProcessingMessages(Request.TAG))
-				.description("The approximate number of requests that are currently under execution")
+				.description("The exact number of requests that are currently under execution")
 				.register(registry);
 
 		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
-				.description("The approximate number of requests that are queued for execution")
+				.description("The exact number of requests that are queued for execution")
 				.register(registry);
 	}
 	
