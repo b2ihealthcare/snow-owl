@@ -53,7 +53,9 @@ public class EventBus extends Lifecycle implements IEventBus {
 	private ConcurrentMap<String, ChoosableList<Handler>> handlerMap = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, AtomicLong> inQueueMessages = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, AtomicLong> currentlyProcessingMessages = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, AtomicLong> finishedMessages = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> succeededMessages = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> completedMessages = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, AtomicLong> failedMessages = new ConcurrentHashMap<>();
 	private ExecutorService executorService;
 	private final String description;
 	private final int numberOfWorkers;
@@ -154,12 +156,17 @@ public class EventBus extends Lifecycle implements IEventBus {
 					holder.handler.handle(message);
 				} catch (Exception e) {
 					LOG.error("Exception happened while delivering message", e);
+					incrementCounter(tag, failedMessages);
 					message.fail(e);
 				} finally {
 					// decrement the number of processing messages
 					decrementCounter(tag, currentlyProcessingMessages);
-					// increment the number of finished messages
-					incrementCounter(tag, finishedMessages);
+					// increment the number of completed messages
+					incrementCounter(tag, completedMessages);
+					// increment the number of succeeded
+					if (message.isSucceeded()) {
+						incrementCounter(tag, succeededMessages);
+					}
 					if (holder.isReplyHandler || !LifecycleUtil.isActive(holder.handler)) {
 						unregisterHandler(holder.address, holder.handler);
 					}
@@ -292,8 +299,18 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	@Override
-	public long getFinishedMessages(String tag) {
-		return getOrCreateCounter(tag, finishedMessages).get();
+	public long getFailedMessages(String tag) {
+		return getOrCreateCounter(tag, failedMessages).get();
+	}
+	
+	@Override
+	public long getCompletedMessages(String tag) {
+		return getOrCreateCounter(tag, completedMessages).get();
+	}
+	
+	@Override
+	public long getSucceededMessages(String tag) {
+		return getOrCreateCounter(tag, succeededMessages).get();
 	}
 	
 	private IEventBus sendMessageInternal(IEventBusProtocol protocol, BaseMessage message, boolean send, IHandler<IMessage> replyHandler) {

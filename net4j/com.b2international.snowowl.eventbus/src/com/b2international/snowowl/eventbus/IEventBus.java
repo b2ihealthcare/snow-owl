@@ -126,18 +126,33 @@ public interface IEventBus {
 	ExecutorService getExecutorService();
 	
 	/**
+	 * @param tag
 	 * @return the amount of messages that are currently in queue by tag.
 	 */
 	long getInQueueMessages(String tag);
 	
 	/**
+	 * @param tag
 	 * @return the amount of currently processing messages by tag.
 	 */
 	long getProcessingMessages(String tag);
 	
 	/**
-	 * @return the amount of messages that are finished by tag.
+	 * @param tag
+	 * @return the amount of messages that have failed by tag.
 	 */
-	long getFinishedMessages(String tag);
+	long getFailedMessages(String tag);
+	
+	/**
+	 * @param tag
+	 * @return the amount of messages that are completed by tag.
+	 */
+	long getCompletedMessages(String tag);
+	
+	/**
+	 * @param tag
+	 * @return the amount of succeeded messages that are completed by tag.
+	 */
+	long getSucceededMessages(String tag);
 
 }
