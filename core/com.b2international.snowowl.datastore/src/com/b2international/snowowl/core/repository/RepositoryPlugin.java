@@ -76,7 +76,6 @@ import com.google.common.net.HostAndPort;
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 
 /**
  * @since 3.3
@@ -231,7 +230,7 @@ public final class RepositoryPlugin extends Plugin {
 	}
 	
 	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
-		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getFinishedMessages(Request.TAG))
+		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getCompletedMessages(Request.TAG))
 				.description("The total number of requests that have completed execution")
 				.register(registry);
 
@@ -242,6 +241,15 @@ public final class RepositoryPlugin extends Plugin {
 		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
 				.description("The exact number of requests that are queued for execution")
 				.register(registry);
+		
+		FunctionCounter.builder("requests.succeeded", eventBus, bus -> bus.getSucceededMessages(Request.TAG))
+				.description("The total number of requests that have successfully completed execution")
+				.register(registry);
+		
+		FunctionCounter.builder("requests.failed", eventBus, bus -> bus.getFailedMessages(Request.TAG))
+				.description("The total number of requests that have failed execution")
+				.register(registry);
+		
 	}
 	
 	private void registerCustomProtocols(IManagedContainer container) {
