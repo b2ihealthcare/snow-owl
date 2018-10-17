@@ -231,15 +231,15 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
-		synchronized (tag) {
-			if (counterMap.containsKey(tag)) {
-				return counterMap.get(tag);
-			} else {
-				final AtomicLong counter = new AtomicLong(0L);
-				counterMap.put(tag, counter);
-				return counter; 
+		if (!counterMap.containsKey(tag)) {
+			synchronized (counterMap) {
+				if (!counterMap.containsKey(tag)) {
+					counterMap.put(tag, new AtomicLong(0L));
+				}
 			}
 		}
+		
+		return counterMap.get(tag);
 	}
 	
 	private void registerHandler(String address, IHandler<IMessage> handler, boolean replyHandler, boolean localOnly) {
