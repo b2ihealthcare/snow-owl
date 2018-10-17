@@ -40,7 +40,8 @@
 								org.eclipse.core.jobs,
 								org.eclipse.equinox.common,
 								org.eclipse.equinox.registry,
-								org.eclipse.osgi
+								org.eclipse.osgi,
+								org.eclipse.osgi.services
 							</excludeArtifactIds>
 						</configuration>
 					</execution>
@@ -245,6 +246,46 @@
 					<groupId>org.semanticweb.elk</groupId>
 					<artifactId>elk-protege</artifactId>
 				</dependency>
+       			<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+       				<artifactId>jetty-continuation</artifactId>
+     			</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-deploy</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-http</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-io</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty.osgi</groupId>
+	       			<artifactId>jetty-osgi-boot</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-security</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-servlet</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-util</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-webapp</artifactId>
+	     		</dependency>
+	     		<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+	       			<artifactId>jetty-xml</artifactId>
+	     		</dependency>
 			</dependencies>
  		</profile>
 	</profiles>
