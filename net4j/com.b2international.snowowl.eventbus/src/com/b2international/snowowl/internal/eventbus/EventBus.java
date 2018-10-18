@@ -113,6 +113,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	public IEventBus receive(IMessage message) {
 		CheckUtil.checkArg(message instanceof BaseMessage, "Accepts only BaseMessage instances");
 		receiveMessage((BaseMessage) message);
+		queue(message);
 		return this;
 	}
 	
@@ -125,7 +126,6 @@ public class EventBus extends Lifecycle implements IEventBus {
 	
 	private void receiveMessage(ChoosableList<Handler> handlers, BaseMessage message) {
 		LOG.trace("Received message: {}", message);
-		incrementCounter(message.tag(), inQueueMessages);
 		if (handlers != null) {
 			if (message.isSend()) {
 				final Handler handler = handlers.choose();
@@ -144,29 +144,17 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void doReceive(final IMessage message, final Handler holder) {
-		final String tag = message.tag();
 		holder.context.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					// decrement in queue message size by 1
-					decrementCounter(tag, inQueueMessages);
-					// then increment processing message size by 1
-					incrementCounter(tag, currentlyProcessingMessages);
+					process(message);
 					holder.handler.handle(message);
 				} catch (Exception e) {
 					LOG.error("Exception happened while delivering message", e);
-					incrementCounter(tag, failedMessages);
 					message.fail(e);
 				} finally {
-					// decrement the number of processing messages
-					decrementCounter(tag, currentlyProcessingMessages);
-					// increment the number of completed messages
-					incrementCounter(tag, completedMessages);
-					// increment the number of succeeded
-					if (message.isSucceeded()) {
-						incrementCounter(tag, succeededMessages);
-					}
+					complete(message);
 					if (holder.isReplyHandler || !LifecycleUtil.isActive(holder.handler)) {
 						unregisterHandler(holder.address, holder.handler);
 					}
@@ -218,16 +206,41 @@ public class EventBus extends Lifecycle implements IEventBus {
 		return this;
 	}
 	
-	private void decrementCounter(final String tag, final Map<String, AtomicLong> toDecrement) {
-		final AtomicLong counter = getOrCreateCounter(tag, toDecrement);
-		counter.set(counter.decrementAndGet());
-		toDecrement.put(tag, counter);
+	private void queue(IMessage message) {
+		final String tag = message.tag();
+		increment(tag, inQueueMessages);
 	}
-	
-	private void incrementCounter(final String tag, final Map<String, AtomicLong> toIncrement) {
+
+	private void process(IMessage message) {
+		final String tag = message.tag();
+		decrement(tag, inQueueMessages);
+
+		increment(tag, currentlyProcessingMessages);
+	}
+
+	private void complete(IMessage message) {
+		final String tag = message.tag();
+		decrement(tag, currentlyProcessingMessages);
+
+		if (message.isSucceeded()) {
+			increment(tag, succeededMessages);
+		} else {
+			increment(tag, failedMessages);
+		}
+
+		increment(tag, completedMessages);
+	}
+
+	private void increment(String tag, Map<String, AtomicLong> toIncrement) {
 		final AtomicLong counter = getOrCreateCounter(tag, toIncrement);
 		counter.set(counter.incrementAndGet());
 		toIncrement.put(tag, counter);
+	}
+
+	private void decrement(String tag, Map<String, AtomicLong> toDecrement) {
+		final AtomicLong counter = getOrCreateCounter(tag, toDecrement);
+		counter.set(counter.decrementAndGet());
+		toDecrement.put(tag, counter);
 	}
 	
 	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
