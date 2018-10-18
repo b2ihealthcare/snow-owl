@@ -235,11 +235,11 @@ public final class RepositoryPlugin extends Plugin {
 				.register(registry);
 
 		Gauge.builder("requests.processing", eventBus, bus -> bus.getProcessingMessages(Request.TAG))
-				.description("The exact number of requests that are currently under execution")
+				.description("The approximate number of requests that are currently under execution")
 				.register(registry);
 
 		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
-				.description("The exact number of requests that are queued for execution")
+				.description("The approximate number of requests that are queued for execution")
 				.register(registry);
 		
 		FunctionCounter.builder("requests.succeeded", eventBus, bus -> bus.getSucceededMessages(Request.TAG))
