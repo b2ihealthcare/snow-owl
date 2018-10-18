@@ -420,21 +420,10 @@
 						<!-- Removes the extension bundle from the available bundles for the 
 							javax.servlet package -->
 						<filter>
-							<type>java-package</type>
-							<id>javax.servlet</id>
-							<restrictTo>
-								<type>osgi-bundle</type>
-								<id>javax.servlet</id>
-								<versionRange>[2.6.0,3.1.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>com.ibm.icu</id>
-							<restrictTo>
-								<versionRange>[50.0.0,51.0.0)</versionRange>
-							</restrictTo>
-						</filter>
+            				<type>p2-installable-unit</type>
+            				<id>org.eclipse.equinox.servletbridge.extensionbundle</id>
+            				<removeAll />
+         				</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.codehaus.groovy</id>
@@ -444,109 +433,10 @@
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
-							<id>org.eclipse.emf.mwe.core</id>
-							<restrictTo>
-								<versionRange>[1.3.3,1.4.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.emf.mwe.utils</id>
-							<restrictTo>
-								<versionRange>[1.3.3,1.4.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.emf.mwe2.runtime</id>
-							<restrictTo>
-								<versionRange>[2.9.0,3.0.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.emf.mwe2.lib</id>
-							<restrictTo>
-								<versionRange>[2.9.0,3.0.0)</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
 							<id>com.google.guava</id>
 							<restrictTo>
 								<versionRange>${guava.version}</versionRange>
 							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.xtext</id>
-							<restrictTo>
-								<versionRange>${xtext.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.xtext.smap</id>
-							<restrictTo>
-								<versionRange>${xtext.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.xtext.util</id>
-							<restrictTo>
-								<versionRange>${xtext.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.xtext.xbase.lib</id>
-							<restrictTo>
-								<versionRange>${xtext.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.xtend.lib</id>
-							<restrictTo>
-								<versionRange>${xtext.version}</versionRange>
-							</restrictTo>
-						</filter>
-						<!-- Remove RAP -->
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.rwt</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.ui</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.jface.databinding</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.jface</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.ui.forms</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.ui.workbench</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.eclipse.rap.ui.views</id>
-							<removeAll />
 						</filter>
 						<!-- Restrict SLF4J version to Virgo 3.7.0 compatible version -->
 						<filter>
