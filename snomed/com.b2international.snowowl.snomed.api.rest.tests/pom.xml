@@ -32,7 +32,7 @@
 							<requirement>
 								<type>eclipse-plugin</type>
 								<id>org.eclipse.jetty.osgi.boot</id>
-								<versionRange>[8.1.0,8.2.0)</versionRange>
+								<versionRange>0.0.0</versionRange>
 							</requirement>
 							<requirement>
 								<type>eclipse-plugin</type>
