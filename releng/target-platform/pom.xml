@@ -286,6 +286,26 @@
 					<groupId>org.eclipse.jetty</groupId>
 	       			<artifactId>jetty-xml</artifactId>
 	     		</dependency>
+	     		<dependency>
+     				<groupId>net.bytebuddy</groupId>
+     				<artifactId>byte-buddy</artifactId>
+     			</dependency>
+     			<dependency>
+	     			<groupId>com.fasterxml</groupId>
+	     			<artifactId>classmate</artifactId>
+	     		</dependency>
+	     		<dependency>
+	     			<groupId>org.mapstruct</groupId>
+	     			<artifactId>mapstruct</artifactId>
+	     		</dependency>
+	     		<dependency>
+	     			<groupId>io.swagger</groupId>
+	     			<artifactId>swagger-annotations</artifactId>
+	     		</dependency>
+	     		<dependency>
+	     			<groupId>io.swagger</groupId>
+	     			<artifactId>swagger-models</artifactId>
+	     		</dependency>
 			</dependencies>
  		</profile>
 	</profiles>

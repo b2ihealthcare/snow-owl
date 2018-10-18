@@ -5,16 +5,7 @@ Bundle-SymbolicName: com.b2international.index;singleton:=true
 Bundle-Version: 6.10.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.b2international.commons;visibility:=reexport,
- org.eclipse.core.runtime,
- org.eclipse.osgi,
- com.google.guava;bundle-version="[18.0.0,19.0.0)",
- com.b2international.commons,
- com.b2international.collections.api,
- com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.8.10",
- com.fasterxml.jackson.core.jackson-core;bundle-version="2.8.10",
- com.fasterxml.jackson.core.jackson-databind;bundle-version="2.8.10",
- com.fasterxml.jackson.dataformat.jackson-dataformat-yaml;bundle-version="2.8.10",
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.fasterxml.jackson.dataformat.jackson-dataformat-smile;bundle-version="2.8.10",
  com.fasterxml.jackson.dataformat.jackson-dataformat-cbor;bundle-version="2.8.10",
  io.netty.buffer;bundle-version="4.1.16",
@@ -23,7 +14,8 @@ Require-Bundle: com.b2international.commons;visibility:=reexport,
  io.netty.common;bundle-version="4.1.16",
  io.netty.handler;bundle-version="4.1.16",
  io.netty.resolver;bundle-version="4.1.16",
- io.netty.transport;bundle-version="4.1.16"
+ io.netty.transport;bundle-version="4.1.16",
+ com.b2international.commons;visibility:=reexport
 Export-Package: com.b2international.index,
  com.b2international.index.admin,
  com.b2international.index.aggregations,
