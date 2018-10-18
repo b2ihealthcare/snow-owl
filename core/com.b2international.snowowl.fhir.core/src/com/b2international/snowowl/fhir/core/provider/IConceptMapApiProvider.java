@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -46,7 +45,8 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		private final Collection<IConceptMapApiProvider> providers;
 		
 		private Registry() {
-			this.providers = ImmutableList.copyOf(Extensions.getExtensions(FHIR_EXTENSION_POINT, IConceptMapApiProvider.class));
+			Collection<IConceptMapApiProvider> extensions = Extensions.getExtensions(FHIR_EXTENSION_POINT, IConceptMapApiProvider.class);
+			this.providers = ImmutableList.copyOf(extensions);
 		}
 		
 		public static Collection<IConceptMapApiProvider> getProviders() {
