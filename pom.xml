@@ -31,8 +31,8 @@
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.0.0</tycho.version>
-		<tycho-extras.version>1.0.0</tycho-extras.version>
+		<tycho.version>1.2.0</tycho.version>
+		<tycho-extras.version>1.2.0</tycho-extras.version>
 		<xtend.compiler.version>2.11.0</xtend.compiler.version>
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
