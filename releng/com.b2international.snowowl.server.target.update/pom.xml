@@ -79,7 +79,7 @@
 							<type>p2-installable-unit</type>
 							<id>com.fasterxml.jackson.core.jackson-databind</id>
 							<restrictTo>
-								<version>${jackson.version}</version>
+								<version>${jackson.databind.version}</version>
 							</restrictTo>
 						</filter>
 						<filter>

@@ -12,7 +12,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.8.10</jackson.version>
+		<jackson.version>2.8.11</jackson.version>
+		<jackson.databind.version>2.8.11.2</jackson.databind.version>
 		<netty.version>4.1.16.Final</netty.version>
 		<slf4j.version>[1.7.2,1.7.3)</slf4j.version>
 		<logback.version>[1.0.7,1.0.8)</logback.version>
@@ -258,7 +259,7 @@
 							<type>p2-installable-unit</type>
 							<id>com.fasterxml.jackson.core.jackson-databind</id>
 							<restrictTo>
-								<version>${jackson.version}</version>
+								<version>${jackson.databind.version}</version>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -445,7 +446,7 @@
 				<dependency>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-databind</artifactId>
-					<version>${jackson.version}</version>
+					<version>${jackson.databind.version}</version>
 					<scope>provided</scope>
 				</dependency>
 				<dependency>
