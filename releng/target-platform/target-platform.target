@@ -40,7 +40,6 @@
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="javax.el" version="2.2.0.v201303151357"/>
 <unit id="javax.el.source" version="2.2.0.v201303151357"/>
-<unit id="javax.ws.rs" version="2.0.1.v201504171603"/>
 <unit id="org.antlr.runtime" version="3.2.0.v201101311130"/>
 <unit id="org.antlr.runtime.source" version="3.2.0.v201101311130"/>
 <unit id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
