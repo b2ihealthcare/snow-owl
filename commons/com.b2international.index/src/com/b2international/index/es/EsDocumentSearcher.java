@@ -241,7 +241,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 		
 		// Use docValues otherwise for field retrieval
-		fields.stream().forEach(reqSource::docValueField);
+		fields.stream().forEach(field -> reqSource.docValueField(field, "use_field_mapping"));
 		reqSource.fetchSource(false);
 		return false;
 	}
@@ -492,7 +492,7 @@ public class EsDocumentSearcher implements Searcher {
 					.storedFields(STORED_FIELDS_NONE)
 					.fetchSource(false);
 				
-				aggregation.getFields().forEach(topHitsAgg::docValueField);
+				aggregation.getFields().forEach(field -> topHitsAgg.docValueField(field, "use_field_mapping"));
 				
 			}
 			
