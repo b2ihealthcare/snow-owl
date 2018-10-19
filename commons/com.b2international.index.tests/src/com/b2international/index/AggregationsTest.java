@@ -26,6 +26,7 @@ import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Expressions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 5.12.0
@@ -42,17 +43,20 @@ public class AggregationsTest extends BaseIndexTest {
 		final Data dup1 = new Data();
 		dup1.setField1("dup1");
 		dup1.setAnalyzedField("duplicate");
-		indexDocument(KEY1, dup1);
 		
 		final Data dup2 = new Data();
 		dup2.setField1("dup2");
 		dup2.setAnalyzedField("duplicate");
-		indexDocument(KEY2, dup2);
 		
 		final Data different = new Data();
 		different.setField1("different");
 		different.setAnalyzedField("different");
-		indexDocument("key3", different);
+		
+		indexDocuments(ImmutableMap.<String, Object>builder()
+				.put(KEY1, dup1)
+				.put(KEY2, dup2)
+				.put("key3", different)
+				.build());
 		
 		final Aggregation<Data> buckets = aggregate(
 			AggregationBuilder.bucket("aggregateOnFieldValue", Data.class)
@@ -82,17 +86,20 @@ public class AggregationsTest extends BaseIndexTest {
 		final Data dup1 = new Data();
 		dup1.setField1("field1");
 		dup1.setField2("field2");
-		indexDocument(KEY1, dup1);
 		
 		final Data dup2 = new Data();
 		dup2.setField1("field1");
 		dup2.setField2("field2");
-		indexDocument(KEY2, dup2);
 		
 		final Data different = new Data();
 		different.setField1("differentField1");
 		different.setField2("differentField2");
-		indexDocument("key3", different);
+		
+		indexDocuments(ImmutableMap.<String, Object>builder()
+				.put(KEY1, dup1)
+				.put(KEY2, dup2)
+				.put("key3", different)
+				.build());
 		
 		final Aggregation<Data> buckets = aggregate(
 			AggregationBuilder.bucket("aggregateOnScriptValue", Data.class)

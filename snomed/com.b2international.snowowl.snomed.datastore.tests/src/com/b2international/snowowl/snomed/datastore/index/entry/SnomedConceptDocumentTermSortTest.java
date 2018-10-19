@@ -96,10 +96,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 					)
 				)
 				.build();
-		indexRevision(MAIN, conceptA);
-		indexRevision(MAIN, conceptB);
-		indexRevision(MAIN, conceptC);
-		indexRevision(MAIN, conceptD);
+		indexRevision(MAIN, conceptA, conceptB, conceptC, conceptD);
 	}
 	
 	@Test

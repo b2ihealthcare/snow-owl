@@ -44,28 +44,24 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRule(ruleId);
 		
 		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
-		indexRevision(MAIN, inactiveDestinationConcept);
-		
 		SnomedConceptDocument inactiveSourceConcept = concept(generateConceptId()).active(false).build();
-		indexRevision(MAIN, inactiveSourceConcept);
-
 		SnomedConceptDocument inactiveTypeConcept = concept(generateConceptId()).active(false).build();
-		indexRevision(MAIN, inactiveTypeConcept);
-		
 		SnomedConceptDocument activeConcept = concept(generateConceptId()).build();
-		indexRevision(MAIN, activeConcept);
-		
 		SnomedRelationshipIndexEntry invalidSourceRelationship = relationship(inactiveSourceConcept.getId(), Concepts.IS_A, activeConcept.getId()).build();
-		indexRevision(MAIN, invalidSourceRelationship);
-		
 		SnomedRelationshipIndexEntry invalidDestinationRelationship = relationship(activeConcept.getId(), Concepts.IS_A, inactiveDestinationConcept.getId()).build();
-		indexRevision(MAIN, invalidDestinationRelationship);
-		
 		SnomedRelationshipIndexEntry invalidTypeRelationship = relationship(activeConcept.getId(), inactiveTypeConcept.getId(), Concepts.FINDING_SITE).build();
-		indexRevision(MAIN, invalidTypeRelationship);
-		
 		SnomedRelationshipIndexEntry validRelationship = relationship(activeConcept.getId(), Concepts.IS_A, Concepts.FINDING_SITE).build();
-		indexRevision(MAIN, validRelationship);
+		
+		indexRevision(MAIN, 
+			inactiveDestinationConcept, 
+			inactiveSourceConcept,
+			inactiveTypeConcept,
+			activeConcept,
+			invalidSourceRelationship,
+			invalidDestinationRelationship,
+			invalidTypeRelationship,
+			validRelationship
+		);
 		
 		ValidationIssues validationIssues = validate(ruleId);
 		
@@ -83,22 +79,22 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		// index three concepts
 		SnomedConceptDocument c1 = concept(generateConceptId()).build();
-		indexRevision(MAIN, c1);
 		SnomedDescriptionIndexEntry d1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!").conceptId(c1.getId())
 				.build();
-		indexRevision(MAIN, d1);
-
+		
 		SnomedConceptDocument c2 = concept(generateConceptId()).build();
-		indexRevision(MAIN, c2);
 		SnomedDescriptionIndexEntry d2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!").conceptId(c2.getId())
 				.build();
-		indexRevision(MAIN, d2);
-
+		
 		SnomedConceptDocument c3 = concept(generateConceptId()).build();
-		indexRevision(MAIN, c3);
 		SnomedDescriptionIndexEntry d3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel World!")
 				.conceptId(c3.getId()).build();
-		indexRevision(MAIN, d3);
+		
+		indexRevision(MAIN, 
+			c1, d1,
+			c2, d2,
+			c3, d3
+		);
 
 		ValidationIssues issues = validate(ruleId);
 

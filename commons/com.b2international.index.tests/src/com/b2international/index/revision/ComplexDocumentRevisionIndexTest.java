@@ -44,8 +44,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", new NestedData("field2")));
 		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(MAIN, data);
-		indexRevision(MAIN, data2);
+		indexRevision(MAIN, data, data2);
 		
 		final Query<DeeplyNestedData> deeplyNestedQuery = Query.select(DeeplyNestedData.class).where(Expressions.nestedMatch("parentData.nestedData", Expressions.exactMatch("field2", "field2"))).build();
 		final Iterable<DeeplyNestedData> matches = search(MAIN, deeplyNestedQuery);
@@ -60,8 +59,7 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", nestedData));
 		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
 		
-		indexRevision(MAIN, data);
-		indexRevision(MAIN, data2);
+		indexRevision(MAIN, data, data2);
 		
 		final Query<NestedData> query = Query.select(NestedData.class).from(DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
 		final Iterable<NestedData> matches = search(MAIN, query);

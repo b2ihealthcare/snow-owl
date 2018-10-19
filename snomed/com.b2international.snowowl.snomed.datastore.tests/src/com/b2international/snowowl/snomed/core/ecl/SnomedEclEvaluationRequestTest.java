@@ -362,8 +362,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void refinementAttributeSubExpression() throws Exception {
 		generateDrugHierarchy();
-		indexRevision(MAIN, concept(HAS_ACTIVE_INGREDIENT).build());
-		indexRevision(MAIN, concept(HAS_BOSS).build());
+		indexRevision(MAIN, 
+			concept(HAS_ACTIVE_INGREDIENT).build(),
+			concept(HAS_BOSS).build()
+		);
 		final Expression actual = eval(String.format("<%s:(%s OR %s)=(%s OR %s)", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, HAS_BOSS, INGREDIENT1, INGREDIENT2));
 		final Expression expected = and(
 			descendantsOf(DRUG_ROOT),
@@ -492,8 +494,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void refinementCardinalityZeroToZeroNotEquals() throws Exception {
 		generateDrugHierarchy();
-		indexRevision(MAIN, concept(DRUG_WITH_INVALID_HAI).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI).group(0).build());
+		indexRevision(MAIN, 
+			concept(DRUG_WITH_INVALID_HAI).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			relationship(DRUG_WITH_INVALID_HAI, HAS_ACTIVE_INGREDIENT, DRUG_WITH_INVALID_HAI).group(0).build()
+		);
 		
 		final Expression actual = eval(String.format("<%s: [0..0] %s != <%s", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected =	Expressions.builder()
@@ -990,12 +994,14 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final String member1 = RandomSnomedIdentiferGenerator.generateConceptId();
 		final String member2 = RandomSnomedIdentiferGenerator.generateConceptId();
 		
-		indexRevision(MAIN, concept(member1)
+		indexRevision(MAIN, 
+			concept(member1)
 				.activeMemberOf(ImmutableSet.of(refSetId))
-				.build());
-		indexRevision(MAIN, concept(member2)
+				.build(),
+			concept(member2)
 				.activeMemberOf(ImmutableSet.of(refSetId))
-				.build());
+				.build()
+		);
 		
 		final Expression actual = eval(String.format("<^%s", refSetId));
 		final Expression expected = descendantsOf(member1, member2);
@@ -1165,24 +1171,26 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * </ul>
 	 */
 	private void generateHierarchy() {
-		// substances
-		indexRevision(MAIN, concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
-		indexRevision(MAIN, concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
+		indexRevision(MAIN, 
+			// substances
+			concept(INGREDIENT1).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build(),
+			concept(INGREDIENT2).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build(),
+			//drugs
+			concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(1).build(),
+			relationship(PANADOL_TABLET, HAS_BOSS, INGREDIENT2).group(1).build(),
+			relationship(PANADOL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build(),
+			relationship(ABACAVIR_TABLET, HAS_BOSS, INGREDIENT1).group(1).build(),
+			relationship(ABACAVIR_TABLET, HAS_TRADE_NAME, INGREDIENT1).group(1).build(),
+			
+			relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(2).build(),
+			relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(2).build(),
+			relationship(TRIPHASIL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build()
+		);
 		
-		//drugs
-		indexRevision(MAIN, concept(ABACAVIR_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, concept(PANADOL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, concept(TRIPHASIL_TABLET).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
 		
-		indexRevision(MAIN, relationship(PANADOL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT1).group(1).build());
-		indexRevision(MAIN, relationship(PANADOL_TABLET, HAS_BOSS, INGREDIENT2).group(1).build());
-		indexRevision(MAIN, relationship(PANADOL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build());
-		indexRevision(MAIN, relationship(ABACAVIR_TABLET, HAS_BOSS, INGREDIENT1).group(1).build());
-		indexRevision(MAIN, relationship(ABACAVIR_TABLET, HAS_TRADE_NAME, INGREDIENT1).group(1).build());
-
-		indexRevision(MAIN, relationship(TRIPHASIL_TABLET, HAS_ACTIVE_INGREDIENT, INGREDIENT2).group(2).build());
-		indexRevision(MAIN, relationship(TRIPHASIL_TABLET, HAS_BOSS, INGREDIENT2).group(2).build());
-		indexRevision(MAIN, relationship(TRIPHASIL_TABLET, HAS_TRADE_NAME, INGREDIENT2).group(1).build());
 	}
 
 	/**
@@ -1201,9 +1209,11 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	 * </ul>
 	 */
 	private void generateTisselKit() {
-		indexRevision(MAIN, concept(INGREDIENT4).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build());
-		indexRevision(MAIN, concept(TISSEL_KIT).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4).group(0).build());
+		indexRevision(MAIN, 
+			concept(INGREDIENT4).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(SUBSTANCE))).build(),
+			concept(TISSEL_KIT).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			relationship(TISSEL_KIT, HAS_ACTIVE_INGREDIENT, INGREDIENT4).group(0).build()
+		);
 	}
 	
 	/**
@@ -1252,13 +1262,17 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	private void generateDrugWithIntegerStrengthOfValueOne() {
-		indexRevision(MAIN, concept(DRUG_1_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1).build());
+		indexRevision(MAIN, 
+			concept(DRUG_1_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1).build()
+		);
 	}
 	
 	private void generateDrugWithDecimalStrengthOfValueOne() {
-		indexRevision(MAIN, concept(DRUG_1D_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build());
-		indexRevision(MAIN, decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d)).build());
+		indexRevision(MAIN, 
+			concept(DRUG_1D_MG).parents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(DRUG_ROOT))).build(),
+			decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d)).build()
+		);
 	}
 
 	private static Expression and(Expression left, Expression right) {
