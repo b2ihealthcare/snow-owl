@@ -21,19 +21,15 @@
  */
 package com.b2international.index.es;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.Map;
 import java.util.StringJoiner;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -74,6 +70,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.ClusterClient;
 import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.ResponseListener;
@@ -91,7 +88,6 @@ import org.elasticsearch.common.lucene.uid.Versions;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentParser;
@@ -101,7 +97,6 @@ import org.elasticsearch.index.rankeval.RankEvalRequest;
 import org.elasticsearch.index.rankeval.RankEvalResponse;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.rest.action.search.RestSearchAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +106,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -202,7 +196,7 @@ public final class EsClient {
 			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
 			
 			try {
-				checkState(client.ping(), "The cluster at '%s' is not available.", host.toURI());
+				checkState(client.ping(RequestOptions.DEFAULT), "The cluster at '%s' is not available.", host.toURI());
 			} catch (Exception e) {
 				if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
 					LOG.error("Unable to authenticate with remote cluster '{}' using the given credentials", host.toURI());
@@ -222,46 +216,48 @@ public final class EsClient {
 	// Methods extracted from org.elasticsearch.client.RestHighLevelClient
 	//
 
-	public final BulkResponse bulk(BulkRequest bulkRequest, Header... headers) throws IOException {
-		return performRequestAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, headers);
+	public final BulkResponse bulk(BulkRequest bulkRequest, RequestOptions options) throws IOException {
+		return performRequestAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, options);
 	}
 
-	public final void bulkAsync(BulkRequest bulkRequest, ActionListener<BulkResponse> listener, Header... headers) {
-		performRequestAsyncAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, listener, headers);
+	public final void bulkAsync(BulkRequest bulkRequest, RequestOptions options, ActionListener<BulkResponse> listener) {
+		performRequestAsyncAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, listener);
 	}
 	
-	public final MultiSearchResponse multiSearch(MultiSearchRequest multiSearchRequest, Header... headers)
-			throws IOException {
-		return performRequestAndParseEntity(multiSearchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, headers);
+	public final MultiSearchResponse multiSearch(MultiSearchRequest multiSearchRequest, RequestOptions options) throws IOException {
+		return client.msearch(multiSearchRequest, options);
+//		return performRequestAndParseEntity(multiSearchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, headers);
 	}
 
-	public final void multiSearchAsync(MultiSearchRequest searchRequest, ActionListener<MultiSearchResponse> listener,
-			Header... headers) {
-		performRequestAsyncAndParseEntity(searchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, listener, headers);
+	public final void multiSearchAsync(MultiSearchRequest searchRequest, RequestOptions options, ActionListener<MultiSearchResponse> listener) {
+		client.msearchAsync(searchRequest, options, listener);
+//		performRequestAsyncAndParseEntity(searchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, listener, headers);
 	}
 	
-	public final MultiGetResponse multiGet(MultiGetRequest multiGetRequest, Header... headers) throws IOException {
-		return performRequestAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, headers);
+	public final MultiGetResponse multiGet(MultiGetRequest multiGetRequest, RequestOptions options) throws IOException {
+		return client.mget(multiGetRequest, options);
+//		return performRequestAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, headers);
 	}
 
-	public final void multiGetAsync(MultiGetRequest multiGetRequest, ActionListener<MultiGetResponse> listener,
-			Header... headers) {
-		performRequestAsyncAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, listener, headers);
+	public final void multiGetAsync(MultiGetRequest multiGetRequest, RequestOptions options, ActionListener<MultiGetResponse> listener) {
+		client.mgetAsync(multiGetRequest, options, listener);
+//		performRequestAsyncAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, listener, headers);
 	}
 	
 	protected final <Req extends ActionRequest, Resp> Resp performRequestAndParseEntity(Req request,
 			CheckedFunction<Req, Request, IOException> requestConverter,
 			CheckedFunction<XContentParser, Resp, IOException> entityParser,
-			Header... headers) throws IOException {
+			RequestOptions options) throws IOException {
 		
 		ActionRequestValidationException validationException = request.validate();
 		if (validationException != null) {
 			throw validationException;
 		}
 		Request req = requestConverter.apply(request);
+		req.setOptions(options);
 		Response response;
 		try {
-			response = getLowLevelClient().performRequest(req.getMethod(), req.getEndpoint(), req.getParameters(), req.getEntity(), headers);
+			response = getLowLevelClient().performRequest(req);
 		} catch (ResponseException e) {
 			throw parseResponseException(e);
 		}
@@ -276,8 +272,7 @@ public final class EsClient {
 	protected final <Req extends ActionRequest, Resp> void performRequestAsyncAndParseEntity(Req request,
 			CheckedFunction<Req, Request, IOException> requestConverter,
 			CheckedFunction<XContentParser, Resp, IOException> entityParser,
-			ActionListener<Resp> listener,
-			Header... headers) {
+			ActionListener<Resp> listener) {
 		ActionRequestValidationException validationException = request.validate();
 		if (validationException != null) {
 			listener.onFailure(validationException);
@@ -292,7 +287,8 @@ public final class EsClient {
 		}
 
 		ResponseListener responseListener = wrapResponseListener(entityParser, listener);
-		getLowLevelClient().performRequestAsync(req.getMethod(), req.getEndpoint(), req.getParameters(), req.getEntity(), responseListener, headers);
+		
+		getLowLevelClient().performRequestAsync(req, responseListener);
 	}
 	
 	final <Resp> ResponseListener wrapResponseListener(CheckedFunction<XContentParser, Resp, IOException> entityParser,
@@ -420,39 +416,29 @@ public final class EsClient {
     }
 
     static Request bulk(BulkRequest bulkRequest) throws IOException {
-        Map<String, String> parameters = newHashMap();
-        
-        if (bulkRequest.timeout() != null) {
-        	parameters.put("timeout", bulkRequest.timeout().getStringRep());
-        }
-        
-        if (bulkRequest.getRefreshPolicy() != WriteRequest.RefreshPolicy.NONE) {
-            parameters.put("refresh", bulkRequest.getRefreshPolicy().getValue());
-        }        
-
         // Bulk API only supports newline delimited JSON or Smile. Before executing
         // the bulk, we need to check that all requests have the same content-type
         // and this content-type is supported by the Bulk API.
         XContentType bulkContentType = null;
         String index = null;
         for (int i = 0; i < bulkRequest.numberOfActions(); i++) {
-            DocWriteRequest<?> request = bulkRequest.requests().get(i);
-            index = enforceSameIndex(request.index(), index);
+            DocWriteRequest<?> writeRequest = bulkRequest.requests().get(i);
+            index = enforceSameIndex(writeRequest.index(), index);
             
 			// Remove index property, as it will be encoded in the request path
-            DocWriteRequest.OpType opType = request.opType();
+            DocWriteRequest.OpType opType = writeRequest.opType();
             
             switch (opType) {
             case INDEX: //$FALL-THROUGH$
 			case CREATE:
-				bulkContentType = enforceSameContentType((IndexRequest) request, bulkContentType);
-				((IndexRequest) request).index(null);
+				bulkContentType = enforceSameContentType((IndexRequest) writeRequest, bulkContentType);
+				((IndexRequest) writeRequest).index(null);
 				break;
 			case DELETE:
-				((DeleteRequest) request).index(null);
+				((DeleteRequest) writeRequest).index(null);
 				break;
 			case UPDATE:
-                UpdateRequest updateRequest = (UpdateRequest) request;
+                UpdateRequest updateRequest = (UpdateRequest) writeRequest;
                 if (updateRequest.doc() != null) {
                     bulkContentType = enforceSameContentType(updateRequest.doc(), bulkContentType);
                 }
@@ -467,38 +453,49 @@ public final class EsClient {
         if (bulkContentType == null) {
             bulkContentType = XContentType.JSON;
         }
+        
+        String endpoint = endpoint(index, "_bulk");
+        Request request = new Request(HttpPost.METHOD_NAME, endpoint);
+        
+        if (bulkRequest.timeout() != null) {
+        	request.addParameter("timeout", bulkRequest.timeout().getStringRep());
+        }
+        
+        if (bulkRequest.getRefreshPolicy() != WriteRequest.RefreshPolicy.NONE) {
+            request.addParameter("refresh", bulkRequest.getRefreshPolicy().getValue());
+        }        
 
         final byte separator = bulkContentType.xContent().streamSeparator();
         final ContentType requestContentType = createContentType(bulkContentType);
 
         ByteArrayOutputStream content = new ByteArrayOutputStream();
-        for (DocWriteRequest<?> request : bulkRequest.requests()) {
-            DocWriteRequest.OpType opType = request.opType();
+        for (DocWriteRequest<?> writeRequest : bulkRequest.requests()) {
+            DocWriteRequest.OpType opType = writeRequest.opType();
 
             try (XContentBuilder metadata = XContentBuilder.builder(bulkContentType.xContent())) {
                 metadata.startObject();
                 {
                     metadata.startObject(opType.getLowercase());
-                    if (Strings.hasLength(request.index())) {
-                        metadata.field("_index", request.index());
+                    if (Strings.hasLength(writeRequest.index())) {
+                        metadata.field("_index", writeRequest.index());
                     }
-                    if (Strings.hasLength(request.type())) {
-                        metadata.field("_type", request.type());
+                    if (Strings.hasLength(writeRequest.type())) {
+                        metadata.field("_type", writeRequest.type());
                     }
-                    if (Strings.hasLength(request.id())) {
-                        metadata.field("_id", request.id());
+                    if (Strings.hasLength(writeRequest.id())) {
+                        metadata.field("_id", writeRequest.id());
                     }
-                    if (Strings.hasLength(request.routing())) {
-                        metadata.field("routing", request.routing());
+                    if (Strings.hasLength(writeRequest.routing())) {
+                        metadata.field("routing", writeRequest.routing());
                     }
-                    if (Strings.hasLength(request.parent())) {
-                        metadata.field("parent", request.parent());
+                    if (Strings.hasLength(writeRequest.parent())) {
+                        metadata.field("parent", writeRequest.parent());
                     }
-                    if (request.version() != Versions.MATCH_ANY) {
-                        metadata.field("version", request.version());
+                    if (writeRequest.version() != Versions.MATCH_ANY) {
+                        metadata.field("version", writeRequest.version());
                     }
 
-                    VersionType versionType = request.versionType();
+                    VersionType versionType = writeRequest.versionType();
                     if (versionType != VersionType.INTERNAL) {
                         if (versionType == VersionType.EXTERNAL) {
                             metadata.field("version_type", "external");
@@ -510,12 +507,12 @@ public final class EsClient {
                     }
 
                     if (opType == DocWriteRequest.OpType.INDEX || opType == DocWriteRequest.OpType.CREATE) {
-                        IndexRequest indexRequest = (IndexRequest) request;
+                        IndexRequest indexRequest = (IndexRequest) writeRequest;
                         if (Strings.hasLength(indexRequest.getPipeline())) {
                             metadata.field("pipeline", indexRequest.getPipeline());
                         }
                     } else if (opType == DocWriteRequest.OpType.UPDATE) {
-                        UpdateRequest updateRequest = (UpdateRequest) request;
+                        UpdateRequest updateRequest = (UpdateRequest) writeRequest;
                         if (updateRequest.retryOnConflict() > 0) {
                             metadata.field("retry_on_conflict", updateRequest.retryOnConflict());
                         }
@@ -534,7 +531,7 @@ public final class EsClient {
 
             BytesRef source = null;
             if (opType == DocWriteRequest.OpType.INDEX || opType == DocWriteRequest.OpType.CREATE) {
-                IndexRequest indexRequest = (IndexRequest) request;
+                IndexRequest indexRequest = (IndexRequest) writeRequest;
                 BytesReference indexSource = indexRequest.source();
                 XContentType indexXContentType = indexRequest.getContentType();
 
@@ -546,7 +543,7 @@ public final class EsClient {
                     }
                 }
             } else if (opType == DocWriteRequest.OpType.UPDATE) {
-                source = XContentHelper.toXContent((UpdateRequest) request, bulkContentType, false).toBytesRef();
+                source = XContentHelper.toXContent((UpdateRequest) writeRequest, bulkContentType, false).toBytesRef();
             }
 
             if (source != null) {
@@ -556,59 +553,59 @@ public final class EsClient {
         }
 
         HttpEntity entity = new ByteArrayEntity(content.toByteArray(), 0, content.size(), requestContentType);
-        String endpoint = endpoint(index, "_bulk");
-		return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
+		request.setEntity(entity);
+		return request;
     }
     
-    static Request multiSearch(MultiSearchRequest multiSearchRequest) throws IOException {
-    	Map<String, String> parameters = newHashMap();
-        parameters.put(RestSearchAction.TYPED_KEYS_PARAM, "true");
-        if (multiSearchRequest.maxConcurrentSearchRequests() != MultiSearchRequest.MAX_CONCURRENT_SEARCH_REQUESTS_DEFAULT) {
-            parameters.put("max_concurrent_searches", Integer.toString(multiSearchRequest.maxConcurrentSearchRequests()));
-        }
-        
-        String index = null;
-        for (SearchRequest searchRequest : multiSearchRequest.requests()) {
-			String[] indices = searchRequest.indices();
-			checkArgument(indices.length < 2, "Multi-index requests in a multi search request is not allowed.");
-			index = enforceSameIndex(indices[0], index);
-			
-			// Remove index property, as it will be encoded in the request path
-			// XXX: Setting indices to null can only be done via reflection or wrapping
-			ReflectionUtils.setField(searchRequest, "indices", null);
-		}
-        
-        XContent xContent = XContentType.JSON.xContent();
-        byte[] source = MultiSearchRequest.writeMultiLineFormat(multiSearchRequest, xContent);
-        HttpEntity entity = new ByteArrayEntity(source, createContentType(xContent.type()));
-        String endpoint = endpoint(index, "_msearch");
-        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
-    }
+//    static Request multiSearch(MultiSearchRequest multiSearchRequest) throws IOException {
+//    	Map<String, String> parameters = newHashMap();
+//        parameters.put(RestSearchAction.TYPED_KEYS_PARAM, "true");
+//        if (multiSearchRequest.maxConcurrentSearchRequests() != MultiSearchRequest.MAX_CONCURRENT_SEARCH_REQUESTS_DEFAULT) {
+//            parameters.put("max_concurrent_searches", Integer.toString(multiSearchRequest.maxConcurrentSearchRequests()));
+//        }
+//        
+//        String index = null;
+//        for (SearchRequest searchRequest : multiSearchRequest.requests()) {
+//			String[] indices = searchRequest.indices();
+//			checkArgument(indices.length < 2, "Multi-index requests in a multi search request is not allowed.");
+//			index = enforceSameIndex(indices[0], index);
+//			
+//			// Remove index property, as it will be encoded in the request path
+//			// XXX: Setting indices to null can only be done via reflection or wrapping
+//			ReflectionUtils.setField(searchRequest, "indices", null);
+//		}
+//        
+//        XContent xContent = XContentType.JSON.xContent();
+//        byte[] source = MultiSearchRequest.writeMultiLineFormat(multiSearchRequest, xContent);
+//        HttpEntity entity = new ByteArrayEntity(source, createContentType(xContent.type()));
+//        String endpoint = endpoint(index, "_msearch");
+//        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
+//    }
     
-    static Request multiGet(MultiGetRequest multiGetRequest) throws IOException {
-    	Map<String, String> parameters = newHashMap();
-        parameters.put("preference", multiGetRequest.preference());
-        
-        if (!multiGetRequest.realtime()) {
-            parameters.put("realtime", Boolean.FALSE.toString());
-        }
-        
-        if (multiGetRequest.refresh()) {
-            parameters.put("refresh", WriteRequest.RefreshPolicy.IMMEDIATE.getValue());
-        }
-
-        String index = null;
-        for (MultiGetRequest.Item item : multiGetRequest) {
-			index = enforceSameIndex(item.index(), index);
-			
-			// Remove index property, as it will be encoded in the request path
-			item.index(null);
-		}
-        
-        HttpEntity entity = createEntity(multiGetRequest, XContentType.JSON);
-        String endpoint = endpoint(index, "_mget");
-        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
-    }
+//    static Request multiGet(MultiGetRequest multiGetRequest) throws IOException {
+//    	Map<String, String> parameters = newHashMap();
+//        parameters.put("preference", multiGetRequest.preference());
+//        
+//        if (!multiGetRequest.realtime()) {
+//            parameters.put("realtime", Boolean.FALSE.toString());
+//        }
+//        
+//        if (multiGetRequest.refresh()) {
+//            parameters.put("refresh", WriteRequest.RefreshPolicy.IMMEDIATE.getValue());
+//        }
+//
+//        String index = null;
+//        for (MultiGetRequest.Item item : multiGetRequest) {
+//			index = enforceSameIndex(item.index(), index);
+//			
+//			// Remove index property, as it will be encoded in the request path
+//			item.index(null);
+//		}
+//        
+//        HttpEntity entity = createEntity(multiGetRequest, XContentType.JSON);
+//        String endpoint = endpoint(index, "_mget");
+//        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
+//    }
     
     private static HttpEntity createEntity(ToXContent toXContent, XContentType xContentType) throws IOException {
         BytesRef source = XContentHelper.toXContent(toXContent, xContentType, false).toBytesRef();
@@ -659,9 +656,12 @@ public final class EsClient {
         return ContentType.create(xContentType.mediaTypeWithoutParameters(), (Charset) null);
     }
     
-    static Request clearScroll(ClearScrollRequest clearScrollRequest) throws IOException {
+    private static Request clearScroll(ClearScrollRequest clearScrollRequest) throws IOException {
         HttpEntity entity = createEntity(clearScrollRequest, XContentType.JSON);
-        return new Request(HttpDelete.METHOD_NAME, "/_search/scroll", ImmutableMap.of("ignore", "404"), entity);
+        Request request = new Request(HttpDelete.METHOD_NAME, "/_search/scroll");
+        request.setEntity(entity);
+        request.addParameter("ignore", "404");
+        return request;
     }
     
 	//
@@ -684,91 +684,84 @@ public final class EsClient {
 		return client.cluster();
 	}
 
-	public final boolean ping(Header... headers) throws IOException {
-		return client.ping(headers);
+	public final boolean ping(RequestOptions options) throws IOException {
+		return client.ping(options);
 	}
 
-	public final MainResponse info(Header... headers) throws IOException {
-		return client.info(headers);
+	public final MainResponse info(RequestOptions options) throws IOException {
+		return client.info(options);
 	}
 
-	public final GetResponse get(GetRequest getRequest, Header... headers) throws IOException {
-		return client.get(getRequest, headers);
+	public final GetResponse get(GetRequest getRequest, RequestOptions options) throws IOException {
+		return client.get(getRequest, options);
 	}
 
-	public final void getAsync(GetRequest getRequest, ActionListener<GetResponse> listener, Header... headers) {
-		client.getAsync(getRequest, listener, headers);
+	public final void getAsync(GetRequest getRequest, RequestOptions options, ActionListener<GetResponse> listener) {
+		client.getAsync(getRequest, options, listener);
 	}
 
-	public final boolean exists(GetRequest getRequest, Header... headers) throws IOException {
-		return client.exists(getRequest, headers);
+	public final boolean exists(GetRequest getRequest, RequestOptions options) throws IOException {
+		return client.exists(getRequest, options);
 	}
 
-	public final void existsAsync(GetRequest getRequest, ActionListener<Boolean> listener, Header... headers) {
-		client.existsAsync(getRequest, listener, headers);
+	public final void existsAsync(GetRequest getRequest, RequestOptions options, ActionListener<Boolean> listener) {
+		client.existsAsync(getRequest, options, listener);
 	}
 
-	public final IndexResponse index(IndexRequest indexRequest, Header... headers) throws IOException {
-		return client.index(indexRequest, headers);
+	public final IndexResponse index(IndexRequest indexRequest, RequestOptions options) throws IOException {
+		return client.index(indexRequest, options);
 	}
 
-	public final void indexAsync(IndexRequest indexRequest, ActionListener<IndexResponse> listener, Header... headers) {
-		client.indexAsync(indexRequest, listener, headers);
+	public final void indexAsync(IndexRequest indexRequest, RequestOptions options, ActionListener<IndexResponse> listener) {
+		client.indexAsync(indexRequest, options, listener);
 	}
 
-	public final UpdateResponse update(UpdateRequest updateRequest, Header... headers) throws IOException {
-		return client.update(updateRequest, headers);
+	public final UpdateResponse update(UpdateRequest updateRequest, RequestOptions options) throws IOException {
+		return client.update(updateRequest, options);
 	}
 
-	public final void updateAsync(UpdateRequest updateRequest, ActionListener<UpdateResponse> listener,
-			Header... headers) {
-		client.updateAsync(updateRequest, listener, headers);
+	public final void updateAsync(UpdateRequest updateRequest, RequestOptions options, ActionListener<UpdateResponse> listener) {
+		client.updateAsync(updateRequest, options, listener);
 	}
 
-	public final DeleteResponse delete(DeleteRequest deleteRequest, Header... headers) throws IOException {
-		return client.delete(deleteRequest, headers);
+	public final DeleteResponse delete(DeleteRequest deleteRequest, RequestOptions options) throws IOException {
+		return client.delete(deleteRequest, options);
 	}
 
-	public final void deleteAsync(DeleteRequest deleteRequest, ActionListener<DeleteResponse> listener,
-			Header... headers) {
-		client.deleteAsync(deleteRequest, listener, headers);
+	public final void deleteAsync(DeleteRequest deleteRequest, RequestOptions options, ActionListener<DeleteResponse> listener) {
+		client.deleteAsync(deleteRequest, options, listener);
 	}
 	
-	public final SearchResponse search(SearchRequest searchRequest, Header... headers) throws IOException {
-		return client.search(searchRequest, headers);
+	public final SearchResponse search(SearchRequest searchRequest, RequestOptions options) throws IOException {
+		return client.search(searchRequest, options);
 	}
 
-	public final void searchAsync(SearchRequest searchRequest, ActionListener<SearchResponse> listener,
-			Header... headers) {
-		client.searchAsync(searchRequest, listener, headers);
+	public final void searchAsync(SearchRequest searchRequest, RequestOptions options, ActionListener<SearchResponse> listener) {
+		client.searchAsync(searchRequest, options, listener);
 	}
 
-	public final SearchResponse searchScroll(SearchScrollRequest searchScrollRequest, Header... headers)
-			throws IOException {
-		return client.searchScroll(searchScrollRequest, headers);
+	public final SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions options) throws IOException {
+		return client.scroll(searchScrollRequest, options);
 	}
 
-	public final void searchScrollAsync(SearchScrollRequest searchScrollRequest,
-			ActionListener<SearchResponse> listener, Header... headers) {
-		client.searchScrollAsync(searchScrollRequest, listener, headers);
+	public final void searchScrollAsync(SearchScrollRequest searchScrollRequest, RequestOptions options, ActionListener<SearchResponse> listener) {
+		client.scrollAsync(searchScrollRequest, options, listener);
 	}
 
-	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, Header... headers)
-			throws IOException {
-		return performRequestAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, headers);
+	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, RequestOptions options) throws IOException {
+		return performRequestAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, options);
 	}
 
-	public final void clearScrollAsync(ClearScrollRequest clearScrollRequest,
-			ActionListener<ClearScrollResponse> listener, Header... headers) {
-		performRequestAsyncAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, listener, headers);
+	public final void clearScrollAsync(ClearScrollRequest clearScrollRequest, RequestOptions options, ActionListener<ClearScrollResponse> listener) {
+		performRequestAsyncAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, listener);
 	}
 
-	public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, Header... headers) throws IOException {
-		return client.rankEval(rankEvalRequest, headers);
+	public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, RequestOptions options) throws IOException {
+		return client.rankEval(rankEvalRequest, options);
 	}
 
 	public final void rankEvalAsync(RankEvalRequest rankEvalRequest, ActionListener<RankEvalResponse> listener,
-			Header... headers) {
-		client.rankEvalAsync(rankEvalRequest, listener, headers);
+			RequestOptions options) {
+		client.rankEvalAsync(rankEvalRequest, options, listener);
 	}
 }
