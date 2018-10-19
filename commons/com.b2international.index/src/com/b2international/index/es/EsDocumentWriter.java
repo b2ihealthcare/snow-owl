@@ -42,6 +42,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -161,7 +162,7 @@ public class EsDocumentWriter implements Writer {
 		
 		// then bulk indexes/deletes
 		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
-			final BulkProcessor processor = BulkProcessor.builder(client::bulkAsync, new BulkProcessor.Listener() {
+			final BulkProcessor processor = BulkProcessor.builder((req, listener) -> client.bulkAsync(req, RequestOptions.DEFAULT, listener), new BulkProcessor.Listener() {
 				@Override
 				public void beforeBulk(long executionId, BulkRequest request) {
 					admin.log().debug("Sending bulk request {}", request.numberOfActions());

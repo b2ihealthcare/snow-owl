@@ -34,6 +34,7 @@ import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.ScriptType;
@@ -107,7 +108,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final GetRequest getRequest = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
 		final GetResponse getResponse = admin.client()
-				.get(getRequest);
+				.get(getRequest, RequestOptions.DEFAULT);
 		
 		if (getResponse.isExists()) {
 			final byte[] bytes = getResponse.getSourceAsBytes();
@@ -177,7 +178,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		// fetch phase
 		SearchResponse response = null; 
 		try {
-			response = client.search(req);
+			response = client.search(req, RequestOptions.DEFAULT);
 		} catch (Exception e) {
 			admin.log().error("Couldn't execute query", e);
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
@@ -193,7 +194,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
 					.scroll(scrollTime);
 			
-			response = client.searchScroll(searchScrollRequest);
+			response = client.scroll(searchScrollRequest, RequestOptions.DEFAULT);
 			int fetchedDocs = response.getHits().getHits().length;
 			if (fetchedDocs == 0) {
 				break;
@@ -206,7 +207,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		if (isLocalScroll) {
 			final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
 			clearScrollRequest.addScrollId(response.getScrollId());
-			client.clearScroll(clearScrollRequest);
+			client.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
 		}
 		
 		final Class<T> select = query.getSelect();
@@ -259,7 +260,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
 				.scroll(scroll.getKeepAlive());
 		final SearchResponse response = admin.client()
-				.searchScroll(searchScrollRequest);
+				.scroll(searchScrollRequest, RequestOptions.DEFAULT);
 		
 		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
 		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
@@ -272,7 +273,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		clearScrollRequest.addScrollId(scrollId);
 		
 		try {
-			admin.client().clearScroll(clearScrollRequest);
+			admin.client().clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Couldn't clear scroll state for scrollId '%s'.", scrollId), e);
 		}
@@ -436,7 +437,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		
 		SearchResponse response = null; 
 		try {
-			response = client.search(req);
+			response = client.search(req, RequestOptions.DEFAULT);
 		} catch (Exception e) {
 			admin.log().error("Couldn't execute aggregation", e);
 			throw new IndexException("Couldn't execute aggregation: " + e.getMessage(), null);
@@ -488,8 +489,10 @@ public class EsDocumentSearcher implements DocSearcher {
 			} else {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_NONE)
-					.fetchSource(false)
-					.fieldDataFields(aggregation.getFields());
+					.fetchSource(false);
+				
+				aggregation.getFields().forEach(topHitsAgg::docValueField);
+				
 			}
 			
 			termsAgg.subAggregation(topHitsAgg);

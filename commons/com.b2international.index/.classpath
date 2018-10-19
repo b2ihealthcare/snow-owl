@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="output" path="bin"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/analysis-common-6.3.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/analysis-common-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-6.3.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-cli-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-core-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/HdrHistogram-2.1.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpasyncclient-4.1.2.jar"/>
@@ -24,31 +21,35 @@
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-nio-4.4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.9.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-5.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lang-painless-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-api-2.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-core-2.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-core-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-grouping-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-highlighter-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-join-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-memory-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-misc-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-queries-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-sandbox-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-extras-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-7.3.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/parent-join-client-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/rank-eval-client-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/reindex-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/scripting-painless-spi-6.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/snakeyaml-1.17.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lang-painless-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-api-2.11.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/log4j-core-2.11.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-analyzers-common-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-backward-codecs-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-core-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-grouping-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-highlighter-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-join-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-memory-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-misc-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queries-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-queryparser-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-sandbox-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial-extras-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-spatial3d-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lucene-suggest-7.4.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/parent-join-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/rank-eval-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/reindex-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/scripting-painless-spi-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-6.3.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-6.4.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
