@@ -22,11 +22,11 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.subsumption.SubsumptionResult.SubsumptionType;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
 /**

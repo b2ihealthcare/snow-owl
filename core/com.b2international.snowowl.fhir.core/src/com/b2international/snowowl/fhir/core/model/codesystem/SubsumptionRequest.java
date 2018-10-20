@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.subsumption;
+package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.4
  */
 @JsonDeserialize(builder = SubsumptionRequest.Builder.class)
+@JsonPropertyOrder({"codeA", "codeB", "system", "version", "codingA", "codingB"})
 public class SubsumptionRequest {
 
 	/**
