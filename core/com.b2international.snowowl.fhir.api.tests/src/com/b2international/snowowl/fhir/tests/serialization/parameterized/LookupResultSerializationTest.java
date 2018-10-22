@@ -16,9 +16,7 @@
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
@@ -42,9 +40,6 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  * @since 6.6
  */
 public class LookupResultSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
 	public void missingNameTest() throws Exception {

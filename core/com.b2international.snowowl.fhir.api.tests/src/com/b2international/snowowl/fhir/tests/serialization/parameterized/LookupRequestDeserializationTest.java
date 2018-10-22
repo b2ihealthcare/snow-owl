@@ -15,25 +15,96 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.tests.FhirTest;
 
 /**
  * Lookup request deserialization test
  * @since 6.6
  */
-public class LookupRequestDeserializationTest {
-
+public class LookupRequestDeserializationTest extends FhirTest {
+	
 	@Test
+	public void missingCodeTest() {
+		
+		Builder builder = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
+		
+		Issue expectedIssue = builder.addLocation("LookupRequest.codeMissing")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'codeMissing' content is invalid [false]."
+					+ " Violation: Code is not provided for the system.")
+			.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		System.out.println("Building the lookup request object.");
+		LookupRequest.builder()
+			.system("system").build();
+			
+	}
+	
+	@Test
+	public void fullCircleTest() throws Exception {
+		
+		Coding coding = Coding.builder()
+			.system("http://hl7.org/fhir/issue-severity")
+			.code("fatal")
+			.build();
+
+		System.out.println("Building the lookup request object.");
+		LookupRequest request = LookupRequest.builder()
+				.coding(coding)
+				.build();
+		
+		Json json1 = new Parameters.Json(request);
+		System.out.println("JSON params:" + json1);
+		
+		Fhir fhir = new Parameters.Fhir(json1.parameters());
+		String fhirJson = objectMapper.writeValueAsString(fhir);
+		System.out.println("This is the JSON request from the client: " + fhirJson);
+		
+		System.out.println("This is happening in the server-side...");
+		Fhir parameters = objectMapper.readValue(fhirJson, Parameters.Fhir.class);
+		System.out.println("Deserialized into FHIR parameters..." + parameters.getParameters());
+		
+		System.out.println("Back to Domain JSON...");
+		Json json = new Parameters.Json(parameters);
+		LookupRequest lookupRequest = objectMapper.convertValue(json, LookupRequest.class);
+		System.out.println("... and back to the object representation we started from:" + lookupRequest);
+		
+	}
+	
+	//@Test
 	public void testDeserialization() {
 
 		Coding coding = Coding.builder()

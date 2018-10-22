@@ -17,7 +17,11 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.AssertTrue;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -25,7 +29,11 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
+import com.b2international.snowowl.fhir.core.model.dt.FhirType;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -39,14 +47,14 @@ import com.google.common.collect.Sets;
  * @since 6.4
  */
 @JsonDeserialize(builder = LookupRequest.Builder.class)
-@JsonPropertyOrder({"code", "system", "version", "coding"})
+@JsonPropertyOrder({"code", "system", "version", "coding", "date", "displayLanguage", "property"})
 public class LookupRequest {
 	
 	// The code that is to be located. If a code is provided, a system must be provided (0..1)
-	private final String code;
+	private final Code code;
 
 	// The system for the code that is to be located (0..1)
-	private final String system;
+	private final Uri system;
 	
 	// The version that these details are based on (0..1)
 	private final String version;
@@ -66,7 +74,7 @@ public class LookupRequest {
 	private final Date date;
 	
 	//The requested language for display (see ExpansionProfile.displayLanguage)
-	private final String displayLanguage;
+	private final Code displayLanguage;
 	
 	/*
 	 * A property that the client wishes to be returned in the output. If no
@@ -78,28 +86,29 @@ public class LookupRequest {
 	 * names match), and the rest (except for lang.X) in the property parameter
 	 * group
 	 */
-	private final Collection<String> properties;
+	@FhirType(FhirDataType.PART)
+	private final Collection<Code> property;
 	
 	LookupRequest(
-			String code, 
-			String system, 
+			Code code, 
+			Uri system, 
 			String version, 
 			Coding coding, 
 			Date date, 
-			String displayLanguage,
-			Collection<String> properties) {
+			Code displayLanguage,
+			Collection<Code> properties) {
 		this.code = code;
 		this.system = system;
 		this.version = version;
 		this.coding = coding;
 		this.date = date;
 		this.displayLanguage = displayLanguage;
-		this.properties = properties;
+		this.property = properties;
 	}
 	
 	public String getCode() {
 		if (code != null) {
-			return code;
+			return code.getCodeValue();
 		} else if (coding != null) {
 			return coding.getCode().getCodeValue();
 		}
@@ -108,7 +117,7 @@ public class LookupRequest {
 
 	public String getSystem() {
 		if (system != null) {
-			return system;
+			return system.getUriValue();
 		} else if (coding != null && coding.getSystem() != null) {
 			return coding.getSystem().getUriValue();
 		}
@@ -127,12 +136,16 @@ public class LookupRequest {
 		return date;
 	}
 
-	public String getDisplayLanguage() {
+	public Code getDisplayLanguage() {
 		return displayLanguage;
 	}
 
-	public Collection<String> getProperties() {
-		return properties;
+	public Collection<Code> getProperties() {
+		return property;
+	}
+	
+	public Collection<String> getPropertyCodes() {
+		return property.stream().map(p -> p.getCodeValue()).collect(Collectors.toSet());
 	}
 
 	/**
@@ -141,8 +154,8 @@ public class LookupRequest {
 	 * @param property
 	 * @return
 	 */
-	public final boolean containsProperty(String property) {
-		return properties.contains(property);
+	public final boolean containsProperty(Code propertyCode) {
+		return property.contains(propertyCode);
 	}
 	
 	/**
@@ -151,9 +164,7 @@ public class LookupRequest {
 	 * @return
 	 */
 	public boolean isPropertyRequested(IConceptProperty conceptProperty) {
-		return properties == null ||
-			properties.isEmpty() ||
-			containsProperty(conceptProperty.getCodeValue());
+		return containsProperty(conceptProperty.getCode());
 	}
 	
 	/**
@@ -161,9 +172,7 @@ public class LookupRequest {
 	 * @return
 	 */
 	public final boolean isVersionPropertyRequested() {
-		return properties == null ||
-			properties.isEmpty() ||
-			containsProperty(SupportedCodeSystemRequestProperties.VERSION.getCodeValue());
+		return containsProperty(SupportedCodeSystemRequestProperties.VERSION.getCode());
 	}
 	
 	/**
@@ -171,35 +180,91 @@ public class LookupRequest {
 	 * @return
 	 */
 	public final boolean isDesignationPropertyRequested() {
-		return properties == null ||
-			properties.isEmpty() ||
-			containsProperty(SupportedCodeSystemRequestProperties.DESIGNATION.getCodeValue());
+		return containsProperty(SupportedCodeSystemRequestProperties.DESIGNATION.getCode());
 	}
 	
 	public static Builder builder() {
 		return new Builder();
 	}
+	
+	@AssertTrue(message = "Source needs to be set either via code/system or code or codeable concept")
+	private boolean isSourceValid() {
+		System.out.println("   *** I am in the validating phase!");
+		return true;
+	} 
+	
+	@AssertTrue(message = "Code is not provided for the system")
+	private boolean isCodeMissing() {
+
+		if (system != null && code == null) {
+			return false;
+		}
+		return true;
+	}
+	
+	@AssertTrue(message = "System is missing for provided code")
+	private boolean isSystemMissing() {
+
+		if (system == null && code != null) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	@AssertTrue(message = "Code/system/version and Coding do not match. Probably would make sense to specify only one of them.")
+	private boolean isCodeOrCodingInvalid() {
+
+		if (code != null && coding != null) {
+			if (!coding.getCode().getCodeValue().equals(code.getCodeValue())) {
+				return false;
+			}
+			
+			if (!coding.getSystem().getUriValue().equals(system.getUriValue())) {
+				return false;
+			}
+			
+			if (!Objects.equals(coding.getVersion(), version)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@AssertTrue(message = "Both system URI and version tag identifies a version.")
+	private boolean isUriVersionInvalid() {
+
+		//SNOMED CT specific, both the URI and version identifies the version
+		if (system != null) {
+			if (system.getUriValue().startsWith("http://snomed.info/sct") 
+					&& system.getUriValue().contains("version")
+					&& version != null) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<LookupRequest> {
 
-		private String code;
-		private String system;
+		private Code code;
+		private Uri system;
 		private String version;
 		private Coding coding;
 		private Date date;
-		private String displayLanguage;
-		private Set<String> properties = Sets.newHashSet();
+		private Code displayLanguage;
+		private Set<Code> properties = Sets.newHashSet();
 		
 		Builder() {}
 		
 		public Builder code(final String code) {
-			this.code = code;
+			this.code = new Code(code);
 			return this;
 		}
 
 		public Builder system(final String system) {
-			this.system = system;
+			this.system = new Uri(system);
 			return this;
 		}
 		
@@ -223,7 +288,7 @@ public class LookupRequest {
 		}
 		
 		public Builder displayLanguage(final String displayLanguage) {
-			this.displayLanguage = displayLanguage;
+			this.displayLanguage = new Code(displayLanguage);
 			return this;
 		}
 
@@ -231,17 +296,23 @@ public class LookupRequest {
 		 * Alternative property deserializer to be used when converting FHIR Parameters representation to LookupRequest. Multi-valued property expand.
 		 */
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		Builder property(Collection<String> properties) {
-			return properties(properties);
+		Builder property(Collection<Code> props) {
+			properties = Collections3.toImmutableSet(props);
+			return this;
 		}
 		
 		public Builder properties(Collection<String> properties) {
+			this.properties = properties.stream().map(p -> new Code(p)).collect(Collectors.toSet());
+			return this;
+		}
+		
+		public Builder codeProperties(Collection<Code> properties) {
 			this.properties = Collections3.toImmutableSet(properties);
 			return this;
 		}
 		
 		public Builder addProperty(String property) {
-			this.properties.add(property);
+			this.properties.add(new Code(property));
 			return this;
 		}
 

@@ -95,12 +95,12 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		validateRequestedProperties(lookup);
 		
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
+		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
+		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
 		
 		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
 		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage() : "en-GB";
+		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
 		
 		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
 			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
@@ -239,7 +239,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		//add terms as designations
 		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
 				
-			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage() : "en-GB";
+			String languageCode = lookupRequest.getDisplayLanguage() != null ? lookupRequest.getDisplayLanguage().getCodeValue() : "en-GB";
 				for (SnomedDescription description : concept.getDescriptions()) {
 						
 					Coding coding = Coding.builder()
@@ -274,8 +274,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		
 		//Optionally requested properties
-		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCodeValue());
-		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCodeValue());
+		boolean requestedChild = lookupRequest.containsProperty(CommonConceptProperties.CHILD.getCode());
+		boolean requestedParent = lookupRequest.containsProperty(CommonConceptProperties.PARENT.getCode());
 		
 		if (requestedChild && concept.getDescendants() != null) {
 			for (SnomedConcept child : concept.getDescendants()) {
@@ -290,7 +290,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		
 		//Relationship target properties
-		Collection<String> properties = lookupRequest.getProperties();
+		Collection<String> properties = lookupRequest.getPropertyCodes();
 		Set<String> relationshipTypeIds = properties.stream()
 			.filter(p -> p.startsWith("http://snomed.info/id/"))
 			.map(p -> p.substring(p.lastIndexOf('/') + 1, p.length()))

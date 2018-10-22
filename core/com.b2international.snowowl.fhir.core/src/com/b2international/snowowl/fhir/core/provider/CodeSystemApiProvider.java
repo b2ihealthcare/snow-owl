@@ -331,7 +331,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param properties
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
-		final Collection<String> properties = request.getProperties();
+		final Collection<String> properties = request.getPropertyCodes();
 		
 		final Set<String> supportedCodes = getSupportedProperties().stream().map(p -> {
 			if (p instanceof IConceptProperty.Dynamic) {

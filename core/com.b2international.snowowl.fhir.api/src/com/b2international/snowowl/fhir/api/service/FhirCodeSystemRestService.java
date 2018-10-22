@@ -21,7 +21,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -45,10 +43,10 @@ import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -221,13 +219,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@RequestBody Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
-
-		//validate the code/system/version parameters BOTH in the request as well as possibly in the coding
-		validateLookupRequest(req);
-		
-		//all good, now do something
 		LookupResult result = lookup(req);
-		
 		return toResponse(result);
 	}
 
@@ -368,45 +360,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return codeSystemProvider.lookup(lookupRequest);
 	}
 
-	/*
-	 * Cross-field validation of the incoming parameters
-	 * @param lookupRequest
-	 */
-	private void validateLookupRequest(LookupRequest lookupRequest) {
-		if (lookupRequest.getSystem() != null && lookupRequest.getCode() == null) {
-			throw new NotFoundException("Code", "");
-		}
-		
-		if (lookupRequest.getCode()!=null && lookupRequest.getSystem() == null) {
-			throw new BadRequestException("Parameter 'system' is not specified while code is present in the request.", "LookupRequest.system");
-		}
-		
-		if (lookupRequest.getCode() !=null && lookupRequest.getCoding() !=null) {
-			Coding coding = lookupRequest.getCoding();
-			if (!coding.getCode().getCodeValue().equals(lookupRequest.getCode())) {
-				throw new BadRequestException("Code and Coding.code are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-			
-			if (!coding.getSystem().getUriValue().equals(lookupRequest.getSystem())) {
-				throw new BadRequestException("System and Coding.system are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-			
-			if (!Objects.equals(coding.getVersion(), lookupRequest.getVersion())) {
-				throw new BadRequestException("Version and Coding.version are different. Probably would make sense to specify only one of them.", "LookupRequest");
-			}
-		}
-		
-		//SNOMED CT specific, both the URI and version identifies the version
-		if (lookupRequest.getSystem() != null) {
-			if (lookupRequest.getSystem().startsWith("http://snomed.info/sct") 
-					&& lookupRequest.getSystem().contains("version")
-					&& lookupRequest.getVersion() != null) {
-				
-				throw new BadRequestException("Both system URI and version tag identifies a version.", "LookupRequest");
-			}
-		}
-	}
-	
 	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {
 		validateSubsumptionRequest(null, codeA,  codeB, system, version);
 	}

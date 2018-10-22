@@ -37,7 +37,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 6.9
  */
 @JsonDeserialize(builder = ValidateCodeRequest.Builder.class)
-@JsonPropertyOrder({"url", "context", "valueSet", "code", "system", "version", "display", "coding", "codeableConcept", "date", "abstract", "displayLanguage"})
+@JsonPropertyOrder({"url", "context", "valueSet", "code", "system", "version", "display", "coding", "codeableConcept", "date",
+	"abstract", "displayLanguage"})
 public class ValidateCodeRequest {
 	
 	//Value set Canonical URL. The server must know the value set (e.g. it is defined explicitly in the server's value sets, or it is defined implicitly by some code system known to the server
