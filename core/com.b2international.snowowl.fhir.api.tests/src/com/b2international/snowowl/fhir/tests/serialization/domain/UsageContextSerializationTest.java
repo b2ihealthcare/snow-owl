@@ -17,9 +17,7 @@ package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
@@ -37,9 +35,6 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  * @since 6.6
  */
 public class UsageContextSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
 	public void codeableConceptUsageContextTest() throws Exception {

@@ -18,9 +18,7 @@ package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 import java.util.Date;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
@@ -33,9 +31,9 @@ import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
-import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 
 /**
  * Test for serializing the Property class.
@@ -43,9 +41,6 @@ import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
  * @since 6.4
  */
 public class PropertySerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
 	public void minimalPropertyTest() throws Exception {

@@ -21,9 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -62,9 +60,6 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  * @since 6.6
  */
 public class ComplexDataTypeSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	private Builder builder = Issue.builder()
 			.code(IssueType.INVALID)

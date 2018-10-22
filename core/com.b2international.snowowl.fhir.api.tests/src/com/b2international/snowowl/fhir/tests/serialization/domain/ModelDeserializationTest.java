@@ -28,13 +28,13 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
-import com.b2international.snowowl.fhir.tests.ValidatorTest;
+import com.b2international.snowowl.fhir.tests.FhirTest;
 
 /**
  * Test for validating the deserialization of the base domain models.
  * @since 6.6
  */
-public class ModelDeserializationTest extends ValidatorTest {
+public class ModelDeserializationTest extends FhirTest {
 	
 	private Builder builder = Issue.builder()
 		.code(IssueType.INVALID)
