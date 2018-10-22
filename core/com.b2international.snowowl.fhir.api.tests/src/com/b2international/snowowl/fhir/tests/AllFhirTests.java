@@ -38,6 +38,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Parame
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.PropertySerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.SubsumptionRequestTest;
 import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateRequestDeserializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateResultSerializationTest;
 
 /**
  * FHIR test suite.
@@ -61,6 +62,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	BundleSerializationTest.class,
 	
 	TranslateRequestDeserializationTest.class,
+	TranslateResultSerializationTest.class,
 
 	//This tests are pretty meaningless, TODO:
 	ValueSetSerializationTest.class,

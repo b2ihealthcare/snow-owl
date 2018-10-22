@@ -36,7 +36,7 @@ import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 /**
- * Test for serializing the Designation class.
+ * Test for serializing the @see {@link LookupResult} class.
  * see CodeSystem-lookup
  * 
  * @since 6.6
@@ -50,9 +50,9 @@ public class LookupResultSerializationTest extends FhirTest {
 	public void missingNameTest() throws Exception {
 
 		Builder builder = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error");
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.name")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid [null]. Violation: may not be empty.")
@@ -69,13 +69,13 @@ public class LookupResultSerializationTest extends FhirTest {
 	public void emptyNameTest() throws Exception {
 
 		Builder builder = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error");
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.name")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid []. Violation: may not be empty.")
-				.build();
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid []. Violation: may not be empty.")
+			.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");
@@ -88,13 +88,13 @@ public class LookupResultSerializationTest extends FhirTest {
 	public void missingDisplayTest() throws Exception {
 
 		Builder builder = Issue.builder()
-				.code(IssueType.INVALID)
-				.severity(IssueSeverity.ERROR)
-				.diagnostics("1 validation error");
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.display")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'display' content is invalid [null]. Violation: may not be empty.")
-				.build();
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'display' content is invalid [null]. Violation: may not be empty.")
+			.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");

@@ -265,7 +265,7 @@ public class TranslateRequest {
 		}
 		
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-		public Builder dependency(Collection<Dependency> deps) {
+		public Builder dependencies(Collection<Dependency> deps) {
 			dependencies = ImmutableList.builder();
 			dependencies.addAll(deps);
 			return this;
