@@ -37,7 +37,7 @@ public class Dependency {
 	//The value for this dependency
 	private final CodeableConcept concept;
 	
-	public Dependency(final Uri element, final CodeableConcept concept) {
+	Dependency(final Uri element, final CodeableConcept concept) {
 		this.element = element;
 		this.concept = concept;
 	}
@@ -48,6 +48,10 @@ public class Dependency {
 	
 	public CodeableConcept getConcept() {
 		return concept;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")

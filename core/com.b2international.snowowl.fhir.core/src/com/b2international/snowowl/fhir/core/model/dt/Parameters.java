@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import com.b2international.commons.reflect.Reflections;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -98,6 +99,17 @@ public final class Parameters {
 	
 	public List<Parameter> getParameters() {
 		return parameters;
+	}
+	
+	/**
+	 * Returns the optinal parameter with matching name provided.
+	 * @param parameterName
+	 * @return
+	 */
+	public Optional<Parameter> getByName(String parameterName) {
+		return parameters.stream()
+			.filter(p -> p.getName().equals(parameterName))
+			.findFirst();
 	}
 	
 	@JsonSerialize(using = Parameters.Json.Ser.class)
@@ -181,11 +193,22 @@ public final class Parameters {
 			this.parameters = parameters;
 		}
 		
+		/**
+		 * Returns the optinal parameter with matching name provided.
+		 * @param parameterName
+		 * @return
+		 */
+		public Optional<Parameter> getByName(String parameterName) {
+			return parameters.getParameters().stream()
+				.filter(p -> p.getName().equals(parameterName))
+				.findFirst();
+		}
+		
 		@ApiModelProperty("parameter")
 		public List<Parameter> getParameters() {
 			return parameters.getParameters();
 		} 
-
+		
 		static final class Ser extends StdSerializer<Parameters.Fhir> {
 
 			private static final long serialVersionUID = 1L;

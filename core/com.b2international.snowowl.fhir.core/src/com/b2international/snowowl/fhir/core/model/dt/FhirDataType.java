@@ -38,6 +38,7 @@ public enum FhirDataType {
 	
 	//complex types
 	CODING("valueCoding"), 
+	CODEABLECONCEPT("valueCodeableConcept"),
 	
 	// references to complex types with specific type field name
 	PART("part");
