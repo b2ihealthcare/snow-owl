@@ -269,7 +269,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
 	public Parameters.Fhir subsumes(
-			
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
@@ -279,11 +278,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
 		
 		final SubsumptionRequest req = SubsumptionRequest.builder()
-				.codeA(codeA)
-				.codeB(codeB)
-				.system(codeSystemId)
-				.version(version)
-				.build();
+			.codeA(codeA)
+			.codeB(codeB)
+			.system(codeSystemId)
+			.version(version)
+			.build();
 		
 		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(req.getSystem());
 		final SubsumptionResult result = codeSystemProvider.subsumes(req);
