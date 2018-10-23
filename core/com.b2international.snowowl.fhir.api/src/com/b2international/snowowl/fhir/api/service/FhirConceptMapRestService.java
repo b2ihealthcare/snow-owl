@@ -20,6 +20,7 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -37,17 +38,14 @@ import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -77,8 +75,8 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return bundle of concept maps
 	 */
 	@ApiOperation(
-			value="Retrieve all concept maps",
-			notes="Returns a collection of the supported concept maps.")
+		value="Retrieve all concept maps",
+		notes="Returns a collection of the supported concept maps.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
@@ -121,9 +119,9 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return @link {@link ConceptMap}
 	 */
 	@ApiOperation(
-			response=ConceptMap.class,
-			value="Retrieve the concept map by id",
-			notes="Retrieves the concept map specified by its logical id.")
+		response=ConceptMap.class,
+		value="Retrieve the concept map by id",
+		notes="Retrieves the concept map specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -151,25 +149,48 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return translation of the code
 	 */
 	@ApiOperation(
-			response=TranslateResult.class,
-			value="Translate a code based on a specific Concept Map",
-			notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
+		response=TranslateResult.class,
+		value="Translate a code based on a specific Concept Map",
+		notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Concept map not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.GET)
-	public Parameters.Fhir translate(@ApiParam(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId) {
+	public Parameters.Fhir translate(
+		@ApiParam(value="The id of the Concept Map to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
+		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
+		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
+		@ApiParam(value="The code system's version") @RequestParam(value="version") final String version,
+		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
+		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
+		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
+		@ApiParam(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
 		
-		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
+		//validation is triggered by builder.build()
+		Builder builder = TranslateRequest.builder()
+			.code(code)
+			.system(system)
+			.version(version);
+			
+		if(source.isPresent()) {
+			builder.source(source.get());
+		}
 		
-		TranslateRequest translateRequest = TranslateRequest.builder()
-				.build();
+		if(target.isPresent()) {
+			builder.target(target.get());
+		}
 		
-		IConceptMapApiProvider valueSetProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(logicalId);
-		TranslateResult translateResult = valueSetProvider.translate(logicalId, translateRequest);
-		return toResponse(translateResult);
+		if(targetSystem.isPresent()) {
+			builder.targetSystem(targetSystem.get());
+		}
+		
+		if(isReverse.isPresent()) {
+			builder.isReverse(isReverse.get());
+		}
+		
+		return toResponse(doTranslate(conceptMapId, builder.build()));
 	}
 	
 	/**
@@ -178,22 +199,23 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return translation of the code
 	 */
 	@ApiOperation(
-			response=TranslateResult.class,
-			value="Translate a code based on a specific Concept Map",
-			notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
+		response=TranslateResult.class,
+		value="Translate a code based on a specific Concept Map",
+		notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$translate", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir translate(
-			@ApiParam(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
-			@ApiParam(name = "body", value = "The translate request parameters")
-			@RequestBody Parameters.Fhir in) {
+		@ApiParam(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
+		@ApiParam(name = "body", value = "The translate request parameters")
+		@RequestBody Parameters.Fhir in) {
 		
+		//validation is triggered by builder.build()
 		final TranslateRequest request = toRequest(in, TranslateRequest.class);
-		TranslateResult result = doTranslate(request);
+		TranslateResult result = doTranslate(conceptMapId, request);
 		return toResponse(result);
 	}
 
@@ -202,28 +224,47 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return translation of the code
 	 */
 	@ApiOperation(
-			response=TranslateResult.class,
-			value="Translate a code",
-			notes="Translate a code from one value set to another, based on the existing value set and concept maps resources, and/or other additional knowledge available to the server.")
+		response=TranslateResult.class,
+		value="Translate a code",
+		notes="Translate a code from one value set to another, based on the existing value set and concept maps resources, and/or other additional knowledge available to the server.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Concept map not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$translate", method=RequestMethod.GET)
-	public Parameters.Fhir translate() {
+	public Parameters.Fhir translate(
+		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
+		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
+		@ApiParam(value="The code system's version") @RequestParam(value="version") final String version,
+		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
+		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
+		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
+		@ApiParam(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
 		
-		TranslateRequest translateRequest = TranslateRequest.builder()
-				.build();
+		//validation is triggered by builder.build()
+		Builder builder = TranslateRequest.builder()
+				.code(code)
+				.system(system)
+				.version(version);
+				
+			if(source.isPresent()) {
+				builder.source(source.get());
+			}
+			
+			if(target.isPresent()) {
+				builder.target(target.get());
+			}
+			
+			if(targetSystem.isPresent()) {
+				builder.targetSystem(targetSystem.get());
+			}
+			
+			if(isReverse.isPresent()) {
+				builder.isReverse(isReverse.get());
+			}
 		
-		TranslateResult.Builder resultBuilder = TranslateResult.builder();
-		
-		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders();
-		for (IConceptMapApiProvider provider : providers) {
-			Collection<Match> matches = provider.translate(translateRequest);
-			resultBuilder.addMatches(matches);
-		}
-		return toResponse(resultBuilder.build());
+		return toResponse(doTranslate(builder.build()));
 	}
 	
 	/**
@@ -232,9 +273,9 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 * @return translation of the code
 	 */
 	@ApiOperation(
-			response=TranslateResult.class,
-			value="Translate a code",
-			notes="Translate a code from one value set to another, based on the existing value set and concept map resources.")
+		response=TranslateResult.class,
+		value="Translate a code",
+		notes="Translate a code from one value set to another, based on the existing value set and concept map resources.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -245,14 +286,44 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 			@ApiParam(name = "body", value = "The translate request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
+		//validation is triggered by builder.build()
 		final TranslateRequest request = toRequest(in, TranslateRequest.class);
 		TranslateResult result = doTranslate(request);
 		return toResponse(result);
 	}
 	
-	private TranslateResult doTranslate(TranslateRequest request) {
-		// TODO Auto-generated method stub
-		return null;
+	/*
+	 * Specific Concept Map based translation
+	 */
+	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
+		
+		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
+		IConceptMapApiProvider valueSetProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(logicalId);
+		TranslateResult translateResult = valueSetProvider.translate(logicalId, translateRequest);
+		return translateResult;
+	}
+	
+	/*
+	 * Translation from ANY Concept Maps
+	 */
+	private TranslateResult doTranslate(TranslateRequest translateRequest) {
+		
+		TranslateResult.Builder resultBuilder = TranslateResult.builder();
+		
+		int totalMatch = 0;
+		
+		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders();
+		
+		for (IConceptMapApiProvider provider : providers) {
+			Collection<Match> matches = provider.translate(translateRequest);
+			totalMatch = totalMatch + matches.size();
+			resultBuilder.addMatches(matches);
+		}
+		
+		return resultBuilder
+			.result(totalMatch > 0)
+			.message(totalMatch + " matches.")
+			.build();
 	}
 	
 }

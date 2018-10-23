@@ -229,6 +229,11 @@ public class TranslateRequest {
 			this.version = version;
 			return this;
 		}
+		
+		public Builder source(final String source) {
+			this.source = new Uri(source);
+			return this;
+		}
 
 		public Builder coding(Coding coding) {
 			this.coding = coding;
