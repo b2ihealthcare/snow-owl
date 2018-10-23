@@ -22,6 +22,9 @@ import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
+import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -94,9 +97,20 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	ConceptMap getConceptMap(LogicalId logicalId);
 
 	/**
-	 * @param logicalId
-	 * @return
+	 * Returns a the collection of mapping matches as a translate result from a given Concept Map
+	 * @param {@link TranslateRequest}
+	 * @param logicalId logical if of the {@link ConceptMap}
+	 * @return {@link TranslateResult}
 	 */
-	String translate(LogicalId logicalId);
+	TranslateResult translate(LogicalId logicalId, TranslateRequest translateRequest);
+
+	/**
+	 * Returns a collection of mapping matches for the given translate request
+	 * These mappings can be fetched from any concept map in the system.
+	 * 
+	 * @param {@link TranslateRequest}
+	 * @return collection of translate matches
+	 */
+	Collection<Match> translate(TranslateRequest translateRequest);
 	
 }

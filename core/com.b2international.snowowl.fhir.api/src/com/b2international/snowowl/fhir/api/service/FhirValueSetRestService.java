@@ -76,7 +76,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			value="Retrieve all value sets",
 			notes="Returns a collection of the supported value sets.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -121,7 +121,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			value="Retrieve the value set by id",
 			notes="Retrieves the value set specified by its logical id.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
@@ -151,7 +151,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			value="Expand a value set",
 			notes="Expand a value set specified by its logical id.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
@@ -243,7 +243,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			value="Validate a code in a value set",
 			notes="Validate that a coded value is in the set of codes allowed by a value set.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
@@ -282,7 +282,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			value="Validate a code in a value set defined by its URL",
 			notes="Validate that a coded value is in the set of codes allowed by a value set.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})

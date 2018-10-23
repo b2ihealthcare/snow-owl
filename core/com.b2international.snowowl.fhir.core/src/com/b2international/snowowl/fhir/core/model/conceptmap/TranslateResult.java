@@ -104,6 +104,10 @@ public class TranslateResult {
 			return this;
 		}
 		
+		public void addMatches(Collection<Match> additionalMatches) {
+			matches.addAll(additionalMatches);
+		}
+		
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public Builder match(Collection<Match> matchCollection) {
 			matches = ImmutableList.builder();
@@ -115,6 +119,7 @@ public class TranslateResult {
 		protected TranslateResult doBuild() {
 			return new TranslateResult(result, message, matches.build());
 		}
+
 
 	}
 	

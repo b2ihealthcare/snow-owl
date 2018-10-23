@@ -89,7 +89,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			value="Retrieve all code systems",
 			notes="Returns a collection of the supported code systems.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -140,7 +140,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			value="Retrieve the code system by id",
 			notes="Retrieves the code system specified by its logical id.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
