@@ -64,7 +64,7 @@ public class Indexes {
 	}
 	
 	private static ObjectMapper configure(ObjectMapper mapper) {
-		return mapper.copy()
+		return mapper
 				.registerModule(new DecimalModule())
 				.addMixIn(Metadata.class, MetadataMixin.class)
 				.addMixIn(MetadataHolder.class, MetadataHolderMixin.class)
