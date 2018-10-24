@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.junit.Before;
+
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
@@ -66,10 +68,9 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 //			SnomedConstraintDocument.class
 		);
 	}
-	
-	@Override
+
+	@Before
 	public void setup() {
-		super.setup();
 		staging = index().prepareCommit(MAIN);
 	}
 	

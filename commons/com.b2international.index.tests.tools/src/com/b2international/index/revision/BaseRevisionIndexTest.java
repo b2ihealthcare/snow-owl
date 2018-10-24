@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,20 +27,15 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 
 import com.b2international.commons.options.MetadataImpl;
-import com.b2international.index.DefaultIndex;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
-import com.b2international.index.IndexClient;
-import com.b2international.index.Indexes;
+import com.b2international.index.IndexResource;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
 import com.b2international.index.util.Reflections;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -51,42 +47,31 @@ public abstract class BaseRevisionIndexTest {
 	protected static final String STORAGE_KEY1 = "1";
 	protected static final String STORAGE_KEY2 = "2";
 	
-	// XXX start from 3 to take the two constant values above into account
 	private AtomicLong storageKeys = new AtomicLong(3);
-	private ObjectMapper mapper;
-	private Mappings mappings;
-	private Index rawIndex;
-	private RevisionIndex index;
-	private TimestampProvider timestampProvider;
 	
-	protected final String nextId() {
-		return Long.toString(storageKeys.getAndIncrement());
-	}
+	private final Collection<Hooks.Hook> hooks = newArrayListWithCapacity(2);
 	
-	@Before
-	public void setup() {
-		mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		configureMapper(mapper);
-		mappings = new Mappings(getTypes());
-		rawIndex = new DefaultIndex(createIndexClient(mapper, mappings));
-		timestampProvider = new TimestampProvider.Default();
-		index = new DefaultRevisionIndex(rawIndex, timestampProvider, mapper);
-		index.admin().create();
-	}
+	@Rule
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper);
 
 	@After
-	public void teardown() {
-		if (index != null) {
-			index.admin().delete();
-		}
+	public void after() {
+		hooks.forEach(index().hooks()::removeHook);
 	}
 	
-	protected final ObjectMapper getMapper() {
-		return mapper;
+	/**
+	 * Subclasses may override to provide additional mappings for the underlying index.
+	 * @return
+	 */
+	protected Collection<Class<?>> getTypes() {
+		return Collections.emptySet();
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
+	}
+	
+	protected final String nextId() {
+		return Long.toString(storageKeys.getAndIncrement());
 	}
 	
 	protected String createBranch(String parent, String child) {
@@ -98,11 +83,15 @@ public abstract class BaseRevisionIndexTest {
 	}
 
 	protected final RevisionIndex index() {
-		return index;
+		return index.getRevisionIndex();
 	}
 	
 	protected final Index rawIndex() {
-		return rawIndex;
+		return index.getIndex();
+	}
+	
+	protected final ObjectMapper getMapper() {
+		return index.getMapper();
 	}
 	
 	protected BaseRevisionBranching branching() {
@@ -113,20 +102,13 @@ public abstract class BaseRevisionIndexTest {
 		return getBranch(MAIN);
 	}
 	
+	protected final void withHook(Hooks.Hook hook) {
+		hooks.add(hook);
+		index().hooks().addHook(hook);
+	}
+	
 	protected RevisionBranch getBranch(String branchPath) {
 		return branching().getBranch(branchPath);
-	}
-	
-	/**
-	 * Subclasses may override to provide additional mappings for the underlying index.
-	 * @return
-	 */
-	protected Collection<Class<?>> getTypes() {
-		return Collections.emptySet();
-	}
-	
-	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
-		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings);
 	}
 	
 	protected final void indexDocument(final String key, final Object doc) {
@@ -188,7 +170,7 @@ public abstract class BaseRevisionIndexTest {
 	
 	protected void assertDocEquals(Object expected, Object actual) {
 		assertNotNull("Actual document is missing from index", actual);
-		for (Field f : mappings.getMapping(expected.getClass()).getFields()) {
+		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
 					|| DocumentMapping._ID.equals(f.getName())) {

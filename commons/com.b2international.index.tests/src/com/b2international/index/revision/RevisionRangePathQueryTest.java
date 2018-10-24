@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
@@ -37,17 +36,9 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 		return ImmutableList.<Class<?>>of(RevisionData.class);
 	}
 
-	private String branchA;
-	
-	@Before
-	@Override
-	public void setup() {
-		super.setup();
-		branchA = createBranch(MAIN, "a");
-	}
-	
 	@Test(expected = IllegalArgumentException.class)
 	public void readRangeWithoutBase() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
 		search(RevisionIndex.toRevisionRange("", branchA), Query.select(RevisionData.class).where(Expressions.matchAll()).build());
 	}
 	
@@ -58,6 +49,7 @@ public class RevisionRangePathQueryTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void readRange() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
 		final RevisionData data1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		final RevisionData data2 = new RevisionData(STORAGE_KEY2, "field1", "field2Changed");
 		indexRevision(MAIN, data1);

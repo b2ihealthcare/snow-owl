@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class ScrollTest extends BaseIndexTest {
 
+	private static final int NUM_DOCS = 10_000;
+	
 	private final Random rnd = new Random();
 
 	@Override
@@ -47,7 +49,7 @@ public class ScrollTest extends BaseIndexTest {
 	
 	@Test
 	public void searchAndReturnTopNHitsWithLimit() throws Exception {
-		indexDocs(100_000);
+		indexDocs(NUM_DOCS);
 		// return top 100 hits
 		Hits<Data> hits = search(Query.select(Data.class)
 				.where(Expressions.matchAll())
@@ -58,37 +60,37 @@ public class ScrollTest extends BaseIndexTest {
 	
 	@Test
 	public void searchAndReturnAllHitsWithLimit() throws Exception {
-		indexDocs(100_000);
+		indexDocs(NUM_DOCS);
 		// return all hits within the first page
 		Stopwatch w = Stopwatch.createStarted();
 		Hits<Data> hits = search(Query.select(Data.class)
 				.where(Expressions.matchAll())
-				.limit(100_000)
+				.limit(NUM_DOCS)
 				.build());
 		System.err.println("ReturnAllHitsWithLimit took " + w);
-		assertThat(hits).hasSize(100_000);
+		assertThat(hits).hasSize(NUM_DOCS);
 	}
 	
 	@Test
 	public void searchAndReturnAllPartialHits() throws Exception {
-		indexDocs(100_000);
+		indexDocs(NUM_DOCS);
 		// return all hits within the first page
 		Stopwatch w = Stopwatch.createStarted();
 		Hits<String> hits = search(Query.select(String.class)
 				.from(Data.class)
 				.fields("field1")
 				.where(Expressions.matchAll())
-				.limit(100_000)
+				.limit(NUM_DOCS)
 				.build());
 		System.err.println("ReturnAllPartialHitsWithLimit took " + w);
-		assertThat(hits).hasSize(100_000);
+		assertThat(hits).hasSize(NUM_DOCS);
 	}
 	
 	@Test
 	public void searchAndReturnAllHitsWithScroll() throws Exception {
-		indexDocs(100_000);
+		indexDocs(NUM_DOCS);
 		// return all hits within the first page
-		List<Data> hits = newArrayListWithExpectedSize(100_000);
+		List<Data> hits = newArrayListWithExpectedSize(NUM_DOCS);
 		
 		Stopwatch w = Stopwatch.createStarted();
 		Iterable<Hits<Data>> scroll = scroll(Query.select(Data.class)
@@ -101,7 +103,7 @@ public class ScrollTest extends BaseIndexTest {
 		}
  		
  		System.err.println("ReturnAllHitsWithScroll took " + w);
-		assertThat(hits).hasSize(100_000);
+		assertThat(hits).hasSize(NUM_DOCS);
 	}
 	
 	private void indexDocs(int numberOfDocs) {

@@ -115,7 +115,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	
 	@Before
 	public void setup() {
-		super.setup();
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), getMapper(), new Mappings(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class));
 		repository = new ValidationRepository(index);
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -140,7 +139,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	
 	@After
 	public void teardown() {
-		super.teardown();
 		repository.dispose();
 	}
 	

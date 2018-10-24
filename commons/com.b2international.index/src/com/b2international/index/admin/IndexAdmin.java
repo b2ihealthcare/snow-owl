@@ -15,6 +15,7 @@
  */
 package com.b2international.index.admin;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -52,12 +53,12 @@ public interface IndexAdmin {
 	void delete();
 
 	/**
-	 * Clears a type and all its associated data from the index.
+	 * Clears all associated data from the index for the specified types.
 	 * 
-	 * @param type
-	 *            - the type to remove completely from the index
+	 * @param types
+	 *            - the types to remove completely from the index
 	 */
-	<T> void clear(Class<T> type);
+	void clear(Collection<Class<?>> types);
 
 	/**
 	 * Returns the settings of this index.

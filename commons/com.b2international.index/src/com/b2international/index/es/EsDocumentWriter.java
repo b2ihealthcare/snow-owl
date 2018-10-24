@@ -19,22 +19,16 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.elasticsearch.action.DocWriteRequest.OpType;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -43,36 +37,23 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.script.ScriptType;
 
 import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkOperation;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.es.admin.EsIndexAdmin;
-import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.RawValue;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -89,14 +70,9 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class EsDocumentWriter implements Writer {
 
-	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
-
-	private static final int BATCHS_SIZE = 10_000;
-	
 	private final EsIndexAdmin admin;
 	private final Searcher searcher;
 
-	private final Random random = new Random();
 	private final Table<Class<?>, String, Object> indexOperations = HashBasedTable.create();
 	private final Multimap<Class<?>, String> deleteOperations = HashMultimap.create();
 	private final ObjectMapper mapper;
@@ -164,10 +140,10 @@ public class EsDocumentWriter implements Writer {
 		}
 		final List<ListenableFuture<?>> updateFutures = newArrayList();
 		for (BulkUpdate<?> update : bulkUpdateOperations) {
-			updateFutures.add(executor.submit(() -> bulkUpdate(client, update, mappingsToRefresh)));
+			updateFutures.add(executor.submit(() -> admin.bulkUpdate(update, mappingsToRefresh)));
 		}
 		for (BulkDelete<?> delete: bulkDeleteOperations) {
-			updateFutures.add(executor.submit(() -> bulkDelete(client, delete, mappingsToRefresh)));
+			updateFutures.add(executor.submit(() -> admin.bulkDelete(delete, mappingsToRefresh)));
 		}
 		try {
 			executor.shutdown();
@@ -283,140 +259,6 @@ public class EsDocumentWriter implements Writer {
 
 		// refresh the index if there were only updates
 		admin.refresh(mappingsToRefresh);
-	}
-
-	private void bulkUpdate(final EsClient client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
-		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
-		final String rawScript = mapping.getScript(update.getScript()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
-		bulkIndexByScroll(client, update, "_update_by_query", script, mappingsToRefresh);
-	}
-
-	private void bulkDelete(final EsClient client, final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
-		bulkIndexByScroll(client, delete, "_delete_by_query", null, mappingsToRefresh);
-	}
-
-	private void bulkIndexByScroll(final EsClient client,
-			final BulkOperation<?> op, 
-			final String command, 
-			final org.elasticsearch.script.Script script, 
-			final Set<DocumentMapping> mappingsToRefresh) {
-		
-		final DocumentMapping mapping = admin.mappings().getMapping(op.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping).build(op.getFilter());
-		
-		long versionConflicts = 0;
-		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
-		
-		do {
-
-			/*
-			 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html and 
-			 * for https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-delete-by-query.html
-			 * the low-level structure of this request.
-			 */
-			try {
-
-				final String endpoint = String.format("%s/%s/%s", admin.getTypeIndex(mapping), mapping.typeAsString(), command);
-				
-				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#_url_parameters_2
-				final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-						.put("scroll_size", Integer.toString(BATCHS_SIZE))
-						.put("slices", Integer.toString(getConcurrencyLevel()))
-						.build(); 
-
-				final ObjectNode ubqr = mapper.createObjectNode();
-				putXContentValue(ubqr, "script", script);
-				putXContentValue(ubqr, "query", query);
-
-				final HttpEntity requestBody = new StringEntity(mapper.writeValueAsString(ubqr), ContentType.APPLICATION_JSON);
-				
-				Response response;
-				try {
-					response = client.getLowLevelClient().performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
-				} catch (ResponseException e) {
-					response = e.getResponse();
-				}
-				
-				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#docs-update-by-query-response-body
-				final JsonNode updateByQueryResponse = mapper.readTree(response.getEntity().getContent());
-				
-				final int updateCount = updateByQueryResponse.get("updated").asInt();
-				final int deleteCount = updateByQueryResponse.get("deleted").asInt();
-				final int noops = updateByQueryResponse.get("noops").asInt();
-				final ArrayNode failures = (ArrayNode) updateByQueryResponse.get("failures");
-				
-				versionConflicts = updateByQueryResponse.get("version_conflicts").asInt();
-				
-				boolean updated = updateCount > 0;
-				if (updated) {
-					mappingsToRefresh.add(mapping);
-					admin.log().info("Updated {} {} documents with bulk {}", updateCount, mapping.typeAsString(), op);
-				}
-				
-				boolean deleted = deleteCount > 0;
-				if (deleted) {
-					mappingsToRefresh.add(mapping);
-					admin.log().info("Deleted {} {} documents with bulk {}", deleteCount, mapping.typeAsString(), op);
-				}
-				
-				if (!updated && !deleted) {
-					admin.log().warn("Bulk {} could not be applied to {} documents, no-ops ({}), conflicts ({})",
-							op,
-							mapping.typeAsString(), 
-							noops, 
-							versionConflicts);
-				}
-				
-				if (failures.size() > 0) {
-					boolean versionConflictsOnly = true;
-					for (JsonNode failure : failures) {
-						final String failureMessage = failure.get("cause").get("reason").asText();
-						final int failureStatus = failure.get("status").asInt();
-						
-						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
-							versionConflictsOnly = false;
-							admin.log().error("Index failure during bulk update: {}", failureMessage);
-						} else {
-							admin.log().warn("Version conflict reason: {}", failureMessage);
-						}
-					}
-
-					if (!versionConflictsOnly) {
-						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.");
-					}
-				}
-				
-				if (attempts <= 0) {
-					throw new IndexException("There were indexing failures during bulk updates. See logs for all failures.", null);
-				}
-				
-				if (versionConflicts > 0) {
-					--attempts;
-					try {
-						Thread.sleep(100 + random.nextInt(900));
-						admin.refresh(Collections.singleton(mapping));
-					} catch (InterruptedException e) {
-						throw new IndexException("Interrupted", e);
-					}
-				}
-			} catch (IOException e) {
-				throw new IndexException("Could not execute bulk update.", e);
-			}
-		} while (versionConflicts > 0);
-	}
-
-	private void putXContentValue(final ObjectNode ubqr, final String key, final ToXContent toXContent) throws IOException {
-		if (toXContent == null) {
-			return;
-		}
-		
-		final XContentBuilder xContentBuilder = toXContent.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS);
-		xContentBuilder.flush();
-		xContentBuilder.close();
-		
-		final ByteArrayOutputStream outputStream = (ByteArrayOutputStream) xContentBuilder.getOutputStream();
-		ubqr.putRawValue(key, new RawValue(outputStream.toString("UTF-8")));
 	}
 
 	private int getConcurrencyLevel() {

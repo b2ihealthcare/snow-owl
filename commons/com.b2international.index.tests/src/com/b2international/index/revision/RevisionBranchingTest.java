@@ -201,15 +201,12 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 		final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(parallelUpdates.size()));
 		final Collection<ListenableFuture<?>> futures = newArrayList();
 		for (final IndexWrite<Void> parallelUpdate : parallelUpdates) {
-			futures.add(executor.submit(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						barrier.await(1000, TimeUnit.MILLISECONDS);
-						branching.commit(parallelUpdate);
-					} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
-						throw new RuntimeException("Failed to wait for all parties");
-					}
+			futures.add(executor.submit(() -> {
+				try {
+					barrier.await(2000, TimeUnit.MILLISECONDS);
+					branching.commit(parallelUpdate);
+				} catch (InterruptedException | BrokenBarrierException | TimeoutException e) {
+					throw new RuntimeException("Failed to wait for all parties", e);
 				}
 			}));
 		}
@@ -220,8 +217,8 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 
 		// after parallel updates, both timestamp and metadata should be changed and recorded
 		final RevisionBranch branch = getBranch("MAIN/a");
-		assertEquals(branch.getHeadTimestamp(), commitTimestamp);
-		assertEquals(branch.metadata(), ImmutableMap.<String, Object>of("test", 1));
+		assertEquals(commitTimestamp, branch.getHeadTimestamp());
+		assertEquals(ImmutableMap.<String, Object>of("test", 1), branch.metadata());
 	}
 	
 }

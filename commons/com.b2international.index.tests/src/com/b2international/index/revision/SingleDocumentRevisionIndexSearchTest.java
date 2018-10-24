@@ -51,11 +51,11 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		indexRevision(MAIN, first, second);
 		
-		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.builder().build()).build();
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchAll()).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(2);
-		assertThat(matches).containsAll(Lists.newArrayList(first, second));
+		assertThat(matches).containsOnly(first, second);
 	}
 	
 	@Test

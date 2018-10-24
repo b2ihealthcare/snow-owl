@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Objects;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -48,13 +50,14 @@ public class DecimalFieldTest extends BaseIndexTest {
 	protected Collection<Class<?>> getTypes() {
 		return ImmutableSet.<Class<?>>of(DataWithDecimal.class);
 	}
-	
-	@Override
+
+	@Before
 	public void setup() {
-		super.setup();
-		indexDocument(KEY1, new DataWithDecimal(VALUE_10));
-		indexDocument(KEY2, new DataWithDecimal(VALUE_05));
-		indexDocument(KEY3, new DataWithDecimal(VALUE_20));
+		indexDocuments(ImmutableMap.of(
+			KEY1, new DataWithDecimal(VALUE_10),
+			KEY2, new DataWithDecimal(VALUE_05),
+			KEY3, new DataWithDecimal(VALUE_20)
+		));
 	}
 	
 	@Test

@@ -57,9 +57,7 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 	}
 	
 	@Before
-	@Override
 	public void setup() {
-		super.setup();
 		conceptA = concept()
 				.preferredDescriptions(
 					ImmutableList.of(

@@ -119,7 +119,6 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Before
 	public void setup() {
-		super.setup();
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		context = TestBranchContext.on(MAIN)
 				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))

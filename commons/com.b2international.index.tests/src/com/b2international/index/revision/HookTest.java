@@ -41,11 +41,10 @@ public class HookTest extends BaseRevisionIndexTest {
 	@Test
 	public void preCommitHook() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
-		Hooks.PreCommitHook preCommit = staging -> {
+		withHook((Hooks.PreCommitHook) staging -> {
 			assertEquals(1, staging.getNewObjects().size());
 			latch.countDown();
-		};
-		index().hooks().addHook(preCommit);
+		});
 		commit(MAIN, Collections.singleton(new RevisionData(STORAGE_KEY1, "field1", "field2")));
 		assertTrue(latch.await(1, TimeUnit.SECONDS));
 	}
@@ -53,11 +52,10 @@ public class HookTest extends BaseRevisionIndexTest {
 	@Test
 	public void postCommitHook() throws Exception {
 		CountDownLatch latch = new CountDownLatch(1);
-		Hooks.PostCommitHook postCommit = commit -> {
+		withHook((Hooks.PostCommitHook) commit -> {
 			assertEquals(1, commit.getDetailsByObject(STORAGE_KEY1).size());
 			latch.countDown();
-		};
-		index().hooks().addHook(postCommit);
+		});
 		commit(MAIN, Collections.singleton(new RevisionData(STORAGE_KEY1, "field1", "field2")));
 		assertTrue(latch.await(1, TimeUnit.SECONDS));
 	}

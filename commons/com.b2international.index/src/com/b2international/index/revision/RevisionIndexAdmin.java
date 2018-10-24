@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -60,8 +61,8 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public <T> void clear(Class<T> type) {
-		rawIndexAdmin.clear(type);
+	public void clear(Collection<Class<?>> types) {
+		rawIndexAdmin.clear(types);
 	}
 
 	@Override

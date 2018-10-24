@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,13 @@ package com.b2international.index;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Rule;
 
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
-import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
@@ -39,48 +33,30 @@ public abstract class BaseIndexTest {
 
 	protected static final String KEY1 = "key1";
 	protected static final String KEY2 = "key2";
-	
-	private Index index;
-	private IndexClient client;
-	private Mappings mappings;
-	
-	@Before
-	public void setup() {
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		mappings = new Mappings(getTypes());
-		client = createIndexClient(mapper, mappings);
-		index = new DefaultIndex(client);
-		index.admin().create();
-	}
-	
-	@After
-	public void teardown() {
-		index.admin().delete();
-	}
-	
+
+	@Rule
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper);
+
 	/**
 	 * @return the document types used by this test case
 	 */
 	protected abstract Collection<Class<?>> getTypes();
 
-	/**
-	 * @return the settings to use for the index client
-	 */
-	protected Map<String, Object> getSettings() {
-		return ImmutableMap.of();
+	
+	protected void configureMapper(ObjectMapper mapper) {
+		
 	}
 	
-	private final IndexClient createIndexClient(ObjectMapper mapper, Mappings mappings) {
-		return Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, mappings, getSettings());
+	protected final ObjectMapper getMapper() {
+		return index.getMapper();
 	}
 	
 	protected final Index index() {
-		return index;
+		return index.getIndex();
 	}
 	
 	protected final IndexClient client() {
-		return client;
+		return index.getClient();
 	}
 	
 	protected final <T> T getDocument(final Class<T> type, final String key) {
