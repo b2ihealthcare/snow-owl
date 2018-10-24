@@ -321,8 +321,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		}
 		
 		return resultBuilder
-			.result(totalMatch > 0)
-			.message(totalMatch + " matches.")
+			.message(totalMatch + " match(es).")
 			.build();
 	}
 	

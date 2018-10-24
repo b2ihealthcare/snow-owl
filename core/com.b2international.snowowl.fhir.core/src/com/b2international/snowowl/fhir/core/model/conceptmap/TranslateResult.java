@@ -16,9 +16,11 @@
 package com.b2international.snowowl.fhir.core.model.conceptmap;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.FhirType;
@@ -61,7 +63,14 @@ public class TranslateResult {
 	}
 	
 	public Boolean getResult() {
-		return result;
+		
+		if (match == null || match.isEmpty()) return false;
+		
+		return match.stream().filter(m -> m.getEquivalence() != null 
+			&& !m.getEquivalence().equals(ConceptMapEquivalence.DISJOINT.getCode())
+			&& !m.getEquivalence().equals(ConceptMapEquivalence.UNMATCHED.getCode())
+		)
+		.findAny().isPresent();
 	}
 	
 	public String getMessage() {
@@ -79,17 +88,11 @@ public class TranslateResult {
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder extends ValidatingBuilder<TranslateResult> {
 
-		private Boolean result;
 		private String message;
 		private ImmutableList.Builder<Match> matches = ImmutableList.builder();
 		
 		Builder() {}
 		
-		public Builder result(final Boolean result) {
-			this.result = result;
-			return this;
-		}
-
 		public Builder message(final String message) {
 			this.message = message;
 			return this;
@@ -117,7 +120,16 @@ public class TranslateResult {
 		
 		@Override
 		protected TranslateResult doBuild() {
-			return new TranslateResult(result, message, matches.build());
+			
+			List<Match> matchesList = matches.build();
+			
+			boolean result = matchesList.stream().filter(m -> m.getEquivalence() != null 
+				&& !m.getEquivalence().equals(ConceptMapEquivalence.DISJOINT.getCode())
+				&& !m.getEquivalence().equals(ConceptMapEquivalence.UNMATCHED.getCode())
+			)
+			.findAny().isPresent();
+			
+			return new TranslateResult(result, message, matchesList);
 		}
 
 
