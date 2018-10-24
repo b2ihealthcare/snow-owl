@@ -73,21 +73,56 @@
 						</goals>
 						<configuration>
 							<!-- Copying only the necessary JARs from the dependencies and their transitive stuff -->
-							<!-- Either exclude JARs that are available from any other source or include only the stuff that is not available from other sources -->
-							<excludeArtifactIds>
-								jackson-core,
-								jackson-dataformat-cbor,
-								jackson-dataformat-smile,
-								jackson-dataformat-yaml,
-								netty-buffer,
-								netty-codec,
-								netty-codec-http,
-								netty-common,
-								netty-handler,
-								netty-resolver,
-								netty-transport,
-								snakeyaml
-							</excludeArtifactIds>
+							<includeArtifactIds>
+								aggs-matrix-stats-client,
+								analysis-common,
+								antlr4-runtime,
+								asm-debug-all,
+								commons-codec,
+								commons-logging,
+								compiler,
+								elasticsearch,
+								elasticsearch-cli,
+								elasticsearch-core,
+								elasticsearch-rest-client,
+								elasticsearch-rest-high-level-client,
+								elasticsearch-secure-sm,
+								elasticsearch-x-content,
+								HdrHistogram,
+								hppc,
+								httpasyncclient,
+								httpclient,
+								httpcore,
+								httpcore-nio,
+								jna,
+								joda-time,
+								jopt-simple,
+								lang-mustache-client,
+								lang-painless,
+								log4j-api,
+								log4j-core,
+								lucene-analyzers-common,
+								lucene-backward-codecs,
+								lucene-core,
+								lucene-grouping,
+								lucene-highlighter,
+								lucene-join,
+								lucene-memory,
+								lucene-misc,
+								lucene-queries,
+								lucene-queryparser,
+								lucene-sandbox,
+								lucene-spatial,
+								lucene-spatial-extras,
+								lucene-spatial3d,
+								lucene-suggest,
+								parent-join-client,
+								rank-eval-client,
+								reindex,
+								scripting-painless-spi,
+								t-digest,
+								transport-netty4
+							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>
 					</execution>
