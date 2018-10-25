@@ -11,4 +11,9 @@
             class="com.b2international.snowowl.snomed.fhir.SnomedValueSetApiProvider">
       </valueSetApiProvider>
    </extension>
+   <extension point="com.b2international.snowowl.fhir.core.conceptMapProvider">
+      <conceptMapApiProvider
+            class="com.b2international.snowowl.snomed.fhir.ReferenceSetConceptMapApiProvider">
+      </conceptMapApiProvider>
+   </extension>
 </plugin>

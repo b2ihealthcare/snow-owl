@@ -34,7 +34,6 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
-import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -58,16 +56,13 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPartDefinition;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -77,20 +72,8 @@ import com.google.common.collect.Sets;
  * @since 6.4
  * @see IValueSetApiProvider
  */
-public final class SnomedValueSetApiProvider extends FhirApiProvider implements IValueSetApiProvider {
+public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider implements IValueSetApiProvider {
 
-	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-		SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-		SnomedUri.SNOMED_BASE_URI_STRING
-	);
-	
-	private String repositoryId;
-	
-	public SnomedValueSetApiProvider() {
-		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-	
 	@Override
 	public Collection<ValueSet> getValueSets() {
 		
@@ -149,7 +132,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.getSync()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
+				.orElseThrow(() -> new NotFoundException("Active member", logicalId.toString()));
 		}
 		
 	}
@@ -215,8 +198,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 		String locationName = "$expand.url";
 		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, locationName);
 		
-		//validateVersion(snomedUri, lookup.getVersion());
-		
 		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		if (!snomedUri.hasQueryPart()) {
@@ -271,7 +252,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				}
 			}
 		}
-		
 		throw new NotImplementedException();
 	}
 	
@@ -771,6 +751,9 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			
 		for (SnomedReferenceSetMember snomedReferenceSetMember : members) {
 			
+			//skip inactive members
+			if (!snomedReferenceSetMember.isActive()) continue;
+			
 			SnomedConcept concept = (SnomedConcept) snomedReferenceSetMember.getReferencedComponent();
 			
 			Contains content = Contains.builder()
@@ -803,7 +786,7 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 				.getSync();
 				
 		}).collect(Collectors.toList())
-		.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
+			.stream().flatMap(List::stream).collect(Collectors.toList()); //List<List<?> -> List<?>
 		
 		return simpleTypevalueSets;
 	}
@@ -935,45 +918,6 @@ public final class SnomedValueSetApiProvider extends FhirApiProvider implements 
 			.title(referencedComponent.getPt().getTerm())
 			.addCompose(compose);
 		
-	}
-	
-	@Override
-	protected String getRepositoryId() {
-		return repositoryId;
-	}
-	
-	@Override
-	public boolean isSupported(LogicalId logicalId) {
-		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
-	}
-	
-	@Override
-	public Collection<String> getSupportedURIs() {
-		return SUPPORTED_URIS;
-	}
-	
-	@Override
-	public final boolean isSupported(String uri) {
-		if (Strings.isNullOrEmpty(uri)) return false;
-		
-		boolean foundInList = getSupportedURIs().stream()
-				.filter(uri::equalsIgnoreCase)
-				.findAny()
-				.isPresent();
-			
-		//extension and version is part of the URI
-		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
-		
-		return foundInList || extensionUri;
-	}
-
-	protected Uri getFhirUri() {
-		return SnomedUri.SNOMED_BASE_URI;
-	}
-
-	@Override
-	protected String getCodeSystemShortName() {
-		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	}
 
 }

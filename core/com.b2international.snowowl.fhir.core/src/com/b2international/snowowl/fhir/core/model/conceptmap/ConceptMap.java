@@ -24,6 +24,7 @@ import javax.validation.constraints.AssertTrue;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -33,7 +34,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Reference;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import io.swagger.annotations.ApiModel;
@@ -142,7 +145,7 @@ public class ConceptMap extends TerminologyResource {
 		private Reference sourceReference;
 		private Uri targetUri;
 		private Reference targetReference;
-		private final Collection<Group> groups = Lists.newArrayList();
+		private Collection<Group> groups = Lists.newArrayList();
 
 		public Builder(String conceptMapId) {
 			super(conceptMapId);
@@ -176,6 +179,11 @@ public class ConceptMap extends TerminologyResource {
 		public Builder targetReference(Reference targetReference) {
 			this.targetReference = targetReference;
 			return getSelf();
+		}
+		
+		public Builder groups(Collection<Group> groups) {
+			this.groups = groups;
+			return this;
 		}
 
 		public Builder addGroup(final Group group) {

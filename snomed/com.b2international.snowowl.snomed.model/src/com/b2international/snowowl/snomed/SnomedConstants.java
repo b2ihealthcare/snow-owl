@@ -323,6 +323,13 @@ public abstract class SnomedConstants {
 		
 		//complex map correlation and category
 		public static final String MAP_CORRELATION_ROOT = "447247004";
+		public static final String MAP_CORRELATION_BROAD_TO_NARROW = "447559001";
+		public static final String MAP_CORRELATION_EXACT_MATCH = "447557004";
+		public static final String MAP_CORRELATION_NARROW_TO_BROAD = "447558009";
+		public static final String MAP_CORRELATION_PARTIAL_OVERLAP = "447560006";
+		public static final String MAP_CORRELATION_NOT_MAPPABLE = "447556008";
+		public static final String MAP_CORRELATION_NOT_SPECIFIED = "447561005";
+		
 		public static final String MAP_CATEGORY_ROOT = "447634004";
 		public static final String MAP_CATEGORY_NOT_CLASSIFIED = "447638001";
 		
