@@ -29,11 +29,25 @@
 							<excludeArtifactIds>
 								org.apache.felix.framework,
 								org.apache.felix.main,
+								org.eclipse.core.runtime,
+								org.eclipse.core.contenttype,
+								org.eclipse.core.expressions,
+								org.eclipse.core.filesystem,
 								org.eclipse.core.jobs,
+								org.eclipse.core.resources,
+								org.eclipse.core.commands,
+								org.eclipse.core.variables,
+								org.eclipse.equinox.app,
 								org.eclipse.equinox.common,
 								org.eclipse.equinox.registry,
+								org.eclipse.equinox.preferences,
+								org.eclipse.debug.core,
+								org.eclipse.text,
 								org.eclipse.osgi,
-								org.eclipse.osgi.services
+								org.eclipse.osgi.services,
+								org.eclipse.jdt.core,
+								org.eclipse.jdt.debug,
+								org.eclipse.jdt.launching
 							</excludeArtifactIds>
 						</configuration>
 					</execution>
