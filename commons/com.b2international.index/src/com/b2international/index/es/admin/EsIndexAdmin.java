@@ -190,10 +190,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 				}
 				
 	 		}
-	 		// wait until the cluster processes each index create request
-	 		waitForYellowHealth(getAllIndexes());
-	 		log.info("'{}' indexes are ready.", name);
 		}
+		// wait until the cluster processes each index create request
+		waitForYellowHealth(getAllIndexes());
+		log.info("'{}' indexes are ready.", name);
 	}
 
 	private String[] getAllIndexes() {
