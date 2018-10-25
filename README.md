@@ -40,7 +40,7 @@ Snow Owl uses Maven for its build system. In order to create a distribution, sim
 
     mvn clean package
 
-The distribution package can be found in the `releng/distribution/target` folder, when the build is complete.
+The distribution packages can be found in the `releng/com.b2international.snowowl.server.update/target` folder, when the build is complete.
 
 To run the test cases, use the following command:
 
@@ -63,7 +63,7 @@ Required Eclipse plug-ins (install the listed features via `Help` -> `Install Ne
   * MWE 2 language SDK 2.9.0 (MWE)
   * Xtend IDE 2.11.0 (Xtext)
   * Xtext Complete SDK 2.11.0 (Xtext)
-* Optional: Maven integration (http://download.eclipse.org/technology/m2e/releases) 
+* Maven integration (http://download.eclipse.org/technology/m2e/releases) 
  
 ### Eclipse Preferences
 
@@ -83,7 +83,7 @@ Make sure you have the following preferences enabled/disabled.
 2. Open the `target-platform/target-platform-local.target` file
 3. Wait until Eclipse resolves the target platform and then click on `Set as Target platform`
 4. Wait until the build is complete and you have no compile errors
-5. Launch `snow-owl-community` launch configuration in the Run Configurations menu
+5. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
 6. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
 
 # Contributing
