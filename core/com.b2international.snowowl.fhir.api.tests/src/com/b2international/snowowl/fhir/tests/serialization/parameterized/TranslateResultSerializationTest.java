@@ -90,7 +90,6 @@ public class TranslateResultSerializationTest extends FhirTest {
 			.build();
 		
 		TranslateResult translateResult = TranslateResult.builder()
-			.result(true)
 			.message("This is a test result")
 			.addMatch(match)
 			.build();
@@ -118,7 +117,6 @@ public class TranslateResultSerializationTest extends FhirTest {
 	public void parameterizedTest() throws Exception {
 		
 		TranslateResult translateResult = TranslateResult.builder()
-			.result(true)
 			.build();
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);
@@ -126,7 +124,7 @@ public class TranslateResultSerializationTest extends FhirTest {
 		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
 		
 		String expected ="{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":[{\"name\":\"result\",\"valueBoolean\":true}]}";
+				+ "\"parameter\":[{\"name\":\"result\",\"valueBoolean\":false}]}";
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 		
 	}
