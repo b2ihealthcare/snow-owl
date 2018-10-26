@@ -50,13 +50,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.core.runtime.compatibility.registry"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"/>
-
-   <plugin
          id="org.eclipse.emf.common"
          download-size="0"
          install-size="0"
