@@ -10,7 +10,7 @@
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 	<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
 	<unit id="org.eclipse.net4j.util.feature.group" version="4.7.0.v20180530-0909"/>
-	<repository location="http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.7/"/>
+	<repository location="http://download.eclipse.org/modeling/emf/cdo/drops/R20180613-0111/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="javax.el" version="2.2.0.v201303151357"/>
