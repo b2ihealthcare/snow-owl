@@ -287,12 +287,30 @@
 			<artifactId>protege-common</artifactId>
 			<version>${protege.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+    				<groupId>org.apache.felix</groupId>
+  					<artifactId>org.apache.felix.main</artifactId>
+        		</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>protege-editor-core</artifactId>
 			<version>${protege.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+          			<groupId>org.eclipse.equinox</groupId>
+  					<artifactId>org.eclipse.equinox.common</artifactId>
+        		</exclusion>
+				<exclusion>
+          			<groupId>org.eclipse.equinox</groupId>
+  					<artifactId>org.eclipse.equinox.registry</artifactId>
+        		</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
@@ -341,6 +359,17 @@
       		<artifactId>jetty-osgi-boot</artifactId>
       		<version>${jetty.version}</version>
       		<scope>provided</scope>
+      		<exclusions>
+      			<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+      			<exclusion>
+          			<groupId>org.eclipse.osgi</groupId>
+  					<artifactId>org.eclipse.osgi</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.osgi</groupId>
+  					<artifactId>org.eclipse.osgi.services</artifactId>
+        		</exclusion>
+      		</exclusions>
     	</dependency>
     	<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -425,18 +454,63 @@
   			<artifactId>org.eclipse.emf.codegen.ecore</artifactId>
   			<version>${emf.version}</version>
   			<scope>provided</scope>
+  			<exclusions>
+  				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+  				<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+          			<artifactId>org.eclipse.core.runtime</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+          			<artifactId>org.eclipse.core.resources</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.jdt</groupId>
+  					<artifactId>org.eclipse.jdt.core</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.jdt</groupId>
+  					<artifactId>org.eclipse.jdt.launching</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+          			<artifactId>org.eclipse.debug.core</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+          			<artifactId>org.eclipse.text</artifactId>
+        		</exclusion>
+  			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
 			<artifactId>org.eclipse.xtext</artifactId>
 			<version>${xtext.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+  					<artifactId>org.eclipse.equinox.common</artifactId>
+        		</exclusion>
+        		<exclusion>
+          			<groupId>org.eclipse.platform</groupId>
+  					<artifactId>org.eclipse.osgi</artifactId>
+        		</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
   			<groupId>org.eclipse.xtext</groupId>	
   			<artifactId>org.eclipse.xtext.generator</artifactId>
   			<version>${xtext.version}</version>
   			<scope>provided</scope>
+			<exclusions>
+				<!-- Prefer p2 update site for all Eclipse Platform dependencies, so exclude them here -->
+				<exclusion>
+          			<groupId>com.ibm.icu</groupId>
+  					<artifactId>icu4j</artifactId>
+        		</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
@@ -462,6 +536,7 @@
 			<version>${xtext.version}</version>
 			<scope>provided</scope>
 			<exclusions>
+				<!-- Prefer Guava version 18.0 -->
 				<exclusion>
           			<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
@@ -504,6 +579,7 @@
   			<version>${mwe2.version}</version>
   			<scope>provided</scope>
   			<exclusions>
+  				<!-- Prefer Guava version 18.0 -->
 				<exclusion>
           			<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
@@ -562,6 +638,13 @@
 						</artifact>
 					</target>
 					<filters>
+						<filter>
+							<type>eclipse-plugin</type>
+							<id>org.eclipse.osgi</id>
+							<restrictTo>
+								<versionRange>[3.9.1,3.10.0]</versionRange>
+							</restrictTo>
+						</filter>
 						<!-- work around Equinox bug 348045 -->
 						<!-- Removes the extension bundle from the available bundles for the 
 							javax.servlet package -->

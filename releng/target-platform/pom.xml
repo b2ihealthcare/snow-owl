@@ -47,7 +47,8 @@
 								org.eclipse.osgi.services,
 								org.eclipse.jdt.core,
 								org.eclipse.jdt.debug,
-								org.eclipse.jdt.launching
+								org.eclipse.jdt.launching,
+								icu4j
 							</excludeArtifactIds>
 						</configuration>
 					</execution>
