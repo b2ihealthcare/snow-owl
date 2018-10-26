@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -344,7 +344,7 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubAttributeSet
@@ -355,7 +355,7 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndExpressionConstraint.left=} (ambiguity) right=ExclusionExpressionConstraint
@@ -366,7 +366,7 @@ public class EclSyntacticSequencer extends AbstractSyntacticSequencer {
 	
 	/**
 	 * Ambiguous syntax:
-	 *     ',' | 'AND'
+	 *     'AND' | ','
 	 *
 	 * This ambiguous syntax occurs at:
 	 *     {AndRefinement.left=} (ambiguity) right=SubRefinement

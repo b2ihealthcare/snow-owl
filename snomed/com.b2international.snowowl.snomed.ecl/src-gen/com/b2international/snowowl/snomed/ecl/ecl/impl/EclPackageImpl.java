@@ -1,5 +1,5 @@
 /**
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -406,7 +406,7 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
 
   /**
    * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-   * 
+   *
    * <p>This method is used to initialize {@link EclPackage#eINSTANCE} when that field is accessed.
    * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
    * <!-- begin-user-doc -->
@@ -421,7 +421,8 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     if (isInited) return (EclPackage)EPackage.Registry.INSTANCE.getEPackage(EclPackage.eNS_URI);
 
     // Obtain or create and register package
-    EclPackageImpl theEclPackage = (EclPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof EclPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new EclPackageImpl());
+    Object registeredEclPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
+    EclPackageImpl theEclPackage = registeredEclPackage instanceof EclPackageImpl ? (EclPackageImpl)registeredEclPackage : new EclPackageImpl();
 
     isInited = true;
 
@@ -434,7 +435,6 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     // Mark meta-data to indicate it can't be changed
     theEclPackage.freeze();
 
-  
     // Update the registry and return the package
     EPackage.Registry.INSTANCE.put(EclPackage.eNS_URI, theEclPackage);
     return theEclPackage;
