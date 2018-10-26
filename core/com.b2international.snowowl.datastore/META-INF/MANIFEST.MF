@@ -8,8 +8,8 @@ Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.eclipse.net4j.jvm;bundle-version="[4.1.0,4.1.1)";visibility:=reexport,
- org.eclipse.net4j.tcp;bundle-version="[4.1.0,4.1.1)";visibility:=reexport,
+ org.eclipse.net4j.jvm;bundle-version="[4.1.600,4.2.0)";visibility:=reexport,
+ org.eclipse.net4j.tcp;bundle-version="[4.1.600,4.2.0)";visibility:=reexport,
  org.eclipse.core.expressions;bundle-version="3.4.400",
  org.eclipse.xtext.util;bundle-version="[2.11.0,2.13.0)";visibility:=reexport,
  xstream;bundle-version="1.4.7";visibility:=reexport,

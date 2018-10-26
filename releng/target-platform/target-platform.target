@@ -3,13 +3,14 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.9.0.v20140221-1852"/>
+<unit id="org.eclipse.pde.feature.group" version="3.9.1.v20140221-1700"/>
 <unit id="org.eclipse.platform.feature.group" version="4.3.2.v20140221-1852"/>
 <repository location="http://download.eclipse.org/eclipse/updates/4.3/R-4.3.2-201402211700/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.net4j.feature.group" version="4.1.2.v20121028-0914"/>
-<unit id="org.eclipse.net4j.util.feature.group" version="4.1.2.v20121028-0914"/>
-<repository location="http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.1/"/>
+	<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
+	<unit id="org.eclipse.net4j.util.feature.group" version="4.7.0.v20180530-0909"/>
+	<repository location="http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.7/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="javax.el" version="2.2.0.v201303151357"/>

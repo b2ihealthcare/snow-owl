@@ -5,8 +5,8 @@ Bundle-SymbolicName: com.b2international.snowowl.rpc;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Activator: com.b2international.snowowl.internal.rpc.bundle.OM$Activator
 Bundle-Vendor: B2i Healthcare
-Require-Bundle: org.eclipse.core.runtime;bundle-version="3.8.0",
- org.eclipse.net4j;bundle-version="4.1.2"
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.100",
+ org.eclipse.net4j;bundle-version="[4.7.0,4.8.0)";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.internal.rpc;x-internal:=t
