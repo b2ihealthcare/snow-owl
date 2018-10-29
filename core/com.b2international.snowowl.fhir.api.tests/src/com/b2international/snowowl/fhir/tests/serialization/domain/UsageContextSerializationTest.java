@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
@@ -29,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.usagecontext.CodeableConceptU
 import com.b2international.snowowl.fhir.core.model.usagecontext.QuantityUsageContext;
 import com.b2international.snowowl.fhir.core.model.usagecontext.RangeUsageContext;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Usage context serialization tests.
@@ -56,15 +58,13 @@ public class UsageContextSerializationTest extends FhirTest {
 		
 		printPrettyJson(usageContext);
 		
-		String expectedJson = "{\"code\":"
-					+ "{\"code\":\"codingCode\","
-					+ "\"display\":\"codingDisplay\"},"
-				+ "\"valueCodeableConcept\":{\"text\":\"codingText\","
-				+ "\"coding\":[{\"code\":\"codingCode\","
-					+ "\"display\":\"codingDisplay\"}]"
-				+ "}}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(usageContext));
+		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
+		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getString("valueCodeableConcept.text"), equalTo("codingText"));
+		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].code"), equalTo("codingCode"));
+		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].display"), equalTo("codingDisplay"));
 	}
 	
 	@Test
@@ -90,18 +90,15 @@ public class UsageContextSerializationTest extends FhirTest {
 		
 		printPrettyJson(usageContext);
 		
-		String expectedJson = "{\"code\":"
-					+ "{\"code\":\"codingCode\","
-					+ "\"display\":\"codingDisplay\"},"
-				+ "\"valueQuantity\":"
-					+ "{\"value\":12.3,"
-					+ "\"comparator\":\">=\","
-					+ "\"unit\":\"mg\","
-					+ "\"system\":\"uri:LOINC\","
-					+ "\"code\":\"code\"}"
-					+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(usageContext));
+		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
+		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getDouble("valueQuantity.value"), equalTo(12.3));
+		assertThat(jsonPath.getString("valueQuantity.comparator"), equalTo(">="));
+		assertThat(jsonPath.getString("valueQuantity.unit"), equalTo("mg"));
+		assertThat(jsonPath.getString("valueQuantity.system"), equalTo("uri:LOINC"));
+		assertThat(jsonPath.getString("valueQuantity.code"), equalTo("code"));
 	}
 	
 	@Test
@@ -127,19 +124,30 @@ public class UsageContextSerializationTest extends FhirTest {
 		RangeUsageContext usageContext = RangeUsageContext.builder()
 			.code(Coding.builder()
 					.code("codingCode")
-					.display("display")
+					.display("codingDisplay")
 					.build())
 			.value(range)
 			.build();
 		
 		printPrettyJson(usageContext);
 		
-		String expectedJson = "{\"code\":{\"code\":\"codingCode\",\"display\":\"display\"},"
-				+ "\"valueRange\":{\"low\":{\"value\":12.3,\"unit\":\"mg\",\"system\":\"uri:LOINC\",\"code\":\"code1\"},"
-				+ "\"high\":{\"value\":120.3,\"unit\":\"mg\",\"system\":\"uri:LOINC\",\"code\":\"code1\"}}}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(usageContext));
+		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
+		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
+		
+		jsonPath.setRoot("valueRange");
+		
+		assertThat(jsonPath.getDouble("low.value"), equalTo(12.3));
+		assertThat(jsonPath.getString("low.unit"), equalTo("mg"));
+		assertThat(jsonPath.getString("low.system"), equalTo("uri:LOINC"));
+		assertThat(jsonPath.getString("low.code"), equalTo("code1"));
+		
+		assertThat(jsonPath.getDouble("high.value"), equalTo(120.3));
+		assertThat(jsonPath.getString("high.unit"), equalTo("mg"));
+		assertThat(jsonPath.getString("high.system"), equalTo("uri:LOINC"));
+		assertThat(jsonPath.getString("high.code"), equalTo("code1"));
+		
 	}
-	
 
 }

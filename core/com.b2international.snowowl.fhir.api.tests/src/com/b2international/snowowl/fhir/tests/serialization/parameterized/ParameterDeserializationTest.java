@@ -88,17 +88,6 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertParameter(jsonParam, "paramName", FhirDataType.DECIMAL, 1.21);
 	}
 	
-	//@Test
-	public void decimalParameterTest2() throws Exception {
-		
-		String jsonParam = "{\"resourceType\":\"Parameters\"," + 
-				"\"parameter\":["
-					+ "{\"name\":\"paramName\",\"valueDecimal\":1.21}"
-				+ "]}";
-		
-		assertParameter(jsonParam, "paramName", FhirDataType.DECIMAL, 1.21f);
-	}
-	
 	@Test
 	public void codeParameterTest() throws Exception {
 		

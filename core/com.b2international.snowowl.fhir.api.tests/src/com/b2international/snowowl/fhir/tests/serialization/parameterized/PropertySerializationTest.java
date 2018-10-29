@@ -51,7 +51,7 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -112,7 +112,7 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -139,7 +139,7 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","
@@ -169,7 +169,7 @@ public class PropertySerializationTest extends FhirTest {
 		 
 		Fhir fhirParameters = new Parameters.Fhir(property);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		String expected = 
 				"{\"resourceType\":\"Parameters\","

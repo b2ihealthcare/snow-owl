@@ -52,7 +52,7 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueString\":\"test\"}");
 		Fhir fhirParameters = new Parameters.Fhir(new StringTestParameterObject());
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
@@ -77,7 +77,7 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueInteger\":1}");
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	
@@ -102,7 +102,7 @@ public class ParameterSerializationTest extends FhirTest {
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueCode\":\"test\"}");
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
 	}
 	

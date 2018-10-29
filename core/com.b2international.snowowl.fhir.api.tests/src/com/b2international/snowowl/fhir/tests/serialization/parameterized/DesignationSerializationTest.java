@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import org.junit.Assert;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -30,6 +32,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for serializing the Designation class.
@@ -56,21 +59,22 @@ public class DesignationSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(designation);
 
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
-		String expected = 
-				"{\"resourceType\":\"Parameters\","
-					+ "\"parameter\":["
-						+ "{\"name\":\"language\",\"valueCode\":\"en_uk\"},"
-						+ "{\"name\":\"use\",\"valueCoding\":"
-							+ "{\"code\":\"1234\","
-							+ "\"system\":\"http://snomed.info/sct\","
-							+ "\"version\":\"20180131\"}},"
-						+ "{\"name\":\"value\",\"valueString\":\"dValue\"}"
-					+ "]" 
-				+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getString("parameter[0].name"), equalTo("language"));
+		assertThat(jsonPath.getString("parameter[0].valueCode"), equalTo("en_uk"));
+		assertThat(jsonPath.getString("parameter[2].name"), equalTo("value"));
+		assertThat(jsonPath.getString("parameter[2].valueString"), equalTo("dValue"));
+		
+		jsonPath.setRoot("parameter[1]");
+		
+		assertThat(jsonPath.getString("name"), equalTo("use"));
+		assertThat(jsonPath.getString("valueCoding.code"), equalTo("1234"));
+		assertThat(jsonPath.getString("valueCoding.system"), equalTo("http://snomed.info/sct"));
+		assertThat(jsonPath.getString("valueCoding.version"), equalTo("20180131"));
 	}
 	
 	@Test
