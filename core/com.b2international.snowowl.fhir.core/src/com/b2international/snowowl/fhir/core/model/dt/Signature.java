@@ -52,6 +52,7 @@ public class Signature extends Element {
 		this.whoUri = whoUri;
 		this.onBehalfOfUri = onBehalfOfUri;
 		this.onBehalfOfReference = onBehalfOfReference;
+		this.contentType = contentType;
 		this.blob = blob;
 	}
 
@@ -191,11 +192,11 @@ public class Signature extends Element {
 		}
 		
 		public Builder blob(byte[] blob) {
-			byte[] bytes = "blob".getBytes();
-			this.blob = new Byte[bytes.length];
 			
-			for (int i = 0; i < bytes.length; i++) {
-		        this.blob[i] = Byte.valueOf(bytes[i]);
+			this.blob = new Byte[blob.length];
+			
+			for (int i = 0; i < blob.length; i++) {
+		        this.blob[i] = Byte.valueOf(blob[i]);
 		    }
 			return getSelf();
 		}
