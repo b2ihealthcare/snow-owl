@@ -17,20 +17,44 @@ package com.b2international.snowowl.fhir.tests;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import java.io.IOException;
+import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * CodeSystem REST end-point test cases
+ * 
+ * parameter: [ {
+ *      "name" : "version",
+ *      "valueString" : "v1"
+ *    },
+ *    {
+ *      "name": "property",
+ *      "valueCode" : "whateverCode"
+ *    },
+ *    {
+ *       "name" : "property",
+ *       "part" : [
+ *           "name" : "code"
+ *           "valueCode" : "whateverCode"
+ *       ]
+ *     },
+ *     ..
+ * ]
+ * 
+ * 
  * @since 6.6
  */
 public class SandBoxRestTest extends FhirRestTest {
@@ -38,6 +62,51 @@ public class SandBoxRestTest extends FhirRestTest {
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
+	
+	@Test
+	public void buildCode() throws IOException {
+		Coding coding = Coding.builder()
+				.system("http://hl7.org/fhir/issue-severity")
+				.code("fatal")
+				.build();
+
+			LookupRequest request = LookupRequest.builder()
+				.coding(coding)
+				.addProperty("name")
+				.build();
+		
+			Json json1 = new Parameters.Json(request);
+			Fhir fhir = new Parameters.Fhir(json1.parameters());
+			
+			String fhirJson = objectMapper.writeValueAsString(fhir);
+			System.out.println("This is the JSON request from the client: " + fhirJson);
+			
+			System.out.println("This is happening in the server-side...");
+			Fhir parameters = objectMapper.readValue(fhirJson, Parameters.Fhir.class);
+			System.out.println("Deserialized into FHIR parameters..." + parameters.getParameters());
+			
+			System.out.println("Back to Domain JSON...");
+			Json json = new Parameters.Json(parameters);
+			Parameters parameters2 = json.parameters();
+			List<Parameter> parameters3 = parameters2.getParameters();
+			for (Parameter parameter : parameters3) {
+				System.out.println("P: " + parameter);
+			}
+			
+			LookupRequest lookupRequest = objectMapper.convertValue(json, LookupRequest.class);
+			System.out.println("... and back to the object representation we started from:" + lookupRequest);
+			
+			
+			Json finalJson = new Parameters.Json(lookupRequest);
+			Fhir finalFhir = new Parameters.Fhir(finalJson.parameters());
+			
+			String stringJson = objectMapper.writeValueAsString(finalFhir);
+			System.out.println("Final final: " + stringJson);
+			/*
+			*/
+			//String jsonBody = objectMapper.writeValueAsString(fhirParameters);
+			//System.out.println("Json: " + jsonBody);
+	}
 	
 	/*
     "resourceType": "CodeSystem",

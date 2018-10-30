@@ -70,7 +70,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
-	private static final String URI_BASE = "http://snomed.info/sct";
+	private static final String URI_BASE = "http://snomed.info";
 	
 	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 		SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
@@ -299,25 +299,27 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		String branchPath = getBranchPath(lookupRequest.getVersion());
 		
-		SnomedRequests.prepareSearchRelationship()
-			.all()
-			.filterByActive(true)
-			.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
-			.filterBySource(concept.getId())
-			.filterByType(relationshipTypeIds)
-			.build(getRepositoryId(), branchPath)
-			.execute(getBus())
-			.then(rels -> {
-				rels.forEach(r -> {
-					Property property = Property.builder()
-						.code(r.getTypeId())
-						.valueCode(r.getDestinationId())
-						.build();
-					resultBuilder.addProperty(property);
-				});
-				return null;
-			})
-			.getSync();
+		if (!relationshipTypeIds.isEmpty()) {
+			SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP.getConceptId())
+				.filterBySource(concept.getId())
+				.filterByType(relationshipTypeIds)
+				.build(getRepositoryId(), branchPath)
+				.execute(getBus())
+				.then(rels -> {
+					rels.forEach(r -> {
+						Property property = Property.builder()
+							.code(r.getTypeId())
+							.valueCode(r.getDestinationId())
+							.build();
+						resultBuilder.addProperty(property);
+					});
+					return null;
+				})
+				.getSync();
+		}
 		
 		return resultBuilder.build();
 	}

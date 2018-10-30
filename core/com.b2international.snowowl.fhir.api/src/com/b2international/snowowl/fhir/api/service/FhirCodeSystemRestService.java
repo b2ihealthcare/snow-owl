@@ -21,6 +21,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -179,20 +180,31 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version,
-		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date", required=false) final String date,
-		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage", required=false) final String displayLanguage,
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required=false) Set<String> properties) {
+		@ApiParam(value="The code system version") @RequestParam(value="version") final Optional<String> version,
+		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date") final Optional<String> date,
+		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage") final Optional<String> displayLanguage,
+		
+		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
+		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
-			.system(system)
-			.version(version)
-			.displayLanguage(displayLanguage)
-			.properties(properties);
+			.system(system);
 		
-		if (date != null) {
-			builder.date(date);
+		if (version.isPresent()) {
+			builder.version(version.get());
+		}
+		
+		if (date.isPresent()) {
+			builder.date(date.get());
+		}
+
+		if (displayLanguage.isPresent()) {
+			builder.displayLanguage(displayLanguage.get());
+		}
+
+		if (properties != null && !properties.isEmpty()) {
+			builder.properties(properties);
 		}
 		
 		//all good, now do something
@@ -219,6 +231,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@RequestBody Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
+		
 		LookupResult result = lookup(req);
 		return toResponse(result);
 	}
@@ -358,7 +371,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		ICodeSystemApiProvider codeSystemProvider = ICodeSystemApiProvider.Registry.getCodeSystemProvider(lookupRequest.getSystem());
 		return codeSystemProvider.lookup(lookupRequest);
 	}
-
+	
 	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {
 		validateSubsumptionRequest(null, codeA,  codeB, system, version);
 	}

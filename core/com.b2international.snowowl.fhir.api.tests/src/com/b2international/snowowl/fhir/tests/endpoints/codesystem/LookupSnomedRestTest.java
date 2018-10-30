@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -54,7 +55,8 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("system", "http://snomed.info/sct")
-			.param("code", "263495000")
+			.param("code", "64572001")
+			.param("property", "designation", "sufficientlyDefined", "inactive", "effectiveTime")
 			.param("_format", "json")
 			.when().get("/CodeSystem/$lookup")
 			.asString();
@@ -63,13 +65,13 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		LookupResult result = convertToResult(responseString);
 		
 		assertEquals("SNOMED CT", result.getName());
-		assertEquals("Gender", result.getDisplay());
+		assertEquals("Disease", result.getDisplay());
 		
 		//Designations
 		Collection<Designation> designations = result.getDesignation();
 		
 		Designation ptDesignation = designations.stream()
-			.filter(d -> d.getValue().equals("Gender"))
+			.filter(d -> d.getValue().equals("Disease"))
 			.findFirst()
 			.get();
 		
@@ -77,7 +79,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		assertThat(ptDesignation.getUse().getDisplay(), equalTo("Synonym"));
 		
 		Designation fsnDesignation = designations.stream()
-				.filter(d -> d.getValue().equals("Gender (observable entity)"))
+				.filter(d -> d.getValue().equals("Disease (disorder)"))
 				.findFirst()
 				.get();
 		
@@ -109,9 +111,9 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("system", "http://snomed.info/sct")
-			.param("code", "312984006")
+			.param("code", "128927009") //procedure by method
 			.param("property", "inactive")
-			.param("property", "http://snomed.info/id/116676008") //associated morphology
+			.param("property", "http://snomed.info/id/260686004") //method
 			.param("_format", "json")
 			.when().get("/CodeSystem/$lookup")
 			.asString();
@@ -121,7 +123,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		//Mandatory parameters
 		assertEquals("SNOMED CT", result.getName());
-		assertEquals("Abnormal uterine bleeding unrelated to menstrual cycle", result.getDisplay());
+		assertEquals("Procedure by method", result.getDisplay());
 		
 		assertNull(result.getVersion());
 		
@@ -136,8 +138,8 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		Property inactiveProperty = getProperty(properties, "inactive");
 		assertThat(inactiveProperty.getValue(), equalTo(false));
 		
-		Property associatedMProperty = getProperty(properties, "116676008"); //associated morphology
-		assertThat(associatedMProperty.getValue(), equalTo("50960005")); //associated morphology = Hemorrhage
+		Property associatedMProperty = getProperty(properties, "260686004"); //method
+		assertThat(associatedMProperty.getValue(), equalTo("129264002")); //method = Action
 	}
 	
 	//GET SNOMED CT with properties
@@ -163,7 +165,8 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
-			.param("code", "263495000")
+			.param("code", "64572001") //Disease
+			.param("property", "version")
 			.when().get("/CodeSystem/$lookup")
 			.asString();
 		
@@ -178,9 +181,9 @@ public class LookupSnomedRestTest extends FhirRestTest {
 	public void lookupVersionPostTest() throws Exception {
 		
 		Coding coding = Coding.builder()
-				.system("http://snomed.info/sct/900000000000207008/version/20170131")
-				.code("263495000")
-				.build();
+			.system("http://snomed.info/sct/900000000000207008/version/20170131")
+			.code("64572001")
+			.build();
 
 		LookupRequest request = LookupRequest.builder()
 				.coding(coding)
@@ -197,10 +200,11 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.when().post("/CodeSystem/$lookup")
 			.then()
 		.body("resourceType", equalTo("Parameters"))
+		.body("parameter.size()", is(2))
 		.body("parameter[0].name", equalTo("name"))
 		.body("parameter[0].valueString", equalTo("SNOMED CT"))
-		.body("parameter[1].name", equalTo("version"))
-		.body("parameter[1].valueString", equalTo("20170131"))
+		.body("parameter[1].name", equalTo("display"))
+		.body("parameter[1].valueString", equalTo("Disease"))
 		.statusCode(200);
 	}
 	

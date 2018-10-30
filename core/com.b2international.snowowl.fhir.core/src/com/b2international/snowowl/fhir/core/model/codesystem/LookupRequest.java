@@ -189,7 +189,6 @@ public class LookupRequest {
 	
 	@AssertTrue(message = "Source needs to be set either via code/system or code or codeable concept")
 	private boolean isSourceValid() {
-		System.out.println("   *** I am in the validating phase!");
 		return true;
 	} 
 	
@@ -199,6 +198,11 @@ public class LookupRequest {
 		if (system != null && code == null) {
 			return false;
 		}
+		
+		if (coding != null && coding.getCodeValue() == null) {
+			return false;
+		}
+		
 		return true;
 	}
 	
@@ -208,6 +212,11 @@ public class LookupRequest {
 		if (system == null && code != null) {
 			return false;
 		}
+		
+		if (coding != null && coding.getSystem() == null) {
+			return false;
+		}
+		
 		return true;
 	}
 	

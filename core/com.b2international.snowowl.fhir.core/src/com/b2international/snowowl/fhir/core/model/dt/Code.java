@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.core.model.dt;
 
 import javax.validation.constraints.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -24,13 +26,21 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * 
  * @since 6.3
  */
+@JsonPropertyOrder({"codeValue"})
 public class Code {
 	
 	private static final String CODE_REGEXP = "[^\\s]+([\\s]?[^\\s]+)*"; //$NON-NLS-N$
 	
+	//When serialized into parameters, code will be: {"name":"codeValue","valueString":"value"}
+	@FhirType(FhirDataType.CODE)
 	@Pattern(regexp = CODE_REGEXP) //not empty is included
+	@JsonProperty("codeValue")
 	private String codeValue;
 
+	//For Jackson
+	@SuppressWarnings("unused")
+	private Code() {}
+	
 	public Code(String codeValue) {
 		this.codeValue = codeValue;
 	}

@@ -126,9 +126,9 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 	public void lookupFhirCodeSystemPropertiesCodingTest() throws Exception {
 		
 		Coding coding = Coding.builder()
-				.system("http://hl7.org/fhir/issue-severity")
-				.code("fatal")
-				.build();
+			.system("http://hl7.org/fhir/issue-severity")
+			.code("fatal")
+			.build();
 
 		LookupRequest request = LookupRequest.builder()
 				.coding(coding)
@@ -151,37 +151,6 @@ public class LookupFhirCodeSystemRestTest extends FhirRestTest {
 			.body("parameter[1].name", equalTo("display"))
 			.body("parameter[1].valueString", equalTo("Fatal"))
 			.statusCode(200);
-	}
-	
-	
-	//POST invalid request body
-	@Test
-	public void lookupFhirCodeSystemInvalidCodingTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-				//.system("http://hl7.org/fhir/issue-severity")
-				.code("fatal")
-				.build();
-
-		LookupRequest request = LookupRequest.builder()
-				.coding(coding)
-				.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-		printPrettyJson(fhirParameters);
-		
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.contentType(BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
-			.body(jsonBody)
-			.when().post("/CodeSystem/$lookup")
-			.then()
-			.body("resourceType", equalTo("OperationOutcome"))
-			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("invalid"))
-			.body("issue.diagnostics", hasItem("Parameter 'system' is not specified while code is present in the request."))
-			.statusCode(400);
 	}
 	
 }
