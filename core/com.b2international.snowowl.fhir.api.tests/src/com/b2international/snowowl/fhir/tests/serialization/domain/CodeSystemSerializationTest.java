@@ -26,7 +26,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.FhirConstants;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
@@ -38,9 +37,7 @@ import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
@@ -166,10 +163,12 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		printPrettyJson(conceptProperty);
 		
-		String expectedJson = "{\"code\":\"child\","
-				+ "\"valueCoding\":{\"code\":\"codingCode\",\"system\":\"uri\"}}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptProperty));
 		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(conceptProperty));
+		assertThat(jsonPath.getString("code"), equalTo("child"));
+		jsonPath.setRoot("valueCoding");
+		assertThat(jsonPath.getString("code"), equalTo("codingCode"));
+		assertThat(jsonPath.getString("system"), equalTo("uri"));
 	}
 	
 	@Test
@@ -220,6 +219,12 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		applyFilter(codeSystem);
 		printPrettyJson(codeSystem);
+		
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(codeSystem));
+		
+		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
+		assertThat(jsonPath.getString("status"), equalTo("active"));
+		assertThat(jsonPath.getString("content"), equalTo("complete"));
 		
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","
 				+ "\"status\":\"active\","
@@ -296,56 +301,47 @@ public class CodeSystemSerializationTest extends FhirTest {
 		
 		applyFilter(codeSystem);
 		
+		printPrettyJson(codeSystem);
+		
 		JsonPath jsonPath = getJsonPath(codeSystem);
 		
+		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
+		assertThat(jsonPath.getString("id"), equalTo("repo/shortName"));
 		assertThat(jsonPath.getString("language"), equalTo("en"));
-		assertThat(jsonPath.get("resourceType"), equalTo("CodeSystem"));
-		assertThat(jsonPath.get("property[0].code"), equalTo("child"));
-		assertThat(jsonPath.get("property.size()"), equalTo(1));
+		assertThat(jsonPath.getString("text.status"), equalTo("additional"));
+		assertThat(jsonPath.getString("text.div"), equalTo("<div>Some html text</div>"));
+		assertThat(jsonPath.getString("url"), equalTo("code system uri"));
+
+		assertThat(jsonPath.getString("identifier.use"), equalTo("official"));
+		assertThat(jsonPath.getString("identifier.system"), equalTo("www.hl7.org"));
+		assertThat(jsonPath.getString("identifier.value"), equalTo("OID:1234.1234"));
+		
+		assertThat(jsonPath.getString("version"), equalTo("2018.01.01"));
+		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
+		assertThat(jsonPath.getString("title"), equalTo("title"));
+		assertThat(jsonPath.getString("status"), equalTo("active"));
+		assertThat(jsonPath.getString("publisher"), equalTo("B2i"));
+		assertThat(jsonPath.getString("description"), equalTo("Code system description"));
+		assertThat(jsonPath.getString("hierarchyMeaning"), equalTo("is-a"));
+		assertThat(jsonPath.getString("content"), equalTo("complete"));
+		assertThat(jsonPath.getString("property[0].code"), equalTo("child"));
+		assertThat(jsonPath.getString("property[0].uri"), equalTo("http://hl7.org/fhir/concept-properties/child"));
+		assertThat(jsonPath.getString("property[0].description"), equalTo("Child"));
+		assertThat(jsonPath.getString("property[0].type"), equalTo("code"));
+		
+		jsonPath.setRoot("concept[0]");
+		
+		assertThat(jsonPath.getString("code"), equalTo("conceptCode"));
+		assertThat(jsonPath.getString("display"), equalTo("Label"));
+		assertThat(jsonPath.getString("definition"), equalTo("This is a code definition"));
+		assertThat(jsonPath.getString("designation[0].language"), equalTo("uk_en"));
+		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
+		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
+		assertThat(jsonPath.getString("designation[0].value"), equalTo("conceptLabel_uk"));
+		assertThat(jsonPath.getString("designation[0].languageCode"), equalTo("uk_en"));
+
+		assertThat(jsonPath.getString("property[0].code"), equalTo("childConcept"));
+		assertThat(jsonPath.getString("property[0].valueCode"), equalTo("childId"));
 	}
-	
-	@Test
-	public void bundleTest() throws Exception {
-		
-		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
-			.status(PublicationStatus.ACTIVE)
-			.name("Local code system")
-			.content(CodeSystemContentMode.COMPLETE)
-			.url(new Uri("code system uri"))
-			.build();
-		
-		Entry entry = new Entry(new Uri("full Url"), codeSystem);
-		
-		Bundle bundle = Bundle.builder("bundle_Id?")
-			.language("en")
-			.total(1)
-			.type(BundleType.SEARCHSET)
-			.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
-			.addEntry(entry)
-			.build();
-		
-		printPrettyJson(bundle);
-		
-		String expectedJson = "{\"resourceType\":\"Bundle\","
-				+ "\"id\":\"bundle_Id?\","
-				+ "\"language\":\"en\","
-				+ "\"type\":\"searchset\","
-				+ "\"total\":1,"
-				+ "\"link\":"
-					+ "[{\"relation\":\"self\","
-					+ "\"url\":\"http://localhost:8080/snowowl/CodeSystem\"}],"
-					+ "\"entry\":[{\"fullUrl\":\"full Url\",\"resource\":"
-						+ "{\"resourceType\":\"CodeSystem\","
-						+ "\"id\":\"repo/shortName\","
-						+ "\"url\":\"code system uri\","
-						+ "\"name\":\"Local code system\","
-						+ "\"status\":\"active\","
-						+ "\"content\":\"complete\"}"
-					+ "}]"
-				+ "}";
-		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(bundle));
-	}
-	
 
 }

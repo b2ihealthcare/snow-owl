@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.Date;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.date.Dates;
@@ -29,11 +32,14 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for serializing the Property class.
@@ -53,14 +59,10 @@ public class PropertySerializationTest extends FhirTest {
 		
 		printPrettyJson(fhirParameters);
 		
-		String expected = 
-				"{\"resourceType\":\"Parameters\","
-					+ "\"parameter\":["
-						+ "{\"name\":\"code\",\"valueCode\":\"123\"}"
-					+ "]" 
-				+ "}";
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(1));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("code", FhirDataType.CODE, "123"));
 	}
 	
 	@Test
@@ -114,16 +116,13 @@ public class PropertySerializationTest extends FhirTest {
 		
 		printPrettyJson(fhirParameters);
 		
-		String expected = 
-				"{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-						+ "{\"name\":\"code\",\"valueCode\":\"123\"},"
-						+ "{\"name\":\"value\",\"valueInteger\":2},"
-						+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"}"
-					+ "]" 
-				+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(3));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("code", FhirDataType.CODE, "123"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("value", FhirDataType.INTEGER, 2));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("description", FhirDataType.STRING, "propertyDescription"));
 	}
 	
 	@Test
@@ -141,16 +140,13 @@ public class PropertySerializationTest extends FhirTest {
 		
 		printPrettyJson(fhirParameters);
 		
-		String expected = 
-				"{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-						+ "{\"name\":\"code\",\"valueCode\":\"123\"},"
-						+ "{\"name\":\"value\",\"valueDateTime\":\"2018-03-09T19:50:21+0000\"},"
-						+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"}"
-					+ "]" 
-				+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(3));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("code", FhirDataType.CODE, "123"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("value", FhirDataType.DATETIME, "2018-03-09T19:50:21+0000"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("description", FhirDataType.STRING, "propertyDescription"));
 	}
 	
 	@Test
@@ -171,20 +167,21 @@ public class PropertySerializationTest extends FhirTest {
 		
 		printPrettyJson(fhirParameters);
 		
-		String expected = 
-				"{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":["
-					+ "{\"name\":\"code\",\"valueCode\":\"123\"},"
-					+ "{\"name\":\"value\",\"valueInteger\":2},"
-					+ "{\"name\":\"description\",\"valueString\":\"propertyDescription\"},"
-					+ "{\"name\":\"subproperty\","
-					+ "\"part\":[{\"name\":\"code\",\"valueCode\":\"subCode\"},"
-						+ "{\"name\":\"value\",\"valueInteger\":1},"
-						+ "{\"name\":\"description\",\"valueString\":\"subDescription\"}]"
-						+ "}]" 
-				+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(4));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("code", FhirDataType.CODE, "123"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("value", FhirDataType.INTEGER, 2));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("description", FhirDataType.STRING, "propertyDescription"));
+		
+		assertThat(jsonPath.getString("parameter[3].name"), equalTo("subproperty"));
+		assertThat(jsonPath.getString("parameter[3].part[0].name"), equalTo("code"));
+		assertThat(jsonPath.getString("parameter[3].part[0].valueCode"), equalTo("subCode"));
+		assertThat(jsonPath.getString("parameter[3].part[1].name"), equalTo("value"));
+		assertThat(jsonPath.getInt("parameter[3].part[1].valueInteger"), equalTo(1));
+		assertThat(jsonPath.getString("parameter[3].part[2].name"), equalTo("description"));
+		assertThat(jsonPath.getString("parameter[3].part[2].valueString"), equalTo("subDescription"));
 	}
 	
 	@Test

@@ -27,7 +27,7 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  * SubsumptionRequest Test
  * @since 6.6
  */
-public class SubsumptionRequestTest extends FhirTest {
+public class SubsumptionRequestDeserializationTest extends FhirTest {
 	
 	@Test
 	public void lookupRequestCodeTest() throws Exception {

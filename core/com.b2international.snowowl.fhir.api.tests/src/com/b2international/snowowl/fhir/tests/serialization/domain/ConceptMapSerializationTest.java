@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -42,7 +41,7 @@ import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for checking the ConceptMap serialization
- * @since 6.10
+ * @since 7.0
  */
 public class ConceptMapSerializationTest extends FhirTest {
 	
@@ -50,11 +49,11 @@ public class ConceptMapSerializationTest extends FhirTest {
 	public void unMappedTest() throws Exception {
 		
 		UnMapped unMapped = UnMapped.builder()
-					.mode("Mode")
-					.code("Code")
-					.display("Display")
-					.url("Url")
-					.build();
+			.mode("Mode")
+			.code("Code")
+			.display("Display")
+			.url("Url")
+			.build();
 
 		printPrettyJson(unMapped);
 	
@@ -70,8 +69,8 @@ public class ConceptMapSerializationTest extends FhirTest {
 	public void unMappedMissingOptionalFieldsTest() throws Exception {
 		
 		UnMapped unMapped = UnMapped.builder()
-					.mode("Mode")
-					.build();
+			.mode("Mode")
+			.build();
 
 		printPrettyJson(unMapped);
 		
@@ -84,10 +83,10 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		exception.expect(ValidationException.class);
 		UnMapped.builder()
-					.code("Code")
-					.display("Display")
-					.url("Url")
-					.build();
+			.code("Code")
+			.display("Display")
+			.url("Url")
+			.build();
 	}
 	
 	
@@ -108,8 +107,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("property"), equalTo("Property"));
 		assertThat(jsonPath.get("system"), equalTo("System"));
 		assertThat(jsonPath.get("code"), equalTo("Code"));
-		assertEquals(jsonPath.getString("display"), "Display");
-	
+		assertThat(jsonPath.getString("display"), equalTo("Display"));
 	}
 	
 	@Test
@@ -130,7 +128,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertNull(jsonPath.get("system"));
 		assertThat(jsonPath.get("code"), equalTo("Code"));
 		assertNull(jsonPath.get("display"));
-	
 	}
 	
 	@Test
@@ -143,35 +140,33 @@ public class ConceptMapSerializationTest extends FhirTest {
 			.system("System")
 			.display("Display")
 			.build();
-	
 	}
 	
 	@Test
 	public void targetTest() throws Exception{
 		
 		Target target = Target.builder()
+			.code("Code")
+			.display("Display")
+			.equivalence("Equivalence")
+			.comment("Comment")
+			.addDependsOn(DependsOn.builder()
+				.property("Property")
 				.code("Code")
-				.display("Display")
-				.equivalence("Equivalence")
-				.comment("Comment")
-				.addDependsOn(DependsOn.builder()
-						.property("Property")
-						.code("Code")
-						.build())
-				.addDependsOn(DependsOn.builder()
-						.property("Property.2")
-						.code("Code 2")
-						.build())
-				.addProduct(DependsOn.builder()
-						.property("ProductProperty")
-						.code("ProductCode")
-						.build())
-				.addProduct(DependsOn.builder()
-						.property("ProductProperty.2")
-						.code("ProductCode 2")
-						.build())
-				
-				.build();
+				.build())
+			.addDependsOn(DependsOn.builder()
+				.property("Property.2")
+				.code("Code 2")
+				.build())
+			.addProduct(DependsOn.builder()
+				.property("ProductProperty")
+				.code("ProductCode")
+				.build())
+			.addProduct(DependsOn.builder()
+				.property("ProductProperty.2")
+				.code("ProductCode 2")
+				.build())
+			.build();
 		
 		printPrettyJson(target);
 		
@@ -183,7 +178,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("comment"),equalTo("Comment"));
 		assertThat(jsonPath.get("dependsOn.property"), hasItem("Property.2"));
 		assertThat(jsonPath.get("product.property"), hasItem("ProductProperty.2"));
-		
 	}
 	
 	@Test
@@ -202,7 +196,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertNull(jsonPath.get("comment"));
 		assertNull(jsonPath.get("dependsOn"));
 		assertNull(jsonPath.get("product"));
-		
 	}
 	
 	@Test
@@ -226,7 +219,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("display"), equalTo("Display"));
 		assertThat(jsonPath.get("target.equivalence"), hasItem("Equivalence"));
 		assertThat(jsonPath.get("target.display"), hasItem("Display"));
-		
 	}
 	
 	@Test
@@ -243,7 +235,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertNull(jsonPath.get("display"));
 		assertNull(jsonPath.get("target"));
 		assertNull(jsonPath.get("target"));
-		
 	}
 	
 	@Test
@@ -251,19 +242,19 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		Group group = Group.builder()
 				
-				.source("Source")
-				.sourceVersion("SourceVersion")
-				.target("Target")
-				.targetVersion("TargetVersion")
-				.addElement(ConceptMapElement.builder()
-						.code("ElementCode")
-						.display("ElementDisplay")
-						
-						.build())
-				.unmapped(UnMapped.builder()
-						.mode("Mode")
-						.build())
-				.build();
+			.source("Source")
+			.sourceVersion("SourceVersion")
+			.target("Target")
+			.targetVersion("TargetVersion")
+			.addElement(ConceptMapElement.builder()
+					.code("ElementCode")
+					.display("ElementDisplay")
+					
+					.build())
+			.unmapped(UnMapped.builder()
+					.mode("Mode")
+					.build())
+			.build();
 		
 		printPrettyJson(group);
 		
@@ -276,21 +267,17 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("element.code"), hasItem("ElementCode") );
 		assertThat(jsonPath.get("element.display"), hasItem("ElementDisplay"));
 		assertThat(jsonPath.get("unmapped.mode"), equalTo("Mode") );
-		
-		
 	}
 	
 	@Test
 	public void groupMissingOptionalFieldTest() throws Exception {
 		
 		Group group = Group.builder()
-				
-				.addElement(ConceptMapElement.builder()
-						.code("ElementCode")
-						.display("ElementDisplay")
-						
-						.build())
-				.build();
+			.addElement(ConceptMapElement.builder()
+				.code("ElementCode")
+				.display("ElementDisplay")
+				.build())
+			.build();
 		
 		printPrettyJson(group);
 		
@@ -310,26 +297,24 @@ public class ConceptMapSerializationTest extends FhirTest {
 
 		exception.expect(ValidationException.class);
 
-			Group.builder()
-				.source("Source")
-				.sourceVersion("SourceVersion")
-				.target("Target")
-				.targetVersion("TargetVersion")
-				.unmapped(UnMapped.builder()
-						.mode("Mode")
-						.build())
-				.build();
-
+		Group.builder()
+			.source("Source")
+			.sourceVersion("SourceVersion")
+			.target("Target")
+			.targetVersion("TargetVersion")
+			.unmapped(UnMapped.builder()
+				.mode("Mode")
+				.build())
+			.build();
 	}
 	
 	@Test
 	public void conceptMapTest() throws Exception {
 	
 		ConceptMap conceptMap = ConceptMap.builder("-1")
-				
 				.url("http://who.org")
 				.identifier(Identifier.builder()
-						.build())
+					.build())
 				.version("20130131")
 				.name("conceptMapName")
 				.title("conceptMapTitle")
@@ -369,8 +354,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertThat(jsonPath.get("purpose"), equalTo("Purpose"));
 		assertThat(jsonPath.get("sourceUri"), equalTo("SourceUri"));
 		assertThat(jsonPath.get("useContext.valueCodeableConcept.text"), hasItem("CodeableConceptText"));
-		
-		
 	}
 
 }

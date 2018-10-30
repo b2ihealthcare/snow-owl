@@ -105,27 +105,27 @@ public class UsageContextSerializationTest extends FhirTest {
 	public void rangeUsageContextTest() throws Exception {
 		
 		SimpleQuantity low = SimpleQuantity.builder()
-				.value(12.3)
-				.unit("mg")
-				.system("uri:LOINC")
-				.code("code1")
-				.build();
+			.value(12.3)
+			.unit("mg")
+			.system("uri:LOINC")
+			.code("code1")
+			.build();
 			
 		SimpleQuantity high = SimpleQuantity.builder()
-				.value(120.3)
-				.unit("mg")
-				.system("uri:LOINC")
-				.code("code1")
-				.build();
+			.value(120.3)
+			.unit("mg")
+			.system("uri:LOINC")
+			.code("code1")
+			.build();
 				
 			
 		Range range = new Range(low, high);
 		
 		RangeUsageContext usageContext = RangeUsageContext.builder()
 			.code(Coding.builder()
-					.code("codingCode")
-					.display("codingDisplay")
-					.build())
+				.code("codingCode")
+				.display("codingDisplay")
+				.build())
 			.value(range)
 			.build();
 		

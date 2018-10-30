@@ -51,9 +51,9 @@ import com.jayway.restassured.path.json.JsonPath;
 public class ModelSerializationTest extends FhirTest {
 	
 	private Builder builder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
+		.code(IssueType.INVALID)
+		.severity(IssueSeverity.ERROR)
+		.diagnostics("1 validation error");
 	
 	@Test
 	public void contactDetailTest() throws Exception {
@@ -106,7 +106,6 @@ public class ModelSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("security[0].code"), equalTo("code"));
 		assertThat(jsonPath.getString("tag[0].code"), equalTo("tag"));
 		assertThat(jsonPath.getString("profile[0]"), equalTo("profileValue"));
-		
 	}
 	
 	@Test
@@ -132,8 +131,8 @@ public class ModelSerializationTest extends FhirTest {
 	public void missingIssueTest() throws Exception {
 		
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
-				.build();
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
+			.build();
 		
 		exception.expect(ValidationException.class);
 		exception.expectMessage("1 validation error");

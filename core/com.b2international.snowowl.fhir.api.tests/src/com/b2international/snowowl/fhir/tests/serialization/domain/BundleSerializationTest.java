@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for checking the serialization from model->JSON.
@@ -63,26 +65,30 @@ public class BundleSerializationTest extends FhirTest {
 		
 		printPrettyJson(bundle);
 		
-		String expectedJson = "{\"resourceType\":\"Bundle\","
-				+ "\"id\":\"bundle_Id?\","
-				+ "\"language\":\"en\","
-				+ "\"type\":\"searchset\","
-				+ "\"total\":1,"
-				+ "\"link\":"
-					+ "[{\"relation\":\"self\","
-					+ "\"url\":\"http://localhost:8080/snowowl/CodeSystem\"}],"
-					+ "\"entry\":[{\"fullUrl\":\"full Url\",\"resource\":"
-						+ "{\"resourceType\":\"CodeSystem\","
-						+ "\"id\":\"repo/shortName\","
-						+ "\"url\":\"code system uri\","
-						+ "\"name\":\"Local code system\","
-						+ "\"status\":\"active\","
-						+ "\"content\":\"complete\"}"
-					+ "}]"
-				+ "}";
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		
-		assertEquals(expectedJson, objectMapper.writeValueAsString(bundle));
+		assertThat(jsonPath.getString("resourceType"), equalTo("Bundle"));
+		assertThat(jsonPath.getString("id"), equalTo("bundle_Id?"));
+		assertThat(jsonPath.getString("language"), equalTo("en"));
+		assertThat(jsonPath.getString("type"), equalTo("searchset"));
+		assertThat(jsonPath.getInt("total"), equalTo(1));
+		
+		jsonPath.setRoot("link[0]");
+		
+		assertThat(jsonPath.getString("relation"), equalTo("self"));
+		assertThat(jsonPath.getString("url"), equalTo("http://localhost:8080/snowowl/CodeSystem"));
+		
+		jsonPath.setRoot("entry[0]");
+		
+		assertThat(jsonPath.getString("fullUrl"), equalTo("full Url"));
+		jsonPath.setRoot("entry[0].resource");
+		
+		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
+		assertThat(jsonPath.getString("id"), equalTo("repo/shortName"));
+		assertThat(jsonPath.getString("url"), equalTo("code system uri"));
+		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
+		assertThat(jsonPath.getString("status"), equalTo("active"));
+		assertThat(jsonPath.getString("content"), equalTo("complete"));
 	}
-	
 
 }

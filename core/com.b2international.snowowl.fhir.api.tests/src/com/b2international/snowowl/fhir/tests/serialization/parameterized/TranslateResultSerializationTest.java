@@ -15,33 +15,30 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Product;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.restassured.path.json.JsonPath;
 
 /**
  * Test for serializing the @see {@link TranslateResult} class.
@@ -55,27 +52,21 @@ public class TranslateResultSerializationTest extends FhirTest {
 	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
-	public void missingResultTest() throws Exception {
+	public void falseResultTest() throws Exception {
 
-		Builder builder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
+		TranslateResult translateResult = TranslateResult.builder().build();
 		
-		Issue expectedIssue = builder.addLocation("TranslateResult.result")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, 
-						"Parameter 'result' content is invalid [null]. Violation: may not be null.")
-				.build();
+		Fhir fhirParameters = new Parameters.Fhir(translateResult);
 		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		TranslateResult.builder().build();
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(1));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("result", FhirDataType.BOOLEAN, false));
 	}
 	
 	@Test
-	public void validResultTest() throws JsonProcessingException {
+	public void validResultTest() throws Exception {
 		
 		Match match = Match.builder()
 			.equivalence(ConceptMapEquivalence.EQUAL)
@@ -96,7 +87,7 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		Parameter parameter = fhirParameters.getByName("result").get();
 		Boolean result = (Boolean) parameter.getValue();
@@ -121,12 +112,13 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);
 		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
-		String expected ="{\"resourceType\":\"Parameters\","
-				+ "\"parameter\":[{\"name\":\"result\",\"valueBoolean\":false}]}";
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
+		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getList("parameter").size(), is(1));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("result", FhirDataType.BOOLEAN, false));
 	}
 	
 }

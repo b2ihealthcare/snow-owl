@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertThat;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -30,10 +30,12 @@ import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.jayway.restassured.path.json.JsonPath;
 
@@ -132,43 +134,18 @@ public class LookupResultSerializationTest extends FhirTest {
 					.build())
 			.build();
 		
-		String expected = "{\"resourceType\":"
-				+ "\"Parameters\",\"parameter\":"
-				+ "[{\"name\":\"name\",\"valueString\":\"test\"},"
-				+ "{\"name\":\"display\",\"valueString\":\"display\"},"
-				+ "{\"name\":\"designation\",\"part\":"
-					+ "[{\"name\":\"language\",\"valueCode\":\"uk\"},"
-					+ "{\"name\":\"value\",\"valueString\":\"dValue\"}]"
-				+ "},"
-				+ "{\"name\":\"property\",\"part\":"
-					+ "[{\"name\":\"code\",\"valueCode\":\"1234\"},"
-					+ "{\"name\":\"value\",\"valueString\":\"sds\"},"
-					+ "{\"name\":\"description\",\"valueString\":\"propDescription\"},"
-					+ "{\"name\":\"subproperty\",\"part\":"
-						+ "[{\"name\":\"code\",\"valueCode\":\"subCode\"},"
-						+ "{\"name\":\"value\",\"valueInteger\":1},"
-						+ "{\"name\":\"description\",\"valueString\":\"subDescription\"}]"
-						+ "}]"
-					+ "}]"
-				+ "}";
-		
 		Fhir fhirParameters = new Parameters.Fhir(lookupResult);
 		
-		//System.out.println(objectMapper.writeValueAsString(fhirParameters));
-		
-		System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(fhirParameters));
+		printPrettyJson(fhirParameters);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		//assertThat(jsonPath.getList("parameter[2].part[*].name"), hasItem("language"));
-		
 		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+
+		assertThat(jsonPath.getList("parameter.name"), hasItems("name", "display", "designation", "property"));
 		
-		assertThat(jsonPath.getString("parameter[0].name"), equalTo("name"));
-		assertThat(jsonPath.getString("parameter[0].valueString"), equalTo("test"));
-		
-		assertThat(jsonPath.getString("parameter[1].name"), equalTo("display"));
-		assertThat(jsonPath.getString("parameter[1].valueString"), equalTo("display"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("name", FhirDataType.STRING, "test"));
+		assertThat(jsonPath, FhirParameterMatcher.hasParameter("display", FhirDataType.STRING, "display"));
 		
 		assertThat(jsonPath.getString("parameter[2].name"), equalTo("designation"));
 		assertThat(jsonPath.getString("parameter[2].part[0].name"), equalTo("language"));
@@ -191,6 +168,6 @@ public class LookupResultSerializationTest extends FhirTest {
 		assertThat(jsonPath.getInt("parameter[3].part[3].part[1].valueInteger"), equalTo(1));
 		assertThat(jsonPath.getString("parameter[3].part[3].part[2].name"), equalTo("description"));
 		assertThat(jsonPath.getString("parameter[3].part[3].part[2].valueString"), equalTo("subDescription"));
-		
 	}
+	
 }
