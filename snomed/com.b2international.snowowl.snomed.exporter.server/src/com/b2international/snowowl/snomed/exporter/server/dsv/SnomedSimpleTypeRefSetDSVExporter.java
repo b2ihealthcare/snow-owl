@@ -92,6 +92,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private List<ExtendedLocale> locales;
 	private String exportPath;
+	
+	private final String lineSeparator;
 
 	/**
 	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
@@ -110,6 +112,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.delimiter = exportSetting.getDelimiter();
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 		exportPath = exportSetting.getExportPath();
+		lineSeparator = System.getProperty("line.separator");
 		groupedRelationships = Maps.newTreeMap();
 		groupedOnlyItems = Lists.newArrayList();
 	}
@@ -143,7 +146,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			file.createNewFile();
 
-			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId,includeInactiveMembers);
+			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId, includeInactiveMembers);
 			createHeaderList(referencedComponents);
 
 			// write the header to the file
@@ -156,8 +159,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 
 			if (includeDescriptionId || includeRelationshipId || includeInactiveMembers) {
-				sb.append(System.getProperty("line.separator"));
-				// sb.length > 0 works not, because the first element of the meta header can be empty string.
+				// sb.length > 0 doesn't work, because the first element of the meta header can be empty string.
 				boolean fistElement = true;
 
 				for (String headerListElement : headerList) {
@@ -169,7 +171,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					sb.append(headerListElement);
 				}
 			}
-			sb.append(System.getProperty("line.separator"));
+			
+			sb.append(lineSeparator);
 			os.writeBytes(sb.toString());
 
 			async.stop();
@@ -273,7 +276,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						stringBuffer.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, includeRelationshipId));
 					}
 				}
-				stringBuffer.append(System.getProperty("line.separator"));
+				stringBuffer.append(lineSeparator);
 				os.writeBytes(stringBuffer.toString());
 				remainderMonitor.worked(1);
 			}
