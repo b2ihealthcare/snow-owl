@@ -20,6 +20,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.collect.ImmutableList;
@@ -90,7 +92,11 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
 		public String load(final TransactionContext context) throws Exception {
-			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
+			final String latestReleaseBranch = SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
+			if (latestReleaseBranch == null) {
+				return Branch.MAIN_PATH;
+			}
+			return latestReleaseBranch;
 		}
 	});
 
@@ -176,7 +182,8 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 	}
 
 	private String getLatestReleaseBranch(final TransactionContext context) {
-		return referenceBranchFunction.apply(context);
+		final String latestVersion = referenceBranchFunction.apply(context);
+		return  latestVersion == Branch.MAIN_PATH ? null : latestVersion;
 	}
 
 	private void ensureMemberActive(final TransactionContext context, final SnomedAttributeValueRefSetMember existingMember) {
@@ -212,7 +219,7 @@ final class SnomedInactivationReasonUpdateRequest<C extends Inactivatable & Comp
 
 	private void updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedAttributeValueRefSetMember existingMember) {
 
-		if (existingMember.isReleased()) {
+		if (existingMember.isReleased() &&  !Strings.isNullOrEmpty(referenceBranch)) {
 
 			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getUuid())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)
