@@ -299,7 +299,27 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		return subsumptionRequest.getVersion();
+		String version = subsumptionRequest.getVersion();
+
+		//get the latest version or MAIN
+		if (version == null) {
+			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.one()
+				.filterByCodeSystemShortName(getCodeSystemShortName())
+				.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first();
+				
+			if (optionalVersion.isPresent()) {
+				return optionalVersion.get().getVersionId();
+			} else {
+				return IBranchPath.MAIN_BRANCH;
+			}
+		}
+		
+		return version;
 	}
 
 	/**

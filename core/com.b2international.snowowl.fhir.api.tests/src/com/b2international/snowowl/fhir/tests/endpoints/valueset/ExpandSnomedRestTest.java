@@ -39,17 +39,17 @@ public class ExpandSnomedRestTest extends FhirRestTest {
 	@Test
 	public void implicitRefsetTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("url", "http://snomed.info/sct?fhir_vs=refset/723264001") 
+			.param("url", "http://snomed.info/sct?fhir_vs=refset/410607006") 
 			.when().get("/ValueSet/$expand")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", equalTo("snomedStore:MAIN/2018-07-31:723264001"))
+			.body("id", equalTo("snomedStore:MAIN/2018-07-31:410607006"))
 			.body("language", equalTo("en-us"))
 			.body("version", equalTo(SNOMED_VERSION))
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem("362460007"))
+			.body("expansion.contains.code", hasItem("41146007"))
 			.statusCode(200);
 	}
 	
@@ -67,7 +67,7 @@ public class ExpandSnomedRestTest extends FhirRestTest {
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem("362460007"))
+			.body("expansion.contains.code", hasItem("41146007"))
 			.statusCode(200);
 	}
 	
@@ -75,7 +75,7 @@ public class ExpandSnomedRestTest extends FhirRestTest {
 	@Test
 	public void implicitIsaTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("url", "http://snomed.info/sct?fhir_vs=isa/50697003") 
+			.param("url", "http://snomed.info/sct?fhir_vs=isa/264395009") 
 			.when().get("/ValueSet/$expand")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
@@ -86,7 +86,7 @@ public class ExpandSnomedRestTest extends FhirRestTest {
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem("50697003"))
+			.body("expansion.contains.code", hasItem("41146007"))
 			.body("expansion.parameter[0].name", equalTo("version"))
 			.body("expansion.parameter[0].valueUri", equalTo("http://snomed.info/sct/version/20180731"))
 			.statusCode(200);
@@ -138,7 +138,7 @@ public class ExpandSnomedRestTest extends FhirRestTest {
 		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		String refsetName = "FHIR Automated Test Query Type Refset";
-		String refsetLogicalId = TestArtifactCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
+		String refsetLogicalId = TestArtifactCreator.createQueryTypeReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

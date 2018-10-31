@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -57,23 +59,52 @@ import com.google.common.collect.Maps;
  */
 public class TestArtifactCreator {
 	
+	
+	/**
+	 * 
+	 * @param branchPath
+	 * @param refsetName
+	 * @param version
+	 * @return
+	 */
+	public static String createSimpleTypeReferenceSet(String branchPath, String refsetName, String version) {
+	
+		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
+		if (!refsetConcept.isPresent()) {
+			System.out.println("Creating test query type reference set...");
+			String combinedId = createSimpleTypeRefsetConcept(branchPath, refsetName);
+			System.out.println("Versioning content...");
+			createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+			return combinedId;
+		} else {
+			System.out.println("Found existing test query type reference set...");
+			String refsetId = refsetConcept.get().getId();
+			SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
+				.one()
+				.filterById(refsetId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.first()
+				.orElseThrow(() -> new NotFoundException("Reference set", refsetId));
+			
+			return referenceSet.getId();
+		}
+	}
+	
+	
 	/**
 	 * @param branchPath
 	 * @param refsetName
 	 * @return refset logical id
 	 */
-	public static String createReferenceSet(String branchPath, String refsetName, String version) {
-		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
-				.filterByTerm(refsetName)
-				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync()
-				.first();
+	public static String createQueryTypeReferenceSet(String branchPath, String refsetName, String version) {
+		
+		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
 			
 			if (!refsetConcept.isPresent()) {
 				System.out.println("Creating test query type reference set...");
-				String combinedId = createRefset(branchPath, refsetName);
+				String combinedId = createQueryTypeReferenceset(branchPath, refsetName);
 				System.out.println("Versioning content...");
 				createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 				
@@ -97,8 +128,19 @@ public class TestArtifactCreator {
 				return refsetId + "|" + firstMember.getId();
 			}
 	}
+
+	private static Optional<SnomedConcept> getRefsetConcept(String branchPath, String refsetName) {
+		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
+				.filterByTerm(refsetName)
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.first();
+		return refsetConcept;
+	}
 	
-	private static String createRefset(String branchPath, String refsetName) {
+	private static String createQueryTypeReferenceset(String branchPath, String refsetName) {
 		
 		CommitResult commitResult = SnomedRequests.prepareNewConcept()
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
@@ -121,10 +163,10 @@ public class TestArtifactCreator {
 		
 		String refsetId = commitResult.getResultAs(String.class);
 		
-		String referencedSimpleTypeRefsetId = createSimpleTypeRefsetConcept(branchPath);
+		String referencedSimpleTypeRefsetId = createSimpleTypeRefsetConcept(branchPath, "FHIR Automated Test Simple Type Refset");
 		
 		Map<String, Object> memberMap = Maps.newHashMap();
-		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<49111001");
+		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<410607006"); //Organism (SNOMED MINI)
 		
 		String memberId = SnomedRequests.prepareNewMember()
 			.setReferenceSetId(refsetId)
@@ -140,19 +182,19 @@ public class TestArtifactCreator {
 		return refsetId + "|" + memberId;
 	}
 	
-	private static String createSimpleTypeRefsetConcept(String branchPath) {
+	private static String createSimpleTypeRefsetConcept(String branchPath, String refsetName) {
 		return SnomedRequests.prepareNewConcept()
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.addDescription(createDescription("FHIR Automated Test Simple Type Refset (foundation metadata concept)", FULLY_SPECIFIED_NAME))
-			.addDescription(createDescription("FHIR Automated Test Simple Type Refset", SYNONYM))
+			.addDescription(createDescription(refsetName +" (foundation metadata concept)", FULLY_SPECIFIED_NAME))
+			.addDescription(createDescription(refsetName, SYNONYM))
 			.addRelationship(createIsaRelationship(CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.addRelationship(createIsaRelationship(CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setType(SnomedRefSetType.SIMPLE))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Value Set")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Reference Set")
 			.execute(getEventBus())
 			.getSync()
 			.getResultAs(String.class);

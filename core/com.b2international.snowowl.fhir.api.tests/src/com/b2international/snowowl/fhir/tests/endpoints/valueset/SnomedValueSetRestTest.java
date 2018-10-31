@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.hamcrest.core.StringStartsWith;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -32,7 +33,21 @@ import com.b2international.snowowl.snomed.fhir.SnomedUri;
  */
 public class SnomedValueSetRestTest extends FhirRestTest {
 	
-	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION";
+	private static final String FHIR_SIMPLE_TYPE_REFSET_VERSION = "FHIR_SIMPLE_TYPE_REFSET_VERSION"; //$NON-NLS-N$
+	private static final String SIMPLE_TYPE__REFSET_NAME = "FHIR Automated Test Simple Type Reference Set"; //$NON-NLS-N$
+	private static String simpleTypeRefSetId;
+
+	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION"; //$NON-NLS-N$
+	private static final String QUERY_TYPE_REFSET_NAME = "FHIR Automated Test Query Type Refset";
+	private static String queryTypeRefsetLogicalId;
+	
+	@BeforeClass
+	public static void setupValueSets() {
+		String mainBranch = IBranchPath.MAIN_BRANCH;
+		simpleTypeRefSetId = TestArtifactCreator.createSimpleTypeReferenceSet(mainBranch, SIMPLE_TYPE__REFSET_NAME, FHIR_SIMPLE_TYPE_REFSET_VERSION);
+		queryTypeRefsetLogicalId = TestArtifactCreator.createQueryTypeReferenceSet(mainBranch, QUERY_TYPE_REFSET_NAME, FHIR_QUERY_TYPE_REFSET_VERSION);
+	}
+	
 	
 	//@Test
 	public void printValueSets() throws Exception {
@@ -101,13 +116,10 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 	@Test
 	public void getSingleQueryTypeValueSetTest() {
 		
-		String mainBranch = IBranchPath.MAIN_BRANCH;
-		String refsetName = "FHIR Automated Test Query Type Refset";
-		String refsetLogicalId = TestArtifactCreator.createReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
-		System.out.println("Refset concept ID: " + refsetLogicalId);
+		System.out.println("Refset concept ID: " + queryTypeRefsetLogicalId);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + refsetLogicalId) 
+		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + queryTypeRefsetLogicalId) 
 			.when().get("/ValueSet/{id}")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
@@ -118,16 +130,16 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 			.root("compose[0].include[0]")
 			.body("system", equalTo("http://snomed.info/sct"))
 			.body("filter[0].property", equalTo("expression"))
-			.body("filter[0].value", equalTo("<<49111001"))
+			.body("filter[0].value", equalTo("<<410607006"))
 			.body("filter[0].op", equalTo("="))
 			.statusCode(200);
 	}
 	
 	//This is junk as the ID is hard-coded
-	//@Test
+	@Test
 	public void getSingleSnomedValueSetTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/2018-07-31:723264001") 
+		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + ":" + simpleTypeRefSetId) 
 			.when().get("/ValueSet/{id}")
 			.prettyPrint();
 	}

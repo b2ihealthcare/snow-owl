@@ -112,7 +112,7 @@ public abstract class FhirApiProvider {
 			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.ascending(Revision.STORAGE_KEY))
+				.sortBy(SearchResourceRequest.SortField.descending(Revision.STORAGE_KEY))
 				.build(getRepositoryId())
 				.execute(getBus())
 				.getSync()

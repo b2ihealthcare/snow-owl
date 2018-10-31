@@ -40,8 +40,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumedByWithVersionTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "413029008") //Monospecific reactions
-			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
+			.param("codeA", "409822003") //Bacteria
+			.param("codeB", "264395009") //Microorganism (parent)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20180131")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -55,8 +55,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void twoVersionsTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "413029008") //Monospecific reactions
-			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
+			.param("codeA", "409822003") //Bacteria
+			.param("codeB", "264395009") //Microorganism (parent)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
 			.param("version", "2018-01-31")
 			.when().get("/CodeSystem/$subsumes")
@@ -64,7 +64,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.diagnostics", hasItem("Both system URI and version tag identifies a version."))
+			.body("issue.diagnostics", hasItem("Version specified in the URI [http://snomed.info/sct/900000000000207008/version/20170131] "
+					+ "does not match the version set in the request [2018-01-31]"))
 			.statusCode(400);
 	}
 	
@@ -72,8 +73,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumedByTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "413029008") //Monospecific reactions
-			.param("codeB", "59524001") //59524001 - Blood bank procedure (parent)
+			.param("codeA", "409822003") //Bacteria
+			.param("codeB", "264395009") //Microorganism (parent)
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -86,8 +87,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "59524001")
-			.param("codeB", "413029008")
+			.param("codeA", "264395009") //Microorganism (parent)
+			.param("codeB", "409822003") //Bacteria
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -100,8 +101,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void notSubsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "235856003")
-			.param("codeB", "413029008")
+			.param("codeA", "71388002") //procedure
+			.param("codeB", "409822003") //bacteria
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -114,8 +115,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void equivalentTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "235856003")
-			.param("codeB", "235856003")
+			.param("codeA", "409822003")
+			.param("codeB", "409822003")
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
