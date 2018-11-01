@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,8 +41,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumedByWithVersionTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "409822003") //Bacteria
-			.param("codeB", "264395009") //Microorganism (parent)
+			.param("codeA", BACTERIA) //Bacteria
+			.param("codeB", MICROORGANISM) //Microorganism (parent)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20180131")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -55,8 +56,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void twoVersionsTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "409822003") //Bacteria
-			.param("codeB", "264395009") //Microorganism (parent)
+			.param("codeA", BACTERIA) //Bacteria
+			.param("codeB", MICROORGANISM) //Microorganism (parent)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
 			.param("version", "2018-01-31")
 			.when().get("/CodeSystem/$subsumes")
@@ -73,8 +74,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumedByTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "409822003") //Bacteria
-			.param("codeB", "264395009") //Microorganism (parent)
+			.param("codeA", BACTERIA) //Bacteria
+			.param("codeB", MICROORGANISM) //Microorganism (parent)
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -87,8 +88,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "264395009") //Microorganism (parent)
-			.param("codeB", "409822003") //Bacteria
+			.param("codeA", MICROORGANISM) //Microorganism (parent)
+			.param("codeB", BACTERIA) //Bacteria
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -102,7 +103,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("codeA", "71388002") //procedure
-			.param("codeB", "409822003") //bacteria
+			.param("codeB", BACTERIA) //bacteria
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -115,8 +116,8 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void equivalentTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", "409822003")
-			.param("codeB", "409822003")
+			.param("codeA", BACTERIA)
+			.param("codeB", BACTERIA)
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
