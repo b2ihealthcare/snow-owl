@@ -54,7 +54,7 @@ public class EclValidator extends AbstractEclValidator {
 	public void checkAmbiguity(OrExpressionConstraint it) {
 		if (isAmbiguous(it, it.getLeft())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.OR_EXPRESSION_CONSTRAINT__LEFT, AMBIGUOUS_CODE);
-		} else if (isAmbiguous(it, it.getLeft())) {
+		} else if (isAmbiguous(it, it.getRight())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.OR_EXPRESSION_CONSTRAINT__RIGHT, AMBIGUOUS_CODE);
 		}
 	}
@@ -63,7 +63,7 @@ public class EclValidator extends AbstractEclValidator {
 	public void checkAmbiguity(ExclusionExpressionConstraint it) {
 		if (isAmbiguous(it, it.getLeft())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.EXCLUSION_EXPRESSION_CONSTRAINT__LEFT, AMBIGUOUS_CODE);
-		} else if (isAmbiguous(it, it.getLeft())) {
+		} else if (isAmbiguous(it, it.getRight())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.EXCLUSION_EXPRESSION_CONSTRAINT__RIGHT, AMBIGUOUS_CODE);
 		}
 	}
@@ -72,7 +72,7 @@ public class EclValidator extends AbstractEclValidator {
 	public void checkAmbiguity(OrRefinement it) {
 		if (isAmbiguous(it, it.getLeft())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.OR_REFINEMENT__LEFT, AMBIGUOUS_CODE);
-		} else if (isAmbiguous(it, it.getLeft())) {
+		} else if (isAmbiguous(it, it.getRight())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.OR_REFINEMENT__RIGHT, AMBIGUOUS_CODE);
 		}
 	}
@@ -81,7 +81,7 @@ public class EclValidator extends AbstractEclValidator {
 	public void checkAmbiguity(AndRefinement it) {
 		if (isAmbiguous(it, it.getLeft())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.AND_REFINEMENT__LEFT, AMBIGUOUS_CODE);
-		} else if (isAmbiguous(it, it.getLeft())) {
+		} else if (isAmbiguous(it, it.getRight())) {
 			error(AMBIGUOUS_MESSAGE, it, EclPackage.Literals.AND_REFINEMENT__RIGHT, AMBIGUOUS_CODE);
 		}
 	}
