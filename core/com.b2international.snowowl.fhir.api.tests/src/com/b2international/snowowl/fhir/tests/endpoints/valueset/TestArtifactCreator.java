@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONY
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -84,18 +85,6 @@ public class TestArtifactCreator {
 		} else {
 			System.out.println("Found existing test simple type reference set...");
 			String refsetId = refsetConcept.get().getId();
-			
-			/*
-			
-			SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
-				.one()
-				.filterById(refsetId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.getSync()
-				.first()
-				.orElseThrow(() -> new NotFoundException("Reference set", refsetId));
-			*/
 			return refsetId;
 		}
 	}
@@ -104,6 +93,8 @@ public class TestArtifactCreator {
 	private static void createMember(String branchPath, String refsetId, String referencedConceptId) {
 		
 		SnomedRequests.prepareNewMember()
+			.setId(UUID.randomUUID().toString())
+			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setActive(true)
 			.setReferenceSetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
