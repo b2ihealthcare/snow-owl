@@ -18,11 +18,9 @@ package com.b2international.snowowl.fhir.core.model;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 
 /**
  * Annotation based builder superclass for FHIR model classes and data types.
@@ -31,11 +29,8 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
  */
 public abstract class ValidatingBuilder<T> {
 
-	private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-
 	public void validateModel(T model) {
-		Validator validator = factory.getValidator();
-		Set<ConstraintViolation<T>> violations = validator.validate(model);
+		Set<ConstraintViolation<T>> violations = ValidationUtil.getValidator().validate(model);
 
 		if (!violations.isEmpty()) {
 			throw new ValidationException(violations);

@@ -61,14 +61,14 @@ public class AllFhirRestTests {
 	/**
 	 * Execute the tests with this rule if the dataset needs to be imported
 	 */
-	@ClassRule
+	//@ClassRule
 	public static final RuleChain appRule = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
 		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
 	
-	//@ClassRule
+	@ClassRule
 	public static final RuleChain appRuleWithDB = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
