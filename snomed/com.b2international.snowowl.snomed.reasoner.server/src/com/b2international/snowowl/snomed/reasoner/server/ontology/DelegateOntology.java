@@ -21,7 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -35,14 +34,13 @@ import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
-import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.reasoner.model.ConceptDefinition;
 import com.b2international.snowowl.snomed.reasoner.model.ConcreteDomainDefinition;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.model.RelationshipDefinition;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
 import com.b2international.snowowl.snomed.reasoner.model.WritableEmptySet;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -208,7 +206,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
-			if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
+			if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
 				continue;
 			}
 
@@ -225,7 +223,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		for (final LongIterator itr2 = superTypeIds.iterator(); itr2.hasNext(); /* empty */) {
 			final long superTypeId = itr2.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(superTypeId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(superTypeId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
 				final OWLObjectProperty subProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + conceptId, prefixManager);
 				final OWLObjectProperty superProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + superTypeId, prefixManager);
 				final OWLSubObjectPropertyOfAxiom propertyAxiom = manager.getOWLDataFactory().getOWLSubObjectPropertyOfAxiom(subProperty, superProperty);
@@ -252,43 +250,49 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		return result;
 	}
 
-	private List<OWLAxiom> createRawAxioms(final long conceptId, final boolean primitive) {
+	private OWLAxiom createRawAxiom(final long conceptId, final boolean primitive) {
+		final ConceptDefinition definition = new ConceptDefinition(conceptId, primitive);
 
-		final Collection<ConcreteDomainFragment> conceptDomainFragments = getReasonerTaxonomyBuilder().getStatedConcreteDomainFragments(conceptId);
-		final Set<ConcreteDomainDefinition> conceptDomainDefinitions = newHashSet();
+		getReasonerTaxonomyBuilder().getStatedConcreteDomainFragments(conceptId)
+			.stream()
+			.forEachOrdered(m -> {
+				final String typeId = Long.toString(m.getTypeId());
+				final DataType dataType = m.getDataType();
+				final String serializedValue = m.getSerializedValue();
 
-		for (final ConcreteDomainFragment conceptFragment : conceptDomainFragments) {
-			conceptDomainDefinitions.add(new ConcreteDomainDefinition(conceptFragment));
-		}
+				final ConcreteDomainDefinition cdDefinition = new ConcreteDomainDefinition(typeId, dataType, serializedValue);
+	
+				// CD members are always "never-grouped" in group 0, but never part of any union group
+				if (m.getGroup() == 0) {
+					definition.addNeverGroupedDefinition(cdDefinition, m.getGroup(), 0);
+				} else {
+					definition.addGroupDefinition(cdDefinition, m.getGroup(), 0);
+				}
+			});
 
-		final ConceptDefinition definition = new ConceptDefinition(conceptDomainDefinitions, conceptId, primitive, null);
-		final Collection<StatementFragment> statementFragments = getReasonerTaxonomyBuilder().getStatedStatementFragments(conceptId);
+		getReasonerTaxonomyBuilder().getStatedStatementFragments(conceptId)
+			.stream()
+			.forEach(r -> {
+				final long typeId = r.getTypeId();
+				final long destinationId = r.getDestinationId();
+				
+				if (LongConcepts.IS_A_ID == typeId) {
+					definition.addClassParentId(destinationId);
+				} else {
+					final RelationshipDefinition relationshipDefinition = new RelationshipDefinition(typeId,
+							destinationId, 
+							r.isDestinationNegated(),
+							r.isUniversal());
+	
+					if (Longs.contains(LongConcepts.NEVER_GROUPED_ROLE_IDS, typeId) && r.getGroup() == 0) {
+						definition.addNeverGroupedDefinition(relationshipDefinition, r.getGroup(), r.getUnionGroup());
+					} else {
+						definition.addGroupDefinition(relationshipDefinition, r.getGroup(), r.getUnionGroup());
+					}
+				}
+			});
 
-		for (final StatementFragment statementFragment : statementFragments) {
-			final long statementId = statementFragment.getStatementId();
-			final Collection<ConcreteDomainFragment> relationshipDomainFragments = getReasonerTaxonomyBuilder().getStatedConcreteDomainFragments(statementId);
-			final Set<ConcreteDomainDefinition> relationshipDomainDefinitions = newHashSet();
-
-			for (final ConcreteDomainFragment relationshipDomainFragment : relationshipDomainFragments) {
-				relationshipDomainDefinitions.add(new ConcreteDomainDefinition(relationshipDomainFragment));
-			}
-
-			final RelationshipDefinition relationshipDefinition = new RelationshipDefinition(relationshipDomainDefinitions,
-					statementFragment.getTypeId(), statementFragment.getDestinationId(), statementFragment.isDestinationNegated(),
-					statementFragment.isUniversal());
-
-			if (LongConcepts.IS_A_ID == statementFragment.getTypeId()) {
-				definition.addIsaDefinition(relationshipDefinition);
-			} else if (Longs.contains(LongConcepts.NEVER_GROUPED_ROLE_IDS, statementFragment.getTypeId()) && 0 == statementFragment.getGroup()) {
-				definition.addNeverGroupedDefinition(relationshipDefinition, statementFragment.getGroup(), statementFragment.getUnionGroup());
-			} else {
-				definition.addGroupDefinition(relationshipDefinition, statementFragment.getGroup(), statementFragment.getUnionGroup());
-			}
-		}
-
-		final List<OWLAxiom> axioms = newArrayList();
-		definition.collect(manager.getOWLDataFactory(), prefixManager, axioms, Sets.<OWLClassExpression>newHashSet());
-		return axioms;
+		return definition.asOwlAxiom(this);
 	}
 
 	@Override public <T extends OWLAxiom> Set<T> getAxioms(final AxiomType<T> axiomType, final boolean includeImportsClosure) {
@@ -364,12 +368,11 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final long conceptId = getConceptId(namedSubClass);
-
 		if (!getReasonerTaxonomyBuilder().isPrimitive(conceptId)) {
 			return false;
 		}
 
-		return createRawAxioms(conceptId, true).contains(axiom);
+		return createRawAxiom(conceptId, true).equals(axiom);
 	}
 
 	private boolean containsEquivalentClassesAxiom(final OWLEquivalentClassesAxiom axiom) {
@@ -389,7 +392,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 				continue;
 			}
 
-			if (createRawAxioms(conceptId, false).contains(axiom)) {
+			if (createRawAxiom(conceptId, false).equals(axiom)) {
 				return true;
 			}
 		}
@@ -415,7 +418,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final long conceptId = getConceptId(namedSubProperty);
-		return getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID);
+		return getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID);
 	}
 
 	private boolean containsDisjointUnionAxiom(final OWLDisjointUnionAxiom axiom) {
@@ -488,8 +491,6 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final OWLDataFactory df = manager.getOWLDataFactory();
-		result.add(df.getOWLClass(SnomedOntologyUtils.PREFIX_CONCEPT_UNIT_NOT_APPLICABLE, prefixManager));
-
 		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
@@ -512,19 +513,15 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final OWLDataFactory df = manager.getOWLDataFactory();
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_HAS_UNIT, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE_GROUP, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE_HAS_MEASUREMENT, prefixManager));
-		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_DATA_HAS_VALUE, prefixManager));
-
 		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
 				result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_CONCEPT + conceptId, prefixManager));
 			}
 		}
 
+		result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE_GROUP, prefixManager));
 		result.addAll(plusOntology.getObjectPropertiesInSignature());
 		return result;
 	}
@@ -535,8 +532,22 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 	}
 
 	@Override public Set<OWLDataProperty> getDataPropertiesInSignature() {
-		// TODO Consider switching to proper data properties (dataHasValue should be here)
-		return WritableEmptySet.create();
+		final Set<OWLDataProperty> result = newHashSet();
+		if (isEmpty()) {
+			return result;
+		}
+
+		final OWLDataFactory df = manager.getOWLDataFactory();
+		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
+		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
+			final long conceptId = itr.next();
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_DATA_ATTRIBUTE_ID)) {
+				result.add(df.getOWLDataProperty(SnomedOntologyUtils.PREFIX_DATA + conceptId, prefixManager));
+			}
+		}
+
+		result.addAll(plusOntology.getDataPropertiesInSignature());
+		return result;
 	}
 
 	@Override public Set<OWLDataProperty> getDataPropertiesInSignature(final boolean includeImportsClosure) {
@@ -803,13 +814,9 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private void collectSubClassAxiomsForConceptId(final long conceptId, final Set<OWLSubClassOfAxiom> result) {
 
-		final List<OWLAxiom> rawAxioms = createRawAxioms(conceptId, true);
-
-		for (final OWLAxiom axiom : rawAxioms) {
-			if (AxiomType.SUBCLASS_OF.equals(axiom.getAxiomType())) {
-				result.add((OWLSubClassOfAxiom) axiom);
-				break;
-			}
+		final OWLAxiom rawAxiom = createRawAxiom(conceptId, true);
+		if (AxiomType.SUBCLASS_OF.equals(rawAxiom.getAxiomType())) {
+			result.add((OWLSubClassOfAxiom) rawAxiom);
 		}
 	}
 
@@ -834,13 +841,9 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private void collectEquivalentClassesAxiomForLHS(final long conceptId, final Set<OWLEquivalentClassesAxiom> result) {
 
-		final List<OWLAxiom> rawAxioms = createRawAxioms(conceptId, false);
-
-		for (final OWLAxiom axiom : rawAxioms) {
-			if (AxiomType.EQUIVALENT_CLASSES.equals(axiom.getAxiomType())) {
-				result.add((OWLEquivalentClassesAxiom) axiom);
-				break;
-			}
+		final OWLAxiom rawAxiom = createRawAxiom(conceptId, false);
+		if (AxiomType.EQUIVALENT_CLASSES.equals(rawAxiom.getAxiomType())) {
+			result.add((OWLEquivalentClassesAxiom) rawAxiom);
 		}
 	}
 
@@ -928,7 +931,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		final long conceptId = getConceptId(objectProperty);
 
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
+		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
 			return WritableEmptySet.create();
 		}
 
@@ -952,7 +955,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		final long conceptId = getConceptId(objectProperty);
 
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID)) {
+		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
 			return WritableEmptySet.create();
 		}
 

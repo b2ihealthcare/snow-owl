@@ -58,7 +58,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 
@@ -330,16 +329,14 @@ public final class ReasonerTaxonomyBuilder {
 			for (final SnomedRefSetMemberIndexEntry entry : page) {
 				final long referencedComponentId = Long.parseLong(entry.getReferencedComponentId());
 				final long refsetId = Long.parseLong(entry.getReferenceSetId());
-				final byte dataType = (byte) entry.getDataType().ordinal();
-				final long unitId = Strings.isNullOrEmpty(entry.getUnitId()) ? -1L : Long.parseLong(entry.getUnitId());
+				final long typeId = Long.parseLong(entry.getTypeId());
 				final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
 				
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, 
-						entry.getAttributeName(), 
-						dataType,
-						unitId, 
+						typeId, 
 						entry.getStorageKey(), 
-						refsetId);
+						refsetId,
+						entry.getGroup());
 				
 				if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
 					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
