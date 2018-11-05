@@ -21,34 +21,16 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
 
 import org.hamcrest.core.StringStartsWith;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.fhir.tests.SnomedFhirRestTest;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
 /**
  * Generic ValueSet REST end-point test cases for SNOMED 'valuesets'
  * @since 6.7
  */
-public class SnomedValueSetRestTest extends FhirRestTest {
-	
-	private static final String FHIR_SIMPLE_TYPE_REFSET_VERSION = "FHIR_SIMPLE_TYPE_REFSET_VERSION"; //$NON-NLS-N$
-	private static final String SIMPLE_TYPE__REFSET_NAME = "FHIR Automated Test Simple Type Reference Set"; //$NON-NLS-N$
-	private static String simpleTypeRefSetId;
-
-	private static final String FHIR_QUERY_TYPE_REFSET_VERSION = "FHIR_QUERY_TYPE_REFSET_VERSION"; //$NON-NLS-N$
-	private static final String QUERY_TYPE_REFSET_NAME = "FHIR Automated Test Query Type Refset";
-	private static String queryTypeRefsetLogicalId;
-	
-	@BeforeClass
-	public static void setupValueSets() {
-		String mainBranch = IBranchPath.MAIN_BRANCH;
-		simpleTypeRefSetId = TestArtifactCreator.createSimpleTypeReferenceSet(mainBranch, SIMPLE_TYPE__REFSET_NAME, FHIR_SIMPLE_TYPE_REFSET_VERSION);
-		queryTypeRefsetLogicalId = TestArtifactCreator.createQueryTypeReferenceSet(mainBranch, QUERY_TYPE_REFSET_NAME, FHIR_QUERY_TYPE_REFSET_VERSION);
-	}
-	
+public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	
 	//@Test
 	public void printValueSets() throws Exception {
@@ -74,8 +56,8 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 		.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
 		.body("resource.url", startsWith("http://snomed.info/sct/version"))
 		.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
-		.body("resource.title", equalTo(SIMPLE_TYPE__REFSET_NAME))
-		.body("resource.name", equalTo(SIMPLE_TYPE__REFSET_NAME))
+		.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+		.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
 		.body("resource.status", equalTo("active"))
 		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose[0].include[0]")
 		.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
@@ -103,8 +85,8 @@ public class SnomedValueSetRestTest extends FhirRestTest {
 		.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
 		.body("resource.url", startsWith("http://snomed.info/sct/version"))
 		.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
-		.body("resource.title", equalTo(SIMPLE_TYPE__REFSET_NAME))
-		.body("resource.name", equalTo(SIMPLE_TYPE__REFSET_NAME))
+		.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+		.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
 		.body("resource.status", equalTo("active"))
 		
 		//subsetted

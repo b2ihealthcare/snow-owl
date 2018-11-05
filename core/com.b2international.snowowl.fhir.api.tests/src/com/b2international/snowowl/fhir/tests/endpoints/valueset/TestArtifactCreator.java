@@ -235,7 +235,7 @@ public class TestArtifactCreator {
 			.setModifier(RelationshipModifier.EXISTENTIAL);
 	}
 	
-	private static void createVersion(String version, String codeSystemName) {
+	private static synchronized void createVersion(String version, String codeSystemName) {
 		
 		Request<ServiceProvider, Boolean> request = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemName)
