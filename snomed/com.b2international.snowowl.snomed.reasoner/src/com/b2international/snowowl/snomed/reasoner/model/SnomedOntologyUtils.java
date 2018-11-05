@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import com.google.common.collect.Iterables;
 
 /**
- * Utility class that holds OWL object identifier prefixes as well as methods for creating class expressions for object intersections and unions.
+ * Utility class that holds OWL object identifier prefixes as well as methods
+ * for creating class expressions for object intersections and unions.
  */
 public abstract class SnomedOntologyUtils {
 
@@ -32,18 +33,17 @@ public abstract class SnomedOntologyUtils {
 	public static final IRI BASE_IRI = IRI.create(BASE_NAMESPACE);
 	public static final URI BASE_URI = BASE_IRI.toURI();
 	public static final String PREFIX_SNOMED = "snomed:";
+
 	public static final String PREFIX_LABEL = PREFIX_SNOMED + "label_";
 	public static final String PREFIX_CONCEPT = PREFIX_SNOMED + "concept_";
 	public static final String PREFIX_ROLE = PREFIX_SNOMED + "role_";
-	public static final String PREFIX_ROLE_HAS_MEASUREMENT = PREFIX_SNOMED + "roleHasMeasurement";
-	public static final String PREFIX_ROLE_GROUP = PREFIX_SNOMED + "roleGroup";
-	public static final String PREFIX_CONCEPT_UNIT_NOT_APPLICABLE = PREFIX_SNOMED + "conceptUnitNotApplicable";
-	public static final String PREFIX_DATA_HAS_VALUE = PREFIX_SNOMED + "dataHasValue";
-	public static final String PREFIX_HAS_UNIT = PREFIX_SNOMED + "roleHasUnit";
+	public static final String PREFIX_DATA = PREFIX_SNOMED + "data_";
+	public static final String PREFIX_ROLE_GROUP = PREFIX_SNOMED + "roleGroup"; // TODO: Replace this constant with role_609096000 (Role group)
 
 	/**
-	 * Creates a {@link DefaultPrefixManager} instance for the specified ontology. The prefix {{@code snomed:} will be registered for the ontology's
-	 * IRI.
+	 * Creates a {@link DefaultPrefixManager} instance for the specified ontology.
+	 * The prefix {{@code snomed:} will be registered for the ontology's IRI.
+	 * 
 	 * @param ontology the ontology to use (may not be {@code null})
 	 * @return the created prefix manager
 	 */
@@ -52,7 +52,9 @@ public abstract class SnomedOntologyUtils {
 	}
 
 	/**
-	 * Creates a {@link DefaultPrefixManager} instance for the specified IRI. The prefix {{@code snomed:} will be registered for the argument.
+	 * Creates a {@link DefaultPrefixManager} instance for the specified IRI. The
+	 * prefix {{@code snomed:} will be registered for the argument.
+	 * 
 	 * @param ontology the IRI to register for the {@code snomed:} prefix (may not be {@code null})
 	 * @return the created prefix manager
 	 */
@@ -63,9 +65,11 @@ public abstract class SnomedOntologyUtils {
 	}
 
 	/**
-	 * Creates an {@link OWLObjectIntersectionOf} expression for the passed in class expression set, or returns a single expression if the set has
-	 * only one element.
-	 * @param df the {@link OWLDataFactory} to use for creating OWL objects
+	 * Creates an {@link OWLObjectIntersectionOf} expression for the passed in class
+	 * expression set, or returns a single expression if the set has only one
+	 * element.
+	 * 
+	 * @param df    the {@link OWLDataFactory} to use for creating OWL objects
 	 * @param terms the set of terms to convert
 	 * @return the converted class expression
 	 */
@@ -78,9 +82,11 @@ public abstract class SnomedOntologyUtils {
 	}
 
 	/**
-	 * Creates an {@link OWLObjectUnionOf} expression for the passed in class expression set, or returns a single expression if the set has only one
+	 * Creates an {@link OWLObjectUnionOf} expression for the passed in class
+	 * expression set, or returns a single expression if the set has only one
 	 * element.
-	 * @param df the {@link OWLDataFactory} to use for creating OWL objects
+	 * 
+	 * @param df    the {@link OWLDataFactory} to use for creating OWL objects
 	 * @param terms the set of terms to convert
 	 * @return the converted class expression
 	 */
