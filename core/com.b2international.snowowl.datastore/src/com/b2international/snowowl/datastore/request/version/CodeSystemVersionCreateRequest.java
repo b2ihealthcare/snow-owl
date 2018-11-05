@@ -112,7 +112,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
 		
 		// validate new path
-		Branch.BranchNameValidator.DEFAULT.checkName(newVersionPath);
+		Branch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
 		try {
 			RepositoryRequests.branching()
