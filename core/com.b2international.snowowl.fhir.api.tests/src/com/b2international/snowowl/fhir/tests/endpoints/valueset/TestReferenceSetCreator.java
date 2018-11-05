@@ -33,6 +33,7 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
+import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -57,7 +58,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 7.0
  */
-public class TestArtifactCreator {
+public class TestReferenceSetCreator extends TestArtifactCreator {
 	
 	
 	/**
@@ -235,41 +236,4 @@ public class TestArtifactCreator {
 			.setModifier(RelationshipModifier.EXISTENTIAL);
 	}
 	
-	private static synchronized void createVersion(String version, String codeSystemName) {
-		
-		Request<ServiceProvider, Boolean> request = CodeSystemRequests.prepareNewCodeSystemVersion()
-			.setCodeSystemShortName(codeSystemName)
-			.setDescription("FHIR Test version")
-			.setVersionId(version)
-			.setEffectiveTime(new Date())
-			.build();
-			
-		String jobId = JobRequests.prepareSchedule()
-			.setDescription(String.format("Creating version '%s/%s'", 
-					codeSystemName, version))
-			.setUser(User.SYSTEM.getUsername())
-			.setRequest(request)
-			.buildAsync()
-			.execute(getEventBus())
-			.getSync();
-		
-		RemoteJobEntry job = null;
-		do {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new SnowowlRuntimeException(e);
-			}
-			
-			job = JobRequests.prepareGet(jobId)
-					.buildAsync()
-					.execute(getEventBus())
-					.getSync();
-		} while (job == null || !job.isDone());
-	}
-	
-	private static IEventBus getEventBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
-
 }
