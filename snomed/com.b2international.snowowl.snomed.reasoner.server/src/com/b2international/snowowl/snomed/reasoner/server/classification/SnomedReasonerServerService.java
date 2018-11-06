@@ -409,17 +409,13 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	}
 
 	private ConcreteDomainElement createConcreteDomainElement(Map<Long, ChangeConcept> changeConceptCache, IBranchPath branchPath, ConcreteDomainFragment fragment) {
-		
-		ChangeConcept unitConcept = (ConcreteDomainFragment.UNSET_UOM_ID == fragment.getUomId()) 
-				? null
-				: getOrCreateChangeConcept(changeConceptCache, branchPath, fragment.getUomId());
-		
+
+		ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, fragment.getTypeId());
 		ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
-				fragment.getLabel(), 
-				fragment.getValue(), 
-				unitConcept,
-				fragment.getDataType()
-				);
+				typeComponent,
+				fragment.getSerializedValue(),
+				fragment.getDataType(),
+				fragment.getGroup());
 		
 		return concreteDomainElement;
 	}

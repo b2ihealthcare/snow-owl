@@ -305,13 +305,13 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Creates a new SNOMED CT <i>concrete domain</i> reference set member with the specified arguments.
 	 * <p>
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
-	 * added to the reference set's members list.
+	 * added to the referenced concept's CD members list.
 	 * 
 	 * @param moduleId the module ID for the reference set member
 	 * @param refSet the parent reference set
 	 * @param referencedComponentId the referenced component ID for this member
 	 * @param dataType the data type of the concrete domain member
-	 * @param value the value of the reference set member
+	 * @param serializedValue the String representation of the reference set member's value
 	 * @param group the relationship group this reference set member belongs to
 	 * @param typeId the type ID for the concrete domain member
 	 * @param characteristicTypeId the characteristic type ID for the concrete domain member
@@ -322,14 +322,14 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 			final SnomedConcreteDataTypeRefSet refSet,
 			final String referencedComponentId, 
 			final DataType dataType,
-			final Object value,
+			final String serializedValue,
 			final int group,
 			final String typeId, 
 			final String characteristicTypeId) {
 		
 		final SnomedConcreteDataTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
 		initializeRefSetMember(member, referencedComponentId, moduleId, refSet);
-		member.setSerializedValue(SnomedRefSetUtil.serializeValue(dataType, value));
+		member.setSerializedValue(serializedValue);
 		member.setGroup(group);
 		member.setTypeId(typeId);
 		member.setCharacteristicTypeId(characteristicTypeId);

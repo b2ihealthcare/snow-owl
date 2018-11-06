@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetEditingContext;
-import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
@@ -47,21 +46,18 @@ public class ConcreteDomainPersister {
 	public void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedEntry) {
 		final Concept moduleConcept = namespaceAndModuleAssigner.getConcreteDomainModule(conceptId);
 		final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = context.lookup(Long.toString(addedEntry.getRefSetId()), SnomedConcreteDataTypeRefSet.class);
+		
 		final SnomedConcreteDataTypeRefSetMember refSetMember = context.createConcreteDataTypeRefSetMember(
+				moduleConcept.getId(),
+				concreteDataTypeRefSet,
 				conceptId,
-				nullIfUnset(addedEntry.getUomId()),
-				Concepts.CD_EQUAL,
-				SnomedRefSetUtil.deserializeValue(addedEntry.getDataType(), addedEntry.getValue()), 
-				Concepts.INFERRED_RELATIONSHIP, 
-				addedEntry.getLabel(), 
-				moduleConcept.getId(), 
-				concreteDataTypeRefSet);
+				addedEntry.getDataType(),
+				addedEntry.getSerializedValue(),
+				addedEntry.getGroup(),
+				Long.toString(addedEntry.getTypeId()),
+				Concepts.INFERRED_RELATIONSHIP);
 		
 		final Concept referencedComponent = context.lookup(conceptId, Concept.class);
 		referencedComponent.getConcreteDomainRefSetMembers().add(refSetMember);
-	}
-
-	private String nullIfUnset(final long uomId) {
-		return (uomId == ConcreteDomainFragment.UNSET_UOM_ID) ? null : Long.toString(uomId);
 	}
 }

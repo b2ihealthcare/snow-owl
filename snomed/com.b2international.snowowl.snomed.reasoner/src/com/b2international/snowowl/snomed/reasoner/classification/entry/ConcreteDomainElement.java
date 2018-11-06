@@ -18,70 +18,54 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 import java.io.Serializable;
 
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 /**
  * Represents a summary of a concrete domain reference set member in an {@link IConcreteDomainChangeEntry}.
  */
 public class ConcreteDomainElement implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private final String attributeDisplayName;
+	private final ChangeConcept type;
 	private final String value;
-	private final ChangeConcept unit;
 	private final DataType dataType;
+	private final int group;
 
 	/**
 	 * Creates a new concrete domain element with the specified arguments.
 	 * 
-	 * @param attributeDisplayName the display name of the concrete domain member's attribute
+	 * @param type the CD member's type, represented as a {@link ChangeConcept}
 	 * @param value the value of the concrete domain member, suitable for display on the UI
-	 * @param unit the UOM component of the concrete domain member (can be {@code null} if no unit is associated with this member)
+	 * @param dataType the CD member data type
+	 * @param group the relationship group of the CD member
 	 */
-	public ConcreteDomainElement(final String attributeDisplayName, final String value, final ChangeConcept unit, DataType dataType) {
-		this.attributeDisplayName = attributeDisplayName;
+	public ConcreteDomainElement(final ChangeConcept type, final String value, final DataType dataType, final int group) {
+		this.type = type;
 		this.value = value;
-		this.unit = unit;
 		this.dataType = dataType;
+		this.group = group;
 	}
 
-	/**
-	 * @return the display name of the concrete domain member's attribute
-	 */
-	public String getAttributeDisplayName() {
-		return attributeDisplayName;
+	public ChangeConcept getType() {
+		return type;
 	}
 
-	/**
-	 * @return the value of the concrete domain member, suitable for display on the UI
-	 */
 	public String getValue() {
 		return value;
 	}
 
-	/**
-	 * @return the UOM component of the concrete domain member (can be {@code null} if no unit is associated with this member)
-	 */
-	public ChangeConcept getUnit() {
-		return unit;
-	}
-	
-	/**
-	 * @return the DataType of the concrete domain member
-	 */
 	public DataType getDataType() {
 		return dataType;
 	}
 
+	public int getGroup() {
+		return group;
+	}
+
 	@Override 
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((attributeDisplayName == null) ? 0 : attributeDisplayName.hashCode());
-		result = prime * result + ((unit == null) ? 0 : unit.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+		return Objects.hash(type, value, dataType, group);
 	}
 
 	@Override 
@@ -92,9 +76,11 @@ public class ConcreteDomainElement implements Serializable {
 
 		final ConcreteDomainElement other = (ConcreteDomainElement) obj;
 
-		if (!Objects.equal(attributeDisplayName, other.attributeDisplayName)) { return false; }
-		if (!Objects.equal(unit, other.unit)) { return false; }
-		if (!Objects.equal(value, other.value)) { return false; }
+		if (!Objects.equals(type, other.type)) { return false; }
+		if (!Objects.equals(value, other.value)) { return false; }
+		if (dataType != other.dataType) { return false; }
+		if (group != other.group) { return false; }
+		
 		return true;
 	}
 }
