@@ -233,14 +233,12 @@ public class EventBus extends Lifecycle implements IEventBus {
 
 	private void increment(String tag, Map<String, AtomicLong> toIncrement) {
 		final AtomicLong counter = getOrCreateCounter(tag, toIncrement);
-		counter.set(counter.incrementAndGet());
-		toIncrement.put(tag, counter);
+		counter.incrementAndGet();
 	}
 
 	private void decrement(String tag, Map<String, AtomicLong> toDecrement) {
 		final AtomicLong counter = getOrCreateCounter(tag, toDecrement);
-		counter.set(counter.decrementAndGet());
-		toDecrement.put(tag, counter);
+		counter.decrementAndGet();
 	}
 	
 	private AtomicLong getOrCreateCounter(final String tag, final Map<String, AtomicLong> counterMap) {
