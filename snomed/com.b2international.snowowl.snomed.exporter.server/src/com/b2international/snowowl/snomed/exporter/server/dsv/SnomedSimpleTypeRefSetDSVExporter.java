@@ -76,6 +76,8 @@ import com.google.common.collect.Sets;
 
 public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
@@ -143,7 +145,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 			file.createNewFile();
 
-			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId,includeInactiveMembers);
+			SnomedConcepts referencedComponents = getReferencedComponentConcepts(refSetId, includeInactiveMembers);
 			createHeaderList(referencedComponents);
 
 			// write the header to the file
@@ -156,8 +158,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			}
 
 			if (includeDescriptionId || includeRelationshipId || includeInactiveMembers) {
-				sb.append(System.getProperty("line.separator"));
-				// sb.length > 0 works not, because the first element of the meta header can be empty string.
+				// sb.length > 0 doesn't work, because the first element of the meta header can be empty string.
 				boolean fistElement = true;
 
 				for (String headerListElement : headerList) {
@@ -169,7 +170,8 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					sb.append(headerListElement);
 				}
 			}
-			sb.append(System.getProperty("line.separator"));
+			
+			sb.append(LINE_SEPARATOR);
 			os.writeBytes(sb.toString());
 
 			async.stop();
@@ -273,7 +275,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						stringBuffer.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, includeRelationshipId));
 					}
 				}
-				stringBuffer.append(System.getProperty("line.separator"));
+				stringBuffer.append(LINE_SEPARATOR);
 				os.writeBytes(stringBuffer.toString());
 				remainderMonitor.worked(1);
 			}
