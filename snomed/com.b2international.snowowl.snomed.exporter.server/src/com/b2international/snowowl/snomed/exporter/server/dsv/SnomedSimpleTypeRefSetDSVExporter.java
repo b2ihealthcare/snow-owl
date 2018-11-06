@@ -76,6 +76,8 @@ import com.google.common.collect.Sets;
 
 public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
+	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
@@ -92,8 +94,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private List<ExtendedLocale> locales;
 	private String exportPath;
-	
-	private final String lineSeparator;
 
 	/**
 	 * Creates a new instance with the export parameters. Called by the SnomedSimpleTypeRefSetDSVExportServerIndication.
@@ -112,7 +112,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		this.delimiter = exportSetting.getDelimiter();
 		this.branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 		exportPath = exportSetting.getExportPath();
-		lineSeparator = System.getProperty("line.separator");
 		groupedRelationships = Maps.newTreeMap();
 		groupedOnlyItems = Lists.newArrayList();
 	}
@@ -172,7 +171,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				}
 			}
 			
-			sb.append(lineSeparator);
+			sb.append(LINE_SEPARATOR);
 			os.writeBytes(sb.toString());
 
 			async.stop();
@@ -276,7 +275,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						stringBuffer.append(joinResultsWithDelimiters(relationships, groupedRelationships.get(groupId).get(relationshipId), delimiter, includeRelationshipId));
 					}
 				}
-				stringBuffer.append(lineSeparator);
+				stringBuffer.append(LINE_SEPARATOR);
 				os.writeBytes(stringBuffer.toString());
 				remainderMonitor.worked(1);
 			}
