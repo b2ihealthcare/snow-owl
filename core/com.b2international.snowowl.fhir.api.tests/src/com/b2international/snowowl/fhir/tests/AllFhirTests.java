@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FilterTest;
 import com.b2international.snowowl.fhir.tests.filter.ParameterParsingTest;
 import com.b2international.snowowl.fhir.tests.filter.SearchRequestParametersTest;
@@ -80,6 +81,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	CodeSystemSerializationTest.class,
 	ValueSetSerializationTest.class,
 	ConceptMapSerializationTest.class,
+	ConceptMapFilterTest.class,
 
 })
 public class AllFhirTests {

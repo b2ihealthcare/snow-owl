@@ -31,7 +31,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -50,6 +52,7 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("ValueSet")
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ValueSet extends TerminologyResource {
 	
 	//FHIR header "resourceType" : "ValueSet",

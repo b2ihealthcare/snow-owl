@@ -344,6 +344,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.targetUri("TargetUri")
 				.build();
 		
+		applyFilter(conceptMap);
 		printPrettyJson(conceptMap);
 		
 		JsonPath jsonPath = getJsonPath(conceptMap);

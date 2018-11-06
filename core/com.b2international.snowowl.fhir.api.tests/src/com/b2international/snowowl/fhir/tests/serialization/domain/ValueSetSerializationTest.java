@@ -204,6 +204,7 @@ public class ValueSetSerializationTest extends FhirTest {
 			
 			.build();
 		
+		applyFilter(valueSet);
 		printPrettyJson(valueSet);
 		
 		JsonPath jsonPath = getJsonPath(valueSet);

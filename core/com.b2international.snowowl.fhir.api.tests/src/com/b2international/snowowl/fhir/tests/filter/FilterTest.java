@@ -271,7 +271,7 @@ public class FilterTest extends FhirTest {
 
 		setupSummaryFilter(summaryParameter);
 
-		printJson(codeSystem);
+		printPrettyJson(codeSystem);
 		String jsonString = objectMapper.writeValueAsString(codeSystem);
 		assertEquals("{\"resourceType\":\"CodeSystem\",\"id\":\"repo/shortName\","
 				+ "\"url\":\"code system uri\","

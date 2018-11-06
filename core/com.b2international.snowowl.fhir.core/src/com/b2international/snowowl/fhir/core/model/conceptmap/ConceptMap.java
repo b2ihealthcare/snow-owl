@@ -24,7 +24,6 @@ import javax.validation.constraints.AssertTrue;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.TerminologyResource;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -33,10 +32,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Reference;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
+import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import io.swagger.annotations.ApiModel;
@@ -58,6 +57,7 @@ import io.swagger.annotations.ApiModel;
  * @since 6.10
  */
 @ApiModel("ConceptMap")
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ConceptMap extends TerminologyResource {
 
 	// FHIR header "resourceType" : "ConceptMap",
