@@ -61,6 +61,7 @@ public abstract class TerminologyResource extends DomainResource {
 	@JsonProperty
 	private String version; //not necessarily available - and what to do when we have more than 1??
 	
+	@Summary
 	@JsonProperty
 	private String name;
 	

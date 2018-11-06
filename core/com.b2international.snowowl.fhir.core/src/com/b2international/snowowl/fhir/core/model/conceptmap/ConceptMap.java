@@ -33,6 +33,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Reference;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,6 +63,7 @@ public class ConceptMap extends TerminologyResource {
 
 	// FHIR header "resourceType" : "ConceptMap",
 
+	@Mandatory
 	@JsonProperty
 	private final String resourceType = "ConceptMap";
 

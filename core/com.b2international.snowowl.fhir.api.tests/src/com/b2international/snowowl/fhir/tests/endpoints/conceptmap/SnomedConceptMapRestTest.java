@@ -61,7 +61,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 		.prettyPrint();
 	}
 	
-	//@Test
+	@Test
 	public void conceptMapsTest() throws Exception {
 		
 		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
@@ -101,7 +101,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void getSimpleMapTypeConceptMapTest() {
 		
 		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
@@ -137,7 +137,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void getComplexMapTypeConceptMapTest() {
 		
 		//second item is complex map
@@ -174,7 +174,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//@Test
+	@Test
 	public void getExtendedMapTypeConceptMapTest() {
 		
 		//second item is complex map
@@ -224,7 +224,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("ConceptMap"))
 			.body("meta.tag[0].code", equalTo("SUBSETTED"))
 			.body("id", equalTo("snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId))
-			.body("language", equalTo("en-us"))
+			.body("language", nullValue())
 			.body("url", startsWith("http://snomed.info/sct/version"))
 			.body("identifier.use", equalTo("official"))
 			.body("identifier.system", startsWith("http://snomed.info/sct/version"))
@@ -236,7 +236,5 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.body("group", nullValue())
 			.statusCode(200);
 	}
-	
-	
 	
 }
