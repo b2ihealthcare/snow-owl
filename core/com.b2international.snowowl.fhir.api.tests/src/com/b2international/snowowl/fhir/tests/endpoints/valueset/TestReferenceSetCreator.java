@@ -19,22 +19,15 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.CommitResult;
-import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -51,7 +44,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
-import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -101,7 +93,6 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Refset Member")
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
-		
 	}
 
 

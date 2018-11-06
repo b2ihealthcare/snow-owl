@@ -27,9 +27,9 @@ import com.b2international.snowowl.fhir.tests.endpoints.codesystem.CodeSystemRes
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupFhirCodeSystemRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupSnomedRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SubsumesSnomedRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.valueset.ExpandSnomedRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.valueset.SnomedValueSetRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.valueset.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;

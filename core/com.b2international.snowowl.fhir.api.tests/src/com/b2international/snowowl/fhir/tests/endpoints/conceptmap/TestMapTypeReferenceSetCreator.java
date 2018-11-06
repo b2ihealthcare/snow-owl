@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.valueset.conceptmap;
+package com.b2international.snowowl.fhir.tests.endpoints.conceptmap;
 
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
@@ -64,13 +65,13 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 	
 		List<String> refsetIds = Lists.newArrayList();
 		
-		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, simpleMapName);
+		Optional<SnomedDescription> refsetDescription = getRefsetConcept(branchPath, simpleMapName + " (foundation metadata concept)");
 		
-		if (!refsetConcept.isPresent()) {
+		if (!refsetDescription.isPresent()) {
 			
 			System.out.println("Creating test map type reference set...");
-			String refsetId = createRefsetConcept(branchPath, simpleMapName, SnomedRefSetType.SIMPLE);
-			System.out.println("Creating reference set members for map type refset...");
+			String refsetId = createRefsetConcept(branchPath, simpleMapName, SnomedRefSetType.SIMPLE_MAP);
+			System.out.println("Creating reference set members for map type refset: " + simpleMapName);
 			createSimpleMapping(branchPath, refsetId, FhirTestConcepts.BACTERIA, "Bacteria Target");
 			createSimpleMapping(branchPath, refsetId, FhirTestConcepts.MICROORGANISM, "MO");
 			refsetIds.add(refsetId);
@@ -78,14 +79,14 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			
 			System.out.println("Creating test map type reference set...");
 			refsetId = createRefsetConcept(branchPath, complexMapName, SnomedRefSetType.COMPLEX_MAP);
-			System.out.println("Creating reference set members for complex map type refset...");
+			System.out.println("Creating reference set members for complex map type refset: " + complexMapName);
 			createComplexMapping(branchPath, refsetId, FhirTestConcepts.BACTERIA, "Bacteria Target");
 			createComplexMapping(branchPath, refsetId, FhirTestConcepts.MICROORGANISM, "MO");
 			refsetIds.add(refsetId);
 			
 			System.out.println("Creating test map type reference set...");
 			refsetId = createRefsetConcept(branchPath, extendedMapName, SnomedRefSetType.EXTENDED_MAP);
-			System.out.println("Creating reference set members for extended map type refset...");
+			System.out.println("Creating reference set members for extended map type refset: " + extendedMapName);
 			createExtendedMapping(branchPath, refsetId, FhirTestConcepts.BACTERIA, "Bacteria Target");
 			createExtendedMapping(branchPath, refsetId, FhirTestConcepts.MICROORGANISM, "MO");
 			refsetIds.add(refsetId);
@@ -96,16 +97,15 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			return refsetIds;
 		} else {
 			System.out.println("Found existing test map type reference set...");
-			Optional<SnomedConcept> simpleConcept = getRefsetConcept(branchPath, simpleMapName);
-			refsetIds.add(simpleConcept.get().getId());
-			Optional<SnomedConcept> complexConcept = getRefsetConcept(branchPath, complexMapName);
-			refsetIds.add(complexConcept.get().getId());
-			Optional<SnomedConcept> extendedConcept = getRefsetConcept(branchPath, extendedMapName);
-			refsetIds.add(extendedConcept.get().getId());
+			Optional<SnomedDescription> simpleConcept = getRefsetConcept(branchPath, simpleMapName);
+			refsetIds.add(simpleConcept.get().getConceptId());
+			Optional<SnomedDescription> complexConcept = getRefsetConcept(branchPath, complexMapName);
+			refsetIds.add(complexConcept.get().getConceptId());
+			Optional<SnomedDescription> extendedConcept = getRefsetConcept(branchPath, extendedMapName);
+			refsetIds.add(extendedConcept.get().getConceptId());
 			return refsetIds;
 		}
 	}
-	
 	
 	private static void createSimpleMapping(String branchPath, String refsetId, String referencedConceptId, String mappingTarget) {
 		
@@ -120,7 +120,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 		
 	}
 	
@@ -132,7 +133,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 		properties.put(SnomedRf2Headers.FIELD_MAP_GROUP, 1);
 		properties.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 1);
 		properties.put(SnomedRf2Headers.FIELD_MAP_RULE, "OTHERWISE TRUE");
-		properties.put(SnomedRf2Headers.FIELD_CORRELATION_ID, "447561005");
+		properties.put(SnomedRf2Headers.FIELD_CORRELATION_ID, "447561005"); //correlation not specified
 		
 		SnomedRequests.prepareNewMember()
 			.setId(UUID.randomUUID().toString())
@@ -142,7 +143,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Complex Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 		
 	}
 	
@@ -154,7 +156,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 		properties.put(SnomedRf2Headers.FIELD_MAP_GROUP, 1);
 		properties.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 1);
 		properties.put(SnomedRf2Headers.FIELD_MAP_RULE, "OTHERWISE TRUE");
-		properties.put(SnomedRf2Headers.FIELD_CORRELATION_ID, "447561005");
+		properties.put(SnomedRf2Headers.FIELD_CORRELATION_ID, "447561005"); //correlation not specified
 		properties.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, "447639009");
 		
 		SnomedRequests.prepareNewMember()
@@ -165,13 +167,24 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Extended Map Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 		
 	}
 	
 	
 
-	private static Optional<SnomedConcept> getRefsetConcept(String branchPath, String refsetName) {
+	private static Optional<SnomedDescription> getRefsetConcept(String branchPath, String refsetName) {
+		
+		return SnomedRequests.prepareSearchDescription()
+			.one()
+			.filterByExactTerm(refsetName)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync()
+			.first();
+		
+		/*
 		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
 				.filterByTerm(refsetName)
 				.all()
@@ -179,7 +192,9 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync()
 				.first();
+		
 		return refsetConcept;
+		*/
 	}
 	
 	private static String createRefsetConcept(String branchPath, String refsetName, SnomedRefSetType refsetType) {
@@ -188,7 +203,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setIdFromNamespace(Concepts.B2I_NAMESPACE)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.addDescription(createDescription(refsetName +" (foundation metadata concept)", FULLY_SPECIFIED_NAME))
+			.addDescription(createDescription(refsetName + " (foundation metadata concept)", FULLY_SPECIFIED_NAME))
 			.addDescription(createDescription(refsetName, SYNONYM))
 			.addRelationship(createIsaRelationship(CharacteristicType.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(refsetType)))
 			.addRelationship(createIsaRelationship(CharacteristicType.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(refsetType)))
