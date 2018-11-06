@@ -28,7 +28,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
  * 
  * @since 6.5
  */
-class Synonyms {
+public final class Synonyms {
 
 	private final BranchContext context;
 	private Set<String> synonyms;

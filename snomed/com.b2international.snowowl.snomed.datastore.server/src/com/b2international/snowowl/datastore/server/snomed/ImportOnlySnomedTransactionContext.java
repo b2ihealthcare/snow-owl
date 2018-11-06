@@ -36,6 +36,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.google.inject.Provider;
 
 /**
@@ -47,11 +48,13 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 	private final SnomedEditingContext editingContext;
 	private final RevisionSearcher searcher;
 	private Branch branch;
+	private final Synonyms synonyms;
 
 	public ImportOnlySnomedTransactionContext(final String userId, final RevisionSearcher searcher, final SnomedEditingContext editingContext) {
 		this.userId = userId;
 		this.searcher = searcher;
 		this.editingContext = editingContext;
+		this.synonyms = new Synonyms(this);
 	}
 
 	@Override
@@ -99,6 +102,8 @@ public class ImportOnlySnomedTransactionContext implements TransactionContext {
 			return type.cast(searcher);
 		} else if (type.isAssignableFrom(SnomedEditingContext.class)) {
 			return type.cast(editingContext);
+		} else if (type.isAssignableFrom(Synonyms.class)) {
+			return type.cast(synonyms);
 		}
 		return ApplicationContext.getInstance().getServiceChecked(type);
 	}
