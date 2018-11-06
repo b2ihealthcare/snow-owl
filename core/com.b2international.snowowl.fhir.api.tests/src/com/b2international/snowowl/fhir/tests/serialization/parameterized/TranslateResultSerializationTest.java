@@ -70,6 +70,7 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		Match match = Match.builder()
 			.equivalence(ConceptMapEquivalence.EQUAL)
+			/*
 			.concept(Coding.builder()
 					.system(SnomedUri.SNOMED_BASE_URI_STRING)
 					.code(Concepts.CAUSATIVE_AGENT)
@@ -78,11 +79,27 @@ public class TranslateResultSerializationTest extends FhirTest {
 			.addProduct(Product.builder()
 					.concept("code", "system", "codeTerm")
 					.build())
+					*/
 			.build();
+		
+			Match match2 = Match.builder()
+				.equivalence(ConceptMapEquivalence.DISJOINT)
+				/*
+				.concept(Coding.builder()
+						.system(SnomedUri.SNOMED_BASE_URI_STRING)
+						.code(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+						.display("Existential modifier")
+						.build())
+						*/
+				//.addProduct(Product.builder()
+				//		.concept("code", "system", "codeTerm")
+				//		.build())
+				.build();
 		
 		TranslateResult translateResult = TranslateResult.builder()
 			.message("This is a test result")
 			.addMatch(match)
+			.addMatch(match2)
 			.build();
 		
 		Fhir fhirParameters = new Parameters.Fhir(translateResult);

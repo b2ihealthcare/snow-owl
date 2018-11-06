@@ -301,8 +301,8 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		IConceptMapApiProvider valueSetProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(logicalId);
-		TranslateResult translateResult = valueSetProvider.translate(logicalId, translateRequest);
+		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(logicalId);
+		TranslateResult translateResult = conceptMapApiProvider.translate(logicalId, translateRequest);
 		return translateResult;
 	}
 	

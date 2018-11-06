@@ -131,8 +131,6 @@ public class TranslateResult {
 			
 			return new TranslateResult(result, message, matchesList);
 		}
-
-
 	}
 	
 }
