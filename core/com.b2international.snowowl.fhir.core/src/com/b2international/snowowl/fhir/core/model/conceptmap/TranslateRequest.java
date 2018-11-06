@@ -97,7 +97,7 @@ public class TranslateRequest {
 		this.reverse = isReverse;
 	}
 	
-	public String getCode() {
+	public String getCodeValue() {
 		if (code != null) {
 			return code.getCodeValue();
 		} else if (coding != null) {
@@ -106,7 +106,7 @@ public class TranslateRequest {
 		return null;
 	}
 
-	public String getSystem() {
+	public String getSystemValue() {
 		if (system != null) {
 			return system.getUriValue();
 		} else if (coding != null && coding.getSystem() != null) {
@@ -190,6 +190,15 @@ public class TranslateRequest {
 		}
 
 		if (target != null && targetsystem != null) {
+			return false;
+		}
+		return true;
+	}
+	
+	@AssertTrue(message = "SNOMED CT version is defined as part of the system URI")
+	private boolean isVersionValid() {
+		
+		if (version != null && system != null && system.isSnomedUri()) {
 			return false;
 		}
 		return true;

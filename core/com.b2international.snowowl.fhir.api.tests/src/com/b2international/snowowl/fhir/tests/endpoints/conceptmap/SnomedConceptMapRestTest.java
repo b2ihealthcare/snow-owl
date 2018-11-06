@@ -18,20 +18,19 @@ package com.b2international.snowowl.fhir.tests.endpoints.conceptmap;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 
 import java.util.List;
 
-import org.hamcrest.core.IsNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
-import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
 /**
- * Generic ValueSet REST end-point test cases for SNOMED 'valuesets'
+ * Generic Concept Map REST end-point test cases for SNOMED Map Type reference sets
  * @since 6.7
  */
 public class SnomedConceptMapRestTest extends FhirRestTest {
@@ -45,7 +44,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 
 
 	@BeforeClass
-	public static void setupValueSets() {
+	public static void setupMaps() {
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		mapTypeRefSetIds = TestMapTypeReferenceSetCreator.createSimpleMapTypeReferenceSets(mainBranch, 
 				SIMPLE_MAP_TYPE_REFSET_NAME, 

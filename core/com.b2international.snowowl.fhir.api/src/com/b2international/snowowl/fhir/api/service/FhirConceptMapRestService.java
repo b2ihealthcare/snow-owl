@@ -236,7 +236,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	public Parameters.Fhir translate(
 		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system's version") @RequestParam(value="version") final String version,
+		@ApiParam(value="The code system's version, if null latest is used") @RequestParam(value="version") final Optional<String> version,
 		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
 		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
 		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
@@ -244,25 +244,28 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		//validation is triggered by builder.build()
 		Builder builder = TranslateRequest.builder()
-				.code(code)
-				.system(system)
-				.version(version);
-				
-			if(source.isPresent()) {
-				builder.source(source.get());
-			}
+			.code(code)
+			.system(system);
+		
+		if (version.isPresent()) {
+			builder.version(version.get());
+		}
 			
-			if(target.isPresent()) {
-				builder.target(target.get());
-			}
-			
-			if(targetSystem.isPresent()) {
-				builder.targetSystem(targetSystem.get());
-			}
-			
-			if(isReverse.isPresent()) {
-				builder.isReverse(isReverse.get());
-			}
+		if(source.isPresent()) {
+			builder.source(source.get());
+		}
+		
+		if(target.isPresent()) {
+			builder.target(target.get());
+		}
+		
+		if(targetSystem.isPresent()) {
+			builder.targetSystem(targetSystem.get());
+		}
+		
+		if(isReverse.isPresent()) {
+			builder.isReverse(isReverse.get());
+		}
 		
 		return toResponse(doTranslate(builder.build()));
 	}

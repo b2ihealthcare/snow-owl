@@ -467,7 +467,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		String codeSystem = validateCodeRequest.getSystem();
 		
 		//only SNOMED CT components can be present in a SNOMED CT reference set
-		if (!codeSystem.startsWith("http://snomed.info/sct")) {
+		if (!codeSystem.startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
 			return ValidateCodeResult.builder()
 					.result(false)
 					.message(String.format("SNOMED CT reference sets can reference SNOMED CT components only. Referenced component is %s.", codeSystem))

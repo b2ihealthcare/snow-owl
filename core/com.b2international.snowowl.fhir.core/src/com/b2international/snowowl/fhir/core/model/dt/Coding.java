@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.dt;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -180,6 +181,15 @@ public class Coding {
 
 	public static Builder builder() {
 		return new Builder();
+	}
+	
+	@AssertTrue(message = "SNOMED CT version is defined as part of the system URI")
+	private boolean isVersionValid() {
+		
+		if (version != null && system != null && system.isSnomedUri()) {
+			return false;
+		}
+		return true;
 	}
 	
 	public static class Builder extends ValidatingBuilder<Coding> {

@@ -245,7 +245,7 @@ public class LookupRequest {
 
 		//SNOMED CT specific, both the URI and version identifies the version
 		if (system != null) {
-			if (system.getUriValue().startsWith("http://snomed.info/sct") 
+			if (system.isSnomedUri() 
 					&& system.getUriValue().contains("version")
 					&& version != null) {
 				return false;

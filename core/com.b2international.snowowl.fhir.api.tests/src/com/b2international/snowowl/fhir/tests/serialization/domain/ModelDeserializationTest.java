@@ -29,6 +29,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
 /**
  * Test for validating the deserialization of the base domain models.
@@ -88,6 +89,28 @@ public class ModelDeserializationTest extends FhirTest {
 			.code("1233")
 			.system("sys tem")
 			.version("20180131")
+			.build();
+	}
+	
+	@Test
+	public void invalidCodingTest() throws Exception {
+		Issue expectedIssue = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error")
+			.addLocation("Coding.versionValid")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
+				+ "Violation: SNOMED CT version is defined as part of the system URI.")
+			.build();
+			
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		Coding.builder()
+			.system(SnomedUri.SNOMED_BASE_URI_STRING)
+			.version("OTHER_VERSION")
+			.code("fatal")
 			.build();
 	}
 	

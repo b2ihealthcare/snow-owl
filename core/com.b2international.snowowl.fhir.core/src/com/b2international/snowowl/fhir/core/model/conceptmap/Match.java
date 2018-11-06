@@ -122,6 +122,11 @@ public class Match {
 			return this;
 		}
 		
+		public Builder source(final String sourceValue) {
+			this.source = new Uri(sourceValue);
+			return this;
+		}
+		
 		@Override
 		protected Match doBuild() {
 			return new Match(equivalence, concept, products.build(), source);
