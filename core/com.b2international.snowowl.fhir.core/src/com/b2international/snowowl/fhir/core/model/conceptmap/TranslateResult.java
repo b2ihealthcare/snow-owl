@@ -77,7 +77,7 @@ public class TranslateResult {
 		return message;
 	}
 
-	public Collection<Match> getMatch() {
+	public Collection<Match> getMatches() {
 		return match;
 	}
 	
@@ -92,6 +92,13 @@ public class TranslateResult {
 		private ImmutableList.Builder<Match> matches = ImmutableList.builder();
 		
 		Builder() {}
+		
+		//only for Deserialization
+		@SuppressWarnings("unused")
+		private Builder result(final Boolean result) {
+			//
+			return this;
+		}
 		
 		public Builder message(final String message) {
 			this.message = message;

@@ -16,17 +16,22 @@
 package com.b2international.snowowl.fhir.tests.endpoints.conceptmap;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
-import org.hamcrest.core.IsNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
+import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
@@ -55,15 +60,8 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 				FHIR_MAP_TYPE_REFSET_VERSION);
 	}
 	
-	//@Test
-	public void printConceptMap() throws Exception {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		.when().get("/ConceptMap")
-		.prettyPrint();
-	}
-	
 	@Test
-	public void translateMappingTest() {
+	public void translateMappingTest() throws Exception {
 		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("code", FhirTestConcepts.MICROORGANISM) 
@@ -71,11 +69,50 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
 			.when()
 			.get("/ConceptMap/$translate")
-			.prettyPrint();
+			.asString();
 		
-		//System.out.println("Response: " + response);
+		Fhir parameters = objectMapper.readValue(response, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		
+		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
+		
+		assertTrue(result.getResult());
+		assertEquals("3 match(es).", result.getMessage());
+		
+		Collection<Match> matches = result.getMatches();
+		assertEquals(3, matches.size());
+		
+		Optional<Match> optionalMatch = matches.stream()
+			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
+			.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		Match match = optionalMatch.get();
+		assertEquals("equivalent", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
+		optionalMatch = matches.stream()
+				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(1)))
+				.findFirst();
+			
+		assertTrue(optionalMatch.isPresent());
+			
+		match = optionalMatch.get();
+		assertEquals("unmatched", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+
+		optionalMatch = matches.stream()
+				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(2)))
+				.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		match = optionalMatch.get();
+		assertEquals("unmatched", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
 	}
-	
 	
 	
 }

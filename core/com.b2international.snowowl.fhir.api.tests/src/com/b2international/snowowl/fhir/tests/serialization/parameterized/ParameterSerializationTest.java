@@ -28,7 +28,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Basic FHIR parameter serialization tests.
@@ -131,13 +130,17 @@ public class ParameterSerializationTest extends FhirTest {
 			}
 		}
 		
-		String expected = buildExpectedJson("{\"name\":\"parameterName\","
-				+ "\"part\":[{" + 
-				"\"name\":\"codeValue\","
-				+ "\"valueCode\":\"first\"}," +
-				"{\"name\":\"codeValue\","
-				+ "\"valueCode\":\"second\"}" +
-				"]}");
+		String expected = buildExpectedJson("{\"name\":\"parameterName\"," + 
+				"\"part\":[{"+ 
+					"\"name\":\"codeValue\"," + 
+					"\"valueCode\":\"first\"" + 
+					"}]" + 
+				"},{" + 
+					"\"name\":\"parameterName\"," + 
+				"\"part\":[{" + 
+					"\"name\":\"codeValue\"," + 
+					"\"valueCode\":\"second\"" + 
+					"}]}"); 
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
 		printPrettyJson(fhirParameters);
