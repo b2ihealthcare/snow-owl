@@ -71,7 +71,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem(FhirTestConcepts.MICROORGANISM))
+			.body("expansion.contains.code", hasItem(FhirTestConcepts.BACTERIA))
 			.statusCode(200);
 	}
 	
@@ -130,7 +130,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.body("status", equalTo("active"))
 			.body("expansion.total", notNullValue())
 			.body("expansion.timestamp", notNullValue())
-			.body("expansion.contains.code", hasItem(FhirTestConcepts.MICROORGANISM))
+			.body("expansion.contains.code", hasItem(FhirTestConcepts.BACTERIA))
 			.statusCode(200);
 	}
 	

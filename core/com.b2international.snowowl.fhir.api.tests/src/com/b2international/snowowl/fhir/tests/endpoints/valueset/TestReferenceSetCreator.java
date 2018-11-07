@@ -60,7 +60,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 	 * @param version
 	 * @return
 	 */
-	public static String createSimpleTypeReferenceSet(String branchPath, String refsetName, String version) {
+	public static synchronized String createSimpleTypeReferenceSet(String branchPath, String refsetName, String version) {
 	
 		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
 		if (!refsetConcept.isPresent()) {
@@ -92,7 +92,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, "info@b2international.com", "FHIR Automated Test Simple Type Refset Member")
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
+			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+			.getSync();
 	}
 
 
@@ -101,7 +102,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 	 * @param refsetName
 	 * @return refset logical id
 	 */
-	public static String createQueryTypeReferenceSet(String branchPath, String refsetName, String version) {
+	public static synchronized String createQueryTypeReferenceSet(String branchPath, String refsetName, String version) {
 		
 		Optional<SnomedConcept> refsetConcept = getRefsetConcept(branchPath, refsetName);
 			

@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.exceptions.NotImplementedException;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
 import com.b2international.snowowl.datastore.CodeSystems;
@@ -36,6 +34,7 @@ import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMapElement;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Group;
@@ -46,7 +45,6 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -56,7 +54,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
@@ -136,80 +133,93 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 	@Override
 	public TranslateResult translate(LogicalId logicalId, TranslateRequest translateRequest) {
 		
-		//TODO: move this somewhere else
-		if (!translateRequest.getSystemValue().equals("SNOMEDCT")) {
-			return TranslateResult.builder().message("Source code system is not SNOMED CT.").build();
+		//source system is not SNOMED CT, this is a contradiction/error
+		if (translateRequest.getSystemValue() != null && !translateRequest.getSystemValue().startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
+			throw new BadRequestException("Source system URI '" + translateRequest.getSystemValue() + "' is invalid (not SNOMED CT).", "$translate.system");
 		}
-	
-		/*
-		String mapTargetComponentId = getMapTargetComponentType(translateRequest.getSystem());
-		SnomedRequests.prepareSearchRefSet().all()
-		.filterByActive(true)
-		.filterByMapTargetComponentType(mapTargetComponentId)
-		..
-		*/
 		
-		//Cannot filter for map target component type (implicite the target code system)
-		SnomedRequests.prepareSearchMember()
-			.all()
-			.filterById(logicalId.getComponentId())
+		//can we find the refset in question?
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+
+		SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
+			.one()
 			.filterByActive(true)
-			.setExpand("referencedComponent(expand(pt()))")
-			.filterByReferencedComponent(translateRequest.getCodeValue())
-			.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
-			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.build(repositoryId, logicalId.getBranchPath())
+			.filterById(logicalId.getComponentId())
+			.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
+			.build(repositoryId, codeSystemVersion.getPath())
 			.execute(getBus())
-			.then(ms -> {
-				
-				return ms.stream().filter(m -> {
-				
-					m.getReferenceSetId();
-					return true;
-				})
-				.collect(Collectors.toSet());
-			})
-			.getSync();
+			.getSync()
+			.first()
+			.orElseThrow(() -> new NotFoundException("Reference set", logicalId.getComponentId()));
 		
-		throw new NotImplementedException();
+		//test the target
+		String targetsystem = translateRequest.getTargetsystem().getUriValue();
+		if (targetsystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
+			targetsystem = SnomedTerminologyComponentConstants.CONCEPT;
+		}
+				
+		try {
+			CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(targetsystem);
+		} catch (RuntimeException ex) {
+			throw new BadRequestException("Target system '" + targetsystem + "' not found or invalid.", "$translate.targetsystem");
+		}
+		
+		String mapTargetComponentType = referenceSet.getMapTargetComponentType();
+		if (!targetsystem.equals(mapTargetComponentType)) {
+			return TranslateResult.builder().message(
+					String.format("Reference set '%s', map target component type '%s' does not match the requested target system '%s'.",
+							logicalId.toString(), mapTargetComponentType, targetsystem))
+					.build();
+		}
+		
+		TranslateResult.Builder builder = TranslateResult.builder();
+		builder.message(String.format("Results for reference set '%s' with map target component type '%s'.",
+						logicalId.toString(), mapTargetComponentType));
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(translateRequest.getSystemValue(), "ConceptMap$translate.system");
+		
+		Set<Match> matches = SnomedRequests.prepareSearchMember()
+				.all()
+				.filterByActive(true)
+				.setExpand("referencedComponent(expand(pt()))")
+				.filterByRefSet(logicalId.getComponentId())
+				.filterByReferencedComponent(translateRequest.getCodeValue())
+				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
+				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+				.build(repositoryId, codeSystemVersion.getPath())
+				.execute(getBus())
+				.then(members -> {
+					return members.stream()
+							.map(member -> createMatch(snomedUri, member))
+							.collect(Collectors.toSet());
+				})
+				.getSync();
+		
+		builder.addMatches(matches);
+		return builder.build();
 	}
 
 	@Override
 	public Collection<Match> translate(TranslateRequest translateRequest) {
 		
-		//This should not happen
-		if (translateRequest.getSystemValue() == null) {
+		if (!isValidTranslateRequest(translateRequest)) {
 			return Collections.emptySet();
 		}
-		
-		//source system is not SNOMED CT, nothing to do here
-		if (translateRequest.getSystemValue() != null && !translateRequest.getSystemValue().startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			return Collections.emptySet();
-		}
-		
-		String locationName = "$translate.system";
-		SnomedUri snomedUri = SnomedUri.fromUriString(translateRequest.getSystemValue(), locationName);
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
-
 		
 		//"com.b2international.snowowl.terminology.atc.concept" is expected
 		//or the standard SNOMED CT URI
-		Uri targetsystem = translateRequest.getTargetsystem();
-		String uriValue = targetsystem.getUriValue();
+		String uriValue = translateRequest.getTargetsystem().getUriValue();
 		
 		if (uriValue.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
 			uriValue = SnomedTerminologyComponentConstants.CONCEPT;
 		}
 		
-		int terminologyComponentIdAsInt;
+		int terminologyComponentIdAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(uriValue);
 		
-		//do nothing further if the target code system is not defined in the registry
-		try {
-			terminologyComponentIdAsInt = CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(uriValue);
-		} catch (RuntimeException ex) {
-			return Collections.emptySet();
-		}
+		String locationName = "$translate.system";
+		SnomedUri snomedUri = SnomedUri.fromUriString(translateRequest.getSystemValue(), locationName);
+		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		//no target code system is specified on the Map
 		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()
@@ -420,6 +430,33 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			default:
 				return ConceptMapEquivalence.UNMATCHED; //what should we do here?
 			}
+	}
+	
+	private boolean isValidTranslateRequest(TranslateRequest translateRequest) {
+		
+		//This should not happen
+		if (translateRequest.getSystemValue() == null) {
+			return false;
+		}
+				
+		//source system is not SNOMED CT, nothing to do here
+		if (translateRequest.getSystemValue() != null && !translateRequest.getSystemValue().startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
+			return false;
+		}
+		
+		//test the target
+		String targetsystem = translateRequest.getTargetsystem().getUriValue();
+		if (targetsystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
+			targetsystem = SnomedTerminologyComponentConstants.CONCEPT;
+		}
+		
+		try {
+			CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsInt(targetsystem);
+		} catch (RuntimeException ex) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	private String getMapTargetComponentType(String codeSystemShortName) {

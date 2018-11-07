@@ -162,6 +162,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(logicalId);
 		ValueSet valueSet = valueSetProvider.expandValueSet(logicalId);
+		
+		applyEmptyContentFilter(valueSet);
 		return valueSet;
 	}
 	
@@ -184,6 +186,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(url);
 		ValueSet valueSet = valueSetProvider.expandValueSet(url);
+		
+		applyEmptyContentFilter(valueSet);
 		return valueSet;
 	}
 	
@@ -224,6 +228,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		IValueSetApiProvider valueSetProvider = IValueSetApiProvider.Registry.getValueSetProvider(request.getUrl().getUriValue());
 		ValueSet valueSet = valueSetProvider.expandValueSet(request);
+		
+		applyEmptyContentFilter(valueSet);
 		
 		return valueSet;
 	}

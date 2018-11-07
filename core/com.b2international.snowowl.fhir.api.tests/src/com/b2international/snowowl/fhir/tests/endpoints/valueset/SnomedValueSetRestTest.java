@@ -44,55 +44,55 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	public void valueSetsTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		.when().get("/ValueSet")
-		.then()
-		.body("resourceType", equalTo("Bundle"))
-		.body("type", equalTo("searchset"))
-		.body("total", notNullValue())
-		
-		//SNOMED CT
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
-		.body("resource.resourceType", equalTo("ValueSet"))
-		.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
-		.body("resource.url", startsWith("http://snomed.info/sct/version"))
-		.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
-		.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
-		.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
-		.body("resource.status", equalTo("active"))
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose[0].include[0]")
-		.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
-		.body("filter.size()", equalTo(1))
-		.body("filter[0].property", equalTo("expression"))
-		.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
-		.body("filter[0].op", equalTo("="))
-		.statusCode(200);
+			.when().get("/ValueSet")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", notNullValue())
+			
+			//SNOMED CT
+			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose[0].include[0]")
+			.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
+			.body("filter.size()", equalTo(1))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
+			.body("filter[0].op", equalTo("="))
+			.statusCode(200);
 	}
 	
 	@Test
 	public void valueSetsSummaryTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		.param("_summary", true)
-		.when().get("/ValueSet")
-		.then()
-		.body("resourceType", equalTo("Bundle"))
-		.body("type", equalTo("searchset"))
-		.body("total", notNullValue())
-		
-		//SNOMED CT
-		.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
-		.body("resource.resourceType", equalTo("ValueSet"))
-		.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
-		.body("resource.url", startsWith("http://snomed.info/sct/version"))
-		.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
-		.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
-		.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
-		.body("resource.status", equalTo("active"))
-		
-		//subsetted
-		.body("resource.meta.tag[0].code", equalTo("SUBSETTED"))
-		
-		.statusCode(200);
+			.param("_summary", true)
+			.when().get("/ValueSet")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", notNullValue())
+			
+			//SNOMED CT
+			.root("entry.find { it.fullUrl == 'http://localhost:8080/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			//subsetted
+			.body("resource.meta.tag[0].code", equalTo("SUBSETTED"))
+			
+			.statusCode(200);
 	}
 	
 	//'Virtual' value set

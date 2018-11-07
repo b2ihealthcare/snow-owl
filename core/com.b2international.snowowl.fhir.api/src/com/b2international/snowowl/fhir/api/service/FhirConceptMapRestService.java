@@ -162,7 +162,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		@ApiParam(value="The id of the Concept Map to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
 		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system's version") @RequestParam(value="version") final String version,
+		@ApiParam(value="The code system's version") @RequestParam(value="version") final Optional<String> version,
 		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
 		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
 		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
@@ -171,9 +171,12 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		//validation is triggered by builder.build()
 		Builder builder = TranslateRequest.builder()
 			.code(code)
-			.system(system)
-			.version(version);
-			
+			.system(system);
+		
+		if (version.isPresent()) {
+			builder.version(version.get());
+		}
+		
 		if(source.isPresent()) {
 			builder.source(source.get());
 		}

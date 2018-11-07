@@ -23,8 +23,14 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.CodeSystemRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupFhirCodeSystemRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupSnomedRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SubsumesSnomedRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.TranslateSnomedConceptMapRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.valueset.ExpandSnomedRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.valueset.SnomedValueSetRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
@@ -40,14 +46,15 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	
 	/*
+	 */
 	CodeSystemRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
 	LookupSnomedRestTest.class,
 	SubsumesSnomedRestTest.class,
 	SnomedValueSetRestTest.class,
 	ExpandSnomedRestTest.class,
+
 	SnomedConceptMapRestTest.class,
-	 */
 	TranslateSnomedConceptMapRestTest.class,
 	
 	//SandBoxRestTest.class,
@@ -57,14 +64,14 @@ public class AllFhirRestTests {
 	/**
 	 * Execute the tests with this rule if the dataset needs to be imported
 	 */
-	//@ClassRule
+	@ClassRule
 	public static final RuleChain appRule = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
 		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.fhir.api"));
 	
-	@ClassRule
+	//@ClassRule
 	public static final RuleChain appRuleWithDB = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl().clearResources(false).config(PlatformUtil.toAbsolutePath(AllFhirRestTests.class, "fhir-configuration.yml")))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))

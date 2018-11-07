@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.tests.endpoints.conceptmap;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -114,5 +115,100 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 		
 	}
 	
+	//From a specific Map type reference set
+	@Test
+	public void nonExistingRefsetTest() throws Exception {
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":invalid")
+			.param("code", FhirTestConcepts.MICROORGANISM) 
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.root("issue[0]")
+			.body("severity", equalTo("error"))
+			.body("code", equalTo("exception"))
+			.body("diagnostics", equalTo("Reference set with identifier 'invalid' could not be found."))
+			.statusCode(404);
+	}
+	
+	//From a specific Map type reference set
+	@Test
+	public void invalidSystemTest() throws Exception {
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.param("code", FhirTestConcepts.MICROORGANISM) 
+			.param("system", "some_other_than_snomed_system") //invalid
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.root("issue[0]")
+			.body("severity", equalTo("error"))
+			.body("code", equalTo("invalid"))
+			.body("diagnostics", equalTo("Source system URI 'some_other_than_snomed_system' is invalid (not SNOMED CT)."))
+			.statusCode(400);
+	}
+	
+	//From a specific Map type reference set
+	@Test
+	public void invalidTargetTest() throws Exception {
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.param("code", FhirTestConcepts.MICROORGANISM) 
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", "Invalid_target_codesystem") //invalid
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.then()
+			.body("resourceType", equalTo("OperationOutcome"))
+			.root("issue[0]")
+			.body("severity", equalTo("error"))
+			.body("code", equalTo("invalid"))
+			.body("diagnostics", equalTo("Target system 'Invalid_target_codesystem' not found or invalid."))
+			.statusCode(400);
+	}
+	
+	//From a specific Map type reference set
+	@Test
+	public void translateSpecificMappingTest() throws Exception {
+		
+		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.param("code", FhirTestConcepts.MICROORGANISM) 
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.asString();
+		
+		Fhir parameters = objectMapper.readValue(response, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		
+		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
+		
+		assertTrue(result.getResult());
+		assertTrue(result.getMessage().startsWith("Results for reference set"));
+		
+		Collection<Match> matches = result.getMatches();
+		assertEquals(1, matches.size());
+		
+		Optional<Match> optionalMatch = matches.stream()
+			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
+			.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		Match match = optionalMatch.get();
+		assertEquals("equivalent", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
+	}
 	
 }

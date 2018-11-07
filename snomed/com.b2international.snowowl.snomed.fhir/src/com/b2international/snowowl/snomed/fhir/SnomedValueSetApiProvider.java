@@ -421,7 +421,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.findFirst();
 			
 			if (!optionalRefsetMember.isPresent()) {
-				return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+				throw new NotFoundException("Reference set member", valueSetLogicalId.getMemberId());
 			}
 			
 			SnomedReferenceSetMember referenceSetMember = optionalRefsetMember.get();
@@ -488,7 +488,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		//Reference set not found
 		if (!snomedReferenceSets.first().isPresent()) {
-			return ValidateCodeResult.builder().valueSetNotFoundResult(valueSetLogicalId).build();
+			throw new NotFoundException("Reference set", refsetId);
 		} 
 		
 		//Refset is found, how about the concept as as member?
