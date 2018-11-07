@@ -77,15 +77,13 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		//Collect every version on every extension
 		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
 		
-		int all = Integer.MAX_VALUE;
-		
 		//might be nicer to maintain the order by version
 		List<ConceptMap> conceptMaps = codeSystemVersionList.stream().map(csve -> {
 			
 			return SnomedRequests.prepareSearchRefSet()
 				.all()
 				.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-				.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
+				.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 				.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.build(repositoryId, csve.getPath())
@@ -109,13 +107,11 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		
 		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
 		
-		int all = Integer.MAX_VALUE;
-		
 		SnomedReferenceSet snomedReferenceSet = SnomedRequests.prepareSearchRefSet()
 			.all()
 			.filterById(logicalId.getComponentId())
 			.filterByTypes(ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, SnomedRefSetType.COMPLEX_MAP, SnomedRefSetType.EXTENDED_MAP))
-			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
+			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
 			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)))
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.build(repositoryId,logicalId.getBranchPath())
@@ -135,7 +131,8 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		
 		//source system is not SNOMED CT, this is a contradiction/error
 		if (translateRequest.getSystemValue() != null && !translateRequest.getSystemValue().startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			throw new BadRequestException("Source system URI '" + translateRequest.getSystemValue() + "' is invalid (not SNOMED CT).", "$translate.system");
+			throw new BadRequestException("Source system URI '" + translateRequest.getSystemValue() + 
+					"' is invalid (not SNOMED CT).", "$translate.system");
 		}
 		
 		//can we find the refset in question?
@@ -174,7 +171,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 		
 		TranslateResult.Builder builder = TranslateResult.builder();
 		builder.message(String.format("Results for reference set '%s' with map target component type '%s'.",
-						logicalId.toString(), mapTargetComponentType));
+					logicalId.toString(), mapTargetComponentType));
 		
 		SnomedUri snomedUri = SnomedUri.fromUriString(translateRequest.getSystemValue(), "ConceptMap$translate.system");
 		
