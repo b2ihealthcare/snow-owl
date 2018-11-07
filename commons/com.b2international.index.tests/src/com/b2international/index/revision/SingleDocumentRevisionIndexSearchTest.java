@@ -260,11 +260,11 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMatchTextFuzzy() {
-		final Data data = new Data("field1", "field2");
+		final Data data = new Data("abcd", "efgh");
 		
 		indexRevision(MAIN, STORAGE_KEY1, data);
 		
-		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextFuzzy("field1", "field2")).build();
+		final Query<Data> query = Query.select(Data.class).where(Expressions.matchTextFuzzy("field1", "aacd")).build();
 		final Iterable<Data> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);
