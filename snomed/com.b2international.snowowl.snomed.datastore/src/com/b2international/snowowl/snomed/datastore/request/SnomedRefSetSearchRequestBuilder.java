@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -70,6 +71,27 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Collection<Integer> referencedComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, Collections3.toImmutableSet(referencedComponentTypes));
+	}
+
+	/**
+	 * Returns map type reference sets that have the exact matching map targe component type.
+	 * Only applicable for maps
+	 * @param map target component type integer
+	 */
+	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(Integer mapTargetComponentType) {
+		if (mapTargetComponentType == null) {
+			return getSelf();
+		}
+		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
+	}
+	
+	/**
+	 * Returns map type reference sets that have the exact matching map targe component types.
+	 * Only applicable for maps
+	 * @param map target component types
+	 */
+	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
+		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, Collections3.toImmutableSet(mapTargetComponentTypes));
 	}
 
 }
