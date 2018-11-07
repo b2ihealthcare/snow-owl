@@ -259,7 +259,11 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.matchQuery(field, term).operator(Operator.OR);
 			break;
 		case FUZZY:
-			query = QueryBuilders.fuzzyQuery(field, term).fuzziness(Fuzziness.ONE).prefixLength(1);
+			query = QueryBuilders.matchQuery(field, term)
+				.fuzziness(Fuzziness.ONE)
+				.prefixLength(1)
+				.operator(Operator.AND)
+				.maxExpansions(10);
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
