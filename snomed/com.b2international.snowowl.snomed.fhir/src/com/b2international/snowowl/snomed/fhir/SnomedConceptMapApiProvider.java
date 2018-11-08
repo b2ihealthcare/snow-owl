@@ -147,7 +147,7 @@ public class SnomedConceptMapApiProvider extends SnomedFhirApiProvider implement
 			.execute(getBus())
 			.getSync()
 			.first()
-			.orElseThrow(() -> new NotFoundException("Reference set", logicalId.getComponentId()));
+			.orElseThrow(() -> new NotFoundException("Map type reference set", logicalId.getComponentId()));
 		
 		//test the target
 		String targetsystem = translateRequest.getTargetsystem().getUriValue();

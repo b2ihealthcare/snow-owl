@@ -115,6 +115,15 @@ public class TranslateRequest {
 		return null;
 	}
 	
+	public Uri getSystem() {
+		if (system != null) {
+			return system;
+		} else if (coding != null && coding.getSystem() != null) {
+			return coding.getSystem();
+		}
+		return null;
+	}
+	
 	public String getVersion() {
 		return version;
 	}

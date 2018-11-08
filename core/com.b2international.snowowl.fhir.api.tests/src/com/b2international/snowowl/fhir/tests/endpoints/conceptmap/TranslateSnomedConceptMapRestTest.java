@@ -132,7 +132,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 			.root("issue[0]")
 			.body("severity", equalTo("error"))
 			.body("code", equalTo("exception"))
-			.body("diagnostics", equalTo("Reference set with identifier 'invalid' could not be found."))
+			.body("diagnostics", equalTo("Map type reference set with identifier 'invalid' could not be found."))
 			.statusCode(404);
 	}
 	
