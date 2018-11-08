@@ -763,6 +763,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.body("active", equalTo(false)); // Child didn't update the status, so inactivation on the parent is in effect
 	}
 	
+	@Ignore
 	@Test
 	public void rebaseDestinationConceptDeletionOverNewRelationship() throws Exception {
 		// new concept on test branch
