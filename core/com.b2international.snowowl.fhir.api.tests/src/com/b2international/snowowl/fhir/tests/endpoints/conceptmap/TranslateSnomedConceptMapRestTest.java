@@ -35,6 +35,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
 /**
@@ -173,6 +174,25 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 			.body("code", equalTo("invalid"))
 			.body("diagnostics", equalTo("Target system 'Invalid_target_codesystem' not found or invalid."))
 			.statusCode(400);
+	}
+	
+	//From a specific Map type reference set
+	@Test
+	public void noResultTest() throws Exception {
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.param("code", Concepts.ROOT_CONCEPT)  //ROOT has no mapping
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.root("parameter[0]")
+			.body("name", equalTo("result"))
+			.body("valueBoolean", equalTo(false))
+			.statusCode(200);
 	}
 	
 	//From a specific Map type reference set
