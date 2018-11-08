@@ -47,7 +47,7 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	public NormalFormUnionGroup(final NormalFormProperty property) {
 		checkNotNull(property, "property");
 		this.properties = ImmutableList.of(property);
-		this.unionGroupNumber = 0;
+		this.unionGroupNumber = ZERO_GROUP;
 	}
 	
 	/**
@@ -59,7 +59,7 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	public NormalFormUnionGroup(final Iterable<NormalFormProperty> properties) {
 		checkNotNull(properties, "properties");
 		this.properties = ImmutableList.copyOf(properties);
-		this.unionGroupNumber = NUMBER_NOT_PRESERVED;
+		this.unionGroupNumber = UNKOWN_GROUP;
 	}
 
 	public List<NormalFormProperty> getProperties() {
@@ -71,7 +71,7 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	}
 
 	public void setUnionGroupNumber(final int unionGroupNumber) {
-		checkState(this.unionGroupNumber == NUMBER_NOT_PRESERVED, "Union group number is already set.");
+		checkState(this.unionGroupNumber == UNKOWN_GROUP, "Union group number is already set.");
 		checkArgument(unionGroupNumber > 0, "Illegal union group number '%s'.", unionGroupNumber);
 		this.unionGroupNumber = unionGroupNumber;
 	}

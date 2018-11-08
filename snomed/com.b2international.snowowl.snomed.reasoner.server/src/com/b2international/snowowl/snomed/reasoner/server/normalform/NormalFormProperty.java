@@ -26,7 +26,9 @@ interface NormalFormProperty {
 	 * should be used when the fragments in this group/union group are converted into
 	 * relationships.
 	 */
-	static final int NUMBER_NOT_PRESERVED = -1;
+	static final int UNKOWN_GROUP = -1;
+	
+	static final int ZERO_GROUP = 0;
 
 	/**
 	 * Checks if the specified item can be regarded as redundant when compared to

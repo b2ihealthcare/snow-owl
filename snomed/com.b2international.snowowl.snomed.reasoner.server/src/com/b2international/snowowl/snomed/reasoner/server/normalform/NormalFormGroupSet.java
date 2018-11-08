@@ -96,7 +96,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 			.sorted(Comparator.comparingInt(otherGroup -> otherGroup.getGroupNumber()))
 			.forEachOrdered(otherGroup -> this.groups
 				.stream()
-				.filter(group -> group.getGroupNumber() == NormalFormGroup.NUMBER_NOT_PRESERVED && group.equals(otherGroup))
+				.filter(group -> group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP && group.equals(otherGroup))
 				.findFirst()
 				.ifPresent(group -> {
 					group.adjustOrder(otherGroup);
@@ -115,7 +115,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 		int groupNumber = 1;
 
 		for (final NormalFormGroup group : groups) {
-			if (group.getGroupNumber() != NormalFormGroup.NUMBER_NOT_PRESERVED) {
+			if (group.getGroupNumber() != NormalFormGroup.UNKOWN_GROUP) {
 				continue;
 			}
 			

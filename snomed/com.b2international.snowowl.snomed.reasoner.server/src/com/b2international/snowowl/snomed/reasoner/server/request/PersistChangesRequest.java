@@ -63,7 +63,7 @@ import com.b2international.snowowl.snomed.reasoner.server.classification.Reasone
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeRecorder;
 import com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain.ConcreteDomainPersister;
 import com.b2international.snowowl.snomed.reasoner.server.diff.relationship.RelationshipPersister;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.b2international.snowowl.snomed.reasoner.server.normalform.NormalFormGenerator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
@@ -202,8 +202,8 @@ final class PersistChangesRequest implements Request<ServiceProvider, ApiError> 
 			final OntologyChangeRecorder<StatementFragment> relationshipRecorder,
 			final OntologyChangeRecorder<ConcreteDomainFragment> concreteDomainRecorder) {
 		
-		final RelationshipNormalFormGenerator relationshipGenerator = new RelationshipNormalFormGenerator(taxonomy, taxonomyBuilder);
-		relationshipGenerator.collectNormalFormChanges(subMonitor.newChild(1), relationshipRecorder, concreteDomainRecorder);
+		final NormalFormGenerator relationshipGenerator = new NormalFormGenerator(taxonomy, taxonomyBuilder);
+		relationshipGenerator.computeChanges(subMonitor.newChild(1), relationshipRecorder, concreteDomainRecorder);
 	}
 
 	private void applyRelationshipChanges(SnomedEditingContext editingContext, OntologyChangeRecorder<StatementFragment> relationshipRecorder, SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {

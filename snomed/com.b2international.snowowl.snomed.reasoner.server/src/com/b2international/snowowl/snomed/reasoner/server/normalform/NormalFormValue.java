@@ -84,13 +84,7 @@ final class NormalFormValue implements NormalFormProperty {
 	}
 
 	private boolean closureContains(final long conceptId1, final long conceptId2) {
-		if (conceptId1 == conceptId2) { 
-			return true; 
-		} else if (ancestorsContains(conceptId1, conceptId2)) {
-			return true;
-		} else {
-			return false;
-		}
+		return (conceptId1 == conceptId2) || ancestorsContains(conceptId1, conceptId2);
 	}
 
 	@Override

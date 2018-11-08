@@ -54,7 +54,7 @@ final class NormalFormGroup implements NormalFormProperty {
 	public NormalFormGroup(final NormalFormUnionGroup unionGroup) {
 		checkNotNull(unionGroup, "unionGroup");
 		this.unionGroups = ImmutableList.of(unionGroup);
-		this.groupNumber = 0;
+		this.groupNumber = ZERO_GROUP;
 	}
 	
 	/**
@@ -66,7 +66,7 @@ final class NormalFormGroup implements NormalFormProperty {
 	public NormalFormGroup(final Iterable<NormalFormUnionGroup> unionGroups) {
 		checkNotNull(unionGroups, "unionGroups");
 		this.unionGroups = ImmutableList.copyOf(unionGroups);
-		this.groupNumber = NUMBER_NOT_PRESERVED;
+		this.groupNumber = UNKOWN_GROUP;
 	}
 
 	public List<NormalFormUnionGroup> getUnionGroups() {
@@ -78,7 +78,7 @@ final class NormalFormGroup implements NormalFormProperty {
 	}
 
 	public void setGroupNumber(final int groupNumber) {
-		checkState(this.groupNumber == NUMBER_NOT_PRESERVED, "Group number is already set.");
+		checkState(this.groupNumber == UNKOWN_GROUP, "Group number is already set.");
 		checkArgument(groupNumber > 0, "Illegal group number '%s'.", groupNumber);
 		this.groupNumber = groupNumber;
 	}
@@ -140,7 +140,7 @@ final class NormalFormGroup implements NormalFormProperty {
 			.sorted(Comparator.comparingInt(otherUnionGroup -> otherUnionGroup.getUnionGroupNumber()))
 			.forEachOrdered(otherUnionGroup -> this.unionGroups
 				.stream()
-				.filter(unionGroup -> unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.NUMBER_NOT_PRESERVED && unionGroup.equals(otherUnionGroup))
+				.filter(unionGroup -> unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKOWN_GROUP && unionGroup.equals(otherUnionGroup))
 				.findFirst()
 				.ifPresent(unionGroup -> {
 					unionGroup.setUnionGroupNumber(otherUnionGroup.getUnionGroupNumber());
@@ -158,7 +158,7 @@ final class NormalFormGroup implements NormalFormProperty {
 		int unionGroupNumber = 1;
 
 		for (final NormalFormUnionGroup unionGroup : unionGroups) {
-			if (unionGroup.getUnionGroupNumber() != NormalFormUnionGroup.NUMBER_NOT_PRESERVED) {
+			if (unionGroup.getUnionGroupNumber() != NormalFormUnionGroup.UNKOWN_GROUP) {
 				continue;
 			}
 			

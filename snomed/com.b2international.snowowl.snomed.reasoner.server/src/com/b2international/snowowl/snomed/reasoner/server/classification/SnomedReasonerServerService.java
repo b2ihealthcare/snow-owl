@@ -20,7 +20,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +54,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
@@ -73,17 +71,16 @@ import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptC
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.ConceptConcreteDomainNormalFormGenerator;
-import com.b2international.snowowl.snomed.reasoner.server.normalform.RelationshipNormalFormGenerator;
+import com.b2international.snowowl.snomed.reasoner.server.normalform.NormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.request.SnomedReasonerRequests;
 import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 import io.reactivex.disposables.Disposable;
 
@@ -91,6 +88,94 @@ import io.reactivex.disposables.Disposable;
  * Manages reasoners that operate on the OWL representation of a SNOMED&nbsp;CT repository branch path. 
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
+
+	private final class ConcreteDomainChangeCollector extends OntologyChangeProcessor<ConcreteDomainFragment> {
+		private final Builder<IConcreteDomainChangeEntry> concreteDomainBuilder;
+		private final Map<Long, ChangeConcept> changeConceptCache;
+		private final IBranchPath branchPath;
+
+		private ConcreteDomainChangeCollector(Builder<IConcreteDomainChangeEntry> concreteDomainBuilder,
+				Map<Long, ChangeConcept> changeConceptCache, IBranchPath branchPath) {
+			this.concreteDomainBuilder = concreteDomainBuilder;
+			this.changeConceptCache = changeConceptCache;
+			this.branchPath = branchPath;
+		}
+
+		@Override 
+		protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
+			registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
+		}
+
+		@Override 
+		protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedSubject) {
+			registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
+		}
+
+		private void registerEntry(long conceptId, ConcreteDomainFragment subject, Nature changeNature) {
+			ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
+					branchPath, 
+					subject);
+			
+			ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache,
+					branchPath, 
+					conceptId);
+			
+			ConceptConcreteDomainChangeEntry responseEntry = new ConceptConcreteDomainChangeEntry(
+					changeNature, 
+					sourceComponent, 
+					concreteDomainElement);
+			
+			concreteDomainBuilder.add(responseEntry);
+		}
+	}
+
+	private final class RelationshipChangeCollector extends OntologyChangeProcessor<StatementFragment> {
+		private final Builder<RelationshipChangeEntry> relationshipBuilder;
+		private final IBranchPath branchPath;
+		private final Map<Long, ChangeConcept> changeConceptCache;
+
+		private RelationshipChangeCollector(Builder<RelationshipChangeEntry> relationshipBuilder,
+				IBranchPath branchPath, Map<Long, ChangeConcept> changeConceptCache) {
+			this.relationshipBuilder = relationshipBuilder;
+			this.branchPath = branchPath;
+			this.changeConceptCache = changeConceptCache;
+		}
+
+		@Override 
+		protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
+			registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
+		}
+
+		@Override 
+		protected void handleRemovedSubject(final String conceptId, final StatementFragment removedSubject) {
+			registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
+		}
+
+		private void registerEntry(long conceptId, StatementFragment subject, Nature changeNature) {
+			
+			ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, conceptId);
+			ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getTypeId());
+			ChangeConcept destinationComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getDestinationId());
+			
+			long modifierId = subject.isUniversal() 
+					? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
+					: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
+			
+			ChangeConcept modifierComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, modifierId);
+			
+			RelationshipChangeEntry entry = new RelationshipChangeEntry(
+					changeNature, 
+					sourceComponent, 
+					typeComponent, 
+					destinationComponent, 
+					subject.getGroup(), 
+					subject.getUnionGroup(), 
+					modifierComponent, 
+					subject.isDestinationNegated());
+			
+			relationshipBuilder.add(entry);
+		}
+	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner");
 	
@@ -155,7 +240,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 	
 	private final Cache<String, ReasonerTaxonomy> taxonomyResultRegistry;
 	private final Cache<String, ReasonerTaxonomyBuilder> taxonomyBuilderRegistry;
-	private final boolean concreteDomainSupportEnabled;
 	private final Disposable remoteJobSubscription;
 	
 	public SnomedReasonerServerService(int maximumReasonerCount, int maximumTaxonomiesToKeep) {
@@ -163,7 +247,6 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 
 		this.taxonomyResultRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
 		this.taxonomyBuilderRegistry = CacheBuilder.newBuilder().maximumSize(maximumTaxonomiesToKeep).build();
-		this.concreteDomainSupportEnabled = ApplicationContext.getInstance().getServiceChecked(SnomedCoreConfiguration.class).isConcreteDomainSupported();
 		
 		LOGGER.info("Initialized SNOMED CT reasoner server with maximum of {} reasoner(s) instances and {} result(s) to keep.", maximumReasonerCount, maximumTaxonomiesToKeep);
 		
@@ -282,97 +365,9 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
 		Map<Long, ChangeConcept> changeConceptCache = newHashMap();
 				
-		new RelationshipNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
-			.collectNormalFormChanges(null, new OntologyChangeProcessor<StatementFragment>() {
-			@Override 
-			protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
-				registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
-			}
-			
-			@Override 
-			protected void handleRemovedSubject(final String conceptId, final StatementFragment removedSubject) {
-				registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
-			}
-	
-			private void registerEntry(long conceptId, StatementFragment subject, Nature changeNature) {
-				
-				ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, conceptId);
-				ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getTypeId());
-				ChangeConcept destinationComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getDestinationId());
-				
-				long modifierId = subject.isUniversal() 
-						? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
-						: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
-				
-				ChangeConcept modifierComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, modifierId);
-				
-				RelationshipChangeEntry entry = new RelationshipChangeEntry(
-						changeNature, 
-						sourceComponent, 
-						typeComponent, 
-						destinationComponent, 
-						subject.getGroup(), 
-						subject.getUnionGroup(), 
-						modifierComponent, 
-						subject.isDestinationNegated());
-				
-				relationshipBuilder.add(entry);
-				
-				// look up all CDEs from the original relationship and add them as inferred
-				if (concreteDomainSupportEnabled) {
-					Collection<ConcreteDomainFragment> relationshipConcreteDomainElements = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(subject.getStatementId());
-					
-					for (ConcreteDomainFragment concreteDomainElementIndexEntry : relationshipConcreteDomainElements) {
-						
-						ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
-								branchPath, 
-								concreteDomainElementIndexEntry);
-						
-						RelationshipConcreteDomainChangeEntry relationshipConcreteDomainElementEntry = 
-								new RelationshipConcreteDomainChangeEntry(
-										changeNature, 
-										sourceComponent, 
-										typeComponent, 
-										destinationComponent, 
-										concreteDomainElement);
-						
-						concreteDomainBuilder.add(relationshipConcreteDomainElementEntry);
-					}
-				}
-			}
-		});
-		
-		if (concreteDomainSupportEnabled) {
-			new ConceptConcreteDomainNormalFormGenerator(taxonomy, reasonerTaxonomyBuilder)
-			.collectNormalFormChanges(null, new OntologyChangeProcessor<ConcreteDomainFragment>() {
-				@Override 
-				protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
-					registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
-				}
-				
-				@Override 
-				protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedSubject) {
-					registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
-				}
-				
-				private void registerEntry(long conceptId, ConcreteDomainFragment subject, Nature changeNature) {
-					ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
-							branchPath, 
-							subject);
-					
-					ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache,
-							branchPath, 
-							conceptId);
-					
-					ConceptConcreteDomainChangeEntry responseEntry = new ConceptConcreteDomainChangeEntry(
-							changeNature, 
-							sourceComponent, 
-							concreteDomainElement);
-					
-					concreteDomainBuilder.add(responseEntry);
-				}
-			});
-		}
+		new NormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).computeChanges(null, 
+				new RelationshipChangeCollector(relationshipBuilder, branchPath, changeConceptCache), 
+				new ConcreteDomainChangeCollector(concreteDomainBuilder, changeConceptCache, branchPath));
 		
 		List<AbstractEquivalenceSet> equivalentConcepts = doGetEquivalentConcepts(taxonomy);
 		GetResultResponseChanges convertedChanges = new GetResultResponseChanges(taxonomy.getElapsedTimeMillis(), 
