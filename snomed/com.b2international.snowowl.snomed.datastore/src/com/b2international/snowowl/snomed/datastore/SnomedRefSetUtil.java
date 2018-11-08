@@ -145,6 +145,8 @@ public abstract class SnomedRefSetUtil {
 		switch (type) {
 			case SIMPLE:
 				return SnomedRefSetPackage.Literals.SNOMED_REF_SET_MEMBER;
+			case ANNOTATION:
+				return SnomedRefSetPackage.Literals.SNOMED_ANNOTATION_REF_SET_MEMBER;
 			case ATTRIBUTE_VALUE:
 				return SnomedRefSetPackage.Literals.SNOMED_ATTRIBUTE_VALUE_REF_SET_MEMBER;
 			case LANGUAGE:
