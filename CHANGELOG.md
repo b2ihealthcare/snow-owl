@@ -1,6 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.10.0
+
+### Dependencies
+- Bump Jackson modules to 2.8.11 and Jackson Databind module to 2.8.11.2 (fixes security vulnerability issues reported by GitHub)
+
+### Performance
+- Simplify and improve SNOMED CT Description term fuzzy matching functionality (9d7bce4) 
+
+### Bugs
+- Delete all types of referring members when component is deleted (130d938)
+- Fix de/serialization of module dependency member fields (a5f4369)
+- Validate versionId before creating Code System Version entry (39efad0) 
+- Fix reference set DSV import related issues (bb3efa0, bc8ec3b)
+- Fix potentional validation issue duplication (7956697)
+- Fix error when trying to revert effective time of an RF2 component without any released versions (7f16873)
+- Use single-node discovery in embedded mode by default (38075a3)
+
 ## 6.9.0
 
 ### Added
