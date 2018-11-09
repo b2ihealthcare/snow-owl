@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,12 @@ package com.b2international.snowowl.snomed.reasoner.classification;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipConcreteDomainChangeEntry;
 import com.google.common.collect.ImmutableList;
 
 /**
  * Captures a reasoner change set for review purposes.
- * 
  */
 public class GetResultResponseChanges implements Serializable {
 
@@ -35,19 +32,19 @@ public class GetResultResponseChanges implements Serializable {
 	private final long elapsedTimeMillis;
 	private final List<AbstractEquivalenceSet> equivalenceSets;
 	private final List<RelationshipChangeEntry> relationshipEntries;
-	private final List<IConcreteDomainChangeEntry> concreteDomainEntries;
+	private final List<ConcreteDomainChangeEntry> concreteDomainEntries;
 
 	/**
 	 * Creates a new change set with the specified arguments.
 	 * @param elapsedTimeMillis elapsed time measured on the server in milliseconds
 	 * @param equivalenceSets the list of equivalence sets (including both regular and unsatisfiable ones)
-	 * @param relationshipEntries the list of inferred or redundant SNOMED&nbsp;CT relationship entries
-	 * @param concreteDomainEntries the list of inferred or redundant SNOMED&nbsp;CT concrete domain reference set member entries
+	 * @param relationshipEntries the list of inferred or redundant SNOMED CT relationship entries
+	 * @param concreteDomainEntries the list of inferred or redundant SNOMED CT concrete domain reference set member entries
 	 */
 	public GetResultResponseChanges(long elapsedTimeMillis, 
 			List<? extends AbstractEquivalenceSet> equivalenceSets,
 			List<RelationshipChangeEntry> relationshipEntries,
-			List<? extends IConcreteDomainChangeEntry> concreteDomainEntries) {
+			List<ConcreteDomainChangeEntry> concreteDomainEntries) {
 
 		this.elapsedTimeMillis = elapsedTimeMillis;
 		this.equivalenceSets = ImmutableList.copyOf(equivalenceSets);
@@ -70,17 +67,16 @@ public class GetResultResponseChanges implements Serializable {
 	}
 
 	/**
-	 * @return the list of inferred or redundant SNOMED&nbsp;CT relationship entries
+	 * @return the list of inferred or redundant SNOMED CT relationship entries
 	 */
 	public List<RelationshipChangeEntry> getRelationshipEntries() {
 		return relationshipEntries;
 	}
 
 	/**
-	 * @return the list of inferred or redundant SNOMED&nbsp;CT concrete domain reference set member entries; the returned list only contains
-	 *         {@link ConceptConcreteDomainChangeEntry} and {@link RelationshipConcreteDomainChangeEntry} instances.
+	 * @return the list of inferred or redundant SNOMED CT concrete domain reference set member entries
 	 */
-	public List<IConcreteDomainChangeEntry> getConcreteDomainElementEntries() {
+	public List<ConcreteDomainChangeEntry> getConcreteDomainElementEntries() {
 		return concreteDomainEntries;
 	}
 }

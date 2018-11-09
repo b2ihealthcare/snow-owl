@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.EquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.GetResultResponseChanges;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeEntry.Nature;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -250,9 +250,9 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 	private SnomedRelationship getRelationship(IBranchPath branchPath, RelationshipChangeEntry relationshipChange) {
 		return Iterables.getOnlyElement(SnomedRequests.prepareSearchRelationship()
 				.setLimit(1)
-				.filterBySource(relationshipChange.getSource().getId().toString())
-				.filterByDestination(relationshipChange.getDestination().getId().toString())
-				.filterByType(relationshipChange.getType().getId().toString())
+				.filterBySource(relationshipChange.getSourceId())
+				.filterByDestination(relationshipChange.getDestinationId())
+				.filterByType(relationshipChange.getTypeId())
 				.filterByGroup(relationshipChange.getGroup())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
@@ -296,7 +296,7 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			final RelationshipChange convertedRelationshipChange = new RelationshipChange();
 			final ChangeNature changeNature = Nature.INFERRED.equals(relationshipChange.getNature()) ? ChangeNature.INFERRED : ChangeNature.REDUNDANT;
 			convertedRelationshipChange.setChangeNature(changeNature);
-			convertedRelationshipChange.setDestinationId(Long.toString(relationshipChange.getDestination().getId()));
+			convertedRelationshipChange.setDestinationId(relationshipChange.getDestinationId());
 			convertedRelationshipChange.setDestinationNegated(relationshipChange.isDestinationNegated());
 
 			final String characteristicTypeId;
@@ -312,10 +312,13 @@ public class ClassificationRunIndex extends SingleDirectoryIndexImpl {
 			convertedRelationshipChange.setCharacteristicTypeId(characteristicTypeId);
 			convertedRelationshipChange.setGroup(relationshipChange.getGroup());
 
-			final String modifierId = Long.toString(relationshipChange.getModifier().getId());
-			convertedRelationshipChange.setModifier(Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(modifierId) ? RelationshipModifier.UNIVERSAL : RelationshipModifier.EXISTENTIAL);
-			convertedRelationshipChange.setSourceId(Long.toString(relationshipChange.getSource().getId()));
-			convertedRelationshipChange.setTypeId(Long.toString(relationshipChange.getType().getId()));
+			final RelationshipModifier relationshipModifier = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationshipChange.getModifierId()) 
+					? RelationshipModifier.UNIVERSAL 
+					: RelationshipModifier.EXISTENTIAL;
+
+			convertedRelationshipChange.setModifier(relationshipModifier);
+			convertedRelationshipChange.setSourceId(relationshipChange.getSourceId());
+			convertedRelationshipChange.setTypeId(relationshipChange.getTypeId());
 			convertedRelationshipChange.setUnionGroup(relationshipChange.getUnionGroup());
 
 			indexResult(id, branchPath, userId, creationDate, RelationshipChange.class, convertedRelationshipChange.getSourceId(), convertedRelationshipChange);

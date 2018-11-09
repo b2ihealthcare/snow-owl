@@ -17,11 +17,9 @@ package com.b2international.snowowl.snomed.reasoner.server.classification;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,11 +48,8 @@ import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonom
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.SnomedPackage;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractEquivalenceSet;
 import com.b2international.snowowl.snomed.reasoner.classification.AbstractResponse.Type;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSettings;
@@ -65,22 +60,16 @@ import com.b2international.snowowl.snomed.reasoner.classification.GetResultRespo
 import com.b2international.snowowl.snomed.reasoner.classification.PersistChangesResponse;
 import com.b2international.snowowl.snomed.reasoner.classification.SnomedReasonerService;
 import com.b2international.snowowl.snomed.reasoner.classification.UnsatisfiableSet;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.AbstractChangeEntry.Nature;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeConcept;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.ConceptConcreteDomainChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainElement;
-import com.b2international.snowowl.snomed.reasoner.classification.entry.IConcreteDomainChangeEntry;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ChangeEntry.Nature;
+import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
-import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
 import com.b2international.snowowl.snomed.reasoner.server.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.server.normalform.NormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.server.request.SnomedReasonerRequests;
-import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import io.reactivex.disposables.Disposable;
 
@@ -89,88 +78,66 @@ import io.reactivex.disposables.Disposable;
  */
 public class SnomedReasonerServerService extends CollectingService<Reasoner, ClassificationSettings> implements SnomedReasonerService, IDisposableService {
 
-	private final class ConcreteDomainChangeCollector extends OntologyChangeProcessor<ConcreteDomainFragment> {
-		private final Builder<IConcreteDomainChangeEntry> concreteDomainBuilder;
-		private final Map<Long, ChangeConcept> changeConceptCache;
-		private final IBranchPath branchPath;
+	private static final class ConcreteDomainChangeCollector extends OntologyChangeProcessor<ConcreteDomainFragment> {
+		private final ImmutableList.Builder<ConcreteDomainChangeEntry> concreteDomainBuilder;
 
-		private ConcreteDomainChangeCollector(Builder<IConcreteDomainChangeEntry> concreteDomainBuilder,
-				Map<Long, ChangeConcept> changeConceptCache, IBranchPath branchPath) {
+		private ConcreteDomainChangeCollector(final ImmutableList.Builder<ConcreteDomainChangeEntry> concreteDomainBuilder) {
 			this.concreteDomainBuilder = concreteDomainBuilder;
-			this.changeConceptCache = changeConceptCache;
-			this.branchPath = branchPath;
 		}
 
 		@Override 
 		protected void handleAddedSubject(final String conceptId, final ConcreteDomainFragment addedSubject) {
-			registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
+			registerEntry(conceptId, addedSubject, Nature.INFERRED);
 		}
 
 		@Override 
 		protected void handleRemovedSubject(final String conceptId, final ConcreteDomainFragment removedSubject) {
-			registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
+			registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
 		}
 
-		private void registerEntry(long conceptId, ConcreteDomainFragment subject, Nature changeNature) {
-			ConcreteDomainElement concreteDomainElement = createConcreteDomainElement(changeConceptCache,
-					branchPath, 
-					subject);
-			
-			ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache,
-					branchPath, 
-					conceptId);
-			
-			ConceptConcreteDomainChangeEntry responseEntry = new ConceptConcreteDomainChangeEntry(
-					changeNature, 
-					sourceComponent, 
-					concreteDomainElement);
-			
-			concreteDomainBuilder.add(responseEntry);
+		private void registerEntry(final String conceptId, final ConcreteDomainFragment subject, final Nature changeNature) {
+			final ConcreteDomainChangeEntry changeEntry = new ConcreteDomainChangeEntry(changeNature, 
+					conceptId, 
+					Long.toString(subject.getTypeId()), 
+					subject.getGroup(), 
+					subject.getDataType(), 
+					subject.getSerializedValue());
+
+			concreteDomainBuilder.add(changeEntry);
 		}
 	}
 
-	private final class RelationshipChangeCollector extends OntologyChangeProcessor<StatementFragment> {
-		private final Builder<RelationshipChangeEntry> relationshipBuilder;
-		private final IBranchPath branchPath;
-		private final Map<Long, ChangeConcept> changeConceptCache;
+	private static final class RelationshipChangeCollector extends OntologyChangeProcessor<StatementFragment> {
+		private final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder;
 
-		private RelationshipChangeCollector(Builder<RelationshipChangeEntry> relationshipBuilder,
-				IBranchPath branchPath, Map<Long, ChangeConcept> changeConceptCache) {
+		private RelationshipChangeCollector(final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder) {
 			this.relationshipBuilder = relationshipBuilder;
-			this.branchPath = branchPath;
-			this.changeConceptCache = changeConceptCache;
 		}
 
 		@Override 
 		protected void handleAddedSubject(final String conceptId, final StatementFragment addedSubject) {
-			registerEntry(Long.valueOf(conceptId), addedSubject, Nature.INFERRED);
+			registerEntry(conceptId, addedSubject, Nature.INFERRED);
 		}
 
 		@Override 
 		protected void handleRemovedSubject(final String conceptId, final StatementFragment removedSubject) {
-			registerEntry(Long.valueOf(conceptId), removedSubject, Nature.REDUNDANT);
+			registerEntry(conceptId, removedSubject, Nature.REDUNDANT);
 		}
 
-		private void registerEntry(long conceptId, StatementFragment subject, Nature changeNature) {
+		private void registerEntry(final String conceptId, final StatementFragment subject, final Nature changeNature) {
 			
-			ChangeConcept sourceComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, conceptId);
-			ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getTypeId());
-			ChangeConcept destinationComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, subject.getDestinationId());
+			final String modifierId = subject.isUniversal() 
+					? Concepts.UNIVERSAL_RESTRICTION_MODIFIER
+					: Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 			
-			long modifierId = subject.isUniversal() 
-					? LongConcepts.UNIVERSAL_RESTRICTION_MODIFIER_ID
-					: LongConcepts.EXISTENTIAL_RESTRICTION_MODIFIER_ID;
-			
-			ChangeConcept modifierComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, modifierId);
-			
-			RelationshipChangeEntry entry = new RelationshipChangeEntry(
+			final RelationshipChangeEntry entry = new RelationshipChangeEntry(
 					changeNature, 
-					sourceComponent, 
-					typeComponent, 
-					destinationComponent, 
+					conceptId, 
+					Long.toString(subject.getTypeId()), 
 					subject.getGroup(), 
+					Long.toString(subject.getDestinationId()), 
 					subject.getUnionGroup(), 
-					modifierComponent, 
+					modifierId, 
 					subject.isDestinationNegated());
 			
 			relationshipBuilder.add(entry);
@@ -356,63 +323,23 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		}
 	}
 
-	private GetResultResponseChanges doGetResult(String classificationId, ReasonerTaxonomy taxonomy) {
+	private GetResultResponseChanges doGetResult(final String classificationId, final ReasonerTaxonomy taxonomy) {
+		final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
 		
-		IBranchPath branchPath = taxonomy.getBranchPath();
-		ReasonerTaxonomyBuilder reasonerTaxonomyBuilder = taxonomyBuilderRegistry.getIfPresent(classificationId);
-		
-		ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
-		ImmutableList.Builder<IConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
-		Map<Long, ChangeConcept> changeConceptCache = newHashMap();
+		final ImmutableList.Builder<RelationshipChangeEntry> relationshipBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<ConcreteDomainChangeEntry> concreteDomainBuilder = ImmutableList.builder();
 				
 		new NormalFormGenerator(taxonomy, reasonerTaxonomyBuilder).computeChanges(null, 
-				new RelationshipChangeCollector(relationshipBuilder, branchPath, changeConceptCache), 
-				new ConcreteDomainChangeCollector(concreteDomainBuilder, changeConceptCache, branchPath));
+				new RelationshipChangeCollector(relationshipBuilder), 
+				new ConcreteDomainChangeCollector(concreteDomainBuilder));
 		
-		List<AbstractEquivalenceSet> equivalentConcepts = doGetEquivalentConcepts(taxonomy);
-		GetResultResponseChanges convertedChanges = new GetResultResponseChanges(taxonomy.getElapsedTimeMillis(), 
+		final List<AbstractEquivalenceSet> equivalentConcepts = doGetEquivalentConcepts(taxonomy);
+		final GetResultResponseChanges convertedChanges = new GetResultResponseChanges(taxonomy.getElapsedTimeMillis(), 
 				equivalentConcepts,
 				relationshipBuilder.build(), 
 				concreteDomainBuilder.build());
 		
 		return convertedChanges;
-	}
-
-	private ChangeConcept getOrCreateChangeConcept(Map<Long, ChangeConcept> changeConceptCache, IBranchPath branchPath, long id) {
-		if (changeConceptCache.containsKey(id)) {
-			return changeConceptCache.get(id); 
-		} else {
-			ChangeConcept concept = SnomedRequests.prepareGetConcept(Long.toString(id))
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-					.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-					.then(new Function<SnomedConcept, ChangeConcept>() {
-						@Override
-						public ChangeConcept apply(SnomedConcept input) {
-							return new ChangeConcept(id, Long.parseLong(input.getIconId()));
-						}
-					})
-					.fail(new Function<Throwable, ChangeConcept>() {
-						@Override
-						public ChangeConcept apply(Throwable input) {
-							return new ChangeConcept(id, Long.parseLong(Concepts.ROOT_CONCEPT));
-						}
-					})
-					.getSync();
-			changeConceptCache.put(id, concept);
-			return concept;
-		}
-	}
-
-	private ConcreteDomainElement createConcreteDomainElement(Map<Long, ChangeConcept> changeConceptCache, IBranchPath branchPath, ConcreteDomainFragment fragment) {
-
-		ChangeConcept typeComponent = getOrCreateChangeConcept(changeConceptCache, branchPath, fragment.getTypeId());
-		ConcreteDomainElement concreteDomainElement = new ConcreteDomainElement(
-				typeComponent,
-				fragment.getSerializedValue(),
-				fragment.getDataType(),
-				fragment.getGroup());
-		
-		return concreteDomainElement;
 	}
 
 	@Override 
