@@ -151,14 +151,11 @@ public final class NormalFormGenerator {
 		}
 		
 		final Collection<ConcreteDomainFragment> ownStatedMembers = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(conceptId);
-		final Collection<ConcreteDomainFragment> ownAdditionalMembers = reasonerTaxonomyBuilder.getAdditionalConcreteDomainFragments(conceptId);
-		final Collection<ConcreteDomainFragment> ownAddditionalGroupedMembers = ownAdditionalMembers.stream()
-				.filter(m -> m.getGroup() > 0)
-				.collect(Collectors.toList());
+		final Collection<ConcreteDomainFragment> ownAdditionalGroupedMembers = reasonerTaxonomyBuilder.getAdditionalGroupedConcreteDomainFragments(conceptId);
 		
 		candidateMembers.put(conceptId, ImmutableList.<ConcreteDomainFragment>builder()
 				.addAll(ownStatedMembers)
-				.addAll(ownAddditionalGroupedMembers)
+				.addAll(ownAdditionalGroupedMembers)
 				.build());
 		
 		final Collection<ConcreteDomainFragment> ownInferredMembers = reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
