@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>6.10.0</version>
+		<version>6.11.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.scripting.groovy</artifactId>
 	<packaging>eclipse-plugin</packaging>
