@@ -24,6 +24,7 @@ import org.apache.http.HttpHost;
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,7 +59,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
 		String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
 		
-		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host, username, password);
+		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host, username, password, mapper);
 		
 		final EsClient client = EsClient.create(clientConfiguration);
 		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);

@@ -19,7 +19,7 @@
  * - org.elasticsearch.client.RestHighLevelClient
  * - org.elasticsearch.client.Request
  */
-package com.b2international.index.es;
+package com.b2international.index.es.client.http;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Map;
 import java.util.StringJoiner;
 
 import org.apache.http.HttpEntity;
@@ -38,6 +40,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.ElasticsearchException;
@@ -46,6 +49,9 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionRequestValidationException;
 import org.elasticsearch.action.DocWriteRequest;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkProcessor.Builder;
+import org.elasticsearch.action.bulk.BulkProcessor.Listener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -67,8 +73,6 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.ClusterClient;
-import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
@@ -85,6 +89,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.SuppressForbidden;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.lucene.uid.Versions;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.ToXContent;
@@ -92,73 +97,43 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.VersionType;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.rankeval.RankEvalRequest;
 import org.elasticsearch.index.rankeval.RankEvalResponse;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.BulkByScrollTask;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.elasticsearch.script.Script;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Activator;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.b2international.index.IndexException;
+import com.b2international.index.es.EsClientConfiguration;
+import com.b2international.index.es.client.ClusterClient;
+import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.client.IndicesClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.RawValue;
+import com.google.common.collect.ImmutableMap;
 
 /**
- * @since 6.6
+ * @since 6.11
  */
-public final class EsClient {
+public final class EsHttpClient implements EsClient {
 
-	private static final Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
-	
-	private static final LoadingCache<EsClientConfiguration, EsClient> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
-			.removalListener(EsClient::onRemove)
-			.build(CacheLoader.from(EsClient::onAdd));
-	
-	private static EsClient onAdd(final EsClientConfiguration configuration) {
-		return new EsClient(configuration);
-	}
-	
-	private static void onRemove(final RemovalNotification<EsClientConfiguration, EsClient> notification) {
-		Activator.withTccl(() -> {
-			closeClient(notification.getKey(), notification.getValue().client);
-		});
-	}
-
-	private static void closeClient(final EsClientConfiguration configuration, RestHighLevelClient client) {
-		try {
-			client.close();
-			LOG.info("Closed ES REST client for '{}'", configuration.getHost().toURI());
-		} catch (final IOException e) {
-			LOG.error("Unable to close ES REST client", e);
-		}
-	}
-	
-	public static final EsClient create(final EsClientConfiguration configuration) {
-		try {
-			return CLIENTS_BY_HOST.getUnchecked(configuration);
-		} catch (UncheckedExecutionException e) {
-			if (e.getCause() instanceof RuntimeException) {
-				throw (RuntimeException) e.getCause();
-			} else {
-				throw new RuntimeException(e.getCause());
-			}
-		}
-	}
-	
-	public static final void stop() {
-		CLIENTS_BY_HOST.invalidateAll();
-		CLIENTS_BY_HOST.cleanUp();
-	}
-	
 	private final RestHighLevelClient client;
 	private final NamedXContentRegistry registry;
+	private final IndicesClient indicesClient;
+	private final ClusterClient clusterClient;
+	private ObjectMapper mapper;
 	
-	private EsClient(final EsClientConfiguration configuration) {
+	public EsHttpClient(final EsClientConfiguration configuration) {
+		this.mapper = configuration.mapper();
 		// XXX: Adjust the thread context classloader while ES client is initializing 
 		this.client = Activator.withTccl(() -> {
 			
@@ -187,7 +162,7 @@ public final class EsClient {
 				
 			}
 			
-			LOG.info("ES REST client is connecting to '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
+			EsClient.LOG.info("ES REST client is connecting to '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
 					host.toURI(),
 					useAuthentication ? " using basic authentication" : "",
 					configuration.getConnectTimeout(),
@@ -199,49 +174,53 @@ public final class EsClient {
 				checkState(client.ping(RequestOptions.DEFAULT), "The cluster at '%s' is not available.", host.toURI());
 			} catch (Exception e) {
 				if (e instanceof ElasticsearchStatusException && ((ElasticsearchStatusException) e).status() == RestStatus.UNAUTHORIZED) {
-					LOG.error("Unable to authenticate with remote cluster '{}' using the given credentials", host.toURI());
+					EsClient.LOG.error("Unable to authenticate with remote cluster '{}' using the given credentials", host.toURI());
 				}
-				closeClient(configuration, client);
+				close();
 				throw e;
 			}
 			
 			return client;
-		}); 
+		});
+		
+		this.indicesClient = new IndicesHttpClient(client);
+		this.clusterClient = new ClusterHttpClient(client);
 		
 		// XXX: Extract NamedXContentRegistry via reflection
 		this.registry = ReflectionUtils.getField(RestHighLevelClient.class, client, "registry");
 	}
-	
+
 	//
 	// Methods extracted from org.elasticsearch.client.RestHighLevelClient
 	//
+	
+	@Override
+	public Builder bulk(Listener listener) {
+		return BulkProcessor.builder((req, actionListener) -> bulkAsync(req, RequestOptions.DEFAULT, actionListener), listener);
+	}
 
 	public final BulkResponse bulk(BulkRequest bulkRequest, RequestOptions options) throws IOException {
-		return performRequestAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, options);
+		return performRequestAndParseEntity(bulkRequest, EsHttpClient::bulk, BulkResponse::fromXContent, options);
 	}
 
 	public final void bulkAsync(BulkRequest bulkRequest, RequestOptions options, ActionListener<BulkResponse> listener) {
-		performRequestAsyncAndParseEntity(bulkRequest, EsClient::bulk, BulkResponse::fromXContent, listener);
+		performRequestAsyncAndParseEntity(bulkRequest, EsHttpClient::bulk, BulkResponse::fromXContent, listener);
 	}
 	
 	public final MultiSearchResponse multiSearch(MultiSearchRequest multiSearchRequest, RequestOptions options) throws IOException {
 		return client.msearch(multiSearchRequest, options);
-//		return performRequestAndParseEntity(multiSearchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, headers);
 	}
 
 	public final void multiSearchAsync(MultiSearchRequest searchRequest, RequestOptions options, ActionListener<MultiSearchResponse> listener) {
 		client.msearchAsync(searchRequest, options, listener);
-//		performRequestAsyncAndParseEntity(searchRequest, EsClient::multiSearch, MultiSearchResponse::fromXContext, listener, headers);
 	}
 	
 	public final MultiGetResponse multiGet(MultiGetRequest multiGetRequest, RequestOptions options) throws IOException {
 		return client.mget(multiGetRequest, options);
-//		return performRequestAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, headers);
 	}
 
 	public final void multiGetAsync(MultiGetRequest multiGetRequest, RequestOptions options, ActionListener<MultiGetResponse> listener) {
 		client.mgetAsync(multiGetRequest, options, listener);
-//		performRequestAsyncAndParseEntity(multiGetRequest, EsClient::multiGet, MultiGetResponse::fromXContent, listener, headers);
 	}
 	
 	protected final <Req extends ActionRequest, Resp> Resp performRequestAndParseEntity(Req request,
@@ -557,56 +536,6 @@ public final class EsClient {
 		return request;
     }
     
-//    static Request multiSearch(MultiSearchRequest multiSearchRequest) throws IOException {
-//    	Map<String, String> parameters = newHashMap();
-//        parameters.put(RestSearchAction.TYPED_KEYS_PARAM, "true");
-//        if (multiSearchRequest.maxConcurrentSearchRequests() != MultiSearchRequest.MAX_CONCURRENT_SEARCH_REQUESTS_DEFAULT) {
-//            parameters.put("max_concurrent_searches", Integer.toString(multiSearchRequest.maxConcurrentSearchRequests()));
-//        }
-//        
-//        String index = null;
-//        for (SearchRequest searchRequest : multiSearchRequest.requests()) {
-//			String[] indices = searchRequest.indices();
-//			checkArgument(indices.length < 2, "Multi-index requests in a multi search request is not allowed.");
-//			index = enforceSameIndex(indices[0], index);
-//			
-//			// Remove index property, as it will be encoded in the request path
-//			// XXX: Setting indices to null can only be done via reflection or wrapping
-//			ReflectionUtils.setField(searchRequest, "indices", null);
-//		}
-//        
-//        XContent xContent = XContentType.JSON.xContent();
-//        byte[] source = MultiSearchRequest.writeMultiLineFormat(multiSearchRequest, xContent);
-//        HttpEntity entity = new ByteArrayEntity(source, createContentType(xContent.type()));
-//        String endpoint = endpoint(index, "_msearch");
-//        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
-//    }
-    
-//    static Request multiGet(MultiGetRequest multiGetRequest) throws IOException {
-//    	Map<String, String> parameters = newHashMap();
-//        parameters.put("preference", multiGetRequest.preference());
-//        
-//        if (!multiGetRequest.realtime()) {
-//            parameters.put("realtime", Boolean.FALSE.toString());
-//        }
-//        
-//        if (multiGetRequest.refresh()) {
-//            parameters.put("refresh", WriteRequest.RefreshPolicy.IMMEDIATE.getValue());
-//        }
-//
-//        String index = null;
-//        for (MultiGetRequest.Item item : multiGetRequest) {
-//			index = enforceSameIndex(item.index(), index);
-//			
-//			// Remove index property, as it will be encoded in the request path
-//			item.index(null);
-//		}
-//        
-//        HttpEntity entity = createEntity(multiGetRequest, XContentType.JSON);
-//        String endpoint = endpoint(index, "_mget");
-//        return new Request(HttpPost.METHOD_NAME, endpoint, parameters, entity);
-//    }
-    
     private static HttpEntity createEntity(ToXContent toXContent, XContentType xContentType) throws IOException {
         BytesRef source = XContentHelper.toXContent(toXContent, xContentType, false).toBytesRef();
         return new ByteArrayEntity(source.bytes, source.offset, source.length, createContentType(xContentType));
@@ -656,7 +585,7 @@ public final class EsClient {
         return ContentType.create(xContentType.mediaTypeWithoutParameters(), (Charset) null);
     }
     
-    private static Request clearScroll(ClearScrollRequest clearScrollRequest) throws IOException {
+    private static Request toClearScrollHttpRequest(ClearScrollRequest clearScrollRequest) throws IOException {
         HttpEntity entity = createEntity(clearScrollRequest, XContentType.JSON);
         Request request = new Request(HttpDelete.METHOD_NAME, "/_search/scroll");
         request.setEntity(entity);
@@ -672,16 +601,19 @@ public final class EsClient {
 		return client.getLowLevelClient();
 	}
 
+	@Override
 	public final void close() throws IOException {
 		client.close();
 	}
 
+	@Override
 	public final IndicesClient indices() {
-		return client.indices();
+		return indicesClient;
 	}
 
+	@Override
 	public final ClusterClient cluster() {
-		return client.cluster();
+		return clusterClient;
 	}
 
 	public final boolean ping(RequestOptions options) throws IOException {
@@ -692,6 +624,15 @@ public final class EsClient {
 		return client.info(options);
 	}
 
+	@Override
+	public GetResponse get(GetRequest req) {
+		try {
+			return get(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't execute GetRequest: " + req, e);
+		}
+	}
+	
 	public final GetResponse get(GetRequest getRequest, RequestOptions options) throws IOException {
 		return client.get(getRequest, options);
 	}
@@ -732,6 +673,15 @@ public final class EsClient {
 		client.deleteAsync(deleteRequest, options, listener);
 	}
 	
+	@Override
+	public SearchResponse search(SearchRequest req) {
+		try {
+			return search(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
+		}
+	}
+	
 	public final SearchResponse search(SearchRequest searchRequest, RequestOptions options) throws IOException {
 		return client.search(searchRequest, options);
 	}
@@ -740,6 +690,15 @@ public final class EsClient {
 		client.searchAsync(searchRequest, options, listener);
 	}
 
+	@Override
+	public SearchResponse scroll(SearchScrollRequest req) {
+		try {
+			return scroll(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException("Couldn't execute SearchScrollRequest: " + req, e);
+		}
+	}
+	
 	public final SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions options) throws IOException {
 		return client.scroll(searchScrollRequest, options);
 	}
@@ -748,12 +707,20 @@ public final class EsClient {
 		client.scrollAsync(searchScrollRequest, options, listener);
 	}
 
+	public final ClearScrollResponse clearScroll(ClearScrollRequest req) {
+		try {
+			return clearScroll(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Couldn't clear scroll state for scrollId(s) '%s'.", req.scrollIds()), e);
+		}
+	}
+	
 	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, RequestOptions options) throws IOException {
-		return performRequestAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, options);
+		return performRequestAndParseEntity(clearScrollRequest, EsHttpClient::toClearScrollHttpRequest, ClearScrollResponse::fromXContent, options);
 	}
 
 	public final void clearScrollAsync(ClearScrollRequest clearScrollRequest, RequestOptions options, ActionListener<ClearScrollResponse> listener) {
-		performRequestAsyncAndParseEntity(clearScrollRequest, EsClient::clearScroll, ClearScrollResponse::fromXContent, listener);
+		performRequestAsyncAndParseEntity(clearScrollRequest, EsHttpClient::toClearScrollHttpRequest, ClearScrollResponse::fromXContent, listener);
 	}
 
 	public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, RequestOptions options) throws IOException {
@@ -764,4 +731,72 @@ public final class EsClient {
 			RequestOptions options) {
 		client.rankEvalAsync(rankEvalRequest, options, listener);
 	}
+
+	/*
+	 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html for
+	 * the low-level structure of the update by query request
+	 */
+	@Override
+	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException {
+		// POST /index/type/_update_by_query
+		final String endpoint = new EsHttpClient.EndpointBuilder()
+				.addPathPart(index, type)
+				.addPathPartAsIs("_update_by_query")
+				.build();
+		
+		// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#_url_parameters_2
+		final Map<String, String> parameters = ImmutableMap.<String, String>builder()
+				.put("scroll_size", Integer.toString(batchSize))
+				.put("slices", Integer.toString(numberOfSlices))
+				.build(); 
+
+		final ObjectNode ubqr = mapper.createObjectNode();
+		putXContentValue(ubqr, "script", script);
+		putXContentValue(ubqr, "query", query);
+		
+		final HttpEntity requestBody = new StringEntity(mapper.writeValueAsString(ubqr), ContentType.APPLICATION_JSON);
+		
+		Response response;
+		try {
+			response = client.getLowLevelClient().performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
+		} catch (ResponseException e) {
+			response = e.getResponse();
+		}
+		
+		final JsonNode updateByQueryResponse = mapper.readTree(response.getEntity().getContent());
+		
+		// TODO support slices and failures
+		return new BulkByScrollResponse(
+			new TimeValue(updateByQueryResponse.get("took").asLong()), 
+			new BulkByScrollTask.Status(
+				0, 
+				updateByQueryResponse.get("total").asLong(), 
+				updateByQueryResponse.get("updated").asLong(), 
+				updateByQueryResponse.has("created") ? updateByQueryResponse.get("created").asLong() : 0, 
+				updateByQueryResponse.get("deleted").asLong(), 
+				updateByQueryResponse.get("batches").asInt(), 
+				updateByQueryResponse.get("version_conflicts").asLong(), 
+				updateByQueryResponse.get("noops").asLong(),
+				updateByQueryResponse.path("retries.bulk").asLong(), 
+				updateByQueryResponse.path("retries.search").asLong(), 
+				new TimeValue(updateByQueryResponse.get("throttled_millis").asLong()), 
+				Float.parseFloat(updateByQueryResponse.get("requests_per_second").asText()), 
+				"", 
+				new TimeValue(updateByQueryResponse.path("throttled_until_millis").asLong())
+			), 
+			Collections.emptyList(), 
+			Collections.emptyList(), 
+			updateByQueryResponse.get("timed_out").asBoolean()
+		);
+	}
+	
+	private void putXContentValue(final ObjectNode ubqr, final String key, final ToXContent toXContent) throws IOException {
+		final XContentBuilder xContentBuilder = toXContent.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS);
+		xContentBuilder.flush();
+		xContentBuilder.close();
+		
+		final ByteArrayOutputStream outputStream = (ByteArrayOutputStream) xContentBuilder.getOutputStream();
+		ubqr.putRawValue(key, new RawValue(outputStream.toString("UTF-8")));
+	}
+	
 }

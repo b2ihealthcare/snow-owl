@@ -19,6 +19,8 @@ import java.util.Objects;
 
 import org.apache.http.HttpHost;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * @since 6.7
  */
@@ -27,15 +29,17 @@ public final class EsClientConfiguration {
 	private final int connectTimeout;
 	private final int socketTimeout;
 	private final HttpHost host;
-	private String username;
-	private String password;
+	private final String username;
+	private final String password;
+	private final ObjectMapper mapper;
 
-	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host, String username, String password) {
+	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host, String username, String password, ObjectMapper mapper) {
 		this.connectTimeout = connectTimeout;
 		this.socketTimeout = socketTimeout;
 		this.host = host;
 		this.username = username;
 		this.password = password;
+		this.mapper = mapper;
 	}
 
 	public int getConnectTimeout() {
@@ -58,6 +62,10 @@ public final class EsClientConfiguration {
 		return password;
 	}
 
+	public ObjectMapper mapper() {
+		return mapper;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(host);
@@ -73,4 +81,5 @@ public final class EsClientConfiguration {
 		// First client configuration for a host wins
 		return Objects.equals(host, other.host);
 	}
+
 }
