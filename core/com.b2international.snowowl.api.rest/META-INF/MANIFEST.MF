@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-Version: 6.10.0.qualifier
+Bundle-Version: 6.10.0
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
