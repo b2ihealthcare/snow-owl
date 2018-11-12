@@ -113,7 +113,6 @@ public class EventBus extends Lifecycle implements IEventBus {
 	public IEventBus receive(IMessage message) {
 		CheckUtil.checkArg(message instanceof BaseMessage, "Accepts only BaseMessage instances");
 		receiveMessage((BaseMessage) message);
-		queue(message);
 		return this;
 	}
 	
@@ -144,6 +143,7 @@ public class EventBus extends Lifecycle implements IEventBus {
 	}
 	
 	private void doReceive(final IMessage message, final Handler holder) {
+		queue(message);
 		holder.context.submit(new Runnable() {
 			@Override
 			public void run() {
