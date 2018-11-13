@@ -178,6 +178,16 @@ public class IndexConfiguration {
 	}
 
 	@JsonProperty
+	public String getClusterName() {
+		return clusterName;
+	}
+	
+	@JsonProperty
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+	
+	@JsonProperty
 	public String getClusterUrl() {
 		return clusterUrl;
 	}
