@@ -116,6 +116,61 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 		
 	}
 	
+	@Test
+	public void reverseTranslateMappingTest() throws Exception {
+		
+		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("code", "MO") 
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("reverse", true)
+			.when()
+			.get("/ConceptMap/$translate")
+			.prettyPrint();
+		
+		Fhir parameters = objectMapper.readValue(response, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		
+		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
+		
+		assertTrue(result.getResult());
+		assertEquals("3 match(es).", result.getMessage());
+		
+		Collection<Match> matches = result.getMatches();
+		assertEquals(3, matches.size());
+		
+		Optional<Match> optionalMatch = matches.stream()
+			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
+			.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		Match match = optionalMatch.get();
+		assertEquals("equivalent", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
+		optionalMatch = matches.stream()
+				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(1)))
+				.findFirst();
+			
+		assertTrue(optionalMatch.isPresent());
+			
+		match = optionalMatch.get();
+		assertEquals("unmatched", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+
+		optionalMatch = matches.stream()
+				.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(2)))
+				.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		match = optionalMatch.get();
+		assertEquals("unmatched", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
+	}
+	
 	//From a specific Map type reference set
 	@Test
 	public void nonExistingRefsetTest() throws Exception {
@@ -204,6 +259,43 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 			.param("code", FhirTestConcepts.MICROORGANISM) 
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.when()
+			.get("/ConceptMap/{id}/$translate")
+			.asString();
+		
+		Fhir parameters = objectMapper.readValue(response, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		
+		TranslateResult result = objectMapper.convertValue(json, TranslateResult.class);
+		
+		assertTrue(result.getResult());
+		assertTrue(result.getMessage().startsWith("Results for reference set"));
+		
+		Collection<Match> matches = result.getMatches();
+		assertEquals(1, matches.size());
+		
+		Optional<Match> optionalMatch = matches.stream()
+			.filter(m -> m.getSource().getUriValue().equals("http://snomed.info/sct/id/" + mapTypeRefSetIds.get(0)))
+			.findFirst();
+		
+		assertTrue(optionalMatch.isPresent());
+		
+		Match match = optionalMatch.get();
+		assertEquals("equivalent", match.getEquivalence().getCodeValue());
+		assertEquals("MO", match.getConcept().getCodeValue());
+		
+	}
+	
+	//From a specific Map type reference set
+	@Test
+	public void reverseTranslateSpecificMappingTest() throws Exception {
+		
+		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.param("code", "MO") 
+			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
+			.param("reverse", true)
 			.when()
 			.get("/ConceptMap/{id}/$translate")
 			.asString();
