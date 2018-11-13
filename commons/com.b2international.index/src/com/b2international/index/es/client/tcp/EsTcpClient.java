@@ -103,10 +103,10 @@ public final class EsTcpClient implements EsClient {
 		ubqrb.source()
 			.setIndices(index)
 			.setTypes(type)
-			.setSize(batchSize);
+			.setSize(batchSize)
+			.setQuery(query);
 		
 		return ubqrb
-			.filter(query)
 			.script(script)
 			.setSlices(numberOfSlices)
 			.get();

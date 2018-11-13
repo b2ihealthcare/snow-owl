@@ -19,7 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.common.Strings;
+
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -37,7 +38,6 @@ public final class EsClientConfiguration {
 	private final String password;
 	private final int connectTimeout;
 	private final int socketTimeout;
-	private final ObjectMapper mapper;
 
 	public EsClientConfiguration(
 			final String clusterName,
@@ -45,15 +45,13 @@ public final class EsClientConfiguration {
 			final String username, 
 			final String password, 
 			final int connectTimeout, 
-			final int socketTimeout,
-			final ObjectMapper mapper) {
+			final int socketTimeout) {
 		this.clusterName = clusterName;
 		this.clusterUrl = clusterUrl;
 		this.username = username;
 		this.password = password;
 		this.connectTimeout = connectTimeout;
 		this.socketTimeout = socketTimeout;
-		this.mapper = mapper;
 		checkArgument(
 			isTcp() || isHttp(), 
 			"Unsupported networking scheme in clusterUrl: %s. Supported schemes are: %s.", clusterUrl, ImmutableList.of(TCP_SCHEME, HTTP_SCHEME, HTTPS_SCHEME)
@@ -84,10 +82,6 @@ public final class EsClientConfiguration {
 		return socketTimeout;
 	}
 
-	public ObjectMapper mapper() {
-		return mapper;
-	}
-	
 	@Override
 	public int hashCode() {
 		return Objects.hash(clusterUrl);
@@ -110,6 +104,13 @@ public final class EsClientConfiguration {
 	
 	public boolean isTcp() {
 		return clusterUrl.startsWith(TCP_SCHEME);
+	}
+
+	/**
+	 * @return <code>true</code> if both username and password is provided, meaning that the target Elasticsearch cluster is protected by authentication, <code>false</code> if not protected.
+	 */
+	public boolean isProtected() {
+		return !Strings.isNullOrEmpty(getUserName()) && !Strings.isNullOrEmpty(getPassword());
 	}
 	
 }

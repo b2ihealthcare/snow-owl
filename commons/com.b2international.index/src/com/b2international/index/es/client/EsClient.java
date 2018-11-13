@@ -109,6 +109,12 @@ public interface EsClient extends AutoCloseable {
 		
 		@SuppressWarnings("resource")
 		static EsClient onAdd(final EsClientConfiguration configuration) {
+			LOG.info("Connecting to Elasticsearch cluster at '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
+					configuration.getClusterUrl(),
+					configuration.isProtected() ? " using basic authentication" : "",
+					configuration.getConnectTimeout(),
+					configuration.getSocketTimeout());
+			
 			if (configuration.isHttp()) {
 				return new EsHttpClient(configuration);
 			} else {

@@ -55,7 +55,7 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 			final String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
 			final String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
 			
-			final EsClientConfiguration clientConfiguration = new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout, mapper);
+			final EsClientConfiguration clientConfiguration = new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout);
 			
 			client = EsClient.create(clientConfiguration);
 		} else {

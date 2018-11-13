@@ -23,102 +23,41 @@ package com.b2international.index.es.client.http;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
-import java.util.StringJoiner;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.lucene.util.BytesRef;
-import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.ActionRequest;
-import org.elasticsearch.action.ActionRequestValidationException;
-import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkProcessor.Builder;
 import org.elasticsearch.action.bulk.BulkProcessor.Listener;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.get.MultiGetRequest;
-import org.elasticsearch.action.get.MultiGetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.main.MainResponse;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.ClearScrollResponse;
-import org.elasticsearch.action.search.MultiSearchRequest;
-import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.action.support.WriteRequest;
-import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.CheckedFunction;
-import org.elasticsearch.common.Nullable;
-import org.elasticsearch.common.Strings;
-import org.elasticsearch.common.SuppressForbidden;
-import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.lucene.uid.Versions;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.VersionType;
+import org.elasticsearch.client.RestHighLevelClientExt;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.rankeval.RankEvalRequest;
-import org.elasticsearch.index.rankeval.RankEvalResponse;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.BulkByScrollTask;
-import org.elasticsearch.rest.BytesRestResponse;
+import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 
-import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Activator;
 import com.b2international.index.es.EsClientConfiguration;
 import com.b2international.index.es.client.ClusterClient;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.client.IndicesClient;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.RawValue;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 6.11
@@ -126,13 +65,11 @@ import com.google.common.collect.ImmutableMap;
 public final class EsHttpClient implements EsClient {
 
 	private final RestHighLevelClient client;
-	private final NamedXContentRegistry registry;
+	private final RestHighLevelClientExt clientExt;
 	private final IndicesClient indicesClient;
 	private final ClusterClient clusterClient;
-	private ObjectMapper mapper;
 	
 	public EsHttpClient(final EsClientConfiguration configuration) {
-		this.mapper = configuration.mapper();
 		// XXX: Adjust the thread context classloader while ES client is initializing 
 		this.client = Activator.withTccl(() -> {
 			
@@ -146,9 +83,7 @@ public final class EsHttpClient implements EsClient {
 				.setRequestConfigCallback(requestConfigCallback)
 				.setMaxRetryTimeoutMillis(configuration.getSocketTimeout()); // retry timeout should match socket timeout
 			
-			boolean useAuthentication = !Strings.isNullOrEmpty(configuration.getUserName()) && !Strings.isNullOrEmpty(configuration.getPassword());
-
-			if (useAuthentication) {
+			if (configuration.isProtected()) {
 				
 				final HttpClientConfigCallback httpClientConfigCallback = httpClientConfigBuilder -> {
 					final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -160,12 +95,6 @@ public final class EsHttpClient implements EsClient {
 				restClientBuilder.setHttpClientConfigCallback(httpClientConfigCallback);
 				
 			}
-			
-			EsClient.LOG.info("ES REST client is connecting to '{}'{}, connect timeout: {} ms, socket timeout: {} ms.", 
-					host.toURI(),
-					useAuthentication ? " using basic authentication" : "",
-					configuration.getConnectTimeout(),
-					configuration.getSocketTimeout());
 			
 			final RestHighLevelClient client = new RestHighLevelClient(restClientBuilder);
 			
@@ -182,428 +111,21 @@ public final class EsHttpClient implements EsClient {
 			return client;
 		});
 		
+		this.clientExt = new RestHighLevelClientExt(client);
 		this.indicesClient = new IndicesHttpClient(client);
 		this.clusterClient = new ClusterHttpClient(client);
-		
-		// XXX: Extract NamedXContentRegistry via reflection
-		this.registry = ReflectionUtils.getField(RestHighLevelClient.class, client, "registry");
-	}
-
-	//
-	// Methods extracted from org.elasticsearch.client.RestHighLevelClient
-	//
-	
-	@Override
-	public Builder bulk(Listener listener) {
-		return BulkProcessor.builder((req, actionListener) -> bulkAsync(req, RequestOptions.DEFAULT, actionListener), listener);
-	}
-
-	public final BulkResponse bulk(BulkRequest bulkRequest, RequestOptions options) throws IOException {
-		return performRequestAndParseEntity(bulkRequest, EsHttpClient::bulk, BulkResponse::fromXContent, options);
-	}
-
-	public final void bulkAsync(BulkRequest bulkRequest, RequestOptions options, ActionListener<BulkResponse> listener) {
-		performRequestAsyncAndParseEntity(bulkRequest, EsHttpClient::bulk, BulkResponse::fromXContent, listener);
-	}
-	
-	public final MultiSearchResponse multiSearch(MultiSearchRequest multiSearchRequest, RequestOptions options) throws IOException {
-		return client.msearch(multiSearchRequest, options);
-	}
-
-	public final void multiSearchAsync(MultiSearchRequest searchRequest, RequestOptions options, ActionListener<MultiSearchResponse> listener) {
-		client.msearchAsync(searchRequest, options, listener);
-	}
-	
-	public final MultiGetResponse multiGet(MultiGetRequest multiGetRequest, RequestOptions options) throws IOException {
-		return client.mget(multiGetRequest, options);
-	}
-
-	public final void multiGetAsync(MultiGetRequest multiGetRequest, RequestOptions options, ActionListener<MultiGetResponse> listener) {
-		client.mgetAsync(multiGetRequest, options, listener);
-	}
-	
-	protected final <Req extends ActionRequest, Resp> Resp performRequestAndParseEntity(Req request,
-			CheckedFunction<Req, Request, IOException> requestConverter,
-			CheckedFunction<XContentParser, Resp, IOException> entityParser,
-			RequestOptions options) throws IOException {
-		
-		ActionRequestValidationException validationException = request.validate();
-		if (validationException != null) {
-			throw validationException;
-		}
-		Request req = requestConverter.apply(request);
-		req.setOptions(options);
-		Response response;
-		try {
-			response = getLowLevelClient().performRequest(req);
-		} catch (ResponseException e) {
-			throw parseResponseException(e);
-		}
-
-		try {
-			return parseEntity(response.getEntity(), entityParser);
-		} catch(Exception e) {
-			throw new IOException("Unable to parse response body for " + response, e);
-		}
-	}
-	
-	protected final <Req extends ActionRequest, Resp> void performRequestAsyncAndParseEntity(Req request,
-			CheckedFunction<Req, Request, IOException> requestConverter,
-			CheckedFunction<XContentParser, Resp, IOException> entityParser,
-			ActionListener<Resp> listener) {
-		ActionRequestValidationException validationException = request.validate();
-		if (validationException != null) {
-			listener.onFailure(validationException);
-			return;
-		}
-		Request req;
-		try {
-			req = requestConverter.apply(request);
-		} catch (Exception e) {
-			listener.onFailure(e);
-			return;
-		}
-
-		ResponseListener responseListener = wrapResponseListener(entityParser, listener);
-		
-		getLowLevelClient().performRequestAsync(req, responseListener);
-	}
-	
-	final <Resp> ResponseListener wrapResponseListener(CheckedFunction<XContentParser, Resp, IOException> entityParser,
-			ActionListener<Resp> listener) {
-		return new ResponseListener() {
-			@Override
-			public void onSuccess(Response response) {
-				try {
-					listener.onResponse(parseEntity(response.getEntity(), entityParser));
-				} catch(Exception e) {
-					IOException ioe = new IOException("Unable to parse response body for " + response, e);
-					onFailure(ioe);
-				}
-			}
-
-			@Override
-			public void onFailure(Exception exception) {
-				if (exception instanceof ResponseException) {
-					ResponseException responseException = (ResponseException) exception;
-					listener.onFailure(parseResponseException(responseException));
-				} else {
-					listener.onFailure(exception);
-				}
-			}
-		};
-	}
-	
-	protected final <Resp> Resp parseEntity(final HttpEntity entity,
-			final CheckedFunction<XContentParser, Resp, IOException> entityParser) throws IOException {
-		if (entity == null) {
-			throw new IllegalStateException("Response body expected but not returned");
-		}
-		if (entity.getContentType() == null) {
-			throw new IllegalStateException("Elasticsearch didn't return the [Content-Type] header, unable to parse response body");
-		}
-		XContentType xContentType = XContentType.fromMediaTypeOrFormat(entity.getContentType().getValue());
-		if (xContentType == null) {
-			throw new IllegalStateException("Unsupported Content-Type: " + entity.getContentType().getValue());
-		}
-		try (XContentParser parser = xContentType.xContent().createParser(registry,
-				LoggingDeprecationHandler.INSTANCE, entity.getContent())) {
-			return entityParser.apply(parser);
-		}
-	}
-	
-    /**
-     * Converts a {@link ResponseException} obtained from the low level REST client into an {@link ElasticsearchException}.
-     * If a response body was returned, tries to parse it as an error returned from Elasticsearch.
-     * If no response body was returned or anything goes wrong while parsing the error, returns a new {@link ElasticsearchStatusException}
-     * that wraps the original {@link ResponseException}. The potential exception obtained while parsing is added to the returned
-     * exception as a suppressed exception. This method is guaranteed to not throw any exception eventually thrown while parsing.
-     */
-    protected final ElasticsearchStatusException parseResponseException(ResponseException responseException) {
-        Response response = responseException.getResponse();
-        HttpEntity entity = response.getEntity();
-        ElasticsearchStatusException elasticsearchException;
-        if (entity == null) {
-            elasticsearchException = new ElasticsearchStatusException(
-                    responseException.getMessage(), RestStatus.fromCode(response.getStatusLine().getStatusCode()), responseException);
-        } else {
-            try {
-                elasticsearchException = parseEntity(entity, BytesRestResponse::errorFromXContent);
-                elasticsearchException.addSuppressed(responseException);
-            } catch (Exception e) {
-                RestStatus restStatus = RestStatus.fromCode(response.getStatusLine().getStatusCode());
-                elasticsearchException = new ElasticsearchStatusException("Unable to parse response body", restStatus, responseException);
-                elasticsearchException.addSuppressed(e);
-            }
-        }
-        return elasticsearchException;
-    }
-	
-	//
-	// Methods and inner class extracted from org.elasticsearch.client.Request
-	//
-	
-    /**
-     * Utility class to build request's endpoint given its parts as strings
-     */
-    public static class EndpointBuilder {
-
-        private final StringJoiner joiner = new StringJoiner("/", "/", "");
-
-        public EndpointBuilder addPathPart(String... parts) {
-            for (String part : parts) {
-                if (Strings.hasLength(part)) {
-                    joiner.add(encodePart(part));
-                }
-            }
-            return this;
-        }
-
-        public EndpointBuilder addCommaSeparatedPathParts(String[] parts) {
-            addPathPart(String.join(",", parts));
-            return this;
-        }
-
-        public EndpointBuilder addPathPartAsIs(String part) {
-            if (Strings.hasLength(part)) {
-                joiner.add(part);
-            }
-            return this;
-        }
-
-        public String build() {
-            return joiner.toString();
-        }
-
-        private static String encodePart(String pathPart) {
-            try {
-                //encode each part (e.g. index, type and id) separately before merging them into the path
-                //we prepend "/" to the path part to make this pate absolute, otherwise there can be issues with
-                //paths that start with `-` or contain `:`
-                URI uri = new URI(null, null, null, -1, "/" + pathPart, null, null);
-                //manually encode any slash that each part may contain
-                return uri.getRawPath().substring(1).replaceAll("/", "%2F");
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException("Path part [" + pathPart + "] couldn't be encoded", e);
-            }
-        }
-    }
-    
-    static String endpoint(String index, String endpoint) {
-        return new EndpointBuilder().addPathPart(index).addPathPartAsIs(endpoint).build();
-    }
-
-    static Request bulk(BulkRequest bulkRequest) throws IOException {
-        // Bulk API only supports newline delimited JSON or Smile. Before executing
-        // the bulk, we need to check that all requests have the same content-type
-        // and this content-type is supported by the Bulk API.
-        XContentType bulkContentType = null;
-        String index = null;
-        for (int i = 0; i < bulkRequest.numberOfActions(); i++) {
-            DocWriteRequest<?> writeRequest = bulkRequest.requests().get(i);
-            index = enforceSameIndex(writeRequest.index(), index);
-            
-			// Remove index property, as it will be encoded in the request path
-            DocWriteRequest.OpType opType = writeRequest.opType();
-            
-            switch (opType) {
-            case INDEX: //$FALL-THROUGH$
-			case CREATE:
-				bulkContentType = enforceSameContentType((IndexRequest) writeRequest, bulkContentType);
-				((IndexRequest) writeRequest).index(null);
-				break;
-			case DELETE:
-				((DeleteRequest) writeRequest).index(null);
-				break;
-			case UPDATE:
-                UpdateRequest updateRequest = (UpdateRequest) writeRequest;
-                if (updateRequest.doc() != null) {
-                    bulkContentType = enforceSameContentType(updateRequest.doc(), bulkContentType);
-                }
-                if (updateRequest.upsertRequest() != null) {
-                    bulkContentType = enforceSameContentType(updateRequest.upsertRequest(), bulkContentType);
-                }
-                updateRequest.index(null);
-				break;
-            }
-        }
-
-        if (bulkContentType == null) {
-            bulkContentType = XContentType.JSON;
-        }
-        
-        String endpoint = endpoint(index, "_bulk");
-        Request request = new Request(HttpPost.METHOD_NAME, endpoint);
-        
-        if (bulkRequest.timeout() != null) {
-        	request.addParameter("timeout", bulkRequest.timeout().getStringRep());
-        }
-        
-        if (bulkRequest.getRefreshPolicy() != WriteRequest.RefreshPolicy.NONE) {
-            request.addParameter("refresh", bulkRequest.getRefreshPolicy().getValue());
-        }        
-
-        final byte separator = bulkContentType.xContent().streamSeparator();
-        final ContentType requestContentType = createContentType(bulkContentType);
-
-        ByteArrayOutputStream content = new ByteArrayOutputStream();
-        for (DocWriteRequest<?> writeRequest : bulkRequest.requests()) {
-            DocWriteRequest.OpType opType = writeRequest.opType();
-
-            try (XContentBuilder metadata = XContentBuilder.builder(bulkContentType.xContent())) {
-                metadata.startObject();
-                {
-                    metadata.startObject(opType.getLowercase());
-                    if (Strings.hasLength(writeRequest.index())) {
-                        metadata.field("_index", writeRequest.index());
-                    }
-                    if (Strings.hasLength(writeRequest.type())) {
-                        metadata.field("_type", writeRequest.type());
-                    }
-                    if (Strings.hasLength(writeRequest.id())) {
-                        metadata.field("_id", writeRequest.id());
-                    }
-                    if (Strings.hasLength(writeRequest.routing())) {
-                        metadata.field("routing", writeRequest.routing());
-                    }
-                    if (Strings.hasLength(writeRequest.parent())) {
-                        metadata.field("parent", writeRequest.parent());
-                    }
-                    if (writeRequest.version() != Versions.MATCH_ANY) {
-                        metadata.field("version", writeRequest.version());
-                    }
-
-                    VersionType versionType = writeRequest.versionType();
-                    if (versionType != VersionType.INTERNAL) {
-                        if (versionType == VersionType.EXTERNAL) {
-                            metadata.field("version_type", "external");
-                        } else if (versionType == VersionType.EXTERNAL_GTE) {
-                            metadata.field("version_type", "external_gte");
-                        } else if (versionType == VersionType.FORCE) {
-                            metadata.field("version_type", "force");
-                        }
-                    }
-
-                    if (opType == DocWriteRequest.OpType.INDEX || opType == DocWriteRequest.OpType.CREATE) {
-                        IndexRequest indexRequest = (IndexRequest) writeRequest;
-                        if (Strings.hasLength(indexRequest.getPipeline())) {
-                            metadata.field("pipeline", indexRequest.getPipeline());
-                        }
-                    } else if (opType == DocWriteRequest.OpType.UPDATE) {
-                        UpdateRequest updateRequest = (UpdateRequest) writeRequest;
-                        if (updateRequest.retryOnConflict() > 0) {
-                            metadata.field("retry_on_conflict", updateRequest.retryOnConflict());
-                        }
-                        if (updateRequest.fetchSource() != null) {
-                            metadata.field("_source", updateRequest.fetchSource());
-                        }
-                    }
-                    metadata.endObject();
-                }
-                metadata.endObject();
-
-                BytesRef metadataSource = BytesReference.bytes(metadata).toBytesRef();
-                content.write(metadataSource.bytes, metadataSource.offset, metadataSource.length);
-                content.write(separator);
-            }
-
-            BytesRef source = null;
-            if (opType == DocWriteRequest.OpType.INDEX || opType == DocWriteRequest.OpType.CREATE) {
-                IndexRequest indexRequest = (IndexRequest) writeRequest;
-                BytesReference indexSource = indexRequest.source();
-                XContentType indexXContentType = indexRequest.getContentType();
-
-                try (XContentParser parser = XContentHelper.createParser(NamedXContentRegistry.EMPTY,
-                    LoggingDeprecationHandler.INSTANCE, indexSource, indexXContentType)) {
-                    try (XContentBuilder builder = XContentBuilder.builder(bulkContentType.xContent())) {
-                        builder.copyCurrentStructure(parser);
-                        source = BytesReference.bytes(builder).toBytesRef();
-                    }
-                }
-            } else if (opType == DocWriteRequest.OpType.UPDATE) {
-                source = XContentHelper.toXContent((UpdateRequest) writeRequest, bulkContentType, false).toBytesRef();
-            }
-
-            if (source != null) {
-                content.write(source.bytes, source.offset, source.length);
-                content.write(separator);
-            }
-        }
-
-        HttpEntity entity = new ByteArrayEntity(content.toByteArray(), 0, content.size(), requestContentType);
-		request.setEntity(entity);
-		return request;
-    }
-    
-    private static HttpEntity createEntity(ToXContent toXContent, XContentType xContentType) throws IOException {
-        BytesRef source = XContentHelper.toXContent(toXContent, xContentType, false).toBytesRef();
-        return new ByteArrayEntity(source.bytes, source.offset, source.length, createContentType(xContentType));
-    }
-    
-    private static String enforceSameIndex(String requestIndex, String index) {
-    	if (index == null) {
-    		return requestIndex;
-    	}
-    	if (!requestIndex.equals(index)) {
-    		throw new IllegalArgumentException("Mismatching index found for request [" + requestIndex + "], previous requests "
-    				+ "targeted index [" + index + "]");
-    	}
-		return index;
-	}
-
-	/**
-     * Ensure that the {@link IndexRequest}'s content type is supported by the Bulk API and that it conforms
-     * to the current {@link BulkRequest}'s content type (if it's known at the time of this method get called).
-     *
-     * @return the {@link IndexRequest}'s content type
-     */
-    static XContentType enforceSameContentType(IndexRequest indexRequest, @Nullable XContentType xContentType) {
-        XContentType requestContentType = indexRequest.getContentType();
-        if (requestContentType != XContentType.JSON && requestContentType != XContentType.SMILE) {
-            throw new IllegalArgumentException("Unsupported content-type found for request with content-type [" + requestContentType
-                    + "], only JSON and SMILE are supported");
-        }
-        if (xContentType == null) {
-            return requestContentType;
-        }
-        if (requestContentType != xContentType) {
-            throw new IllegalArgumentException("Mismatching content-type found for request with content-type [" + requestContentType
-                    + "], previous requests have content-type [" + xContentType + "]");
-        }
-        return xContentType;
-    }
-    
-    /**
-     * Returns a {@link ContentType} from a given {@link XContentType}.
-     *
-     * @param xContentType the {@link XContentType}
-     * @return the {@link ContentType}
-     */
-    @SuppressForbidden(reason = "Only allowed place to convert a XContentType to a ContentType")
-    public static ContentType createContentType(final XContentType xContentType) {
-        return ContentType.create(xContentType.mediaTypeWithoutParameters(), (Charset) null);
-    }
-    
-    private static Request toClearScrollHttpRequest(ClearScrollRequest clearScrollRequest) throws IOException {
-        HttpEntity entity = createEntity(clearScrollRequest, XContentType.JSON);
-        Request request = new Request(HttpDelete.METHOD_NAME, "/_search/scroll");
-        request.setEntity(entity);
-        request.addParameter("ignore", "404");
-        return request;
-    }
-    
-	//
-	// Delegate methods are unmodified below
-	//
-	
-	public final RestClient getLowLevelClient() {
-		return client.getLowLevelClient();
 	}
 
 	@Override
 	public final void close() throws IOException {
 		client.close();
 	}
+	
+	@Override
+	public Builder bulk(Listener listener) {
+		return BulkProcessor.builder((req, actionListener) -> clientExt.bulkAsync(req, RequestOptions.DEFAULT, actionListener), listener);
+	}
+
 
 	@Override
 	public final IndicesClient indices() {
@@ -615,171 +137,43 @@ public final class EsHttpClient implements EsClient {
 		return clusterClient;
 	}
 
-	public final boolean ping(RequestOptions options) throws IOException {
-		return client.ping(options);
-	}
-
-	public final MainResponse info(RequestOptions options) throws IOException {
-		return client.info(options);
-	}
-
 	@Override
 	public GetResponse get(GetRequest req) throws IOException {
-		return get(req, RequestOptions.DEFAULT);
-	}
-	
-	public final GetResponse get(GetRequest getRequest, RequestOptions options) throws IOException {
-		return client.get(getRequest, options);
+		return client.get(req, RequestOptions.DEFAULT);
 	}
 
-	public final void getAsync(GetRequest getRequest, RequestOptions options, ActionListener<GetResponse> listener) {
-		client.getAsync(getRequest, options, listener);
-	}
-
-	public final boolean exists(GetRequest getRequest, RequestOptions options) throws IOException {
-		return client.exists(getRequest, options);
-	}
-
-	public final void existsAsync(GetRequest getRequest, RequestOptions options, ActionListener<Boolean> listener) {
-		client.existsAsync(getRequest, options, listener);
-	}
-
-	public final IndexResponse index(IndexRequest indexRequest, RequestOptions options) throws IOException {
-		return client.index(indexRequest, options);
-	}
-
-	public final void indexAsync(IndexRequest indexRequest, RequestOptions options, ActionListener<IndexResponse> listener) {
-		client.indexAsync(indexRequest, options, listener);
-	}
-
-	public final UpdateResponse update(UpdateRequest updateRequest, RequestOptions options) throws IOException {
-		return client.update(updateRequest, options);
-	}
-
-	public final void updateAsync(UpdateRequest updateRequest, RequestOptions options, ActionListener<UpdateResponse> listener) {
-		client.updateAsync(updateRequest, options, listener);
-	}
-
-	public final DeleteResponse delete(DeleteRequest deleteRequest, RequestOptions options) throws IOException {
-		return client.delete(deleteRequest, options);
-	}
-
-	public final void deleteAsync(DeleteRequest deleteRequest, RequestOptions options, ActionListener<DeleteResponse> listener) {
-		client.deleteAsync(deleteRequest, options, listener);
-	}
-	
 	@Override
 	public SearchResponse search(SearchRequest req) throws IOException {
-		return search(req, RequestOptions.DEFAULT);
+		return client.search(req, RequestOptions.DEFAULT);
 	}
 	
-	public final SearchResponse search(SearchRequest searchRequest, RequestOptions options) throws IOException {
-		return client.search(searchRequest, options);
-	}
-
-	public final void searchAsync(SearchRequest searchRequest, RequestOptions options, ActionListener<SearchResponse> listener) {
-		client.searchAsync(searchRequest, options, listener);
-	}
-
 	@Override
 	public SearchResponse scroll(SearchScrollRequest req) throws IOException {
-		return scroll(req, RequestOptions.DEFAULT);
+		return client.scroll(req, RequestOptions.DEFAULT);
 	}
 	
-	public final SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions options) throws IOException {
-		return client.scroll(searchScrollRequest, options);
-	}
-
-	public final void searchScrollAsync(SearchScrollRequest searchScrollRequest, RequestOptions options, ActionListener<SearchResponse> listener) {
-		client.scrollAsync(searchScrollRequest, options, listener);
-	}
-
-	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
-		return clearScroll(req, RequestOptions.DEFAULT);
-	}
-	
-	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, RequestOptions options) throws IOException {
-		return performRequestAndParseEntity(clearScrollRequest, EsHttpClient::toClearScrollHttpRequest, ClearScrollResponse::fromXContent, options);
-	}
-
-	public final void clearScrollAsync(ClearScrollRequest clearScrollRequest, RequestOptions options, ActionListener<ClearScrollResponse> listener) {
-		performRequestAsyncAndParseEntity(clearScrollRequest, EsHttpClient::toClearScrollHttpRequest, ClearScrollResponse::fromXContent, listener);
-	}
-
-	public final RankEvalResponse rankEval(RankEvalRequest rankEvalRequest, RequestOptions options) throws IOException {
-		return client.rankEval(rankEvalRequest, options);
-	}
-
-	public final void rankEvalAsync(RankEvalRequest rankEvalRequest, ActionListener<RankEvalResponse> listener,
-			RequestOptions options) {
-		client.rankEvalAsync(rankEvalRequest, options, listener);
-	}
-
-	/*
-	 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html for
-	 * the low-level structure of the update by query request
-	 */
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException {
-		// POST /index/type/_update_by_query
-		final String endpoint = new EsHttpClient.EndpointBuilder()
-				.addPathPart(index, type)
-				.addPathPartAsIs("_update_by_query")
-				.build();
+	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
+		return clientExt.clearScroll(req, RequestOptions.DEFAULT);
+	}
+	
+	@Override
+	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query)
+			throws IOException {
+		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(new SearchRequest());
 		
-		// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#_url_parameters_2
-		final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-				.put("scroll_size", Integer.toString(batchSize))
-				.put("slices", Integer.toString(numberOfSlices))
-				.build(); 
+		updateByQueryRequest.getSearchRequest()
+			.indices(index)
+			.types(type)
+			.source()
+			.size(batchSize)
+			.query(query);
+		
+		updateByQueryRequest
+			.setScript(script)
+			.setSlices(numberOfSlices);
+		
+		return clientExt.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
+	}
 
-		final ObjectNode ubqr = mapper.createObjectNode();
-		putXContentValue(ubqr, "script", script);
-		putXContentValue(ubqr, "query", query);
-		
-		final HttpEntity requestBody = new StringEntity(mapper.writeValueAsString(ubqr), ContentType.APPLICATION_JSON);
-		
-		Response response;
-		try {
-			response = client.getLowLevelClient().performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
-		} catch (ResponseException e) {
-			response = e.getResponse();
-		}
-		
-		final JsonNode updateByQueryResponse = mapper.readTree(response.getEntity().getContent());
-		
-		// TODO support slices and failures
-		return new BulkByScrollResponse(
-			new TimeValue(updateByQueryResponse.get("took").asLong()), 
-			new BulkByScrollTask.Status(
-				0, 
-				updateByQueryResponse.get("total").asLong(), 
-				updateByQueryResponse.get("updated").asLong(), 
-				updateByQueryResponse.has("created") ? updateByQueryResponse.get("created").asLong() : 0, 
-				updateByQueryResponse.get("deleted").asLong(), 
-				updateByQueryResponse.get("batches").asInt(), 
-				updateByQueryResponse.get("version_conflicts").asLong(), 
-				updateByQueryResponse.get("noops").asLong(),
-				updateByQueryResponse.path("retries.bulk").asLong(), 
-				updateByQueryResponse.path("retries.search").asLong(), 
-				new TimeValue(updateByQueryResponse.get("throttled_millis").asLong()), 
-				Float.parseFloat(updateByQueryResponse.get("requests_per_second").asText()), 
-				"", 
-				new TimeValue(updateByQueryResponse.path("throttled_until_millis").asLong())
-			), 
-			Collections.emptyList(), 
-			Collections.emptyList(), 
-			updateByQueryResponse.get("timed_out").asBoolean()
-		);
-	}
-	
-	private void putXContentValue(final ObjectNode ubqr, final String key, final ToXContent toXContent) throws IOException {
-		final XContentBuilder xContentBuilder = toXContent.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS);
-		xContentBuilder.flush();
-		xContentBuilder.close();
-		
-		final ByteArrayOutputStream outputStream = (ByteArrayOutputStream) xContentBuilder.getOutputStream();
-		ubqr.putRawValue(key, new RawValue(outputStream.toString("UTF-8")));
-	}
-	
 }
