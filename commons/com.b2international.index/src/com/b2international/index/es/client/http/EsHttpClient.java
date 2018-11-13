@@ -110,7 +110,6 @@ import org.elasticsearch.script.Script;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Activator;
-import com.b2international.index.IndexException;
 import com.b2international.index.es.EsClientConfiguration;
 import com.b2international.index.es.client.ClusterClient;
 import com.b2international.index.es.client.EsClient;
@@ -137,7 +136,7 @@ public final class EsHttpClient implements EsClient {
 		// XXX: Adjust the thread context classloader while ES client is initializing 
 		this.client = Activator.withTccl(() -> {
 			
-			final HttpHost host = configuration.getHost();
+			final HttpHost host = HttpHost.create(configuration.getClusterUrl());
 
 			final RequestConfigCallback requestConfigCallback = requestConfigBuilder -> requestConfigBuilder
 					.setConnectTimeout(configuration.getConnectTimeout())
@@ -625,12 +624,8 @@ public final class EsHttpClient implements EsClient {
 	}
 
 	@Override
-	public GetResponse get(GetRequest req) {
-		try {
-			return get(req, RequestOptions.DEFAULT);
-		} catch (IOException e) {
-			throw new IndexException("Couldn't execute GetRequest: " + req, e);
-		}
+	public GetResponse get(GetRequest req) throws IOException {
+		return get(req, RequestOptions.DEFAULT);
 	}
 	
 	public final GetResponse get(GetRequest getRequest, RequestOptions options) throws IOException {
@@ -674,12 +669,8 @@ public final class EsHttpClient implements EsClient {
 	}
 	
 	@Override
-	public SearchResponse search(SearchRequest req) {
-		try {
-			return search(req, RequestOptions.DEFAULT);
-		} catch (IOException e) {
-			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
-		}
+	public SearchResponse search(SearchRequest req) throws IOException {
+		return search(req, RequestOptions.DEFAULT);
 	}
 	
 	public final SearchResponse search(SearchRequest searchRequest, RequestOptions options) throws IOException {
@@ -691,12 +682,8 @@ public final class EsHttpClient implements EsClient {
 	}
 
 	@Override
-	public SearchResponse scroll(SearchScrollRequest req) {
-		try {
-			return scroll(req, RequestOptions.DEFAULT);
-		} catch (IOException e) {
-			throw new IndexException("Couldn't execute SearchScrollRequest: " + req, e);
-		}
+	public SearchResponse scroll(SearchScrollRequest req) throws IOException {
+		return scroll(req, RequestOptions.DEFAULT);
 	}
 	
 	public final SearchResponse scroll(SearchScrollRequest searchScrollRequest, RequestOptions options) throws IOException {
@@ -707,12 +694,8 @@ public final class EsHttpClient implements EsClient {
 		client.scrollAsync(searchScrollRequest, options, listener);
 	}
 
-	public final ClearScrollResponse clearScroll(ClearScrollRequest req) {
-		try {
-			return clearScroll(req, RequestOptions.DEFAULT);
-		} catch (IOException e) {
-			throw new IndexException(String.format("Couldn't clear scroll state for scrollId(s) '%s'.", req.scrollIds()), e);
-		}
+	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
+		return clearScroll(req, RequestOptions.DEFAULT);
 	}
 	
 	public final ClearScrollResponse clearScroll(ClearScrollRequest clearScrollRequest, RequestOptions options) throws IOException {

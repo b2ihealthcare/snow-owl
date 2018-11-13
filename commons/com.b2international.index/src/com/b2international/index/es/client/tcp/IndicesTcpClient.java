@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.es.client;
+package com.b2international.index.es.client.tcp;
 
 import java.io.IOException;
 
@@ -23,18 +23,39 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.client.IndicesAdminClient;
+
+import com.b2international.index.es.client.IndicesClient;
 
 /**
  * @since 6.11
  */
-public interface IndicesClient {
+public final class IndicesTcpClient implements IndicesClient {
 
-	boolean exists(String...indices) throws IOException;
+	private final IndicesAdminClient client;
 
-	CreateIndexResponse create(CreateIndexRequest req) throws IOException;
+	public IndicesTcpClient(IndicesAdminClient client) {
+		this.client = client;
+	}
 
-	DeleteIndexResponse delete(DeleteIndexRequest req) throws IOException;
+	@Override
+	public boolean exists(String...indices) throws IOException {
+		return EsTcpClient.execute(client.prepareExists(indices).execute()).isExists();
+	}
 
-	RefreshResponse refresh(RefreshRequest req) throws IOException;
-	
+	@Override
+	public CreateIndexResponse create(CreateIndexRequest req) throws IOException {
+		return EsTcpClient.execute(client.create(req));
+	}
+
+	@Override
+	public DeleteIndexResponse delete(DeleteIndexRequest req) throws IOException {
+		return EsTcpClient.execute(client.delete(req));
+	}
+
+	@Override
+	public RefreshResponse refresh(RefreshRequest req) throws IOException {
+		return EsTcpClient.execute(client.refresh(req));
+	}
+
 }

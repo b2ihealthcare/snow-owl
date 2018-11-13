@@ -13,18 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index.es.client;
+package com.b2international.index.es.client.tcp;
 
 import java.io.IOException;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.client.ClusterAdminClient;
+
+import com.b2international.index.es.client.ClusterClient;
 
 /**
  * @since 6.11
  */
-public interface ClusterClient {
+public class ClusterTcpClient implements ClusterClient {
 
-	ClusterHealthResponse health(ClusterHealthRequest req) throws IOException;
+	private final ClusterAdminClient client;
+
+	public ClusterTcpClient(ClusterAdminClient client) {
+		this.client = client;
+	}
+	
+	@Override
+	public ClusterHealthResponse health(ClusterHealthRequest req) throws IOException {
+		return EsTcpClient.execute(client.health(req));
+	}
 
 }

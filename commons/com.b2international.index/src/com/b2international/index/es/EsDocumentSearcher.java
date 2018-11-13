@@ -270,7 +270,12 @@ public class EsDocumentSearcher implements DocSearcher {
 	public void cancelScroll(String scrollId) {
 		final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
 		clearScrollRequest.addScrollId(scrollId);
-		admin.client().clearScroll(clearScrollRequest);
+		
+		try {
+			admin.client().clearScroll(clearScrollRequest);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Couldn't clear scroll state for scrollId '%s'.", scrollId), e);
+		}
 	}
 	
 	private <T> Hits<T> toHits(

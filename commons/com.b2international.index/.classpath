@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/percolator-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/reindex-client-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-6.4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-client-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/analysis-common-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>

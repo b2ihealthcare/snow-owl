@@ -15,43 +15,57 @@
  */
 package com.b2international.index.es;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Objects;
 
-import org.apache.http.HttpHost;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.7
  */
 public final class EsClientConfiguration {
 
-	private final int connectTimeout;
-	private final int socketTimeout;
-	private final HttpHost host;
+	public static final String TCP_SCHEME = "tcp://";
+	public static final String HTTP_SCHEME = "http://";
+	public static final String HTTPS_SCHEME = "https://";
+	
+	private final String clusterName;
+	private final String clusterUrl;
 	private final String username;
 	private final String password;
+	private final int connectTimeout;
+	private final int socketTimeout;
 	private final ObjectMapper mapper;
 
-	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host, String username, String password, ObjectMapper mapper) {
-		this.connectTimeout = connectTimeout;
-		this.socketTimeout = socketTimeout;
-		this.host = host;
+	public EsClientConfiguration(
+			final String clusterName,
+			final String clusterUrl, 
+			final String username, 
+			final String password, 
+			final int connectTimeout, 
+			final int socketTimeout,
+			final ObjectMapper mapper) {
+		this.clusterName = clusterName;
+		this.clusterUrl = clusterUrl;
 		this.username = username;
 		this.password = password;
+		this.connectTimeout = connectTimeout;
+		this.socketTimeout = socketTimeout;
 		this.mapper = mapper;
+		checkArgument(
+			isTcp() || isHttp(), 
+			"Unsupported networking scheme in clusterUrl: %s. Supported schemes are: %s.", clusterUrl, ImmutableList.of(TCP_SCHEME, HTTP_SCHEME, HTTPS_SCHEME)
+		);
 	}
 
-	public int getConnectTimeout() {
-		return connectTimeout;
+	public String getClusterName() {
+		return clusterName;
 	}
-
-	public int getSocketTimeout() {
-		return socketTimeout;
-	}
-
-	public HttpHost getHost() {
-		return host;
+	
+	public String getClusterUrl() {
+		return clusterUrl;
 	}
 	
 	public String getUserName() {
@@ -61,6 +75,14 @@ public final class EsClientConfiguration {
 	public String getPassword() {
 		return password;
 	}
+	
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
+
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
 
 	public ObjectMapper mapper() {
 		return mapper;
@@ -68,7 +90,7 @@ public final class EsClientConfiguration {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(host);
+		return Objects.hash(clusterUrl);
 	}
 
 	@Override
@@ -79,7 +101,15 @@ public final class EsClientConfiguration {
 		final EsClientConfiguration other = (EsClientConfiguration) obj;
 
 		// First client configuration for a host wins
-		return Objects.equals(host, other.host);
+		return Objects.equals(clusterUrl, other.clusterUrl);
 	}
 
+	public boolean isHttp() {
+		return clusterUrl.startsWith(HTTP_SCHEME) || clusterUrl.startsWith(HTTPS_SCHEME);
+	}
+	
+	public boolean isTcp() {
+		return clusterUrl.startsWith(TCP_SCHEME);
+	}
+	
 }

@@ -15,7 +15,10 @@
  */
 package com.b2international.index.es.client;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.get.GetRequest;
@@ -25,20 +28,24 @@ import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
 import org.elasticsearch.script.Script;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.Activator;
 import com.b2international.index.es.EsClientConfiguration;
 import com.b2international.index.es.client.http.EsHttpClient;
+import com.b2international.index.es.client.tcp.EsTcpClient;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.net.HostAndPort;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 /**
@@ -46,19 +53,19 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public interface EsClient extends AutoCloseable {
 
-	static final Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
+	Logger LOG = LoggerFactory.getLogger("elastic-snowowl");
 	
 	IndicesClient indices();
 	
 	ClusterClient cluster();
 	
-	GetResponse get(GetRequest req);
+	GetResponse get(GetRequest req) throws IOException;
 	
-	SearchResponse search(SearchRequest req);
+	SearchResponse search(SearchRequest req) throws IOException;
 	
-	SearchResponse scroll(SearchScrollRequest req);
+	SearchResponse scroll(SearchScrollRequest req) throws IOException;
 	
-	ClearScrollResponse clearScroll(ClearScrollRequest req);
+	ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException;
 	
 	BulkProcessor.Builder bulk(BulkProcessor.Listener listener);
 	
@@ -75,7 +82,7 @@ public interface EsClient extends AutoCloseable {
 	/**
 	 * @since 6.11
 	 */
-	static final class ClientPool {
+	final class ClientPool {
 		
 		private static final LoadingCache<EsClientConfiguration, EsClient> CLIENTS_BY_HOST = CacheBuilder.newBuilder()
 				.removalListener(ClientPool::onRemove)
@@ -100,8 +107,19 @@ public interface EsClient extends AutoCloseable {
 			CLIENTS_BY_HOST.cleanUp();
 		}
 		
+		@SuppressWarnings("resource")
 		static EsClient onAdd(final EsClientConfiguration configuration) {
-			return new EsHttpClient(configuration);
+			if (configuration.isHttp()) {
+				return new EsHttpClient(configuration);
+			} else {
+				checkState(configuration.isTcp(), "Only TCP and HTTP clients are supported");
+				HostAndPort hostAndPort = HostAndPort.fromString(configuration.getClusterUrl().replaceAll(EsClientConfiguration.TCP_SCHEME, ""));
+				Settings settings = Settings.builder()
+				        .put("cluster.name", configuration.getClusterName())
+				        .build();
+				return new EsTcpClient(new PreBuiltTransportClient(settings)
+						.addTransportAddress(new TransportAddress(new InetSocketAddress(hostAndPort.getHostText(), hostAndPort.getPort()))));
+			}
 		}
 		
 		static void onRemove(final RemovalNotification<EsClientConfiguration, EsClient> notification) {
@@ -113,9 +131,9 @@ public interface EsClient extends AutoCloseable {
 		static void closeClient(final EsClientConfiguration configuration, EsClient client) {
 			try {
 				client.close();
-				LOG.info("Closed ES client connected to '{}'", configuration.getHost().toURI());
+				LOG.info("Closed ES client connected to '{}'", configuration.getClusterUrl());
 			} catch (final Exception e) {
-				LOG.error("Unable to close ES client connected to '{}'", configuration.getHost().toURI(), e);
+				LOG.error("Unable to close ES client connected to '{}'", configuration.getClusterUrl(), e);
 			}
 		}
 		

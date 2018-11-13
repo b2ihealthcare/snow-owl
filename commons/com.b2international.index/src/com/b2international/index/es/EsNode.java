@@ -41,7 +41,6 @@ import com.google.common.collect.ImmutableList;
 public final class EsNode extends Node {
 
 	private static final String CONFIG_FILE = "elasticsearch.yml";
-	private static final String CLUSTER_NAME = "elastic-snowowl";
 	private static final Logger LOG = LoggerFactory.getLogger("elastic.snowowl");
 	
 	private static EsNode INSTANCE;
@@ -49,7 +48,7 @@ public final class EsNode extends Node {
 	private final Path dataPath;
 	private final boolean persistent;
 	
-	public static Node getInstance(Path configPath, Path dataPath, boolean persistent) {
+	public static Node getInstance(String clusterName, Path configPath, Path dataPath, boolean persistent) {
 		if (INSTANCE == null) {
 			synchronized (EsNode.class) {
 				if (INSTANCE == null) {
@@ -57,7 +56,7 @@ public final class EsNode extends Node {
 					Activator.withTccl(() -> {
 						try {
 							System.setProperty("es.logs.base_path", configPath.toString());
-							final Settings esSettings = configureSettings(configPath.resolve(CONFIG_FILE), dataPath);
+							final Settings esSettings = configureSettings(clusterName, configPath.resolve(CONFIG_FILE), dataPath);
 							final EsNode node = new EsNode(esSettings, dataPath, persistent);
 							node.start();
 							
@@ -99,7 +98,7 @@ public final class EsNode extends Node {
 		});
 	}
 	
-	private static Settings configureSettings(Path configPath, Path dataPath) throws IOException {
+	private static Settings configureSettings(String clusterName, Path configPath, Path dataPath) throws IOException {
 		final Settings.Builder esSettings;
 		if (configPath.toFile().exists()) {
 			LOG.info("Loading configuration settings from file {}", configPath);
@@ -109,9 +108,9 @@ public final class EsNode extends Node {
 		}
 
 		// configure es home directory
-		putSettingIfAbsent(esSettings, "path.home", dataPath.resolve(CLUSTER_NAME).toString());
-		putSettingIfAbsent(esSettings, "cluster.name", CLUSTER_NAME);
-		putSettingIfAbsent(esSettings, "node.name", CLUSTER_NAME);
+		putSettingIfAbsent(esSettings, "path.home", dataPath.resolve(clusterName).toString());
+		putSettingIfAbsent(esSettings, "cluster.name", clusterName);
+		putSettingIfAbsent(esSettings, "node.name", clusterName);
 		
 		// this node is always the master node
 		putSettingIfAbsent(esSettings, "node.master", true);
