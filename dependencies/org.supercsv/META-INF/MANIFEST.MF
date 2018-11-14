@@ -4,7 +4,7 @@ Bundle-Name: SuperCSV Bundle
 Bundle-SymbolicName: org.supercsv;singleton:=true
 Bundle-Version: 1.1.0.b2i
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.supercsv.cellprocessor,
  org.supercsv.cellprocessor.constraint,
  org.supercsv.cellprocessor.ift,

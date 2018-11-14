@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Jackson Module for Primitive Collections API
 Bundle-SymbolicName: com.b2international.collections.jackson;singleton:=true
 Bundle-Version: 7.1.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.b2international.collections.api,
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.8.6,2.9.0)",

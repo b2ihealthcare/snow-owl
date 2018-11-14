@@ -4,6 +4,6 @@ Bundle-Name: Snow Owl SNOMED CT Commons
 Bundle-SymbolicName: com.b2international.snowowl.snomed.common
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.b2international.snowowl.snomed.common
 Require-Bundle: com.b2international.commons;bundle-version="2.6.0"

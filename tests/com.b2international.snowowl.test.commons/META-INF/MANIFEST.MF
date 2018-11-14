@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.reasoner,
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Import-Package: ch.qos.logback.classic;version="1.0.7",
  ch.qos.logback.core.spi;version="1.0.7",

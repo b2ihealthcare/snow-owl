@@ -14,7 +14,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.dsl,
  com.b2international.snowowl.snomed.datastore;visibility:=reexport
 Import-Package: org.slf4j;version="1.7.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.b2international.snowowl.dsl,com.b2international.sn
  owowl.dsl.expressionextractor,com.b2international.snowowl.dsl.parseTr
  eeConstruction,com.b2international.snowowl.dsl.parser.antlr,com.b2int

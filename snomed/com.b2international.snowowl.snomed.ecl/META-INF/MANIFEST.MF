@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.xtext;visibility:=reexport;bundle-version="[2.11.0,2
  org.objectweb.asm;bundle-version="[5.0.1,6.0.0)";resolution:=optional
 Import-Package: org.apache.log4j,
  org.slf4j;version="1.7.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.b2international.snowowl.snomed.ecl,
  com.b2international.snowowl.snomed.ecl.ecl,
  com.b2international.snowowl.snomed.ecl.ecl.impl,

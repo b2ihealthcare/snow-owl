@@ -4,7 +4,7 @@ Bundle-Name: Test Dependencies
 Bundle-SymbolicName: com.b2international.snowowl.test.dependencies
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2iHealthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  contiperf-2.3.2.jar,
  jukito-1.2.jar,

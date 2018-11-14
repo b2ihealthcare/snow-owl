@@ -17,7 +17,7 @@ Require-Bundle: org.junit;bundle-version="4.8.2",
  com.b2international.snowowl.snomed.datastore,
  com.b2international.snowowl.test.commons,
  com.b2international.snowowl.snomed.ecl
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.b2international.snowowl.semanticengine.simpleast.test,
  com.b2international.snowowl.semanticengine.simpleast.test.utils
