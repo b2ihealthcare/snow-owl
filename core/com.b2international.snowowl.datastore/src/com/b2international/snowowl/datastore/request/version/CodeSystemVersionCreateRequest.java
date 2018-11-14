@@ -98,10 +98,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		Set<String> repositoryIds = context.service(RepositoryManager.class).repositories().stream().map(Repository::id).collect(Collectors.toSet());
 		for (String repositoryId : repositoryIds) {
 			try {
-				codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
-						.build(repositoryId)
-						.execute(context.service(IEventBus.class))
-						.getSync();
+				codeSystem = fetchCodeSystem(context, repositoryId, codeSystemShortName);
 			} catch (NotFoundException e) {
 				//ignore
 			}
@@ -145,26 +142,28 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		if (versioningManager.needsOtherCodeSystemsToVersion()) {
 			final Map<String, String> codeSystemsByRepositoryId = versioningManager.codeSystemDependenciesByRepositoryId();
 			for (Entry<String, String> entry : codeSystemsByRepositoryId.entrySet()) {
-				final CodeSystemEntry cs = fetchCodeSystem(context, entry.getKey(), entry.getValue());
+
+				CodeSystemEntry cs = null; 
+				try {
+					cs = fetchCodeSystem(context, entry.getKey(), entry.getValue());
+				} catch(NotFoundException e) {
+					throw new CodeSystemNotFoundException(entry.getValue());
+				}
+				
 				final IVersioningManager otherVersioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(cs.getTerminologyComponentId());
 				versioningManagersByCodeSystem.put(cs, otherVersioningManager);
 			}
 		}
 		
-		return versioningManagersByCodeSystem; //versioningManagersByCodeSystem;
+		return versioningManagersByCodeSystem;
 	}
 	
+	
 	private CodeSystemEntry fetchCodeSystem(ServiceProvider context, final String repositoryId, final String codeSystemShortName) {
-		CodeSystemEntry codeSystem = null;
-		try {
-			codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
-					.build(repositoryId)
-					.execute(context.service(IEventBus.class))
-					.getSync();
-		} catch (NotFoundException e) {
-			// ignore
-		}
-		return codeSystem;
+		return CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
+			.build(repositoryId)
+			.execute(context.service(IEventBus.class))
+			.getSync();
 	}
 
 	private void createVersion(ServiceProvider context, IVersioningManager versioningManager, CodeSystemEntry codeSystem, String user) {
