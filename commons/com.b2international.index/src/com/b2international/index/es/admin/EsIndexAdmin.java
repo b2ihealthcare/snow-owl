@@ -183,6 +183,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
 				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
 				.put("translog.durability", "async")
+				.put("write.wait_for_active_shards", "all")
 				.build();
 	}
 	
