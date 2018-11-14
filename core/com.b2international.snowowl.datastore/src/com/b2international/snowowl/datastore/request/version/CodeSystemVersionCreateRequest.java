@@ -19,6 +19,8 @@ import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockCon
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -57,6 +59,7 @@ import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
 
 /**
  * @since 5.7
@@ -91,7 +94,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		final String user = job.getUser();
 		
 		// get code system
-		CodeSystemEntry codeSystem = null; 
+		CodeSystemEntry codeSystem = null;
 		Set<String> repositoryIds = context.service(RepositoryManager.class).repositories().stream().map(Repository::id).collect(Collectors.toSet());
 		for (String repositoryId : repositoryIds) {
 			try {
@@ -100,7 +103,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						.execute(context.service(IEventBus.class))
 						.getSync();
 			} catch (NotFoundException e) {
-				// ignore
+				//ignore
 			}
 		}
 		
@@ -124,18 +127,56 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		} catch (NotFoundException e) {
 			// ignore
 		}
+
+		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem = createVersioningManagers(context, codeSystem);
+		for (Entry<CodeSystemEntry, IVersioningManager> entry : versioningManagersByCodeSystem.entrySet()) {
+			createVersion(context, entry.getValue(), entry.getKey(), user);
+		}
 		
-		// check that the specified effective time
+		return Boolean.TRUE;
+	}
+	
+	private Map<CodeSystemEntry, IVersioningManager> createVersioningManagers(final ServiceProvider context, final CodeSystemEntry codeSystem) {
+		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem  = Maps.newHashMap();
+		
+		final IVersioningManager versioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(codeSystem.getTerminologyComponentId());
+		versioningManagersByCodeSystem.put(codeSystem, versioningManager);
+
+		if (versioningManager.needsOtherCodeSystemsToVersion()) {
+			final Map<String, String> codeSystemsByRepositoryId = versioningManager.codeSystemDependenciesByRepositoryId();
+			for (Entry<String, String> entry : codeSystemsByRepositoryId.entrySet()) {
+				final CodeSystemEntry cs = fetchCodeSystem(context, entry.getKey(), entry.getValue());
+				final IVersioningManager otherVersioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(cs.getTerminologyComponentId());
+				versioningManagersByCodeSystem.put(cs, otherVersioningManager);
+			}
+		}
+		
+		return versioningManagersByCodeSystem; //versioningManagersByCodeSystem;
+	}
+	
+	private CodeSystemEntry fetchCodeSystem(ServiceProvider context, final String repositoryId, final String codeSystemShortName) {
+		CodeSystemEntry codeSystem = null;
+		try {
+			codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
+					.build(repositoryId)
+					.execute(context.service(IEventBus.class))
+					.getSync();
+		} catch (NotFoundException e) {
+			// ignore
+		}
+		return codeSystem;
+	}
+
+	private void createVersion(ServiceProvider context, IVersioningManager versioningManager, CodeSystemEntry codeSystem, String user) {
 		validateEffectiveTime(context, codeSystem);
-		
+				
 		acquireLocks(context, user, codeSystem);
 		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
-			IVersioningManager versioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(codeSystem.getTerminologyComponentId());
 			monitor.worked(1);
 			// execute publication process via the tooling specific VersioningManager 
-			versioningManager.publish(new PublishOperationConfiguration(user, codeSystemShortName, codeSystem.getBranchPath(), versionId, description, effectiveTime), monitor);
+			versioningManager.publish(new PublishOperationConfiguration(user, codeSystem.getShortName(), codeSystem.getBranchPath(), versionId, description, effectiveTime), monitor);
 			monitor.worked(1);
 			// tag the repository
 			doTag(context, codeSystem, monitor);
@@ -149,8 +190,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				monitor.done();
 			}
 		}
-		
-		return Boolean.TRUE;
 	}
 	
 	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {

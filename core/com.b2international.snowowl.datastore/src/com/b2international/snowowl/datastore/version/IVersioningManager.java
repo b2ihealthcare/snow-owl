@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,23 @@
  */
 package com.b2international.snowowl.datastore.version;
 
+import java.util.Collections;
+import java.util.Map;
+
+import com.b2international.commons.CompareUtils;
+
 /**
  * Service interface for collecting unpublished components and publishing them
  * by setting properties on it such as effective time and/or released flag.
  */
 public interface IVersioningManager extends IPublishManager {
+	
+	default Map<String, String> codeSystemDependenciesByRepositoryId() {
+		return Collections.emptyMap();
+	}
+	
+	default boolean needsOtherCodeSystemsToVersion() {
+		return !CompareUtils.isEmpty(codeSystemDependenciesByRepositoryId());
+	}
+	
 }
