@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="src/"/>
 	<classpathentry exported="true" kind="lib" path="lib/aggs-matrix-stats-client-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/analysis-common-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
@@ -48,8 +51,5 @@
 	<classpathentry exported="true" kind="lib" path="lib/scripting-painless-spi-6.4.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/t-digest-3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/transport-netty4-6.4.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src/"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
