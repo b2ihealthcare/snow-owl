@@ -4,7 +4,7 @@ Bundle-Name: Snow Owl FHIR API
 Bundle-SymbolicName: com.b2international.snowowl.fhir.api
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: com.b2international.snowowl.api.codesystem,
  com.b2international.snowowl.api.codesystem.domain,
  javax.servlet;version="2.6.0",
@@ -31,19 +31,19 @@ Require-Bundle: org.eclipse.equinox.security;bundle-version="1.1.100",
  com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.datastore
 Bundle-ClassPath: .,
- WEB-INF/lib/spring-aop-4.3.10.RELEASE.jar,
- WEB-INF/lib/spring-beans-4.3.10.RELEASE.jar,
- WEB-INF/lib/spring-context-4.3.10.RELEASE.jar,
- WEB-INF/lib/spring-core-4.3.10.RELEASE.jar,
- WEB-INF/lib/spring-expression-4.3.10.RELEASE.jar,
+ WEB-INF/lib/spring-aop-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-beans-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-context-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-core-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-expression-5.1.1.RELEASE.jar,
  WEB-INF/lib/spring-hateoas-0.24.0.RELEASE.jar,
  WEB-INF/lib/spring-plugin-core-1.2.0.RELEASE.jar,
  WEB-INF/lib/spring-plugin-metadata-1.2.0.RELEASE.jar,
- WEB-INF/lib/spring-security-core-4.2.4.RELEASE.jar,
- WEB-INF/lib/spring-security-config-4.2.4.RELEASE.jar,
- WEB-INF/lib/spring-security-web-4.2.4.RELEASE.jar,
- WEB-INF/lib/spring-web-4.3.10.RELEASE.jar,
- WEB-INF/lib/spring-webmvc-4.3.10.RELEASE.jar,
+ WEB-INF/lib/spring-security-config-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-security-core-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-security-web-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-web-5.1.1.RELEASE.jar,
+ WEB-INF/lib/spring-webmvc-5.1.1.RELEASE.jar,
  WEB-INF/lib/springfox-core-2.8.0.jar,
  WEB-INF/lib/springfox-schema-2.8.0.jar,
  WEB-INF/lib/springfox-spi-2.8.0.jar,
