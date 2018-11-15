@@ -160,20 +160,14 @@ public final class EsHttpClient implements EsClient {
 	@Override
 	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query)
 			throws IOException {
-		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(new SearchRequest());
-		
-		updateByQueryRequest.getSearchRequest()
-			.indices(index)
-			.types(type)
-			.source()
-			.size(batchSize)
-			.query(query);
-		
-		updateByQueryRequest
+		UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index)
+			.setDocTypes(type)
+			.setBatchSize(batchSize)
+			.setQuery(query)
 			.setScript(script)
 			.setSlices(numberOfSlices);
 		
-		return clientExt.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
+		return client.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
 	}
 
 }

@@ -20,9 +20,9 @@ import java.io.IOException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.IndicesAdminClient;
 
 import com.b2international.index.es.client.IndicesClient;
@@ -49,7 +49,7 @@ public final class IndicesTcpClient implements IndicesClient {
 	}
 
 	@Override
-	public DeleteIndexResponse delete(DeleteIndexRequest req) throws IOException {
+	public AcknowledgedResponse delete(DeleteIndexRequest req) throws IOException {
 		return EsTcpClient.execute(client.delete(req));
 	}
 

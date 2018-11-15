@@ -21,10 +21,10 @@ import java.util.Arrays;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 
@@ -61,7 +61,7 @@ public final class IndicesHttpClient implements IndicesClient {
 	}
 
 	@Override
-	public DeleteIndexResponse delete(DeleteIndexRequest req) {
+	public AcknowledgedResponse delete(DeleteIndexRequest req) {
 		try {
 			return client.indices().delete(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {

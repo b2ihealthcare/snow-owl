@@ -20,9 +20,9 @@ import java.io.IOException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 
 /**
  * @since 6.11
@@ -33,7 +33,7 @@ public interface IndicesClient {
 
 	CreateIndexResponse create(CreateIndexRequest req) throws IOException;
 
-	DeleteIndexResponse delete(DeleteIndexRequest req) throws IOException;
+	AcknowledgedResponse delete(DeleteIndexRequest req) throws IOException;
 
 	RefreshResponse refresh(RefreshRequest req) throws IOException;
 	

@@ -23,11 +23,15 @@ import java.util.Comparator;
 
 import org.elasticsearch.analysis.common.CommonAnalysisPlugin;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.rankeval.RankEvalPlugin;
 import org.elasticsearch.index.reindex.ReindexPlugin;
+import org.elasticsearch.join.ParentJoinPlugin;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.painless.PainlessPlugin;
+import org.elasticsearch.percolator.PercolatorPlugin;
 import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.search.aggregations.matrix.MatrixAggregationPlugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,13 +141,21 @@ public final class EsNode extends Node {
 	
 	protected EsNode(Settings settings, Path dataPath, boolean persistent) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), ImmutableList.<Class<? extends Plugin>>builder()
-				.add(Netty4Plugin.class)
-				.add(ReindexPlugin.class)
-				.add(PainlessPlugin.class)
 				.add(CommonAnalysisPlugin.class)
-				.build());
-
+				.add(MatrixAggregationPlugin.class)
+				.add(Netty4Plugin.class)
+				.add(PainlessPlugin.class)
+				.add(ParentJoinPlugin.class)
+				.add(PercolatorPlugin.class)
+				.add(RankEvalPlugin.class)
+				.add(ReindexPlugin.class)
+				.build(), true);
 		this.dataPath = dataPath;
 		this.persistent = persistent;
 	}
+	
+	@Override
+	protected void registerDerivedNodeNameWithLogger(String nodeName) {
+	}
+	
 }

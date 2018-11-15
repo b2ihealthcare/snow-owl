@@ -34,9 +34,9 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.RestStatus;
@@ -365,7 +365,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (exists()) {
 			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
 			try {
-				final DeleteIndexResponse deleteIndexResponse = client()
+				final AcknowledgedResponse deleteIndexResponse = client()
 						.indices()
 						.delete(deleteIndexRequest);
 				checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
