@@ -119,6 +119,7 @@ public interface EsClient extends AutoCloseable {
 				return new EsHttpClient(configuration);
 			} else {
 				checkState(configuration.isTcp(), "Only TCP and HTTP clients are supported");
+				checkState(!configuration.isProtected(), "TCP connection scheme does not yet support security configuration. Consider switching to HTTP instead.");
 				HostAndPort hostAndPort = HostAndPort.fromString(configuration.getClusterUrl().replaceAll(EsClientConfiguration.TCP_SCHEME, ""));
 				Settings settings = Settings.builder()
 				        .put("cluster.name", configuration.getClusterName())
