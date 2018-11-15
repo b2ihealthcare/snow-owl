@@ -92,6 +92,10 @@ SNOMED CT:
 
 #Implementation
 
+##Versions
+
+Snow Owl's repository is a fully-fledged revision control system with branches, versions and revisions.  Snow Owl's terminology artefact _versions_ are exposed as FHIR versions for every supported code system with the exception of SNOMED CT where the standard SNOMED CT URI specification governs the format (short date) of the version.  If there is no version specified in a request, the last version is assumed.  If there is no version in the system, the last state (head of MAIN) is considered.
+
 ## Search
 
 The supported search result filters:
@@ -116,7 +120,9 @@ Globally unique logical URIs that represent a terminology resource. For code sys
 | LOINC                     | http://loinc.org                     |   
 | FHIR                      | Prefixed with http://hl7.org/fhir    |
 | LCS                       | Prefixed with the organization link  |
-|                           |                                      | 
+| Value Set                 | Prefixed with the source URI         | 
+| Mapping Set               | Prefixed with the source URI         | 
+|                           |                                      |
 
 ### SNOMED CT
 
