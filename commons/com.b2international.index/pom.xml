@@ -14,7 +14,7 @@
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
-    <!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
+    <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
