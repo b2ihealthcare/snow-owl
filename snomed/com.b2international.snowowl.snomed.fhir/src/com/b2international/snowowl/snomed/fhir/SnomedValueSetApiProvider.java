@@ -97,6 +97,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
 		
+		//Simple type reference set
 		if (!logicalId.isMemberId()) {
 		
 			return getSimpleTypeRefsetSearchRequestBuilder(logicalId.getComponentId())
@@ -114,6 +115,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
 		} else {
 			
+			//Query type reference set
 			return SnomedRequests.prepareSearchMember()
 				.one()
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
