@@ -49,15 +49,15 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	CodeSystemRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
 	LookupSnomedRestTest.class,
-	SubsumesSnomedRestTest.class,
-	SnomedValueSetRestTest.class,
-	ExpandSnomedRestTest.class,
-	SnomedConceptMapRestTest.class,
 	 */
+	//SubsumesSnomedRestTest.class,
+//	SnomedValueSetRestTest.class,
+//	ExpandSnomedRestTest.class,
+//	SnomedConceptMapRestTest.class,
 
-	TranslateSnomedConceptMapRestTest.class,
+//	TranslateSnomedConceptMapRestTest.class,
 	
-	//SandBoxRestTest.class,
+	SandBoxRestTest.class,
 })
 public class AllFhirRestTests {
 	

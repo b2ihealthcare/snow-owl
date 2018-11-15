@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
+import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.BACTERIA;
+import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.MICROORGANISM;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.io.IOException;
@@ -63,7 +65,7 @@ public class SandBoxRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
 	
-	@Test
+	//@Test
 	public void buildCode() throws IOException {
 		Coding coding = Coding.builder()
 				.system("http://hl7.org/fhir/issue-severity")

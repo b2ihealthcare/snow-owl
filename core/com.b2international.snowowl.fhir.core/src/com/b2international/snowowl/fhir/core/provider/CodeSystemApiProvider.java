@@ -299,9 +299,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
+		
 		String version = subsumptionRequest.getVersion();
 
-		//get the latest version or MAIN
+		//get the latest version
 		if (version == null) {
 			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
@@ -315,7 +316,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			if (optionalVersion.isPresent()) {
 				return optionalVersion.get().getVersionId();
 			} else {
-				return IBranchPath.MAIN_BRANCH;
+				//never been versioned
+				return null;
 			}
 		}
 		

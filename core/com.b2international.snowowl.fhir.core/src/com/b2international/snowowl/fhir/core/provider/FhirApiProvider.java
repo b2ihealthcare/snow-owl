@@ -58,7 +58,7 @@ public abstract class FhirApiProvider {
 	 */
 	protected final String getBranchPath(String version) {
 		
-		if (version!=null) {
+		if (version != null) {
 			return Branch.get(Branch.MAIN_PATH, version);
 		} else {
 			

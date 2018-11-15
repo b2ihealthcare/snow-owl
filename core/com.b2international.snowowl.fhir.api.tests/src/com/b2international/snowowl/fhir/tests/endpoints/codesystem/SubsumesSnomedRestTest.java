@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 
+import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.BACTERIA;
+import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.MICROORGANISM;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
-import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -125,7 +126,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		SubsumptionResult result = convertToSubsumptionResult(responseString);
 		Assert.assertEquals(SubsumptionType.EQUIVALENT, result.getOutcome());
 	}
-
+	
 	/**
 	 * Converts the parameter-formatted response string to a {@link SubsumptionResult} object
 	 * @param responseString
