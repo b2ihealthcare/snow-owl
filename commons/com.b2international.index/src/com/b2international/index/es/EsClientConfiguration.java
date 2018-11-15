@@ -84,7 +84,7 @@ public final class EsClientConfiguration {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(clusterUrl);
+		return Objects.hash(clusterName, clusterUrl);
 	}
 
 	@Override
@@ -94,8 +94,9 @@ public final class EsClientConfiguration {
 		if (getClass() != obj.getClass()) { return false; }
 		final EsClientConfiguration other = (EsClientConfiguration) obj;
 
-		// First client configuration for a host wins
-		return Objects.equals(clusterUrl, other.clusterUrl);
+		// First client configuration for a host + clusterName wins
+		return Objects.equals(clusterName, other.clusterName)
+				&& Objects.equals(clusterUrl, other.clusterUrl);
 	}
 
 	public boolean isHttp() {
