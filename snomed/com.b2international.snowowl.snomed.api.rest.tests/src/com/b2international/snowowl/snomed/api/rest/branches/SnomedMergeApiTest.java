@@ -54,6 +54,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
+import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.google.common.collect.ImmutableMap;
 
@@ -764,6 +765,30 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
 		.body("effectiveTime", nullValue()) // Parent wins because of the effective time unset
 		.body("active", equalTo(false)); // Child didn't update the status, so inactivation on the parent is in effect
+	}
+	
+	@Ignore
+	@Test
+	public void rebaseDestinationConceptDeletionOverNewRelationship() throws Exception {
+		// new concept on test branch
+		final String destinationConcept = createNewConcept(branchPath);
+		
+		// new child branch of test parent branch
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		createBranch(a).statusCode(201);
+		
+		// create a new relationship to newly created destination concept on parent branch
+		final String relationshipToDestinationConcept = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, destinationConcept, CharacteristicType.INFERRED_RELATIONSHIP);
+		
+		// delete destination concept on child branch
+		deleteComponent(a, SnomedComponentType.CONCEPT, destinationConcept, false);
+		
+		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
+		merge(branchPath, a, "Rebased concept deletion over new relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// relationship should be deleted along with the already deleted destination concept
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipToDestinationConcept).statusCode(404);
+		
 	}
 
 }

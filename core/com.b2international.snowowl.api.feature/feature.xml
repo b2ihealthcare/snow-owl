@@ -15,7 +15,7 @@ Visit us at http://b2i.sg
    </copyright>
 
    <requires>
-      <import feature="com.b2international.snowowl.server.core.feature" version="3.9.0.qualifier"/>
+      <import feature="com.b2international.snowowl.server.core.feature" version="7.1.0.qualifier"/>
    </requires>
 
    <plugin

@@ -39,10 +39,8 @@ import com.b2international.index.Normalizers;
 import com.b2international.index.RevisionHash;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
-import com.b2international.index.compat.TextConstants;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -57,7 +55,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -200,22 +197,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 
 		public static Expression fuzzy(String term) {
-			final Splitter tokenSplitter = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER).omitEmptyStrings();
-			final ExpressionBuilder fuzzyQuery = com.b2international.index.query.Expressions.builder();
-			int tokenCount = 0;
-
-			for (final String token : tokenSplitter.split(term)) {
-				fuzzyQuery.should(matchTextFuzzy(Fields.TERM, token));
-				++tokenCount;
-			}
-			
-			if (tokenCount == 0) {
-				return com.b2international.index.query.Expressions.matchNone();
-			} else {
-				final int minShouldMatch = Math.max(1, tokenCount - 2);
-				fuzzyQuery.setMinimumNumberShouldMatch(minShouldMatch);
-				return fuzzyQuery.build();
-			}
+			return matchTextFuzzy(Fields.TERM, term);
 		}
 		
 		public static Expression matchEntireTerm(String term) {
