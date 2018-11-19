@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -184,7 +185,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
 		//no start no end -> export unpublished ones
 		if (null == startDate && null == endDate) {
-			query.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), MUST);
+			query.add(getUnpublishedQuery(), MUST);
 			return query;
 		}
 		
@@ -201,7 +202,7 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		//end does not matter but consider unpublished ones.
 		if (null == endDate) {
 			final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
-			effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
+			effectiveTimeQuery.add(getUnpublishedQuery(), SHOULD);
 			effectiveTimeQuery.add(newLongRange(effectiveTimeField, startDate.getTime(), null, true, true), SHOULD);
 			query.add(effectiveTimeQuery, MUST);
 			return query;
@@ -219,11 +220,11 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		query.add(getSnapshotQuery(), MUST);
 		
 		final BooleanQuery effectiveTimeQuery = new BooleanQuery(true);
-		effectiveTimeQuery.add(getUnpublishedQuery(UNSET_EFFECTIVE_TIME), SHOULD);
+		effectiveTimeQuery.add(getUnpublishedQuery(), SHOULD);
 		
 		if (!BranchPathUtils.isMain(branchPath)) {
 			Long versionBranchEffectiveDate = branchesToEffectiveTimeMap.get(BranchPathUtils.createPath(branchPath.getPath()));
-			effectiveTimeQuery.add(newLongRange(SnomedMappings.effectiveTime().fieldName(), versionBranchEffectiveDate, null, true, true), SHOULD);
+			effectiveTimeQuery.add(newLongRange(SnomedMappings.effectiveTime().fieldName(), versionBranchEffectiveDate - TimeUnit.DAYS.toMillis(180), null, true, false), SHOULD);
 		}
 
 		query.add(effectiveTimeQuery, MUST);
@@ -233,8 +234,8 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	
 	protected abstract Query getSnapshotQuery();
 	
-	private Query getUnpublishedQuery(final long effectiveTime) {
-		return SnomedMappings.newQuery().effectiveTime(effectiveTime).matchAll();
+	private Query getUnpublishedQuery() {
+		return SnomedMappings.newQuery().effectiveTime(UNSET_EFFECTIVE_TIME).matchAll();
 	}
 
 	protected final String formatEffectiveTime(final Long effectiveTime) {
