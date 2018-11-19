@@ -133,7 +133,12 @@ public final class NormalFormGenerator {
 		final Collection<StatementFragment> ownStatedNonIsaRelationships = ownStatedRelationships.stream()
 				.filter(r -> r.getTypeId() != LongConcepts.IS_A_ID)
 				.collect(Collectors.toList());
-		candidateNonIsARelationships.put(conceptId, ownStatedNonIsaRelationships);
+		
+		final Collection<StatementFragment> ownAdditionalGroupedRelationships = reasonerTaxonomyBuilder.getAdditionalGroupedStatementFragments(conceptId);
+		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
+				.addAll(ownStatedNonIsaRelationships)
+				.addAll(ownAdditionalGroupedRelationships)
+				.build());
 		
 		// Collect existing inferred relationships for cross-referencing group numbers
 		final Collection<StatementFragment> ownInferredRelationships = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);

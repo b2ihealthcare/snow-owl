@@ -73,7 +73,8 @@ public final class ReasonerTaxonomyBuilder {
 	
 	private static final Set<String> RELATIONSHIP_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
 			Concepts.STATED_RELATIONSHIP, 
-			Concepts.INFERRED_RELATIONSHIP);
+			Concepts.INFERRED_RELATIONSHIP,
+			Concepts.ADDITIONAL_RELATIONSHIP);
 	
 	private static final Set<String> CD_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
 			Concepts.STATED_RELATIONSHIP, 
@@ -117,6 +118,9 @@ public final class ReasonerTaxonomyBuilder {
 
 	/** Maps concept IDs to the associated inferred active outbound relationships. */
 	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
+
+	/** Maps concept IDs to the associated additional active outbound relationships, excluding items with a group number of 0. */
+	private LongKeyMap<Collection<StatementFragment>> additionalGroupedStatementMap;
 
 	/** Matrix for storing concept ancestors by internal IDs. */
 	private int[][] superTypes;
@@ -275,25 +279,38 @@ public final class ReasonerTaxonomyBuilder {
 			if (statedStatementMap == null) {
 				statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 				inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
+				additionalGroupedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 			}
 			
 			for (final String[] statementFields : page) {
+				final int group = Integer.parseInt(statementFields[6]);
+				final long statementId = Long.parseLong(statementFields[0]);
+				
 				final StatementFragment statement = new StatementFragment(
 						Long.parseLong(statementFields[3]),
 						Long.parseLong(statementFields[4]),
 						Boolean.parseBoolean(statementFields[5]),
-						Integer.parseInt(statementFields[6]),
+						group,
 						Integer.parseInt(statementFields[7]),
 						Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(statementFields[8]),
-						Long.parseLong(statementFields[0]),
+						statementId,
 						Long.parseLong(statementFields[1]));
 				
 				final long sourceId = Long.parseLong(statementFields[2]);
+				final String characteristicTypeId = statementFields[9];
 				
-				if (Concepts.STATED_RELATIONSHIP.equals(statementFields[9])) {
-					addToLongMultimap(statedStatementMap, sourceId, statement);
-				} else {
-					addToLongMultimap(inferredStatementMap, sourceId, statement);
+				switch (characteristicTypeId) {
+					case Concepts.STATED_RELATIONSHIP: 
+						addToLongMultimap(statedStatementMap, sourceId, statement);
+						break;
+					case Concepts.ADDITIONAL_RELATIONSHIP:
+						if (group > 0) { addToLongMultimap(additionalGroupedStatementMap, sourceId, statement); }
+						break;
+					case Concepts.INFERRED_RELATIONSHIP:
+						addToLongMultimap(inferredStatementMap, sourceId, statement);
+						break;
+					default:
+						throw new IllegalStateException("Unexpected characteristic type '" + characteristicTypeId + "' on relationship '" + statementId + "'.");
 				}
 			}
 		}
@@ -302,6 +319,7 @@ public final class ReasonerTaxonomyBuilder {
 		if (statedStatementMap == null) {
 			statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 			inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+			additionalGroupedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		}
 		
 		checkpoint(taskName, "collecting statements", stopwatch);
@@ -512,6 +530,15 @@ public final class ReasonerTaxonomyBuilder {
 			return Collections.emptySet();
 		}
 	}
+	
+	public Collection<StatementFragment> getAdditionalGroupedStatementFragments(final long conceptId) {
+		final Collection<StatementFragment> additionalGroupedStatementFragments = additionalGroupedStatementMap.get(conceptId);
+		if (additionalGroupedStatementFragments != null) {
+			 return additionalGroupedStatementFragments;
+		} else {
+			return Collections.emptySet();
+		}
+	}
 
 	public Collection<ConcreteDomainFragment> getStatedConcreteDomainFragments(final long conceptId) {
 		if (statedConcreteDomainMap == null) {
@@ -544,9 +571,9 @@ public final class ReasonerTaxonomyBuilder {
 			return Collections.emptySet();
 		}
 		
-		final Collection<ConcreteDomainFragment> inferredConcreteDomainFragments = additionalGroupedConcreteDomainMap.get(conceptId);
-		if (inferredConcreteDomainFragments != null) {
-			 return inferredConcreteDomainFragments;
+		final Collection<ConcreteDomainFragment> additionalGroupedConcreteDomainFragments = additionalGroupedConcreteDomainMap.get(conceptId);
+		if (additionalGroupedConcreteDomainFragments != null) {
+			 return additionalGroupedConcreteDomainFragments;
 		} else {
 			return Collections.emptySet();
 		}
