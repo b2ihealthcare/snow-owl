@@ -47,6 +47,7 @@
 					</dependency>
 				</dependencies>
 				<configuration>
+					<javaSourceVersion>1.7</javaSourceVersion>
 					<outputDirectory>${basedir}/xtend-gen</outputDirectory>
 				</configuration>
 				<executions>
