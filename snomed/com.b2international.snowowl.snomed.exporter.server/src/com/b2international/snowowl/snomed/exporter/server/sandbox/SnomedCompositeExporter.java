@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -62,6 +61,7 @@ import com.google.common.primitives.Longs;
  */
 public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 
+	private static final long SG_RELEASE_20140801 = EffectiveTimes.parse("2014-08-01").getTime();
 	private SnomedSubExporter subExporter;
 	
 	private final SnomedExportConfiguration configuration;
@@ -224,7 +224,13 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 		
 		if (!BranchPathUtils.isMain(branchPath)) {
 			Long versionBranchEffectiveDate = branchesToEffectiveTimeMap.get(BranchPathUtils.createPath(branchPath.getPath()));
-			effectiveTimeQuery.add(newLongRange(SnomedMappings.effectiveTime().fieldName(), versionBranchEffectiveDate - TimeUnit.DAYS.toMillis(180), null, true, false), SHOULD);
+			
+			// restrict RF2 export lowerbound effective time filter to first SG version for each version entry
+			if (versionBranchEffectiveDate >= SG_RELEASE_20140801) {
+				versionBranchEffectiveDate = SG_RELEASE_20140801;
+			}
+			
+			effectiveTimeQuery.add(newLongRange(SnomedMappings.effectiveTime().fieldName(), versionBranchEffectiveDate, null, true, false), SHOULD);
 		}
 
 		query.add(effectiveTimeQuery, MUST);
