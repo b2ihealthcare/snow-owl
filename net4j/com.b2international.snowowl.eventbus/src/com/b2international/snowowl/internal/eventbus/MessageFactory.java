@@ -33,10 +33,10 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
  */
 public class MessageFactory {
 
-	public static final BaseMessage createMessage(String address, Object message) {
+	public static final BaseMessage createMessage(String address, Object message, String tag) {
 		checkAddress(address);
 		CheckUtil.checkArg(message, "Message should be specified, null messages are not allowed");
-		return new BaseMessage(address, message);
+		return new BaseMessage(address, message, tag);
 	}
 	
 	public static final void checkAddress(String address) {
@@ -59,6 +59,7 @@ public class MessageFactory {
 		ExtendedDataOutputStream wrap = ExtendedDataOutputStream.wrap(stream);
 		ExtendedIOUtil.writeObject(wrap, message.body());
 		ExtendedIOUtil.writeByteArray(out, stream.toByteArray());
+		out.writeString(message.tag());
 	}
 	
 	public static IMessage readMessage(ExtendedDataInputStream in, IEventBusProtocol protocol) throws IOException {
@@ -67,7 +68,8 @@ public class MessageFactory {
 		final boolean send = in.readBoolean();
 		final boolean succeeded = in.readBoolean();
 		final byte[] body = ExtendedIOUtil.readByteArray(in);
-		final BaseMessage message = createMessage(address, ExtendedDataInputStream.wrap(new ByteArrayInputStream(body)));
+		final String tag = in.readString();
+		final BaseMessage message = createMessage(address, ExtendedDataInputStream.wrap(new ByteArrayInputStream(body)), tag);
 		message.replyAddress = isNullOrEmpty(replyAddress) ? null : replyAddress;
 		message.replyProtocol = protocol;
 		message.send = send;

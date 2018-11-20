@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,21 @@ public abstract class BaseEvent implements Event {
 
 	@Override
 	public final void publish(IEventBus bus) {
-		bus.publish(getAddress(), this);
+		bus.publish(getAddress(), this, tag());
 	}
 	
 	@Override
 	public final void send(IEventBus bus, IHandler<IMessage> replyHandler) {
-		bus.send(getAddress(), this, replyHandler);
+		bus.send(getAddress(), this, tag(), replyHandler);
+	}
+
+	/**
+	 * Returns the tag of this {@link Event}. Never null.
+	 * 
+	 * @return 
+	 */
+	protected String tag() {
+		return IMessage.DEFAULT_TAG;
 	}
 
 	@Override
