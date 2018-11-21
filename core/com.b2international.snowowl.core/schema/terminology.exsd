@@ -49,6 +49,9 @@
 
    <element name="terminology">
       <complexType>
+         <sequence>
+            <element ref="dependency" minOccurs="1" maxOccurs="unbounded"/>
+         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -103,6 +106,18 @@
                <documentation>
                   A boolean flag indicating whether the &apos;effective time&apos; proprty is supported hence it can be interpreted for the terminology components or not.
 &lt;br&gt;Optional, if not specified, then false.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="dependency">
+      <complexType>
+         <attribute name="shortName" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
                </documentation>
             </annotation>
          </attribute>

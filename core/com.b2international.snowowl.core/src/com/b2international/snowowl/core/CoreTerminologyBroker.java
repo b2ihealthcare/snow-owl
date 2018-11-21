@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -99,6 +100,8 @@ public class CoreTerminologyBroker {
 	public static final String HIERARCHICAL_ATTRIBUTE = "hierarchical";
 	public static final String TOP_LEVEL_ATTRIBUTE = "topLevel";
 	public static final String NAME_ATTRIBUTE = "name";
+	public static final String DEPENDENCY_ATTRIBUTE = "dependency";
+	public static final String SHORT_NAME_ATTRIBUTE = "shortName";
 
 	private static final Map<Integer, String> INT_TO_ID_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Integer> ID_TO_INT_CACHE = Maps.newConcurrentMap();
@@ -367,6 +370,21 @@ public class CoreTerminologyBroker {
 			}
 		}
 		throw new RuntimeException("Cannot find terminology with ID: '" + terminologyId + "'.");
+	}
+	
+	public List<String> getAffectedCodeSystemsForTeminology(String terminologyId) {
+		final List<String> affectedCodeSystems = Lists.newArrayList();
+		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
+			final String id = terminology.getAttribute(ID_ATTRIBUTE);
+			if (id.equals(terminologyId)) {
+				affectedCodeSystems.addAll(
+					Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
+						.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
+						.collect(Collectors.toList())
+				);
+			}
+		}
+		return affectedCodeSystems;
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {
