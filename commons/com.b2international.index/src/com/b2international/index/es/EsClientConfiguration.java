@@ -15,39 +15,55 @@
  */
 package com.b2international.index.es;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Objects;
 
-import org.apache.http.HttpHost;
+import org.elasticsearch.common.Strings;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.7
  */
 public final class EsClientConfiguration {
 
+	public static final String TCP_SCHEME = "tcp://";
+	public static final String HTTP_SCHEME = "http://";
+	public static final String HTTPS_SCHEME = "https://";
+	
+	private final String clusterName;
+	private final String clusterUrl;
+	private final String username;
+	private final String password;
 	private final int connectTimeout;
 	private final int socketTimeout;
-	private final HttpHost host;
-	private String username;
-	private String password;
 
-	public EsClientConfiguration(final int connectTimeout, final int socketTimeout, final HttpHost host, String username, String password) {
-		this.connectTimeout = connectTimeout;
-		this.socketTimeout = socketTimeout;
-		this.host = host;
+	public EsClientConfiguration(
+			final String clusterName,
+			final String clusterUrl, 
+			final String username, 
+			final String password, 
+			final int connectTimeout, 
+			final int socketTimeout) {
+		this.clusterName = clusterName;
+		this.clusterUrl = clusterUrl;
 		this.username = username;
 		this.password = password;
+		this.connectTimeout = connectTimeout;
+		this.socketTimeout = socketTimeout;
+		checkArgument(
+			isTcp() || isHttp(), 
+			"Unsupported networking scheme in clusterUrl: %s. Supported schemes are: %s.", clusterUrl, ImmutableList.of(TCP_SCHEME, HTTP_SCHEME, HTTPS_SCHEME)
+		);
 	}
 
-	public int getConnectTimeout() {
-		return connectTimeout;
+	public String getClusterName() {
+		return clusterName;
 	}
-
-	public int getSocketTimeout() {
-		return socketTimeout;
-	}
-
-	public HttpHost getHost() {
-		return host;
+	
+	public String getClusterUrl() {
+		return clusterUrl;
 	}
 	
 	public String getUserName() {
@@ -57,10 +73,18 @@ public final class EsClientConfiguration {
 	public String getPassword() {
 		return password;
 	}
+	
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
+
+	public int getSocketTimeout() {
+		return socketTimeout;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(host);
+		return Objects.hash(clusterName, clusterUrl);
 	}
 
 	@Override
@@ -70,7 +94,24 @@ public final class EsClientConfiguration {
 		if (getClass() != obj.getClass()) { return false; }
 		final EsClientConfiguration other = (EsClientConfiguration) obj;
 
-		// First client configuration for a host wins
-		return Objects.equals(host, other.host);
+		// First client configuration for a host + clusterName wins
+		return Objects.equals(clusterName, other.clusterName)
+				&& Objects.equals(clusterUrl, other.clusterUrl);
 	}
+
+	public boolean isHttp() {
+		return clusterUrl.startsWith(HTTP_SCHEME) || clusterUrl.startsWith(HTTPS_SCHEME);
+	}
+	
+	public boolean isTcp() {
+		return clusterUrl.startsWith(TCP_SCHEME);
+	}
+
+	/**
+	 * @return <code>true</code> if both username and password is provided, meaning that the target Elasticsearch cluster is protected by authentication, <code>false</code> if not protected.
+	 */
+	public boolean isProtected() {
+		return !Strings.isNullOrEmpty(getUserName()) && !Strings.isNullOrEmpty(getPassword());
+	}
+	
 }

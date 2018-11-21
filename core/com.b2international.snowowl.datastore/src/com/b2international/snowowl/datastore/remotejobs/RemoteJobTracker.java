@@ -115,7 +115,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				filter, 
 				RemoteJobEntry.Fields.ID, 
 				RemoteJobEntry.WITH_DONE,
-				ImmutableMap.of("state", RemoteJobState.FAILED, "finishDate", System.currentTimeMillis())
+				ImmutableMap.of("state", RemoteJobState.FAILED.name(), "finishDate", System.currentTimeMillis())
 			);
 			writer.bulkUpdate(update);
 			writer.commit();
@@ -163,7 +163,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		final RemoteJobEntry job = get(jobId);
 		if (job != null && !job.isCancelled()) {
 			LOG.trace("Cancelling job {}", jobId);
-			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("expectedState", RemoteJobState.RUNNING, "newState", RemoteJobState.CANCEL_REQUESTED));
+			update(jobId, RemoteJobEntry.WITH_STATE, ImmutableMap.of("expectedState", RemoteJobState.RUNNING.name(), "newState", RemoteJobState.CANCEL_REQUESTED.name()));
 			Job.getJobManager().cancel(SingleRemoteJobFamily.create(jobId));
 		}
 	}
@@ -278,7 +278,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				final RemoteJob job = (RemoteJob) event.getJob();
 				final String jobId = job.getId();
 				LOG.trace("Running job {}", jobId);
-				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING, "startDate", System.currentTimeMillis()));
+				update(jobId, RemoteJobEntry.WITH_RUNNING, ImmutableMap.of("state", RemoteJobState.RUNNING.name(), "startDate", System.currentTimeMillis()));
 			}
 		}
 		
@@ -308,7 +308,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				if (response != null) {
 					params.put("result", response);
 				}
-				params.put("state", newState);
+				params.put("state", newState.name());
 				params.put("finishDate", System.currentTimeMillis());
 				update(jobId, RemoteJobEntry.WITH_DONE, params.build());
 			}
