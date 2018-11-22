@@ -15,23 +15,10 @@
  */
 package com.b2international.snowowl.datastore.version;
 
-import java.util.Collections;
-import java.util.Map;
-
-import com.b2international.commons.CompareUtils;
-
 /**
  * Service interface for collecting unpublished components and publishing them
  * by setting properties on it such as effective time and/or released flag.
  */
 public interface IVersioningManager extends IPublishManager {
-	
-	default Map<String, String> codeSystemDependenciesByRepositoryId() {
-		return Collections.emptyMap();
-	}
-	
-	default boolean needsOtherCodeSystemsToVersion() {
-		return !CompareUtils.isEmpty(codeSystemDependenciesByRepositoryId());
-	}
 	
 }
