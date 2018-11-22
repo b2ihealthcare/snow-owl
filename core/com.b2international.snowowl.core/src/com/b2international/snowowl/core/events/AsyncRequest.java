@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.events;
 
+import java.util.concurrent.TimeUnit;
+
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -60,6 +63,33 @@ public final class AsyncRequest<R> {
 	
 	public Request<ServiceProvider, R> getRequest() {
 		return request;
+	}
+	
+	/**
+	 * Execute the request and synchronously wait until it responds.
+	 * @return the response
+	 */
+	public R get() {
+		return execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync();
+	}
+	
+	/**
+	 * Execute the request and synchronously wait until it responds or times out after the given milliseconds.
+	 * @param timeout - timeout value in milliseconds
+	 * @return the response
+	 */
+	public R get(long timeout) {
+		return get(timeout, TimeUnit.MILLISECONDS);
+	}
+
+	/**
+	 * Execute the request and synchronously wait until it responds or times out after the given timeout config.
+	 * @param timeout - timeout value
+	 * @param unit - the unit for the timeout value
+	 * @return the response
+	 */
+	private R get(long timeout, TimeUnit unit) {
+		return execute(ApplicationContext.getServiceForClass(IEventBus.class)).getSync(timeout, unit);
 	}
 
 }
