@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.index.revision.Revision;
@@ -139,6 +140,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 		return getCodeSystems()
 				.stream()
+				.filter(cs -> cs.getUrl().getUriValue().equals(codeSystemUri))
 				.findFirst()
 				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
 	}
@@ -322,6 +324,22 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 		
 		return version;
+	}
+	
+	/**
+	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value
+	 * @param supplier
+	 * @param lookupRequest
+	 * @param resultBuilder
+	 * @param conceptProperty
+	 */
+	protected void addProperty(Supplier<?> supplier, LookupRequest lookupRequest, LookupResult.Builder resultBuilder, IConceptProperty conceptProperty) {
+		
+		if (lookupRequest.containsProperty(conceptProperty.getCode())) {
+			if (supplier.get() != null) {
+				resultBuilder.addProperty(conceptProperty.propertyOf(supplier));
+			}
+		}
 	}
 
 	/**

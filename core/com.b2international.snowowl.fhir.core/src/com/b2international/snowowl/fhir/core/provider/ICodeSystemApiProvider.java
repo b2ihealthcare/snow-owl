@@ -118,6 +118,8 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @param codeSystemUri
 	 * @return {@link CodeSystem}
 	 * @throws BadRequestException if the code system is not supported by this provider
+	 * 
+	 * TODO: Is this used anywhere?  Should be probably as a filter.
 	 */
 	CodeSystem getCodeSystem(String codeSystemUri);
 

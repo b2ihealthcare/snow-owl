@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
+import java.util.function.Supplier;
+
 import com.b2international.snowowl.fhir.core.codesystems.ConceptPropertyType;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property.Builder;
@@ -79,6 +81,32 @@ public interface IConceptProperty extends FhirCodeSystem {
 			break;
 		case STRING:
 			prop.valueString((String) value);
+			break;
+		default: 
+			throw new UnsupportedOperationException("Unsupported property type " + getConceptPropertyType());
+		}
+		return prop.build();
+	}
+	
+	/**
+	 * Creates a property for the supplier's value without description
+	 * @param value
+	 * @return
+	 */
+	default Property propertyOf(Supplier<?> function) {
+		
+		Builder prop = Property.builder()
+				.code(getCodeValue());
+		
+		switch (getConceptPropertyType()) {
+		case CODE:
+			prop.valueCode((String) function.get());
+			break;
+		case BOOLEAN:
+			prop.valueBoolean((Boolean) function.get());
+			break;
+		case STRING:
+			prop.valueString((String) function.get());
 			break;
 		default: 
 			throw new UnsupportedOperationException("Unsupported property type " + getConceptPropertyType());
