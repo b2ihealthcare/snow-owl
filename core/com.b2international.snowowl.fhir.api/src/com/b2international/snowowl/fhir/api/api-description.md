@@ -12,7 +12,10 @@ Code systems maintained within Snow Owl are exposed (read-only) via the endpoint
 
 *   SNOMED CT
 *   ICD-10
-*   Internal (FHIR) Code Systems
+*   ATC
+*   LOINC
+*   OPCS
+*   Internal (FHIR) Code Systems (terminology subset)
 
 ### SNOMED CT
 
