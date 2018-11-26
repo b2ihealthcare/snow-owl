@@ -131,15 +131,17 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		OMMonitor remainderMonitor = null;
 		Path exportPath = getExportPath();
 		
-		try (BufferedWriter writer = Files.newBufferedWriter(exportPath, Charsets.UTF_8)) {
+		try {
 			
-			computeHeader();
-			writeHeader(writer);
-			async.stop();
-			async = null;
+			try (BufferedWriter writer = Files.newBufferedWriter(exportPath, Charsets.UTF_8)) {
+				computeHeader();
+				writeHeader(writer);
+				async.stop();
+				async = null;
 			
-			remainderMonitor = monitor.fork(20);
-			writeValues(remainderMonitor, writer);
+				remainderMonitor = monitor.fork(20);
+				writeValues(remainderMonitor, writer);
+			}
 			
 			File zipFile = FileUtils.createZipArchive(exportPath.getParent().toFile(), Files.createTempFile("export", ".zip").toFile());
 			return zipFile;
