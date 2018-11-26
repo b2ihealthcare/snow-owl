@@ -44,6 +44,7 @@ import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -178,30 +179,25 @@ public final class ConceptDefinition implements Serializable {
 		collectGroupTerms(df, prefixManager, terms, neverGroupedDefinitions);
 
 		// Grouped definitions are wrapped in a roleGroup existential restriction
-		final IntKeyMap<Set<Definition>> zeroGroupedDefinitions = groupedDefinitions.get(0);
 		final Set<OWLClassExpression> groupTerms = newHashSet();
-
-		zeroGroupedDefinitions.get(0).forEach(d -> {
-			groupTerms.clear(); // Re-use the set in each iteration
-			d.collect(df, prefixManager, groupTerms); // Add single definition to groupTerms on its own
-			collectGroupExpression(df, prefixManager, terms, groupTerms);
-		});
-
-		for (final IntIterator itr = zeroGroupedDefinitions.keySet().iterator(); itr.hasNext(); /* empty */) {
-			final int unionGroup = itr.next();
-			if (unionGroup != 0) {
-				groupTerms.clear(); // Re-use the set in each iteration
-				collectUnionGroupTerms(df, prefixManager, groupTerms, zeroGroupedDefinitions.get(unionGroup)); // Add single union group
-				collectGroupExpression(df, prefixManager, terms, groupTerms);
-			}
-		}
 
 		// Add the non-zero (numbered) groups last
 		for (final IntIterator itr = groupedDefinitions.keySet().iterator(); itr.hasNext(); /* empty */) {
 			final int group = itr.next();
-			if (group != 0) {
+			final IntKeyMap<Set<Definition>> definitions = groupedDefinitions.get(group);
+			
+			if (group == 0) {
 				groupTerms.clear(); // Re-use the set in each iteration
-				collectGroupTerms(df, prefixManager, groupTerms, groupedDefinitions.get(group)); // Add _all_ definitions to numbered groups
+				collectGroupTerms(df, prefixManager, groupTerms, definitions);
+				
+				// Add definitions to groupTerms as their own role group expression
+				groupTerms.forEach(groupTerm -> {
+					collectGroupExpression(df, prefixManager, terms, ImmutableSet.of(groupTerm));	
+				});
+				
+			} else {
+				groupTerms.clear(); // Re-use the set in each iteration
+				collectGroupTerms(df, prefixManager, groupTerms, definitions); // Add _all_ definitions to numbered groups
 				collectGroupExpression(df, prefixManager, terms, groupTerms);
 			}
 		}
@@ -228,14 +224,16 @@ public final class ConceptDefinition implements Serializable {
 	private void collectGroupTerms(final OWLDataFactory df, 
 			final DefaultPrefixManager prefixManager,
 			final Set<OWLClassExpression> terms, 
-			final IntKeyMap<Set<Definition>> definitionsByRoleGroup) {
+			final IntKeyMap<Set<Definition>> definitionsByUnionGroup) {
 
-		collectTerms(df, prefixManager, terms, definitionsByRoleGroup.get(0));
-
-		for (final IntIterator itr = definitionsByRoleGroup.keySet().iterator(); itr.hasNext(); /* empty */) {
+		for (final IntIterator itr = definitionsByUnionGroup.keySet().iterator(); itr.hasNext(); /* empty */) {
 			final int unionGroup = itr.next();
-			if (unionGroup != 0) {
-				collectUnionGroupTerms(df, prefixManager, terms, definitionsByRoleGroup.get(unionGroup));
+			final Set<Definition> definitions = definitionsByUnionGroup.get(unionGroup);
+			
+			if (unionGroup == 0) { // Zero-numbered union groups are interpreted on their own
+				collectTerms(df, prefixManager, terms, definitions);
+			} else {
+				collectUnionGroupTerms(df, prefixManager, terms, definitions);
 			}
 		}
 	}
@@ -251,7 +249,7 @@ public final class ConceptDefinition implements Serializable {
 	private void collectUnionGroupTerms(final OWLDataFactory df, 
 			final DefaultPrefixManager prefixManager,
 			final Set<OWLClassExpression> terms, 
-			final Set<Definition> definitions) {
+			final Set<Definition> unionGroupDefinitions) {
 
 		/* 
 		 * FIXME: while not currently enforced in a precondition check, all definitions in a union group 
@@ -261,7 +259,7 @@ public final class ConceptDefinition implements Serializable {
 		final Set<OWLClassExpression> unionTerms = newHashSet();
 		RelationshipDefinition firstDefinition = null;
 
-		for (final Definition definition : definitions) {
+		for (final Definition definition : unionGroupDefinitions) {
 			if (null == firstDefinition) {
 				firstDefinition = (RelationshipDefinition) definition;
 			}
