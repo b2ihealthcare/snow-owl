@@ -205,7 +205,14 @@ public final class NormalFormGenerator {
 			
 			Iterables.addAll(targetGroupSet, otherGroups);
 		}
+		
+		// Finally, add the (stated) information from the concept itself
+		final Iterable<NormalFormGroup> ownGroups = toGroups(false,
+				candidateNonIsAFragments.get(conceptId),
+				candidateMembers.get(conceptId));
 
+		Iterables.addAll(targetGroupSet, ownGroups);
+		
 		// Shuffle around group numbers to match existing inferred group numbers as much as possible 
 		targetGroupSet.adjustOrder(existingGroupSet);
 
