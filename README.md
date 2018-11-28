@@ -80,11 +80,12 @@ Make sure you have the following preferences enabled/disabled.
 ## First steps
 
 1. Import all projects into your Eclipse workspace and wait for the build to complete
-2. Open the `target-platform/target-platform-local.target` file
-3. Wait until Eclipse resolves the target platform and then click on `Set as Target platform`
-4. Wait until the build is complete and you have no compile errors
-5. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
-6. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
+2. Select all projects and hit `Alt` + `F5` and trigger an update to all Maven projects manually (to download dependencies from Maven)
+3. Open the `target-platform/target-platform-local.target` file
+4. Wait until Eclipse resolves the target platform (click on the `Resolve` button if it refuses to do so) and then click on `Set as Active Target platform`
+5. Wait until the build is complete and you have no compile errors
+6. Launch `snow-owl-oss` launch configuration in the Run Configurations menu
+7. Navigate to `http://localhost:8080/snowowl/snomed-ct/v3`
 
 # Contributing
 
