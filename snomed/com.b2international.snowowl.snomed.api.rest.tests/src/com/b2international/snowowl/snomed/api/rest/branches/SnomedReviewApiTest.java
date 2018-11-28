@@ -50,7 +50,7 @@ import com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.http.ContentType;
 
 /**
  * @since 2.0

@@ -87,7 +87,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.jayway.restassured.http.ContentType;
+import io.restassured.http.ContentType;
 
 /**
  * @since 2.0
@@ -598,7 +598,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 		.accept(ContentType.JSON)
 		.queryParam("term", "<<")
-		.get("/{path}/descriptions", branchPath)
+		.get("/{path}/descriptions", branchPath.getPath())
 		.then()
 		.statusCode(200);
 	}

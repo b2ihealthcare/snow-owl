@@ -20,8 +20,8 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 4.5

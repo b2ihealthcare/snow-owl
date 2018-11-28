@@ -25,8 +25,8 @@ import java.util.Set;
 import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.google.common.collect.ImmutableSet;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 2.0

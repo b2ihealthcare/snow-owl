@@ -21,7 +21,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 
 import org.junit.Test;
 
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.specification.RequestSpecification;
 
 /**
  * @since 1.0

@@ -52,7 +52,7 @@ import com.b2international.snowowl.snomed.datastore.request.RefSetSupport;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.7
