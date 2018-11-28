@@ -344,6 +344,9 @@ public final class CodeSystemEntry implements Serializable {
 		return true;
 	}
 	
+	/**
+	 * Returns all code system short name dependencies and itself.
+	 */
 	@JsonIgnore
 	public List<String> getAffectedCodeSystems() {
 		List<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
