@@ -20,13 +20,16 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.terminologymetadata.CodeSystem;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
@@ -340,4 +343,12 @@ public final class CodeSystemEntry implements Serializable {
 			return false;
 		return true;
 	}
+	
+	@JsonIgnore
+	public List<String> getAffectedCodeSystems() {
+		List<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
+		affectedCodeSystems.add(shortName);
+		return affectedCodeSystems;
+	}
+	
 }
