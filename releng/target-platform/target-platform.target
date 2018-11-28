@@ -27,10 +27,6 @@
 <unit id="org.apache.commons.lang3" version="3.1.0.v201403281430"/>
 <unit id="org.apache.el" version="7.0.56.v201412180755"/>
 <unit id="org.apache.el.source" version="7.0.56.v201412180755"/>
-<unit id="org.apache.httpcomponents.httpclient" version="4.2.6.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpclient.source" version="4.2.6.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpcore" version="4.2.5.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpcore.source" version="4.2.5.v201311072007"/>
 <unit id="org.apache.xmlbeans" version="2.3.0.v201605172150"/>
 <unit id="org.apache.xmlbeans.source" version="2.3.0.v201605172150"/>
 <unit id="org.dom4j" version="1.6.1.v201312101416"/>

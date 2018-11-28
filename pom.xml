@@ -12,6 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		
 		<!-- Maven Dependency Versions -->
 		<jackson.version>2.8.11</jackson.version>
 		<jackson.databind.version>2.8.11.2</jackson.databind.version>
@@ -34,10 +35,12 @@
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<fast.classpath.scanner.version>3.1.6</fast.classpath.scanner.version>
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
 		<xtend.compiler.version>2.11.0</xtend.compiler.version>
+		
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
@@ -590,6 +593,24 @@
 		  	<groupId>org.eclipse.emf</groupId>
 		  	<artifactId>org.eclipse.emf.mwe.utils</artifactId>
 		  	<version>${mwe.utils.version}</version>
+		  	<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-osgi</artifactId>
+			<version>4.5.3</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		  	<groupId>org.apache.httpcomponents</groupId>
+		  	<artifactId>httpcore-osgi</artifactId>
+		  	<version>4.4.10</version>
+		  	<scope>provided</scope>
+		</dependency>
+		<dependency>
+		  	<groupId>org.apache.httpcomponents</groupId>
+		  	<artifactId>httpasyncclient-osgi</artifactId>
+		  	<version>4.1.4</version>
 		  	<scope>provided</scope>
 		</dependency>
 	</dependencies>
