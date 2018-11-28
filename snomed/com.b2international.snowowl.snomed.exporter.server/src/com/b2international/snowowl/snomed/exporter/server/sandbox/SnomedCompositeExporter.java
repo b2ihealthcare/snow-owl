@@ -21,12 +21,14 @@ import static com.b2international.snowowl.datastore.BranchPathUtils.createMainPa
 import static com.b2international.snowowl.datastore.BranchPathUtils.createVersionPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.lucene.search.BooleanClause.Occur.MUST;
 import static org.apache.lucene.search.BooleanClause.Occur.SHOULD;
 import static org.apache.lucene.search.NumericRangeQuery.newLongRange;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
@@ -72,9 +74,14 @@ public abstract class SnomedCompositeExporter implements SnomedIndexExporter {
 	
 	public SnomedCompositeExporter(final SnomedExportConfiguration configuration) {
 		this.configuration = checkNotNull(configuration, "configuration");
-		
-		branchesToEffectiveTimeMap = createBranchPathMap();
-		branchesToExport = getBranchesToExport();
+
+		if (ContentSubType.SNAPSHOT == configuration.getContentSubType()) {
+			branchesToEffectiveTimeMap = emptyMap();
+			branchesToExport = Collections.<IBranchPath>emptySet().iterator();
+		} else {
+			branchesToEffectiveTimeMap = createBranchPathMap();
+			branchesToExport = getBranchesToExport();
+		}
 		
 		subExporter = createSubExporter(this.configuration);
 		
