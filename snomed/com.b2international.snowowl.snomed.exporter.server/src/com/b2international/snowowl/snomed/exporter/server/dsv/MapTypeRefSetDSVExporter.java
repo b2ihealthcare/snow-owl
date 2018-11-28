@@ -103,7 +103,7 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		
 		final SnomedReferenceSet refSet = SnomedRequests.prepareGetReferenceSet(exportSetting.getRefSetId())
 				.setLocales(exportSetting.getLocales())
-				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(pt()))))")
+				.setExpand("members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(fsn()))))")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(bus)
 				.getSync();
@@ -140,11 +140,11 @@ public class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				SnomedCoreComponent referencedComponent = snomedReferenceSetMember.getReferencedComponent();
 				String id = referencedComponent.getId();
 				if (referencedComponent instanceof SnomedConcept) {
-					SnomedDescription pt = ((SnomedConcept) referencedComponent).getPt();
-					if (pt == null) {
+					SnomedDescription fsn = ((SnomedConcept) referencedComponent).getFsn();
+					if (fsn == null) {
 						labelMap.put(id, id); 
 					} else {
-						labelMap.put(id, pt.getTerm());
+						labelMap.put(id, fsn.getTerm());
 					}
 				} else if (referencedComponent instanceof SnomedDescription) {
 					labelMap.put(id, ((SnomedDescription) referencedComponent).getTerm());

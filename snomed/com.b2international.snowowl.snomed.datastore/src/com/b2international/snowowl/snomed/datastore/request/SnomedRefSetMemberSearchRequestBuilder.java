@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder;
@@ -69,8 +70,16 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		return addOption(OptionKey.PROPS, memberProps);
 	}
 
-	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String type) {
-		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, type);
+	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
+		return filterByReferencedComponentType(CoreTerminologyBroker.getInstance().getTerminologyComponentIdAsShort(referencedComponentType));
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(short referencedComponentType) {
+		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentTypes(Iterable<Short> referencedComponentTypes) {
+		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 
 }

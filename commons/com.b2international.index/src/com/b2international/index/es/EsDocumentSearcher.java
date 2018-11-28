@@ -62,6 +62,7 @@ import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
 import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
@@ -104,13 +105,12 @@ public class EsDocumentSearcher implements DocSearcher {
 	@Override
 	public <T> T get(Class<T> type, String key) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		final GetRequest getRequest = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
+		final GetRequest req = new GetRequest(admin.getTypeIndex(mapping), mapping.typeAsString(), key)
 				.fetchSourceContext(FetchSourceContext.FETCH_SOURCE);
-		final GetResponse getResponse = admin.client()
-				.get(getRequest);
+		final GetResponse res = admin.client().get(req);
 		
-		if (getResponse.isExists()) {
-			final byte[] bytes = getResponse.getSourceAsBytes();
+		if (res.isExists()) {
+			final byte[] bytes = res.getSourceAsBytes();
 			return mapper.readValue(bytes, 0, bytes.length, type);
 		} else {
 			return null;
@@ -193,7 +193,7 @@ public class EsDocumentSearcher implements DocSearcher {
 			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
 					.scroll(scrollTime);
 			
-			response = client.searchScroll(searchScrollRequest);
+			response = client.scroll(searchScrollRequest);
 			int fetchedDocs = response.getHits().getHits().length;
 			if (fetchedDocs == 0) {
 				break;
@@ -235,7 +235,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		}
 		
 		// Use docValues otherwise for field retrieval
-		fields.stream().forEach(reqSource::docValueField);
+		fields.stream().forEach(field -> reqSource.docValueField(field, "use_field_mapping"));
 		reqSource.fetchSource(false);
 		return false;
 	}
@@ -259,7 +259,7 @@ public class EsDocumentSearcher implements DocSearcher {
 		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
 				.scroll(scroll.getKeepAlive());
 		final SearchResponse response = admin.client()
-				.searchScroll(searchScrollRequest);
+				.scroll(searchScrollRequest);
 		
 		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
 		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
@@ -488,8 +488,10 @@ public class EsDocumentSearcher implements DocSearcher {
 			} else {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_NONE)
-					.fetchSource(false)
-					.fieldDataFields(aggregation.getFields());
+					.fetchSource(false);
+				
+				aggregation.getFields().forEach(field -> topHitsAgg.docValueField(field, "use_field_mapping"));
+				
 			}
 			
 			termsAgg.subAggregation(topHitsAgg);

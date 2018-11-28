@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>6.10.0-SNAPSHOT</version>
+		<version>6.11.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.index.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
@@ -51,6 +51,25 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho.version}</version>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>http-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-Dso.index.es.useHttp</argLine>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<failIfNoTests>false</failIfNoTests>
 					<includes>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.datastore.server.importer;
+
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import com.google.common.collect.Sets;
  */
 public class TerminologyImportExcelParser {
 
+	private final Map<String, Integer> columnIndexesByName = newHashMap();
 	private final Map<String, LinkedList<String>> properties = new HashMap<String, LinkedList<String>>();
 	private final Map<String, Multimap<String, String>> metadata = new HashMap<String, Multimap<String, String>>();
 	private final Map<String, Set<Row>> members = new HashMap<String, Set<Row>>();
@@ -141,37 +144,38 @@ public class TerminologyImportExcelParser {
 		final int lastRowNum = sheet.getLastRowNum();
 		final Set<Row> componentMembers = Sets.newHashSet();
 
-		for (int i = memberStartIndex + 1; i <= lastRowNum; i++) {
-
+		for (int i = memberStartIndex; i <= lastRowNum; i++) {
 			final Row row = sheet.getRow(i);
-
 			if (null != row) {
 
 				boolean hasValue = false;
 				short lastCellNum = row.getLastCellNum();
 
 				for (int j = 0; j < lastCellNum; j++) {
+					final String cellValue = ExcelUtilities.extractContentAsString(row.getCell(j));
 
-					if (!StringUtils.isEmpty(ExcelUtilities.extractContentAsString(row.getCell(j)))) {
-
+					// member header row
+					if (memberStartIndex == i) {
+						// header row does not have values, but column index to name map
+						columnIndexesByName.put(cellValue, j);
+					} else if (!StringUtils.isEmpty(cellValue)) {
 						hasValue = true;
 						break;
-						
 					}
-
 				}
 
 				if (hasValue) {
-					
 					componentMembers.add(row);
-					
 				}
 			}
-
 		}
 
 		return componentMembers;
 
+	}
+
+	public Map<String, Integer> getColumnIndexesByName() {
+		return columnIndexesByName;
 	}
 
 }
