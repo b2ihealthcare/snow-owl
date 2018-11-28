@@ -35,13 +35,13 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 
 	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Branch> {
 
-		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId) {
-			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
+		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId, String parentLockDescription) {
+			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId, parentLockDescription);
 		}
 
 		@Override
 		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
-			try (Locks locks = new Locks(context, source, target)) {
+			try (Locks locks = new Locks(context, parentLockDescription, source, target)) {
 				return target.merge(source, commitMessage);
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
@@ -53,13 +53,13 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		}
 	}
 	
-	public BranchMergeJob(Repository repository, String source, String target, String commitMessage, String reviewId) {
-		super(repository, source, target, commitMessage, reviewId);
+	public BranchMergeJob(Repository repository, String source, String target, String commitMessage, String reviewId, String parentLockDescription) {
+		super(repository, source, target, commitMessage, reviewId, parentLockDescription);
 	}
 
 	@Override
 	protected void applyChanges() {
-		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncMergeRequest(getMerge(), commitComment, reviewId)))
+		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncMergeRequest(getMerge(), commitComment, reviewId, parentLockDescription)))
 			.execute(repository.events())
 			.getSync();
 	}

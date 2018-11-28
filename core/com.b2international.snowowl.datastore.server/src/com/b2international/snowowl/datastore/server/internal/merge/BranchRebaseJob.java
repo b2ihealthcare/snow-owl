@@ -41,8 +41,8 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 
 		private static final Logger LOG = LoggerFactory.getLogger(SyncRebaseRequest.class);
 		
-		SyncRebaseRequest(final Merge merge, final String commitMessage, String reviewId) {
-			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
+		SyncRebaseRequest(final Merge merge, final String commitMessage, String reviewId, String parentLockDescription) {
+			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId, parentLockDescription);
 		}
 
 		@Override
@@ -51,8 +51,8 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 			if (!target.parent().equals(source)) {
 				throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 			}
-
-			try (Locks locks = new Locks(context, source, target)) {
+			
+			try (Locks locks = new Locks(context, parentLockDescription, source, target)) {
 				return target.rebase(source, commitMessage, new Runnable() {
 					@Override
 					public void run() {
@@ -73,13 +73,13 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		}
 	}
 	
-	public BranchRebaseJob(Repository repository, String source, String target, String commitMessage, String reviewId) {
-		super(repository, source, target, commitMessage, reviewId);
+	public BranchRebaseJob(Repository repository, String source, String target, String commitMessage, String reviewId, String parentLockDescription) {
+		super(repository, source, target, commitMessage, reviewId, parentLockDescription);
 	}
 
 	@Override
 	protected void applyChanges() {
-		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncRebaseRequest(getMerge(), commitComment, reviewId)))
+		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncRebaseRequest(getMerge(), commitComment, reviewId, parentLockDescription)))
 			.execute(repository.events())
 			.getSync();
 	}

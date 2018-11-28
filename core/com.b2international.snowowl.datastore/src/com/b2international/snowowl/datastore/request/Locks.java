@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.ROOT ;
+
 import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
@@ -44,10 +46,18 @@ public class Locks implements AutoCloseable {
 		this(context, User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.SYNCHRONIZE, firstBranch, nextBranches);
 	}
 	
+	public Locks(RepositoryContext context, String parentLockDescription, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
+		this(context, User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockDescription, firstBranch, nextBranches);
+	}
+	
 	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
+		this(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, ROOT, firstBranch, nextBranches);
+	}
+	
+	public Locks(RepositoryContext context, String userId, String description, String parentLockDescription, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		repositoryId = context.id();
 		lockManager = context.service(IDatastoreOperationLockManager.class);
-		lockContext = new DatastoreLockContext(userId, description);
+		lockContext = new DatastoreLockContext(userId, description, parentLockDescription);
 	
 		lockTargets = Maps.newHashMap();
 		for (Branch branch : Lists.asList(firstBranch, nextBranches)) {

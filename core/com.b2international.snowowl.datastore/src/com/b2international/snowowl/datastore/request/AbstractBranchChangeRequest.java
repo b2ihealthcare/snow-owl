@@ -39,12 +39,15 @@ public abstract class AbstractBranchChangeRequest<R> implements Request<Reposito
 	protected final String commitMessage;
 	@JsonProperty
 	protected final String reviewId;
+	@JsonProperty
+	protected final String parentLockDescription;
 
-	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String commitMessage, String reviewId) {
+	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String commitMessage, String reviewId, String parentLockDescription) {
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
 		this.commitMessage = commitMessage;
 		this.reviewId = reviewId;
+		this.parentLockDescription = parentLockDescription;
 	}
 
 	@Override
