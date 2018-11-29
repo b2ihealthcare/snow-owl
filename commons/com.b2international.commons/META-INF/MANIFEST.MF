@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Commons
-Bundle-SymbolicName: com.b2international.commons
+Bundle-SymbolicName: com.b2international.commons;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -93,3 +93,4 @@ Bundle-ClassPath: .,
  lib/micrometer-registry-prometheus-1.0.6.jar,
  lib/simpleclient_common-0.4.0.jar,
  lib/simpleclient-0.4.0.jar
+Bundle-ActivationPolicy: lazy
