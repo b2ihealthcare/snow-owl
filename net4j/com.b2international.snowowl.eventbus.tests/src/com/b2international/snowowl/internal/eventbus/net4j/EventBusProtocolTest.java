@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import com.b2international.snowowl.eventbus.IMessage;
 import com.b2international.snowowl.eventbus.net4j.EventBusConstants;
@@ -144,7 +143,6 @@ public class EventBusProtocolTest {
 	
 	private void prepareEvent(boolean isAdded) {
 		when(event.getAddress()).thenReturn(ADDRESS);
-		when(event.getSource()).thenReturn(eb);
 		when(event.isAdded()).thenReturn(isAdded);
 	}
 
@@ -154,7 +152,6 @@ public class EventBusProtocolTest {
 	
 	private void prepareRequestSync(EventBusProtocol protocol, short signalID, Object message, Object result) throws Exception {
 		when(factory.createRequestWithConfirmation(protocol, signalID, message)).thenReturn(requestWithConfirmation);
-		when(requestWithConfirmation.send(Mockito.eq(EventBusProtocol.ADDRESS_BOOK_REQ_TIMEOUT))).thenReturn(result);
 	}
 	
 }
