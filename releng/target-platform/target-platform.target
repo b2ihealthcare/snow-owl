@@ -29,13 +29,18 @@
 <unit id="org.apache.el.source" version="7.0.56.v201412180755"/>
 <unit id="org.apache.xmlbeans" version="2.3.0.v201605172150"/>
 <unit id="org.apache.xmlbeans.source" version="2.3.0.v201605172150"/>
-<unit id="org.dom4j" version="1.6.1.v201312101416"/>
-<unit id="org.dom4j.source" version="1.6.1.v201312101416"/>
+<unit id="org.dom4j" version="1.6.1.v20170815-1500"/>
+<unit id="org.dom4j.source" version="1.6.1.v20170815-1500"/>
+<unit id="org.hamcrest.core" version="1.3.0.v20180420-1519"/>
+<unit id="org.hamcrest.core.source" version="1.3.0.v20180420-1519"/>
+<unit id="org.hamcrest.library" version="1.3.0.v20180524-2246"/>
+<unit id="org.hamcrest.library.source" version="1.3.0.v20180524-2246"/>
 <unit id="org.junit" version="4.12.0.v201504281640"/>
 <unit id="org.junit.source" version="4.12.0.v201504281640"/>
 <unit id="osgi.enterprise" version="4.2.0.v201108120515"/>
 <unit id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository"/>
+<unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
 </location>
 </locations>
 </target>

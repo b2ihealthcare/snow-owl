@@ -45,8 +45,7 @@
 								rest-assured-common,
 								tagsoup,
 								json-path,
-								xml-path,
-								hamcrest-library
+								xml-path
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>

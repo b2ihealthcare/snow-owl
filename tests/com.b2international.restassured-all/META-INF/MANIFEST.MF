@@ -34,21 +34,20 @@ Export-Package: io.restassured,
  io.restassured.path.xml.mapping,
  io.restassured.response,
  io.restassured.specification,
- io.restassured.spi,
- org.hamcrest.collection
+ io.restassured.spi
 Require-Bundle: org.apache.commons.codec;bundle-version="1.9.0",
- org.hamcrest.core;bundle-version="1.3.0",
+ org.hamcrest.core;bundle-version="1.3.0";visibility:=reexport,
+ org.hamcrest.library;bundle-version="1.3.0";visibility:=reexport,
  org.apache.commons.logging;bundle-version="1.2.0",
  org.apache.commons.lang3;bundle-version="3.1.0",
  groovy-all;bundle-version="2.4.13",
  org.apache.httpcomponents.httpasyncclient;bundle-version="4.1.4",
  org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
- org.apache.httpcomponents.httpcore;bundle-version="4.4.10"
+ org.apache.httpcomponents.httpcore;bundle-version="4.4.10",
+ org.ccil.cowan.tagsoup;bundle-version="1.2.0"
 Import-Package: com.fasterxml.jackson.core;version="2.8.11",
  com.fasterxml.jackson.databind;version="2.8.11"
-Bundle-ClassPath: lib/tagsoup-1.2.1.jar,
- lib/hamcrest-library-1.3.jar,
- lib/json-path-3.2.0.jar,
+Bundle-ClassPath: lib/json-path-3.2.0.jar,
  lib/rest-assured-3.2.0.jar,
  lib/rest-assured-common-3.2.0.jar,
  lib/xml-path-3.2.0.jar
