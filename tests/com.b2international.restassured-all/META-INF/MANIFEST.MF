@@ -40,13 +40,13 @@ Require-Bundle: org.apache.commons.codec;bundle-version="1.9.0",
  org.hamcrest.core;bundle-version="1.3.0",
  org.apache.commons.logging;bundle-version="1.2.0",
  org.apache.commons.lang3;bundle-version="3.1.0",
- groovy-all;bundle-version="2.4.13"
+ groovy-all;bundle-version="2.4.13",
+ org.apache.httpcomponents.httpasyncclient;bundle-version="4.1.4",
+ org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
+ org.apache.httpcomponents.httpcore;bundle-version="4.4.10"
 Import-Package: com.fasterxml.jackson.core;version="2.8.11",
  com.fasterxml.jackson.databind;version="2.8.11"
-Bundle-ClassPath: lib/httpclient-4.5.3.jar,
- lib/httpcore-4.4.3.jar,
- lib/httpmime-4.5.1.jar,
- lib/tagsoup-1.2.1.jar,
+Bundle-ClassPath: lib/tagsoup-1.2.1.jar,
  lib/hamcrest-library-1.3.jar,
  lib/json-path-3.2.0.jar,
  lib/rest-assured-3.2.0.jar,

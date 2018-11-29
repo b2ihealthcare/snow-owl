@@ -43,9 +43,6 @@
 							<includeArtifactIds>
 								rest-assured,
 								rest-assured-common,
-								httpclient,
-								httpcore,
-								httpmime,
 								tagsoup,
 								json-path,
 								xml-path,
