@@ -172,7 +172,7 @@ public abstract class AbstractTerminologyExcelImportJob<T extends CDOObject> ext
 			commitSheets(fileName, sheets);
 
 			final CDOCommitInfo commitInfo = 
-					CDOCommitInfoUtils.createEmptyCommitInfo(getRepositoryUuid(), getBranchPath(), getUserId(), "commit comment", getLatestSuccessfulCommitTime(), lastCommitTime);
+					CDOCommitInfoUtils.createEmptyCommitInfo(getRepositoryUuid(), getBranchPath(), getUserId(), String.format("Imported %ss from Excel file %s.", getTerminologyName(), fileName), getLatestSuccessfulCommitTime(), lastCommitTime);
 			CDOServerUtils.sendCommitNotification(commitInfo);
 
 			return Status.OK_STATUS;
