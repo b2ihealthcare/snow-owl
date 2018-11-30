@@ -61,7 +61,9 @@ import com.b2international.snowowl.datastore.version.VersioningManagerBroker;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 5.7
@@ -87,7 +89,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	String codeSystemShortName;
 	
 	// lock props
-	private transient Map<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> lockTargetsByContext;
+	private transient Multimap<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> lockTargetsByContext;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
@@ -214,10 +216,10 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystemEntry> codeSystems) {
 		try {
-			this.lockTargetsByContext = Maps.newHashMap();
+			this.lockTargetsByContext = HashMultimap.create();
 			
+			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
 			for (CodeSystemEntry codeSystem : codeSystems) {
-				final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
 				final SingleRepositoryAndBranchLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(
 						codeSystem.getRepositoryUuid(),
 						BranchPathUtils.createPath(codeSystem.getBranchPath()));
@@ -239,7 +241,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void releaseLocks(ServiceProvider context) {
-		for (Entry<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> entry : lockTargetsByContext.entrySet()) {
+		for (Entry<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> entry : lockTargetsByContext.entries()) {
 			context.service(IDatastoreOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
 		}
 	}
