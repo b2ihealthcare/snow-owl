@@ -227,6 +227,15 @@ public class SnomedInactivationPlan {
 	public Set<CDOObject> getInactivatedComponents() {
 		return Collections.unmodifiableSet(inactivatedComponents);
 	}
+
+	/**
+	 * Merges two inactivation plans together.
+	 * 
+	 * @param plan {@link SnomedInactivationPlan} instance to merge into this.
+	 */
+	public void mergePlan(SnomedInactivationPlan plan) {
+		inactivatedComponents.addAll(plan.inactivatedComponents);
+	}
 	
 	/**
 	 * Marks the specified SNOMED&nbsp;CT component for inactivation.
