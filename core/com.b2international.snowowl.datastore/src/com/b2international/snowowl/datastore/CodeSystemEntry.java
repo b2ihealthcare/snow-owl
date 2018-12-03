@@ -21,6 +21,8 @@ import static com.b2international.index.query.Expressions.matchAny;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -348,10 +350,10 @@ public final class CodeSystemEntry implements Serializable {
 	 * Returns all code system short name dependencies and itself.
 	 */
 	@JsonIgnore
-	public List<String> getAffectedCodeSystems() {
+	public SortedSet<String> getDependenciesAndSelf() {
 		List<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
 		affectedCodeSystems.add(shortName);
-		return affectedCodeSystems;
+		return new TreeSet<String>(affectedCodeSystems);
 	}
 	
 }
