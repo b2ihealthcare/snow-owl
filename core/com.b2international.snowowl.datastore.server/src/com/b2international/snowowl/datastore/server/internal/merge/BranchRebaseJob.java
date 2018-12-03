@@ -74,7 +74,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 		}
 	}
 	
-	public BranchRebaseJob(Repository repository, String userId, String source, String target, String commitMessage, String reviewId, String parentLockContext) {
+	public BranchRebaseJob(Repository repository, String source, String target, String userId, String commitMessage, String reviewId, String parentLockContext) {
 		super(repository, source, target, userId, commitMessage, reviewId, parentLockContext);
 	}
 
