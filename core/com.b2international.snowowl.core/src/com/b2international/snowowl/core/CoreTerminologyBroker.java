@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
@@ -37,6 +38,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -108,7 +110,7 @@ public class CoreTerminologyBroker {
 	private static final Map<String, Short> ID_TO_SHORT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, Integer> CLASS_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, String> CLASS_TO_ID_CACHE = Maps.newConcurrentMap();
-	private static final Map<String, List<String>> TERMINOLOGY_ID_TO_SHORTNAMES_CACHE = Maps.newConcurrentMap();
+	private static final Map<String, SortedSet<String>> TERMINOLOGY_ID_TO_SHORTNAMES_CACHE = Maps.newConcurrentMap();
 
 	private static CoreTerminologyBroker instance;
 	private Map<String, ICoreTerminologyComponentInformation> registeredTerminologyComponents;
@@ -373,25 +375,34 @@ public class CoreTerminologyBroker {
 		throw new RuntimeException("Cannot find terminology with ID: '" + terminologyId + "'.");
 	}
 	
-	public List<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
+	public SortedSet<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
 		Preconditions.checkNotNull(terminologyId, "terminologyId");
 		
 		if (!TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId)) {
-			final List<String> affectedCodeSystems = Lists.newArrayList();
+			boolean terminologyPresent = false;
+			
 			for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
+				final List<String> affectedCodeSystems = Lists.newArrayList();
 				final String id = terminology.getAttribute(ID_ATTRIBUTE);
+				
 				if (id.equals(terminologyId)) {
-					affectedCodeSystems.addAll(
+					terminologyPresent = true;
+				}
+				
+				affectedCodeSystems.addAll(
 							Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
 								.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
 								.collect(Collectors.toList())
 							);
-				}
+				TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, ImmutableSortedSet.copyOf(affectedCodeSystems));
 			}
-			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(terminologyId, affectedCodeSystems);
-		}
+			
+			if (!terminologyPresent) {
+				throw new IllegalArgumentException("No terminology extension has been registered with the id: " + terminologyId);				
+			}
+		} 
 		
-		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);	
+		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {

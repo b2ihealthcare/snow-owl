@@ -18,12 +18,9 @@ package com.b2international.snowowl.datastore;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
@@ -36,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 
 
 /**
@@ -352,9 +350,9 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	@JsonIgnore
 	public SortedSet<String> getDependenciesAndSelf() {
-		List<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
+		SortedSet<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
 		affectedCodeSystems.add(shortName);
-		return new TreeSet<String>(affectedCodeSystems);
+		return ImmutableSortedSet.copyOf(affectedCodeSystems);
 	}
 	
 	/**
@@ -362,7 +360,7 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	@JsonIgnore
 	public SortedSet<String> getDependencies() {
-		return new TreeSet<String>(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
+		return CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
 	}
 	
 	@JsonIgnore
