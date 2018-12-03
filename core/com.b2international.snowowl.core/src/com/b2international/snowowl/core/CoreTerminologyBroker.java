@@ -108,6 +108,7 @@ public class CoreTerminologyBroker {
 	private static final Map<String, Short> ID_TO_SHORT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, Integer> CLASS_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, String> CLASS_TO_ID_CACHE = Maps.newConcurrentMap();
+	private static final Map<String, List<String>> TERMINOLOGY_ID_TO_SHORTNAMES_CACHE = Maps.newConcurrentMap();
 
 	private static CoreTerminologyBroker instance;
 	private Map<String, ICoreTerminologyComponentInformation> registeredTerminologyComponents;
@@ -372,19 +373,25 @@ public class CoreTerminologyBroker {
 		throw new RuntimeException("Cannot find terminology with ID: '" + terminologyId + "'.");
 	}
 	
-	public List<String> getAffectedCodeSystemsForTeminology(String terminologyId) {
-		final List<String> affectedCodeSystems = Lists.newArrayList();
-		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-			final String id = terminology.getAttribute(ID_ATTRIBUTE);
-			if (id.equals(terminologyId)) {
-				affectedCodeSystems.addAll(
-					Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
-						.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
-						.collect(Collectors.toList())
-				);
+	public List<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
+		Preconditions.checkNotNull(terminologyId, "terminologyId");
+		
+		if (!TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId)) {
+			final List<String> affectedCodeSystems = Lists.newArrayList();
+			for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
+				final String id = terminology.getAttribute(ID_ATTRIBUTE);
+				if (id.equals(terminologyId)) {
+					affectedCodeSystems.addAll(
+							Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
+								.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
+								.collect(Collectors.toList())
+							);
+				}
 			}
+			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(terminologyId, affectedCodeSystems);
 		}
-		return affectedCodeSystems;
+		
+		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);	
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {
