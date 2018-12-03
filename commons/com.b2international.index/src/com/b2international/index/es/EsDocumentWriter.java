@@ -36,7 +36,6 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -48,6 +47,7 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
 import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -155,7 +155,7 @@ public class EsDocumentWriter implements Writer {
 		
 		// then bulk indexes/deletes
 		if (!indexOperations.isEmpty() || !deleteOperations.isEmpty()) {
-			final BulkProcessor processor = BulkProcessor.builder((req, listener) -> client.bulkAsync(req, RequestOptions.DEFAULT, listener), new BulkProcessor.Listener() {
+			final BulkProcessor processor = client.bulk(new BulkProcessor.Listener() {
 				@Override
 				public void beforeBulk(long executionId, BulkRequest request) {
 					admin.log().debug("Sending bulk request {}", request.numberOfActions());
@@ -180,7 +180,7 @@ public class EsDocumentWriter implements Writer {
 			.setBulkActions(10_000)
 			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
 			.build();
-
+			
 			for (Class<?> type : ImmutableSet.copyOf(indexOperations.rowKeySet())) {
 				final Map<String, Object> indexOperationsForType = indexOperations.row(type);
 				

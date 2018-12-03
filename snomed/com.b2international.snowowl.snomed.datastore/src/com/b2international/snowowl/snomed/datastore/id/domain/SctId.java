@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.domain;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchRange;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.commons.CompareUtils;
@@ -36,7 +37,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @since 4.5
  */
 @Doc
-public class SctId {
+public class SctId implements Serializable {
 
 	public static class Fields {
 		public static final String SEQUENCE = "sequence";

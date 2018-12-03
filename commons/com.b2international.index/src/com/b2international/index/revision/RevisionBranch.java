@@ -48,13 +48,16 @@ import com.google.common.primitives.Longs;
 		+ "if (params.mergeSources != null) {"
 		+ "    ctx._source.mergeSources.add(['timestamp': params.headTimestamp, 'branchPoints': params.mergeSources, 'squash': params.squash]);"
 		+ "}"
+		+ "boolean found = false;"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
 		+ "        segment.end = params.headTimestamp;"
-		+ "        return null;"
+		+ "        found = true;"
 		+ "    }"
 		+ "}"
-		+ "throw new RuntimeException(\"Missing branch segment\")")
+		+ "if (!found) {"
+		+ "    throw new RuntimeException(\"Missing branch segment\")"
+		+ "}")
 @Script(name=RevisionBranch.Scripts.WITH_DELETED, script="ctx._source.deleted = true")
 @Script(name=RevisionBranch.Scripts.WITH_METADATA, script="ctx._source.metadata = params.metadata")
 @Script(name=RevisionBranch.Scripts.REPLACE, script="ctx._source = params.replace")

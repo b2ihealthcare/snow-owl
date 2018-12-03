@@ -41,7 +41,8 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -50,9 +51,9 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.index.compat.TextConstants;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
-import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -82,11 +83,11 @@ import com.b2international.snowowl.snomed.datastore.id.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.datastore.id.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.datastore.id.domain.SctId;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+
 import io.restassured.http.ContentType;
 
 /**
@@ -665,21 +666,22 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void updateReleasedDescriptionTerm() throws Exception {
-		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm")
+	public void shouldUpdateReleasedDescriptionTerm() throws Exception {
+		final String descriptionId = createNewDescription(branchPath);
+		final String newTerm = "updatedUnreleasedDescriptionTerm";
+		final Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TERM, newTerm)
 				.put("commitComment", "Update unreleased description term")
 				.build();
 		
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
 		
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
-			.body(SnomedRf2Headers.FIELD_TERM, equalTo(SnomedRestFixtures.DEFAULT_TERM));
+			.body(SnomedRf2Headers.FIELD_TERM, equalTo(newTerm));
 	}
 	
 	@Test

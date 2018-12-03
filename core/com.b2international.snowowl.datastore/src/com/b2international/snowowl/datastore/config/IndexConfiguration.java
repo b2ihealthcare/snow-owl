@@ -50,7 +50,9 @@ public class IndexConfiguration {
 	private Integer numberOfShards = 6;
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
-	
+
+	@NotEmpty
+	private String clusterName = IndexClientFactory.DEFAULT_CLUSTER_NAME;
 	// @Nullable
 	private String clusterUrl;
 	// @Nullable
@@ -175,6 +177,16 @@ public class IndexConfiguration {
 		this.commitConcurrencyLevel = commitConcurrencyLevel;
 	}
 
+	@JsonProperty
+	public String getClusterName() {
+		return clusterName;
+	}
+	
+	@JsonProperty
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+	
 	@JsonProperty
 	public String getClusterUrl() {
 		return clusterUrl;

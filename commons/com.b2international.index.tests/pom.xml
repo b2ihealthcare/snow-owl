@@ -41,11 +41,30 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho.version}</version>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>http-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-Dso.index.es.useHttp</argLine>
+						</configuration>
+					</execution>
+				</executions>
 				<configuration>
 					<argLine>-Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
 					<failIfNoTests>false</failIfNoTests>
 					<includes>
-						<include>**/*Test.java</include>
+						<include>**/*Test*.java</include>
 					</includes>
 					<!-- Kill test JVM if tests take more than 10 minutes (600 seconds) 
 						to finish -->
