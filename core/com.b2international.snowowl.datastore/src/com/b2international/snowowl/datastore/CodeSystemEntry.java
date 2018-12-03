@@ -356,4 +356,12 @@ public final class CodeSystemEntry implements Serializable {
 		return new TreeSet<String>(affectedCodeSystems);
 	}
 	
+	/**
+	 * Returns the short names of all affected code systems
+	 */
+	@JsonIgnore
+	public SortedSet<String> getDependencies() {
+		return new TreeSet<String>(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
+	}
+	
 }
