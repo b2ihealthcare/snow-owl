@@ -122,13 +122,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 
 		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem = createVersioningManagers(context, codeSystemsByShortName, codeSystem);
 
-		acquireLocks(context, user, versioningManagersByCodeSystem.keySet());
+		try {
+			acquireLocks(context, user, versioningManagersByCodeSystem.keySet());
 		
-		for (Entry<CodeSystemEntry, IVersioningManager> entry : versioningManagersByCodeSystem.entrySet()) {
-			createVersion(context, entry.getValue(), entry.getKey(), user);
+			for (Entry<CodeSystemEntry, IVersioningManager> entry : versioningManagersByCodeSystem.entrySet()) {
+				createVersion(context, entry.getValue(), entry.getKey(), user);
+			}
+		} finally {
+			releaseLocks(context);
 		}
-		
-		releaseLocks(context);
 		
 		return Boolean.TRUE;
 	}
