@@ -307,8 +307,11 @@ public abstract class SnomedConstants {
 		public static final String ICD_10_REFERENCE_SET_ID = "447562003";
 		public static final String ICD_10_CM_COMPLEX_MAP_REFERENCE_SET_ID = "6011000124106";
 
-		// Concept model attribute hierarchy
+		// Concept model attribute hierarchy roots
 		public static final String CONCEPT_MODEL_ATTRIBUTE = "410662002";
+		public static final String SG_CONCRETE_DOMAIN_ATTRIBUTE = "31041000132100";
+		
+		// Concept model attribute hierarchy roots, starting with INT 20180131
 		public static final String CONCEPT_MODEL_OBJECT_ATTRIBUTE = "762705008";
 		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
 		

@@ -31,6 +31,9 @@ public abstract class LongConcepts {
 
 	public static final long[] NEVER_GROUPED_ROLE_IDS = new long[] { PART_OF_ID, LATERALITY_ID, HAS_DOSE_FORM_ID, HAS_ACTIVE_INGREDIENT_ID };
 	
+	public static final long CONCEPT_MODEL_ATTRIBUTE_ID = Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE);
+	public static final long SG_CONCRETE_DOMAIN_ATTRIBUTE_ID = Long.parseLong(Concepts.SG_CONCRETE_DOMAIN_ATTRIBUTE);
+	
 	public static final long CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID = Long.parseLong(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
 	public static final long CONCEPT_MODEL_DATA_ATTRIBUTE_ID = Long.parseLong(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
 	

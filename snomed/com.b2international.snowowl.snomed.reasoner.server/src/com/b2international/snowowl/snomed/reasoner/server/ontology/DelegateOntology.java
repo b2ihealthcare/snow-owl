@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.ontology;
 
-import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_CONCEPT;
-import static com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils.PREFIX_ROLE;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -54,22 +52,34 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private final OWLOntologyManager manager;
 	private final OWLOntologyID ontologyID;
-	private final DefaultPrefixManager prefixManager;
+	private final IBranchPath branchPath;
 	private final RevisionIndex index;
+	private final boolean concreteDomainSupport;
+	private final long objectAttributeRoot;
+	private final long dataAttributeRoot;
+	
+	private final DefaultPrefixManager prefixManager;
 	private final boolean trackingChanges;
 	private final OWLOntology plusOntology;
-	private final boolean concreteDomainSupport;
-	private final IBranchPath branchPath;
 
 	private volatile ReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
 
-	public DelegateOntology(final OWLOntologyManager manager, final OWLOntologyID ontologyID, final IBranchPath branchPath, final RevisionIndex index, boolean concreteDomainSupport) throws OWLOntologyCreationException {
-		super();
+	public DelegateOntology(final OWLOntologyManager manager, 
+			final OWLOntologyID ontologyID, 
+			final IBranchPath branchPath, 
+			final RevisionIndex index, 
+			final boolean concreteDomainSupport,
+			final long objectAttributeRoot,
+			final long dataAttributeRoot) throws OWLOntologyCreationException {
+		
 		this.manager = manager;
 		this.ontologyID = ontologyID;
 		this.branchPath = branchPath;
 		this.index = index;
 		this.concreteDomainSupport = concreteDomainSupport;
+		this.objectAttributeRoot = objectAttributeRoot;
+		this.dataAttributeRoot = dataAttributeRoot;
+		
 		this.prefixManager = SnomedOntologyUtils.createPrefixManager(this);
 		this.plusOntology = manager.createOntology();
 		this.trackingChanges = (null == ontologyID.getVersionIRI());
@@ -206,7 +216,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
-			if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
+			if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(objectAttributeRoot)) {
 				continue;
 			}
 
@@ -223,9 +233,9 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		for (final LongIterator itr2 = superTypeIds.iterator(); itr2.hasNext(); /* empty */) {
 			final long superTypeId = itr2.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(superTypeId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
-				final OWLObjectProperty subProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + conceptId, prefixManager);
-				final OWLObjectProperty superProperty = manager.getOWLDataFactory().getOWLObjectProperty(PREFIX_ROLE + superTypeId, prefixManager);
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(superTypeId).contains(objectAttributeRoot)) {
+				final OWLObjectProperty subProperty = manager.getOWLDataFactory().getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE + conceptId, prefixManager);
+				final OWLObjectProperty superProperty = manager.getOWLDataFactory().getOWLObjectProperty(SnomedOntologyUtils.PREFIX_ROLE + superTypeId, prefixManager);
 				final OWLSubObjectPropertyOfAxiom propertyAxiom = manager.getOWLDataFactory().getOWLSubObjectPropertyOfAxiom(subProperty, superProperty);
 				result.add(propertyAxiom);
 			}
@@ -418,7 +428,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final long conceptId = getConceptId(namedSubProperty);
-		return getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID);
+		return getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(objectAttributeRoot);
 	}
 
 	private boolean containsDisjointUnionAxiom(final OWLDisjointUnionAxiom axiom) {
@@ -516,7 +526,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(objectAttributeRoot)) {
 				result.add(df.getOWLObjectProperty(SnomedOntologyUtils.PREFIX_CONCEPT + conceptId, prefixManager));
 			}
 		}
@@ -541,7 +551,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		final LongSet conceptIdSet = getReasonerTaxonomyBuilder().getConceptIdSet();
 		for (final LongIterator itr = conceptIdSet.iterator(); itr.hasNext(); /* empty */) {
 			final long conceptId = itr.next();
-			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_DATA_ATTRIBUTE_ID)) {
+			if (getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(dataAttributeRoot)) {
 				result.add(df.getOWLDataProperty(SnomedOntologyUtils.PREFIX_DATA + conceptId, prefixManager));
 			}
 		}
@@ -898,14 +908,14 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 	private void collectDisjointUnionAxiomForConceptId(final long conceptId, final Set<OWLDisjointUnionAxiom> result) {
 
-		final OWLClass conceptClass = manager.getOWLDataFactory().getOWLClass(PREFIX_CONCEPT + conceptId, prefixManager);
+		final OWLClass conceptClass = manager.getOWLDataFactory().getOWLClass(SnomedOntologyUtils.PREFIX_CONCEPT + conceptId, prefixManager);
 		final Set<OWLClass> disjointUnionClasses = newHashSet();
 
 		final LongSet subTypeIds = getReasonerTaxonomyBuilder().getSubTypeIds(conceptId);
 
 		for (final LongIterator itr2 = subTypeIds.iterator(); itr2.hasNext(); /* empty */) {
 			final long subTypeId = itr2.next();
-			final OWLClass disjointUnionMember = manager.getOWLDataFactory().getOWLClass(PREFIX_CONCEPT + subTypeId, prefixManager);
+			final OWLClass disjointUnionMember = manager.getOWLDataFactory().getOWLClass(SnomedOntologyUtils.PREFIX_CONCEPT + subTypeId, prefixManager);
 			disjointUnionClasses.add(disjointUnionMember);
 		}
 
@@ -930,8 +940,8 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 		}
 
 		final long conceptId = getConceptId(objectProperty);
-
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
+		
+		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(objectAttributeRoot)) {
 			return WritableEmptySet.create();
 		}
 
@@ -955,7 +965,7 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 
 		final long conceptId = getConceptId(objectProperty);
 
-		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(LongConcepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE_ID)) {
+		if (!getReasonerTaxonomyBuilder().getAllSuperTypeIds(conceptId).contains(objectAttributeRoot)) {
 			return WritableEmptySet.create();
 		}
 
