@@ -30,16 +30,16 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest<Merge>
 
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
-				? commitMessage 
+				? commitMessage
 				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
 	}
 
-	BranchMergeRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId, String parentLockDescription) {
-		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockDescription);
+	BranchMergeRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
 	}
 	
 	@Override
 	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
-		return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId, parentLockDescription);
+		return context.service(MergeService.class).enqueue(sourcePath, targetPath, userId, commitMessage, reviewId, parentLockContext);
 	}
 }

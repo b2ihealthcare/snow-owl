@@ -31,10 +31,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 	
 	private String source;
 	private String target;
+	private String userId;
 	private String commitComment;
 	private String reviewId;
 	@Nullable
-	private String parentLockDescription;
+	private String parentLockContext;
 	
 	CreateMergeRequestBuilder() {}
 	
@@ -48,6 +49,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 	
+	public CreateMergeRequestBuilder setUserId(String userId) {
+		this.userId = userId;
+		return this;
+	}
+	
 	public CreateMergeRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return this;
@@ -58,8 +64,8 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 
-	public CreateMergeRequestBuilder setParentLockDescription(String parentLockDescription) {
-		this.parentLockDescription = parentLockDescription;
+	public CreateMergeRequestBuilder setparentLockContext(String parentLockContext) {
+		this.parentLockContext = parentLockContext;
 		return this;
 	}
 	
@@ -68,9 +74,9 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
 		if (targetPath.getParent().equals(sourcePath)) {
-			return new BranchRebaseRequest(source, target, commitComment, reviewId, parentLockDescription);
+			return new BranchRebaseRequest(source, target, userId, commitComment, reviewId, parentLockContext);
 		} else {
-			return new BranchMergeRequest(source, target, commitComment, reviewId, parentLockDescription);
+			return new BranchMergeRequest(source, target, userId, commitComment, reviewId, parentLockContext);
 		}
 	}
 	

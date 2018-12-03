@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.request.AbstractBranchChangeRequest;
 import com.b2international.snowowl.datastore.request.Locks;
@@ -35,13 +36,13 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 
 	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Branch> {
 
-		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId, String parentLockDescription) {
-			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId, parentLockDescription);
+		SyncMergeRequest(final Merge merge, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+			super(merge.getSource(), merge.getTarget(), userId, commitMessage, reviewId, parentLockContext);
 		}
 
 		@Override
 		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
-			try (Locks locks = new Locks(context, parentLockDescription, source, target)) {
+			try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
 				return target.merge(source, commitMessage);
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
@@ -53,13 +54,13 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		}
 	}
 	
-	public BranchMergeJob(Repository repository, String source, String target, String commitMessage, String reviewId, String parentLockDescription) {
-		super(repository, source, target, commitMessage, reviewId, parentLockDescription);
+	public BranchMergeJob(Repository repository, String source, String target, String userId, String commitMessage, String reviewId, String parentLockContext) {
+		super(repository, source, target, userId, commitMessage, reviewId, parentLockContext);
 	}
 
 	@Override
 	protected void applyChanges() {
-		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncMergeRequest(getMerge(), commitComment, reviewId, parentLockDescription)))
+		new AsyncRequest<>(new RepositoryRequest<>(repository.id(), new SyncMergeRequest(getMerge(), userId, commitComment, reviewId, parentLockContext)))
 			.execute(repository.events())
 			.getSync();
 	}
