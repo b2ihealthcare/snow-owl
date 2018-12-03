@@ -64,7 +64,7 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 
-	public CreateMergeRequestBuilder setparentLockContext(String parentLockContext) {
+	public CreateMergeRequestBuilder setParentLockContext(String parentLockContext) {
 		this.parentLockContext = parentLockContext;
 		return this;
 	}
