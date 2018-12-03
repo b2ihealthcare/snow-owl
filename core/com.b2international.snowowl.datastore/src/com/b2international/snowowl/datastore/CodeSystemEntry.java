@@ -18,6 +18,7 @@ package com.b2international.snowowl.datastore;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -362,6 +363,11 @@ public final class CodeSystemEntry implements Serializable {
 	@JsonIgnore
 	public SortedSet<String> getDependencies() {
 		return new TreeSet<String>(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
+	}
+	
+	@JsonIgnore
+	public String getRelativeBranchPath(String relativeTo) {
+		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
 	}
 	
 }
