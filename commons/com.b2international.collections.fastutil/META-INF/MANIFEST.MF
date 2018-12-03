@@ -23,4 +23,4 @@ Export-Package: com.b2international.collections,
  it.unimi.dsi.fastutil.objects;x-internal:=true,
  it.unimi.dsi.fastutil.shorts;x-internal:=true
 Bundle-ClassPath: .,
- lib/fastutil-7.0.12.jar
+ lib/fastutil-8.2.2.jar

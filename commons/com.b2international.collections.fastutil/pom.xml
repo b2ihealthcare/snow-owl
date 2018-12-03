@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<fastutil.version>7.0.12</fastutil.version>
+		<fastutil.version>8.2.2</fastutil.version>
 	</properties>
 	
 	<!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
