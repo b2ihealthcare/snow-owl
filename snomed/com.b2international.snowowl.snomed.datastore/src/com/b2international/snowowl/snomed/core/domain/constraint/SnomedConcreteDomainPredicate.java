@@ -25,6 +25,7 @@ import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.MrcmFactory;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.google.common.base.Strings;
 
 /**
  * @since 6.5
@@ -106,7 +107,8 @@ public final class SnomedConcreteDomainPredicate extends SnomedPredicate {
 
 	@Override
 	public void collectConceptIds(final Collection<String> conceptIds) {
-		return;
+		if (getAttribute() != null) { getAttribute().collectConceptIds(conceptIds); }
+		if (!Strings.isNullOrEmpty(getCharacteristicTypeId())) { conceptIds.add(getCharacteristicTypeId()); }
 	}
 
 	@Override
