@@ -20,6 +20,7 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 import java.util.SortedSet;
 
 import com.b2international.index.Doc;
@@ -34,6 +35,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -350,7 +352,7 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	@JsonIgnore
 	public SortedSet<String> getDependenciesAndSelf() {
-		SortedSet<String> affectedCodeSystems = CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
+		Set<String> affectedCodeSystems = Sets.newHashSet(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
 		affectedCodeSystems.add(shortName);
 		return ImmutableSortedSet.copyOf(affectedCodeSystems);
 	}
