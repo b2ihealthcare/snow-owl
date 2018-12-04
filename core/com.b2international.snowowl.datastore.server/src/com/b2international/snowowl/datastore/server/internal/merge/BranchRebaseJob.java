@@ -54,7 +54,7 @@ public class BranchRebaseJob extends AbstractBranchChangeRemoteJob {
 			}
 			
 			try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
-				return target.rebase(source, commitMessage, new Runnable() {
+				return target.rebase(source, userId, commitMessage, new Runnable() {
 					@Override
 					public void run() {
 						try {

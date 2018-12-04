@@ -29,6 +29,7 @@ import com.b2international.snowowl.datastore.internal.branch.BranchManagerImpl;
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -117,7 +118,7 @@ public class MainBranchTest {
 
 	@Test(expected = BadRequestException.class)
 	public void rebaseMainBranch() throws Exception {
-		main.rebase(main, "Rebase");
+		main.rebase(main, User.SYSTEM.getUsername(), "Rebase");
 	}
 	
 }

@@ -66,7 +66,7 @@ public class MainBranchImpl extends BranchImpl {
 	}
 	
 	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
+	public Branch rebase(Branch onTopOf, String userId, String commitMessage, Runnable postReopen) {
 		throw new BadRequestException(path() + " cannot be rebased");
 	}
 	

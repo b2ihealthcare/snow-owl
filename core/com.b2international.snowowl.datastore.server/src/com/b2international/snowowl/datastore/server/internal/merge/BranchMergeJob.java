@@ -43,7 +43,7 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		@Override
 		protected Branch execute(RepositoryContext context, Branch source, Branch target) {
 			try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
-				return target.merge(source, commitMessage);
+				return target.merge(source, userId, commitMessage);
 			} catch (BranchMergeException e) {
 				throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
 			} catch (DatastoreOperationLockException e) {
