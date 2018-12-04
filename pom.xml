@@ -30,7 +30,7 @@
 		<mwe2.version>2.9.1.201705291010</mwe2.version>
 		<mwe.utils.version>1.3.21.201705291010</mwe.utils.version>
 		<asm.commons.version>6.2.1</asm.commons.version>
-		<kotlin.version>1.1.51</kotlin.version>
+		<kotlin.version>1.2.51</kotlin.version>
 		<protege.version>5.0.0-beta-21</protege.version>
 		<owlapi.version>4.1.3</owlapi.version>
 		<elk.version>0.4.3</elk.version>
