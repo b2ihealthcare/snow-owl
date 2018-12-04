@@ -3,8 +3,8 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg&#xD;&#xA;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#xD;&#xA;you may not use this file except in compliance with the License.&#xD;&#xA;You may obtain a copy of the License at&#xD;&#xA;&#xD;&#xA;     http://www.apache.org/licenses/LICENSE-2.0&#xD;&#xA;&#xD;&#xA;Unless required by applicable law or agreed to in writing, software&#xD;&#xA;distributed under the License is distributed on an &quot;AS IS&quot; BASIS, &#xD;&#xA;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#xD;&#xA;See the License for the specific language governing permissions and&#xD;&#xA;limitations under the License."
     modelDirectory="/com.b2international.snowowl.snomed.mrcm.model/src" modelPluginID="com.b2international.snowowl.snomed.mrcm.model"
     modelName="Mrcm" rootExtendsInterface="org.eclipse.emf.cdo.CDOObject" rootExtendsClass="org.eclipse.emf.internal.cdo.CDOObjectImpl"
-    reflectiveDelegation="true" importerID="org.eclipse.emf.importer.cdo" featureDelegation="Reflective"
-    complianceLevel="6.0" copyrightFields="false">
+    reflectiveDelegation="true" importerID="org.eclipse.emf.importer.ecore" featureDelegation="Reflective"
+    complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.12">
   <foreignModel>mrcm.ecore</foreignModel>
   <modelPluginVariables>CDO=org.eclipse.emf.cdo</modelPluginVariables>
   <genPackages prefix="Mrcm" basePackage="com.b2international.snowowl.snomed" disposableProviderFactory="true"
@@ -24,6 +24,7 @@
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/SELF"/>
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/DESCENDANT"/>
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/SELF_OR_DESCENDANT"/>
+      <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/CHILD"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="mrcm.ecore#//ConstraintStrength">
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//ConstraintStrength/MANDATORY_CM"/>

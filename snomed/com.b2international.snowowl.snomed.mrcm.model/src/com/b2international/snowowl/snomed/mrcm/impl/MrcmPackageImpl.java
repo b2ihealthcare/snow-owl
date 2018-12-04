@@ -239,7 +239,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 
 	/**
 	 * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-	 * 
+	 *
 	 * <p>This method is used to initialize {@link MrcmPackage#eINSTANCE} when that field is accessed.
 	 * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
 	 * <!-- begin-user-doc -->
@@ -253,7 +253,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		if (isInited) return (MrcmPackage)EPackage.Registry.INSTANCE.getEPackage(MrcmPackage.eNS_URI);
 
 		// Obtain or create and register package
-		MrcmPackageImpl theMrcmPackage = (MrcmPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof MrcmPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new MrcmPackageImpl());
+		Object registeredMrcmPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
+		MrcmPackageImpl theMrcmPackage = registeredMrcmPackage instanceof MrcmPackageImpl ? (MrcmPackageImpl)registeredMrcmPackage : new MrcmPackageImpl();
 
 		isInited = true;
 
@@ -266,7 +267,6 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		// Mark meta-data to indicate it can't be changed
 		theMrcmPackage.freeze();
 
-  
 		// Update the registry and return the package
 		EPackage.Registry.INSTANCE.put(MrcmPackage.eNS_URI, theMrcmPackage);
 		return theMrcmPackage;
@@ -1004,6 +1004,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.SELF);
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.DESCENDANT);
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.SELF_OR_DESCENDANT);
+		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.CHILD);
 
 		initEEnum(constraintStrengthEEnum, ConstraintStrength.class, "ConstraintStrength");
 		addEEnumLiteral(constraintStrengthEEnum, ConstraintStrength.MANDATORY_CM);
