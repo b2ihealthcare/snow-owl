@@ -48,7 +48,8 @@
 								org.eclipse.jdt.core,
 								org.eclipse.jdt.debug,
 								org.eclipse.jdt.launching,
-								icu4j
+								icu4j,
+								log4j
 							</excludeArtifactIds>
 						</configuration>
 					</execution>

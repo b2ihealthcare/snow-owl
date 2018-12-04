@@ -26,9 +26,10 @@
 		<commons.collections.version>3.2.2</commons.collections.version>
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<emf.version>2.15.0</emf.version>
-		<xtext.version>2.11.0</xtext.version>
-		<mwe2.version>2.9.0.201605261059</mwe2.version>
-		<mwe.utils.version>1.3.20.201605261059</mwe.utils.version>
+		<xtext.version>2.15.0</xtext.version>
+		<mwe2.version>2.9.1.201705291010</mwe2.version>
+		<mwe.utils.version>1.3.21.201705291010</mwe.utils.version>
+		<asm.commons.version>6.2.1</asm.commons.version>
 		<kotlin.version>1.1.51</kotlin.version>
 		<protege.version>5.0.0-beta-21</protege.version>
 		<owlapi.version>4.1.3</owlapi.version>
@@ -36,10 +37,11 @@
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<fast.classpath.scanner.version>3.1.6</fast.classpath.scanner.version>
 		
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
-		<xtend.compiler.version>2.11.0</xtend.compiler.version>
+		<xtend.compiler.version>2.15.0</xtend.compiler.version>
 		
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
@@ -314,6 +316,13 @@
 			<artifactId>protege-editor-owl</artifactId>
 			<version>${protege.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+        		<exclusion>
+		          	<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.owlapi</groupId>
@@ -326,6 +335,13 @@
 			<artifactId>elk-protege</artifactId>
 			<version>${elk.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+				<exclusion>
+					<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -365,6 +381,14 @@
         		<exclusion>
           			<groupId>org.eclipse.osgi</groupId>
   					<artifactId>org.eclipse.osgi.services</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.ow2.asm</groupId>
+      				<artifactId>asm</artifactId>
+      			</exclusion>
+      			<exclusion>
+        			<groupId>org.ow2.asm</groupId>
+      				<artifactId>asm-commons</artifactId>
         		</exclusion>
       		</exclusions>
     	</dependency>
@@ -488,6 +512,11 @@
           			<groupId>org.eclipse.platform</groupId>
   					<artifactId>org.eclipse.osgi</artifactId>
         		</exclusion>
+        		<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+        		<exclusion>
+		          	<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -508,6 +537,13 @@
 			<artifactId>org.eclipse.xtext.util</artifactId>
 			<version>${xtext.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+        		<exclusion>
+		          	<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.xtext</groupId>
@@ -575,6 +611,11 @@
           			<groupId>com.google.guava</groupId>
 					<artifactId>guava</artifactId>
         		</exclusion>
+        		<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
+        		<exclusion>
+		          	<groupId>log4j</groupId>
+  					<artifactId>log4j</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -583,6 +624,11 @@
 		  	<version>${mwe.utils.version}</version>
 		  	<scope>provided</scope>
 		</dependency>
+		<dependency>
+      		<groupId>org.ow2.asm</groupId>
+      		<artifactId>asm-commons</artifactId>
+      		<version>${asm.commons.version}</version>
+      	</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-osgi</artifactId>
