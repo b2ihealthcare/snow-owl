@@ -29,7 +29,9 @@ public abstract class DatastoreLockContextDescriptions {
 	public static final String COMMIT = "committing changes";
 	public static final String PREPARE = "waiting for a branch to be prepared";
 	public static final String SYNCHRONIZE = "synchronizing changes";
+	public static final String MULTI_SYNCHRONIZE = "synchronizing changes on one or more repositories";
 	public static final String PROMOTE = "promoting changes";
+	public static final String MULTI_PROMOTE = "promoting changes on one or more repositories";
 	public static final String PROCESS_CHANGES = "waiting for changes to be processed";
 	public static final String CONFIGURE_VERSION = "configuring the new version";
 	public static final String CREATE_VERSION = "creating a new version";

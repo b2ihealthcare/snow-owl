@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -36,6 +38,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -99,12 +102,15 @@ public class CoreTerminologyBroker {
 	public static final String HIERARCHICAL_ATTRIBUTE = "hierarchical";
 	public static final String TOP_LEVEL_ATTRIBUTE = "topLevel";
 	public static final String NAME_ATTRIBUTE = "name";
+	public static final String DEPENDENCY_ATTRIBUTE = "dependency";
+	public static final String SHORT_NAME_ATTRIBUTE = "shortName";
 
 	private static final Map<Integer, String> INT_TO_ID_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Integer> ID_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<String, Short> ID_TO_SHORT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, Integer> CLASS_TO_INT_CACHE = Maps.newConcurrentMap();
 	private static final Map<Class<?>, String> CLASS_TO_ID_CACHE = Maps.newConcurrentMap();
+	private static final Map<String, SortedSet<String>> TERMINOLOGY_ID_TO_SHORTNAMES_CACHE = Maps.newConcurrentMap();
 
 	private static CoreTerminologyBroker instance;
 	private Map<String, ICoreTerminologyComponentInformation> registeredTerminologyComponents;
@@ -169,6 +175,24 @@ public class CoreTerminologyBroker {
 
 	private CoreTerminologyBroker() {
 		//avoid instantiation
+		
+		initializeTerminologyToShortnameCache();
+	}
+	
+	private void initializeTerminologyToShortnameCache() {
+		
+		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
+			final ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+			final String id = terminology.getAttribute(ID_ATTRIBUTE);
+
+			affectedCodeSystems.addAll(
+					Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
+					.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
+					.collect(Collectors.toList())
+					);
+
+			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, affectedCodeSystems.build());
+		}
 	}
 
 	public static CoreTerminologyBroker getInstance() {
@@ -367,6 +391,11 @@ public class CoreTerminologyBroker {
 			}
 		}
 		throw new RuntimeException("Cannot find terminology with ID: '" + terminologyId + "'.");
+	}
+	
+	public SortedSet<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
+		Preconditions.checkArgument(TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId), "No terminology extension has been registered with the id: " + terminologyId);
+		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {

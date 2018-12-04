@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import javax.annotation.Nullable;
+
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -29,8 +31,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 	
 	private String source;
 	private String target;
+	private String userId;
 	private String commitComment;
 	private String reviewId;
+	@Nullable
+	private String parentLockContext;
 	
 	CreateMergeRequestBuilder() {}
 	
@@ -44,6 +49,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 	
+	public CreateMergeRequestBuilder setUserId(String userId) {
+		this.userId = userId;
+		return this;
+	}
+	
 	public CreateMergeRequestBuilder setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return this;
@@ -54,17 +64,20 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 
+	public CreateMergeRequestBuilder setParentLockContext(String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+		return this;
+	}
+	
 	@Override
 	protected Request<RepositoryContext, Merge> doBuild() {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
 		if (targetPath.getParent().equals(sourcePath)) {
-			return new BranchRebaseRequest(source, target, commitComment, reviewId);
+			return new BranchRebaseRequest(source, target, userId, commitComment, reviewId, parentLockContext);
 		} else {
-			return new BranchMergeRequest(source, target, commitComment, reviewId);
+			return new BranchMergeRequest(source, target, userId, commitComment, reviewId, parentLockContext);
 		}
 	}
-
-	
 	
 }

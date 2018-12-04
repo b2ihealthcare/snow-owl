@@ -145,14 +145,14 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 
 	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage) {
-		return rebase(onTopOf, commitMessage, EMPTY_RUNNABLE);
+	public Branch rebase(Branch onTopOf, String userId, String commitMessage) {
+		return rebase(onTopOf, userId, commitMessage, EMPTY_RUNNABLE);
 	}
 	
 	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
+	public Branch rebase(Branch onTopOf, String userId, String commitMessage, Runnable postReopen) {
 		if (canRebase(onTopOf)) {
-			return branchManager.rebase(this, (BranchImpl) onTopOf, commitMessage, postReopen);
+			return branchManager.rebase(this, (BranchImpl) onTopOf, userId, commitMessage, postReopen);
 		} else {
 			return this;
 		}
@@ -173,14 +173,14 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 	}
 	
 	@Override
-	public Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException {
+	public Branch merge(Branch changesFrom, String userId, String commitMessage) throws BranchMergeException {
 		if (path().equals(changesFrom.path())) {
 			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());
 		}
 		
 		final BranchState changesFromState = changesFrom.state();
 		if (changesFromState == BranchState.FORWARD) {
-			return branchManager.merge((BranchImpl) changesFrom, this, commitMessage);
+			return branchManager.merge((BranchImpl) changesFrom, this, userId, commitMessage);
 		} else {
 			throw new BranchMergeException("Branch %s should be in FORWARD state to be merged into %s. It's currently %s", changesFrom.path(), path(), changesFromState);
 		}

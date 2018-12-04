@@ -199,8 +199,8 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 	}
 
-	final InternalBranch merge(final InternalBranch from, final InternalBranch to, final String commitMessage) {
-		final InternalBranch mergedTo = applyChangeSet(from, to, false, false, commitMessage); // Implicit notification (commit)
+	final InternalBranch merge(final InternalBranch from, final InternalBranch to, final String userId, final String commitMessage) {
+		final InternalBranch mergedTo = applyChangeSet(from, to, false, false, userId, commitMessage); // Implicit notification (commit)
 		// reopen only if the to branch is a direct parent of the from branch, otherwise these are unrelated branches 
 		if (from.parent().equals(mergedTo)) {
 			final InternalBranch reopenedFrom = reopen(mergedTo, from.name(), from.metadata());
@@ -210,20 +210,20 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return mergedTo;
 	}
 
-	public InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String commitMessage, final Runnable postReopen) {
-		applyChangeSet(branch, onTopOf, true, true, commitMessage);
+	public InternalBranch rebase(final InternalBranch branch, final InternalBranch onTopOf, final String userId, final String commitMessage, final Runnable postReopen) {
+		applyChangeSet(branch, onTopOf, true, true, userId, commitMessage);
 		final InternalBranch rebasedBranch = reopen(onTopOf, branch.name(), branch.metadata());
 		postReopen.run();
 		
 		if (branch.headTimestamp() > branch.baseTimestamp()) {
-			return applyChangeSet(branch, rebasedBranch, false, true, commitMessage); // Implicit notification (reopen & commit)
+			return applyChangeSet(branch, rebasedBranch, false, true, userId, commitMessage); // Implicit notification (reopen & commit)
 		} else {
 			sendChangeEvent(rebasedBranch.path()); // Explicit notification (reopen)
 			return rebasedBranch;
 		}
 	}
 
-	protected abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage);
+	protected abstract InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String userId, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {

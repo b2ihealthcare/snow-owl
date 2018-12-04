@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.datastore.request;
 
+import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.ROOT ;
+
 import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
@@ -22,10 +24,8 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
-import com.b2international.snowowl.identity.domain.User;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -39,15 +39,14 @@ public class Locks implements AutoCloseable {
 	private final DatastoreLockContext lockContext;
 	private final Map<String, IOperationLockTarget> lockTargets;
 	
-	public Locks(RepositoryContext context, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
-		// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
-		this(context, User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.SYNCHRONIZE, firstBranch, nextBranches);
+	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
+		this(context, userId, description, ROOT, firstBranch, nextBranches);
 	}
 	
-	public Locks(RepositoryContext context, String userId, String description, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
+	public Locks(RepositoryContext context, String userId, String description, String parentLockContext, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		repositoryId = context.id();
 		lockManager = context.service(IDatastoreOperationLockManager.class);
-		lockContext = new DatastoreLockContext(userId, description);
+		lockContext = new DatastoreLockContext(userId, description, parentLockContext);
 	
 		lockTargets = Maps.newHashMap();
 		for (Branch branch : Lists.asList(firstBranch, nextBranches)) {
@@ -58,7 +57,7 @@ public class Locks implements AutoCloseable {
 	}
 
 	private void lock() throws OperationLockException, InterruptedException {
-		lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets.values());			
+		lockManager.lock(lockContext, IDatastoreOperationLockManager.IMMEDIATE, lockTargets.values());
 	}
 	
 	public void unlock(String path) throws OperationLockException {
