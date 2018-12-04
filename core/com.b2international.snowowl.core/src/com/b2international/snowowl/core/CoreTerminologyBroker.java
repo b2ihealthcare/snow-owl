@@ -182,7 +182,7 @@ public class CoreTerminologyBroker {
 	private void initializeTerminologyToShortnameCache() {
 		
 		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-			final List<String> affectedCodeSystems = Lists.newArrayList();
+			final ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
 			final String id = terminology.getAttribute(ID_ATTRIBUTE);
 
 			affectedCodeSystems.addAll(
@@ -191,7 +191,7 @@ public class CoreTerminologyBroker {
 					.collect(Collectors.toList())
 					);
 
-			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, ImmutableSortedSet.copyOf(affectedCodeSystems));
+			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, affectedCodeSystems.build());
 		}
 	}
 
@@ -394,13 +394,8 @@ public class CoreTerminologyBroker {
 	}
 	
 	public SortedSet<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
-		Preconditions.checkNotNull(terminologyId, "terminologyId");
-		
-		if (TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId)) {
-			return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
-		} else {
-			throw new IllegalArgumentException("No terminology extension has been registered with the id: " + terminologyId);
-		}
+		Preconditions.checkArgument(TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId), "No terminology extension has been registered with the id: " + terminologyId);
+		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {

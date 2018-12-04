@@ -352,7 +352,7 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	@JsonIgnore
 	public SortedSet<String> getDependenciesAndSelf() {
-		com.google.common.collect.ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
 		affectedCodeSystems.addAll(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
 		affectedCodeSystems.add(shortName);
 		return affectedCodeSystems.build();
@@ -366,6 +366,9 @@ public final class CodeSystemEntry implements Serializable {
 		return CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId);
 	}
 	
+	/**
+	 * Returns a new branch path that originates from the code system's branch path
+	 */
 	@JsonIgnore
 	public String getRelativeBranchPath(String relativeTo) {
 		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
