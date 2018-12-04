@@ -74,6 +74,9 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * The '<em><b>CHILD</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the direct children of the specified concept.
+	 * <!-- end-model-doc -->
 	 * @see #CHILD_VALUE
 	 * @generated
 	 * @ordered
@@ -130,6 +133,9 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the direct children of the specified concept.
+	 * <!-- end-model-doc -->
 	 * @see #CHILD
 	 * @model
 	 * @generated

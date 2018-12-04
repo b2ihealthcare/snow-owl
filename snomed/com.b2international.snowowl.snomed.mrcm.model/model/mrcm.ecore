@@ -215,7 +215,11 @@
         <details key="documentation" value="Include the specified concept and all its subtype concepts."/>
       </eAnnotations>
     </eLiterals>
-    <eLiterals name="CHILD" value="3" literal="CHILD"/>
+    <eLiterals name="CHILD" value="3" literal="CHILD">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="documentation" value="Include the direct children of the specified concept."/>
+      </eAnnotations>
+    </eLiterals>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ConstraintStrength">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
