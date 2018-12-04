@@ -59,6 +59,8 @@ public final class SnomedHierarchyDefinition extends SnomedConceptSetDefinition 
 		switch (inclusionType) {
 		case SELF: 
 			return conceptId;
+		case CHILD:
+			return String.format("<!%s", conceptId);
 		case DESCENDANT: 
 			return String.format("<%s", conceptId); 
 		case SELF_OR_DESCENDANT: 
