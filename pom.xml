@@ -673,7 +673,7 @@
 							<type>eclipse-plugin</type>
 							<id>com.google.guava</id>
 							<restrictTo>
-								<versionRange>${guava.version}</versionRange>
+								<versionRange>${guava.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- Restrict SLF4J version to Virgo 3.7.0 compatible version -->
