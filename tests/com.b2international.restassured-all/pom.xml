@@ -43,7 +43,6 @@
 							<includeArtifactIds>
 								rest-assured,
 								rest-assured-common,
-								tagsoup,
 								json-path,
 								xml-path
 							</includeArtifactIds>

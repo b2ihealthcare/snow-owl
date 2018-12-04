@@ -4,7 +4,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/analysis-common-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/antlr4-runtime-4.5.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/compiler-0.9.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-6.5.0.jar"/>

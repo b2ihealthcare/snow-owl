@@ -19,8 +19,6 @@
 <unit id="org.antlr.runtime.source" version="3.2.0.v201101311130"/>
 <unit id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
 <unit id="org.apache.commons.beanutils.source" version="1.8.0.v201205091237"/>
-<unit id="org.apache.commons.codec" version="1.6.0.v201305230611"/>
-<unit id="org.apache.commons.codec.source" version="1.6.0.v201305230611"/>
 <unit id="org.apache.commons.exec" version="1.1.0.v201301240602"/>
 <unit id="org.apache.commons.exec.source" version="1.1.0.v201301240602"/>
 <unit id="org.apache.commons.lang" version="2.6.0.v201404270220"/>

@@ -39,6 +39,7 @@
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
+		<commons.codec.version>1.10</commons.codec.version>
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
@@ -666,6 +667,12 @@
 		    <artifactId>HdrHistogram</artifactId>
 		    <version>${hdrhistogram.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+    		<groupId>commons-codec</groupId>
+    		<artifactId>commons-codec</artifactId>
+    		<version>${commons.codec.version}</version>
+    		<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

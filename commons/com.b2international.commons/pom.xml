@@ -64,7 +64,6 @@
 								zjsonpatch,
 								micrometer-core,
 								micrometer-registry-prometheus,
-								HdrHistogram,
 								LatencyUtils,
 								simpleclient_common,
 								simpleclient
