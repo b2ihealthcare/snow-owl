@@ -49,7 +49,7 @@ public final class SnomedConstraintSearchRequestBuilder
 	}
 	
 	public SnomedConstraintSearchRequestBuilder filterByChildIds(Collection<String> childIds) {
-		return addOption(SnomedConstraintSearchRequest.OptionKey.SELF, childIds);
+		return addOption(SnomedConstraintSearchRequest.OptionKey.CHILD, childIds);
 	}
 	
 	public SnomedConstraintSearchRequestBuilder filterByDescendantId(String descendantId) {
