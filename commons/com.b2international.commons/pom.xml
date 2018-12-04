@@ -14,7 +14,6 @@
 
 	<properties>
 		<micrometer.version>1.0.6</micrometer.version>
-		<typetools.version>0.4.8</typetools.version>
 		<zjsonpatch.version>0.4.4</zjsonpatch.version>
 		<picocli.version>3.5.1</picocli.version>
 		<jsr305.version>1.3.9</jsr305.version>
@@ -36,11 +35,6 @@
 			<groupId>com.flipkart.zjsonpatch</groupId>
 			<artifactId>zjsonpatch</artifactId>
 			<version>${zjsonpatch.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.jodah</groupId>
-			<artifactId>typetools</artifactId>
-			<version>${typetools.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
@@ -67,7 +61,6 @@
 							<includeArtifactIds>
 								jsr305,
 								picocli,
-								typetools,
 								zjsonpatch,
 								micrometer-core,
 								micrometer-registry-prometheus,

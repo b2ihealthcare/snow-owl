@@ -709,4 +709,18 @@ Visit us at http://b2i.sg
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="net.jodah.typetools"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="de.svenkubiak.jBCrypt"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
 </feature>

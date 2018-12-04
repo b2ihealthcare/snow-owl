@@ -37,6 +37,7 @@
 		<jetty.version>9.4.5.v20170502</jetty.version>
 		<fast.classpath.scanner.version>3.1.6</fast.classpath.scanner.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
+		<typetools.version>0.4.8</typetools.version>
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
@@ -651,7 +652,14 @@
 	        <groupId>de.svenkubiak</groupId>
 	        <artifactId>jBCrypt</artifactId>
 	        <version>${jbcrypt.version}</version>
+	        <scope>provided</scope>
     	</dependency>
+    	<dependency>
+			<groupId>net.jodah</groupId>
+			<artifactId>typetools</artifactId>
+			<version>${typetools.version}</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
