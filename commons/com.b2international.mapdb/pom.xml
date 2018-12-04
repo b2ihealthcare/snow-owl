@@ -11,6 +11,7 @@
 	
 	<properties>
 		<guava.version>20.0</guava.version>
+		<guava.versionRange>[20.0.0,21.0.0)</guava.versionRange>
 		<mapdb.version>3.0.7</mapdb.version>
 		<kotlin.version>1.2.51</kotlin.version>
 		<eclipse.collections.version>9.1.0</eclipse.collections.version>
