@@ -37,6 +37,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>MANDATORY CM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Mandatory concept model constraint.
+	 * <!-- end-model-doc -->
 	 * @see #MANDATORY_CM_VALUE
 	 * @generated
 	 * @ordered
@@ -47,6 +50,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>RECOMMENDED CM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Recommended concept model constraint based on best practice editorial rules.
+	 * <!-- end-model-doc -->
 	 * @see #RECOMMENDED_CM_VALUE
 	 * @generated
 	 * @ordered
@@ -57,6 +63,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>ADVISORY CM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Advisory concept model constraint based on editorial conventions.
+	 * <!-- end-model-doc -->
 	 * @see #ADVISORY_CM_VALUE
 	 * @generated
 	 * @ordered
@@ -67,6 +76,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>MANDATORY PC</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Mandatory constraint on post-coordinated refinement.
+	 * <!-- end-model-doc -->
 	 * @see #MANDATORY_PC_VALUE
 	 * @generated
 	 * @ordered
@@ -77,6 +89,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>INFORMATION MODEL PC</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Constraint of post-coordinated refinement that is specific to use in a particular information model. The information model is identified by the 'scope' attribute.
+	 * <!-- end-model-doc -->
 	 * @see #INFORMATION_MODEL_PC_VALUE
 	 * @generated
 	 * @ordered
@@ -87,6 +102,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>USE CASE SPECIFIC PC</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Constraint of post-coordinated refinement that is specific to a particular use case. The use case is identified by the 'scope' attribute.
+	 * <!-- end-model-doc -->
 	 * @see #USE_CASE_SPECIFIC_PC_VALUE
 	 * @generated
 	 * @ordered
@@ -97,6 +115,9 @@ public enum ConstraintStrength implements Enumerator {
 	 * The '<em><b>IMPLEMENTATION SPECIFIC PC</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Constraint of post-coordinated refinement that is specific to a particular application or local implementation. The implementation is identified by the 'scope' attribute.
+	 * <!-- end-model-doc -->
 	 * @see #IMPLEMENTATION_SPECIFIC_PC_VALUE
 	 * @generated
 	 * @ordered

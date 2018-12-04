@@ -37,6 +37,9 @@ public enum GroupRule implements Enumerator {
 	 * The '<em><b>UNGROUPED</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Test cardinality or interdependency between ungrouped relationships.
+	 * <!-- end-model-doc -->
 	 * @see #UNGROUPED_VALUE
 	 * @generated
 	 * @ordered
@@ -47,6 +50,9 @@ public enum GroupRule implements Enumerator {
 	 * The '<em><b>SINGLE GROUP</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Test cardinality or interdependency between Relationships in each relationship group.
+	 * <!-- end-model-doc -->
 	 * @see #SINGLE_GROUP_VALUE
 	 * @generated
 	 * @ordered
@@ -57,6 +63,9 @@ public enum GroupRule implements Enumerator {
 	 * The '<em><b>ALL GROUPS</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Test cardinality or interdependency between all relationships irrespective of whether they are grouped or ungrouped.
+	 * <!-- end-model-doc -->
 	 * @see #ALL_GROUPS_VALUE
 	 * @generated
 	 * @ordered
@@ -67,6 +76,9 @@ public enum GroupRule implements Enumerator {
 	 * The '<em><b>MULTIPLE GROUPS</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Test cardinality or interdependency between relationship groups that match the predicates in the referenced dependency predicate.
+	 * <!-- end-model-doc -->
 	 * @see #MULTIPLE_GROUPS_VALUE
 	 * @generated
 	 * @ordered

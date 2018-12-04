@@ -1,10 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Snow Owl MRCM Model
+Bundle-Name: %pluginName
 Bundle-SymbolicName: com.b2international.snowowl.snomed.mrcm.model;singleton:=true
+Automatic-Module-Name: com.b2international.snowowl.snomed.mrcm.model
 Bundle-Version: 6.11.0.qualifier
 Bundle-ClassPath: .
-Bundle-Vendor: B2i Healthcare
+Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",

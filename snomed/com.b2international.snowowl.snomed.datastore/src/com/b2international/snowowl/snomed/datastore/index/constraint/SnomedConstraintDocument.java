@@ -79,10 +79,11 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		 * are looking for applicable constraints.
 		 */
 		final Set<String> selfIds = newHashSet();
+		final Set<String> childIds = newHashSet();
 		final Set<String> descendantIds = newHashSet();
 		final Set<String> refSetIds = newHashSet();
 		final Set<String> relationshipKeys = newHashSet(); // "typeId=destinationId" format
-		collectIds(constraint.getDomain(), selfIds, descendantIds, refSetIds, relationshipKeys);
+		collectIds(constraint.getDomain(), selfIds, childIds, descendantIds, refSetIds, relationshipKeys);
 
 		return new Builder()
 				.id(constraint.getUuid())
@@ -120,7 +121,8 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	 *            type-destination values
 	 */
 	private static void collectIds(final ConceptSetDefinition definition, 
-			final Set<String> selfIds, 
+			final Set<String> selfIds,
+			final Set<String> childIds,
 			final Set<String> descendantIds, 
 			final Set<String> refSetIds, 
 			final Set<String> relationshipKeys) {
@@ -136,6 +138,9 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				switch (inclusionType) {
 					case SELF:
 						selfIds.add(focusConceptId);
+						break;
+					case CHILDREN:
+						childIds.add(focusConceptId);
 						break;
 					case DESCENDANT:
 						descendantIds.add(focusConceptId);
@@ -168,7 +173,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			@Override
 			public ConceptSetDefinition caseCompositeConceptSetDefinition(final CompositeConceptSetDefinition definition) {
 				for (final ConceptSetDefinition childdefinition : definition.getChildren()) {
-					collectIds(childdefinition, selfIds, descendantIds, refSetIds, relationshipKeys);
+					collectIds(childdefinition, selfIds, childIds, descendantIds, refSetIds, relationshipKeys);
 				}
 				return definition;
 			}
@@ -337,6 +342,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	public static final class Fields extends RevisionDocument.Fields {
 		public static final String PREDICATE_TYPE = "predicateType";
 		public static final String SELF_IDS = "selfIds";
+		public static final String CHILD_IDS = "childIds";
 		public static final String DESCENDANT_IDS = "descendantIds";
 		public static final String REFSET_IDS = "refSetIds";
 		public static final String RELATIONSHIP_KEYS = "relationshipKeys";
@@ -355,6 +361,10 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			return matchAny(Fields.SELF_IDS, selfIds);
 		}
 
+		public static Expression childIds(final Collection<String> childIds) {
+			return matchAny(Fields.CHILD_IDS, childIds);
+		}
+		
 		public static Expression descendantIds(final Collection<String> descendantIds) {
 			return matchAny(Fields.DESCENDANT_IDS, descendantIds);
 		}
