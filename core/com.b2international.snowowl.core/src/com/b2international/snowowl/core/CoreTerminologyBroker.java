@@ -175,6 +175,24 @@ public class CoreTerminologyBroker {
 
 	private CoreTerminologyBroker() {
 		//avoid instantiation
+		
+		initializeTerminologyToShortnameCache();
+	}
+	
+	private void initializeTerminologyToShortnameCache() {
+		
+		for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
+			final List<String> affectedCodeSystems = Lists.newArrayList();
+			final String id = terminology.getAttribute(ID_ATTRIBUTE);
+
+			affectedCodeSystems.addAll(
+					Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
+					.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
+					.collect(Collectors.toList())
+					);
+
+			TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, ImmutableSortedSet.copyOf(affectedCodeSystems));
+		}
 	}
 
 	public static CoreTerminologyBroker getInstance() {
@@ -378,31 +396,11 @@ public class CoreTerminologyBroker {
 	public SortedSet<String> getAffectedCodeSystemsForTeminology(final String terminologyId) {
 		Preconditions.checkNotNull(terminologyId, "terminologyId");
 		
-		if (!TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId)) {
-			boolean terminologyPresent = false;
-			
-			for (final IConfigurationElement terminology : Platform.getExtensionRegistry().getConfigurationElementsFor(TERMINOLOGY_EXTENSION_POINT_ID)) {
-				final List<String> affectedCodeSystems = Lists.newArrayList();
-				final String id = terminology.getAttribute(ID_ATTRIBUTE);
-				
-				if (id.equals(terminologyId)) {
-					terminologyPresent = true;
-				}
-				
-				affectedCodeSystems.addAll(
-							Arrays.stream(terminology.getChildren(DEPENDENCY_ATTRIBUTE))
-								.map(configurationElement -> configurationElement.getAttribute(SHORT_NAME_ATTRIBUTE))
-								.collect(Collectors.toList())
-							);
-				TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.put(id, ImmutableSortedSet.copyOf(affectedCodeSystems));
-			}
-			
-			if (!terminologyPresent) {
-				throw new IllegalArgumentException("No terminology extension has been registered with the id: " + terminologyId);				
-			}
-		} 
-		
-		return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
+		if (TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.containsKey(terminologyId)) {
+			return TERMINOLOGY_ID_TO_SHORTNAMES_CACHE.get(terminologyId);
+		} else {
+			throw new IllegalArgumentException("No terminology extension has been registered with the id: " + terminologyId);
+		}
 	}
 	
 	public ICoreTerminologyComponentInformation getComponentInformation(final Object object) {
