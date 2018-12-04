@@ -100,6 +100,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 				.predicateType(predicateType)
 				.selfIds(selfIds)
 				.descendantIds(descendantIds)
+				.childIds(childIds)
 				.refSetIds(refSetIds)
 				.relationshipKeys(relationshipKeys);
 	}
@@ -225,6 +226,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 
 		private SnomedConstraintPredicateType predicateType;
 		private Collection<String> selfIds;
+		private Collection<String> childIds;
 		private Collection<String> descendantIds;
 		private Collection<String> refSetIds;
 		private Collection<String> relationshipKeys;
@@ -287,6 +289,11 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			this.selfIds = selfIds;
 			return getSelf();
 		}
+		
+		public Builder childIds(Collection<String> childIds) {
+			this.childIds = childIds;
+			return getSelf();
+		}
 
 		public Builder descendantIds(final Collection<String> descendantIds) {
 			this.descendantIds = descendantIds;
@@ -316,6 +323,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 					predicate, 
 					predicateType, 
 					selfIds, 
+					childIds,
 					descendantIds, 
 					refSetIds,
 					relationshipKeys);
@@ -394,6 +402,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	// Used when looking for applicable constraints for a concept
 	private final SnomedConstraintPredicateType predicateType;
 	private final Set<String> selfIds;
+	private final Set<String> childIds;
 	private final Set<String> descendantIds;
 	private final Set<String> refSetIds;
 	private final Set<String> relationshipKeys;
@@ -411,6 +420,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 			PredicateFragment predicate,
 			SnomedConstraintPredicateType predicateType, 
 			Collection<String> selfIds, 
+			Collection<String> childIds,
 			Collection<String> descendantIds,
 			Collection<String> refSetIds, 
 			Collection<String> relationshipKeys) {
@@ -428,6 +438,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 		this.predicate = predicate;
 		this.predicateType = predicateType;
 		this.selfIds = Collections3.toImmutableSet(selfIds);
+		this.childIds = Collections3.toImmutableSet(childIds);
 		this.descendantIds = Collections3.toImmutableSet(descendantIds);
 		this.refSetIds = Collections3.toImmutableSet(refSetIds);
 		this.relationshipKeys = Collections3.toImmutableSet(relationshipKeys);
@@ -478,6 +489,13 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 	 */
 	public Set<String> getSelfIds() {
 		return selfIds;
+	}
+	
+	/**
+	 * Returns all SNOMED CT identifiers where this predicate can be applied on the direct children of the given identifier.
+	 */
+	public Set<String> getChildIds() {
+		return childIds;
 	}
 
 	/**
