@@ -14,7 +14,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-rest-high-level-client-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-secure-sm-6.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-6.5.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/HdrHistogram-2.1.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.7.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.jar"/>

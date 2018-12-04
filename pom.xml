@@ -38,6 +38,7 @@
 		<fast.classpath.scanner.version>3.1.6</fast.classpath.scanner.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
+		<hdrhistogram.version>2.1.10</hdrhistogram.version>
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
@@ -658,6 +659,12 @@
 			<groupId>net.jodah</groupId>
 			<artifactId>typetools</artifactId>
 			<version>${typetools.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hdrhistogram</groupId>
+		    <artifactId>HdrHistogram</artifactId>
+		    <version>${hdrhistogram.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
