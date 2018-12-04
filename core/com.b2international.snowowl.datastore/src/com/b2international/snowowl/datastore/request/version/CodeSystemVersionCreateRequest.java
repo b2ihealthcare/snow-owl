@@ -183,8 +183,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
-			.execute(context.service(IEventBus.class))
-			.getSync()
+			.getRequest()
+			.execute(context)
 			.getItems();
 	}
 	
