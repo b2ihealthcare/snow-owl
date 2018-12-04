@@ -41,6 +41,7 @@
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
 		<commons.logging.version>1.2</commons.logging.version>
 		<commons.codec.version>1.10</commons.codec.version>
+		<fastutil.version>8.2.2</fastutil.version>
 		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
@@ -680,6 +681,12 @@
     		<artifactId>commons-logging</artifactId>
     		<version>${commons.logging.version}</version>
     		<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>it.unimi.dsi</groupId>
+			<artifactId>fastutil</artifactId>
+			<version>${fastutil.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
