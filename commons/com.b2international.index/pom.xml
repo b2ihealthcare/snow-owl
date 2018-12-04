@@ -83,7 +83,6 @@
 								analysis-common,
 								antlr4-runtime,
 								asm-debug-all,
-								commons-logging,
 								compiler,
 								elasticsearch,
 								elasticsearch-cli,

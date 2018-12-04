@@ -263,7 +263,7 @@ Visit us at http://b2i.sg
          id="org.apache.commons.logging"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.2.0"
          unpack="false"/>
 
    <plugin
