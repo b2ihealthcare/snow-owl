@@ -138,10 +138,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	private Map<CodeSystemEntry, IVersioningManager> createVersioningManagers(final ServiceProvider context, Map<String, CodeSystemEntry> codeSystemsByShortName, final CodeSystemEntry baseCodeSystem) {
 		final Map<CodeSystemEntry, IVersioningManager> versioningManagersByCodeSystem  = Maps.newHashMap();
-		final IVersioningManager versioningManager = VersioningManagerBroker.INSTANCE.createVersioningManager(baseCodeSystem.getTerminologyComponentId());
-		versioningManagersByCodeSystem.put(baseCodeSystem, versioningManager);
-		
-		CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(baseCodeSystem.getTerminologyComponentId())
+		baseCodeSystem.getDependenciesAndSelf()
 			.stream()
 			.map(affectedCodeSystemShortName -> codeSystemsByShortName.get(affectedCodeSystemShortName))
 			.forEach(affectedCodeSystem -> {
