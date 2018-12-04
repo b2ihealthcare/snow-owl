@@ -24,7 +24,7 @@
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/SELF"/>
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/DESCENDANT"/>
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/SELF_OR_DESCENDANT"/>
-      <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/CHILDREN"/>
+      <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//HierarchyInclusionType/CHILD"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="mrcm.ecore#//ConstraintStrength">
       <genEnumLiterals ecoreEnumLiteral="mrcm.ecore#//ConstraintStrength/MANDATORY_CM"/>

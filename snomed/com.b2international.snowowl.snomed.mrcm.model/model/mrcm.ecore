@@ -215,7 +215,7 @@
         <details key="documentation" value="Include the specified concept and all its subtype concepts."/>
       </eAnnotations>
     </eLiterals>
-    <eLiterals name="CHILDREN" value="3"/>
+    <eLiterals name="CHILD" value="3" literal="CHILD"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="ConstraintStrength">
     <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">

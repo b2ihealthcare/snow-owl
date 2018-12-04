@@ -139,7 +139,7 @@ public final class SnomedConstraintDocument extends RevisionDocument implements 
 					case SELF:
 						selfIds.add(focusConceptId);
 						break;
-					case CHILDREN:
+					case CHILD:
 						childIds.add(focusConceptId);
 						break;
 					case DESCENDANT:

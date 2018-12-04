@@ -1004,7 +1004,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.SELF);
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.DESCENDANT);
 		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.SELF_OR_DESCENDANT);
-		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.CHILDREN);
+		addEEnumLiteral(hierarchyInclusionTypeEEnum, HierarchyInclusionType.CHILD);
 
 		initEEnum(constraintStrengthEEnum, ConstraintStrength.class, "ConstraintStrength");
 		addEEnumLiteral(constraintStrengthEEnum, ConstraintStrength.MANDATORY_CM);

@@ -71,14 +71,14 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * @ordered
 	 */
 	SELF_OR_DESCENDANT(2, "SELF_OR_DESCENDANT", "SELF_OR_DESCENDANT"), /**
-	 * The '<em><b>CHILDREN</b></em>' literal object.
+	 * The '<em><b>CHILD</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #CHILDREN_VALUE
+	 * @see #CHILD_VALUE
 	 * @generated
 	 * @ordered
 	 */
-	CHILDREN(3, "CHILDREN", "CHILDREN");
+	CHILD(3, "CHILD", "CHILD");
 
 	/**
 	 * The '<em><b>SELF</b></em>' literal value.
@@ -123,19 +123,19 @@ public enum HierarchyInclusionType implements Enumerator {
 	public static final int SELF_OR_DESCENDANT_VALUE = 2;
 
 	/**
-	 * The '<em><b>CHILDREN</b></em>' literal value.
+	 * The '<em><b>CHILD</b></em>' literal value.
 	 * <!-- begin-user-doc -->
 	 * <p>
-	 * If the meaning of '<em><b>CHILDREN</b></em>' literal object isn't clear,
+	 * If the meaning of '<em><b>CHILD</b></em>' literal object isn't clear,
 	 * there really should be more of a description here...
 	 * </p>
 	 * <!-- end-user-doc -->
-	 * @see #CHILDREN
+	 * @see #CHILD
 	 * @model
 	 * @generated
 	 * @ordered
 	 */
-	public static final int CHILDREN_VALUE = 3;
+	public static final int CHILD_VALUE = 3;
 
 	/**
 	 * An array of all the '<em><b>Hierarchy Inclusion Type</b></em>' enumerators.
@@ -148,7 +148,7 @@ public enum HierarchyInclusionType implements Enumerator {
 			SELF,
 			DESCENDANT,
 			SELF_OR_DESCENDANT,
-			CHILDREN,
+			CHILD,
 		};
 
 	/**
@@ -208,7 +208,7 @@ public enum HierarchyInclusionType implements Enumerator {
 			case SELF_VALUE: return SELF;
 			case DESCENDANT_VALUE: return DESCENDANT;
 			case SELF_OR_DESCENDANT_VALUE: return SELF_OR_DESCENDANT;
-			case CHILDREN_VALUE: return CHILDREN;
+			case CHILD_VALUE: return CHILD;
 		}
 		return null;
 	}
