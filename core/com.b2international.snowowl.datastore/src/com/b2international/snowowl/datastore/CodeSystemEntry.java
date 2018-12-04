@@ -352,9 +352,10 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	@JsonIgnore
 	public SortedSet<String> getDependenciesAndSelf() {
-		Set<String> affectedCodeSystems = Sets.newHashSet(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
+		com.google.common.collect.ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+		affectedCodeSystems.addAll(CoreTerminologyBroker.getInstance().getAffectedCodeSystemsForTeminology(terminologyComponentId));
 		affectedCodeSystems.add(shortName);
-		return ImmutableSortedSet.copyOf(affectedCodeSystems);
+		return affectedCodeSystems.build();
 	}
 	
 	/**
