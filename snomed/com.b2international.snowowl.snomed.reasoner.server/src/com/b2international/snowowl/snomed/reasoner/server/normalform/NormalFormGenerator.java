@@ -283,6 +283,11 @@ public final class NormalFormGenerator {
 				unionGroups.add(toNonZeroUnionGroup(preserveNumbers, key, unionGroupRelationships));
 			}
 		}
+		
+		// If there are no relationships, process the reference set members
+		if (relationshipsByUnionGroupId.isEmpty()) {
+			unionGroups.addAll(toZeroUnionGroups(ImmutableList.of(), groupMembers));
+		}
 	
 		return unionGroups.build();
 	}
