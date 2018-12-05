@@ -99,6 +99,10 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addEffectiveTimeClause(queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::referenceSetId);
 		
+		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
+			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Short.class)));
+		}
+		
 		if (!referencedComponentIds.isEmpty()) {
 			queryBuilder.filter(referencedComponentIds(referencedComponentIds));
 		}

@@ -56,6 +56,7 @@ import com.b2international.snowowl.datastore.internal.branch.MainBranchImpl;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.identity.domain.User;
 
 /**
  * @since 4.1
@@ -70,7 +71,7 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+		protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String userId, String commitMessage) {
 			if (!dryRun && from.headTimestamp() > from.baseTimestamp()) {
 				return handleCommit(to, clock.getTimestamp());
 			} else {
@@ -381,7 +382,7 @@ public class BranchManagerTest {
 	}
 
 	private Branch merge(Branch target, Branch source) {
-		return target.merge(source, "Message");
+		return target.merge(source, User.SYSTEM.getUsername(), "Message");
 	}
 
 	private Branch rebase(Branch branch) {
@@ -389,6 +390,6 @@ public class BranchManagerTest {
 	}
 	
 	private Branch rebase(Branch branch, Branch onTopOf) {
-		return branch.rebase(onTopOf, "Message");
+		return branch.rebase(onTopOf, User.SYSTEM.getUsername(), "Message");
 	}
 }

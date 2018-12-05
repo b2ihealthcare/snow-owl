@@ -62,6 +62,7 @@ import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBra
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.review.ReviewManager;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -170,7 +171,7 @@ public class CDOBranchManagerTest {
 
 		// commit and rebase
 		manager.handleCommit(main, clock.getTimeStamp());
-		Branch rebasedBranchA = branchA.rebase(branchA.parent(), "Rebase");
+		Branch rebasedBranchA = branchA.rebase(branchA.parent(), User.SYSTEM.getUsername(), "Rebase");
 		
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
@@ -195,7 +196,7 @@ public class CDOBranchManagerTest {
 		// make a commit on MAIN
 		manager.handleCommit((InternalBranch) a.parent(), clock.getTimeStamp());
 		// rebase child
-		final InternalCDOBasedBranch rebasedA = (InternalCDOBasedBranch) a.rebase(a.parent(), "Rebase A");
+		final InternalCDOBasedBranch rebasedA = (InternalCDOBasedBranch) a.rebase(a.parent(), User.SYSTEM.getUsername(), "Rebase A");
 		final InternalCDOBasedBranch parentAfterRebase = (InternalCDOBasedBranch) rebasedA.parent();
 		assertThat(rebasedA.segmentId()).isEqualTo(3);
 		assertThat(rebasedA.segments()).containsOnly(3);

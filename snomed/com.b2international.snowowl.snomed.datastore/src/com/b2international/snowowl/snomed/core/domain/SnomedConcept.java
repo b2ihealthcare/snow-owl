@@ -95,7 +95,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	}
 	
 	/**
-	 * Helper function to get ancestors of a given {@link SnomedConcept}.
+	 * Helper function to get ancestors of a given {@link SnomedConcept}, both stated and inferred.
 	 */
 	public static final Function<SnomedConcept, Set<String>> GET_ANCESTORS = (concept) -> {
 		final Set<String> ancestors = newHashSet();
@@ -110,6 +110,20 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		}
 		for (long ancestor : concept.getStatedAncestorIds()) {
 			ancestors.add(Long.toString(ancestor));
+		}
+		return ancestors;
+	};
+
+	/**
+	 * Helper function to get only direct parents of a given {@link SnomedConcept}, both stated and inferred.
+	 */
+	public static final Function<SnomedConcept, Set<String>> GET_PARENTS = (concept) -> {
+		final Set<String> ancestors = newHashSet();
+		for (long parent : concept.getParentIds()) {
+			ancestors.add(Long.toString(parent));
+		}
+		for (long parent : concept.getStatedParentIds()) {
+			ancestors.add(Long.toString(parent));
 		}
 		return ancestors;
 	};

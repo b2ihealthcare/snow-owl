@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +68,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
 		})
 	@RequestMapping(method = RequestMethod.POST, consumes={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest) {
+	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest, Principal principal) {
 		ApiValidation.checkInput(restRequest);
 		
 		final Merge merge = RepositoryRequests.merging()
@@ -75,6 +76,7 @@ public class SnomedBranchMergingController extends AbstractRestService {
 			.setSource(restRequest.getSource())
 			.setTarget(restRequest.getTarget())
 			.setReviewId(restRequest.getReviewId())
+			.setUserId(principal.getName())
 			.setCommitComment(restRequest.getCommitComment())
 			.build(repositoryId)
 			.execute(bus)

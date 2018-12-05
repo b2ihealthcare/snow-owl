@@ -28,15 +28,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.http.client.methods.HttpGet;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.client.Response;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.rest.RestStatus;
@@ -51,12 +51,10 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
 import com.b2international.index.Text;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.es.EsClient;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Primitives;
@@ -70,17 +68,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
-	private final ObjectMapper mapper;
 	
 	private final Logger log;
 	private final String prefix;
 
-	public EsIndexAdmin(EsClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
+	public EsIndexAdmin(EsClient client, String name, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
-		this.mapper = mapper;
 		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		
@@ -99,23 +95,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		final String[] indices = getAllIndexes();
-		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(indices);
-
 		try {
-			return client().indices().exists(getIndexRequest);
-		} catch (IOException e) {
+			return client().indices().exists(getAllIndexes());
+		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of all ES indices.", e);
 		}
 	}
 
 	private boolean exists(DocumentMapping mapping) {
 		final String index = getTypeIndex(mapping);
-		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(index);
-
 		try {
-			return client().indices().exists(getIndexRequest);
-		} catch (IOException e) {
+			return client().indices().exists(index);
+		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of ES index '" + index + "'.", e);
 		}
 	}
@@ -152,10 +143,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				createIndexRequest.settings(indexSettings);
 				
 				try {
-					final CreateIndexResponse response = client.indices()
-							.create(createIndexRequest);
+					final CreateIndexResponse response = client.indices().create(createIndexRequest);
 					checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
-				} catch (IOException e) {
+				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
@@ -193,6 +183,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
 				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
 				.put("translog.durability", "async")
+				.put("write.wait_for_active_shards", "all")
 				.build();
 	}
 	
@@ -208,53 +199,35 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
 			final int pollTimeout = socketTimeout / 2;
 			
-			// GET /_cluster/health/test1,test2
-			final String endpoint = new EsClient.EndpointBuilder()
-					.addPathPartAsIs("_cluster")
-					.addPathPartAsIs("health")
-					.addCommaSeparatedPathParts(indices)
-					.build();
+			final ClusterHealthRequest req = new ClusterHealthRequest(indices)
+					.waitForYellowStatus() // Wait until yellow status is reached
+					.timeout(String.format("%sms", pollTimeout)); // Poll interval is half the socket timeout
+			req.level(Level.INDICES); // Detail level should be concerned with the indices in the path
 			
-			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
-			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-					.put("level", "indices") // Detail level should be concerned with the indices in the path
-					.put("wait_for_status", "yellow") // Wait until yellow status is reached
-					.put("timeout", String.format("%sms", pollTimeout)) // Poll interval is half the socket timeout
-					.put("ignore", "408") // This parameter is not sent to ES; it makes server 408 responses not throw an exception
-					.build(); 
-		
 			final long startTime = System.currentTimeMillis();
 			final long endTime = startTime + clusterTimeout; // Polling finishes when the cluster timeout is reached
-			long currentTime = startTime; 
-			JsonNode responseNode = null;
+			long currentTime = startTime;
+			
+			ClusterHealthResponse response = null;
 			
 			do {
 				
 				try {
-					
-					final Response clusterHealthResponse = client().getLowLevelClient()
-							.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
-					final InputStream responseStream = clusterHealthResponse.getEntity()
-							.getContent();
-					responseNode = mapper.readTree(responseStream);
-					
-					if (!responseNode.get("timed_out").asBoolean()) {
-						currentTime = System.currentTimeMillis();
+					response = client().cluster().health(req);
+					currentTime = System.currentTimeMillis();
+					if (!response.isTimedOut()) {
 						break; 
 					}
-					
-				} catch (IOException e) {
+				} catch (Exception e) {
 					throw new IndexException("Couldn't retrieve cluster health for index " + name, e);
 				}
 				
-				currentTime = System.currentTimeMillis();
-			
 			} while (currentTime < endTime);
 			
-			if (responseNode == null || responseNode.get("timed_out").asBoolean()) {
+			if (response == null || response.isTimedOut()) {
 				throw new IndexException(String.format("Cluster health did not reach yellow status for '%s' indexes after %s ms.", name, currentTime - startTime), null);
 			} else {
-				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, responseNode.get("status").asText(), currentTime - startTime);
+				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, response.getStatus(), currentTime - startTime);
 			}
 		}
 	}
@@ -392,11 +365,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (exists()) {
 			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
 			try {
-				final DeleteIndexResponse deleteIndexResponse = client()
+				final AcknowledgedResponse deleteIndexResponse = client()
 						.indices()
 						.delete(deleteIndexRequest);
 				checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
 			}
 		}
@@ -459,7 +432,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 			
 			try {
-				
+			
 				final RefreshRequest refreshRequest = new RefreshRequest(indicesToRefresh);
 				final RefreshResponse refreshResponse = client()
 						.indices()
@@ -468,7 +441,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indicesToRefresh)), e);
 			}
 		}

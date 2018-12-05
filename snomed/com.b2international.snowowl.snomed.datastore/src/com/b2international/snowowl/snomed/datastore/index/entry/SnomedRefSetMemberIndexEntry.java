@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -429,6 +430,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
 		}
 
+		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
+			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
+		}
+		
 		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {
 			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
 		}

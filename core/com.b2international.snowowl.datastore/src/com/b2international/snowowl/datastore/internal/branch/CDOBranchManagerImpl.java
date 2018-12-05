@@ -154,7 +154,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     }
 
     @Override
-    public InternalBranch rebase(InternalBranch branch, InternalBranch onTopOf, String commitMessage, Runnable postReopen) {
+    public InternalBranch rebase(InternalBranch branch, InternalBranch onTopOf, String userId, String commitMessage, Runnable postReopen) {
 		CDOTransaction testTransaction = null;
 		CDOTransaction newTransaction = null;
 		
@@ -174,7 +174,7 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 				postReopen.run();
 				
 				newTransaction = transferChangeSet(testTransaction, tmpBranch);
-				final InternalCDOBasedBranch tmpBranchWithChanges = (InternalCDOBasedBranch) commitChanges(branch, tmpBranch, commitMessage, newTransaction);
+				final InternalCDOBasedBranch tmpBranchWithChanges = (InternalCDOBasedBranch) commitChanges(branch, tmpBranch, userId, commitMessage, newTransaction);
 				
 				final CDOBranchImpl rebasedBranch = new CDOBranchImpl(branch.name(), onTopOf.path(), tmpBranchWithChanges.baseTimestamp(), 
 						tmpBranchWithChanges.headTimestamp(), branch.metadata(), tmpBranchWithChanges.cdoBranchId(), 
@@ -239,13 +239,13 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
 	}
     
     @Override
-    protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String commitMessage) {
+    protected InternalBranch applyChangeSet(InternalBranch from, InternalBranch to, boolean dryRun, boolean isRebase, String userId, String commitMessage) {
         final CDOTransaction dirtyTransaction = applyChangeSet(from, to, isRebase);
         try {
         	if (dryRun) {
             	return to;
             } else {
-            	return commitChanges(from, to, commitMessage, dirtyTransaction);
+            	return commitChanges(from, to, userId, commitMessage, dirtyTransaction);
             }
 		} finally {
 			LifecycleUtil.deactivate(dirtyTransaction);
@@ -273,13 +273,13 @@ public final class CDOBranchManagerImpl extends BranchManagerImpl implements Bra
     	}
     }
     
-	private InternalBranch commitChanges(InternalBranch from, InternalBranch to, String commitMessage, CDOTransaction targetTransaction) {
+	private InternalBranch commitChanges(InternalBranch from, InternalBranch to, String userId, String commitMessage, CDOTransaction targetTransaction) {
 		try { 
 
             if (targetTransaction.isDirty()) {
     			// FIXME: Using "System" user and "synchronize" description until a more suitable pair can be specified here
             	targetTransaction.setCommitComment(commitMessage);
-            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(User.SYSTEM.getUsername(), commitMessage, targetTransaction)
+            	CDOCommitInfo commitInfo = new CDOServerCommitBuilder(userId, commitMessage, targetTransaction)
             			.parentContextDescription(DatastoreLockContextDescriptions.SYNCHRONIZE)
             			.commitOne();
             	

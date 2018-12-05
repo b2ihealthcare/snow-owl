@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.datastore.events;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -33,9 +34,9 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 	private final long commitTimestamp;
 	private final String userId;
 	private final String comment;
-	private final Collection<ComponentIdentifier> newComponents;
-	private final Collection<ComponentIdentifier> changedComponents;
-	private final Collection<ComponentIdentifier> deletedComponents;
+	private final Set<ComponentIdentifier> newComponents;
+	private final Set<ComponentIdentifier> changedComponents;
+	private final Set<ComponentIdentifier> deletedComponents;
 
 
 	public RepositoryCommitNotification(final String repositoryId,
@@ -55,7 +56,7 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		this.comment = comment;
 		this.newComponents = Collections3.toImmutableSet(newComponents);
 		this.changedComponents = Collections3.toImmutableSet(changedComponents);
-		this.deletedComponents = Collections3.toImmutableList(deletedComponents);
+		this.deletedComponents = Collections3.toImmutableSet(deletedComponents);
 	}
 	
 	public String getCommitId() {
@@ -78,15 +79,15 @@ public final class RepositoryCommitNotification extends RepositoryEvent {
 		return comment;
 	}
 	
-	public Collection<ComponentIdentifier> getNewComponents() {
+	public Set<ComponentIdentifier> getNewComponents() {
 		return newComponents;
 	}
 	
-	public Collection<ComponentIdentifier> getChangedComponents() {
+	public Set<ComponentIdentifier> getChangedComponents() {
 		return changedComponents;
 	}
 	
-	public Collection<ComponentIdentifier> getDeletedComponents() {
+	public Set<ComponentIdentifier> getDeletedComponents() {
 		return deletedComponents;
 	}
 	

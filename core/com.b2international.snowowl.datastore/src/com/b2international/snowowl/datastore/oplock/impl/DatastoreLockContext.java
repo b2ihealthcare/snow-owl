@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class DatastoreLockContext implements Serializable {
 	public DatastoreLockContext(final String userId, final String description, final String parentDescription) {
 		this.userId = Preconditions.checkNotNull(userId, "User identifier may not be null.");
 		this.description = Preconditions.checkNotNull(description, "Operation description may not be null.");
-		this.parentDescription = Preconditions.checkNotNull(parentDescription, "Parent description may not be null.");
+		this.parentDescription = Preconditions.checkNotNull(parentDescription, "Parent lock context ID may not be null.");
 	}
 
 	public String getUserId() {

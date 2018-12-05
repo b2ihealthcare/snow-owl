@@ -67,7 +67,7 @@ public abstract class SnomedApiTestConstants {
 
 	public static final long POLL_INTERVAL = TimeUnit.MILLISECONDS.toMillis(200L);
 
-	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(30L);
+	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
 
 	public static final String EXTENSION_PATH = "MAIN/2016-07-31/SNOMEDCT-B2I";
 

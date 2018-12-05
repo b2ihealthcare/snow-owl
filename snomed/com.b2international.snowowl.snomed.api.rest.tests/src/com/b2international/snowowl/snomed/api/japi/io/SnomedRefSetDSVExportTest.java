@@ -200,7 +200,7 @@ public class SnomedRefSetDSVExportTest {
 	private Set<String> ancestorsOf(SnomedConcepts concepts) {
 		return concepts.getItems()
 					.stream()
-					.flatMap(item -> SnomedConcept.GET_ANCESTORS.apply(item).stream())
+					.flatMap(item -> SnomedConcept.GET_PARENTS.apply(item).stream())
 					.collect(Collectors.toSet());
 	}
 
