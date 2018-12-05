@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.reasoner.model;
 
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongIterator;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.google.common.primitives.Longs;
@@ -59,6 +62,9 @@ public class ConceptDefinitionBuilder {
 					definition.addGroupDefinition(cdDefinition, m.getGroup(), 0);
 				}
 			});
+		
+		final LongSet neverGroupedIngredients = PrimitiveSets.newLongOpenHashSet();
+		final LongSet groupedIngredients = PrimitiveSets.newLongOpenHashSet();
 
 		concept.getOutboundRelationships()
 			.stream()
@@ -83,8 +89,30 @@ public class ConceptDefinitionBuilder {
 						definition.addGroupDefinition(relationshipDefinition, r.getGroup(), r.getUnionGroup());
 					}
 				}
+				
+				// Collect ingredient concepts from HAI relationships
+				if (LongConcepts.HAS_ACTIVE_INGREDIENT_ID == typeId 
+						&& r.getUnionGroup() == 0
+						&& !r.isDestinationNegated()
+						&& !universal) {
+
+					if (r.getGroup() == 0) {
+						neverGroupedIngredients.add(destinationId);
+					} else {
+						groupedIngredients.add(destinationId);
+					}
+				}
 			});
 
+		// Add never-grouped definitions for ingredients that have only appeared in groups
+		groupedIngredients.removeAll(neverGroupedIngredients);
+		
+		for (LongIterator itr = groupedIngredients.iterator(); itr.hasNext(); /* empty */) {
+			final long destinationId = itr.next();
+			final RelationshipDefinition relationshipDefinition = new RelationshipDefinition(LongConcepts.HAS_ACTIVE_INGREDIENT_ID, destinationId, false, false);
+			definition.addNeverGroupedDefinition(relationshipDefinition, 0, 0);
+		}
+		
 		return definition;
 	}
 

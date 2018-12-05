@@ -25,6 +25,7 @@ import java.util.Set;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.revision.RevisionIndex;
@@ -280,9 +281,12 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 				}
 			});
 
+		final LongSet neverGroupedIngredients = PrimitiveSets.newLongOpenHashSet();
+		final LongSet groupedIngredients = PrimitiveSets.newLongOpenHashSet();
+		
 		getReasonerTaxonomyBuilder().getStatedStatementFragments(conceptId)
 			.stream()
-			.forEach(r -> {
+			.forEachOrdered(r -> {
 				final long typeId = r.getTypeId();
 				final long destinationId = r.getDestinationId();
 				
@@ -299,9 +303,31 @@ public class DelegateOntology extends OWLObjectImpl implements OWLMutableOntolog
 					} else {
 						definition.addGroupDefinition(relationshipDefinition, r.getGroup(), r.getUnionGroup());
 					}
+					
+					// Collect ingredient concepts from HAI relationships
+					if (LongConcepts.HAS_ACTIVE_INGREDIENT_ID == typeId 
+							&& r.getUnionGroup() == 0
+							&& !r.isDestinationNegated()
+							&& !r.isUniversal()) {
+
+						if (r.getGroup() == 0) {
+							neverGroupedIngredients.add(destinationId);
+						} else {
+							groupedIngredients.add(destinationId);
+						}
+					}
 				}
 			});
-
+		
+		// Add never-grouped definitions for ingredients that have only appeared in groups
+		groupedIngredients.removeAll(neverGroupedIngredients);
+		
+		for (LongIterator itr = groupedIngredients.iterator(); itr.hasNext(); /* empty */) {
+			final long destinationId = itr.next();
+			final RelationshipDefinition relationshipDefinition = new RelationshipDefinition(LongConcepts.HAS_ACTIVE_INGREDIENT_ID, destinationId, false, false);
+			definition.addNeverGroupedDefinition(relationshipDefinition, 0, 0);
+		}
+		
 		return definition.asOwlAxiom(this);
 	}
 
