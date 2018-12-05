@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,14 @@ import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
  * @since 4.6
  */
-public class Locks implements AutoCloseable {
+public final class Locks implements AutoCloseable {
 
 	private final String repositoryId;
 	private final IDatastoreOperationLockManager lockManager;
@@ -46,7 +47,7 @@ public class Locks implements AutoCloseable {
 	public Locks(RepositoryContext context, String userId, String description, String parentLockContext, Branch firstBranch, Branch... nextBranches) throws OperationLockException, InterruptedException {
 		repositoryId = context.id();
 		lockManager = context.service(IDatastoreOperationLockManager.class);
-		lockContext = new DatastoreLockContext(userId, description, parentLockContext);
+		lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
 	
 		lockTargets = Maps.newHashMap();
 		for (Branch branch : Lists.asList(firstBranch, nextBranches)) {

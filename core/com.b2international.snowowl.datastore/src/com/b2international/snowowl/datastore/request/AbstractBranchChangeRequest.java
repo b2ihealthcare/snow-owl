@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.datastore.request;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -32,15 +34,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public abstract class AbstractBranchChangeRequest<R> implements Request<RepositoryContext, R> {
 
 	@JsonProperty
+	@NotEmpty
 	protected final String sourcePath;
+	
 	@JsonProperty
+	@NotEmpty
 	protected final String targetPath;
+	
 	@JsonProperty
+	@NotEmpty
 	protected final String userId;
+	
 	@JsonProperty
+	@NotEmpty
 	protected final String commitMessage;
+	
 	@JsonProperty
 	protected final String reviewId;
+	
 	@JsonProperty
 	protected final String parentLockContext;
 

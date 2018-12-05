@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.datastore.request;
 
-import javax.annotation.Nullable;
-
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -31,10 +29,10 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 	
 	private String source;
 	private String target;
-	private String userId;
 	private String commitComment;
 	private String reviewId;
-	@Nullable
+	
+	private String userId;
 	private String parentLockContext;
 	
 	CreateMergeRequestBuilder() {}
