@@ -339,9 +339,9 @@ public final class ReasonerTaxonomyBuilder {
 		}
 
 		if (collectInferredComponents) {
-			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));
+			builder.filter(SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));
 		} else {
-			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+			builder.filter(SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 		}
 		
 		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
