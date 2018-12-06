@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.exceptions.ApiValidation;
+import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.CollectionResource;

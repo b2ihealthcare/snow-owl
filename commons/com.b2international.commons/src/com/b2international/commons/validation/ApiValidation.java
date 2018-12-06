@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.hibernate.validator;
-
+package com.b2international.commons.validation;
 
 import static java.util.Collections.singletonList;
 
@@ -31,6 +30,8 @@ import javax.validation.metadata.BeanDescriptor;
 
 import org.hibernate.validator.HibernateValidator;
 
+import com.b2international.commons.exceptions.ValidationException;
+
 /**
  * Custom ValidationUtil class to access powerful bean validation infrastructure
  * specified in JSR-303 at http://beanvalidation.org/1.1/spec/. The static
@@ -40,11 +41,11 @@ import org.hibernate.validator.HibernateValidator;
  * 
  * See for details: https://access.redhat.com/site/solutions/734273
  * 
- * @since 3.4
+ * @since 4.1.1
  * @see http://beanvalidation.org/1.1/spec/
  * @see http://hibernate.org/validator/
  */
-public class ValidationUtil {
+public class ApiValidation {
 
 	private static final ValidatorFactory FACTORY = Validation.byDefaultProvider()
 			.providerResolver(new HibernateValidationProviderResolver()).configure().buildValidatorFactory();;
@@ -57,7 +58,24 @@ public class ValidationUtil {
 		}
 
 	}
+	
+	private ApiValidation() {}
 
+	/**
+	 * Validates the given object using the Bean Validation 1.1 spec
+	 * @param object - the object to validate
+	 * @return - the object if valid
+	 * @throws ValidationException - if there are validation constraint violations
+	 */
+	public static <T> T checkInput(T object) {
+		final Set<ConstraintViolation<T>> violations = getValidator().validate(object);
+		if (!violations.isEmpty()) {
+			throw new ValidationException(violations);
+		} else {
+			return object;
+		}
+	}
+	
 	/**
 	 * Returns a configured {@link Validator} instance for Java bean validation.
 	 * 
@@ -81,7 +99,7 @@ public class ValidationUtil {
 				final Thread thread = Thread.currentThread();
 				final ClassLoader oldClassLoader = thread.getContextClassLoader();
 				try {
-					thread.setContextClassLoader(ValidationUtil.class.getClassLoader());
+					thread.setContextClassLoader(ApiValidation.class.getClassLoader());
 					return FACTORY.getValidator().validate(object, groups);
 				} finally {
 					thread.setContextClassLoader(oldClassLoader);
@@ -104,5 +122,5 @@ public class ValidationUtil {
 			}
 		};
 	}
-
+	
 }

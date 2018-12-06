@@ -442,13 +442,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.b2international.snowowl.hibernate.validator"
-         download-size="0"
-         install-size="0"
-         version="5.1.3.Final-b2i"
-         unpack="false"/>
-
-   <plugin
          id="org.dom4j"
          download-size="0"
          install-size="0"
@@ -631,20 +624,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="com.fasterxml.jackson.module.jackson-module-jsonSchema"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="javax.validation.api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="stax2-api"
          download-size="0"
          install-size="0"
@@ -732,6 +711,76 @@ Visit us at http://b2i.sg
 
    <plugin
          id="it.unimi.dsi.fastutil"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.fasterxml.classmate"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.github.lukehutch.fast-classpath-scanner"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.swagger.annotations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.swagger.models"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="jcl.over.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="jul.to.slf4j"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.bytebuddy.byte-buddy"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="net.bytebuddy.byte-buddy-agent"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.httpcomponents.httpasyncclient"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.mapstruct"
          download-size="0"
          install-size="0"
          version="0.0.0"

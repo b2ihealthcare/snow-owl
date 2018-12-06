@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.api.codesystem.ICodeSystemService;
 import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;

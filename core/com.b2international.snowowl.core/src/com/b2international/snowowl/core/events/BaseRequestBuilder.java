@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.events;
 
-import com.b2international.commons.exceptions.ApiValidation;
+import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ServiceProvider;
 
 /**

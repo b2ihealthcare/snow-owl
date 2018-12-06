@@ -42,10 +42,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import com.b2international.commons.exceptions.ApiValidation;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.snomed.api.browser.ISnomedBrowserService;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserConcept;
 import com.b2international.snowowl.snomed.api.domain.browser.ISnomedBrowserRelationship;
