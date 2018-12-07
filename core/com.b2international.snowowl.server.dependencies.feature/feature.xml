@@ -274,13 +274,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="org.supercsv"
-         download-size="0"
-         install-size="0"
-         version="1.1.0.b2i"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.core.variables"
          download-size="0"
          install-size="0"

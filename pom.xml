@@ -55,7 +55,6 @@
 
 	<modules>
 		<module>commons</module>
-		<module>dependencies</module>
 		<module>core</module>
 		<module>net4j</module>
 		<module>snomed</module>
