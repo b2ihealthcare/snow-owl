@@ -245,9 +245,14 @@ public final class SnomedValidationContext {
 		postValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
+
+		if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile())) {
+			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
+		}
 		
-		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
-		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+		if (configuration.isValidReleaseFile(configuration.getRelationshipFile())) {
+			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+		}
 		
 		this.defects.forEach((file, defects) -> {
 			defects.asMap().forEach((type, messages) -> {
