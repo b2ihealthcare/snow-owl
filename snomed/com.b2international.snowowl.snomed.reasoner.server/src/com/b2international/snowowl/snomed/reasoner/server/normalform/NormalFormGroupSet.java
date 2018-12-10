@@ -115,17 +115,17 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 		int groupNumber = 1;
 
 		for (final NormalFormGroup group : groups) {
-			if (group.getGroupNumber() != NormalFormGroup.UNKOWN_GROUP) {
-				continue;
-			}
-			
-			while (numbersUsed.contains(groupNumber)) {
+			if (group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP) {
+				while (numbersUsed.contains(groupNumber)) {
+					groupNumber++;
+				}
+				
+				group.setGroupNumber(groupNumber);
 				groupNumber++;
 			}
-				
+			
+			// Always check if there are any union groups that need numbers
 			group.fillNumbers();
-			group.setGroupNumber(groupNumber);
-			groupNumber++;
 		}
 	}
 }
