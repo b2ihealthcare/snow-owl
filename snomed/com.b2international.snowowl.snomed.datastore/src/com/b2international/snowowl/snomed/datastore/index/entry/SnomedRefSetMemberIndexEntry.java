@@ -454,6 +454,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return exactMatch(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeId);
 		}
 		
+		public static Expression relationshipGroup(int relationshipGroup) {
+			return match(Fields.RELATIONSHIP_GROUP, relationshipGroup);
+		}
+		
 		public static Expression correlationIds(Collection<String> correlationIds) {
 			return matchAny(Fields.CORRELATION_ID, correlationIds);
 		}
