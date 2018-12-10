@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintStren
 import com.b2international.snowowl.snomed.core.domain.constraint.GroupRule;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
+import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.CardinalityPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.ConcreteDomainPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.DescriptionPredicateFragment;
@@ -142,6 +143,7 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 	@Test
 	public void indexConcreteDomainConstraint() throws Exception {
 		final String id = randomUUID();
+		final String isVaccineId = RandomSnomedIdentiferGenerator.generateConceptId();
 		final SnomedConstraintDocument constraint = SnomedConstraintDocument.relationshipBuilder()
 				.active(DEFAULT_STATUS)
 				.author(DEFAULT_AUTHOR)
@@ -165,8 +167,12 @@ public class SnomedConstraintDocumentSerializationTest extends BaseRevisionIndex
 								DEFAULT_STATUS,
 								DEFAULT_EFFECTIVE_TIME,
 								DEFAULT_AUTHOR,
-								"Vaccine",
-								"canBeTaggedWithVaccine",
+								new HierarchyDefinitionFragment(randomUUID(), 
+										DEFAULT_STATUS, 
+										DEFAULT_EFFECTIVE_TIME, 
+										DEFAULT_AUTHOR, 
+										isVaccineId, 
+										HierarchyInclusionType.SELF),
 								DataType.BOOLEAN,
 								Concepts.STATED_RELATIONSHIP)))
 				.strength(ConstraintStrength.MANDATORY_CM)

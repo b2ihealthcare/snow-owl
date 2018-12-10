@@ -20,13 +20,17 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.SortedSet;
 
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 
 
 /**
@@ -320,4 +324,32 @@ public final class CodeSystemEntry implements Serializable {
 			return false;
 		return true;
 	}
+	
+	/**
+	 * Returns all code system short name dependencies and itself.
+	 */
+	@JsonIgnore
+	public SortedSet<String> getDependenciesAndSelf() {
+		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+		affectedCodeSystems.addAll(getDependencies());
+		affectedCodeSystems.add(shortName);
+		return affectedCodeSystems.build();
+	}
+	
+	/**
+	 * Returns the short names of all affected code systems
+	 */
+	@JsonIgnore
+	public SortedSet<String> getDependencies() {
+		return TerminologyRegistry.INSTANCE.getTerminology(terminologyComponentId).getDependencies();
+	}
+	
+	/**
+	 * Returns a new branch path that originates from the code system's branch path
+	 */
+	@JsonIgnore
+	public String getRelativeBranchPath(String relativeTo) {
+		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
+	}
+	
 }

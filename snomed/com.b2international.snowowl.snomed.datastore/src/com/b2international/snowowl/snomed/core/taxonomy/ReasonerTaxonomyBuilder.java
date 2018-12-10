@@ -60,7 +60,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -75,7 +74,6 @@ public final class ReasonerTaxonomyBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy");
 
 	// Long versions of concept SCTIDs
-	private static final long DEFAULT_UNIT = Long.parseLong(Concepts.DEFAULT_UNIT);
 	private static final Set<String> CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP);
 	private static final int SCROLL_LIMIT = 50_000;
 
@@ -557,17 +555,15 @@ public final class ReasonerTaxonomyBuilder {
 				}
 
 				final String value = SnomedRefSetUtil.serializeValue(member.getDataType(), member.getValue());
-				final String label = member.getAttributeName();
-				final byte type = (byte) member.getDataType().ordinal();
-				final long uomId = Strings.isNullOrEmpty(member.getUnitId()) ? DEFAULT_UNIT : Long.parseLong(member.getUnitId());
+				final long typeId = Long.parseLong(member.getTypeId());
+				final Integer group = member.getGroup();
 				final long refsetId = Long.parseLong(member.getReferenceSetId());
 				final String memberId = member.getId();
 
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(value, 
-						label, 
-						type,
-						uomId, 
+						typeId,
 						refsetId,
+						group,
 						memberId);
 
 				if (Concepts.STATED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
@@ -619,18 +615,15 @@ public final class ReasonerTaxonomyBuilder {
 					}
 
 					final String value = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
-					final String label = (String) member.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
-					final byte type = (byte) SnomedRefSetUtil.getDataType(member.getReferenceSetId()).ordinal();
-					final String uomId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_UNIT_ID); 
-					final long uomIdLong = Strings.isNullOrEmpty(uomId) ? DEFAULT_UNIT : Long.parseLong(uomId);
+					final String typeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID);
+					final Integer group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 					final long refsetId = Long.parseLong(member.getReferenceSetId());
 					final String memberId = member.getId();
 
 					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(value, 
-							label, 
-							type,
-							uomIdLong, 
+							Long.parseLong(typeId), 
 							refsetId,
+							group,
 							memberId);
 
 					if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {

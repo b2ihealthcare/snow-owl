@@ -68,6 +68,8 @@
 		<appender-ref ref="VIRGO_LOG_FILE" />
 	</logger>
 	
+	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
+
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />
 	</root>

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.solr.common.util.JavaBinCodec;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.ClearScrollRequest;
@@ -57,6 +59,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Scroll;
+import com.b2international.index.SearchContextMissingException;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
@@ -76,6 +79,7 @@ import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -261,14 +265,30 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
-				.scroll(scroll.getKeepAlive());
-		final SearchResponse response = admin.client()
-				.scroll(searchScrollRequest);
+		final String scrollId = scroll.getScrollId();
+		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+		searchScrollRequest.scroll(scroll.getKeepAlive());
 		
-		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
-		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
-		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
+		try {
+			
+			final SearchResponse response = admin.client()
+					.scroll(searchScrollRequest);
+			
+			final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
+			final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
+			return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());	
+			
+		} catch (IOException | ElasticsearchStatusException e) {
+			final Throwable rootCause = Throwables.getRootCause(e);
+			
+			if (rootCause instanceof ElasticsearchException && rootCause.getMessage().contains("No search context found for id [")) {
+				throw new SearchContextMissingException(String.format("Search context missing for scrollId '%s'.", scrollId), null);
+			} else if (e instanceof IOException) {
+				throw e;
+			} else {
+				throw new IOException(e);
+			}
+		}
 	}
 	
 	@Override

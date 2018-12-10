@@ -45,6 +45,7 @@ import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.Merging;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -188,6 +189,7 @@ public class SnomedBranchRequestTest {
 		Merge merge = merges.prepareCreate()
 				.setSource(first)
 				.setTarget(firstParentPath)
+				.setUserId(User.SYSTEM.getUsername())
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
 				.execute(bus)

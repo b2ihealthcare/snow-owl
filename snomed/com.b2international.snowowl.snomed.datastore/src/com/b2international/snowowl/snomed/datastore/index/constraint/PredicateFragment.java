@@ -43,5 +43,5 @@ public abstract class PredicateFragment extends ConceptModelComponentFragment {
 
 		super(uuid, active, effectiveTime, author);
 	}
-
+	
 }

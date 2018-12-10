@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 /**
  * Represents an exported column in DSV files created from reference sets of the SNOMED&nbsp;CT terminology. 
- *
  */
 public abstract class AbstractSnomedDsvExportItem implements Serializable {
 
@@ -59,7 +58,6 @@ public abstract class AbstractSnomedDsvExportItem implements Serializable {
 	 * @throws IOException
 	 */
 	public static AbstractSnomedDsvExportItem createFromInputStream(final DataInputStream inputStream) throws IOException {
-		
 		final int ordinal = inputStream.readInt();
 		final SnomedDsvExportItemType type = SnomedDsvExportItemType.values()[ordinal];
 		
@@ -69,12 +67,11 @@ public abstract class AbstractSnomedDsvExportItem implements Serializable {
 				final String componentId = inputStream.readUTF();
 				final String componentLabel = inputStream.readUTF();
 				return new ComponentIdSnomedDsvExportItem(type, componentId, componentLabel);
-
 			case DATAYPE:
-				final String datatypeLabel = inputStream.readUTF();
+				final String dataTypeId = inputStream.readUTF();
+				final String dataTypeLabel = inputStream.readUTF();
 				final boolean booleanDatatype = inputStream.readBoolean();
-				return new DatatypeSnomedDsvExportItem(type, datatypeLabel, booleanDatatype);
-						
+				return new DatatypeSnomedDsvExportItem(type, dataTypeId, dataTypeLabel, booleanDatatype);
 			default:
 				return new SimpleSnomedDsvExportItem(type);
 		}

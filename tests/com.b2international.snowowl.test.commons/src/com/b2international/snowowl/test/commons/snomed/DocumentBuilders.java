@@ -16,18 +16,16 @@
 package com.b2international.snowowl.test.commons.snomed;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -95,30 +93,30 @@ public abstract class DocumentBuilders {
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String attributeName, final BigDecimal value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.DECIMAL);
+	public static SnomedRefSetMemberIndexEntry.Builder decimalMember(final String referencedComponentId, final String typeId, final BigDecimal value) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.DECIMAL);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String attributeName, final int value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.INTEGER);
+	public static SnomedRefSetMemberIndexEntry.Builder integerMember(final String referencedComponentId, final String typeId, final int value) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.INTEGER);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String attributeName, final String value) {
-		return concreteDomain(referencedComponentId, attributeName, value, DataType.STRING);
+	public static SnomedRefSetMemberIndexEntry.Builder stringMember(final String referencedComponentId, final String typeId, final String value) {
+		return concreteDomain(referencedComponentId, typeId, value, DataType.STRING);
 	}
 
-	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String attributeName, final Object value, final DataType type) {
+	public static SnomedRefSetMemberIndexEntry.Builder concreteDomain(final String referencedComponentId, final String typeId, final Object value, final DataType type) {
 		return SnomedRefSetMemberIndexEntry.builder()
-				.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+				.id(UUID.randomUUID().toString())
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
 				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP)
-				.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeName)
+				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
+				.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 0)
 				.field(Fields.DATA_TYPE, type)
 				.field(SnomedRf2Headers.FIELD_VALUE, value);
 	}
-	
 }

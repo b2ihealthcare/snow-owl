@@ -28,6 +28,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>ALL FORMS</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be true in all forms.
+	 * <!-- end-model-doc -->
 	 * @see #ALL_FORMS_VALUE
 	 * @generated
 	 * @ordered
@@ -38,6 +41,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>DISTRIBUTION FORM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be tested in the distribution form.
+	 * <!-- end-model-doc -->
 	 * @see #DISTRIBUTION_FORM_VALUE
 	 * @generated
 	 * @ordered
@@ -48,6 +54,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>STATED FORM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be tested in the stated form.
+	 * <!-- end-model-doc -->
 	 * @see #STATED_FORM_VALUE
 	 * @generated
 	 * @ordered
@@ -58,6 +67,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>CLOSE TO USER FORM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be tested in the close to user form.
+	 * <!-- end-model-doc -->
 	 * @see #CLOSE_TO_USER_FORM_VALUE
 	 * @generated
 	 * @ordered
@@ -68,6 +80,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>LONG NORMAL FORM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be tested in the long normal form.
+	 * <!-- end-model-doc -->
 	 * @see #LONG_NORMAL_FORM_VALUE
 	 * @generated
 	 * @ordered
@@ -78,6 +93,9 @@ public enum ConstraintForm implements Enumerator {
 	 * The '<em><b>SHORT NORMAL FORM</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * The constraint should be tested in the short normal form.
+	 * <!-- end-model-doc -->
 	 * @see #SHORT_NORMAL_FORM_VALUE
 	 * @generated
 	 * @ordered

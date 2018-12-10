@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.terminology;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.SortedSet;
 
 import com.b2international.snowowl.core.domain.IComponent;
 
@@ -39,7 +41,8 @@ public interface Terminology {
 	String getId();
 
 	/**
-	 * Returns whether the terminology supports effective time updates and versioning the terminology requires an effective time to be set. By default
+	 * Returns whether the terminology supports effective time updates and
+	 * versioning the terminology requires an effective time to be set. By default
 	 * it is set to <code>false</code>.
 	 * 
 	 * @return
@@ -47,11 +50,20 @@ public interface Terminology {
 	default boolean isEffectiveTimeSupported() {
 		return false;
 	}
-	
+
 	/**
-	 * @return a {@link Collection} of domain classes that represent terminology components. The returned classes must have
+	 * @return a {@link Collection} of domain classes that represent terminology
+	 *         components. The returned classes must have
 	 *         {@link TerminologyComponent} on them.
 	 */
 	Collection<Class<? extends IComponent>> getTerminologyComponents();
+
+	/**
+	 * @return a {@link SortedSet} of code system shortnames that are set as dependencies
+	 *         of this {@link Terminology}, by default returns empty {@link SortedSet}.
+	 */
+	default SortedSet<String> getDependencies() {
+		return Collections.emptySortedSet();
+	}
 
 }

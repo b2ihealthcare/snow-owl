@@ -269,6 +269,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			.prepareSearchDescription()
 			.all()
 			.setExpand(expandOptions.get("expand", Options.class))
+			.filterByActive(expandOptions.containsKey("active") ? expandOptions.getBoolean("active") : null)
 			.filterByType(expandOptions.containsKey("typeId") ? expandOptions.getString("typeId") : null)
 			.filterByConceptId(conceptIds)
 			.setLocales(locales())

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
 import com.b2international.snowowl.datastore.request.AbstractBranchChangeRequest;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
@@ -38,13 +39,13 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 
 	private static class SyncMergeRequest extends AbstractBranchChangeRequest<Boolean> {
 
-		SyncMergeRequest(final Merge merge, final String commitMessage, String reviewId) {
-			super(merge.getSource(), merge.getTarget(), commitMessage, reviewId);
+		SyncMergeRequest(final Merge merge, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+			super(merge.getSource(), merge.getTarget(), userId, commitMessage, reviewId, parentLockContext);
 		}
 
 		@Override
 		protected Boolean execute(RepositoryContext context, Branch source, Branch target) {
-			try (Locks locks = new Locks(context, source, target)) {
+			try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext, source, target)) {
 				context.service(BaseRevisionBranching.class).merge(source.path(), target.path(), commitMessage, context.service(ComponentRevisionConflictProcessor.class), true);
 				return true;
 			} catch (BranchMergeException e) {
@@ -57,16 +58,16 @@ public class BranchMergeJob extends AbstractBranchChangeRemoteJob {
 		}
 	}
 	
-	public BranchMergeJob(Repository repository, String source, String target, String commitMessage, String reviewId) {
-		super(repository, source, target, commitMessage, reviewId);
+	public BranchMergeJob(Repository repository, String source, String target, String userId, String commitMessage, String reviewId, String parentLockContext) {
+		super(repository, source, target, userId, commitMessage, reviewId, parentLockContext);
 	}
 
 	@Override
 	protected void applyChanges() {
 		new AsyncRequest<>(
-			new RepositoryRequest<>(repository.id(),
+			new RepositoryRequest<>(repository.id(), 
 				new IndexReadRequest<>(
-					new SyncMergeRequest(getMerge(), commitComment, reviewId)
+					new SyncMergeRequest(getMerge(), userId, commitComment, reviewId, parentLockContext)
 				)
 			)
 		).execute(repository.events()).getSync();

@@ -18,8 +18,12 @@ package com.b2international.snowowl.datastore.request.version;
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.CREATE_VERSION;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -61,6 +65,8 @@ import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.terminologyregistry.core.request.CodeSystemRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 5.7
@@ -86,30 +92,16 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	String codeSystemShortName;
 	
 	// lock props
-	private transient DatastoreLockContext lockContext;
-	private transient SingleRepositoryAndBranchLockTarget lockTarget;
+	private transient Multimap<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> lockTargetsByContext;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
 		
-		// get code system
-		CodeSystemEntry codeSystem = null;
-		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
-		final Set<String> repositoryIds = repositoryManager.repositories().stream().map(Repository::id).collect(Collectors.toSet());
-		for (String repositoryId : repositoryIds) {
-			try {
-				codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
-						.build(repositoryId)
-						.execute(context.service(IEventBus.class))
-						.getSync();
-				break;
-			} catch (NotFoundException e) {
-				// ignore
-			}
-		}
+		final Map<String, CodeSystemEntry> codeSystemsByShortName = fetchAllCodeSystems(context);
 		
+		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
@@ -132,36 +124,60 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			// ignore
 		}
 		
-		// check that the specified effective time
-		validateEffectiveTime(context, codeSystem);
+		final List<CodeSystemEntry> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
+			.stream()
+			.map(codeSystemsByShortName::get)
+			.collect(Collectors.toList());
 		
-		acquireLocks(context, user, codeSystem);
+		acquireLocks(context, user, codeSystemsToVersion);
 		
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
 			
-			new RepositoryRequest<>(repositoryId,
-				new IndexReadRequest<>(
-					new BranchRequest<>(codeSystem.getBranchPath(),
-						new RevisionIndexReadRequest<CommitResult>(
-							repositoryManager.get(repositoryId)
-								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemShortName, versionId, description, effectiveTime))
+			codeSystemsToVersion.forEach(codeSystemToVersion -> {
+				// check that the specified effective time is valid in this code system
+				validateEffectiveTime(context, codeSystem);
+				new RepositoryRequest<>(repositoryId,
+					new IndexReadRequest<>(
+						new BranchRequest<>(codeSystem.getBranchPath(),
+							new RevisionIndexReadRequest<CommitResult>(
+								context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
+									.service(VersioningRequestBuilder.class)
+									.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
+							)
 						)
 					)
-				)
-			).execute(context);
+				).execute(context);
+				
+				// tag the repository
+				doTag(context, codeSystem, monitor);
+			});
 			
-			// tag the repository
-			doTag(context, codeSystem, monitor);
+			return Boolean.TRUE;
 		} finally {
 			releaseLocks(context);
 			if (null != monitor) {
 				monitor.done();
 			}
 		}
-		
-		return Boolean.TRUE;
+	}
+	
+	private Map<String, CodeSystemEntry> fetchAllCodeSystems(ServiceProvider context) {
+		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
+		final Collection<Repository> repositories = repositoryManager.repositories();
+		return repositories.stream()
+			.map(repository -> fetchCodeSystem(context, repository.id()))
+			.flatMap(Collection::stream)
+			.collect(Collectors.toMap(CodeSystemEntry::getShortName, Function.identity()));
+	}
+	
+	private List<CodeSystemEntry> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+		return CodeSystemRequests.prepareSearchCodeSystem()
+			.all()
+			.build(repositoryId)
+			.getRequest()
+			.execute(context)
+			.getItems();
 	}
 	
 	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
@@ -190,14 +206,21 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.orElse(Instant.EPOCH);
 	}
 	
-	private void acquireLocks(ServiceProvider context, String user, CodeSystemEntry codeSystem) {
+	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystemEntry> codeSystems) {
 		try {
-			this.lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			this.lockTarget = new SingleRepositoryAndBranchLockTarget(
-				codeSystem.getRepositoryUuid(), 
-				BranchPathUtils.createPath(codeSystem.getBranchPath())
-			);
-			context.service(IDatastoreOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+			this.lockTargetsByContext = HashMultimap.create();
+			
+			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
+			for (CodeSystemEntry codeSystem : codeSystems) {
+				final SingleRepositoryAndBranchLockTarget lockTarget = new SingleRepositoryAndBranchLockTarget(
+						codeSystem.getRepositoryUuid(),
+						BranchPathUtils.createPath(codeSystem.getBranchPath()));
+				
+				context.service(IDatastoreOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+
+				lockTargetsByContext.put(lockContext, lockTarget);
+			}
+			
 		} catch (final OperationLockException e) {
 			if (e instanceof DatastoreOperationLockException) {
 				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
@@ -210,7 +233,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void releaseLocks(ServiceProvider context) {
-		context.service(IDatastoreOperationLockManager.class).unlock(lockContext, lockTarget);
+		for (Entry<DatastoreLockContext, SingleRepositoryAndBranchLockTarget> entry : lockTargetsByContext.entries()) {
+			context.service(IDatastoreOperationLockManager.class).unlock(entry.getKey(), entry.getValue());
+		}
 	}
 	
 	private void doTag(ServiceProvider context, CodeSystemEntry codeSystem, IProgressMonitor monitor) {

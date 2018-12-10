@@ -73,7 +73,7 @@ public class ConceptModelComponentRenderer {
 		} else if (component instanceof SnomedRelationshipPredicate) {
 			fullText = getRelationshipPredicateRendering((SnomedRelationshipPredicate)component, limit);
 		} else if (component instanceof SnomedConcreteDomainPredicate) {
-			fullText = getConcreteDomainElementPredicateRendering((SnomedConcreteDomainPredicate)component); 
+			fullText = getConcreteDomainElementPredicateRendering((SnomedConcreteDomainPredicate)component, limit); 
 		} else if (component instanceof SnomedCardinalityPredicate) {
 			fullText = getCardinalityPredicateRendering((SnomedCardinalityPredicate)component, limit);
 		} else if (component instanceof SnomedDependencyPredicate) {
@@ -160,12 +160,12 @@ public class ConceptModelComponentRenderer {
 		return getLabel(descriptionPredicate.getTypeId());
 	}
 	
-	private String getConcreteDomainElementPredicateRendering(SnomedConcreteDomainPredicate concreteDomainElementPredicate) {
+	private String getConcreteDomainElementPredicateRendering(SnomedConcreteDomainPredicate concreteDomainElementPredicate, int limit) {
 		StringBuilder builder = new StringBuilder();
 		
-		builder.append(concreteDomainElementPredicate.getName());
+		builder.append(getHumanReadableRendering(concreteDomainElementPredicate.getAttribute(), limit));
 		builder.append(" [");
-		builder.append(concreteDomainElementPredicate.getDataType());
+		builder.append(concreteDomainElementPredicate.getRange());
 		builder.append("]");
 		return builder.toString();
 	}

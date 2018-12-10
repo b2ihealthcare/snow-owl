@@ -16,8 +16,8 @@
 package com.b2international.snowowl.snomed.validation;
 
 import static com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator.generateConceptId;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.description;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.description;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
@@ -53,8 +53,8 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
