@@ -128,9 +128,6 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID)) {
 				queryBuilder.filter(mapCategoryIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, String.class)));
 			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_OPERATOR_ID)) {
-				queryBuilder.filter(operatorIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_OPERATOR_ID, String.class)));
-			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
 				queryBuilder.filter(targetComponents(propsFilter.getCollection(SnomedRf2Headers.FIELD_TARGET_COMPONENT, String.class)));
 			}
@@ -140,16 +137,11 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION)) {
 				queryBuilder.filter(mapTargetDescriptions(propsFilter.getCollection(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, String.class)));
 			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_UNIT_ID)) {
-				queryBuilder.filter(unitIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_UNIT_ID, String.class)));
-			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				queryBuilder.filter(valueIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_VALUE_ID, String.class)));
 			}
-			if (propKeys.remove(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME)) {
-				// TODO: Restore ECL filter when concrete domain attributes are represented with SCTIDs
-				// addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class), SnomedRefSetMemberIndexEntry.Expressions::attributeNames);
-				queryBuilder.filter(attributeNames(propsFilter.getCollection(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, String.class)));
+			if (propKeys.remove(SnomedRf2Headers.FIELD_TYPE_ID)) {
+				addEclFilter(context, queryBuilder, propsFilter.getCollection(SnomedRf2Headers.FIELD_TYPE_ID, String.class), SnomedRefSetMemberIndexEntry.Expressions::typeIds);
 			}
 			if (propKeys.remove(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID)) {
 				queryBuilder.filter(domainIds(propsFilter.getCollection(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, String.class)));

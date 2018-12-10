@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.common;
 
 /**
  * Collects all release file field names and headers for SNOMED&nbsp;CT RF2.
- *
  */
 public abstract class SnomedRf2Headers {
 
@@ -58,22 +57,8 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_DESCRIPTION_FORMAT = "descriptionFormat";
 	public static final String FIELD_DESCRIPTION_LENGTH = "descriptionLength";
 	
-	// Field names introduced in AU concrete domain reference set files
-	public static final String FIELD_UNIT_ID = "unitId";
-	public static final String FIELD_OPERATOR_ID = "operatorId";
+	// Field names introduced in concrete domain reference set files
 	public static final String FIELD_VALUE = "value";
-	
-	// Field names introduced in SG concrete domain reference set files
-	/**
-	 * @deprecated - replaced by {@link #FIELD_UNIT_ID}
-	 */
-	public static final String FIELD_UOM_ID = "uomId";
-	public static final String FIELD_ATTRIBUTE_NAME = "attributeName";
-	
-	/**
-	 * @deprecated - replaced by {@link #FIELD_VALUE}
-	 */
-	public static final String FIELD_DATA_VALUE = "dataValue";
 	
 	// Field names introduced in attribute value type reference set files
 	public static final String FIELD_VALUE_ID = "valueId";
@@ -207,21 +192,9 @@ public abstract class SnomedRf2Headers {
 		FIELD_MODULE_ID, 
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID, 
-		FIELD_UNIT_ID, 
-		FIELD_OPERATOR_ID, 
-		FIELD_VALUE };
-
-	public static final String[] CONCRETE_DATA_TYPE_HEADER_WITH_LABEL = new String[] {
-		FIELD_ID, 
-		FIELD_EFFECTIVE_TIME, 
-		FIELD_ACTIVE, 
-		FIELD_MODULE_ID, 
-		FIELD_REFSET_ID, 
-		FIELD_REFERENCED_COMPONENT_ID, 
-		FIELD_UOM_ID, 
-		FIELD_OPERATOR_ID, 
-		FIELD_ATTRIBUTE_NAME, 
-		FIELD_DATA_VALUE, 
+		FIELD_VALUE, 
+		FIELD_RELATIONSHIP_GROUP, 
+		FIELD_TYPE_ID, 
 		FIELD_CHARACTERISTIC_TYPE_ID };
 
 	public static final String[] ATTRIBUTE_VALUE_TYPE_HEADER = new String[] { 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,14 @@ import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
+ *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getGroup <em>Group</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getSerializedValue <em>Serialized Value</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getLabel <em>Label</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getUomComponentId <em>Uom Component Id</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getOperatorComponentId <em>Operator Component Id</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getTypeId <em>Type Id</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getDataType <em>Data Type</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedConcreteDataTypeRefSetMemberImpl#getCharacteristicTypeId <em>Characteristic Type Id</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -65,6 +64,24 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public int getGroup() {
+		return (Integer)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP, true);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setGroup(int newGroup) {
+		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP, newGroup);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public String getSerializedValue() {
 		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE, true);
 	}
@@ -83,8 +100,8 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getLabel() {
-		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__LABEL, true);
+	public String getTypeId() {
+		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID, true);
 	}
 
 	/**
@@ -92,44 +109,8 @@ public class SnomedConcreteDataTypeRefSetMemberImpl extends SnomedRefSetMemberIm
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setLabel(String newLabel) {
-		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__LABEL, newLabel);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public String getUomComponentId() {
-		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UOM_COMPONENT_ID, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void setUomComponentId(String newUomComponentId) {
-		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UOM_COMPONENT_ID, newUomComponentId);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public String getOperatorComponentId() {
-		return (String)eGet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__OPERATOR_COMPONENT_ID, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void setOperatorComponentId(String newOperatorComponentId) {
-		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__OPERATOR_COMPONENT_ID, newOperatorComponentId);
+	public void setTypeId(String newTypeId) {
+		eSet(SnomedRefSetPackage.Literals.SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID, newTypeId);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,60 +15,71 @@
  */
 package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
-import com.google.common.base.Objects;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Abstract base class for reasoner change entries.
  */
-public abstract class AbstractChangeEntry implements IChangeEntry {
+public abstract class ChangeEntry implements Serializable {
 
-	private static final long serialVersionUID = -4015153137195793820L;
+	private static final long serialVersionUID = 2L;
 
 	/**
-	 * Enumerates the possible natures of an {@link AbstractChangeEntry}.
+	 * Enumerates the possible natures of an {@link ChangeEntry}.
 	 */
 	public enum Nature {
-		
+
 		INFERRED("Inferred"), 
 		REDUNDANT("Redundant");
-		
+
 		private String name;
-		
-		private Nature(String name) {
+
+		private Nature(final String name) {
 			this.name = name;
-		};
-		
+		}
+
 		public String getName() {
 			return name;
 		}
-		
 	}
 
-	private final ChangeConcept source;
 	private final Nature nature;
 
-	protected AbstractChangeEntry(final Nature nature, final ChangeConcept source) {
-		this.source = source;
+	private final String sourceId;
+	private final String typeId;
+	private final int group;
+
+	protected ChangeEntry(final Nature nature, 
+			final String sourceId,
+			final String typeId,
+			final int group) {
+
 		this.nature = nature;
+		this.sourceId = sourceId;
+		this.typeId = typeId;
+		this.group = group;
 	}
 
-	@Override 
-	public ChangeConcept getSource() {
-		return source;
-	}
-
-	@Override 
 	public Nature getNature() {
 		return nature;
 	}
 
+	public String getSourceId() {
+		return sourceId;
+	}
+
+	public String getTypeId() {
+		return typeId;
+	}
+
+	public int getGroup() {
+		return group;
+	}
+
 	@Override 
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((nature == null) ? 0 : nature.hashCode());
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
-		return result;
+		return Objects.hash(nature, sourceId, typeId, group);
 	}
 
 	@Override 
@@ -77,10 +88,13 @@ public abstract class AbstractChangeEntry implements IChangeEntry {
 		if (obj == null) { return false; }
 		if (getClass() != obj.getClass()) { return false; }
 
-		final AbstractChangeEntry other = (AbstractChangeEntry) obj;
+		final ChangeEntry other = (ChangeEntry) obj;
 
 		if (nature != other.nature) { return false; }
-		if (!Objects.equal(source, other.source)) { return false; }
+		if (!Objects.equals(sourceId, other.sourceId)) { return false; }
+		if (!Objects.equals(typeId, other.typeId)) { return false; }
+		if (group != other.group) { return false; }
+
 		return true;
 	}
 }

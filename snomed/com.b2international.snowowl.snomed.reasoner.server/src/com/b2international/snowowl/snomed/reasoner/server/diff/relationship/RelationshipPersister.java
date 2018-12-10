@@ -23,8 +23,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedEditingContext;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.model.SnomedModelExtensions;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSet;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
 
 /**
  * Applies changes related to relationships using the specified SNOMED CT editing context.
@@ -72,37 +70,5 @@ public class RelationshipPersister {
 		inferredRelationship.setUnionGroup(addedEntry.getUnionGroup());
 		inferredRelationship.setModifier(addedEntry.isUniversal() ? universalRelationshipConcept : existentialRelationshipConcept);
 		inferredRelationship.setModule(moduleConcept);
-		
-		if (addedEntry.getStatementId() != -1L) {
-			final Relationship statedRelationship = context.lookup(Long.toString(addedEntry.getStatementId()), Relationship.class);
-			
-			for (final SnomedConcreteDataTypeRefSetMember originalMember : statedRelationship.getConcreteDomainRefSetMembers()) {
-				/* 
-				 * XXX: We only expect STATED and ADDITIONAL concrete domain members to be present on the 
-				 * original (stated) relationship; we will create INFERRED and ADDITIONAL concrete domain members
-				 * on the new (inferred) relationship, respectively.
-				 */
-				final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet = (SnomedConcreteDataTypeRefSet) originalMember.getRefSet();
-				final SnomedConcreteDataTypeRefSetMember refSetMember = context.getRefSetEditingContext().createConcreteDataTypeRefSetMember(
-						inferredRelationship.getId(),
-						originalMember.getUomComponentId(),
-						originalMember.getOperatorComponentId(),
-						originalMember.getSerializedValue(), 
-						getCharacteristicTypeId(originalMember), 
-						originalMember.getLabel(), 
-						moduleConcept.getId(), 
-						concreteDataTypeRefSet);
-				
-				inferredRelationship.getConcreteDomainRefSetMembers().add(refSetMember);
-			}
-		}
-	}
-
-	private String getCharacteristicTypeId(final SnomedConcreteDataTypeRefSetMember originalMember) {
-		if (Concepts.ADDITIONAL_RELATIONSHIP.equals(originalMember.getCharacteristicTypeId())) {
-			return Concepts.ADDITIONAL_RELATIONSHIP;
-		} else {
-			return Concepts.INFERRED_RELATIONSHIP;
-		}
 	}
 }

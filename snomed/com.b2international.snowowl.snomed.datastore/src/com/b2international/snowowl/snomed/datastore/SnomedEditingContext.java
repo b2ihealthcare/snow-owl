@@ -838,9 +838,8 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 				.setBody(BulkRequest.<BranchContext>create()
 						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT)) // association
 						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID)) // attribute value
-						.add(getReferringMembersByProps(deletedIds, Fields.UNIT_ID)) // cd
+						.add(getReferringMembersByProps(deletedIds, Fields.TYPE_ID)) // cd
 						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID)) // cd
-						.add(getReferringMembersByProps(deletedIds, Fields.OPERATOR_ID)) // cd
 						.add(getReferringMembersByProps(deletedIds, Fields.DESCRIPTION_FORMAT))
 						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID)) // language
 						.add(getReferringMembersByProps(deletedIds, Fields.MAP_TARGET)) // simple map

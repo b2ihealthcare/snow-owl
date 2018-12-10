@@ -403,8 +403,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getConcreteDomainElementPredicate_Name() {
-		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(0);
+	public EReference getConcreteDomainElementPredicate_Attribute() {
+		return (EReference)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(0);
 	}
 
 	/**
@@ -412,7 +412,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getConcreteDomainElementPredicate_Label() {
+	public EAttribute getConcreteDomainElementPredicate_Range() {
 		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(1);
 	}
 
@@ -421,17 +421,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getConcreteDomainElementPredicate_Type() {
-		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(2);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EAttribute getConcreteDomainElementPredicate_CharacteristicTypeConceptId() {
-		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(3);
+		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(2);
 	}
 
 	/**
@@ -813,9 +804,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		createEReference(cardinalityPredicateEClass, CARDINALITY_PREDICATE__PREDICATE);
 
 		concreteDomainElementPredicateEClass = createEClass(CONCRETE_DOMAIN_ELEMENT_PREDICATE);
-		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME);
-		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL);
-		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE);
+		createEReference(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE);
+		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE);
 		createEAttribute(concreteDomainElementPredicateEClass, CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID);
 
 		dependencyPredicateEClass = createEClass(DEPENDENCY_PREDICATE);
@@ -933,9 +923,8 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		initEReference(getCardinalityPredicate_Predicate(), this.getConceptModelPredicate(), null, "predicate", null, 1, 1, CardinalityPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(concreteDomainElementPredicateEClass, ConcreteDomainElementPredicate.class, "ConcreteDomainElementPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEAttribute(getConcreteDomainElementPredicate_Name(), ecorePackage.getEString(), "name", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConcreteDomainElementPredicate_Label(), ecorePackage.getEString(), "label", "", 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getConcreteDomainElementPredicate_Type(), this.getDataType(), "type", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getConcreteDomainElementPredicate_Attribute(), this.getConceptSetDefinition(), null, "attribute", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getConcreteDomainElementPredicate_Range(), this.getDataType(), "range", null, 1, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getConcreteDomainElementPredicate_CharacteristicTypeConceptId(), ecorePackage.getEString(), "characteristicTypeConceptId", null, 0, 1, ConcreteDomainElementPredicate.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(dependencyPredicateEClass, DependencyPredicate.class, "DependencyPredicate", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);

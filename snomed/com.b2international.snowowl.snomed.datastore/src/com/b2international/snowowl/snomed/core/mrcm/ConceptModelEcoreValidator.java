@@ -80,9 +80,7 @@ public enum ConceptModelEcoreValidator {
 				// Constraint validation message is optional				
 				MrcmPackage.Literals.CONSTRAINT_BASE__VALIDATION_MESSAGE,
 				// Constraint descriptions are also optional
-				MrcmPackage.Literals.CONSTRAINT_BASE__DESCRIPTION,
-				// Predicate labels are derived from their camelCased name when the stored value is empty
-				MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL);
+				MrcmPackage.Literals.CONSTRAINT_BASE__DESCRIPTION);
 
 		@Override public boolean visit(final EObjectTreeNode node) {
 			return checkNode(node);

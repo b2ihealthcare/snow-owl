@@ -345,31 +345,22 @@ public interface MrcmPackage extends EPackage {
 	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__AUTHOR = CONCEPT_MODEL_PREDICATE__AUTHOR;
 
 	/**
-	 * The feature id for the '<em><b>Name</b></em>' attribute.
+	 * The feature id for the '<em><b>Attribute</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 0;
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 0;
 
 	/**
-	 * The feature id for the '<em><b>Label</b></em>' attribute.
+	 * The feature id for the '<em><b>Range</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 1;
-
-	/**
-	 * The feature id for the '<em><b>Type</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 2;
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 1;
 
 	/**
 	 * The feature id for the '<em><b>Characteristic Type Concept Id</b></em>' attribute.
@@ -378,7 +369,7 @@ public interface MrcmPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 3;
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of structural features of the '<em>Concrete Domain Element Predicate</em>' class.
@@ -387,7 +378,7 @@ public interface MrcmPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int CONCRETE_DOMAIN_ELEMENT_PREDICATE_FEATURE_COUNT = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 4;
+	int CONCRETE_DOMAIN_ELEMENT_PREDICATE_FEATURE_COUNT = CONCEPT_MODEL_PREDICATE_FEATURE_COUNT + 3;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.mrcm.impl.DependencyPredicateImpl <em>Dependency Predicate</em>}' class.
@@ -1412,37 +1403,26 @@ public interface MrcmPackage extends EPackage {
 	EClass getConcreteDomainElementPredicate();
 
 	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getName <em>Name</em>}'.
+	 * Returns the meta object for the containment reference '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getAttribute <em>Attribute</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Name</em>'.
-	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getName()
+	 * @return the meta object for the containment reference '<em>Attribute</em>'.
+	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getAttribute()
 	 * @see #getConcreteDomainElementPredicate()
 	 * @generated
 	 */
-	EAttribute getConcreteDomainElementPredicate_Name();
+	EReference getConcreteDomainElementPredicate_Attribute();
 
 	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getLabel <em>Label</em>}'.
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getRange <em>Range</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Label</em>'.
-	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getLabel()
+	 * @return the meta object for the attribute '<em>Range</em>'.
+	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getRange()
 	 * @see #getConcreteDomainElementPredicate()
 	 * @generated
 	 */
-	EAttribute getConcreteDomainElementPredicate_Label();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getType <em>Type</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Type</em>'.
-	 * @see com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getType()
-	 * @see #getConcreteDomainElementPredicate()
-	 * @generated
-	 */
-	EAttribute getConcreteDomainElementPredicate_Type();
+	EAttribute getConcreteDomainElementPredicate_Range();
 
 	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate#getCharacteristicTypeConceptId <em>Characteristic Type Concept Id</em>}'.
@@ -1991,28 +1971,20 @@ public interface MrcmPackage extends EPackage {
 		EClass CONCRETE_DOMAIN_ELEMENT_PREDICATE = eINSTANCE.getConcreteDomainElementPredicate();
 
 		/**
-		 * The meta object literal for the '<em><b>Name</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Attribute</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME = eINSTANCE.getConcreteDomainElementPredicate_Name();
+		EReference CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE = eINSTANCE.getConcreteDomainElementPredicate_Attribute();
 
 		/**
-		 * The meta object literal for the '<em><b>Label</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Range</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL = eINSTANCE.getConcreteDomainElementPredicate_Label();
-
-		/**
-		 * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE = eINSTANCE.getConcreteDomainElementPredicate_Type();
+		EAttribute CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE = eINSTANCE.getConcreteDomainElementPredicate_Range();
 
 		/**
 		 * The meta object literal for the '<em><b>Characteristic Type Concept Id</b></em>' attribute feature.

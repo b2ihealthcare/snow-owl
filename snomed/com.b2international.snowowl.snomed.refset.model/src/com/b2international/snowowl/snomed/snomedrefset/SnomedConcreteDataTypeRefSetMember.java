@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,33 @@ package com.b2international.snowowl.snomed.snomedrefset;
  */
 public interface SnomedConcreteDataTypeRefSetMember extends SnomedRefSetMember {
 	/**
+	 * Returns the value of the '<em><b>Group</b></em>' attribute.
+	 * The default value is <code>"0"</code>.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Group</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Group</em>' attribute.
+	 * @see #setGroup(int)
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedConcreteDataTypeRefSetMember_Group()
+	 * @model default="0" required="true"
+	 * @generated
+	 */
+	int getGroup();
+
+	/**
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getGroup <em>Group</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Group</em>' attribute.
+	 * @see #getGroup()
+	 * @generated
+	 */
+	void setGroup(int value);
+
+	/**
 	 * Returns with the serialized form of the value. 
 	 * @return the value in a serialized format.
 	 * @see #setSerializedValue(String)
@@ -55,59 +82,30 @@ public interface SnomedConcreteDataTypeRefSetMember extends SnomedRefSetMember {
 	void setSerializedValue(String value);
 
 	/**
-	 * Returns with the human readable label of the reference set member.
-	 * @return the human readable format of the reference set member.
-	 * @see #setLabel(String)
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedConcreteDataTypeRefSetMember_Label()
-	 * @model required="true"
-	 *        annotation="http://www.eclipse.org/CDO/DBStore columnName='label0'"
-	 * @generated
-	 */
-	String getLabel();
-
-	/**
-	 * Counterpart of {@link #getLabel()}.
-	 * @param value the new label for the reference set member.
-	 * @see #getLabel()
-	 * @generated
-	 */
-	void setLabel(String value);
-
-	/**
-	 * Returns with the unique SNOMED&nbsp;CT ID of the unit of measure concept.
-	 * @return the UOM concept ID.
-	 * @see #setUomComponentId(String)
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedConcreteDataTypeRefSetMember_UomComponentId()
+	 * Returns the value of the '<em><b>Type Id</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Type Id</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Type Id</em>' attribute.
+	 * @see #setTypeId(String)
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedConcreteDataTypeRefSetMember_TypeId()
 	 * @model required="true"
 	 * @generated
 	 */
-	String getUomComponentId();
+	String getTypeId();
 
 	/**
-	 * Counterpart of {@link #getUomComponentId()}.
-	 * @param value the UOM concept ID.
-	 * @see #getUomComponentId()
+	 * Sets the value of the '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getTypeId <em>Type Id</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Type Id</em>' attribute.
+	 * @see #getTypeId()
 	 * @generated
 	 */
-	void setUomComponentId(String value);
-
-	/**
-	 * Returns with the unique SNOMED&nbsp;CT ID of the operator concept.
-	 * @return the unique identifier of the operator concept.
-	 * @see #setOperatorComponentId(String)
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetPackage#getSnomedConcreteDataTypeRefSetMember_OperatorComponentId()
-	 * @model required="true"
-	 * @generated
-	 */
-	String getOperatorComponentId();
-
-	/**
-	 * Counterpart of {@link #getOperatorComponentId()}.
-	 * @param value the unique ID of the operator concept.
-	 * @see #getOperatorComponentId()
-	 * @generated
-	 */
-	void setOperatorComponentId(String value);
+	void setTypeId(String value);
 
 	/**
 	 * Returns with the data type of the reference set member.

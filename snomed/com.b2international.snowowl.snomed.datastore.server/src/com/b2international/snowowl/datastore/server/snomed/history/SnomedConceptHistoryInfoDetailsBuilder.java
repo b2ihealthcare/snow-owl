@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -445,10 +445,9 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 
 	private String getConcreteDataTypeItem(final SnomedConcreteDataTypeRefSetMember cdtMember) {
 		return new StringBuilder()
-			.append(cdtMember.getLabel())
+			.append(getConceptLabel(getConcept(cdtMember.getTypeId(), cdtMember.cdoView())))
 			.append(" ")
 			.append(String.valueOf(cdtMember.getSerializedValue()))
-			.append(cdtMember.getUomComponentId() != null ? getConceptLabel(getConcept(cdtMember.getUomComponentId(), cdtMember.cdoView())) : "")
 			.toString();
 	}
 	
@@ -560,5 +559,4 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		}
 		return label;
 	}
-	
 }

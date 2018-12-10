@@ -323,15 +323,14 @@ public class SnomedRefSetDSVExportTest {
 				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
 				results.add(descriptionExportItem);
 			} else if (predicate instanceof SnomedRelationshipPredicate) {
-				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: expecting a single-SCTID expression here
+				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
 				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, typeId, typeId);
 				results.add(relationshipExportItem);
 			} else if (predicate instanceof SnomedConcreteDomainPredicate) {
-				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getDataType();
-				final String dataTypeName = dataType.getName();
+				final String attributeId = ((SnomedConcreteDomainPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
+				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getRange();
 				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(dataType);
-				
-				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, dataTypeName, dataTypeBoolean);
+				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, attributeId, attributeId, dataTypeBoolean);
 				results.add(datatypeExportItem);
 			}
 		}

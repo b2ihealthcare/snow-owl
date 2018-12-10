@@ -58,7 +58,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 
@@ -72,7 +71,15 @@ public final class ReasonerTaxonomyBuilder {
 	// Long version of "IS A" relationship type ID
 	private static final long IS_A_ID = Long.parseLong(Concepts.IS_A);
 	
-	private static final Set<String> CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.INFERRED_RELATIONSHIP);
+	private static final Set<String> RELATIONSHIP_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
+			Concepts.STATED_RELATIONSHIP, 
+			Concepts.INFERRED_RELATIONSHIP,
+			Concepts.ADDITIONAL_RELATIONSHIP);
+	
+	private static final Set<String> CD_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
+			Concepts.STATED_RELATIONSHIP, 
+			Concepts.INFERRED_RELATIONSHIP,
+			Concepts.ADDITIONAL_RELATIONSHIP);
 	
 	private static final int SCROLL_LIMIT = 50_000;
 
@@ -112,6 +119,9 @@ public final class ReasonerTaxonomyBuilder {
 	/** Maps concept IDs to the associated inferred active outbound relationships. */
 	private LongKeyMap<Collection<StatementFragment>> inferredStatementMap;
 
+	/** Maps concept IDs to the associated additional active outbound relationships, excluding items with a group number of 0. */
+	private LongKeyMap<Collection<StatementFragment>> additionalGroupedStatementMap;
+
 	/** Matrix for storing concept ancestors by internal IDs. */
 	private int[][] superTypes;
 
@@ -124,11 +134,14 @@ public final class ReasonerTaxonomyBuilder {
 	/** Maps SCTIDs to internal IDs. */
 	private LongKeyIntMap conceptIdToInternalId;
 
-	/** Maps component IDs to the associated stated concrete domain members. */
+	/** Maps concept IDs to the associated stated concrete domain members. */
 	private LongKeyMap<Collection<ConcreteDomainFragment>> statedConcreteDomainMap;
 
-	/** Maps component IDs to the associated inferred concrete domain members. */
+	/** Maps concept IDs to the associated inferred concrete domain members. */
 	private LongKeyMap<Collection<ConcreteDomainFragment>> inferredConcreteDomainMap;
+
+	/** Maps concept IDs to the associated additional concrete domain members, excluding items with a group number of 0. */
+	private LongKeyMap<Collection<ConcreteDomainFragment>> additionalGroupedConcreteDomainMap;
 
 	/** Maps concept IDs to the term used in one of the concept's active fully specified names. */
 	private LongKeyMap<String> fullySpecifiedNameMap;
@@ -239,7 +252,7 @@ public final class ReasonerTaxonomyBuilder {
 		}
 
 		if (collectInferredComponents) {
-			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CHARACTERISTIC_TYPE_IDS));
+			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(RELATIONSHIP_CHARACTERISTIC_TYPE_IDS));
 		} else {
 			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 		}
@@ -266,25 +279,38 @@ public final class ReasonerTaxonomyBuilder {
 			if (statedStatementMap == null) {
 				statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 				inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
+				additionalGroupedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(conceptCount);
 			}
 			
 			for (final String[] statementFields : page) {
+				final int group = Integer.parseInt(statementFields[6]);
+				final long statementId = Long.parseLong(statementFields[0]);
+				
 				final StatementFragment statement = new StatementFragment(
 						Long.parseLong(statementFields[3]),
 						Long.parseLong(statementFields[4]),
 						Boolean.parseBoolean(statementFields[5]),
-						Integer.parseInt(statementFields[6]),
+						group,
 						Integer.parseInt(statementFields[7]),
 						Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(statementFields[8]),
-						Long.parseLong(statementFields[0]),
+						statementId,
 						Long.parseLong(statementFields[1]));
 				
 				final long sourceId = Long.parseLong(statementFields[2]);
+				final String characteristicTypeId = statementFields[9];
 				
-				if (Concepts.STATED_RELATIONSHIP.equals(statementFields[9])) {
-					addToLongMultimap(statedStatementMap, sourceId, statement);
-				} else {
-					addToLongMultimap(inferredStatementMap, sourceId, statement);
+				switch (characteristicTypeId) {
+					case Concepts.STATED_RELATIONSHIP: 
+						addToLongMultimap(statedStatementMap, sourceId, statement);
+						break;
+					case Concepts.ADDITIONAL_RELATIONSHIP:
+						if (group > 0) { addToLongMultimap(additionalGroupedStatementMap, sourceId, statement); }
+						break;
+					case Concepts.INFERRED_RELATIONSHIP:
+						addToLongMultimap(inferredStatementMap, sourceId, statement);
+						break;
+					default:
+						throw new IllegalStateException("Unexpected characteristic type '" + characteristicTypeId + "' on relationship '" + statementId + "'.");
 				}
 			}
 		}
@@ -293,6 +319,7 @@ public final class ReasonerTaxonomyBuilder {
 		if (statedStatementMap == null) {
 			statedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 			inferredStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+			additionalGroupedStatementMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		}
 		
 		checkpoint(taskName, "collecting statements", stopwatch);
@@ -312,9 +339,9 @@ public final class ReasonerTaxonomyBuilder {
 		}
 
 		if (collectInferredComponents) {
-			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds(CHARACTERISTIC_TYPE_IDS));
+			builder.filter(SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));
 		} else {
-			builder.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
+			builder.filter(SnomedRefSetMemberIndexEntry.Expressions.characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 		}
 		
 		final Query<SnomedRefSetMemberIndexEntry> query = Query.select(SnomedRefSetMemberIndexEntry.class)
@@ -325,26 +352,33 @@ public final class ReasonerTaxonomyBuilder {
 		final Iterable<Hits<SnomedRefSetMemberIndexEntry>> scrolledHits = searcher.scroll(query);
 		statedConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		inferredConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
+		additionalGroupedConcreteDomainMap = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(4);
 		
 		for (final Hits<SnomedRefSetMemberIndexEntry> page : scrolledHits) {
 			for (final SnomedRefSetMemberIndexEntry entry : page) {
 				final long referencedComponentId = Long.parseLong(entry.getReferencedComponentId());
 				final long refsetId = Long.parseLong(entry.getReferenceSetId());
-				final byte dataType = (byte) entry.getDataType().ordinal();
-				final long unitId = Strings.isNullOrEmpty(entry.getUnitId()) ? -1L : Long.parseLong(entry.getUnitId());
+				final long typeId = Long.parseLong(entry.getTypeId());
 				final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
 				
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, 
-						entry.getAttributeName(), 
-						dataType,
-						unitId, 
+						typeId, 
 						entry.getStorageKey(), 
-						refsetId);
+						refsetId,
+						entry.getGroup());
 				
-				if (Concepts.STATED_RELATIONSHIP.equals(entry.getCharacteristicTypeId())) {
-					addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
-				} else {
-					addToLongMultimap(inferredConcreteDomainMap, referencedComponentId, fragment);
+				switch (entry.getCharacteristicTypeId()) {
+					case Concepts.STATED_RELATIONSHIP: 
+						addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
+						break;
+					case Concepts.ADDITIONAL_RELATIONSHIP:
+						if (entry.getGroup() > 0) { addToLongMultimap(additionalGroupedConcreteDomainMap, referencedComponentId, fragment); }
+						break;
+					case Concepts.INFERRED_RELATIONSHIP:
+						addToLongMultimap(inferredConcreteDomainMap, referencedComponentId, fragment);
+						break;
+					default:
+						throw new IllegalStateException("Unexpected characteristic type '" + entry.getCharacteristicTypeId() + "' on CD member '" + entry.getId() + "'.");
 				}
 			}
 		}
@@ -496,13 +530,22 @@ public final class ReasonerTaxonomyBuilder {
 			return Collections.emptySet();
 		}
 	}
+	
+	public Collection<StatementFragment> getAdditionalGroupedStatementFragments(final long conceptId) {
+		final Collection<StatementFragment> additionalGroupedStatementFragments = additionalGroupedStatementMap.get(conceptId);
+		if (additionalGroupedStatementFragments != null) {
+			 return additionalGroupedStatementFragments;
+		} else {
+			return Collections.emptySet();
+		}
+	}
 
-	public Collection<ConcreteDomainFragment> getStatedConcreteDomainFragments(final long componentId) {
+	public Collection<ConcreteDomainFragment> getStatedConcreteDomainFragments(final long conceptId) {
 		if (statedConcreteDomainMap == null) {
 			return Collections.emptySet();
 		}
 		
-		final Collection<ConcreteDomainFragment> statedConcreteDomainFragments = statedConcreteDomainMap.get(componentId);
+		final Collection<ConcreteDomainFragment> statedConcreteDomainFragments = statedConcreteDomainMap.get(conceptId);
 		if (statedConcreteDomainFragments != null) {
 			 return statedConcreteDomainFragments;
 		} else {
@@ -510,12 +553,12 @@ public final class ReasonerTaxonomyBuilder {
 		}
 	}
 	
-	public Collection<ConcreteDomainFragment> getInferredConcreteDomainFragments(final long componentId) {
+	public Collection<ConcreteDomainFragment> getInferredConcreteDomainFragments(final long conceptId) {
 		if (inferredConcreteDomainMap == null) {
 			return Collections.emptySet();
 		}
 		
-		final Collection<ConcreteDomainFragment> inferredConcreteDomainFragments = inferredConcreteDomainMap.get(componentId);
+		final Collection<ConcreteDomainFragment> inferredConcreteDomainFragments = inferredConcreteDomainMap.get(conceptId);
 		if (inferredConcreteDomainFragments != null) {
 			 return inferredConcreteDomainFragments;
 		} else {
@@ -523,6 +566,19 @@ public final class ReasonerTaxonomyBuilder {
 		}
 	}
 	
+	public Collection<ConcreteDomainFragment> getAdditionalGroupedConcreteDomainFragments(final long conceptId) {
+		if (additionalGroupedConcreteDomainMap == null) {
+			return Collections.emptySet();
+		}
+		
+		final Collection<ConcreteDomainFragment> additionalGroupedConcreteDomainFragments = additionalGroupedConcreteDomainMap.get(conceptId);
+		if (additionalGroupedConcreteDomainFragments != null) {
+			 return additionalGroupedConcreteDomainFragments;
+		} else {
+			return Collections.emptySet();
+		}
+	}
+
 	public boolean isActive(final long conceptId) {
 		return conceptIdToInternalId.containsKey(conceptId);
 	}

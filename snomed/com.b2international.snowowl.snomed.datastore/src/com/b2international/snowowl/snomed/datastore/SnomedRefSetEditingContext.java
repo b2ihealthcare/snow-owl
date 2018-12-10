@@ -305,67 +305,34 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 	 * Creates a new SNOMED CT <i>concrete domain</i> reference set member with the specified arguments.
 	 * <p>
 	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
-	 * added to the reference set's members list.
+	 * added to the referenced concept's CD members list.
 	 * 
-	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
-	 * @param type the concrete domain of the reference set member
-	 * @param value the value of the reference set member
-	 * @param label the label of the reference set member
 	 * @param moduleId the module ID for the reference set member
-	 * @param concreteDataTypeRefSet the parent reference set
+	 * @param refSet the parent reference set
+	 * @param referencedComponentId the referenced component ID for this member
+	 * @param dataType the data type of the concrete domain member
+	 * @param serializedValue the String representation of the reference set member's value
+	 * @param group the relationship group this reference set member belongs to
+	 * @param typeId the type ID for the concrete domain member
+	 * @param characteristicTypeId the characteristic type ID for the concrete domain member
 	 * 
 	 * @return the populated reference set member instance
 	 */
-	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final String referencedComponentId, 
-			DataType type, 
-			final Object value,
-			final String characteristicTypeId,
-			final String label, 
-			final String moduleId,
-			final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet) {
+	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final String moduleId,
+			final SnomedConcreteDataTypeRefSet refSet,
+			final String referencedComponentId, 
+			final DataType dataType,
+			final String serializedValue,
+			final int group,
+			final String typeId, 
+			final String characteristicTypeId) {
 		
 		final SnomedConcreteDataTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-		initializeRefSetMember(member, referencedComponentId, moduleId, concreteDataTypeRefSet);
-		member.setSerializedValue(SnomedRefSetUtil.serializeValue(type, value));
-		member.setLabel(label);
-		member.setOperatorComponentId(Concepts.CD_EQUAL);
+		initializeRefSetMember(member, referencedComponentId, moduleId, refSet);
+		member.setSerializedValue(serializedValue);
+		member.setGroup(group);
+		member.setTypeId(typeId);
 		member.setCharacteristicTypeId(characteristicTypeId);
-		return member;
-	}
-	
-	/**
-	 * Creates a new SNOMED CT <i>concrete domain</i> reference set member with the specified arguments.
-	 * <p>
-	 * Note that the member's parent reference set feature will be initialized, but the member itself will <i>not</i> be
-	 * added to the reference set's members list.
-	 * 
-	 * @param referencedComponentId the component identifier - terminology identifier pair for the referenced component
-	 * @param uomComponentId the unit of measurement component identifier
-	 * @param operatorComponentId the comparison operator component identifier
-	 * @param value the value of the reference set member
-	 * @param attrLabel the label of the concrete domain.
-	 * @param moduleId the module ID for the reference set member
-	 * @param concreteDataTypeRefSet the parent reference set
-	 * 
-	 * @return the populated reference set member instance
-	 */
-	public SnomedConcreteDataTypeRefSetMember createConcreteDataTypeRefSetMember(final String referencedComponentId, 
-			final String uomComponentId, 
-			final String operatorComponentId, 
-			final Object value,
-			final String characteristicTypeId,
-			final String attrLabel, 
-			final String moduleId,
-			final SnomedConcreteDataTypeRefSet concreteDataTypeRefSet) {
-		
-		final SnomedConcreteDataTypeRefSetMember member = SnomedRefSetFactory.eINSTANCE.createSnomedConcreteDataTypeRefSetMember();
-		initializeRefSetMember(member, referencedComponentId, moduleId, concreteDataTypeRefSet);
-		member.setSerializedValue(SnomedRefSetUtil.serializeValue(SnomedRefSetUtil.getByClass(value.getClass()), value));
-		member.setUomComponentId(uomComponentId);
-		member.setCharacteristicTypeId(characteristicTypeId);
-		member.setOperatorComponentId(operatorComponentId);
-		member.setLabel(checkNotNull(attrLabel, "Attribute Label must be specified."));
-		
 		return member; 
 	}
 
@@ -579,9 +546,8 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 						.add(getReferringMembers(id, types))
 						.add(getReferringMembersByProps(id, types, Fields.TARGET_COMPONENT)) // association
 						.add(getReferringMembersByProps(id, types, Fields.VALUE_ID)) // attribute value
-						.add(getReferringMembersByProps(id, types, Fields.UNIT_ID)) // cd
+						.add(getReferringMembersByProps(id, types, Fields.TYPE_ID)) // cd
 						.add(getReferringMembersByProps(id, types, Fields.CHARACTERISTIC_TYPE_ID)) // cd
-						.add(getReferringMembersByProps(id, types, Fields.OPERATOR_ID)) // cd
 						.add(getReferringMembersByProps(id, types, Fields.DESCRIPTION_FORMAT))
 						.add(getReferringMembersByProps(id, types, Fields.ACCEPTABILITY_ID)) // language
 						.add(getReferringMembersByProps(id, types, Fields.MAP_TARGET)) // simple map
@@ -646,8 +612,7 @@ public class SnomedRefSetEditingContext extends BaseSnomedEditingContext {
 		} else if (member instanceof SnomedConcreteDataTypeRefSetMember) {
 			
 			SnomedConcreteDataTypeRefSetMember cdMember = (SnomedConcreteDataTypeRefSetMember) member;
-			return componentId.equals(cdMember.getUomComponentId()) 
-					|| componentId.equals(cdMember.getOperatorComponentId())
+			return componentId.equals(cdMember.getTypeId()) 
 					|| componentId.equals(cdMember.getCharacteristicTypeId());
 			
 		} else if (member instanceof SnomedDescriptionTypeRefSetMember) {

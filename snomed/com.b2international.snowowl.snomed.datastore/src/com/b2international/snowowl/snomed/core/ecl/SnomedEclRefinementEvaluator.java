@@ -390,9 +390,7 @@ final class SnomedEclRefinementEvaluator {
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalRelationships(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped);
 		} else if (comparison instanceof DataTypeComparison) {
-			if (grouped) {
-				throw new BadRequestException("Group refinement is not supported in data type based comparison (string/numeric)");
-			} else if (refinement.isReversed()) {
+			if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
 			} else {
 				return evalMembers(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
@@ -402,7 +400,7 @@ final class SnomedEclRefinementEvaluator {
 		}
 	}
 		
-	private Promise<Collection<Property>> evalMembers(BranchContext context, Set<String> focusConceptIds, Collection<String> attributeNames, DataTypeComparison comparison) {
+	private Promise<Collection<Property>> evalMembers(BranchContext context, Set<String> focusConceptIds, Collection<String> typeIds, DataTypeComparison comparison) {
 		final Object value;
 		final DataType type;
 		final SearchResourceRequest.Operator operator;
@@ -465,32 +463,34 @@ final class SnomedEclRefinementEvaluator {
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
-		return evalMembers(context, focusConceptIds, attributeNames, type, value, operator)
+		return evalMembers(context, focusConceptIds, typeIds, type, value, operator)
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
-					.transform(input -> 
-						new Property(input.getId(), 
+					.transform(input -> new Property(input.getId(), 
 							input.getReferencedComponent().getId(), 
-							(String) input.getProperties().get(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME),
+							(String) input.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID),
 							input.getProperties().get(SnomedRf2Headers.FIELD_VALUE), 
-							0 /*groups are not supported, all members considered ungrouped*/)
-					).toSet()
+							(Integer) input.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP)))
+					.toSet()
 				);
 	}
 
 	private Promise<SnomedReferenceSetMembers> evalMembers(
 			final BranchContext context, 
 			final Set<String> focusConceptIds,
-			final Collection<String> attributeNames, 
+			final Collection<String> typeIds, 
 			final DataType type, 
 			final Object value, 
 			SearchResourceRequest.Operator operator) {
+		
 		final Options propFilter = Options.builder()
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, ALLOWED_CHARACTERISTIC_TYPES)
-				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeNames)
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, typeIds)
 				.put(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, type)
 				.put(SnomedRf2Headers.FIELD_VALUE, value)
 				.put(SearchResourceRequest.operator(SnomedRf2Headers.FIELD_VALUE), operator)
 				.build();
+		
+		// TODO: does this request need to support filtering by group?
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
@@ -660,7 +660,5 @@ final class SnomedEclRefinementEvaluator {
 		public String toString() {
 			return "Property [id=" + id + ", objectId=" + objectId + ", typeId=" + typeId + ", value=" + value + ", group=" + group + "]";
 		}
-		
 	}
-	
 }

@@ -245,7 +245,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 
 	/**
 	 * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-	 * 
+	 *
 	 * <p>This method is used to initialize {@link SnomedRefSetPackage#eINSTANCE} when that field is accessed.
 	 * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
 	 * <!-- begin-user-doc -->
@@ -259,7 +259,8 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		if (isInited) return (SnomedRefSetPackage)EPackage.Registry.INSTANCE.getEPackage(SnomedRefSetPackage.eNS_URI);
 
 		// Obtain or create and register package
-		SnomedRefSetPackageImpl theSnomedRefSetPackage = (SnomedRefSetPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof SnomedRefSetPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new SnomedRefSetPackageImpl());
+		Object registeredSnomedRefSetPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
+		SnomedRefSetPackageImpl theSnomedRefSetPackage = registeredSnomedRefSetPackage instanceof SnomedRefSetPackageImpl ? (SnomedRefSetPackageImpl)registeredSnomedRefSetPackage : new SnomedRefSetPackageImpl();
 
 		isInited = true;
 
@@ -272,7 +273,6 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		// Mark meta-data to indicate it can't be changed
 		theSnomedRefSetPackage.freeze();
 
-  
 		// Update the registry and return the package
 		EPackage.Registry.INSTANCE.put(SnomedRefSetPackage.eNS_URI, theSnomedRefSetPackage);
 		return theSnomedRefSetPackage;
@@ -661,7 +661,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSnomedConcreteDataTypeRefSetMember_SerializedValue() {
+	public EAttribute getSnomedConcreteDataTypeRefSetMember_Group() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(0);
 	}
 
@@ -670,7 +670,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSnomedConcreteDataTypeRefSetMember_Label() {
+	public EAttribute getSnomedConcreteDataTypeRefSetMember_SerializedValue() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(1);
 	}
 
@@ -679,7 +679,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSnomedConcreteDataTypeRefSetMember_UomComponentId() {
+	public EAttribute getSnomedConcreteDataTypeRefSetMember_TypeId() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(2);
 	}
 
@@ -688,7 +688,7 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSnomedConcreteDataTypeRefSetMember_OperatorComponentId() {
+	public EAttribute getSnomedConcreteDataTypeRefSetMember_DataType() {
 		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(3);
 	}
 
@@ -697,17 +697,8 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getSnomedConcreteDataTypeRefSetMember_DataType() {
-		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(4);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EAttribute getSnomedConcreteDataTypeRefSetMember_CharacteristicTypeId() {
-		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(5);
+		return (EAttribute)snomedConcreteDataTypeRefSetMemberEClass.getEStructuralFeatures().get(4);
 	}
 
 	/**
@@ -1098,10 +1089,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		createEAttribute(snomedLanguageRefSetMemberEClass, SNOMED_LANGUAGE_REF_SET_MEMBER__ACCEPTABILITY_ID);
 
 		snomedConcreteDataTypeRefSetMemberEClass = createEClass(SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER);
+		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP);
 		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE);
-		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__LABEL);
-		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UOM_COMPONENT_ID);
-		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__OPERATOR_COMPONENT_ID);
+		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID);
 		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__DATA_TYPE);
 		createEAttribute(snomedConcreteDataTypeRefSetMemberEClass, SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__CHARACTERISTIC_TYPE_ID);
 
@@ -1253,10 +1243,9 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 		initEAttribute(getSnomedLanguageRefSetMember_AcceptabilityId(), ecorePackage.getEString(), "acceptabilityId", null, 1, 1, SnomedLanguageRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(snomedConcreteDataTypeRefSetMemberEClass, SnomedConcreteDataTypeRefSetMember.class, "SnomedConcreteDataTypeRefSetMember", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSnomedConcreteDataTypeRefSetMember_Group(), ecorePackage.getEInt(), "group", "0", 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedConcreteDataTypeRefSetMember_SerializedValue(), ecorePackage.getEString(), "serializedValue", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getSnomedConcreteDataTypeRefSetMember_Label(), ecorePackage.getEString(), "label", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getSnomedConcreteDataTypeRefSetMember_UomComponentId(), ecorePackage.getEString(), "uomComponentId", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getSnomedConcreteDataTypeRefSetMember_OperatorComponentId(), ecorePackage.getEString(), "operatorComponentId", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getSnomedConcreteDataTypeRefSetMember_TypeId(), ecorePackage.getEString(), "typeId", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedConcreteDataTypeRefSetMember_DataType(), this.getDataType(), "dataType", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, IS_TRANSIENT, !IS_VOLATILE, !IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, IS_DERIVED, IS_ORDERED);
 		initEAttribute(getSnomedConcreteDataTypeRefSetMember_CharacteristicTypeId(), ecorePackage.getEString(), "characteristicTypeId", null, 1, 1, SnomedConcreteDataTypeRefSetMember.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
@@ -1344,96 +1333,90 @@ public class SnomedRefSetPackageImpl extends EPackageImpl implements SnomedRefSe
 	 * @generated
 	 */
 	protected void createDBStoreAnnotations() {
-		String source = "http://www.eclipse.org/CDO/DBStore";	
+		String source = "http://www.eclipse.org/CDO/DBStore";
 		addAnnotation
-		  (getSnomedComplexMapRefSetMember_MapRule(), 
-		   source, 
+		  (getSnomedComplexMapRefSetMember_MapRule(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedComplexMapRefSetMember_MapAdvice(), 
-		   source, 
+		  (getSnomedComplexMapRefSetMember_MapAdvice(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedConcreteDataTypeRefSetMember_Label(), 
-		   source, 
+		  (getSnomedAnnotationRefSetMember_Annotation(),
+		   source,
 		   new String[] {
-			 "columnName", "label0"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedAnnotationRefSetMember_Annotation(), 
-		   source, 
+		  (getSnomedOWLExpressionRefSetMember_OwlExpression(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedOWLExpressionRefSetMember_OwlExpression(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_DomainConstraint(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_DomainConstraint(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_ParentDomain(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_ParentDomain(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveConstraint(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_ProximalPrimitiveRefinement(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPrecoordination(), 
-		   source, 
+		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMDomainRefSetMember_DomainTemplateForPostcoordination(), 
-		   source, 
+		  (getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
+		   });
 		addAnnotation
-		  (getSnomedMRCMAttributeRangeRefSetMember_RangeConstraint(), 
-		   source, 
+		  (getSnomedMRCMAttributeRangeRefSetMember_AttributeRule(),
+		   source,
 		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
-		   });	
-		addAnnotation
-		  (getSnomedMRCMAttributeRangeRefSetMember_AttributeRule(), 
-		   source, 
-		   new String[] {
-			 "columnType", "LONG VARCHAR",
-			 "columnLength", "32768"
+			   "columnType", "LONG VARCHAR",
+			   "columnLength", "32768"
 		   });
 	}
 
