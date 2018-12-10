@@ -66,7 +66,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -122,8 +121,6 @@ import com.google.common.collect.ImmutableMap;
 	SnomedRefSetMemberIndexEntry.Fields.MRCM_RULE_REFSET_ID
 })
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
-
-	private static final long serialVersionUID = 5198766293865046258L;
 
 	public static class Fields extends SnomedDocument.Fields {
 		// All member types
@@ -400,12 +397,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	public static Collection<SnomedRefSetMemberIndexEntry> from(final Iterable<SnomedReferenceSetMember> refSetMembers) {
-		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
-			@Override
-			public SnomedRefSetMemberIndexEntry apply(final SnomedReferenceSetMember refSetMember) {
-				return builder(refSetMember).build();
-			}
-		}).toList();
+		return FluentIterable.from(refSetMembers)
+				.transform(refSetMember -> builder(refSetMember).build())
+				.toList();
 	}
 
 	public static final class Expressions extends SnomedDocument.Expressions {
@@ -452,10 +446,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression characteristicTypeId(String characteristicTypeId) {
 			return exactMatch(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeId);
-		}
-		
-		public static Expression relationshipGroup(int relationshipGroup) {
-			return match(Fields.RELATIONSHIP_GROUP, relationshipGroup);
 		}
 		
 		public static Expression correlationIds(Collection<String> correlationIds) {
@@ -522,16 +512,16 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					.toSet());
 		}
 		
-		public static Expression group(int group) {
-			return match(Fields.RELATIONSHIP_GROUP, group);
+		public static Expression relationshipGroup(int relationshipGroup) {
+			return match(Fields.RELATIONSHIP_GROUP, relationshipGroup);
 		}
 		
-		public static Expression group(int groupStart, int groupEnd) {
-			checkArgument(groupStart <= groupEnd, "Group end should be greater than or equal to groupStart");
-			if (groupStart == groupEnd) {
-				return group(groupStart);
+		public static Expression relationshipGroup(int relationshipGroupStart, int relationshipGroupEnd) {
+			checkArgument(relationshipGroupStart <= relationshipGroupEnd, "Group end should be greater than or equal to groupStart");
+			if (relationshipGroupStart == relationshipGroupEnd) {
+				return relationshipGroup(relationshipGroupStart);
 			} else {
-				return matchRange(Fields.RELATIONSHIP_GROUP, groupStart, groupEnd);
+				return matchRange(Fields.RELATIONSHIP_GROUP, relationshipGroupStart, relationshipGroupEnd);
 			}
 		}
 		
@@ -569,7 +559,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		// CONCRETE DOMAIN reference set members
 		private DataType dataType;
 		private Object value;
-		private Integer group;
+		private Integer relationshipGroup;
 		private String typeId;
 		private String characteristicTypeId;
 		// DESCRIPTION
@@ -630,7 +620,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public Builder field(String fieldName, Object value) {
 			switch (fieldName) {
 			case Fields.ACCEPTABILITY_ID: this.acceptabilityId = (String) value; break;
-			case Fields.RELATIONSHIP_GROUP: this.group = (Integer) value; break;
+			case Fields.RELATIONSHIP_GROUP: this.relationshipGroup = (Integer) value; break;
 			case Fields.TYPE_ID: this.typeId = (String) value; break;
 			case Fields.CHARACTERISTIC_TYPE_ID: this.characteristicTypeId = (String) value; break;
 			case Fields.CORRELATION_ID: this.correlationId = (String) value; break;
@@ -712,8 +702,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder group(Integer group) {
-			this.group = group;
+		Builder relationshipGroup(Integer relationshipGroup) {
+			this.relationshipGroup = relationshipGroup;
 			return getSelf();
 		}
 		
@@ -961,7 +951,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				default: throw new UnsupportedOperationException("Unsupported concrete domain data type: " + dataType);
 				}
 			}
-			doc.group = group;
+			doc.relationshipGroup = relationshipGroup;
 			doc.characteristicTypeId = characteristicTypeId;
 			// description
 			doc.descriptionFormat = descriptionFormat;
@@ -1040,7 +1030,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private Integer integerValue;
 	private BigDecimal decimalValue;
 
-	private Integer group;
+	private Integer relationshipGroup;
 	private String typeId;
 	private String characteristicTypeId;
 	
@@ -1191,8 +1181,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return dataType;
 	}
 	
-	public Integer getGroup() {
-		return group;
+	public Integer getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
 	public String getTypeId() {
@@ -1387,7 +1377,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.VALUE_ID, getValueId());
 		// CONCRETE DOMAIN reference set members
 		putIfPresent(builder, Fields.DATA_TYPE, getDataType());
-		putIfPresent(builder, Fields.RELATIONSHIP_GROUP, getGroup());
+		putIfPresent(builder, Fields.RELATIONSHIP_GROUP, getRelationshipGroup());
 		putIfPresent(builder, Fields.TYPE_ID, getTypeId());
 		putIfPresent(builder, Fields.SERIALIZED_VALUE, getValue());
 		putIfPresent(builder, Fields.CHARACTERISTIC_TYPE_ID, getCharacteristicTypeId());
@@ -1454,7 +1444,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("valueId", valueId)
 				.add("dataType", dataType)
 				.add("typeId", typeId)
-				.add("group", group)
+				.add("relationshipGroup", relationshipGroup)
 				.add("value", getValue())
 				.add("characteristicTypeId", characteristicTypeId)
 				.add("descriptionLength", descriptionLength)

@@ -365,14 +365,14 @@ public final class ReasonerTaxonomyBuilder {
 						typeId, 
 						entry.getStorageKey(), 
 						refsetId,
-						entry.getGroup());
+						entry.getRelationshipGroup());
 				
 				switch (entry.getCharacteristicTypeId()) {
 					case Concepts.STATED_RELATIONSHIP: 
 						addToLongMultimap(statedConcreteDomainMap, referencedComponentId, fragment);
 						break;
 					case Concepts.ADDITIONAL_RELATIONSHIP:
-						if (entry.getGroup() > 0) { addToLongMultimap(additionalGroupedConcreteDomainMap, referencedComponentId, fragment); }
+						if (entry.getRelationshipGroup() > 0) { addToLongMultimap(additionalGroupedConcreteDomainMap, referencedComponentId, fragment); }
 						break;
 					case Concepts.INFERRED_RELATIONSHIP:
 						addToLongMultimap(inferredConcreteDomainMap, referencedComponentId, fragment);

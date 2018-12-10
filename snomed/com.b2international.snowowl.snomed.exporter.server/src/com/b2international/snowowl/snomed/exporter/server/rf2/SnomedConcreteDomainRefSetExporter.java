@@ -40,7 +40,7 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		sb.append(HT);
 		sb.append(doc.getValue()); //the direct value
 		sb.append(HT);
-		sb.append(doc.getGroup());
+		sb.append(doc.getRelationshipGroup());
 		sb.append(HT);
 		sb.append(nullToEmpty(doc.getTypeId()));
 		sb.append(HT);
