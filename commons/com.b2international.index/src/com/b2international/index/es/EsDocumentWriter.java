@@ -44,7 +44,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.script.ScriptType;
 
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.DocSearcher;
@@ -60,7 +59,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -261,8 +259,7 @@ public class EsDocumentWriter implements Writer {
 	private void bulkUpdate(final EsClient client, final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
 		final DocumentMapping mapping = admin.mappings().getMapping(update.getType());
 		final QueryBuilder query = new EsQueryBuilder(mapping).build(update.getFilter());
-		final String rawScript = mapping.getScript(update.getScript()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
+		org.elasticsearch.script.Script script = update.toEsScript(mapping);
 		
 		long versionConflicts = 0;
 		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
