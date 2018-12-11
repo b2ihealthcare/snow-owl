@@ -44,12 +44,15 @@ public abstract class ChangeEntry implements Serializable {
 		}
 	}
 
-	private final Nature nature;
+	private Nature nature;
 
-	private final String sourceId;
-	private final String typeId;
-	private final int group;
+	private String sourceId;
+	private String typeId;
+	private int group;
 
+	protected ChangeEntry() {
+	}
+	
 	protected ChangeEntry(final Nature nature, 
 			final String sourceId,
 			final String typeId,

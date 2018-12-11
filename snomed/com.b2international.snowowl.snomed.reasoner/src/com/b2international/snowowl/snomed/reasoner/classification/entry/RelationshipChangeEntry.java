@@ -24,11 +24,14 @@ public final class RelationshipChangeEntry extends ChangeEntry {
 
 	private static final long serialVersionUID = 2L;
 
-	private final String destinationId;
-	private final int unionGroup;
-	private final String modifierId;
-	private final boolean destinationNegated;
+	private String destinationId;
+	private int unionGroup;
+	private String modifierId;
+	private boolean destinationNegated;
 
+	private RelationshipChangeEntry() {
+	}
+	
 	/**
 	 * Creates a new relationship change entry with the specified arguments.
 	 * 

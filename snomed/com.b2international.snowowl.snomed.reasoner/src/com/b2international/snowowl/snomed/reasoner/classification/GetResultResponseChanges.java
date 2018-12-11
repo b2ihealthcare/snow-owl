@@ -20,6 +20,8 @@ import java.util.List;
 
 import com.b2international.snowowl.snomed.reasoner.classification.entry.ConcreteDomainChangeEntry;
 import com.b2international.snowowl.snomed.reasoner.classification.entry.RelationshipChangeEntry;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -29,11 +31,16 @@ public class GetResultResponseChanges implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final long elapsedTimeMillis;
+	private long elapsedTimeMillis;
 	private final List<AbstractEquivalenceSet> equivalenceSets;
 	private final List<RelationshipChangeEntry> relationshipEntries;
 	private final List<ConcreteDomainChangeEntry> concreteDomainEntries;
 
+	//@JsonCreator
+	//private GetResultResponseChanges(@JsonProperty List<RelationshipChangeEntry> relationshipEntries) {
+	//	this(0L, ImmutableList.of(), relationshipEntries, ImmutableList.of());	
+	//}
+	
 	/**
 	 * Creates a new change set with the specified arguments.
 	 * @param elapsedTimeMillis elapsed time measured on the server in milliseconds
@@ -41,10 +48,11 @@ public class GetResultResponseChanges implements Serializable {
 	 * @param relationshipEntries the list of inferred or redundant SNOMED CT relationship entries
 	 * @param concreteDomainEntries the list of inferred or redundant SNOMED CT concrete domain reference set member entries
 	 */
-	public GetResultResponseChanges(long elapsedTimeMillis, 
-			List<? extends AbstractEquivalenceSet> equivalenceSets,
-			List<RelationshipChangeEntry> relationshipEntries,
-			List<ConcreteDomainChangeEntry> concreteDomainEntries) {
+	@JsonCreator
+	public GetResultResponseChanges(@JsonProperty("elapsedTimeMillis") long elapsedTimeMillis, 
+			@JsonProperty("equivalenceSets") List<? extends AbstractEquivalenceSet> equivalenceSets,
+			@JsonProperty("relationshipEntries") List<RelationshipChangeEntry> relationshipEntries,
+			@JsonProperty("concreteDomainEntries") List<ConcreteDomainChangeEntry> concreteDomainEntries) {
 
 		this.elapsedTimeMillis = elapsedTimeMillis;
 		this.equivalenceSets = ImmutableList.copyOf(equivalenceSets);
