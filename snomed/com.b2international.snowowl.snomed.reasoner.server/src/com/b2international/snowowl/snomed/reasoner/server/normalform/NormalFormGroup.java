@@ -158,16 +158,14 @@ final class NormalFormGroup implements NormalFormProperty {
 		int unionGroupNumber = 1;
 
 		for (final NormalFormUnionGroup unionGroup : unionGroups) {
-			if (unionGroup.getUnionGroupNumber() != NormalFormUnionGroup.UNKOWN_GROUP) {
-				continue;
-			}
-			
-			while (numbersUsed.contains(unionGroupNumber)) {
+			if (unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKOWN_GROUP) {
+				while (numbersUsed.contains(unionGroupNumber)) {
+					unionGroupNumber++;
+				}
+				
+				unionGroup.setUnionGroupNumber(unionGroupNumber);
 				unionGroupNumber++;
 			}
-				
-			unionGroup.setUnionGroupNumber(unionGroupNumber);
-			unionGroupNumber++;
 		}
 	}
 

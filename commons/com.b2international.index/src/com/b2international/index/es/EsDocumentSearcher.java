@@ -26,7 +26,6 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.solr.common.util.JavaBinCodec;
@@ -40,7 +39,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -391,17 +389,9 @@ public class EsDocumentSearcher implements Searcher {
 			} else if (item instanceof SortByScript) {
 				SortByScript sortByScript = (SortByScript) item;
 				SortBy.Order order = sortByScript.getOrder();
-				String script = sortByScript.getName();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				// if this is a named script then get it from the current mapping
-				if (mapping.getScript(script) != null) {
-					script = mapping.getScript(script).script();
-				}
-				
-				Map<String, Object> arguments = sortByScript.getArguments();
-				
-				reqSource.sort(SortBuilders.scriptSort(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", script, arguments), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), ScriptSortType.STRING)
 						.order(sortOrder));
 				
 			} else {
@@ -409,7 +399,7 @@ public class EsDocumentSearcher implements Searcher {
 			}
         }
 	}
-
+	
 	private Iterable<SortBy> getSortFields(SortBy sortBy) {
 		final List<SortBy> items = newArrayList();
 
@@ -491,8 +481,7 @@ public class EsDocumentSearcher implements Searcher {
 			checkArgument(!isScriptAgg, "Specify either field or script parameter, not both");
 			termsAgg.field(aggregation.getGroupByField());
 		} else if (isScriptAgg) {
-			final String rawScript = aggregation.getGroupByScript();
-			termsAgg.script(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Collections.emptyMap()));
+			termsAgg.script(aggregation.toEsScript(mapping));
 		} else {
 			throw new IllegalArgumentException("Specify either field or script parameter");
 		}

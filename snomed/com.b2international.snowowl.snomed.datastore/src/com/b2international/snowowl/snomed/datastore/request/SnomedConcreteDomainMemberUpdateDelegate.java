@@ -43,7 +43,7 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 			changed |= true;
 		}
 
-		if (newGroup != original.getGroup()) {
+		if (newGroup != original.getRelationshipGroup()) {
 			member.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, newGroup);
 			changed |= true;
 		}

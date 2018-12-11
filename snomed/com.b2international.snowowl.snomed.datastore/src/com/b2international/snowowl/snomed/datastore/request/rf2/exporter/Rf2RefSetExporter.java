@@ -134,7 +134,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case ASSOCIATION:
 				return "c";
 			case CONCRETE_DATA_TYPE: 
-				return "ccss";
+				return "sicc";
 			case QUERY: 
 				return "s";
 			case DESCRIPTION_TYPE: 

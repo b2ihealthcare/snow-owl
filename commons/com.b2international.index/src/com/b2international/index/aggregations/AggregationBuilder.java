@@ -17,14 +17,16 @@ package com.b2international.index.aggregations;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import com.b2international.index.ScriptExpression;
 import com.b2international.index.query.Expression;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.0
  */
-public final class AggregationBuilder<T> {
+public final class AggregationBuilder<T> implements ScriptExpression {
 	
 	private final String name;
 	private final Class<T> select;
@@ -99,6 +101,16 @@ public final class AggregationBuilder<T> {
 	
 	public String getGroupByScript() {
 		return groupByScript;
+	}
+	
+	@Override
+	public String getScript() {
+		return getGroupByScript();
+	}
+	
+	@Override
+	public Map<String, Object> getParams() {
+		return Collections.emptyMap();
 	}
 	
 	public int getMinBucketSize() {

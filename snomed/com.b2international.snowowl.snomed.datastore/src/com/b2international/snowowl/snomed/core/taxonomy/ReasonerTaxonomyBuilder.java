@@ -556,7 +556,7 @@ public final class ReasonerTaxonomyBuilder {
 
 				final String value = SnomedRefSetUtil.serializeValue(member.getDataType(), member.getValue());
 				final long typeId = Long.parseLong(member.getTypeId());
-				final Integer group = member.getGroup();
+				final Integer group = member.getRelationshipGroup();
 				final long refsetId = Long.parseLong(member.getReferenceSetId());
 				final String memberId = member.getId();
 
