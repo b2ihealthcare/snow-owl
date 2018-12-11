@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ import com.b2international.index.query.Expression;
 /**
  * @since 5.0
  */
-public final class BulkUpdate<T> {
+public final class BulkUpdate<T> implements ScriptExpression {
 	
 	private final Class<? extends T> type;
 	private final Expression filter;
-	private final String script;
 	private final String idField;
+	
+	private final String script;
 	private final Map<String, Object> params;
 	
 	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script) {
@@ -50,15 +51,17 @@ public final class BulkUpdate<T> {
 	public Expression getFilter() {
 		return filter;
 	}
-	
-	public String getScript() {
-		return script;
-	}
 
 	public String getIdField() {
 		return idField;
 	}
 	
+	@Override
+	public String getScript() {
+		return script;
+	}
+
+	@Override
 	public Map<String, Object> getParams() {
 		return params;
 	}

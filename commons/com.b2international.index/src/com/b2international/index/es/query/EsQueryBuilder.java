@@ -32,7 +32,6 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
-import org.elasticsearch.script.ScriptType;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.compat.TextConstants;
@@ -67,7 +66,6 @@ import com.b2international.index.query.StringSetPredicate;
 import com.b2international.index.query.TextPredicate;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.b2international.index.util.DecimalUtils;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Queues;
 
 /**
@@ -177,11 +175,9 @@ public final class EsQueryBuilder {
 		visit(inner);
 		final QueryBuilder innerQuery = deque.pop();
 		
-		final String rawScript = mapping.getScript(expression.scriptName()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(expression.getParams()));
 		needsScoring = true;
 		deque.push(QueryBuilders
-				.functionScoreQuery(innerQuery, ScoreFunctionBuilders.scriptFunction(script))
+				.functionScoreQuery(innerQuery, ScoreFunctionBuilders.scriptFunction(expression.toEsScript(mapping)))
 				.boostMode(CombineFunction.REPLACE));
 	}
 	
