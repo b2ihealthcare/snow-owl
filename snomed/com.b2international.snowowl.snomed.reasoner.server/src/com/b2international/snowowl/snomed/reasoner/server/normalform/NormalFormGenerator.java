@@ -19,6 +19,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.server.normalform;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
@@ -271,8 +273,14 @@ public final class NormalFormGenerator {
 	
 		final Multimap<Integer, StatementFragment> relationshipsByUnionGroupId = Multimaps.index(groupRelationships, StatementFragment::getUnionGroup);
 		final ImmutableList.Builder<NormalFormUnionGroup> unionGroups = ImmutableList.builder();
+		
+		final Set<Integer> allKeys = newHashSet(relationshipsByUnionGroupId.keySet());
+		if (!groupMembers.isEmpty()) { 
+			// Union group 0 must be included if members are present
+			allKeys.add(0); 
+		}
 	
-		for (final Integer key : relationshipsByUnionGroupId.keySet()) {
+		for (final Integer key : allKeys) {
 			final Collection<StatementFragment> unionGroupRelationships = relationshipsByUnionGroupId.get(key);
 		
 			if (key == 0) {
@@ -282,11 +290,6 @@ public final class NormalFormGenerator {
 				// Other group numbers produce a single union group from all properties
 				unionGroups.add(toNonZeroUnionGroup(preserveNumbers, key, unionGroupRelationships));
 			}
-		}
-		
-		// If there are no relationships, process the reference set members
-		if (relationshipsByUnionGroupId.isEmpty()) {
-			unionGroups.addAll(toZeroUnionGroups(ImmutableList.of(), groupMembers));
 		}
 	
 		return unionGroups.build();
