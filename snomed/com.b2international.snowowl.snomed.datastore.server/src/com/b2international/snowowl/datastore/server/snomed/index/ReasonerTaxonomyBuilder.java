@@ -361,7 +361,8 @@ public final class ReasonerTaxonomyBuilder {
 				final long typeId = Long.parseLong(entry.getTypeId());
 				final String serializedValue = SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue());
 				
-				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(serializedValue, 
+				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(entry.getId(),
+						serializedValue, 
 						typeId, 
 						entry.getStorageKey(), 
 						refsetId,

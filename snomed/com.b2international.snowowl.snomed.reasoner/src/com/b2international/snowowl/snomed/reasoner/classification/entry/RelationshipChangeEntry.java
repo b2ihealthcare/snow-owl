@@ -17,6 +17,9 @@ package com.b2international.snowowl.snomed.reasoner.classification.entry;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Represents a reasoner change entry capturing the details of inferred or redundant relationships.
  */
@@ -29,12 +32,10 @@ public final class RelationshipChangeEntry extends ChangeEntry {
 	private String modifierId;
 	private boolean destinationNegated;
 
-	private RelationshipChangeEntry() {
-	}
-	
 	/**
 	 * Creates a new relationship change entry with the specified arguments.
 	 * 
+	 * @param id of the entry
 	 * @param nature the change nature
 	 * @param sourceId the source component SCTID
 	 * @param typeId the type component SCTID
@@ -44,16 +45,19 @@ public final class RelationshipChangeEntry extends ChangeEntry {
 	 * @param modifierId the modifier SCTID
 	 * @param destinationNegated {@code true} if the destination component is to be negated, {@code false} otherwise
 	 */
-	public RelationshipChangeEntry(final Nature nature, 
-			final String sourceId, 
-			final String typeId,
-			final int group, 
-			final String destinationId, 
-			final int unionGroup, 
-			final String modifierId,
-			final boolean destinationNegated) {
+	@JsonCreator
+	public RelationshipChangeEntry(
+			@JsonProperty("id") final String id, 
+			@JsonProperty("nature") final Nature nature, 
+			@JsonProperty("sourceId") final String sourceId, 
+			@JsonProperty("typeId")final String typeId,
+			@JsonProperty("group") final int group, 
+			@JsonProperty("destinationId") final String destinationId, 
+			@JsonProperty("unionGroup") final int unionGroup, 
+			@JsonProperty("modifierId") final String modifierId,
+			@JsonProperty("destinationNegated") final boolean destinationNegated) {
 
-		super(nature, sourceId, typeId, group);
+		super(id, nature, sourceId, typeId, group);
 
 		this.destinationId = destinationId;
 		this.unionGroup = unionGroup;

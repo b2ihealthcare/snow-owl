@@ -424,6 +424,7 @@ public final class NormalFormGenerator {
 				.from(unionGroup.getProperties())
 				.filter(NormalFormValue.class)
 				.transform(property -> new ConcreteDomainFragment(
+						property.getId(),
 						property.getSerializedValue(),
 						property.getTypeId(),
 						property.getStorageKey(),

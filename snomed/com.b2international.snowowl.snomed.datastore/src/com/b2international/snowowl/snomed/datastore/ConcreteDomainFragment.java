@@ -27,18 +27,21 @@ public class ConcreteDomainFragment implements Serializable {
 
 	private static final long serialVersionUID = 2L;
 
+	private final String id;
 	private final String serializedValue;
 	private final long typeId;
 	private final long storageKey;
 	private final long refSetId;
 	private final int group;
 
-	public ConcreteDomainFragment(final String serializedValue, 
+	public ConcreteDomainFragment(final String id,
+			final String serializedValue, 
 			final long typeId, 
 			final long storageKey, 
 			final long refSetId, 
 			final int group) {
 		
+		this.id = id;
 		this.serializedValue = serializedValue;
 		this.typeId = typeId;
 		this.storageKey = storageKey;
@@ -53,6 +56,10 @@ public class ConcreteDomainFragment implements Serializable {
 		return SnomedRefSetUtil.getDataType(Long.toString(refSetId));
 	}
 
+	public String getId() {
+		return id;
+	}
+	
 	public String getSerializedValue() {
 		return serializedValue;
 	}
@@ -97,16 +104,9 @@ public class ConcreteDomainFragment implements Serializable {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ConcreteDomainFragment [serializedValue=");
-		builder.append(serializedValue);
-		builder.append(", typeId=");
-		builder.append(typeId);
-		builder.append(", storageKey=");
-		builder.append(storageKey);
-		builder.append(", refSetId=");
-		builder.append(refSetId);
-		builder.append("]");
-		return builder.toString();
+		return "ConcreteDomainFragment [id=" + id + ", serializedValue=" + serializedValue + ", typeId=" + typeId + ", storageKey=" + storageKey
+				+ ", refSetId=" + refSetId + ", group=" + group + "]";
 	}
+
+	
 }

@@ -44,6 +44,10 @@ final class NormalFormValue implements NormalFormProperty {
 		this.fragment = checkNotNull(fragment, "fragment");
 		this.reasonerTaxonomy = checkNotNull(reasonerTaxonomy, "reasonerTaxonomy");
 	}
+	
+	public String getId() {
+		return fragment.getId();
+	}
 
 	public String getSerializedValue() {
 		return fragment.getSerializedValue();

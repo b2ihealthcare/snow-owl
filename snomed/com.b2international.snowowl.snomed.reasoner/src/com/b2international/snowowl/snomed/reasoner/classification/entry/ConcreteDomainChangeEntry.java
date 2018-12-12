@@ -31,20 +31,22 @@ public final class ConcreteDomainChangeEntry extends ChangeEntry {
 	/**
 	 * Creates a new concrete domain change entry instance with the specified arguments.
 	 * 
+	 * @param id of the entry
 	 * @param nature the change nature
 	 * @param sourceId the relationship source component
 	 * @param typeId the relationship type component
 	 * @param destination the relationship destination component
 	 * @param concreteDomainElement the contained concrete domain element
 	 */
-	public ConcreteDomainChangeEntry(final Nature nature, 
+	public ConcreteDomainChangeEntry(final String id,
+			final Nature nature, 
 			final String sourceId, 
 			final String typeId,
 			final int group, 
 			final DataType dataType,
 			final String serializedValue) {
 
-		super(nature, sourceId, typeId, group);
+		super(id, nature, sourceId, typeId, group);
 
 		this.dataType = dataType;
 		this.serializedValue = serializedValue;

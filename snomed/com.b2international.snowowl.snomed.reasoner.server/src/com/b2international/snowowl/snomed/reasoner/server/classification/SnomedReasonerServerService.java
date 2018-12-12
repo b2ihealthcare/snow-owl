@@ -96,7 +96,8 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 		}
 
 		private void registerEntry(final String conceptId, final ConcreteDomainFragment subject, final Nature changeNature) {
-			final ConcreteDomainChangeEntry changeEntry = new ConcreteDomainChangeEntry(changeNature, 
+			final ConcreteDomainChangeEntry changeEntry = new ConcreteDomainChangeEntry(subject.getId(),
+					changeNature, 
 					conceptId, 
 					Long.toString(subject.getTypeId()), 
 					subject.getGroup(), 
@@ -131,6 +132,7 @@ public class SnomedReasonerServerService extends CollectingService<Reasoner, Cla
 					: Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 			
 			final RelationshipChangeEntry entry = new RelationshipChangeEntry(
+					Long.toString(subject.getStatementId()),
 					changeNature, 
 					conceptId, 
 					Long.toString(subject.getTypeId()), 
