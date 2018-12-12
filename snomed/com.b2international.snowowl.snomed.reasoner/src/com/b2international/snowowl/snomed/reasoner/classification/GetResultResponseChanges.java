@@ -36,11 +36,6 @@ public class GetResultResponseChanges implements Serializable {
 	private final List<RelationshipChangeEntry> relationshipEntries;
 	private final List<ConcreteDomainChangeEntry> concreteDomainEntries;
 
-	//@JsonCreator
-	//private GetResultResponseChanges(@JsonProperty List<RelationshipChangeEntry> relationshipEntries) {
-	//	this(0L, ImmutableList.of(), relationshipEntries, ImmutableList.of());	
-	//}
-	
 	/**
 	 * Creates a new change set with the specified arguments.
 	 * @param elapsedTimeMillis elapsed time measured on the server in milliseconds
@@ -84,7 +79,7 @@ public class GetResultResponseChanges implements Serializable {
 	/**
 	 * @return the list of inferred or redundant SNOMED CT concrete domain reference set member entries
 	 */
-	public List<ConcreteDomainChangeEntry> getConcreteDomainElementEntries() {
+	public List<ConcreteDomainChangeEntry> getConcreteDomainEntries() {
 		return concreteDomainEntries;
 	}
 }
