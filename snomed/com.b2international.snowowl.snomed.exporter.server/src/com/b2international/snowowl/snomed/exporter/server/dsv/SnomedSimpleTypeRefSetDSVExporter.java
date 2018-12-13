@@ -78,7 +78,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	
 	private static final String DATA_EXPAND = "pt(),"
 			+ "descriptions(active:true),"
-			+ "relationships(active:true,destination(expand(pt())))),"
+			+ "relationships(active:true,destination(expand(pt()))),"
 			+ "members()";
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
@@ -175,7 +175,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
-			.setExpand(DATA_EXPAND)
+			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
 			.setScroll("15m")
@@ -582,7 +582,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
 								.map(p -> {
 									if (datatypeItem.isBooleanDatatype()) {
-										return ((Boolean) p) ? "Yes" : "No";
+										return "1".equals(p) ? "Yes" : "No";
 									} else {
 										return p.toString();
 									}
