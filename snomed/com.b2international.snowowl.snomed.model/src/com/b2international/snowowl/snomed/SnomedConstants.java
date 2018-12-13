@@ -267,6 +267,7 @@ public abstract class SnomedConstants {
 		// Inactivation indicator reference sets
 		public static final String REFSET_CONCEPT_INACTIVITY_INDICATOR = "900000000000489007";
 		public static final String REFSET_DESCRIPTION_INACTIVITY_INDICATOR = "900000000000490003";
+		public static final String REFSET_RELATIONSHIP_INACTIVITY_INDICATOR = "900000000000547002";
 		
 		// MRCM related concepts
 		public static final String RULE_STRENGTH_ROOT = "723573005";
