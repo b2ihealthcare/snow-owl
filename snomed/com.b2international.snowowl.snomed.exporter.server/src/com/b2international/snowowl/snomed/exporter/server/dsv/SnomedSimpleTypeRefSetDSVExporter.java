@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -143,13 +142,10 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				writeValues(remainderMonitor, writer);
 			}
 			
-			File zipFile = FileUtils.createZipArchive(exportPath.getParent().toFile(), Files.createTempFile("export", ".zip").toFile());
-			return zipFile;
-			
+			return exportPath.toFile();
 		} catch (Exception e) {
 			throw new SnowowlServiceException(e);
 		} finally {
-			if (exportPath != null) { Files.deleteIfExists(exportPath); }
 			if (null != async) { async.stop(); }
 			if (null != remainderMonitor) { remainderMonitor.done(); }
 			if (null != monitor) { monitor.done(); }
