@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,16 @@ package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.rmi.server.ExportException;
 import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.net4j.util.om.monitor.Monitor;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
 import com.b2international.snowowl.datastore.file.FileRegistry;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedClientProtocol;
@@ -90,7 +88,7 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		File exportFile = dsvRequest.send(new Monitor());
 		SnomedExportResult result = dsvRequest.getExportResult();
 		if (result.getResult().equals(SnomedExportResult.Result.CANCELED) || result.getResult().equals(SnomedExportResult.Result.EXCEPTION)) {
-			throw new ExportException(result.getMessage());
+			throw new SnowowlRuntimeException(result.getMessage());
 		}
 		
 		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
@@ -101,7 +99,6 @@ public final class SnomedDSVExportRequest implements Request<BranchContext, UUID
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
 		Branch branch = context.branch();
 		
-		model.setUserId(ApplicationContext.getInstance().getService(ICDOConnectionManager.class).getUserId());
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
