@@ -203,6 +203,7 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						// XXX intentionally using PT here for SDD class properties
 						.setExpand("destination(expand(pt()))")
 						.setLocales(exportSetting.getLocales())
+						.filterByActive(true)
 						.filterBySource(member.getReferencedComponent().getId())
 						.filterByType(Concepts.HAS_SDD_CLASS)
 						.build(SnomedDatastoreActivator.REPOSITORY_UUID, exportSetting.getBranchPath())
