@@ -51,7 +51,11 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CORRELATION_ID);
-		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		
+		final String mapCategoryId = getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		if (SnomedIdentifiers.isValid(mapCategoryId)) {
+			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
+		}
 
 		if (SnomedIdentifiers.isValid(getProperty(SnomedRf2Headers.FIELD_MAP_TARGET))) {
 			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MAP_TARGET);
@@ -69,7 +73,7 @@ final class SnomedExtendedMapMemberCreateDelegate extends SnomedRefSetMemberCrea
 				.withMapRule(getProperty(SnomedRf2Headers.FIELD_MAP_RULE))
 				.withMapAdvice(getProperty(SnomedRf2Headers.FIELD_MAP_ADVICE))
 				.withCorrelationId(getComponentId(SnomedRf2Headers.FIELD_CORRELATION_ID))
-				.withMapCategoryId(getComponentId(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID))
+				.withMapCategoryId(mapCategoryId)
 				.addTo(context);
 
 		return member.getId();

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -67,7 +66,7 @@ import com.google.common.collect.Ordering;
 /**
  * Implements the export process of the DSV export for simple type reference sets. 
  */
-public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
+final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private static final String HEADER_EXPAND = "descriptions(active:true),"
 			+ "relationships(active:true),"
@@ -75,7 +74,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	
 	private static final String DATA_EXPAND = "pt(),"
 			+ "descriptions(active:true),"
-			+ "relationships(active:true,destination(expand(pt())))),"
+			+ "relationships(active:true,destination(expand(pt()))),"
 			+ "members()";
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
@@ -121,7 +120,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * @throws SnowowlServiceException
 	 */
 	@Override
-	public File executeDSVExport() throws Exception {
+	public File executeDSVExport() throws SnowowlServiceException, IOException {
 
 		Path exportPath = getExportPath();
 		
@@ -133,13 +132,9 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				writeValues(writer);
 			}
 			
-			File zipFile = FileUtils.createZipArchive(exportPath.getParent().toFile(), Files.createTempFile("export", ".zip").toFile());
-			return zipFile;
-			
+			return exportPath.toFile();
 		} catch (Exception e) {
 			throw new SnowowlServiceException(e);
-		} finally {
-			if (exportPath != null) { Files.deleteIfExists(exportPath); }
 		}
 	}
 
@@ -162,7 +157,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
-			.setExpand(DATA_EXPAND)
+			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
 			.setScroll("15m")
@@ -562,7 +557,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 								.map(m -> m.getProperties().get(SnomedRf2Headers.FIELD_VALUE))
 								.map(p -> {
 									if (datatypeItem.isBooleanDatatype()) {
-										return ((Boolean) p) ? "Yes" : "No";
+										return "1".equals(p) ? "Yes" : "No";
 									} else {
 										return p.toString();
 									}

@@ -267,6 +267,7 @@ public abstract class SnomedConstants {
 		// Inactivation indicator reference sets
 		public static final String REFSET_CONCEPT_INACTIVITY_INDICATOR = "900000000000489007";
 		public static final String REFSET_DESCRIPTION_INACTIVITY_INDICATOR = "900000000000490003";
+		public static final String REFSET_RELATIONSHIP_INACTIVITY_INDICATOR = "900000000000547002";
 		
 		// MRCM related concepts
 		public static final String RULE_STRENGTH_ROOT = "723573005";
@@ -369,7 +370,7 @@ public abstract class SnomedConstants {
 			UK_EXCLUDE_FROM_DRUG_EXTENSION_RELEASE_MODULE,
 			UK_EXCLUDE_FROM_CLINICAL_RELEASE_MODULE
 		);
-		
+
 		// SG specific concepts
 		public static final String GENERATED_SINGAPORE_MEDICINAL_PRODUCT = "551000991000133100";
 		public static final String HAS_RELEASE_CHARACTERISTIC = "9141000132106";

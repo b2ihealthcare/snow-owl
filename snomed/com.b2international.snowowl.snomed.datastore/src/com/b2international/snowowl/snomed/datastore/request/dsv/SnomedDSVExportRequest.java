@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -41,7 +40,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -53,7 +51,6 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSV
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Optional;
 import com.google.common.collect.FluentIterable;
-import com.google.common.io.Files;
 
 /**
  * @since 5.11
@@ -107,7 +104,6 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
 		Branch branch = context.branch();
 		model.setExportPath(java.nio.file.Files.createTempDirectory("dsv-export-temp-dir").toFile().getAbsolutePath());
-		model.setUserId(User.SYSTEM.getUsername());
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
@@ -156,9 +152,6 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 		try {
 			response = exporter.executeDSVExport();
 		} catch (Exception e) {
-			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-			LogUtils.logExportActivity(LOG, exportModel.getUserId(), exportModel.getBranchPath(), "Caught exception while exporting SNOMED CT terminology to DSV format." + reason);
-			
 			LOG.error("Error while exporting DSV.", e);
 			result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components to delimiter separated files.");
 		}

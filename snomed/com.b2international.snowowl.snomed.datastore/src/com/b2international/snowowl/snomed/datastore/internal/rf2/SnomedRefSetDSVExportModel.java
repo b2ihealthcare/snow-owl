@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 	// used for simple and complex map type refsets
 	private String branchPath;
 	
-	private String userId;
 	private List<ExtendedLocale> locales;
 
 	public SnomedRefSetDSVExportModel() {
@@ -130,11 +129,4 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		this.branchPath = branchPath;
 	}
 	
-	public String getUserId() {
-		return userId;
-	}
-	
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
 }

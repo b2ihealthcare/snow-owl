@@ -86,6 +86,41 @@ The new improved and shiny Snow Owl 7.x documentation is available at `https://b
   * Removed `database` configuration options from `repository` node
   * Removed `revisionCache` configuration option from `repository` node
 
+## 6.11.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.11.0.
+
+#### Concrete Domain Reference Set Member changes (#288)
+
+Property groups now can contain concrete domain properties as well, not just relationships (new column `relationshipGroup`). Also, the `attributeName` property has been renamed to `typeId` and all concrete domain labels (attribute names) must be converted to valid, existing SNOMED CT Concepts in order to support new concrete domain schema. In case you did not had any concrete domain members and you are not planning to use this feature, you can safely use your existing dataset without issues. In other cases, feel free to contact [B2i](mailto:support@b2i.sg) to support your migration to Snow Owl 6.11.0.
+
+### Added
+- Add `repository.index.clusterName` configuration key to customize the clusterName of the embedded ES instance (#281)
+- Add `so.index.es.useHttp` system property to enforce usage of HTTP connection to the embedded ES instance (#281)
+- Support for TCP based connection to remote Elasticsearch clusters (`clusterUrl` configuration key now supports both `tcp://` and `http://`) (#281)
+  * _NOTE: TCP connection to a cluster does not yet support authentication_
+- Java API methods to simplify synchronous execution of requests (8d0e15d)
+- Support for `childOf` HierarchyInclusionType in MRCM rules (#287)
+- Support for `dependencies` between two code system. A Code System now declare another as a dependency,  (#286)
+- New Concept and Description inactivation indicators (102b127) 
+
+### Changes
+- Make SNOMED CT Description `term` field mutable (#284)
+- Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be) 
+- Export FSN in description term columns when exporting Mapping Reference Sets to DSV (#283)
+
+### Dependencies
+- Elasticsearch has been bumped to the latest 6.5 version (#281)
+
+### Bugs
+- Set `write.wait_for_active_shards` setting to `all` to fix inconsistencies in the underlying index when using replicas
+- Fix serialization issue when using the class `SctId` (8284600)
+- Fix missing clause for `referencedComponentType` filters (b98308a)
+- Report a conflict when an inbound relationship references detached destination concept. Fixes object not found and versioning errors (a8ce29e) 
+- Fix script arguments unrecognized by Elasticsearch (#289)
+
 ## 6.10.0
 
 ### Dependencies
