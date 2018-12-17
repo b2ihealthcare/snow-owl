@@ -717,13 +717,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="io.github.lukehutch.fast-classpath-scanner"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="io.swagger.annotations"
          download-size="0"
          install-size="0"
@@ -774,6 +767,13 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.mapstruct"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.github.classgraph.classgraph"
          download-size="0"
          install-size="0"
          version="0.0.0"
