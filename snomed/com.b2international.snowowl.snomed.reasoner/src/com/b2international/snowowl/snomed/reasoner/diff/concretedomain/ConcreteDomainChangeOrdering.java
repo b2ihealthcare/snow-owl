@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.diff.concretedomain;
 
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 /**
@@ -38,15 +39,15 @@ public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainF
 	@Override
 	public int compare(final ConcreteDomainFragment left, final ConcreteDomainFragment right) {
 		
-		final int typeDelta = left.getType() - right.getType();
+		final int typeDelta = left.getDataType().compareTo(right.getDataType());
 		if (typeDelta != 0) return typeDelta;
 		
-		final int attributeLabelDelta = left.getLabel().compareTo(right.getLabel());
+		final int attributeLabelDelta = Longs.compare(left.getTypeId(), right.getTypeId());
 		if (attributeLabelDelta != 0) return attributeLabelDelta;
 
-		final int uomDelta = Longs.compare(left.getUomId(), right.getUomId());
-		if (uomDelta != 0) return uomDelta;
+		final int groupDelta = Ints.compare(left.getGroup(), right.getGroup()	);
+		if (groupDelta != 0) return groupDelta;
 		
-		return left.getValue().compareTo(right.getValue());
+		return left.getSerializedValue().compareTo(right.getSerializedValue());
 	}
 }

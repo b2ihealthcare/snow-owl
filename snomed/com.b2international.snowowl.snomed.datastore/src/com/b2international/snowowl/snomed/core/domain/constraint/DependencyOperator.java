@@ -28,6 +28,9 @@ public enum DependencyOperator implements Enumerator {
 	 * The '<em><b>ONE</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Return true if one and only one child predicate in the composite predicate returns true.
+	 * <!-- end-model-doc -->
 	 * @see #ONE_VALUE
 	 * @generated
 	 * @ordered
@@ -38,6 +41,9 @@ public enum DependencyOperator implements Enumerator {
 	 * The '<em><b>SOME</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Return true if at least one child predicate in the composite predicate returns true.
+	 * <!-- end-model-doc -->
 	 * @see #SOME_VALUE
 	 * @generated
 	 * @ordered
@@ -48,6 +54,9 @@ public enum DependencyOperator implements Enumerator {
 	 * The '<em><b>ALL</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Return true if all tests in the composite predicate return true.
+	 * <!-- end-model-doc -->
 	 * @see #ALL_VALUE
 	 * @generated
 	 * @ordered

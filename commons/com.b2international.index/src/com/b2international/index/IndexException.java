@@ -18,9 +18,7 @@ package com.b2international.index;
 /**
  * @since 4.7
  */
-public final class IndexException extends RuntimeException {
-
-	private static final long serialVersionUID = -8389068730644112365L;
+public class IndexException extends RuntimeException {
 
 	public IndexException(String message, Throwable t) {
 		super(message, t);

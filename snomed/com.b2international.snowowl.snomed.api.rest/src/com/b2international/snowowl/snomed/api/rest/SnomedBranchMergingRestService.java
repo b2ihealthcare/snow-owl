@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -64,7 +65,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			@ApiResponse(code = 404, message = "Source or Target branch was not found", response=RestApiError.class)
 		})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest) {
+	public ResponseEntity<Void> createMerge(@RequestBody MergeRestRequest restRequest, Principal principal) {
 		ApiValidation.checkInput(restRequest);
 		
 		final Merge merge = RepositoryRequests.merging()
@@ -72,6 +73,7 @@ public class SnomedBranchMergingRestService extends AbstractRestService {
 			.setSource(restRequest.getSource())
 			.setTarget(restRequest.getTarget())
 			.setReviewId(restRequest.getReviewId())
+			.setUserId(principal.getName())
 			.setCommitComment(restRequest.getCommitComment())
 			.build(repositoryId)
 			.execute(bus)

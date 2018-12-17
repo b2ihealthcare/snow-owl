@@ -30,19 +30,20 @@ import java.util.function.LongFunction;
 import java.util.function.LongPredicate;
 import java.util.stream.Collectors;
 
-import org.eclipse.net4j.util.StringUtil;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataHasValue;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
 import org.semanticweb.owlapi.model.OWLDisjointUnionAxiom;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedObjectVisitor;
 import org.semanticweb.owlapi.model.OWLNamedObjectVisitorEx;
 import org.semanticweb.owlapi.model.OWLObject;
@@ -74,8 +75,6 @@ import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -98,11 +97,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private static final String PREFIX_SO = "so:";
 	private static final String NAMESPACE_SO = "http://b2i.sg/snowowl/";
 
-	private static final String PREFIX_HAS_UNIT = "so:has_unit";
-	private static final String PREFIX_HAS_VALUE = "so:has_value";
-	private static final String PREFIX_HAS_MEASUREMENT = "so:has_measurement";
-	private static final String PREFIX_LABEL = "so:label_";
-
 	private static final long CONCEPT_MODEL_OBJECT_ATTRIBUTE = 762705008L;
 	private static final long CONCEPT_MODEL_DATA_ATTRIBUTE = 762706009L;
 	private static final long ROLE_GROUP = 609096000L;
@@ -111,14 +105,13 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private static final long LATERALITY = 272741003L;
 	private static final long HAS_DOSE_FORM = 411116001L;
 	private static final long HAS_ACTIVE_INGREDIENT = 127489000L;
+	
+	public static final String PREFIX_DATA = PREFIX_SO + "data_";
 
 	private static final LongSet NEVER_GROUPED_TYPE_IDS = PrimitiveSets.newLongOpenHashSet(PART_OF, 
 			LATERALITY, 
 			HAS_DOSE_FORM, 
 			HAS_ACTIVE_INGREDIENT);
-
-	private static final String[] FIND = new String[] {"%", "(", ")" };
-	private static final String[] REPLACE = new String[] { "%25", "%28", "%29" };
 
 	private final class EntityDeclarationAxiomIterator extends AbstractIterator<OWLDeclarationAxiom> {
 		private final LongIterator idIterator;
@@ -237,9 +230,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private final class ConcreteDomainAttributeIterator extends AbstractIterator<OWLDeclarationAxiom> {
-		private final Iterator<String> attributeNameIterator;
+		private final Iterator<Long> attributeNameIterator;
 
-		private ConcreteDomainAttributeIterator(final Iterator<String> attributeNameIterator) {
+		private ConcreteDomainAttributeIterator(final Iterator<Long> attributeNameIterator) {
 			this.attributeNameIterator = attributeNameIterator;
 		}
 
@@ -249,8 +242,8 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 				return endOfData();
 			}
 
-			final String attributeName = attributeNameIterator.next();
-			final OWLObjectProperty attributeProperty = getDataFactory().getOWLObjectProperty(PREFIX_LABEL + sanitize(attributeName), prefixManager);
+			final Long typeId = attributeNameIterator.next();
+			final OWLDataProperty attributeProperty = getDataFactory().getOWLDataProperty(PREFIX_DATA + typeId, prefixManager);
 			return getOWLDeclarationAxiom(attributeProperty);
 		}
 	}
@@ -301,11 +294,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		prefixManager.setPrefix(PREFIX_SCTM, NAMESPACE_SCTM);
 		prefixManager.setPrefix(PREFIX_SO, NAMESPACE_SO);
 		return prefixManager;
-	}
-
-	// Do limited percent-encoding on incoming text as parentheses may confuse functional OWL parsers
-	private static String sanitize(final String text) {
-		return StringUtil.replace(text, FIND, REPLACE);
 	}
 
 	private final OWLOntologyManager manager;
@@ -402,8 +390,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 						dataAttributeDeclarationAxioms(),
 						dataAttributeSubPropertyOfAxioms(),
 						concreteDomainAttributeAxioms(),
-						disjointUnionAxioms(),
-						additionalAxioms());
+						disjointUnionAxioms());
 			}
 
 			@Override
@@ -455,13 +442,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return new DisjointUnionAxiomIterator(exhaustiveIdIterator());
 	}
 
-	private Iterator<OWLDeclarationAxiom> additionalAxioms() {
-		return ImmutableList.of(getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_MEASUREMENT)),
-				getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_UNIT)),
-				getOWLDeclarationAxiom(getOWLObjectProperty(PREFIX_HAS_VALUE)))
-				.iterator();
-	}
-
 	private LongIterator conceptIdIterator() {
 		return new AbstractLongIterator() {
 			private final LongIterator delegate = taxonomy.getConceptMap().getSctIds();
@@ -492,11 +472,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return getConceptAndSubTypes(CONCEPT_MODEL_DATA_ATTRIBUTE).iterator();
 	}
 
-	private Iterator<String> concreteDomainLabelIterator() {
+	private Iterator<Long> concreteDomainLabelIterator() {
 		return taxonomy.getStatedConcreteDomainMembers()
 				.values()
 				.stream()
-				.map(ConcreteDomainFragment::getLabel)
+				.map(ConcreteDomainFragment::getTypeId)
 				.distinct()
 				.iterator();
 	}
@@ -543,7 +523,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return Ints.checkedCast(taxonomy.getStatedConcreteDomainMembers()
 				.values()
 				.stream()
-				.map(ConcreteDomainFragment::getLabel)
+				.map(ConcreteDomainFragment::getTypeId)
 				.distinct()
 				.count());
 	}
@@ -645,11 +625,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	private OWLObjectSomeValuesFrom getRoleGroupExpression(final OWLClassExpression filler) {
 		final OWLObjectProperty property = getConceptObjectProperty(ROLE_GROUP);
-		return getDataFactory().getOWLObjectSomeValuesFrom(property, filler);
-	}
-
-	private OWLClassExpression getMeasurementExpression(final OWLClassExpression filler) {
-		final OWLObjectProperty property = getDataFactory().getOWLObjectProperty(PREFIX_HAS_MEASUREMENT, prefixManager);
 		return getDataFactory().getOWLObjectSomeValuesFrom(property, filler);
 	}
 
@@ -755,7 +730,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 					.filter(r -> isActiveIngredient(r))
 					.collect(Collectors.toSet());
 
-			final OWLClassExpression groupExpression;
 
 			if (activeIngredientRelationships.size() > 1) {
 				throw new IllegalStateException(String.format("Multiple 'has active ingredient' relationships were found in group %s of concept %s.", group.getKey(), conceptId));
@@ -763,12 +737,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 				// Add it in never-grouped form to the outer intersection 
 				final StatementFragment r = Iterables.getOnlyElement(activeIngredientRelationships);
 				intersection.add(getRelationshipExpression(r.getTypeId(), r.getDestinationId(), r.isDestinationNegated(), r.isUniversal()));
-				groupExpression = getMeasurementExpression(getOWLObjectIntersectionOf(groupIntersection));
-			} else {
-				groupExpression = getRoleGroupExpression(getOWLObjectIntersectionOf(groupIntersection));
 			}
 
-			intersection.add(groupExpression);
+			intersection.add(getRoleGroupExpression(getOWLObjectIntersectionOf(groupIntersection)));
 
 		} else {
 			groupIntersection.forEach(ce -> {
@@ -779,20 +750,17 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private void addConcreteDomainMember(final ConcreteDomainFragment member, final Set<OWLClassExpression> intersection) {
-		final long uomId = member.getUomId();
-		final String attributeName = member.getLabel();
-		final String serializedValue = member.getValue();
+		final long typeId = member.getTypeId();
+		final String serializedValue = member.getSerializedValue();
 		final DataType sctDataType = member.getDataType();
 
 		final OWL2Datatype owl2Datatype = getOWL2Datatype(sctDataType);
+		
+		final OWLDataProperty dataProperty = getDataFactory().getOWLDataProperty(PREFIX_DATA + typeId, prefixManager);
+		final OWLLiteral valueLiteral = getDataFactory().getOWLLiteral(serializedValue, owl2Datatype);
+		final OWLDataHasValue dataExpression = getDataFactory().getOWLDataHasValue(dataProperty, valueLiteral);
 
-		final OWLClassExpression hasUnitExpression = createHasUnitExpression(uomId);
-		final OWLClassExpression hasValueExpression = createHasValueExpression(owl2Datatype, serializedValue);
-		final OWLClassExpression unitAndValueExpression = getOWLObjectIntersectionOf(ImmutableSet.of(hasUnitExpression, hasValueExpression));
-		final OWLObjectProperty attributeProperty = getDataFactory().getOWLObjectProperty(PREFIX_LABEL + sanitize(attributeName), prefixManager);
-		final OWLClassExpression concreteDomainExpression = getDataFactory().getOWLObjectSomeValuesFrom(attributeProperty, unitAndValueExpression);
-
-		intersection.add(concreteDomainExpression);
+		intersection.add(dataExpression);
 	}
 
 	private OWL2Datatype getOWL2Datatype(final DataType dataType) {
@@ -804,26 +772,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		case STRING: return OWL2Datatype.RDF_PLAIN_LITERAL;
 		default: throw new IllegalStateException(MessageFormat.format("Unhandled datatype enum ''{0}''.", dataType));
 		}
-	}
-
-	private OWLClassExpression createHasUnitExpression(final long uomId) {
-		final OWLObjectProperty hasUnitProperty = getDataFactory().getOWLObjectProperty(PREFIX_HAS_UNIT, prefixManager);
-		final OWLClassExpression hasUnitExpression = getDataFactory().getOWLObjectSomeValuesFrom(hasUnitProperty, getConceptClass(uomId));
-		return hasUnitExpression;
-	}
-
-	private OWLClassExpression createHasValueExpression(final OWL2Datatype dataType, final String serializedValue) {
-		/*
-		 * TODO: Replace when reasoners get full OWL2 datatype support
-		 *
-		 * final OWLDataProperty hasValueProperty = df.getOWLDataProperty(PREFIX_DATA_HAS_VALUE, prefixManager);
-		 * final OWLLiteral value = df.getOWLLiteral(literal, datatype);
-		 * final OWLDataHasValue hasValueExpression = df.getOWLDataHasValue(hasValueProperty, value);
-		 */
-		final OWLObjectProperty hasValueProperty = getDataFactory().getOWLObjectProperty(PREFIX_HAS_VALUE, prefixManager);
-		final OWLClass value = getDataFactory().getOWLClass(PREFIX_SO + sanitize(serializedValue) + "_" + dataType.getShortForm(), prefixManager);
-		final OWLClassExpression hasValueExpression = getDataFactory().getOWLObjectSomeValuesFrom(hasValueProperty, value);
-		return hasValueExpression;
 	}
 
 	private OWLObjectProperty getOWLObjectProperty(final String abbreviatedIRI) {

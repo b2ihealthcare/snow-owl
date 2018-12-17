@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.b2international.index.ScriptExpression;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -98,15 +99,15 @@ public abstract class SortBy {
 	/**
 	 * @since 6.3
 	 */
-	public static final class SortByScript extends SortBy {
+	public static final class SortByScript extends SortBy implements ScriptExpression {
 
 		private final Order order;
 		private final String name;
-		private final Map<String, Object> arguments;
+		private final Map<String, Object> params;
 
-		private SortByScript(String name, Map<String, Object> arguments, Order order) {
+		private SortByScript(String name, Map<String, Object> params, Order order) {
 			this.name = name;
-			this.arguments = arguments;
+			this.params = params;
 			this.order = order;
 		}
 		
@@ -114,17 +115,19 @@ public abstract class SortBy {
 			return order;
 		}
 		
-		public String getName() {
+		@Override
+		public String getScript() {
 			return name;
 		}
 		
-		public Map<String, Object> getArguments() {
-			return arguments;
+		@Override
+		public Map<String, Object> getParams() {
+			return params;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(name, arguments, order);
+			return Objects.hash(name, params, order);
 		}
 		
 		@Override
@@ -135,13 +138,13 @@ public abstract class SortBy {
 			
 			SortByScript other = (SortByScript) obj;
 			return Objects.equals(name, other.name) 
-					&& Objects.equals(arguments, other.arguments)
+					&& Objects.equals(params, other.params)
 					&& Objects.equals(order, other.order); 
 		}
 		
 		@Override
 		public String toString() {
-			return name + " " + arguments + " " + order;
+			return name + " " + params + " " + order;
 		}
 		
 	}

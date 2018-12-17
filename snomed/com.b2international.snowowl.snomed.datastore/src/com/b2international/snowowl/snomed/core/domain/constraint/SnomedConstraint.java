@@ -130,9 +130,10 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		 */
 		final Set<String> selfIds = newHashSet();
 		final Set<String> descendantIds = newHashSet();
+		final Set<String> childIds = newHashSet();
 		final Set<String> refSetIds = newHashSet();
 		final Set<String> relationshipKeys = newHashSet(); // "typeId=destinationId" format
-		collectIds(domainFragment, selfIds, descendantIds, refSetIds, relationshipKeys);
+		collectIds(domainFragment, selfIds, childIds, descendantIds, refSetIds, relationshipKeys);
 		
 		updatedModel.id(getId());
 		updatedModel.active(isActive());
@@ -146,6 +147,7 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 		updatedModel.predicate(predicateFragment);
 		updatedModel.predicateType(SnomedConstraintPredicateType.typeOf(predicate));
 		updatedModel.selfIds(selfIds);
+		updatedModel.childIds(childIds);
 		updatedModel.descendantIds(descendantIds);
 		updatedModel.refSetIds(refSetIds);
 		updatedModel.relationshipKeys(relationshipKeys);
@@ -235,6 +237,7 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 	 */
 	private static void collectIds(final ConceptSetDefinitionFragment definition, 
 			final Set<String> selfIds, 
+			final Set<String> childIds,
 			final Set<String> descendantIds, 
 			final Set<String> refSetIds, 
 			final Set<String> relationshipKeys) {
@@ -247,6 +250,9 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 			switch (inclusionType) {
 				case SELF:
 					selfIds.add(focusConceptId);
+					break;
+				case CHILD:
+					childIds.add(focusConceptId);
 					break;
 				case DESCENDANT:
 					descendantIds.add(focusConceptId);
@@ -264,7 +270,7 @@ public final class SnomedConstraint extends SnomedConceptModelComponent implemen
 			refSetIds.add(((ReferenceSetDefinitionFragment) definition).getRefSetId());			
 		} else if (definition instanceof CompositeDefinitionFragment) {
 			for (final ConceptSetDefinitionFragment childDefinition : ((CompositeDefinitionFragment) definition).getChildren()) {
-				collectIds(childDefinition, selfIds, descendantIds, refSetIds, relationshipKeys);
+				collectIds(childDefinition, selfIds, childIds, descendantIds, refSetIds, relationshipKeys);
 			}
 		} else if (definition instanceof RelationshipDefinitionFragment) {
 			final String typeId = ((RelationshipDefinitionFragment) definition).getTypeId();

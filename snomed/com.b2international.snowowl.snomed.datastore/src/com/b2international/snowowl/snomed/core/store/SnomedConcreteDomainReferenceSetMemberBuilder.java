@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -26,24 +25,18 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
  */
 public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedConcreteDomainReferenceSetMemberBuilder> {
 
-	private String uomId;
-	private String operatorId = Concepts.CD_EQUAL;
-	private String attributeLabel;
+	private int group;
+	private String typeId;
 	private String serializedValue;
 	private CharacteristicType characteristicType = CharacteristicType.STATED_RELATIONSHIP;
 	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withUom(String uomId) {
-		this.uomId = uomId;
+	public SnomedConcreteDomainReferenceSetMemberBuilder withGroup(int group) {
+		this.group = group;
 		return getSelf();
 	}
 	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withOperatorId(String operatorId) {
-		this.operatorId = operatorId;
-		return getSelf();
-	}
-	
-	public SnomedConcreteDomainReferenceSetMemberBuilder withAttributeLabel(String label) {
-		this.attributeLabel = label;
+	public SnomedConcreteDomainReferenceSetMemberBuilder withTypeId(String typeId) {
+		this.typeId = typeId;
 		return getSelf();
 	}
 	
@@ -61,9 +54,8 @@ public final class SnomedConcreteDomainReferenceSetMemberBuilder extends SnomedM
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
 		component
-			.field(SnomedRf2Headers.FIELD_UNIT_ID, uomId)
-			.field(SnomedRf2Headers.FIELD_OPERATOR_ID, operatorId)
-			.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, attributeLabel)
+			.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, group)
+			.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)
 			.field(SnomedRf2Headers.FIELD_VALUE, serializedValue)
 			.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicType.getConceptId());
 	}

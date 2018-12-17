@@ -17,11 +17,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.datastore.index.RevisionDocument.Expressions.ids;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.decimalMember;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.integerMember;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.relationship;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.stringMember;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;

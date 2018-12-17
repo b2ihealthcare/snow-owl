@@ -103,6 +103,16 @@ public enum InactivationReason {
 	PENDING_MOVE("Pending move", Concepts.REFSET_MOVED_TO_ASSOCIATION, Concepts.PENDING_MOVE), // MOVED TO
 
 	/**
+	 * Nonconformance to editorial policy. No historical association reference set
+	 * member is required. <br>
+	 * SNOMED&nbsp;CT concept of the inactivation reason:
+	 * NONCONFORMANCE_TO_EDITORIAL_POLICY (ID: 723277005)
+	 * 
+	 * @see InactivationReason
+	 */
+	NONCONFORMANCE_TO_EDITORIAL_POLICY("Nonconformance to editorial policy", "", Concepts.NONCONFORMANCE_TO_EDITORIAL_POLICY),
+
+	/**
 	 * Retired ("inactive with no reason given for inactivation"). Neither a historical association reference set member nor a component inactivation
 	 * reference set member is required.
 	 * 

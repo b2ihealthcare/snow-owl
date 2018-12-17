@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,20 @@ package com.b2international.index.query;
 import java.util.Collections;
 import java.util.Map;
 
+import com.b2international.index.ScriptExpression;
+
 /**
  * @since 5.0
  */
-public class ScriptScoreExpression implements Expression {
+public class ScriptScoreExpression implements Expression, ScriptExpression {
 
-	private final String scriptName;
+	private final String script;
 	private final Expression expression;
-	private final Map<String, ? extends Object> params;
+	private final Map<String, Object> params;
 
-	ScriptScoreExpression(Expression expression, String scriptName, final Map<String, ? extends Object> params) {
+	ScriptScoreExpression(Expression expression, String script, final Map<String, Object> params) {
 		this.expression = expression;
-		this.scriptName = scriptName;
+		this.script = script;
 		this.params = params == null ? Collections.emptyMap() : params;
 	}
 	
@@ -37,8 +39,14 @@ public class ScriptScoreExpression implements Expression {
 		return expression;
 	}
 
-	public String scriptName() {
-		return scriptName;
+	@Override
+	public String getScript() {
+		return script;
+	}
+	
+	@Override
+	public Map<String, Object> getParams() {
+		return params;
 	}
 	
 	@Override
@@ -46,8 +54,4 @@ public class ScriptScoreExpression implements Expression {
 		return String.format("SCRIPT SCORE(%s)", expression);
 	}
 
-	public Map<String, ? extends Object> getParams() {
-		return params;
-	}
-	
 }

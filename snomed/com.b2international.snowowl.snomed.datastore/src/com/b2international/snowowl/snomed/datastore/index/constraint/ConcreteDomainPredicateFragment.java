@@ -26,9 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 
-	private final String label; // "Vaccine"
-	private final String name; // "canBeTaggedWithVaccine"
-	private final DataType dataType;
+	private final ConceptSetDefinitionFragment attribute;
+	private final DataType range;
 	private final String characteristicTypeId;
 	
 	@JsonCreator
@@ -37,38 +36,32 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 			@JsonProperty("active") final boolean active, 
 			@JsonProperty("effectiveTime") final long effectiveTime, 
 			@JsonProperty("author") final String author,
-			@JsonProperty("label") final String label, 
-			@JsonProperty("name") final String name, 
-			@JsonProperty("dataType") final DataType dataType, 
+			@JsonProperty("attribute") final ConceptSetDefinitionFragment attribute,  
+			@JsonProperty("range") final DataType range, 
 			@JsonProperty("characteristicTypeId") final String characteristicTypeId) {
 
 		super(uuid, active, effectiveTime, author);
 
-		this.label = label;
-		this.name = name;
-		this.dataType = dataType;
+		this.attribute = attribute;
+		this.range = range;
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	public String getLabel() {
-		return label;
+	public ConceptSetDefinitionFragment getAttribute() {
+		return attribute;
 	}
-
-	public String getName() {
-		return name;
+	
+	public DataType getRange() {
+		return range;
 	}
-
-	public DataType getDataType() {
-		return dataType;
-	}
-
+	
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
 	}
 	
 	@Override
 	public int hashCode() {
-		return 31 * super.hashCode() + Objects.hash(label, name, dataType, characteristicTypeId);
+		return 31 * super.hashCode() + Objects.hash(attribute, range, characteristicTypeId);
 	}
 
 	@Override
@@ -79,9 +72,8 @@ public final class ConcreteDomainPredicateFragment extends PredicateFragment {
 		
 		ConcreteDomainPredicateFragment other = (ConcreteDomainPredicateFragment) obj;
 		
-		return Objects.equals(label, other.label)
-				&& Objects.equals(name, other.name)
-				&& Objects.equals(dataType, other.dataType)
+		return Objects.equals(attribute, other.attribute)
+				&& Objects.equals(range, other.range)
 				&& Objects.equals(characteristicTypeId, other.characteristicTypeId);
 	}
 }

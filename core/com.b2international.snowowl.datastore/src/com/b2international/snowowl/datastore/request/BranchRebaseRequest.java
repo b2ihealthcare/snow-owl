@@ -41,12 +41,12 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest<Merge
 				: String.format("Rebase branch '%s' on '%s'", targetPath, sourcePath);
 	}
 
-	BranchRebaseRequest(final String sourcePath, final String targetPath, final String commitMessage, String reviewId) {
-		super(sourcePath, targetPath, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId);
+	BranchRebaseRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
 	}
 	
 	@Override
 	protected Merge execute(RepositoryContext context, Branch source, Branch target) {
-		return context.service(MergeService.class).enqueue(sourcePath, targetPath, commitMessage, reviewId);
+		return context.service(MergeService.class).enqueue(sourcePath, targetPath, userId, commitMessage, reviewId, parentLockContext);
 	}
 }

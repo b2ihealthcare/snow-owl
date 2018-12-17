@@ -31,16 +31,25 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 
 	@Override
 	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
-		String newAttributeName = getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
-		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		String newValue = getProperty(SnomedRf2Headers.FIELD_VALUE);
-		String newOperatorId = getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID);
-		String newUnitId = getComponentId(SnomedRf2Headers.FIELD_UNIT_ID);
+		int newGroup = getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class);
+		String newTypeId = getComponentId(SnomedRf2Headers.FIELD_TYPE_ID);
+		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
 		boolean changed = false;
 
-		if (newAttributeName != null && !newAttributeName.equals(original.getAttributeName())) {
-			member.field(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, newAttributeName);
+		if (newValue != null && !newValue.equals(SnomedRefSetUtil.serializeValue(original.getDataType(), original.getValue()))) {
+			member.field(SnomedRf2Headers.FIELD_VALUE, newValue);
+			changed |= true;
+		}
+
+		if (newGroup != original.getRelationshipGroup()) {
+			member.field(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, newGroup);
+			changed |= true;
+		}
+
+		if (newTypeId != null && !newTypeId.equals(original.getTypeId())) {
+			member.field(SnomedRf2Headers.FIELD_TYPE_ID, newTypeId);
 			changed |= true;
 		}
 
@@ -49,22 +58,6 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 			changed |= true;
 		}
 
-		if (newValue != null && !newValue.equals(SnomedRefSetUtil.serializeValue(original.getDataType(), original.getValue()))) {
-			member.field(SnomedRf2Headers.FIELD_VALUE, newValue);
-			changed |= true;
-		}
-
-		if (newOperatorId != null && !newOperatorId.equals(original.getOperatorId())) {
-			member.field(SnomedRf2Headers.FIELD_OPERATOR_ID, newOperatorId);
-			changed |= true;
-		}
-
-		if (newUnitId != null && !newUnitId.equals(original.getUnitId())) {
-			member.field(SnomedRf2Headers.FIELD_UNIT_ID, newUnitId);
-			changed |= true;
-		}
-
 		return changed;
 	}
-
 }

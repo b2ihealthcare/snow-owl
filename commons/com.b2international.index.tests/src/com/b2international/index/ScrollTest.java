@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -104,6 +105,24 @@ public class ScrollTest extends BaseIndexTest {
  		
  		System.err.println("ReturnAllHitsWithScroll took " + w);
 		assertThat(hits).hasSize(NUM_DOCS);
+	}
+	
+	@Test(expected = SearchContextMissingException.class)
+	@Ignore("slows down test suite; scroll context invalidation is non-deterministic")
+	public void scrollTimeout() throws Exception {
+		indexDocs(10_000);
+		
+		Iterable<Hits<Data>> scroll = scroll(Query.select(Data.class)
+				.where(Expressions.matchAll())
+				.scroll("500ms")
+				.limit(100)
+				.build());
+		
+ 		for (Hits<Data> scrollHits : scroll) {
+			scrollHits.getHits();
+			Thread.sleep(1000L);
+			System.out.print(".");
+		}
 	}
 	
 	private void indexDocs(int numberOfDocs) {

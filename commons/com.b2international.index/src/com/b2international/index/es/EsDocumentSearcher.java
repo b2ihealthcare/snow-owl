@@ -26,10 +26,11 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.solr.common.util.JavaBinCodec;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.ClearScrollRequest;
@@ -38,7 +39,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
@@ -57,6 +57,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Scroll;
+import com.b2international.index.SearchContextMissingException;
 import com.b2international.index.Searcher;
 import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
@@ -76,6 +77,7 @@ import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -261,14 +263,30 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> scroll(Scroll<T> scroll) throws IOException {
-		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scroll.getScrollId())
-				.scroll(scroll.getKeepAlive());
-		final SearchResponse response = admin.client()
-				.scroll(searchScrollRequest);
+		final String scrollId = scroll.getScrollId();
+		final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(scrollId);
+		searchScrollRequest.scroll(scroll.getKeepAlive());
 		
-		final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
-		final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
-		return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());
+		try {
+			
+			final SearchResponse response = admin.client()
+					.scroll(searchScrollRequest);
+			
+			final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
+			final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
+			return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits(), response.getScrollId(), null, response.getHits());	
+			
+		} catch (IOException | ElasticsearchStatusException e) {
+			final Throwable rootCause = Throwables.getRootCause(e);
+			
+			if (rootCause instanceof ElasticsearchException && rootCause.getMessage().contains("No search context found for id [")) {
+				throw new SearchContextMissingException(String.format("Search context missing for scrollId '%s'.", scrollId), null);
+			} else if (e instanceof IOException) {
+				throw e;
+			} else {
+				throw new IOException(e);
+			}
+		}
 	}
 	
 	@Override
@@ -371,17 +389,9 @@ public class EsDocumentSearcher implements Searcher {
 			} else if (item instanceof SortByScript) {
 				SortByScript sortByScript = (SortByScript) item;
 				SortBy.Order order = sortByScript.getOrder();
-				String script = sortByScript.getName();
 				SortOrder sortOrder = order == SortBy.Order.ASC ? SortOrder.ASC : SortOrder.DESC;
 				
-				// if this is a named script then get it from the current mapping
-				if (mapping.getScript(script) != null) {
-					script = mapping.getScript(script).script();
-				}
-				
-				Map<String, Object> arguments = sortByScript.getArguments();
-				
-				reqSource.sort(SortBuilders.scriptSort(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", script, arguments), ScriptSortType.STRING)
+				reqSource.sort(SortBuilders.scriptSort(sortByScript.toEsScript(mapping), ScriptSortType.STRING)
 						.order(sortOrder));
 				
 			} else {
@@ -389,7 +399,7 @@ public class EsDocumentSearcher implements Searcher {
 			}
         }
 	}
-
+	
 	private Iterable<SortBy> getSortFields(SortBy sortBy) {
 		final List<SortBy> items = newArrayList();
 
@@ -471,8 +481,7 @@ public class EsDocumentSearcher implements Searcher {
 			checkArgument(!isScriptAgg, "Specify either field or script parameter, not both");
 			termsAgg.field(aggregation.getGroupByField());
 		} else if (isScriptAgg) {
-			final String rawScript = aggregation.getGroupByScript();
-			termsAgg.script(new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Collections.emptyMap()));
+			termsAgg.script(aggregation.toEsScript(mapping));
 		} else {
 			throw new IllegalArgumentException("Specify either field or script parameter");
 		}

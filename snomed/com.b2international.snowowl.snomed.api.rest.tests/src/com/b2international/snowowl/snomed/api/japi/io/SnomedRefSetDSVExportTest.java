@@ -125,16 +125,12 @@ public class SnomedRefSetDSVExportTest {
 				.execute(bus)
 				.getSync();
 
-		File dsvExportZipFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));
-		OutputStream outputStream = new FileOutputStream(dsvExportZipFile);
+		File dsvExportFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));
+		OutputStream outputStream = new FileOutputStream(dsvExportFile);
 		fileRegistry.download(fileId, outputStream);
-		Assert.assertTrue("Export archive must exist!", dsvExportZipFile.exists());
+		Assert.assertTrue("Export file must exist!", dsvExportFile.exists());
 
-		FileUtils.decompressZipArchive(dsvExportZipFile, tempDir);
-		File decompressedDsvFile = new File(tempDir, "test.csv");
-		Assert.assertTrue("Uncompressed file must exist.", decompressedDsvFile.exists());
-
-		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
+		List<String> dsvExportLines = Files.readLines(dsvExportFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 4 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 4);
 	}
 
@@ -144,8 +140,7 @@ public class SnomedRefSetDSVExportTest {
 		addMember(branchPath, refsetId, Concepts.SUBSTANCE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
 		addMember(branchPath, refsetId, Concepts.FINDING_SITE, Collections.singletonMap(SnomedRf2Headers.FIELD_MAP_TARGET, "XXX"));
 		
-		UUID fileId = 
-			SnomedRequests.dsv()
+		UUID fileId = SnomedRequests.dsv()
 				.prepareExport()
 				.setLocales(locales())
 				.setDelimiter(DELIMITER)
@@ -157,16 +152,12 @@ public class SnomedRefSetDSVExportTest {
 				.execute(bus)
 				.getSync();
 
-		File dsvExportZipFile = new File(tempDir, String.format("dsv-export-%s.zip", fileId.toString()));
-		OutputStream outputStream = new FileOutputStream(dsvExportZipFile);
+		File dsvExportFile = new File(tempDir, String.format("dsv-export-%s.csv", fileId.toString()));
+		OutputStream outputStream = new FileOutputStream(dsvExportFile);
 		fileRegistry.download(fileId, outputStream);
-		Assert.assertTrue("Export archive must exist!", dsvExportZipFile.exists());
+		Assert.assertTrue("Export file must exist!", dsvExportFile.exists());
 
-		FileUtils.decompressZipArchive(dsvExportZipFile, tempDir);
-		File decompressedDsvFile = new File(tempDir, "test.csv");
-		Assert.assertTrue("Uncompressed file must exist.", decompressedDsvFile.exists());
-
-		List<String> dsvExportLines = Files.readLines(decompressedDsvFile, Charsets.UTF_8);
+		List<String> dsvExportLines = Files.readLines(dsvExportFile, Charsets.UTF_8);
 		Assert.assertTrue(MessageFormat.format("Expected 3 lines in the exported file (2 header and 2 member lines) instead of {0} lines.", dsvExportLines.size()), dsvExportLines.size() == 3);
 	}
 	
@@ -209,7 +200,7 @@ public class SnomedRefSetDSVExportTest {
 	private Set<String> ancestorsOf(SnomedConcepts concepts) {
 		return concepts.getItems()
 					.stream()
-					.flatMap(item -> SnomedConcept.GET_ANCESTORS.apply(item).stream())
+					.flatMap(item -> SnomedConcept.GET_PARENTS.apply(item).stream())
 					.collect(Collectors.toSet());
 	}
 
@@ -333,15 +324,14 @@ public class SnomedRefSetDSVExportTest {
 				final ComponentIdSnomedDsvExportItem descriptionExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.DESCRIPTION, descriptionTypeId, descriptionTypeId);
 				results.add(descriptionExportItem);
 			} else if (predicate instanceof SnomedRelationshipPredicate) {
-				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: expecting a single-SCTID expression here
+				final String typeId = ((SnomedRelationshipPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
 				final ComponentIdSnomedDsvExportItem relationshipExportItem = new ComponentIdSnomedDsvExportItem(SnomedDsvExportItemType.RELATIONSHIP, typeId, typeId);
 				results.add(relationshipExportItem);
 			} else if (predicate instanceof SnomedConcreteDomainPredicate) {
-				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getDataType();
-				final String dataTypeName = dataType.getName();
+				final String attributeId = ((SnomedConcreteDomainPredicate) predicate).getAttributeExpression(); // XXX: only single-SCTID expressions are accepted
+				final DataType dataType = ((SnomedConcreteDomainPredicate) predicate).getRange();
 				final boolean dataTypeBoolean = DataType.BOOLEAN.equals(dataType);
-				
-				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, dataTypeName, dataTypeBoolean);
+				final DatatypeSnomedDsvExportItem datatypeExportItem = new DatatypeSnomedDsvExportItem(SnomedDsvExportItemType.DATAYPE, attributeId, attributeId, dataTypeBoolean);
 				results.add(datatypeExportItem);
 			}
 		}

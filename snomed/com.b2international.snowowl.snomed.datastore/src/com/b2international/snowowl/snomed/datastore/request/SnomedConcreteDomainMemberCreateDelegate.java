@@ -42,15 +42,15 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 	public String execute(SnomedReferenceSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.CONCRETE_DATA_TYPE);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_ATTRIBUTE_NAME);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_VALUE);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_OPERATOR_ID);
+		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
+		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_TYPE_ID);
+		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
+		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_TYPE_ID);
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
-		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_OPERATOR_ID);
 
 		DataType dataType = refSet.getDataType();
 		String value = getProperty(SnomedRf2Headers.FIELD_VALUE);
@@ -61,21 +61,16 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 			throw new BadRequestException("Couldn't deserialize value '%s' for data type '%s'.", value, dataType);
 		}
 
-		if (hasProperty(SnomedRf2Headers.FIELD_UNIT_ID)) {
-			checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_UNIT_ID);
-		}
-
 		SnomedRefSetMemberIndexEntry member = SnomedComponents.newConcreteDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
-				.withAttributeLabel(getComponentId(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME))
 				.withCharacteristicType(CharacteristicType.getByConceptId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID)))
+				.withGroup(getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class))
 				.withModule(getModuleId())
-				.withOperatorId(getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID))
 				.withReferencedComponent(getReferencedComponentId())
 				.withRefSet(getReferenceSetId())
 				.withSerializedValue(getProperty(SnomedRf2Headers.FIELD_VALUE))
-				.withUom(getComponentId(SnomedRf2Headers.FIELD_UNIT_ID))
+				.withTypeId(getComponentId(SnomedRf2Headers.FIELD_TYPE_ID))
 				.addTo(context);
 
 		return member.getId();
@@ -83,14 +78,8 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
-		ImmutableSet.Builder<String> requiredComponentIds = ImmutableSet.<String>builder()
-				.add(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
-				.add(getComponentId(SnomedRf2Headers.FIELD_OPERATOR_ID));
-		
-		if (hasProperty(SnomedRf2Headers.FIELD_UNIT_ID)) {
-			requiredComponentIds.add(getComponentId(SnomedRf2Headers.FIELD_UNIT_ID));
-		}
-		
-		return requiredComponentIds.build();
+		return ImmutableSet.of(
+				getComponentId(SnomedRf2Headers.FIELD_TYPE_ID), 
+				getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 	}
 }

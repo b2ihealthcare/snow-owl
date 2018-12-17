@@ -476,6 +476,10 @@ public abstract class SnomedRequests {
 					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterBySelfIds(selfIds));
 				}
 				
+				if (!CompareUtils.isEmpty(ruleParentIds)) {
+					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByChildIds(ruleParentIds));
+				}
+				
 				if (!CompareUtils.isEmpty(descendantDomainIds)) {
 					constraintBulkRequestBuilder.add(SnomedRequests.prepareSearchConstraint().all().filterByDescendantIds(descendantDomainIds));
 				}

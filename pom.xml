@@ -38,7 +38,7 @@
 		<owlapi.version>4.1.3</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.5.v20170502</jetty.version>
-		<fast.classpath.scanner.version>3.1.6</fast.classpath.scanner.version>
+		<classgraph.version>4.6.8</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.4.8</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
@@ -277,9 +277,9 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.github.lukehutch</groupId>
-			<artifactId>fast-classpath-scanner</artifactId>
-			<version>${fast.classpath.scanner.version}</version>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+			<version>${classgraph.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

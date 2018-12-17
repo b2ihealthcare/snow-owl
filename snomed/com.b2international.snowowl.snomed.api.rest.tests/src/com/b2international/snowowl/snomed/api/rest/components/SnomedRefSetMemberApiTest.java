@@ -83,10 +83,10 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		String refSetId = createConcreteDomainRefSet(branchPath, DataType.INTEGER);
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "numberOfWidgets")
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.REFSET_ATTRIBUTE)
+				.put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 0)
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
 				.put(SnomedRf2Headers.FIELD_VALUE, "five") // bad
-				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE)
 				.put("commitComment", "Created new reference set member")
 				.build();
 
@@ -99,10 +99,10 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		String refSetId = createConcreteDomainRefSet(branchPath, DataType.DECIMAL);
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "pi")
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.REFSET_ATTRIBUTE) // Using "Reference set attribute" root as a data attribute
+				.put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 0)
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
 				.put(SnomedRf2Headers.FIELD_VALUE, "3.1415927")
-				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE) // Using "Reference set attribute" root as operator
 				.put("commitComment", "Created new reference set member")
 				.build();
 
@@ -111,10 +111,10 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
-		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("pi"))
+		.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.REFSET_ATTRIBUTE))
+		.body(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, equalTo(0))
 		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
-		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"))
-		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE));
+		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"));
 	}
 
 	@Test
@@ -123,10 +123,10 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		String refSetId = createConcreteDomainRefSet(branchPath, DataType.DECIMAL);
 		Map<?, ?> createRequest = createRefSetMemberRequestBody(refSetId, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "pi")
+				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.REFSET_ATTRIBUTE)
+				.put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, 1)
 				.put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.STATED_RELATIONSHIP)
 				.put(SnomedRf2Headers.FIELD_VALUE, "3.1415927")
-				.put(SnomedRf2Headers.FIELD_OPERATOR_ID, Concepts.REFSET_ATTRIBUTE) // Using "Reference set attribute" root as operator
 				.put("commitComment", "Created new concrete domain reference set member")
 				.build();
 
@@ -137,23 +137,23 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> member = getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
 		.statusCode(200)
-		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("pi"))
+		.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.REFSET_ATTRIBUTE))
+		.body(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, equalTo(1))
 		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
 		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"))
-		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE))
 		.extract().as(Map.class);
 
-		member.put(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, "e");
+		member.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.CONCEPT_MODEL_ATTRIBUTE);
 		member.put(SnomedRf2Headers.FIELD_VALUE, "2.7182818");
 		member.put("commitComment", "Updated existing concrete domain reference set member");
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, member, false).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
 		.statusCode(200)
-		.body(SnomedRf2Headers.FIELD_ATTRIBUTE_NAME, equalTo("e"))
+		.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.CONCEPT_MODEL_ATTRIBUTE))
+		.body(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, equalTo(1))
 		.body(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, equalTo(Concepts.STATED_RELATIONSHIP))
-		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("2.7182818"))
-		.body(SnomedRf2Headers.FIELD_OPERATOR_ID, equalTo(Concepts.REFSET_ATTRIBUTE));
+		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("2.7182818"));
 	}
 
 	@Test
