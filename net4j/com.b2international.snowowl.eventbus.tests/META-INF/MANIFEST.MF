@@ -7,5 +7,5 @@ Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.eventbus;bundle-version="3.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.junit;bundle-version="4.11.0",
- org.mockito.mockito-all;bundle-version="1.9.5",
+ org.mockito;bundle-version="2.13.0",
  com.b2international.snowowl.test.dependencies;bundle-version="3.1.0"

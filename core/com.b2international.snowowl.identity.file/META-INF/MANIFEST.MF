@@ -5,5 +5,5 @@ Bundle-SymbolicName: com.b2international.snowowl.identity.file;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Fragment-Host: com.b2international.snowowl.identity
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-ClassPath: .,
- lib/jbcrypt-0.4.jar
+Bundle-ClassPath: .
+Require-Bundle: de.svenkubiak.jBCrypt;bundle-version="0.4.1"

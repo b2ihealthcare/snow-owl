@@ -8,4 +8,5 @@
 	</parent>
 	<artifactId>com.b2international.collections.fastutil</artifactId>
 	<packaging>eclipse-plugin</packaging>
+	
 </project>

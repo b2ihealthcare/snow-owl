@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: B2i Commons Base
-Bundle-SymbolicName: com.b2international.commons.base
+Bundle-SymbolicName: com.b2international.commons.base;singleton:=true
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -40,3 +40,4 @@ Import-Package: javax.crypto,
  org.slf4j;version="1.7.2",
  org.w3c.dom,
  org.xml.sax
+Bundle-ActivationPolicy: lazy

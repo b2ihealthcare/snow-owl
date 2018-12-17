@@ -7,7 +7,6 @@ Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  contiperf-2.3.2.jar,
- jukito-1.2.jar,
  system-rules-1.18.0.jar
 Export-Package: org.databene.contiperf,
  org.databene.contiperf.clock,
@@ -19,6 +18,5 @@ Export-Package: org.databene.contiperf,
  org.databene.contiperf.util,
  org.databene.profile,
  org.databene.stat,
- org.jukito,
  org.junit.contrib.java.lang.system
 Require-Bundle: org.junit;bundle-version="4.11.0"

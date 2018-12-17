@@ -25,8 +25,8 @@ import java.util.Map;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * A set of assert methods related to the branching support in the REST API.
@@ -104,7 +104,7 @@ public abstract class SnomedBranchingRestRequests {
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("/branches/{path}", branchPath)
+				.put("/branches/{path}", branchPath.getPath())
 				.then();
 	}
 

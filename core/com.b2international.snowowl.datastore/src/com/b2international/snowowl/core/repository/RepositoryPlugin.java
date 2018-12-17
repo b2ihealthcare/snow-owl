@@ -73,6 +73,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+
 /**
  * @since 3.3
  */
@@ -123,6 +127,7 @@ public final class RepositoryPlugin extends Plugin {
 		builder.put(IndexClientFactory.INDEX_PREFIX, repositoryConfig.getDeploymentId());
 		
 		final IndexConfiguration indexConfig = repositoryConfig.getIndexConfiguration();
+		builder.put(IndexClientFactory.CLUSTER_NAME, indexConfig.getClusterName());
 		if (indexConfig.getClusterUrl() != null) {
 			builder.put(IndexClientFactory.CLUSTER_URL, indexConfig.getClusterUrl());
 			if (indexConfig.getClusterUsername() != null) {
@@ -170,6 +175,10 @@ public final class RepositoryPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) {
 		if (env.isServer() || env.isEmbedded()) {
 			LOG.debug("Initializing repository plugin.");
+			final MeterRegistry registry = env.service(MeterRegistry.class);
+			final IEventBus eventBus = env.service(IEventBus.class);
+			// Add event bus based request metrics
+			registerRequestMetrics(registry, eventBus);
 			
 			final IManagedContainer container = env.container();
 			
@@ -218,6 +227,29 @@ public final class RepositoryPlugin extends Plugin {
 				throw new SnowowlRuntimeException(e);
 			}
 		}
+		
+	}
+	
+	private void registerRequestMetrics(MeterRegistry registry, IEventBus eventBus) {
+		FunctionCounter.builder("requests.completed", eventBus, bus -> bus.getCompletedMessages(Request.TAG))
+				.description("The total number of requests that have completed execution")
+				.register(registry);
+
+		Gauge.builder("requests.processing", eventBus, bus -> bus.getProcessingMessages(Request.TAG))
+				.description("The approximate number of requests that are currently under execution")
+				.register(registry);
+
+		Gauge.builder("requests.queued", eventBus, bus -> bus.getInQueueMessages(Request.TAG))
+				.description("The approximate number of requests that are queued for execution")
+				.register(registry);
+		
+		FunctionCounter.builder("requests.succeeded", eventBus, bus -> bus.getSucceededMessages(Request.TAG))
+				.description("The total number of requests that have successfully completed execution")
+				.register(registry);
+		
+		FunctionCounter.builder("requests.failed", eventBus, bus -> bus.getFailedMessages(Request.TAG))
+				.description("The total number of requests that have failed execution")
+				.register(registry);
 		
 	}
 	

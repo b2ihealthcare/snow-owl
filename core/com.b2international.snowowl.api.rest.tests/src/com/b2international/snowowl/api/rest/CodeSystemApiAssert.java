@@ -24,9 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 4.7

@@ -20,40 +20,33 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
+import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.ScriptType;
 import org.slf4j.Logger;
@@ -72,17 +65,12 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
 import com.b2international.index.Text;
 import com.b2international.index.admin.IndexAdmin;
-import com.b2international.index.es.EsClient;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.NumericClassUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.RawValue;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Primitives;
@@ -100,17 +88,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final String name;
 	private final Mappings mappings;
 	private final Map<String, Object> settings;
-	private final ObjectMapper mapper;
 	
 	private final Logger log;
 	private final String prefix;
 
-	public EsIndexAdmin(EsClient client, String clientUri, String name, Mappings mappings, Map<String, Object> settings, ObjectMapper mapper) {
+	public EsIndexAdmin(EsClient client, String name, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
 		this.name = name.toLowerCase();
 		this.mappings = mappings;
 		this.settings = newHashMap(settings);
-		this.mapper = mapper;
 		
 		this.log = LoggerFactory.getLogger(String.format("index.%s", this.name));
 		
@@ -129,23 +115,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 	@Override
 	public boolean exists() {
-		final String[] indices = getAllIndexes();
-		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(indices);
-
 		try {
-			return client().indices().exists(getIndexRequest, RequestOptions.DEFAULT);
-		} catch (IOException e) {
+			return client().indices().exists(getAllIndexes());
+		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of all ES indices.", e);
 		}
 	}
 
 	private boolean exists(DocumentMapping mapping) {
 		final String index = getTypeIndex(mapping);
-		final GetIndexRequest getIndexRequest = new GetIndexRequest().indices(index);
-
 		try {
-			return client().indices().exists(getIndexRequest, RequestOptions.DEFAULT);
-		} catch (IOException e) {
+			return client().indices().exists(index);
+		} catch (Exception e) {
 			throw new IndexException("Couldn't check the existence of ES index '" + index + "'.", e);
 		}
 	}
@@ -182,10 +163,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				createIndexRequest.settings(indexSettings);
 				
 				try {
-					final CreateIndexResponse response = client.indices()
-							.create(createIndexRequest, RequestOptions.DEFAULT);
+					final CreateIndexResponse response = client.indices().create(createIndexRequest);
 					checkState(response.isAcknowledged(), "Failed to create index '%s' for type '%s'", name, mapping.typeAsString());
-				} catch (IOException e) {
+				} catch (Exception e) {
 					throw new IndexException(String.format("Failed to create index '%s' for type '%s'", name, mapping.typeAsString()), e);
 				}
 				
@@ -222,6 +202,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				.put(IndexClientFactory.RESULT_WINDOW_KEY, settings().get(IndexClientFactory.RESULT_WINDOW_KEY))
 				.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, settings().get(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY))
 				.put("translog.durability", "async")
+				.put("write.wait_for_active_shards", "all")
 				.build();
 	}
 	
@@ -237,53 +218,35 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
 			final int pollTimeout = socketTimeout / 2;
 			
-			// GET /_cluster/health/test1,test2
-			final String endpoint = new EsClient.EndpointBuilder()
-					.addPathPartAsIs("_cluster")
-					.addPathPartAsIs("health")
-					.addCommaSeparatedPathParts(indices)
-					.build();
+			final ClusterHealthRequest req = new ClusterHealthRequest(indices)
+					.waitForYellowStatus() // Wait until yellow status is reached
+					.timeout(String.format("%sms", pollTimeout)); // Poll interval is half the socket timeout
+			req.level(Level.INDICES); // Detail level should be concerned with the indices in the path
 			
-			// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/cluster-health.html#request-params
-			final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-					.put("level", "indices") // Detail level should be concerned with the indices in the path
-					.put("wait_for_status", "yellow") // Wait until yellow status is reached
-					.put("timeout", String.format("%sms", pollTimeout)) // Poll interval is half the socket timeout
-					.put("ignore", "408") // This parameter is not sent to ES; it makes server 408 responses not throw an exception
-					.build(); 
-		
 			final long startTime = System.currentTimeMillis();
 			final long endTime = startTime + clusterTimeout; // Polling finishes when the cluster timeout is reached
-			long currentTime = startTime; 
-			JsonNode responseNode = null;
+			long currentTime = startTime;
+			
+			ClusterHealthResponse response = null;
 			
 			do {
 				
 				try {
-					
-					final Response clusterHealthResponse = client().getLowLevelClient()
-							.performRequest(HttpGet.METHOD_NAME, endpoint, parameters);
-					final InputStream responseStream = clusterHealthResponse.getEntity()
-							.getContent();
-					responseNode = mapper.readTree(responseStream);
-					
-					if (!responseNode.get("timed_out").asBoolean()) {
-						currentTime = System.currentTimeMillis();
+					response = client().cluster().health(req);
+					currentTime = System.currentTimeMillis();
+					if (!response.isTimedOut()) {
 						break; 
 					}
-					
-				} catch (IOException e) {
+				} catch (Exception e) {
 					throw new IndexException("Couldn't retrieve cluster health for index " + name, e);
 				}
 				
-				currentTime = System.currentTimeMillis();
-			
 			} while (currentTime < endTime);
 			
-			if (responseNode == null || responseNode.get("timed_out").asBoolean()) {
+			if (response == null || response.isTimedOut()) {
 				throw new IndexException(String.format("Cluster health did not reach yellow status for '%s' indexes after %s ms.", name, currentTime - startTime), null);
 			} else {
-				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, responseNode.get("status").asText(), currentTime - startTime);
+				log.info("Cluster health for '{}' indexes reported as '{}' after {} ms.", name, response.getStatus(), currentTime - startTime);
 			}
 		}
 	}
@@ -425,11 +388,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (exists()) {
 			final DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(name + "*");
 			try {
-				final DeleteIndexResponse deleteIndexResponse = client()
+				final AcknowledgedResponse deleteIndexResponse = client()
 						.indices()
-						.delete(deleteIndexRequest, RequestOptions.DEFAULT);
+						.delete(deleteIndexRequest);
 				checkState(deleteIndexResponse.isAcknowledged(), "Failed to delete all ES indices for '%s'.", name);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", name), e);
 			}
 		}
@@ -502,16 +465,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 			
 			try {
-				
+			
 				final RefreshRequest refreshRequest = new RefreshRequest(indicesToRefresh);
 				final RefreshResponse refreshResponse = client()
 						.indices()
-						.refresh(refreshRequest, RequestOptions.DEFAULT);
+						.refresh(refreshRequest);
 				if (RestStatus.OK != refreshResponse.getStatus() && log.isErrorEnabled()) {
 					log.error("Index refresh request of '{}' returned with status {}", Joiner.on(", ").join(indicesToRefresh), refreshResponse.getStatus());
 				}
 				
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(indicesToRefresh)), e);
 			}
 		}
@@ -521,11 +484,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 		final DocumentMapping mapping = mappings().getMapping(update.getType());
 		final String rawScript = mapping.getScript(update.getScript()).script();
 		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
-		bulkIndexByScroll(client, update, "_update_by_query", script, mappingsToRefresh);
+		bulkIndexByScroll(client, update, "update", script, mappingsToRefresh);
 	}
 
 	public void bulkDelete(final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
-		bulkIndexByScroll(client, delete, "_delete_by_query", null, mappingsToRefresh);
+		bulkIndexByScroll(client, delete, "delete", null, mappingsToRefresh);
 	}
 
 	private void bulkIndexByScroll(final EsClient client,
@@ -542,43 +505,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 		
 		do {
 
-			/*
-			 * See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html and 
-			 * for https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-delete-by-query.html
-			 * the low-level structure of this request.
-			 */
 			try {
-
-				final String endpoint = String.format("%s/%s/%s", getTypeIndex(mapping), mapping.typeAsString(), command);
 				
-				// https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-update-by-query.html#_url_parameters_2
-				final Map<String, String> parameters = ImmutableMap.<String, String>builder()
-						.put("scroll_size", Integer.toString(BATCHS_SIZE))
-						.put("slices", Integer.toString(getConcurrencyLevel()))
-						.build(); 
-
-				final ObjectNode ubqr = mapper.createObjectNode();
-				putXContentValue(ubqr, "script", script);
-				putXContentValue(ubqr, "query", query);
-
-				final HttpEntity requestBody = new StringEntity(mapper.writeValueAsString(ubqr), ContentType.APPLICATION_JSON);
-				
-				Response response;
-				try {
-					response = client.getLowLevelClient().performRequest(HttpPost.METHOD_NAME, endpoint, parameters, requestBody);
-				} catch (ResponseException e) {
-					response = e.getResponse();
+				final BulkByScrollResponse response; 
+				if ("update".equals(command)) {
+					response = client.updateByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, script, getConcurrencyLevel(), query);
+				} else if ("delete".equals(command)) {
+					response = client.deleteByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, getConcurrencyLevel(), query);
+				} else {
+					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}
 				
-				// https://www.elastic.co/guide/en/elasticsearch/reference/6.4/docs-update-by-query.html#docs-update-by-query-response-body
-				final JsonNode updateByQueryResponse = mapper.readTree(response.getEntity().getContent());
+				final long updateCount = response.getUpdated();
+				final long deleteCount = response.getDeleted();
+				final long noops = response.getNoops();
+				final List<Failure> failures = response.getBulkFailures();
 				
-				final int updateCount = updateByQueryResponse.has("updated") ? updateByQueryResponse.get("updated").asInt() : 0;
-				final int deleteCount = updateByQueryResponse.has("deleted") ? updateByQueryResponse.get("deleted").asInt() : 0;
-				final int noops = updateByQueryResponse.has("noops") ? updateByQueryResponse.get("noops").asInt() : 0;
-				final ArrayNode failures = (ArrayNode) updateByQueryResponse.get("failures");
-				
-				versionConflicts = updateByQueryResponse.has("version_conflicts") ? updateByQueryResponse.get("version_conflicts").asInt() : 0;
+				versionConflicts = response.getVersionConflicts();
 				
 				boolean updated = updateCount > 0;
 				if (updated) {
@@ -602,9 +545,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				if (failures.size() > 0) {
 					boolean versionConflictsOnly = true;
-					for (JsonNode failure : failures) {
-						final String failureMessage = failure.get("cause").get("reason").asText();
-						final int failureStatus = failure.get("status").asInt();
+					for (Failure failure : failures) {
+						final String failureMessage = failure.getCause().getMessage();
+						final int failureStatus = failure.getStatus().getStatus();
 						
 						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
 							versionConflictsOnly = false;
@@ -637,20 +580,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		} while (versionConflicts > 0);
 	}
-
-	private void putXContentValue(final ObjectNode ubqr, final String key, final ToXContent toXContent) throws IOException {
-		if (toXContent == null) {
-			return;
-		}
-		
-		final XContentBuilder xContentBuilder = toXContent.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS);
-		xContentBuilder.flush();
-		xContentBuilder.close();
-		
-		final ByteArrayOutputStream outputStream = (ByteArrayOutputStream) xContentBuilder.getOutputStream();
-		ubqr.putRawValue(key, new RawValue(outputStream.toString("UTF-8")));
-	}
-
+	
 	public int getConcurrencyLevel() {
 		return (int) settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
 	}

@@ -256,7 +256,6 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		}
 		
 		if (!original.getTerm().equals(term)) {
-			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TERM, term);
 			description.term(term);
 			return true;
 		}

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.test.commons.rest;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -38,10 +38,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 /**
  * Useful extension methods when testing Snow Owl's RESTful API. High level REST related syntactic sugars and stuff like 

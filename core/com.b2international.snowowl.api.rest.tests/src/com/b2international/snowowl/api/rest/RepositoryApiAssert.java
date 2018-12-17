@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.hamcrest.CoreMatchers;
 
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 5.8

@@ -68,17 +68,22 @@ public interface IndexClientFactory {
 	String COMMIT_CONCURRENCY_LEVEL = "concurrencyLevel";
 
 	/**
-	 * Configuration key to specify the URL of the Elasticsearch cluster to connect to
+	 * Configuration key to specify the name of the embedded or TCP based Elasticsearch cluster to connect to.
+	 */
+	String CLUSTER_NAME = "clusterName";
+	
+	/**
+	 * Configuration key to specify the URL of the Elasticsearch cluster to connect to.
 	 */
 	String CLUSTER_URL = "clusterUrl";
 	
 	/**
-	 * Configuration key to specify the user name for authenticating with the Elasticsearch cluster
+	 * Configuration key to specify the user name for authenticating with the Elasticsearch cluster.
 	 */
 	String CLUSTER_USERNAME = "clusterUsername";
 	
 	/**
-	 * Configuration key to specify the password for authenticating with the Elasticsearch cluster
+	 * Configuration key to specify the password for authenticating with the Elasticsearch cluster.
 	 */
 	String CLUSTER_PASSWORD = "clusterPassword";
 	
@@ -124,11 +129,6 @@ public interface IndexClientFactory {
 	int DEFAULT_COMMIT_CONCURRENCY_LEVEL = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
 	
 	/**
-	 * The default cluster URL points to the embedded ES instance
-	 */
-	String DEFAULT_CLUSTER_URL = "http://127.0.0.1:9200";
-
-	/**
 	 * The default index prefix is empty
 	 */
 	String DEFAULT_INDEX_PREFIX = "";
@@ -147,6 +147,11 @@ public interface IndexClientFactory {
 	 * The default timeout for waiting until yellow cluster health is reached is 5 minutes
 	 */
 	int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 300_000;
+	
+	/**
+	 * The default cluster.name value for embedded nodes and tcp based clients.
+	 */
+	String DEFAULT_CLUSTER_NAME = "elastic-snowowl";
 	
 	/**
 	 * Create a new {@link IndexClient} with the given name.

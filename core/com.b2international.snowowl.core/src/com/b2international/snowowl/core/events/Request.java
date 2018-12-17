@@ -50,6 +50,11 @@ public interface Request<C extends ServiceProvider, R> extends Serializable {
 	String ADDRESS = "/requests";
 
 	/**
+	 * Tag to use for {@link IEventBus} communication.
+	 */
+	String TAG = "request";
+	
+	/**
 	 * Executes this action in the given context.
 	 *
 	 * @param context

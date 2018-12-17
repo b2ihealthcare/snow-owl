@@ -64,8 +64,8 @@ import com.google.common.collect.ImmutableMap;
 @Script(
 	name="doiFactor", 
 	script=
-	"double interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0;\n"
-	+ "String id = doc.id.value;\n" 
+	"double interest = params.useDoi ? (doc.doi.value - params.minDoi) / (params.maxDoi - params.minDoi) : 0;"
+	+ "String id = doc.id.value;" 
 	+ "return params.termScores.containsKey(id) ? params.termScores.get(id) + interest : 0.0d;")
 @Script(name="doi", script="return doc.doi.value")
 @Script(
@@ -96,7 +96,7 @@ import com.google.common.collect.ImmutableMap;
 	// if there is no first preferred FSN, then select the first FSN in the list (the index will contain only active description in creation order)
 	+ "for (description in params._source.preferredDescriptions) {"
 	+ "	if (\"900000000000003001\".equals(description.typeId)) {"
-	+ "		return description.term"
+	+ "		return description.term;"
 	+ "	}"
 	+ "}"
 	// Otherwise select the ID for sorting

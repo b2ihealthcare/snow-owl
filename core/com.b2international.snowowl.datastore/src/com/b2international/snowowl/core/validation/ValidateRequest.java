@@ -21,12 +21,12 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -56,6 +56,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.0
@@ -140,8 +141,17 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								.execute(context)
 								.getItems();
 						
+						final Set<String> issueIdsToDelete = Sets.newHashSet();
 						
-						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = existingRuleIssues.stream().collect(Collectors.toMap(ValidationIssue::getAffectedComponent, Function.identity()));
+						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = new HashMap<>();
+						
+						for (ValidationIssue issue : existingRuleIssues) {
+							if (existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent())) {
+								issueIdsToDelete.add(issue.getId());
+							} else {
+								existingIsssuesByComponentIdentifier.put(issue.getAffectedComponent(), issue);
+							}
+						}
 						
 						// remove all processed whitelist entries 
 						final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
@@ -175,11 +185,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 							}
 						}
 						
-						final Set<String> issueIdsToDelete = existingRuleIssues
-								.stream()
-								.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
-								.map(ValidationIssue::getId)
-								.collect(Collectors.toSet());
+						existingRuleIssues
+							.stream()
+							.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
+							.forEach(issue -> issueIdsToDelete.add(issue.getId()));
 						
 						if (!issueIdsToDelete.isEmpty()) {
 							index.removeAll(Collections.singletonMap(ValidationIssue.class, issueIdsToDelete));

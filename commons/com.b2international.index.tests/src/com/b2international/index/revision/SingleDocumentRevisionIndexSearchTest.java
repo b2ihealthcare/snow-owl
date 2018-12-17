@@ -27,8 +27,8 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionFixtures.AnalyzedData;
 import com.b2international.index.revision.RevisionFixtures.BooleanData;
-import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.b2international.index.revision.RevisionFixtures.RangeData;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.b2international.index.revision.RevisionFixtures.ScoredData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -248,11 +248,10 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMatchTextFuzzy() {
-		final RevisionData data = new RevisionData(STORAGE_KEY1, "field1", "field2");
-		
+		final RevisionData data = new RevisionData(STORAGE_KEY1, "abcd", "efgh");
 		indexRevision(MAIN, data);
 		
-		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1", "field2")).build();
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1", "aacd")).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);

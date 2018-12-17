@@ -17,9 +17,9 @@ package com.b2international.snowowl.fhir.tests;
 
 import org.junit.BeforeClass;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.LogConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
+import io.restassured.RestAssured;
+import io.restassured.config.LogConfig;
+import io.restassured.config.RestAssuredConfig;
 
 /**
  * Superclass for common REST-related test functionality

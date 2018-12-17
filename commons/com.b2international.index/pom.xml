@@ -10,11 +10,11 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>6.4.2</elasticsearch.version>
+		<elasticsearch.version>6.5.0</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
-    <!-- NOTE: in case of dependency changes, please update the includeArtifactIds as well in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
+    <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
@@ -24,6 +24,11 @@
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-client</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
             <version>${elasticsearch.version}</version>
         </dependency>
         <dependency>
@@ -78,8 +83,6 @@
 								analysis-common,
 								antlr4-runtime,
 								asm-debug-all,
-								commons-codec,
-								commons-logging,
 								compiler,
 								elasticsearch,
 								elasticsearch-cli,
@@ -88,12 +91,7 @@
 								elasticsearch-rest-high-level-client,
 								elasticsearch-secure-sm,
 								elasticsearch-x-content,
-								HdrHistogram,
 								hppc,
-								httpasyncclient,
-								httpclient,
-								httpcore,
-								httpcore-nio,
 								jna,
 								joda-time,
 								jopt-simple,
@@ -117,11 +115,15 @@
 								lucene-spatial3d,
 								lucene-suggest,
 								parent-join-client,
+								percolator-client,
 								rank-eval-client,
 								reindex,
+								reindex-client,
 								scripting-painless-spi,
 								t-digest,
-								transport-netty4
+								transport,
+								transport-netty4,
+								transport-netty4-client
 							</includeArtifactIds>
 							<outputDirectory>lib</outputDirectory>
 						</configuration>

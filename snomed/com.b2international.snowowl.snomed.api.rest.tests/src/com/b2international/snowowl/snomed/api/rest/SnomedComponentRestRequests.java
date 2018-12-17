@@ -23,8 +23,8 @@ import java.util.Map;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.ValidatableResponse;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
 
 /**
  * A set of assert methods related to manipulation of components through the REST API.

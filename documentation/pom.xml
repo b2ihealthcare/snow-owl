@@ -60,37 +60,10 @@
 									<additionalArgument>-quiet</additionalArgument>
 									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
 								</additionalArguments>
+								<includes>
+									<include>com.b2international*</include>
+								</includes>
 								<excludes>
-									<exclude>com.h2database*</exclude>
-									<exclude>com.fasterxml*</exclude>
-									<exclude>com.mysql*</exclude>
-									<exclude>com.thoughtworks*</exclude>
-									<exclude>com.healthmarketscience*</exclude>
-									<exclude>com.codahale*</exclude>
-									<exclude>javax.annotation*</exclude>
-									<exclude>javax.validation*</exclude>
-									<exclude>gr.forth.ics*</exclude>
-									<exclude>it.unimi.dsi.fastutil*</exclude>
-									<exclude>org.apache*</exclude>
-									<exclude>org.assertj*</exclude>
-									<exclude>org.easyb*</exclude>
-									<exclude>org.eclipse*</exclude>
-									<exclude>org.hibernate*</exclude>
-									<exclude>org.ihtsdo*</exclude>
-									<exclude>org.osgi*</exclude>
-									<exclude>org.protege*</exclude>
-									<exclude>org.supercsv*</exclude>
-									<exclude>org.semanticweb*</exclude>
-									<exclude>org.xmlpull*</exclude>
-									<exclude>sun.*</exclude>
-									<exclude>spiffy*</exclude>
-									<exclude>*.test*</exclude>
-									<exclude>com.jgoodies.looks*</exclude>
-									<exclude>io.reactivex*</exclude>
-									<exclude>net.jodah*</exclude>
-									<exclude>org.tartarus.snowball*</exclude>
-									<exclude>org.elasticsearch*</exclude>
-									<exclude>org.mapdb*</exclude>
 									<exclude>*internal*</exclude>
 								</excludes>
 							</javadocOptions>

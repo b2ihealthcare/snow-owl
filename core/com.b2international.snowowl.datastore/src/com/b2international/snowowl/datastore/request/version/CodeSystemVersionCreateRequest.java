@@ -31,6 +31,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -92,7 +93,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	public Boolean execute(ServiceProvider context) {
 		final RemoteJob job = context.service(RemoteJob.class);
 		final String user = job.getUser();
-
+		
 		// get code system
 		CodeSystemEntry codeSystem = null;
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
@@ -116,6 +117,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
 		final String repositoryId = codeSystem.getRepositoryUuid();
+		
+		// validate new path
+		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
 		try {
 			RepositoryRequests.branching()

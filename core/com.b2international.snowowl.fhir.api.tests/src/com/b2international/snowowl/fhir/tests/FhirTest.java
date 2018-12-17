@@ -31,7 +31,7 @@ import com.b2international.snowowl.fhir.core.model.lookup.LookupResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.jayway.restassured.path.json.JsonPath;
+import io.restassured.path.json.JsonPath;
 
 /**
  * Superclass for common test functionality

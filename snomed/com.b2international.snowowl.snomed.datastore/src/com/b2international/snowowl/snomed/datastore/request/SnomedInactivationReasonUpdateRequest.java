@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 
@@ -88,7 +90,11 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 	private final Function<TransactionContext, String> referenceBranchFunction = CacheBuilder.newBuilder().build(new CacheLoader<TransactionContext, String>() {
 		@Override
 		public String load(final TransactionContext context) throws Exception {
-			return SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
+			final String latestReleaseBranch = SnomedComponentUpdateRequest.getLatestReleaseBranch(context);
+			if (latestReleaseBranch == null) {
+				return Branch.MAIN_PATH;
+			}
+			return latestReleaseBranch;
 		}
 	});
 
@@ -188,7 +194,8 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 	}
 
 	private String getLatestReleaseBranch(final TransactionContext context) {
-		return referenceBranchFunction.apply(context);
+		final String latestVersion = referenceBranchFunction.apply(context);
+		return  latestVersion == Branch.MAIN_PATH ? null : latestVersion;
 	}
 
 	private boolean ensureMemberActive(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
@@ -231,7 +238,7 @@ final class SnomedInactivationReasonUpdateRequest implements Request<Transaction
 
 	private boolean updateEffectiveTime(final TransactionContext context, final String referenceBranch, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 
-		if (existingMember.isReleased()) {
+		if (existingMember.isReleased() &&  !Strings.isNullOrEmpty(referenceBranch)) {
 
 			final SnomedReferenceSetMember referenceMember = SnomedRequests.prepareGetMember(existingMember.getId())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID, referenceBranch)

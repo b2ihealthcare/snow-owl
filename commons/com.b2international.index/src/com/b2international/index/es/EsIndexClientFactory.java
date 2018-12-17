@@ -19,11 +19,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import org.apache.http.HttpHost;
+import org.elasticsearch.node.Node;
 
 import com.b2international.index.IndexClient;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.es.admin.EsIndexAdmin;
+import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.client.tcp.EsTcpClient;
 import com.b2international.index.mapping.Mappings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -41,26 +43,32 @@ public final class EsIndexClientFactory implements IndexClientFactory {
 		final Object configSetting = settings.getOrDefault(CONFIG_DIRECTORY, DEFAULT_PATH);
 		final Path dataDirectory = dataSetting instanceof Path ? (Path) dataSetting : Paths.get((String) dataSetting);
 		final Path configDirectory = configSetting instanceof Path ? (Path) configSetting : Paths.get((String) configSetting);
-		
-		final HttpHost host;
-		if (settings.containsKey(CLUSTER_URL)) {
-			host = HttpHost.create((String) settings.get(CLUSTER_URL));
-		} else {
-			// Start an embedded ES node only if a client URL is not set
-			EsNode.getInstance(configDirectory, dataDirectory, persistent);
-			host = HttpHost.create(DEFAULT_CLUSTER_URL);
-		}
-		
+
+		// generic ES cluster settings
+		final String clusterName = (String) settings.getOrDefault(CLUSTER_NAME, DEFAULT_CLUSTER_NAME);
 		final Object connectTimeoutSetting = settings.getOrDefault(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
 		final Object socketTimeoutSetting = settings.getOrDefault(SOCKET_TIMEOUT, DEFAULT_SOCKET_TIMEOUT);
 		final int connectTimeout = connectTimeoutSetting instanceof Integer ? (int) connectTimeoutSetting : Integer.parseInt((String) connectTimeoutSetting);
 		final int socketTimeout = socketTimeoutSetting instanceof Integer ? (int) socketTimeoutSetting : Integer.parseInt((String) socketTimeoutSetting);
-		String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
-		String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
+		final String username = (String) settings.getOrDefault(CLUSTER_USERNAME, "");
+		final String password = (String) settings.getOrDefault(CLUSTER_PASSWORD, "");
 		
-		final EsClientConfiguration clientConfiguration = new EsClientConfiguration(connectTimeout, socketTimeout, host, username, password);
+		final EsClient client;
+		if (settings.containsKey(CLUSTER_URL)) {
+			final String clusterUrl = (String) settings.get(CLUSTER_URL);
+			client = EsClient.create(new EsClientConfiguration(clusterName, clusterUrl, username, password, connectTimeout, socketTimeout));
+		} else {
+			// Start an embedded ES node only if a cluster URL is not set
+			Node node = EsNode.getInstance(clusterName, configDirectory, dataDirectory, persistent);
+			// check sysprop to force HTTP client when still using embedded mode
+			if (System.getProperty("so.index.es.useHttp") != null) {
+				client = EsClient.create(new EsClientConfiguration(clusterName, "http://127.0.0.1:9200", username, password, connectTimeout, socketTimeout));
+			} else {
+				// and use the local NodeClient to communicate via the embedded node
+				client = new EsTcpClient(node.client());
+			}
+		}
 		
-		final EsClient client = EsClient.create(clientConfiguration);
-		return new EsIndexClient(new EsIndexAdmin(client, host.toURI(), name, mappings, settings, mapper), mapper);
+		return new EsIndexClient(new EsIndexAdmin(client, name, mappings, settings), mapper);
 	}
 }

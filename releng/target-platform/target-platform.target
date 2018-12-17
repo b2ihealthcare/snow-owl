@@ -5,7 +5,7 @@
 <unit id="org.eclipse.equinox.sdk.feature.group" version="3.16.0.v20181130-2106"/>
 <unit id="org.eclipse.pde.feature.group" version="3.13.300.v20181206-0815"/>
 <unit id="org.eclipse.platform.feature.group" version="4.10.0.v20181206-0815"/>
-<repository location=" http://download.eclipse.org/eclipse/updates/4.10milestones/S-4.10RC2-201812060815/"/>
+<repository location="http://download.eclipse.org/eclipse/updates/4.10milestones/S-4.10RC2-201812060815/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 	<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
@@ -19,27 +19,27 @@
 <unit id="org.antlr.runtime.source" version="3.2.0.v201101311130"/>
 <unit id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
 <unit id="org.apache.commons.beanutils.source" version="1.8.0.v201205091237"/>
-<unit id="org.apache.commons.codec" version="1.6.0.v201305230611"/>
-<unit id="org.apache.commons.codec.source" version="1.6.0.v201305230611"/>
 <unit id="org.apache.commons.exec" version="1.1.0.v201301240602"/>
 <unit id="org.apache.commons.exec.source" version="1.1.0.v201301240602"/>
 <unit id="org.apache.commons.lang" version="2.6.0.v201404270220"/>
 <unit id="org.apache.commons.lang3" version="3.1.0.v201403281430"/>
 <unit id="org.apache.el" version="7.0.56.v201412180755"/>
 <unit id="org.apache.el.source" version="7.0.56.v201412180755"/>
-<unit id="org.apache.httpcomponents.httpclient" version="4.2.6.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpclient.source" version="4.2.6.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpcore" version="4.2.5.v201311072007"/>
-<unit id="org.apache.httpcomponents.httpcore.source" version="4.2.5.v201311072007"/>
 <unit id="org.apache.xmlbeans" version="2.3.0.v201605172150"/>
 <unit id="org.apache.xmlbeans.source" version="2.3.0.v201605172150"/>
-<unit id="org.dom4j" version="1.6.1.v201312101416"/>
-<unit id="org.dom4j.source" version="1.6.1.v201312101416"/>
+<unit id="org.dom4j" version="1.6.1.v20170815-1500"/>
+<unit id="org.dom4j.source" version="1.6.1.v20170815-1500"/>
+<unit id="org.hamcrest.core" version="1.3.0.v20180420-1519"/>
+<unit id="org.hamcrest.core.source" version="1.3.0.v20180420-1519"/>
+<unit id="org.hamcrest.library" version="1.3.0.v20180524-2246"/>
+<unit id="org.hamcrest.library.source" version="1.3.0.v20180524-2246"/>
 <unit id="org.junit" version="4.12.0.v201504281640"/>
 <unit id="org.junit.source" version="4.12.0.v201504281640"/>
 <unit id="osgi.enterprise" version="4.2.0.v201108120515"/>
 <unit id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
-<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository"/>
+<unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
+<unit id="org.mockito" version="2.13.0.v20180426-1843"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
 </location>
 </locations>
 </target>
