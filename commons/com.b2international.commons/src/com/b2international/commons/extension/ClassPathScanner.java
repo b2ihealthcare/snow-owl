@@ -19,7 +19,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
@@ -30,13 +30,30 @@ import org.eclipse.osgi.service.resolver.BundleDescription;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.classloaderhandler.OSGiDefaultClassLoaderHandler;
-import io.github.lukehutch.fastclasspathscanner.scanner.ClasspathOrder;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanSpec;
-import io.github.lukehutch.fastclasspathscanner.utils.LogNode;
-import io.github.lukehutch.fastclasspathscanner.utils.ReflectionUtils;
+import com.google.common.collect.ImmutableList;
+
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+import nonapi.io.github.classgraph.ScanSpec;
+import nonapi.io.github.classgraph.classloaderhandler.AntClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.ClassLoaderHandlerRegistry;
+import nonapi.io.github.classgraph.classloaderhandler.ClassLoaderHandlerRegistry.ClassLoaderHandlerRegistryEntry;
+import nonapi.io.github.classgraph.classloaderhandler.EquinoxClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.EquinoxContextFinderClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.FelixClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.JBossClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.JPMSClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.OSGiDefaultClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.ParentLastDelegationOrderTestClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.URLClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.WeblogicClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.WebsphereLibertyClassLoaderHandler;
+import nonapi.io.github.classgraph.classloaderhandler.WebsphereTraditionalClassLoaderHandler;
+import nonapi.io.github.classgraph.classpath.ClasspathOrder;
+import nonapi.io.github.classgraph.utils.LogNode;
+import nonapi.io.github.classgraph.utils.ReflectionUtils;
 
 /**
  * @since 7.0
@@ -64,10 +81,43 @@ public enum ClassPathScanner {
 				}
 			}
 		}
-		registry = new FastClasspathScanner()
-			.setAnnotationVisibility(RetentionPolicy.RUNTIME)
+		
+		// XXX hacking default class loader registry to make ClassGraph work with Equinox 3.9
+		try {
+			Field f = ClassLoaderHandlerRegistry.class.getDeclaredField("CLASS_LOADER_HANDLERS");
+			f.setAccessible(true);
+			
+			Field modifiersField = Field.class.getDeclaredField("modifiers");
+			modifiersField.setAccessible(true);
+			modifiersField.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+			
+			f.set(null, ImmutableList.<ClassLoaderHandlerRegistryEntry>builder()
+					// ClassLoaderHandlers for other ClassLoaders that are handled by ClassGraph
+					.add(new ClassLoaderHandlerRegistryEntry(AntClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(EquinoxClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(EquinoxContextFinderClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(FelixClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(JBossClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(WeblogicClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(WebsphereLibertyClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(WebsphereTraditionalClassLoaderHandler.class))
+			        // XXX Register PDE Dev Mode aware class loader handler to make it work with Equinox 3.9 class loading
+			        .add(new ClassLoaderHandlerRegistryEntry(PDEOSGiDefaultClassLoaderHandler.class))
+			        .add(new ClassLoaderHandlerRegistryEntry(OSGiDefaultClassLoaderHandler.class))
+	                // For unit testing of PARENT_LAST delegation order
+			        .add(new ClassLoaderHandlerRegistryEntry(ParentLastDelegationOrderTestClassLoaderHandler.class))
+	                // JPMS support
+			        .add(new ClassLoaderHandlerRegistryEntry(JPMSClassLoaderHandler.class))
+	                // Java 7/8 support (list last, as fallback)
+			        .add(new ClassLoaderHandlerRegistryEntry(URLClassLoaderHandler.class))
+					.build());
+		} catch (Exception e) {
+			throw new RuntimeException("Couldn't hack ClassGraph :-(", e);
+		}
+				
+		registry = new ClassGraph()
+			.disableRuntimeInvisibleAnnotations()
 			.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
-			.registerClassLoaderHandler(PDEOSGiDefaultClassLoaderHandler.class)
 			.scan();
 	}
 	
@@ -78,7 +128,7 @@ public enum ClassPathScanner {
 	 * @return
 	 */
 	public Collection<Class<?>> getComponentClasses(Class<? extends Annotation> annotation) {
-		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesWithAnnotation(annotation);
+		final ClassInfoList namesOfClassesWithAnnotation = registry.getClassesWithAnnotation(annotation.getName());
 		return getComponentClasses(namesOfClassesWithAnnotation);
 	}
 
@@ -88,7 +138,7 @@ public enum ClassPathScanner {
 	 * @return
 	 */
 	public Collection<Class<?>> getComponentsClassesByInterface(Class<?> type) {
-		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfClassesImplementing(type);
+		final ClassInfoList namesOfClassesWithAnnotation = registry.getClassesImplementing(type.getName());
 		return getComponentClasses(namesOfClassesWithAnnotation);
 	}
 	
@@ -98,13 +148,13 @@ public enum ClassPathScanner {
 	 * @return
 	 */
 	public Collection<Class<?>> getComponentsClassesBySuperclass(Class<?> type) {
-		final List<String> namesOfClassesWithAnnotation = registry.getNamesOfSubclassesOf(type);
+		final ClassInfoList namesOfClassesWithAnnotation = registry.getSubclasses(type.getName());
 		return getComponentClasses(namesOfClassesWithAnnotation);
 	}
 	
 	/*Filters and returns Class<?> instances for the given classNames, where the class is annotated with the Component annotation*/
-	private List<Class<?>> getComponentClasses(final List<String> classNames) {
-		return registry.classNamesToClassRefs(classNames).stream()
+	private List<Class<?>> getComponentClasses(final ClassInfoList classes) {
+		return classes.stream().map(ClassInfo::loadClass)
 				.filter(type -> type.isAnnotationPresent(Component.class))
 				.collect(Collectors.toList());
 	}
@@ -202,6 +252,5 @@ public enum ClassPathScanner {
 		}
 		
 	}
-
 
 }
