@@ -1,5 +1,7 @@
 extraction:
   java:
     index:
+      build_command:
+        - mvn clean package
       maven:
         version: 3.5.3
