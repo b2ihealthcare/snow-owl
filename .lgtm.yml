@@ -1,6 +1,5 @@
 extraction:
   java:
     index:
-  	  java_version: 8
       maven:
         version: 3.5.3
