@@ -23,8 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -36,22 +39,30 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.script.ScriptType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.Analyzers;
+import com.b2international.index.BulkDelete;
+import com.b2international.index.BulkOperation;
+import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.Keyword;
 import com.b2international.index.Text;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
+import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.util.NumericClassUtils;
@@ -64,6 +75,10 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
+	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
+	private static final int BATCHS_SIZE = 10_000;
+	
+	private final Random random = new Random();
 	private final EsClient client;
 	private final String name;
 	private final Mappings mappings;
@@ -446,4 +461,110 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 	}
+	
+	public void bulkUpdate(final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
+		final DocumentMapping mapping = mappings().getMapping(update.getType());
+		final String rawScript = mapping.getScript(update.getScript()).script();
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
+		bulkIndexByScroll(client, update, "update", script, mappingsToRefresh);
+	}
+
+	public void bulkDelete(final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
+		bulkIndexByScroll(client, delete, "delete", null, mappingsToRefresh);
+	}
+
+	private void bulkIndexByScroll(final EsClient client,
+			final BulkOperation<?> op, 
+			final String command, 
+			final org.elasticsearch.script.Script script, 
+			final Set<DocumentMapping> mappingsToRefresh) {
+		
+		final DocumentMapping mapping = mappings().getMapping(op.getType());
+		final QueryBuilder query = new EsQueryBuilder(mapping).build(op.getFilter());
+		
+		long versionConflicts = 0;
+		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
+		
+		do {
+
+			try {
+				
+				final BulkByScrollResponse response; 
+				if ("update".equals(command)) {
+					response = client.updateByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, script, getConcurrencyLevel(), query);
+				} else if ("delete".equals(command)) {
+					response = client.deleteByQuery(getTypeIndex(mapping), mapping.typeAsString(), BATCHS_SIZE, getConcurrencyLevel(), query);
+				} else {
+					throw new UnsupportedOperationException("Not implemented command: " + command);
+				}
+				
+				final long updateCount = response.getUpdated();
+				final long deleteCount = response.getDeleted();
+				final long noops = response.getNoops();
+				final List<Failure> failures = response.getBulkFailures();
+				
+				versionConflicts = response.getVersionConflicts();
+				
+				boolean updated = updateCount > 0;
+				if (updated) {
+					mappingsToRefresh.add(mapping);
+					log().info("Updated {} {} documents with bulk {}", updateCount, mapping.typeAsString(), op);
+				}
+				
+				boolean deleted = deleteCount > 0;
+				if (deleted) {
+					mappingsToRefresh.add(mapping);
+					log().info("Deleted {} {} documents with bulk {}", deleteCount, mapping.typeAsString(), op);
+				}
+				
+				if (!updated && !deleted) {
+					log().warn("Bulk {} could not be applied to {} documents, no-ops ({}), conflicts ({})",
+							op,
+							mapping.typeAsString(), 
+							noops, 
+							versionConflicts);
+				}
+				
+				if (failures.size() > 0) {
+					boolean versionConflictsOnly = true;
+					for (Failure failure : failures) {
+						final String failureMessage = failure.getCause().getMessage();
+						final int failureStatus = failure.getStatus().getStatus();
+						
+						if (failureStatus != RestStatus.CONFLICT.getStatus()) {
+							versionConflictsOnly = false;
+							log().error("Index failure during bulk update: {}", failureMessage);
+						} else {
+							log().warn("Version conflict reason: {}", failureMessage);
+						}
+					}
+
+					if (!versionConflictsOnly) {
+						throw new IllegalStateException("There were indexing failures during bulk updates. See logs for all failures.");
+					}
+				}
+				
+				if (attempts <= 0) {
+					throw new IndexException("There were indexing failures during bulk updates. See logs for all failures.", null);
+				}
+				
+				if (versionConflicts > 0) {
+					--attempts;
+					try {
+						Thread.sleep(100 + random.nextInt(900));
+						refresh(Collections.singleton(mapping));
+					} catch (InterruptedException e) {
+						throw new IndexException("Interrupted", e);
+					}
+				}
+			} catch (IOException e) {
+				throw new IndexException("Could not execute bulk update.", e);
+			}
+		} while (versionConflicts > 0);
+	}
+	
+	public int getConcurrencyLevel() {
+		return (int) settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
+	}
+	
 }

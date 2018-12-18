@@ -32,6 +32,8 @@ import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryAction;
+import org.elasticsearch.index.reindex.DeleteByQueryRequestBuilder;
 import org.elasticsearch.index.reindex.UpdateByQueryAction;
 import org.elasticsearch.index.reindex.UpdateByQueryRequestBuilder;
 import org.elasticsearch.script.Script;
@@ -97,7 +99,8 @@ public final class EsTcpClient implements EsClient {
 	}
 
 	@Override
-	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, QueryBuilder query) throws IOException {
+	public BulkByScrollResponse updateByQuery(String index, String type, int batchSize, Script script, int numberOfSlices, 
+			QueryBuilder query) throws IOException {
 		UpdateByQueryRequestBuilder ubqrb = UpdateByQueryAction.INSTANCE.newRequestBuilder(client);
 		
 		ubqrb.source()
@@ -108,6 +111,22 @@ public final class EsTcpClient implements EsClient {
 		
 		return ubqrb
 			.script(script)
+			.setSlices(numberOfSlices)
+			.get();
+	}
+	
+	@Override
+	public BulkByScrollResponse deleteByQuery(String index, String type, int batchSize, int numberOfSlices,
+			QueryBuilder query) throws IOException {
+		DeleteByQueryRequestBuilder dbqrb = DeleteByQueryAction.INSTANCE.newRequestBuilder(client);
+		
+		dbqrb.source()
+			.setIndices(index)
+			.setTypes(type)
+			.setSize(batchSize)
+			.setQuery(query);
+	
+		return dbqrb
 			.setSlices(numberOfSlices)
 			.get();
 	}
