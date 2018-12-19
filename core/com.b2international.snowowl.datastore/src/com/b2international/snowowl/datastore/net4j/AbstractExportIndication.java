@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,14 +130,9 @@ public abstract class AbstractExportIndication extends IndicationWithMonitoring 
 	
 	private void sendFile(ExtendedDataOutputStream out, File file, OMMonitor monitor) throws IOException, FileNotFoundException {
 		long size = file.length();
-		BufferedInputStream in = null;
-		
 		final Async async = monitor.forkAsync(10);
-		
 		out.writeLong(size);	
-		
-		try {
-			in = new BufferedInputStream(new FileInputStream(file));
+		try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
 			while (size != 0L) {
 				int chunk = Net4jProtocolConstants.BUFFER_SIZE;
 				if (size < Net4jProtocolConstants.BUFFER_SIZE) {
@@ -152,10 +147,8 @@ public abstract class AbstractExportIndication extends IndicationWithMonitoring 
 	
 				size -= chunk;
 			}
-		}
-		finally {
+		} finally {
 			async.stop();
-			in.close();
 		}
 	}
 

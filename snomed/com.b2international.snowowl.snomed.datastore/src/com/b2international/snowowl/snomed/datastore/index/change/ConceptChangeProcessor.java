@@ -20,7 +20,6 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -298,10 +297,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getMemberOf();
-		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getActiveMemberOf();
+		final Collection<String> currentMemberOf = currentVersion.getMemberOf();
+		final Collection<String> currentActiveMemberOf = currentVersion.getActiveMemberOf();
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 	}
