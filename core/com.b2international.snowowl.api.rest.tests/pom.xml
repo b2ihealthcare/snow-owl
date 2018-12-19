@@ -60,6 +60,9 @@
 				<configuration>
 					<useUIThread>false</useUIThread>
 					<argLine>${tycho.testArgLine} -Xms2g -Xmx2g -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
+					<includes>
+						<include>**/AllSnowOwlApiTests.java</include>
+					</includes>
 					<bundleStartLevel>
 						<bundle>
 							<id>org.eclipse.jetty.osgi.boot</id>
