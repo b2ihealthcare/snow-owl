@@ -63,8 +63,7 @@ public class ZipURLHandler extends URLStreamHandler {
 		try {
 			return new URL("zip", "", -1, fileName + "!" + entryName, new ZipURLHandler(fileName, entryName));
 		} catch (MalformedURLException e) {
-			throw new IllegalArgumentException("Unable to create URL instance from passed in file name and entry." +
-					"File name: " + fileName + " | Entry: " + entryName, e);
+			throw new IllegalArgumentException("Unable to create URL instance from passed in file and entry. File: " + fileName + " | Entry: " + entryName, e);
 		}
 	}
 	
