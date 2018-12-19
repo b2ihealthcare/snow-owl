@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -123,7 +124,7 @@ public final class Rf2EffectiveTimeSlice {
 			}
 		}
 		
-		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + valuesWithType);
+		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + Arrays.toString(valuesWithType));
 	}
 	
 	public void register(String containerId, Rf2ContentType<?> type, String[] values, Rf2ValidationIssueReporter reporter) {

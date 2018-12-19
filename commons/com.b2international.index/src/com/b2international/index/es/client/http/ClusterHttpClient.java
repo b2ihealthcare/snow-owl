@@ -16,6 +16,7 @@
 package com.b2international.index.es.client.http;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -41,7 +42,7 @@ public class ClusterHttpClient implements ClusterClient {
 		try {
 			return client.cluster().health(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException("Couldn't retrieve cluster health for index(es) " + req.indices(), e);
+			throw new IndexException("Couldn't retrieve cluster health for index(es) " + Arrays.toString(req.indices()), e);
 		}
 	}
 
