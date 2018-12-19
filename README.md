@@ -50,7 +50,7 @@ Once you have downloaded the appropriate package:
 * Run `curl http://localhost:8080/snowowl/admin/info`
 * See [REST API docs](http://localhost:8080/snowowl/snomed-ct/v3), [FHIR API docs](http://localhost:8080/snowowl/fhir)
 
-## Learn Snow Owl
+# Learn Snow Owl
 
 * [Getting Started](docs/getting_started/index.md)
 * [Set up Snow Owl](docs/setup/index.md)
