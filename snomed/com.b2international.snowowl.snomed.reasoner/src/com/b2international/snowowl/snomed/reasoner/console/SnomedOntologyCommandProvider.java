@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.snomed.reasoner.console;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.snomed.reasoner.preferences.IReasonerPreferencesService;
-import com.google.common.collect.Iterables;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
 /**
  * A {@link CommandProvider} implementation for the administration of the OWL ontology and reasoner services on the OSGi
@@ -38,36 +35,20 @@ public class SnomedOntologyCommandProvider implements CommandProvider {
 		
 		LIST("- Lists all registered reasoners on the server.") {
 			@Override public void execute(final SnomedOntologyCommandProvider provider, final CommandInterpreter interpreter) throws Exception {
-				System.out.println(ApplicationContext.getInstance().getService(IReasonerPreferencesService.class));
-			}
-			
-		},
-		
-		CHECK("[-d] - Checks all registered reasoners presence.\n\t\t-d\t: dump the exception in case of failed initialization. Optional.") {
-			@Override public void execute(final SnomedOntologyCommandProvider provider, final CommandInterpreter interpreter) throws Exception {
-				final boolean dump = "-d".equals(interpreter.nextArgument());
-				final Iterable<IStatus> status = ApplicationContext.getInstance().getService(IReasonerPreferencesService.class).checkAllAvailableReasoners();
+				final ReasonerExtensions reasonerExtensions = ClassificationRequests.prepareSearchReasonerExtensions()
+					.buildAsync()
+					.get();
 				
-				if (CompareUtils.isEmpty(status)) {
-					return;
-				}
-				if (1 == Iterables.size(status) && Iterables.get(status, 0).isOK()) {
-					interpreter.println(Iterables.get(status, 0).getMessage());
-				} else {
-
-					for (final IStatus s : status) {
-						interpreter.println(s.getMessage());
-						if (dump) {
-							if (null != s.getException()) {
-								interpreter.println("\n");
-								interpreter.printStackTrace(s.getException());
-								interpreter.println("\n");
-								interpreter.println("\n");
-							}
-						}
-					}
-					
-				}
+				interpreter.println("extensionId\tname\tversion");
+				interpreter.println("-----------\t----\t-------");
+				
+				reasonerExtensions.forEach(e -> {
+					interpreter.print(e.getExtensionId());
+					interpreter.print("\t");
+					interpreter.print(e.getName());
+					interpreter.print("\t");
+					interpreter.println(e.getVersion());
+				});
 			}
 		},
 		
