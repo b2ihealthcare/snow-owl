@@ -22,8 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -164,11 +162,6 @@ public class ConfigurationFactory<T> {
     		validate(config, path);
     		return config;
     	} catch (UnrecognizedPropertyException e) {
-    		Collection<Object> knownProperties = e.getKnownPropertyIds();
-    		Collection<String> properties = new ArrayList<>(knownProperties.size());
-    		for (Object property : knownProperties) {
-    			properties.add(property.toString());
-    		}
     		throw new RuntimeException(String.format("Unrecognized field '%s' in config file '%s'", e.getPropertyName(), path));
     	} catch (InvalidFormatException e) {
     		String sourceType = e.getValue().getClass().getSimpleName();
