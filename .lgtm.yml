@@ -5,6 +5,8 @@ path_classifiers:
     - snomed/com.b2international.snowowl.snomed.api.rest/static/lib
 extraction:
   java:
+    before_index:
+      - "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
     index:
       build_command:
         - mvn clean package
