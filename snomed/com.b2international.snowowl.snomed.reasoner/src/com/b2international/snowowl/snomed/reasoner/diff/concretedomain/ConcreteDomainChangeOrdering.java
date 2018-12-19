@@ -34,8 +34,8 @@ public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainF
 	@Override
 	public int compare(final ConcreteDomainFragment left, final ConcreteDomainFragment right) {
 		
-		final int typeDelta = left.getDataType().compareTo(right.getDataType());
-		if (typeDelta != 0) return typeDelta;
+		final int refSetDelta = Longs.compare(left.getRefSetId(), right.getRefSetId());
+		if (refSetDelta != 0) return refSetDelta;
 		
 		final int typeIdDelta = Longs.compare(left.getTypeId(), right.getTypeId());
 		if (typeIdDelta != 0) return typeIdDelta;

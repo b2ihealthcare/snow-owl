@@ -40,8 +40,11 @@ public final class ReasonerTaxonomy {
 
 	private final InternalIdMultimap<StatementFragment> statedNonIsARelationships;
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
+	private final InternalIdMultimap<StatementFragment> additionalGroupedRelationships;
+	
 	private final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers;
 	private final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
+	private final Multimap<String, ConcreteDomainFragment> additionalGroupedConcreteDomainMembers;
 
 	private final InternalIdEdges inferredAncestors;
 	private final InternalSctIdSet unsatisfiableConcepts;
@@ -51,12 +54,18 @@ public final class ReasonerTaxonomy {
 	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
 			final InternalIdEdges statedAncestors,
 			final InternalIdEdges statedDescendants, 
+			
 			final InternalSctIdSet fullyDefinedConcepts,
 			final InternalSctIdSet exhaustiveConcepts, 
+			
 			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
+			final InternalIdMultimap<StatementFragment> additionalGroupedRelationships, 
+			
 			final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers,
 			final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers,
+			final Multimap<String, ConcreteDomainFragment> additionalGroupedConcreteDomainMembers, 
+			
 			final InternalIdEdges inferredAncestors,
 			final InternalSctIdSet unsatisfiableConcepts,
 			final InternalSctIdMultimap equivalentConcepts, 
@@ -65,12 +74,18 @@ public final class ReasonerTaxonomy {
 		this.conceptMap = conceptMap;
 		this.statedAncestors = statedAncestors;
 		this.statedDescendants = statedDescendants;
+		
 		this.fullyDefinedConcepts = fullyDefinedConcepts;
 		this.exhaustiveConcepts = exhaustiveConcepts;
+		
 		this.statedNonIsARelationships = statedNonIsARelationships;
 		this.existingInferredRelationships = existingInferredRelationships;
+		this.additionalGroupedRelationships = additionalGroupedRelationships;
+		
 		this.statedConcreteDomainMembers = statedConcreteDomainMembers;
 		this.inferredConcreteDomainMembers = inferredConcreteDomainMembers;
+		this.additionalGroupedConcreteDomainMembers = additionalGroupedConcreteDomainMembers;
+		
 		this.inferredAncestors = inferredAncestors;
 		this.unsatisfiableConcepts = unsatisfiableConcepts;
 		this.equivalentConcepts = equivalentConcepts;
@@ -116,6 +131,10 @@ public final class ReasonerTaxonomy {
 	public InternalIdMultimap<StatementFragment> getExistingInferredRelationships() {
 		return existingInferredRelationships;
 	}
+	
+	public InternalIdMultimap<StatementFragment> getAdditionalGroupedRelationships() {
+		return additionalGroupedRelationships;
+	}
 
 	public Multimap<String, ConcreteDomainFragment> getStatedConcreteDomainMembers() {
 		return statedConcreteDomainMembers;
@@ -123,6 +142,10 @@ public final class ReasonerTaxonomy {
 
 	public Multimap<String, ConcreteDomainFragment> getInferredConcreteDomainMembers() {
 		return inferredConcreteDomainMembers;
+	}
+	
+	public Multimap<String, ConcreteDomainFragment> getAdditionalGroupedConcreteDomainMembers() {
+		return additionalGroupedConcreteDomainMembers;
 	}
 	
 	public LongList getIterationOrder() {
@@ -147,12 +170,18 @@ public final class ReasonerTaxonomy {
 		return new ReasonerTaxonomy(conceptMap, 
 				statedAncestors, 
 				statedDescendants, 
+				
 				fullyDefinedConcepts, 
-				exhaustiveConcepts, 
+				exhaustiveConcepts,
+				
 				statedNonIsARelationships, 
-				existingInferredRelationships, 
+				existingInferredRelationships,
+				additionalGroupedRelationships,
+				
 				statedConcreteDomainMembers, 
 				inferredConcreteDomainMembers,
+				additionalGroupedConcreteDomainMembers,
+				
 				newInferredAncestors, 
 				newUnsatisfiableConcepts,
 				newEquivalentConcepts,
