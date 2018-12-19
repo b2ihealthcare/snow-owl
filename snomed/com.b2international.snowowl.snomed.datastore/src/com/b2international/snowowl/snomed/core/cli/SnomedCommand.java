@@ -109,7 +109,7 @@ public final class SnomedCommand extends Command {
 				if (e instanceof FileNotFoundException) {
 					out.println("Cannot find the path specified. '%s'", path);
 				} else {
-					out.println("Error reading the specified file", e.getMessage());
+					out.println("Error reading the path specified. '%s'. Message: '%s'", path, e.getMessage());
 				}
 				return;
 			}
