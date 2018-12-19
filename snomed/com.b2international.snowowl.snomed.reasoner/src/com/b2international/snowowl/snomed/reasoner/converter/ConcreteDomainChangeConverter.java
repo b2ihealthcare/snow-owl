@@ -54,6 +54,9 @@ import com.google.common.collect.Multimaps;
 public final class ConcreteDomainChangeConverter 
 		extends BaseResourceConverter<ConcreteDomainChangeDocument, ConcreteDomainChange, ConcreteDomainChanges> {
 
+	// TODO: this constant is moved to SnomedReferenceSetMember.Expand on 7.x 
+	private static final String REFERENCED_COMPONENT = "referencedComponent";
+
 	public ConcreteDomainChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
@@ -119,8 +122,8 @@ public final class ConcreteDomainChangeConverter
 		final Multimap<String, ConcreteDomainChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
 
 		final Options expandOptions = expand().get(ConcreteDomainChange.Expand.CONCRETE_DOMAIN_MEMBER, Options.class);
-		final Options referencedComponentOptions = expandOptions.getOptions(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT);
-		final boolean needsReferencedComponent = expandOptions.keySet().remove(SnomedReferenceSetMember.Expand.REFERENCED_COMPONENT);
+		final Options referencedComponentOptions = expandOptions.getOptions(REFERENCED_COMPONENT);
+		final boolean needsReferencedComponent = expandOptions.keySet().remove(REFERENCED_COMPONENT);
 
 		for (final String branch : itemsByBranch.keySet()) {
 			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);

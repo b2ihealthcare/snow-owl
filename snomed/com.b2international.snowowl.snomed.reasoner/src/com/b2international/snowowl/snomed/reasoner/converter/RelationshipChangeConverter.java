@@ -56,6 +56,11 @@ import com.google.common.collect.Multimaps;
 public final class RelationshipChangeConverter 
 extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
+	// TODO: these constants are moved to SnomedRelationship.Expand on 7.x
+	private static final String SOURCE = "source";
+	private static final String TYPE = "type";
+	private static final String DESTINATION = "destination";
+
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
@@ -115,14 +120,14 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
 		final Options expandOptions = expand().get(RelationshipChange.Expand.RELATIONSHIP, Options.class);
 
-		final Options sourceOptions = expandOptions.getOptions(SnomedRelationship.Expand.SOURCE);
-		final Options typeOptions = expandOptions.getOptions(SnomedRelationship.Expand.TYPE);
-		final Options destinationOptions = expandOptions.getOptions(SnomedRelationship.Expand.DESTINATION);
+		final Options sourceOptions = expandOptions.getOptions(SOURCE);
+		final Options typeOptions = expandOptions.getOptions(TYPE);
+		final Options destinationOptions = expandOptions.getOptions(DESTINATION);
 		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
 
-		final boolean needsSource = expandOptions.keySet().remove(SnomedRelationship.Expand.SOURCE);
-		final boolean needsType = expandOptions.keySet().remove(SnomedRelationship.Expand.TYPE);
-		final boolean needsDestination = expandOptions.keySet().remove(SnomedRelationship.Expand.DESTINATION);
+		final boolean needsSource = expandOptions.keySet().remove(SOURCE);
+		final boolean needsType = expandOptions.keySet().remove(TYPE);
+		final boolean needsDestination = expandOptions.keySet().remove(DESTINATION);
 
 		for (final String branch : itemsByBranch.keySet()) {
 			final Collection<RelationshipChange> itemsForCurrentBranch = itemsByBranch.get(branch);
