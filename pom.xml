@@ -912,6 +912,18 @@
 				<artifactId>tycho-versions-plugin</artifactId>
 				<version>${tycho.version}</version>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -945,7 +957,7 @@
 					<configuration>
 						<failIfNoTests>false</failIfNoTests>
 						<includes>
-							<include>**/*Tests.java</include>
+							<include>**/*Test*.java</include>
 						</includes>
 					</configuration>
 				</plugin>
