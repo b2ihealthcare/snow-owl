@@ -284,8 +284,8 @@ public class FileBasedPreferencesService implements PreferencesService {
 
 		@Override
 		public void flush() throws BackingStoreException {
-			try {
-				properties.store(new FileOutputStream(file), null);
+			try (FileOutputStream out = new FileOutputStream(file)) {
+				properties.store(out, null);
 			} catch (IOException e) {
 				throw new BackingStoreException("Error while flushing",e);
 			}
