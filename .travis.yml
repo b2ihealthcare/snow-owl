@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 sudo: required
 install: true
-script: mvn clean verify
+script: MAVEN_OPTS="-Xms2g -Xmx2g" mvn clean verify
 cache:
   directories:
   - $HOME/.m2
