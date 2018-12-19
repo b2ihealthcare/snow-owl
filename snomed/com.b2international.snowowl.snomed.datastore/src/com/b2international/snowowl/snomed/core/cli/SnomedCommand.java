@@ -123,7 +123,7 @@ public final class SnomedCommand extends Command {
 				out.println("Successfully imported SNOMED CT content from file: %s", path);
 			} else {
 				if (!response.getIssues().isEmpty()) {
-					out.println("There are %s validation errors in the provided '%s' file.", path);
+					out.println("There are %s validation errors in the provided '%s' file.", response.getIssues().size(), path);
 				} else {
 					out.println("Failed to import SNOMED CT content from file: %s", path);
 				}
