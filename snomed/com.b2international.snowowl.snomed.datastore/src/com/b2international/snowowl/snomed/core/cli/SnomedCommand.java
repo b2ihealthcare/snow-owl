@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.cli;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.UUID;
 
@@ -102,10 +103,14 @@ public final class SnomedCommand extends Command {
 			}
 			
 			UUID rf2ArchiveId = UUID.randomUUID();
-			try {
-				ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, new FileInputStream(new File(path)));
-			} catch (FileNotFoundException e) {
-				out.println("Cannot find the path specified. '%s'", path);
+			try (FileInputStream in = new FileInputStream(new File(path))) {
+				ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, in);
+			} catch (IOException e) {
+				if (e instanceof FileNotFoundException) {
+					out.println("Cannot find the path specified. '%s'", path);
+				} else {
+					out.println("Error reading the specified file", e.getMessage());
+				}
 				return;
 			}
 			

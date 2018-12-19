@@ -86,10 +86,10 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 	@Override
 	public UUID execute(BranchContext context) {
 		File file = null;
-		try {
+		try (FileInputStream in = new FileInputStream(file)) {
 			file = doExport(toExportModel(context));
 			UUID fileId = UUID.randomUUID();
-			context.service(AttachmentRegistry.class).upload(fileId, new FileInputStream(file));
+			context.service(AttachmentRegistry.class).upload(fileId, in);
 			return fileId;
 		} catch (Exception e) {
 			throw new RuntimeException("Error occurred during DSV export.", e);

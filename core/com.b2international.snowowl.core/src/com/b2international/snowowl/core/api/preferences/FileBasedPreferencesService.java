@@ -111,14 +111,14 @@ public class FileBasedPreferencesService implements PreferencesService {
 			this.name = nodeName;
 			this.file = parent.getConfigDir().resolve(getFilePath(nodeName)).toFile();
 						
-			try {				
+			try (FileInputStream in = new FileInputStream(file)) {				
 				if(!file.exists()){
 					file.createNewFile();
 				}
 				
 				this.properties = new Properties();
 			
-				properties.load(new FileInputStream(file));
+				properties.load(in);
 			} catch (IOException e) {
 				throw new RuntimeException("Could not load preferences from file: "+file.getAbsolutePath(), e);
 			}
