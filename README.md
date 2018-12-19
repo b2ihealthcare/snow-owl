@@ -6,7 +6,7 @@ Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server wi
 [![latest version](https://img.shields.io/github/release/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/latest)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
 
-## Introduction
+# Introduction
 
 Features include:
 * Revision-controlled authoring
@@ -25,7 +25,7 @@ Features include:
     * Connect to your existing cluster or use the embedded instance
     * All the power of Elasticsearch is available (full-text search support, monitoring, analytics and many more)
 
-## Download
+# Download
 
 * [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.zip.sha512)
 * [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.0.0/snow-owl-oss-7.0.0.tar.gz.sha512) 
