@@ -624,6 +624,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		final Collection<StatementFragment> statedNonIsAFragments = taxonomy.getStatedNonIsARelationships()
 				.get(conceptId);
 
+		// "Never grouped" relationships are added directly to the OWL object intersection
 		statedNonIsAFragments.stream()
 			.filter(r -> isNeverGrouped(r))
 			.collect(Collectors.groupingBy(StatementFragment::getUnionGroup))
@@ -631,6 +632,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			.stream()
 			.forEachOrdered(ug -> addUnionGroup(ug, intersection));
 
+		// Others are wrapped in roleGroups
 		statedNonIsAFragments.stream()
 			.filter(r -> !isNeverGrouped(r))
 			.collect(Collectors.groupingBy(StatementFragment::getGroup))
@@ -638,11 +640,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			.stream()
 			.forEachOrdered(g -> addGroup(conceptId, g, intersection));
 
-		final Collection<ConcreteDomainFragment> conceptConcreteDomainFragments = taxonomy.getStatedConcreteDomainMembers()
-				.get(Long.toString(conceptId));
-
-		conceptConcreteDomainFragments.stream()
-			.forEach(c -> addConcreteDomainMember(c, intersection));
+		// "Never grouped" concept concrete domain members are also added directly
+		taxonomy.getStatedConcreteDomainMembers()
+			.get(Long.toString(conceptId))
+			.stream()
+			.filter(c -> c.getGroup() == 0)
+			.forEachOrdered(c -> addConcreteDomainMember(c, intersection));
 
 		return intersection;
 	}
@@ -679,21 +682,13 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			intersection.add(relationshipExpression);
 		} else {
 			unionGroup.getValue()
-			.stream()
-			.map(ugr -> getRelationshipExpression(ugr.getTypeId(), 
-					ugr.getDestinationId(), 
-					ugr.isDestinationNegated(), 
-					ugr.isUniversal()))
-			.forEachOrdered(intersection::add);
+				.stream()
+				.map(ugr -> getRelationshipExpression(ugr.getTypeId(), 
+						ugr.getDestinationId(), 
+						ugr.isDestinationNegated(), 
+						ugr.isUniversal()))
+				.forEachOrdered(intersection::add);
 		}
-
-		// Add relationship-referenced concrete domain members alongside the relationships
-		unionGroup.getValue()
-			.stream()
-			.flatMap(r -> taxonomy.getStatedConcreteDomainMembers()
-					.get(Long.toString(r.getStatementId()))
-					.stream())
-			.forEachOrdered(m -> addConcreteDomainMember(m, intersection));
 	}
 
 	private void addGroup(final long conceptId, final Entry<Integer, List<StatementFragment>> group, final Set<OWLClassExpression> intersection) {
@@ -705,6 +700,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			.entrySet()
 			.stream()
 			.forEachOrdered(ug -> addUnionGroup(ug, groupIntersection));
+		
+		taxonomy.getStatedConcreteDomainMembers()
+			.get(Long.toString(conceptId))
+			.stream()
+			.filter(c -> c.getGroup() == group.getKey())
+			.forEachOrdered(c -> addConcreteDomainMember(c, groupIntersection));
 
 		if (group.getKey() > 0) {
 
@@ -712,7 +713,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 					.stream()
 					.filter(r -> isActiveIngredient(r))
 					.collect(Collectors.toSet());
-
 
 			if (activeIngredientRelationships.size() > 1) {
 				throw new IllegalStateException(String.format("Multiple 'has active ingredient' relationships were found in group %s of concept %s.", group.getKey(), conceptId));
