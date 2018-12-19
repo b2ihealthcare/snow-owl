@@ -38,6 +38,7 @@ public final class ConcreteDomainWriter extends OntologyChangeWriter<ConcreteDom
 				.classificationId(classificationId)
 				.memberId(fragment.getMemberId())
 				.referencedComponentId(conceptId)
+				.group(fragment.getGroup())
 				.build();
 
 		indexChange(concreteDomainDoc);

@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -44,6 +45,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -81,6 +83,7 @@ public final class ConcreteDomainChangeConverter
 		final SnomedCoreComponent referencedComponent = createReferencedComponent(entry.getReferencedComponentId());
 		concreteDomainMember.setId(entry.getMemberId());
 		concreteDomainMember.setReferencedComponent(referencedComponent);
+		concreteDomainMember.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, entry.getGroup()));
 
 		resource.setConcreteDomainMember(concreteDomainMember);
 		return resource;
@@ -165,9 +168,11 @@ public final class ConcreteDomainChangeConverter
 			for (final ConcreteDomainChange item : itemsForCurrentBranch) {
 				final String memberUuid = item.getConcreteDomainMember().getId();
 				final SnomedCoreComponent adjustedReferencedComponent = item.getConcreteDomainMember().getReferencedComponent();
+				final int adjustedGroup = (int) item.getConcreteDomainMember().getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 				final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
 
 				expandedMember.setReferencedComponent(adjustedReferencedComponent);
+				expandedMember.getProperties().put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, adjustedGroup);
 				item.setConcreteDomainMember(expandedMember);
 			}
 		}

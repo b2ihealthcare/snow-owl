@@ -62,6 +62,7 @@ public final class ConcreteDomainChangeDocument {
 		private ChangeNature nature;
 		private String memberId;
 		private String referencedComponentId;
+		private int group;
 
 		@JsonCreator
 		private Builder() {
@@ -88,11 +89,17 @@ public final class ConcreteDomainChangeDocument {
 			return this;
 		}
 
+		public Builder group(int group) {
+			this.group = group;
+			return this;
+		}
+		
 		public ConcreteDomainChangeDocument build() {
 			return new ConcreteDomainChangeDocument(classificationId, 
 					nature, 
 					memberId, 
-					referencedComponentId);
+					referencedComponentId,
+					group);
 		}
 	}
 
@@ -102,18 +109,21 @@ public final class ConcreteDomainChangeDocument {
 	// The origin (stated) UUID of the CD member for inferences, or the UUID of the member to remove/inactivate
 	private final String memberId; 
 
-	// Value that should be changed on the origin member before saving/presenting it as an inference
-	private final String referencedComponentId; 
+	// Values that should be changed on the original member, before saving/presenting it as an inference
+	private final String referencedComponentId;
+	private final int group; 
 
 	private ConcreteDomainChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
 			final String memberId,
-			final String referencedComponentId) {
+			final String referencedComponentId, 
+			final int group) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
 		this.memberId = memberId;
 		this.referencedComponentId = referencedComponentId;
+		this.group = group;
 	}
 
 	public String getClassificationId() {
@@ -131,6 +141,10 @@ public final class ConcreteDomainChangeDocument {
 	public String getReferencedComponentId() {
 		return referencedComponentId;
 	}
+	
+	public int getGroup() {
+		return group;
+	}
 
 	@Override
 	public String toString() {
@@ -143,6 +157,8 @@ public final class ConcreteDomainChangeDocument {
 		builder.append(memberId);
 		builder.append(", referencedComponentId=");
 		builder.append(referencedComponentId);
+		builder.append(", group=");
+		builder.append(group);
 		builder.append("]");
 		return builder.toString();
 	}
