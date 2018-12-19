@@ -43,7 +43,7 @@ public final class ByteArrayListWrapper extends ByteCollectionWrapper implements
 	
 	@Override
 	protected it.unimi.dsi.fastutil.bytes.ByteList delegate() {
-		return (it.unimi.dsi.fastutil.bytes.ByteArrayList) super.delegate();
+		return (it.unimi.dsi.fastutil.bytes.ByteList) super.delegate();
 	}
 	
 	@Override
