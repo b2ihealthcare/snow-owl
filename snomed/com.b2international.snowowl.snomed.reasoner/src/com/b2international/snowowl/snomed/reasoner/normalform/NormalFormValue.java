@@ -20,8 +20,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.text.MessageFormat;
 import java.util.Objects;
 
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 /**
@@ -53,16 +54,12 @@ final class NormalFormValue implements NormalFormProperty {
 		return fragment.getTypeId();
 	}
 
-	public long getStorageKey() {
-		return fragment.getStorageKey();
-	}
-
 	public long getRefSetId() {
 		return fragment.getRefSetId();
 	}
 
-	public DataType getDataType() {
-		return fragment.getDataType();
+	public String getMemberId() {
+		return fragment.getMemberId();
 	}
 
 	@Override
@@ -80,7 +77,7 @@ final class NormalFormValue implements NormalFormProperty {
 	}
 
 	private boolean ancestorsContains(final long conceptId1, final long conceptId2) {
-		return reasonerTaxonomy.getAncestors(conceptId1).contains(conceptId2);
+		return reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId1, false).contains(conceptId2);
 	}
 
 	private boolean closureContains(final long conceptId1, final long conceptId2) {
@@ -108,6 +105,8 @@ final class NormalFormValue implements NormalFormProperty {
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("{0,number,#} : {1} [{2}]", getTypeId(), getSerializedValue(), getDataType());
+		final String refSetId = Long.toString(getRefSetId());
+		final DataType dataType = SnomedRefSetUtil.getDataType(refSetId);
+		return MessageFormat.format("{0,number,#} : {1} [{2}]", getTypeId(), getSerializedValue(), dataType);
 	}
 }

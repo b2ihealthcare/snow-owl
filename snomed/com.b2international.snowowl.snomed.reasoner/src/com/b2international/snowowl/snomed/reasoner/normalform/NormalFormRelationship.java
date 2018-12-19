@@ -27,9 +27,9 @@ import java.util.Objects;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdEdges;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.server.classification.ReasonerTaxonomy;
 
 /**
  * Represents concept attribute-value pairs, used when relationships originating
@@ -41,21 +41,18 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	private final StatementFragment fragment;
 	private final ReasonerTaxonomy reasonerTaxonomy;
-	private final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
 	
 	/**
 	 * Creates a new instance from the specified relationship.
 	 *
 	 * @param fragment the relationship to wrap (may not be <code>null</code>)
 	 * @param reasonerTaxonomy
-	 * @param reasonerTaxonomyBuilder
 	 *
 	 * @throws NullPointerException if the given relationship is <code>null</code>
 	 */
-	public NormalFormRelationship(final StatementFragment fragment, final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public NormalFormRelationship(final StatementFragment fragment, final ReasonerTaxonomy reasonerTaxonomy) {
 		this.fragment = checkNotNull(fragment, "fragment");
 		this.reasonerTaxonomy = checkNotNull(reasonerTaxonomy, "reasonerTaxonomy");
-		this.reasonerTaxonomyBuilder = checkNotNull(reasonerTaxonomyBuilder, "reasonerTaxonomyBuilder");
 	}
 
 	public boolean isDestinationNegated() {
@@ -77,9 +74,9 @@ final class NormalFormRelationship implements NormalFormProperty {
 	public long getStatementId() {
 		return fragment.getStatementId();
 	}
-
-	public long getStorageKey() {
-		return fragment.getStorageKey();
+	
+	public boolean hasStatedPair() {
+		return fragment.hasStatedPair();
 	}
 
 	@Override
@@ -146,7 +143,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 	}
 
 	private boolean ancestorsContains(final long conceptId1, final long conceptId2) {
-		return reasonerTaxonomy.getAncestors(conceptId1).contains(conceptId2);
+		return reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId1, false).contains(conceptId2);
 	}
 
 	private boolean closureContains(final long conceptId1, final long conceptId2) {
@@ -165,8 +162,10 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	private boolean hasCommonExhaustiveSuperType(final NormalFormRelationship other) {
 
-		final LongSet valueAncestors = reasonerTaxonomy.getAncestors(getDestinationId());
-		final LongSet otherValueAncestors = reasonerTaxonomy.getAncestors(other.getDestinationId());
+		final InternalIdEdges inferredAncestors = reasonerTaxonomy.getInferredAncestors();
+		
+		final LongSet valueAncestors = inferredAncestors.getDestinations(getDestinationId(), false);
+		final LongSet otherValueAncestors = inferredAncestors.getDestinations(other.getDestinationId(), false);
 		final LongSet commonAncestors = LongSets.intersection(valueAncestors, otherValueAncestors);
 
 		for (final LongIterator itr = commonAncestors.iterator(); itr.hasNext(); /* empty */) {
@@ -180,7 +179,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 	}
 
 	private boolean isExhaustive(final long conceptId) {
-		return reasonerTaxonomyBuilder.isExhaustive(conceptId);
+		return reasonerTaxonomy.getExhaustiveConcepts().contains(conceptId);
 	}
 
 	@Override

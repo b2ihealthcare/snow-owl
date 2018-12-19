@@ -31,141 +31,142 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-<<<<<<< HEAD
 import com.b2international.collections.PrimitiveMaps;
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.datastore.server.snomed.index.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyWalker;
-=======
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
-
-import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongIterator;
-import com.b2international.collections.longs.LongList;
-import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
->>>>>>> 45e25a8017... [reasoner] Multiple changes to ClassificationRunRequest and related...
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
-import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
-<<<<<<< HEAD
  * Transforms a subsumption hierarchy and a set of non-ISA relationships into
  * distribution normal form.
  *
  * @author law223 - initial implementation in Snorocket's SNOMED API
  */
-public final class NormalFormGenerator implements TaxonomyCallback {
+public final class NormalFormGenerator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NormalFormGenerator.class);
+	private static final long IS_A = Long.parseLong(Concepts.IS_A);
 
 	private final ReasonerTaxonomy reasonerTaxonomy;
-	private final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder;
-	
-	private final LongKeyMap<Collection<StatementFragment>> targetNonIsARelationships = PrimitiveMaps.newLongKeyOpenHashMap();
-	private final LongKeyMap<Collection<ConcreteDomainFragment>> targetMembers = PrimitiveMaps.newLongKeyOpenHashMap();
+
+	private final LongKeyMap<Collection<StatementFragment>> statementCache = PrimitiveMaps.newLongKeyOpenHashMap();
+	private final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 
 	/**
 	 * Creates a new distribution normal form generator instance.
 	 *
-	 * @param reasonerTaxonomy        used for querying the concept hierarchy
-	 *                                inferred by the reasoner (may not be
-	 *                                {@code null})
-	 * @param reasonerTaxonomyBuilder used for querying the pre-classification
-	 *                                terminology content snapshot (may not be
-	 *                                {@code null})
+	 * @param reasonerTaxonomy used for querying the concept hierarchy inferred by
+	 *                         the reasoner, as well as the pre-classification
+	 *                         contents of the branch (may not be {@code null})
 	 */
-	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy, final ReasonerTaxonomyBuilder reasonerTaxonomyBuilder) {
+	public NormalFormGenerator(final ReasonerTaxonomy reasonerTaxonomy) {
 		this.reasonerTaxonomy = reasonerTaxonomy;
-		this.reasonerTaxonomyBuilder = reasonerTaxonomyBuilder;
 	}
-	
-	@Override
-	public final void onConcept(final long conceptId, final LongSet parentIds, final LongSet ancestorIds) {
-	}
-		
+
 	public final void computeChanges(final IProgressMonitor monitor, 
-			final OntologyChangeProcessor<StatementFragment> relationshipProcessor,
-			final OntologyChangeProcessor<ConcreteDomainFragment> memberProcessor) {
-	
+			final OntologyChangeProcessor<StatementFragment> statementProcessor,
+			final OntologyChangeProcessor<ConcreteDomainFragment> concreteDomainProcessor) {
+
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		LOGGER.info(">>> Distribution normal form generation");
 
-		final LongList entries = reasonerTaxonomy.getConceptIds();
+		final LongList entries = reasonerTaxonomy.getIterationOrder();
+		LongSet previousLayer = null;
+		LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
+
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Generating distribution normal form...", entries.size() * 2);
-		
+
 		try {
-		
+
 			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
 				final long conceptId = itr.next();
 
-				computeTargetProperties(conceptId);
-				
-				final Collection<StatementFragment> existingRelationships = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
-				final Collection<StatementFragment> targetRelationships = getTargetRelationships(conceptId);
-				relationshipProcessor.apply(conceptId, existingRelationships, targetRelationships, StatementFragmentOrdering.INSTANCE, subMonitor.newChild(1));
-				
-				final Collection<ConcreteDomainFragment> existingMembers = reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
+				if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
+					if (previousLayer != null) {
+						invalidate(previousLayer);
+					}
+
+					previousLayer = currentLayer;
+					currentLayer = PrimitiveSets.newLongOpenHashSet();
+					continue;
+				}
+
+				precomputeProperties(conceptId);
+
+				final Collection<StatementFragment> existingStatements = reasonerTaxonomy.getExistingInferredRelationships().get(conceptId);
+				final Collection<StatementFragment> targetStatements = getTargetRelationships(conceptId);
+				statementProcessor.apply(conceptId, existingStatements, targetStatements, StatementFragmentOrdering.INSTANCE, subMonitor.newChild(1));
+
+				final Collection<ConcreteDomainFragment> existingMembers = reasonerTaxonomy.getInferredConcreteDomainMembers().get(Long.toString(conceptId));
 				final Collection<ConcreteDomainFragment> targetMembers = getTargetMembers(conceptId);
-				memberProcessor.apply(conceptId, existingMembers, targetMembers, ConcreteDomainChangeOrdering.INSTANCE, subMonitor.newChild(1));
+				concreteDomainProcessor.apply(conceptId, existingMembers, targetMembers, ConcreteDomainChangeOrdering.INSTANCE, subMonitor.newChild(1));
 			}
-			
+
 		} finally {
 			subMonitor.done();
 			LOGGER.info(MessageFormat.format("<<< Distribution normal form generation [{0}]", stopwatch.toString()));
 		}
 	}
 
-	private void computeTargetProperties(final long conceptId) {
-		final LongSet parentIds = reasonerTaxonomy.getParents(conceptId);
-		
+	/**
+	 * Indicates that the breadth-first iteration has reached a new level in the tree.
+	 * Generators are free to drop caches associated with components in the previous
+	 * "slice".
+	 * 
+	 * @param keysToInvalidate 
+	 */
+	private void invalidate(final LongSet keysToInvalidate) {
+		statementCache.keySet().removeAll(keysToInvalidate);
+		concreteDomainCache.keySet().removeAll(keysToInvalidate);
+	}
+
+	private void precomputeProperties(final long conceptId) {
+		final LongSet parentIds = reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId, true);
+
 		/*
 		 * Non IS-A relationships are fetched from ancestors; redundancy must be removed. Since we are working through the list
 		 * of concepts in breadth-first order, we only need to look at cached results from the direct parents, and "distill"
 		 * a non-redundant set of components out of them.
 		 */
 		final LongKeyMap<Collection<StatementFragment>> candidateNonIsARelationships = PrimitiveMaps.newLongKeyOpenHashMap();
+
 		for (final LongIterator itr = parentIds.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
-			candidateNonIsARelationships.put(parentId, targetNonIsARelationships.get(parentId));
+			candidateNonIsARelationships.put(parentId, statementCache.get(parentId));
 		}
-		
+
 		// Add stated relationships from the concept in question as potential sources
-		final Collection<StatementFragment> ownStatedRelationships = reasonerTaxonomyBuilder.getStatedStatementFragments(conceptId);
-		final Collection<StatementFragment> ownStatedNonIsaRelationships = ownStatedRelationships.stream()
-				.filter(r -> r.getTypeId() != LongConcepts.IS_A_ID)
-				.collect(Collectors.toList());
-		
-		final Collection<StatementFragment> ownAdditionalGroupedRelationships = reasonerTaxonomyBuilder.getAdditionalGroupedStatementFragments(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaRelationships = reasonerTaxonomy.getStatedNonIsARelationships().get(conceptId);
+		final Collection<StatementFragment> ownAdditionalGroupedRelationships = reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId);
+
 		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
 				.addAll(ownStatedNonIsaRelationships)
 				.addAll(ownAdditionalGroupedRelationships)
 				.build());
-		
+
 		// Collect existing inferred relationships for cross-referencing group numbers
-		final Collection<StatementFragment> ownInferredRelationships = reasonerTaxonomyBuilder.getInferredStatementFragments(conceptId);
+		final Collection<StatementFragment> ownInferredRelationships = reasonerTaxonomy.getExistingInferredRelationships().get(conceptId);
 		final Collection<StatementFragment> ownInferredNonIsaRelationships = ownInferredRelationships.stream()
-			.filter(r -> r.getTypeId() != LongConcepts.IS_A_ID)
-			.collect(Collectors.toList());
+				.filter(r -> r.getTypeId() != IS_A)
+				.collect(Collectors.toList());
 
 		/*
 		 * Do the same as the above, but for CD members
@@ -173,19 +174,20 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 		final LongKeyMap<Collection<ConcreteDomainFragment>> candidateMembers = PrimitiveMaps.newLongKeyOpenHashMap();
 		for (final LongIterator itr = parentIds.iterator(); itr.hasNext(); /* empty */) {
 			final long parentId = itr.next();
-			candidateMembers.put(parentId, targetMembers.get(parentId));
+			candidateMembers.put(parentId, concreteDomainCache.get(parentId));
 		}
-		
-		final Collection<ConcreteDomainFragment> ownStatedMembers = reasonerTaxonomyBuilder.getStatedConcreteDomainFragments(conceptId);
-		final Collection<ConcreteDomainFragment> ownAdditionalGroupedMembers = reasonerTaxonomyBuilder.getAdditionalGroupedConcreteDomainFragments(conceptId);
-		
+
+		final String referencedComponentId = Long.toString(conceptId);
+		final Collection<ConcreteDomainFragment> ownStatedMembers = reasonerTaxonomy.getStatedConcreteDomainMembers().get(referencedComponentId);
+		final Collection<ConcreteDomainFragment> ownAdditionalGroupedMembers = reasonerTaxonomy.getAdditionalGroupedConcreteDomainMembers().get(referencedComponentId);
+
 		candidateMembers.put(conceptId, ImmutableList.<ConcreteDomainFragment>builder()
 				.addAll(ownStatedMembers)
 				.addAll(ownAdditionalGroupedMembers)
 				.build());
-		
-		final Collection<ConcreteDomainFragment> ownInferredMembers = reasonerTaxonomyBuilder.getInferredConcreteDomainFragments(conceptId);
-		
+
+		final Collection<ConcreteDomainFragment> ownInferredMembers = reasonerTaxonomy.getInferredConcreteDomainMembers().get(referencedComponentId);
+
 		// Remove redundancy
 		final NormalFormGroupSet targetGroupSet = getTargetGroupSet(conceptId, 
 				parentIds,
@@ -193,12 +195,12 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 				ownInferredMembers,
 				candidateNonIsARelationships,
 				candidateMembers);
-		
+
 		// Extract results; place them in the cache, so following concepts can re-use it
-		targetNonIsARelationships.put(conceptId, ImmutableList.copyOf(relationshipsFromGroupSet(targetGroupSet)));
-		targetMembers.put(conceptId, ImmutableList.copyOf(membersFromGroupSet(targetGroupSet)));
+		statementCache.put(conceptId, ImmutableList.copyOf(relationshipsFromGroupSet(targetGroupSet)));
+		concreteDomainCache.put(conceptId, ImmutableList.copyOf(membersFromGroupSet(targetGroupSet)));
 	}
-	
+
 	private NormalFormGroupSet getTargetGroupSet(final long conceptId,
 			final LongSet parentIds,
 			final Collection<StatementFragment> existingInferredNonIsAFragments,
@@ -211,7 +213,7 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 		final Iterable<NormalFormGroup> existingGroups = toGroups(true, 
 				existingInferredNonIsAFragments, 
 				existingInferredMembers);
-		
+
 		for (final NormalFormGroup ownInferredGroup : existingGroups) {
 			existingGroupSet.addUnique(ownInferredGroup);
 		}
@@ -223,17 +225,17 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 			final Iterable<NormalFormGroup> otherGroups = toGroups(false, 
 					candidateNonIsAFragments.get(parentId),
 					candidateMembers.get(parentId));
-			
+
 			Iterables.addAll(targetGroupSet, otherGroups);
 		}
-		
+
 		// Finally, add the (stated) information from the concept itself
 		final Iterable<NormalFormGroup> ownGroups = toGroups(false,
 				candidateNonIsAFragments.get(conceptId),
 				candidateMembers.get(conceptId));
 
 		Iterables.addAll(targetGroupSet, ownGroups);
-		
+
 		// Shuffle around group numbers to match existing inferred group numbers as much as possible 
 		targetGroupSet.adjustOrder(existingGroupSet);
 
@@ -252,11 +254,11 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 
 		final Set<Integer> allKeys = Sets.union(relationshipsByGroupId.keySet(), membersByGroupId.keySet());
 		final ImmutableList.Builder<NormalFormGroup> groups = ImmutableList.builder();
-		
+
 		for (final Integer key : allKeys) {
 			final Collection<StatementFragment> groupRelationships = relationshipsByGroupId.get(key);
 			final Collection<ConcreteDomainFragment> groupMembers = membersByGroupId.get(key);
-			
+
 			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(preserveNumbers, groupRelationships, groupMembers);
 			final Iterable<NormalFormUnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
 
@@ -289,19 +291,19 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 	private Iterable<NormalFormUnionGroup> toUnionGroups(final boolean preserveNumbers, 
 			final Collection<StatementFragment> groupRelationships, 
 			final Collection<ConcreteDomainFragment> groupMembers) {
-	
+
 		final Multimap<Integer, StatementFragment> relationshipsByUnionGroupId = Multimaps.index(groupRelationships, StatementFragment::getUnionGroup);
 		final ImmutableList.Builder<NormalFormUnionGroup> unionGroups = ImmutableList.builder();
-		
+
 		final Set<Integer> allKeys = newHashSet(relationshipsByUnionGroupId.keySet());
 		if (!groupMembers.isEmpty()) { 
 			// Union group 0 must be included if members are present
 			allKeys.add(0); 
 		}
-	
+
 		for (final Integer key : allKeys) {
 			final Collection<StatementFragment> unionGroupRelationships = relationshipsByUnionGroupId.get(key);
-		
+
 			if (key == 0) {
 				// Properties in union group 0 form separate union groups
 				unionGroups.addAll(toZeroUnionGroups(unionGroupRelationships, groupMembers));
@@ -310,121 +312,44 @@ public final class NormalFormGenerator implements TaxonomyCallback {
 				unionGroups.add(toNonZeroUnionGroup(preserveNumbers, key, unionGroupRelationships));
 			}
 		}
-	
+
 		return unionGroups.build();
 	}
 
 	private Iterable<NormalFormUnionGroup> toZeroUnionGroups(
 			final Collection<StatementFragment> unionGroupRelationships, 
 			final Collection<ConcreteDomainFragment> unionGroupMembers) {
-		
+
 		final ImmutableList.Builder<NormalFormUnionGroup> zeroUnionGroups = ImmutableList.builder();
-		
+
 		for (final StatementFragment unionGroupRelationship : unionGroupRelationships) {
-			final NormalFormRelationship normalFormRelationship = new NormalFormRelationship(unionGroupRelationship, 
-					reasonerTaxonomy, 
-					reasonerTaxonomyBuilder);
-			
+			final NormalFormRelationship normalFormRelationship = new NormalFormRelationship(unionGroupRelationship, reasonerTaxonomy);
 			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormRelationship));
 		}
-		
+
 		for (final ConcreteDomainFragment unionGroupMember : unionGroupMembers) {
 			final NormalFormValue normalFormValue = new NormalFormValue(unionGroupMember, reasonerTaxonomy);
 			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormValue));
 		}
-		
+
 		return zeroUnionGroups.build();
 	}
 
 	private NormalFormUnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, 
 			final int unionGroupNumber, 
 			final Collection<StatementFragment> unionGroupRelationships) {
-		
+
 		final Iterable<NormalFormProperty> properties = FluentIterable
 				.from(unionGroupRelationships)
-				.transform(ugr -> new NormalFormRelationship(ugr, reasonerTaxonomy, reasonerTaxonomyBuilder));
+				.transform(ugr -> new NormalFormRelationship(ugr, reasonerTaxonomy));
 
 		final NormalFormUnionGroup unionGroup = new NormalFormUnionGroup(properties);
 		if (preserveNumbers) {
 			unionGroup.setUnionGroupNumber(unionGroupNumber);
 		}
 		return unionGroup;
-=======
- * Base class for different implementations, which generate a set of components in normal form, based on a subsumption
- * hierarchy encapsulated in a reasoner.
- * 
- * @param <T> the generated component type
- * @since
- */
-public abstract class NormalFormGenerator<T extends Serializable> {
-
-	protected final ReasonerTaxonomy taxonomy;
-
-	public NormalFormGenerator(final ReasonerTaxonomy taxonomy) {
-		this.taxonomy = taxonomy;
-	}
-	
-	/**
-	 * Computes and returns all changes as a result of normal form computation.
-	 * 
-	 * @param monitor   the progress monitor to use for reporting progress to the
-	 *                  user. It is the caller's responsibility to call
-	 *                  <code>done()</code> on the given monitor. Accepts
-	 *                  <code>null</code>, indicating that no progress should be
-	 *                  reported and that the operation cannot be cancelled.
-	 * @param processor the change processor to route changes to
-	 * @param ordering  an ordering defined over existing and generated components,
-	 *                  used for detecting changes
-	 * @return the total number of generated components
-	 */
-	public final int collectNormalFormChanges(final IProgressMonitor monitor, final OntologyChangeProcessor<T> processor, final Ordering<T> ordering) {
-
-		final LongList entries = taxonomy.getIterationOrder();
-		LongSet previousLayer = null;
-		LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
-		
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Generating normal form...", entries.size());
-		int generatedComponentCount = 0;
-		
-		try {
-		
-			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
-				final long conceptId = itr.next();
-				
-				if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
-					if (previousLayer != null) {
-						invalidate(previousLayer);
-					}
-					
-					previousLayer = currentLayer;
-					currentLayer = PrimitiveSets.newLongOpenHashSet();
-				} else {
-					final Collection<T> existingComponents = getExistingComponents(conceptId);
-					final Collection<T> generatedComponents = getGeneratedComponents(conceptId);
-					processor.apply(conceptId, existingComponents, generatedComponents, ordering, subMonitor.newChild(1));
-					generatedComponentCount += generatedComponents.size();
-					currentLayer.add(conceptId);
-				}
-			}
-			
-		} finally {
-			subMonitor.done();
-		}
-		
-		return generatedComponentCount; 
 	}
 
-	/**
-	 * Indicates that the BFS iteration has reached a new level in the tree.
-	 * Generators are free to drop caches associated with components in the previous
-	 * layer.
-	 * 
-	 * @param keysToInvalidate 
-	 */
-	protected void invalidate(final LongSet keysToInvalidate) {
-		return;
->>>>>>> 45e25a8017... [reasoner] Multiple changes to ClassificationRunRequest and related...
-	}
 
 	/**
 	 * Filters {@link NormalFormProperty}s so that the returned Iterable only
@@ -451,11 +376,11 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 	private <T extends NormalFormProperty> Iterable<T> getDisjointComparables(final Iterable<T> comparables) {
 		final Set<T> candidates = Sets.newHashSet();
 		final Set<T> redundant = Sets.newHashSet();
-	
+
 		for (final T comparable : comparables) {
 			redundant.clear();
 			boolean found = false;
-	
+
 			for (final T candidate : candidates) {
 				if (candidate.isSameOrStrongerThan(comparable)) {
 					found = true;
@@ -464,17 +389,16 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 					redundant.add(candidate);
 				}
 			}
-	
+
 			if (!found) {
 				candidates.removeAll(redundant);
 				candidates.add(comparable);
 			}
 		}
-	
+
 		return candidates;
 	}
 
-<<<<<<< HEAD
 	private Iterable<StatementFragment> relationshipsFromGroupSet(final NormalFormGroupSet targetGroupSet) {
 		return FluentIterable.from(targetGroupSet).transformAndConcat(this::relationshipsFromGroup);
 	}
@@ -490,7 +414,7 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 	private Iterable<StatementFragment> relationshipsFromUnionGroup(final NormalFormUnionGroup unionGroup, 
 			final int groupNumber, 
 			final int unionGroupNumber) {
-		
+
 		return FluentIterable
 				.from(unionGroup.getProperties())
 				.filter(NormalFormRelationship.class)
@@ -502,10 +426,10 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 						unionGroupNumber,
 						property.isUniversal(),
 						property.getStatementId(),
-						property.getStorageKey()));
+						property.hasStatedPair()));
 	}
-	
-	private Iterable<ConcreteDomainFragment> membersFromGroupSet(NormalFormGroupSet targetGroupSet) {
+
+	private Iterable<ConcreteDomainFragment> membersFromGroupSet(final NormalFormGroupSet targetGroupSet) {
 		return FluentIterable.from(targetGroupSet).transformAndConcat(this::membersFromGroup);
 	}
 
@@ -516,45 +440,35 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 						group.getGroupNumber(), 
 						unionGroup.getUnionGroupNumber()));
 	}
-	
+
 	private Iterable<ConcreteDomainFragment> membersFromUnionGroup(final NormalFormUnionGroup unionGroup, final int groupNumber, final int unionGroupNumber) {
 		return FluentIterable
 				.from(unionGroup.getProperties())
 				.filter(NormalFormValue.class)
 				.transform(property -> new ConcreteDomainFragment(
-						property.getSerializedValue(),
-						property.getTypeId(),
-						property.getStorageKey(),
+						property.getMemberId(),
 						property.getRefSetId(),
-						groupNumber));
+						groupNumber,
+						property.getSerializedValue(),
+						property.getTypeId()));
 	}
 
 	private Collection<StatementFragment> getTargetRelationships(final long conceptId) {
 		final Iterable<StatementFragment> targetIsARelationships = getTargetIsARelationships(conceptId);
-		final Iterable<StatementFragment> targetNonIsARelationships = this.targetNonIsARelationships.get(conceptId);
-	
+		final Iterable<StatementFragment> targetNonIsARelationships = statementCache.get(conceptId);
+
 		return ImmutableList.<StatementFragment>builder()
 				.addAll(targetIsARelationships)
 				.addAll(targetNonIsARelationships)
 				.build();
 	}
 
-	private Collection<ConcreteDomainFragment> getTargetMembers(long conceptId) {
-		return targetMembers.get(conceptId);
+	private Iterable<StatementFragment> getTargetIsARelationships(final long conceptId) {
+		final LongSet parentIds = reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId, true);
+		return LongSets.transform(parentIds, parentId -> new StatementFragment(IS_A, parentId));
 	}
 
-	private Iterable<StatementFragment> getTargetIsARelationships(final long conceptId) {
-		final LongSet parentIds = reasonerTaxonomy.getParents(conceptId);
-		return LongSets.transform(parentIds, parentId -> new StatementFragment(LongConcepts.IS_A_ID, parentId));
+	private Collection<ConcreteDomainFragment> getTargetMembers(final long conceptId) {
+		return concreteDomainCache.get(conceptId);
 	}
-=======
-	/**
-	 * Computes and returns a set of components in normal form for the specified
-	 * concept.
-	 * 
-	 * @param concept the concept for which components should be generated
-	 * @return the generated components of the specified concept in normal form
-	 */
-	public abstract Collection<T> getGeneratedComponents(final long conceptId);
->>>>>>> 45e25a8017... [reasoner] Multiple changes to ClassificationRunRequest and related...
 }
