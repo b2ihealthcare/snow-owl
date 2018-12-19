@@ -48,6 +48,9 @@
 						<goals>
 							<goal>test</goal>
 						</goals>
+						<configuration>
+							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
+						</configuration>
 					</execution>
 					<execution>
 						<id>http-tests</id>
@@ -56,20 +59,10 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<argLine>-Dso.index.es.useHttp</argLine>
+							<argLine>${tycho.testArgLine} -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml -Dso.index.es.useHttp</argLine>
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<argLine>-Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</argLine>
-					<failIfNoTests>false</failIfNoTests>
-					<includes>
-						<include>**/*Test*.java</include>
-					</includes>
-					<!-- Kill test JVM if tests take more than 10 minutes (600 seconds) 
-						to finish -->
-					<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

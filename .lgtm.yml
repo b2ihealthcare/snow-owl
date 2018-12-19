@@ -8,7 +8,5 @@ extraction:
     before_index:
       - "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
     index:
-      build_command:
-        - mvn clean package
       maven:
         version: 3.5.3
