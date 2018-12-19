@@ -32,20 +32,18 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 5.7
@@ -87,8 +85,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
-		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream()
-				.map(SnomedConcept::getId));
+		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
 		taxonomyBuilder.finishConcepts();
 		
 		taxonomyBuilder.addConceptFlags(revisionSearcher);
@@ -101,9 +98,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		}
 
 		// Add the extra definitions
-		taxonomyBuilder.addConceptFlags(additionalConcepts.stream()
-				.filter(c -> DefinitionStatus.FULLY_DEFINED.equals(c.getDefinitionStatus()))
-				.map(SnomedConcept::getId));
+		taxonomyBuilder.addConceptFlags(additionalConcepts.stream());
 
 		final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
 				.flatMap(c -> c.getRelationships().stream());
@@ -125,7 +120,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
+		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + Concepts.MODULE_SCT_CORE); // TODO: custom moduleId in ontology IRI?
 
 		try {

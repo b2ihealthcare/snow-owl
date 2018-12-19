@@ -19,11 +19,11 @@ import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.request.IndexReadRequest;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.request.job.JobRequests;

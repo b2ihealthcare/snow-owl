@@ -23,29 +23,28 @@ import java.util.concurrent.ForkJoinTask;
 
 import javax.validation.constraints.NotNull;
 
+import org.coode.owlapi.manchesterowlsyntax.ManchesterOWLSyntaxOntologyFormat;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.formats.FunctionalSyntaxDocumentFormat;
-import org.semanticweb.owlapi.formats.ManchesterSyntaxDocumentFormat;
-import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
+import org.semanticweb.owlapi.io.OWLFunctionalSyntaxOntologyFormat;
+import org.semanticweb.owlapi.io.RDFXMLOntologyFormat;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLDocumentFormat;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyFormat;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomyBuilder;
+import com.b2international.snowowl.datastore.file.FileRegistry;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomyBuilder;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.exceptions.OntologyException;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.0
@@ -97,14 +96,14 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
-		ontologyManager.setOntologyFactories(ImmutableSet.of(new DelegateOntologyFactory(taxonomy)));
+		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + ontologyModuleId);
 
 		try {
 
 			final OWLOntology ontology = ontologyManager.createOntology(ontologyIRI);
-			final OWLDocumentFormat documentFormat = getOWLDocumentFormat();
-			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
+			final OWLOntologyFormat documentFormat = getOWLDocumentFormat();
+			final FileRegistry fileRegistry = context.service(FileRegistry.class);
 
 			final UUID id = UUID.randomUUID();
 			final PipedOutputStream os = new PipedOutputStream();
@@ -139,11 +138,11 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		return new OntologyException("Couldn't save ontology with module ID '" + ontologyModuleId + "' on branch '" + context.branchPath() + "'.", e);
 	}
 
-	private OWLDocumentFormat getOWLDocumentFormat() {
+	private OWLOntologyFormat getOWLDocumentFormat() {
 		switch (exportType) {
-			case FUNCTIONAL: return new FunctionalSyntaxDocumentFormat();
-			case MANCHESTER: return new ManchesterSyntaxDocumentFormat();
-			case XML: return new RDFXMLDocumentFormat();
+			case FUNCTIONAL: return new OWLFunctionalSyntaxOntologyFormat();
+			case MANCHESTER: return new ManchesterOWLSyntaxOntologyFormat();
+			case XML: return new RDFXMLOntologyFormat();
 			default: throw new IllegalStateException("Unexpected export type '" + exportType + "'.");
 		}
 	}

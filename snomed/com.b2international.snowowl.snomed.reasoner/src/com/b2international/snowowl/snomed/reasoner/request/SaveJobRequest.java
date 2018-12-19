@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -34,6 +33,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
@@ -45,9 +45,7 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -240,7 +238,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
 				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand(getRelationshipExpandString(concreteDomainSupported))
+				.setExpand("relationship(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
 		final SearchResourceRequestIterator<RelationshipChangeSearchRequestBuilder, RelationshipChanges> relationshipIterator = 
@@ -271,17 +269,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		namespaceAndModuleAssigner.clear();
 	}
 
-	private String getRelationshipExpandString(final boolean concreteDomainSupported) {
-		if (concreteDomainSupported) {
-			return String.format("relationship(inferredOnly:true,expand(members(active:true,refSetType:\"%s\",characteristicTypeId:[\"%s\",\"%s\"]))",
-					SnomedRefSetType.CONCRETE_DATA_TYPE,
-					Concepts.STATED_RELATIONSHIP,
-					Concepts.ADDITIONAL_RELATIONSHIP);
-		} else {
-			return "relationship(inferredOnly:true)";
-		}
-	}
-
 	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final ReasonerRelationship relationship) {
@@ -302,17 +289,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				.setUnionGroup(relationship.getUnionGroup())
 				.setModifier(relationship.getModifier())
 				.setModuleId(moduleId);
-
-		/*
-		 * Even though the members hold the originating relationship's ID, it will be
-		 * changed by the relationship creation request to the new relationship ID,
-		 * which is not known at this point (just the namespace).
-		 */
-		if (relationship.getMembers() != null) {
-			relationship.getMembers()
-				.stream()
-				.forEach(createRequest::addMember);
-		}
 
 		bulkRequestBuilder.add(createRequest);
 	}
