@@ -201,7 +201,7 @@ public class LongSets {
 	
 	/**
 	 * Evaluates the procedure argument on each element of the given iterator.
-	 * @param iterator the iterator which elements will be evaluated against the procedure.
+	 * @param itr the iterator which elements will be evaluated against the procedure.
 	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
 	 */
 	public static void forEach(final LongIterator itr, final LongCollectionProcedure procedure) {

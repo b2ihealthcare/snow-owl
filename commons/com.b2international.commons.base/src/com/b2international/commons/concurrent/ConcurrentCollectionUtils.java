@@ -213,7 +213,6 @@ public class ConcurrentCollectionUtils {
 	 * }
 	 * </pre>
 	 * @param subjects the subject iterable. 
-	 * @param nThreads - the number of threads to use for concurrency
 	 * @param closure the procedure to apply on each element.
 	 */
 	public static <T> void forEach(final Iterable<? extends T> subjects, final Procedure<? super T> closure) {

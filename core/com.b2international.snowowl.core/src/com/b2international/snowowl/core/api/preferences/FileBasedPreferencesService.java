@@ -80,7 +80,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 		
 		/**
 		 * Constructor to create the root preferences node, does not contain preferences, it is the root of the preferences tree
-		 * @param configDirectory
+		 * @param configDir
 		 */
 		private FileBasedConfigurationPreferences(Path configDir)  {
 			if (!Files.isDirectory(configDir)){
@@ -94,7 +94,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 		
 		/**
 		 * Constructor to create child preferences nodes.
-		 * @param parent teh parent node
+		 * @param parent the parent node
 		 * @param nodeName the name of the node
 		 */
 		private FileBasedConfigurationPreferences(FileBasedConfigurationPreferences parent, String nodeName){

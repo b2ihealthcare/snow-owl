@@ -197,7 +197,8 @@ public class IntMap<K> implements Cloneable {
 	
 	/**
 	 * Shifts values > after by value
-	 * @param index
+	 * @param after
+	 * @param value
 	 */
 	public void shiftValues(int after, int value) {
 		for(int i = 0; i < values.length; i++) {

@@ -312,9 +312,8 @@ public class ApplicationContext {
 	
 	/**
 	 * Convenience method for handling generic exceptions. 
-	 * 
-	 * @param exception
-	 * @param errorMessage
+	 * @param bundle
+	 * @param status
 	 */
 	public static void handleErrorStatus(final Bundle bundle, final IStatus status) {
 		final MultiStatus multiStatus = getServiceInfo(bundle, status.getException());

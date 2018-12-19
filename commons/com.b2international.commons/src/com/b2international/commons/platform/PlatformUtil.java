@@ -166,7 +166,7 @@ public class PlatformUtil {
 	}
 	
 	/**
-	 * @param url
+	 * @param bundleUrl
 	 * @return
 	 */
 	public static Path toAbsoluteBundlePath(URL bundleUrl) {
