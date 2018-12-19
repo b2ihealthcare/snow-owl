@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package com.b2international.snowowl.datastore.request.job;
 import java.util.UUID;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.datastore.remotejobs.SerializableSchedulingRule;
 
 /**
  * A request builder that wraps existing {@link Request} instances to run them as jobs.
@@ -33,13 +35,14 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	private String user;
 	private String description;
 	private Request<ServiceProvider, ?> request;
+	private SerializableSchedulingRule schedulingRule;
 	
 	ScheduleJobRequestBuilder() {
 	}
 
 	@Override
 	protected Request<ServiceProvider, String> doBuild() {
-		return new ScheduleJobRequest(id, user, request, description);
+		return new ScheduleJobRequest(id, user, request, description, schedulingRule);
 	}
 	
 	/**
@@ -73,6 +76,17 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 	}
 	
 	/**
+	 * Extracts the {@link Request} from the specified {@link AsyncRequest} that will be 
+	 * {@link Request#execute(ServiceProvider) executed} by the job. 
+	 * @param request - the request to execute
+	 * @return this builder
+	 */
+	public ScheduleJobRequestBuilder setRequest(AsyncRequest<?> request) {
+		this.request = request.getRequest();
+		return getSelf();
+	}
+	
+	/**
 	 * Set the {@link Request} that will be {@link Request#execute(ServiceProvider) executed} by the job. 
 	 * @param request - the request to execute
 	 * @return this builder
@@ -82,4 +96,13 @@ public final class ScheduleJobRequestBuilder extends BaseRequestBuilder<Schedule
 		return getSelf();
 	}
 	
+	/**
+	 * Sets the scheduling rule for the remote job, controlling which instances can be executed side-by-side.
+	 * @param schedulingRule - the scheduling rule to apply for this job
+	 * @return this builder
+	 */
+	public ScheduleJobRequestBuilder setSchedulingRule(SerializableSchedulingRule schedulingRule) {
+		this.schedulingRule = schedulingRule;
+		return getSelf();
+	}
 }
