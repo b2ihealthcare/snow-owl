@@ -202,28 +202,20 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		member.setScore(entry.getScore());
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
-		// XXX refset type can be null if the document was loaded partially
-		if (entry.getReferenceSetType() != null) {
-			switch (entry.getReferenceSetType()) {
-			case ASSOCIATION:
-				// convert ID to resources where possible to override value with nested object in JSON
-				props.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, convertToResource(entry.getTargetComponent()));
-				break;
-			case MODULE_DEPENDENCY:
-				// convert stored long values to short date format
-				props.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, entry.getSourceEffectiveTime() == null ? null : toEffectiveTime(entry.getSourceEffectiveTime()));
-				props.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, entry.getTargetEffectiveTime() == null ? null : toEffectiveTime(entry.getTargetEffectiveTime()));
-				break;
-			case CONCRETE_DATA_TYPE:
-				// convert concrete domain value to serialized String format
-				props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
-				break;
-			default:
-				break;
-			}
-			
-			member.setProperties(props);
+
+		// convert ID to resources where possible to override value with nested object in JSON
+		props.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_COMPONENT, (key, value) -> convertToResource((String) value));
+
+		// convert stored long values to short date format
+		props.computeIfPresent(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));
+		props.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));
+
+		// convert concrete domain value to serialized String format
+		if (entry.getValue() != null) {
+			props.put(SnomedRf2Headers.FIELD_VALUE, SnomedRefSetUtil.serializeValue(entry.getDataType(), entry.getValue()));
 		}
+		
+		member.setProperties(props);
 		
 		setReferencedComponent(member, entry.getReferencedComponentId(), entry.getReferencedComponentType());
 		return member;
