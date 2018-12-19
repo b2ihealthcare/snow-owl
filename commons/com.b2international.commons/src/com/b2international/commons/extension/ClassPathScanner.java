@@ -63,8 +63,20 @@ public enum ClassPathScanner {
 		registry = new ClassGraph()
 				.disableRuntimeInvisibleAnnotations()
 				.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
+//				.enableClassInfo()
+//				.enableAnnotationInfo()
 				.enableAllInfo()
+//				.enableRealtimeLogging()
+//				.verbose()
 				.scan();
+		
+		final ClassInfoList componentClasses = registry.getClassesWithAnnotation(Component.class.getName());
+		if (componentClasses.isEmpty()) {
+			System.err.println("asd");
+			System.exit(1);
+		} else {
+			System.err.println("asd");
+		}
 	}
 	
 	/**

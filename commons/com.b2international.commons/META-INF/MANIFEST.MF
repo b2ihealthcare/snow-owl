@@ -91,7 +91,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.fasterxml.jackson.dataformat.jackson-dataformat-csv;bundle-version="[2.8.10,2.9.0)";visibility:=reexport,
  com.b2international.commons.base;visibility:=reexport,
  com.b2international.collections.api;visibility:=reexport,
- io.github.classgraph.classgraph;bundle-version="4.6.8";visibility:=reexport,
+ io.github.classgraph.classgraph;bundle-version="4.6.9";visibility:=reexport,
  net.jodah.typetools;bundle-version="0.4.8";visibility:=reexport,
  org.hdrhistogram.HdrHistogram;bundle-version="2.1.10",
  com.fasterxml.classmate;bundle-version="1.3.4"
