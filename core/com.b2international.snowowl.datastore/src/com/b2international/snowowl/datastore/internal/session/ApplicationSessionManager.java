@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,40 +78,39 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	public final class LogoutListener extends LifecycleEventAdapter {
 
-		/*
-		 * (non-Javadoc)
-		 * @see org.eclipse.net4j.util.lifecycle.LifecycleEventAdapter#onDeactivated(org.eclipse.net4j.util.lifecycle.ILifecycle)
-		 */
 		@Override
 		protected void onDeactivated(final ILifecycle lifecycle) {
-			LOGGER.info("Received deactivation event: " + lifecycle);
-			EventUtil.removeListener(lifecycle, this);
-
-			final RpcSession sessionToLogout = knownSessions.remove(lifecycle);
-
-			if (null == sessionToLogout) {
-				LOGGER.info("No RPC session found to log out.");
-				return;
-			}
-
-			if (sessionToLogout.containsKey(KEY_USER_ID) && sessionToLogout.containsKey(KEY_SESSION_ID)) {
-
-				final String userId = String.valueOf(sessionToLogout.get(KEY_USER_ID));
-				if (!User.isSystem(userId)) {
-
-					final String sessionId = String.valueOf(sessionToLogout.get(KEY_SESSION_ID));
-					//Log as a user activity
-					LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session closed: " + sessionId);
-
-					//Log is as user access event
-					LogUtils.logUserAccess(AUDIT_LOGGER, userId, "Logged out.");
-
+			if (lifecycle instanceof IChannelMultiplexer) {
+				LOGGER.info("Received deactivation event: " + lifecycle);
+				EventUtil.removeListener(lifecycle, this);
+				
+				final RpcSession sessionToLogout = knownSessions.remove((IChannelMultiplexer) lifecycle);
+				
+				if (null == sessionToLogout) {
+					LOGGER.info("No RPC session found to log out.");
+					return;
 				}
-
+				
+				if (sessionToLogout.containsKey(KEY_USER_ID) && sessionToLogout.containsKey(KEY_SESSION_ID)) {
+					
+					final String userId = String.valueOf(sessionToLogout.get(KEY_USER_ID));
+					if (!User.isSystem(userId)) {
+						
+						final String sessionId = String.valueOf(sessionToLogout.get(KEY_SESSION_ID));
+						//Log as a user activity
+						LogUtils.logUserEvent(AUDIT_LOGGER, userId, "Session closed: " + sessionId);
+						
+						//Log is as user access event
+						LogUtils.logUserAccess(AUDIT_LOGGER, userId, "Logged out.");
+						
+					}
+					
+				}
+				
+				sessionToLogout.put(KEY_IS_AUTHENTICATED, false);
+				fireLogoutEvent(sessionToLogout);
 			}
 
-			sessionToLogout.put(KEY_IS_AUTHENTICATED, false);
-			fireLogoutEvent(sessionToLogout);
 		}
 	}
 
