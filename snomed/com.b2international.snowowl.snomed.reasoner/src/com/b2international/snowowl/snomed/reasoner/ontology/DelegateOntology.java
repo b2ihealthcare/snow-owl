@@ -44,8 +44,6 @@ import org.semanticweb.owlapi.model.OWLDisjointUnionAxiom;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLNamedObjectVisitor;
-import org.semanticweb.owlapi.model.OWLNamedObjectVisitorEx;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
@@ -62,18 +60,18 @@ import org.semanticweb.owlapi.model.OWLSubDataPropertyOfAxiom;
 import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
 import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
-import org.semanticweb.owlapi.util.OWLObjectTypeIndexProvider;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.AbstractLongIterator;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.snomed.core.domain.refset.DataType;
-import com.b2international.snowowl.snomed.core.taxonomy.InternalIdMap;
-import com.b2international.snowowl.snomed.core.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdMap;
+import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -314,11 +312,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	@Override
-	protected int index() {
-		return OWLObjectTypeIndexProvider.ONTOLOGY;
-	}
-
-	@Override
 	protected int compareObjectOfSameType(final OWLObject object) {
 		if (object == this) {
 			return 0;
@@ -354,16 +347,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	@Override
 	public Set<OWLOntology> getImportsClosure() {
 		return newHashSet(this);
-	}
-
-	@Override
-	public final void accept(final OWLNamedObjectVisitor visitor) {
-		visitor.visit(this);
-	}
-
-	@Override
-	public final <O> O accept(final OWLNamedObjectVisitorEx<O> visitor) {
-		return visitor.visit(this);
 	}
 
 	@Override
@@ -582,7 +565,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	public long getConceptId(final OWLClass conceptClass) {
 		final IRI iri = conceptClass.getIRI();
 		if (iri.toString().startsWith(NAMESPACE_SCT)) {
-			return Long.parseLong(iri.getShortForm()); 
+			return Long.parseLong(iri.getFragment()); 
 		} else {
 			return -1L;
 		}
@@ -608,9 +591,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		final OWLClass destinationClass = getConceptClass(destinationId);
 		final OWLClassExpression filler = destinationNegated 
 				? getOWLObjectComplementOf(destinationClass) 
-						: destinationClass;
+				: destinationClass;
 
-				return getRelationshipExpression(typeId, filler, universal);
+		return getRelationshipExpression(typeId, filler, universal);
 	}
 
 	private OWLQuantifiedObjectRestriction getRelationshipExpression(final long typeId, final OWLClassExpression filler, final boolean universal) {
@@ -752,7 +735,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private void addConcreteDomainMember(final ConcreteDomainFragment member, final Set<OWLClassExpression> intersection) {
 		final long typeId = member.getTypeId();
 		final String serializedValue = member.getSerializedValue();
-		final DataType sctDataType = member.getDataType();
+		final DataType sctDataType = SnomedRefSetUtil.getDataType(Long.toString(member.getRefSetId()));
 
 		final OWL2Datatype owl2Datatype = getOWL2Datatype(sctDataType);
 		
