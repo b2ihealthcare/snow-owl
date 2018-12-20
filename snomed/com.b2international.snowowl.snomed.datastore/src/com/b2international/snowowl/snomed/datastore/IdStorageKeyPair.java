@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import com.b2international.commons.Pair;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 
 /**
@@ -72,7 +72,7 @@ public final class IdStorageKeyPair extends Pair<String, Long> {
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("ID", getA()).add("CDO ID", getB()).toString();
+		return MoreObjects.toStringHelper(this).add("ID", getA()).add("CDO ID", getB()).toString();
 	}
 	
 }

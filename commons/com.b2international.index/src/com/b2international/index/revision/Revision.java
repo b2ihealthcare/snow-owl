@@ -29,9 +29,8 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
-import com.google.common.primitives.Primitives;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 import net.jodah.typetools.TypeResolver;
 
@@ -125,7 +124,7 @@ public abstract class Revision {
 	}
 	
 	protected ToStringHelper doToString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add(Revision.Fields.ID, id)
 				.add(Revision.Fields.CREATED, created)
 				.add(Revision.Fields.REVISED, revised);

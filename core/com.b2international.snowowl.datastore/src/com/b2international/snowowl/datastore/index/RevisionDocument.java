@@ -25,7 +25,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.api.IComponent;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * @since 4.7

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
@@ -136,6 +136,6 @@ public class DynamicMapImpl extends AbstractDynamicMap {
 	
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this).add("valueMap", valueMap).toString();
+		return MoreObjects.toStringHelper(this).add("valueMap", valueMap).toString();
 	}
 }

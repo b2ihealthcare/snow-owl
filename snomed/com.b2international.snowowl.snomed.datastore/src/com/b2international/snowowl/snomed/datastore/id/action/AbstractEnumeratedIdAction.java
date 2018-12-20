@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.snomed.datastore.id.request.AbstractSnomedIdentifierEnumeratedRequestBuilder;
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -45,7 +45,7 @@ abstract class AbstractEnumeratedIdAction extends AbstractIdAction<Boolean> {
 	
 	@Override
 	public final String toString() {
-		return Objects.toStringHelper(this).add("componentIds", componentIds).toString();
+		return MoreObjects.toStringHelper(this).add("componentIds", componentIds).toString();
 	}
 
 }

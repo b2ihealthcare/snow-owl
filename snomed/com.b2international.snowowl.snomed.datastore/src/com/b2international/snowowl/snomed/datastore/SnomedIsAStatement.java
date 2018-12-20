@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Bare minimum representation of a SNOMED&nbsp;CT IS_A relationship.
@@ -68,7 +68,7 @@ public class SnomedIsAStatement implements IsAStatement, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return Objects.toStringHelper(this)
+		return MoreObjects.toStringHelper(this)
 				.add("sourceId", sourceId)
 				.add("destinationId", destinationId)
 				.toString();
