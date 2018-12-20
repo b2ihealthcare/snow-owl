@@ -288,77 +288,77 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-document-bundle-plugin</artifactId>
-				<version>${tycho-extras.version}</version>
-				<executions>
-					<execution>
-						<id>api-docs</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${siteOutputDirectory}/api-docs</outputDirectory>
-							<skipTocGen>true</skipTocGen>
-							<scopes>compile</scopes>
-							<javadocOptions>
-								<additionalArguments>
-									<additionalArgument>${javadoc-args}</additionalArgument>
-									<additionalArgument>
-										-link
-										http://docs.oracle.com/javase/8/docs/api/
-									</additionalArgument>
-									<additionalArgument>-quiet</additionalArgument>
-									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument>
-								</additionalArguments>
-								<includes>
-									<include>com.b2international*</include>
-								</includes>
-								<excludes>
-									<exclude>*internal*</exclude>
-								</excludes>
-							</javadocOptions>
-						</configuration>
-					</execution>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.eclipse.tycho.extras</groupId> -->
+<!-- 				<artifactId>tycho-document-bundle-plugin</artifactId> -->
+<!-- 				<version>${tycho-extras.version}</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>api-docs</id> -->
+<!-- 						<phase>generate-resources</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>javadoc</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<outputDirectory>${siteOutputDirectory}/api-docs</outputDirectory> -->
+<!-- 							<skipTocGen>true</skipTocGen> -->
+<!-- 							<scopes>compile</scopes> -->
+<!-- 							<javadocOptions> -->
+<!-- 								<additionalArguments> -->
+<!-- 									<additionalArgument>${javadoc-args}</additionalArgument> -->
+<!-- 									<additionalArgument> -->
+<!-- 										-link -->
+<!-- 										http://docs.oracle.com/javase/8/docs/api/ -->
+<!-- 									</additionalArgument> -->
+<!-- 									<additionalArgument>-quiet</additionalArgument> -->
+<!-- 									<additionalArgument>-windowtitle "Snow Owl"</additionalArgument> -->
+<!-- 								</additionalArguments> -->
+<!-- 								<includes> -->
+<!-- 									<include>com.b2international*</include> -->
+<!-- 								</includes> -->
+<!-- 								<excludes> -->
+<!-- 									<exclude>*internal*</exclude> -->
+<!-- 								</excludes> -->
+<!-- 							</javadocOptions> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
 					<!-- Scripting distilled API documentation -->
-					<execution>
-						<id>scripting-api-docs</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>javadoc</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${siteOutputDirectory}/scripting-api-docs</outputDirectory>
-							<skipTocGen>true</skipTocGen>
-							<javadocOptions>
-								<additionalArguments>
-									<additionalArgument>${javadoc-args}</additionalArgument>
-									<additionalArgument>
-										-link
-										http://docs.oracle.com/javase/8/docs/api/
-									</additionalArgument>
-									<additionalArgument>-quiet</additionalArgument>
-									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument>
-								</additionalArguments>
-								<includes>
-									<include>com.b2international.snowowl.datastore.request</include>
-									<include>com.b2international.snowowl.datastore.request.compare</include>
-									<include>com.b2international.snowowl.datastore.request.job</include>
-									<include>com.b2international.snowowl.datastore.request.repository</include>
-									<include>com.b2international.snowowl.datastore.request.version</include>
-									<include>com.b2international.snowowl.snomed.datastore.request</include>
-									<include>com.b2international.snowowl.snomed.datastore.request.dsv</include>
-									<include>com.b2international.snowowl.snomed.datastore.request.rf2</include>
-									<include>com.b2international.snowowl.snomed.datastore.id.request</include>
-									<include>com.b2international.snowowl.snomed.core.domain</include>
-								</includes>
-							</javadocOptions>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 					<execution> -->
+<!-- 						<id>scripting-api-docs</id> -->
+<!-- 						<phase>generate-resources</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>javadoc</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<outputDirectory>${siteOutputDirectory}/scripting-api-docs</outputDirectory> -->
+<!-- 							<skipTocGen>true</skipTocGen> -->
+<!-- 							<javadocOptions> -->
+<!-- 								<additionalArguments> -->
+<!-- 									<additionalArgument>${javadoc-args}</additionalArgument> -->
+<!-- 									<additionalArgument> -->
+<!-- 										-link -->
+<!-- 										http://docs.oracle.com/javase/8/docs/api/ -->
+<!-- 									</additionalArgument> -->
+<!-- 									<additionalArgument>-quiet</additionalArgument> -->
+<!-- 									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument> -->
+<!-- 								</additionalArguments> -->
+<!-- 								<includes> -->
+<!-- 									<include>com.b2international.snowowl.datastore.request</include> -->
+<!-- 									<include>com.b2international.snowowl.datastore.request.compare</include> -->
+<!-- 									<include>com.b2international.snowowl.datastore.request.job</include> -->
+<!-- 									<include>com.b2international.snowowl.datastore.request.repository</include> -->
+<!-- 									<include>com.b2international.snowowl.datastore.request.version</include> -->
+<!-- 									<include>com.b2international.snowowl.snomed.datastore.request</include> -->
+<!-- 									<include>com.b2international.snowowl.snomed.datastore.request.dsv</include> -->
+<!-- 									<include>com.b2international.snowowl.snomed.datastore.request.rf2</include> -->
+<!-- 									<include>com.b2international.snowowl.snomed.datastore.id.request</include> -->
+<!-- 									<include>com.b2international.snowowl.snomed.core.domain</include> -->
+<!-- 								</includes> -->
+<!-- 							</javadocOptions> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 
