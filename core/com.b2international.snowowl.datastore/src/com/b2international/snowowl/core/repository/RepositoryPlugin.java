@@ -35,7 +35,6 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.index.query.slowlog.SlowLogConfig;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -151,24 +150,7 @@ public final class RepositoryPlugin extends Plugin {
 		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
 		builder.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, indexConfig.getClusterHealthTimeout());
 		
-		final SlowLogConfig slowLog = createSlowLogConfig(indexConfig);
-		builder.put(IndexClientFactory.SLOW_LOG_KEY, slowLog);
-		
 		return builder.build();
-	}
-
-	private SlowLogConfig createSlowLogConfig(final IndexConfiguration config) {
-		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder();
-		builder.put(SlowLogConfig.FETCH_DEBUG_THRESHOLD, config.getFetchDebugThreshold());
-		builder.put(SlowLogConfig.FETCH_INFO_THRESHOLD, config.getFetchInfoThreshold());
-		builder.put(SlowLogConfig.FETCH_TRACE_THRESHOLD, config.getFetchTraceThreshold());
-		builder.put(SlowLogConfig.FETCH_WARN_THRESHOLD, config.getFetchWarnThreshold());
-		builder.put(SlowLogConfig.QUERY_DEBUG_THRESHOLD, config.getQueryDebugThreshold());
-		builder.put(SlowLogConfig.QUERY_INFO_THRESHOLD, config.getQueryInfoThreshold());
-		builder.put(SlowLogConfig.QUERY_TRACE_THRESHOLD, config.getQueryTraceThreshold());
-		builder.put(SlowLogConfig.QUERY_WARN_THRESHOLD, config.getQueryWarnThreshold());
-		
-		return new SlowLogConfig(builder.build());
 	}
 
 	@Override
