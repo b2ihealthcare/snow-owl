@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContextProvider;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.monitoring.MonitoringThreadLocal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -69,17 +68,12 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	}
 
 	private CommitResult commit(final TransactionContext context, final Object body) {
-		try {
-			
-			/*
-			 * FIXME: at this point, the component identifier might have changed even though the input 
-			 * required an exact ID to be assigned. What to do?
-			 */
-			final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
-			return new CommitResult(commitTimestamp, body);
-		} finally {
-			MonitoringThreadLocal.release();
-		}
+		/*
+		 * FIXME: at this point, the component identifier might have changed even though the input 
+		 * required an exact ID to be assigned. What to do?
+		 */
+		final long commitTimestamp = context.commit(userId, commitComment, parentContextDescription);
+		return new CommitResult(commitTimestamp, body);
 	}
 	
 	private Object executeNext(TransactionContext context) {
