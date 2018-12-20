@@ -634,6 +634,7 @@
       		<groupId>org.ow2.asm</groupId>
       		<artifactId>asm-commons</artifactId>
       		<version>${asm.commons.version}</version>
+      		<scope>provided</scope>
       	</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

@@ -27,31 +27,37 @@
   			<groupId>com.google.code.findbugs</groupId>
   			<artifactId>jsr305</artifactId>
   			<version>${jsr305.version}</version>
+  			<scope>provided</scope>
 		</dependency>
 		<dependency>
   			<groupId>info.picocli</groupId>
 		  	<artifactId>picocli</artifactId>
 		  	<version>${picocli.version}</version>
+		  	<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.flipkart.zjsonpatch</groupId>
 			<artifactId>zjsonpatch</artifactId>
 			<version>${zjsonpatch.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<version>${micrometer.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
   			<groupId>javax.validation</groupId>
   			<artifactId>validation-api</artifactId>
   			<version>${validation.api.version}</version>
+  			<scope>provided</scope>
 		</dependency>
 		<dependency>
   			<groupId>org.hibernate</groupId>
   			<artifactId>hibernate-validator</artifactId>
   			<version>${hibernate.validator.version}</version>
+  			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
