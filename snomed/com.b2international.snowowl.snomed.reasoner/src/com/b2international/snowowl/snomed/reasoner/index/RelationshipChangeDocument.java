@@ -35,6 +35,7 @@ public final class RelationshipChangeDocument {
 	public static class Fields {
 		public static final String CLASSIFICATION_ID = "classificationId";
 		public static final String SOURCE_ID = "sourceId";
+		public static final String DESTINATION_ID = "destinationId";
 	}
 
 	public static class Expressions {
@@ -52,6 +53,14 @@ public final class RelationshipChangeDocument {
 
 		public static Expression sourceId(final Iterable<String> sourceIds) {
 			return matchAny(Fields.SOURCE_ID, sourceIds);
+		}
+		
+		public static Expression destinationId(final String destinationId) {
+			return exactMatch(Fields.DESTINATION_ID, destinationId);
+		}
+		
+		public static Expression destinationId(final Iterable<String> destinationIds) {
+			return matchAny(Fields.DESTINATION_ID, destinationIds);
 		}
 	}
 

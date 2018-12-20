@@ -47,6 +47,14 @@ public final class RelationshipChangeSearchRequestBuilder
 		return addOption(OptionKey.SOURCE_ID, sourceIds);
 	}
 
+	public RelationshipChangeSearchRequestBuilder filterByDestinationId(final String destinationId) {
+		return addOption(OptionKey.DESTINATION_ID, destinationId);
+	}
+	
+	public RelationshipChangeSearchRequestBuilder filterByDestinationId(final Iterable<String> destinationIds) {
+		return addOption(OptionKey.DESTINATION_ID, destinationIds);
+	}
+	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, RelationshipChanges> createSearch() {
 		return new RelationshipChangeSearchRequest();

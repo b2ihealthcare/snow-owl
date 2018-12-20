@@ -34,18 +34,16 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 
 	@Override
 	protected void indexChange(final String conceptId, final StatementFragment fragment, final ChangeNature nature) {
-
 		final RelationshipChangeDocument.Builder builder = RelationshipChangeDocument.builder()
 				.nature(nature)
 				.classificationId(classificationId)
 				.sourceId(conceptId)
+				.typeId(Long.toString(fragment.getTypeId()))
+				.destinationId(Long.toString(fragment.getDestinationId()))
 				.group(fragment.getGroup())
 				.unionGroup(fragment.getUnionGroup());
 
-		if (fragment.getStatementId() == -1L) {
-			builder.typeId(Long.toString(fragment.getTypeId()));
-			builder.destinationId(Long.toString(fragment.getDestinationId()));
-		} else {
+		if (fragment.getStatementId() != -1L) {
 			builder.relationshipId(Long.toString(fragment.getStatementId()));
 		}
 		
