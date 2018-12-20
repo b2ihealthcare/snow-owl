@@ -22,6 +22,7 @@
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>${restassured.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
