@@ -40,8 +40,6 @@ import com.b2international.snowowl.datastore.importer.ITerminologyExporter;
 /**
  * Common superclass for single file based export indications required by the Net4j protocol.
  * Clients to extend.
- * 
- *
  */
 public abstract class AbstractExportIndication extends IndicationWithMonitoring {
 	
@@ -50,7 +48,7 @@ public abstract class AbstractExportIndication extends IndicationWithMonitoring 
 
 	/**
 	 * @param protocol
-	 * @param valueSetExcelExportSignal
+	 * @param exportSignal
 	 */
 	public AbstractExportIndication(SignalProtocol<?> protocol, short exportSignal) {
 		super(protocol, exportSignal);

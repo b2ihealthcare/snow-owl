@@ -69,7 +69,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	
 	/**
 	 * ValueSets
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return bundle of value sets
 	 */
 	@ApiOperation(
@@ -113,7 +113,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	/**
 	 * HTTP Get for retrieving a value set by its value set id
 	 * @param valueSetId
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return
 	 */
 	@ApiOperation(
@@ -189,7 +189,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	
 	/**
 	 * HTTP Post request to expand a value set
-	 * @param url
+	 * @param in - FHIR parameters
 	 * @return expanded {@link ValueSet}
 	 */
 	@ApiOperation(

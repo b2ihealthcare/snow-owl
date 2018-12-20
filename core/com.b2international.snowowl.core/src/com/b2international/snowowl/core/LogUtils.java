@@ -72,7 +72,7 @@ public class LogUtils {
 	 * 
 	 * @param logger
 	 * @param user
-	 * @param brancPath
+	 * @param branchPath
 	 * @param message
 	 */
 	public static void logUserEvent(Logger logger, String user, IBranchPath branchPath, String message) {
@@ -88,7 +88,6 @@ public class LogUtils {
 	 * 
 	 * @param logger
 	 * @param user
-	 * @param brancPath
 	 * @param message
 	 */
 	public static void logUserEvent(Logger logger, String user, String message) {

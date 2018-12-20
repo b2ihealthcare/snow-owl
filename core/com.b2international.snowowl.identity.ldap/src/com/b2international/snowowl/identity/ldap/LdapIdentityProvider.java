@@ -250,7 +250,6 @@ final class LdapIdentityProvider implements IdentityProvider {
 	/**
 	 * Sets up a {@link Hashtable}, needed for {@link InitialLdapContext} creation.
 	 * 
-	 * @param options the map of LDAP-specific configuration properties (may not be {@code null})
 	 * @return a Hashtable of properties in a format required by InitialLdapContext's constructor
 	 */
 	private Hashtable<String, Object> createLdapEnvironment() {

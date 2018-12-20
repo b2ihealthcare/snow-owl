@@ -321,10 +321,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	}
 	
 	/**
-	 * Returns {@code true} if the version is a fake {@link ICodeSystemVersion} implementation
-	 * representing the HEAD in the repository.
-	 * @param version the version to check.
-	 * @return {@code true} if the argument is the latest version, otherwise {@code false}
+	 * @return {@code true} if this version represents the HEAD in the repository.
 	 */
 	@JsonIgnore
 	public boolean isLatestVersion() {

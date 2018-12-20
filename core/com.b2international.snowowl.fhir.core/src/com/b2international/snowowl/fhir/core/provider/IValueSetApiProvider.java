@@ -57,7 +57,7 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 		
 		/**
 		 * Returns the matching {@link IValueSetApiProvider} for the given path (repository:branchPath).
-		 * @param logical code system path (e.g.icd10Store:20140101)
+		 * @param logicalId - logical code system path (e.g.icd10Store:20140101)
 		 * @return FHIR value set provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
@@ -105,7 +105,7 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 
 	/**
 	 * Returns the expanded value set for the passed in value set URI
-	 * @param valueSetUri
+	 * @param url
 	 * @return {@link ValueSet}
 	 * @throws BadRequestException if the value set is not supported by this provider
 	 */
@@ -113,7 +113,7 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	
 	/**
 	 * Returns the expanded value set for the passed in request
-	 * @param request body
+	 * @param request - the expand request
 	 * @return expanded {@link ValueSet}
 	 * @throws BadRequestException if the value set is not supported by this provider
 	 */
@@ -121,8 +121,8 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	
 	/**
 	 * Validates a code against a provided value set
-	 * @param validateCodeRequest code to validate
-	 * @param logicalId logical id of the value set to validate the code against
+	 * @param validateCodeRequest - code to validate
+	 * @param logicalId - logical id of the value set to validate the code against
 	 * @return validation result
 	 */
 	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId logicalId);

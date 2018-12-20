@@ -129,7 +129,7 @@ public abstract class FhirResource {
 		 * Encode our internal component Id to hide it from the outside world.
 		 * This can be null when a new resource is sent to the server to be saved
 		 * @see FhirResource.Builder:Builder()
-		 * @param cdoId
+		 * @param resourceId
 		 */
 		public Builder(String resourceId) {
 			this.id = new Id(resourceId);

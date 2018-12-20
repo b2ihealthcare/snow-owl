@@ -42,7 +42,7 @@ public class LogicalId {
 	/**
 	 * Logical ID for reference set members
 	 * @param repositoryId
-	 * @param path
+	 * @param branchPath
 	 * @param componentId
 	 * @param memberId
 	 */

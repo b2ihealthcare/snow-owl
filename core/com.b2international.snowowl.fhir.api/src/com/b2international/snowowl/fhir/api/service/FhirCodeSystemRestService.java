@@ -84,7 +84,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	
 	/**
 	 * CodeSystems
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return bundle of code systems
 	 */
 	@ApiOperation(
@@ -134,7 +134,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/**
 	 * HTTP Get for retrieving a code system by its code system id
 	 * @param codeSystemId
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return
 	 */
 	@ApiOperation(
@@ -204,10 +204,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/**
 	 * POST-based lookup end-point.
 	 * All parameters are in the request body.
-	 * @param coding
-	 * @param date
-	 * @param displayLanguage
-	 * @param properties
+	 * @param in - FHIR parameters
 	 */
 	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({

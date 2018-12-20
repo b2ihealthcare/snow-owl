@@ -31,8 +31,6 @@ import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 /**
  * Abstract export request class for retrieving single files over the net4j protocol.
  * Clients to extend.
- * 
- *
  */
 public abstract class AbstractExportRequest extends RequestWithMonitoring<File> {
 
@@ -42,9 +40,10 @@ public abstract class AbstractExportRequest extends RequestWithMonitoring<File> 
 	
 	/**
 	 * @param protocol
-	 * @param sourceDir
 	 * @param importSignal
-	 * @param targetEffectiveTime 
+	 * @param branchPath
+	 * @param exportPath
+	 * @param userId
 	 */
 	public AbstractExportRequest(final SignalProtocol<?> protocol, final short importSignal, final IBranchPath branchPath, final String exportPath, final String userId) {
 		super(protocol, importSignal);

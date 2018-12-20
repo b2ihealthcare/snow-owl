@@ -60,40 +60,45 @@ public interface ISnomedTaxonomyBuilder {
 	String getSourceNodeId(final String edgeId);
 
 	String getDestinationNodeId(final String edgeId);
-	
+
 	/**
 	 * Workaround to avoid autoboxing.
 	 */
 	static interface IntToLongFunction {
 		/**
 		 * Applies the function to the specified primitive integer value.
-		 * @param the primitive integer value.
+		 * 
+		 * @param i
+		 *            - the primitive integer value.
 		 * @return the long value after applying the current function.
-		 * */
+		 */
 		long apply(final int i);
 	}
-	
+
 	/**
 	 * Function for performing {@link BitSet} transformation.
 	 */
 	static interface TransformBitSetFunction {
 		/**
 		 * Performs any arbitrary transformation on the specified {@link BitSet}.
-		 * @param internalId the internal ID.
-		 * @param sourceBitSet the {@link BitSet} to transform.
+		 * 
+		 * @param internalId
+		 *            the internal ID.
+		 * @param sourceBitSet
+		 *            the {@link BitSet} to transform.
 		 * @return the transformed {@link BitSet}.
 		 */
 		BitSet transform(final int internalId, final BitSet sourceBitSet);
 	}
 
 	static interface TaxonomyItem {
-		
+
 		String getId();
-		
+
 		boolean isCurrent();
-		
+
 	}
-	
+
 	public static interface TaxonomyBuilderNode extends TaxonomyItem {
 
 		static TaxonomyBuilderNode of(SnomedConcept concept) {
@@ -104,23 +109,24 @@ public interface ISnomedTaxonomyBuilder {
 				public boolean isCurrent() {
 					return active;
 				}
-				
+
 				@Override
 				public String getId() {
 					return id;
 				}
 			};
 		}
-		
+
 	}
-	
+
 	public static interface TaxonomyBuilderEdge extends TaxonomyItem {
 		String getSoureId();
+
 		String getDestinationId();
-		
+
 		@Deprecated
 		boolean isValid();
-		
+
 		static TaxonomyBuilderEdge of(SnomedRelationship relationship) {
 			final String id = relationship.getId();
 			final boolean active = relationship.isActive();
@@ -131,22 +137,22 @@ public interface ISnomedTaxonomyBuilder {
 				public boolean isCurrent() {
 					return active;
 				}
-				
+
 				@Override
 				public String getId() {
 					return id;
 				}
-				
+
 				@Override
 				public boolean isValid() {
 					return true;
 				}
-				
+
 				@Override
 				public String getSoureId() {
 					return sourceId;
 				}
-				
+
 				@Override
 				public String getDestinationId() {
 					return destinationId;
@@ -154,5 +160,5 @@ public interface ISnomedTaxonomyBuilder {
 			};
 		}
 	}
-	
+
 }
