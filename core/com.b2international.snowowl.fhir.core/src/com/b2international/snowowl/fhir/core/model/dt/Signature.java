@@ -39,23 +39,6 @@ import com.google.common.collect.Lists;
  */
 public class Signature extends Element {
 	
-	@SuppressWarnings("rawtypes")
-	Signature(String id, Collection<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
-			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
-		
-		super(id, extensions);
-		
-		this.types = types;
-		this.when = when;
-		this.whoUri = whoUri;
-		this.whoReference = whoReference;
-		this.whoUri = whoUri;
-		this.onBehalfOfUri = onBehalfOfUri;
-		this.onBehalfOfReference = onBehalfOfReference;
-		this.contentType = contentType;
-		this.blob = blob;
-	}
-
 	@Summary
 	@Valid
 	@NotEmpty
@@ -92,6 +75,23 @@ public class Signature extends Element {
 	@Valid
 	@JsonProperty
 	private Byte[] blob;
+	
+	@SuppressWarnings("rawtypes")
+	Signature(String id, Collection<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
+			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
+		
+		super(id, extensions);
+		
+		this.types = types;
+		this.when = when;
+		this.whoUri = whoUri;
+		this.whoReference = whoReference;
+		this.whoUri = whoUri;
+		this.onBehalfOfUri = onBehalfOfUri;
+		this.onBehalfOfReference = onBehalfOfReference;
+		this.contentType = contentType;
+		this.blob = blob;
+	}
 	
 	@JsonProperty
 	public Uri getWhoUri() {

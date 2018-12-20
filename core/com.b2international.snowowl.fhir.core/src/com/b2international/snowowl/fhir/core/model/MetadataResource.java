@@ -42,11 +42,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
- * FHIR terminology resource with common properties.
+ * FHIR resource with common meta-data properties.
  * 
  * @since 6.3
  */
-public abstract class TerminologyResource extends DomainResource {
+public abstract class MetadataResource extends DomainResource {
 	
 	//same as logical id
 	@Summary
@@ -113,7 +113,7 @@ public abstract class TerminologyResource extends DomainResource {
 	 * @param text
 	 */
 	@SuppressWarnings("rawtypes")
-	public TerminologyResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
+	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			Narrative text, Uri url, Identifier identifier, String version, 
 			String name, String title, Code status, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
 			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {

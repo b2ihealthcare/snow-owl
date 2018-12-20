@@ -23,7 +23,7 @@ import javax.validation.constraints.AssertTrue;
 
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -59,7 +59,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("ConceptMap")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-public class ConceptMap extends TerminologyResource {
+public class ConceptMap extends MetadataResource {
 
 	// FHIR header "resourceType" : "ConceptMap",
 
@@ -141,7 +141,7 @@ public class ConceptMap extends TerminologyResource {
 		return new Builder(conceptMapId);
 	}
 
-	public static class Builder extends TerminologyResource.Builder<Builder, ConceptMap> {
+	public static class Builder extends MetadataResource.Builder<Builder, ConceptMap> {
 
 		private Uri sourceUri;
 		private Reference sourceReference;
@@ -185,7 +185,7 @@ public class ConceptMap extends TerminologyResource {
 		
 		public Builder groups(Collection<Group> groups) {
 			this.groups = groups;
-			return this;
+			return getSelf();
 		}
 
 		public Builder addGroup(final Group group) {

@@ -26,7 +26,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -63,7 +63,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-public class CodeSystem extends TerminologyResource {
+public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",
 	@Mandatory
@@ -157,7 +157,7 @@ public class CodeSystem extends TerminologyResource {
 		return new Builder(codeSystemId);
 	}
 
-	public static class Builder extends TerminologyResource.Builder<Builder, CodeSystem> {
+	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
 		private Boolean caseSensitive;
 		

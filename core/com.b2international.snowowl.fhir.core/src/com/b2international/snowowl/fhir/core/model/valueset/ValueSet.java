@@ -22,7 +22,7 @@ import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
-import com.b2international.snowowl.fhir.core.model.TerminologyResource;
+import com.b2international.snowowl.fhir.core.model.MetadataResource;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -54,7 +54,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("ValueSet")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-public class ValueSet extends TerminologyResource {
+public class ValueSet extends MetadataResource {
 	
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
@@ -103,7 +103,7 @@ public class ValueSet extends TerminologyResource {
 		return new Builder(valueSetId);
 	}
 
-	public static class Builder extends TerminologyResource.Builder<Builder, ValueSet> {
+	public static class Builder extends MetadataResource.Builder<Builder, ValueSet> {
 
 		private Boolean immutable;
 		private Boolean extensible;
