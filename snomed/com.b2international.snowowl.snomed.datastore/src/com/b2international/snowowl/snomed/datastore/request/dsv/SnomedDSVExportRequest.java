@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request.dsv;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.rmi.server.ExportException;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,9 +84,8 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 	
 	@Override
 	public UUID execute(BranchContext context) {
-		File file = null;
+		File file = doExport(toExportModel(context));
 		try (FileInputStream in = new FileInputStream(file)) {
-			file = doExport(toExportModel(context));
 			UUID fileId = UUID.randomUUID();
 			context.service(AttachmentRegistry.class).upload(fileId, in);
 			return fileId;
@@ -100,10 +98,10 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 		}
 	}
 
-	private SnomedRefSetDSVExportModel toExportModel(BranchContext context) throws Exception {
+	private SnomedRefSetDSVExportModel toExportModel(BranchContext context) {
 		SnomedRefSetDSVExportModel model = new SnomedRefSetDSVExportModel();
 		Branch branch = context.branch();
-		model.setExportPath(java.nio.file.Files.createTempDirectory("dsv-export-temp-dir").toFile().getAbsolutePath());
+		model.setExportPath(System.getProperty("java.io.tmpdir"));
 		model.setBranchBase(branch.baseTimestamp());
 		model.setBranchPath(context.branchPath());
 		model.setDelimiter(delimiter);
@@ -144,7 +142,7 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 		this.locales = locales;
 	}
 	
-	private File doExport(SnomedRefSetDSVExportModel exportModel) throws Exception {
+	private File doExport(SnomedRefSetDSVExportModel exportModel) {
 		File response = null;
 		SnomedExportResult result = new SnomedExportResult();
 		IRefSetDSVExporter exporter = getRefSetExporter(exportModel);
@@ -157,7 +155,7 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID> {
 		}
 
 		if (result.getResult().equals(SnomedExportResult.Result.CANCELED) || result.getResult().equals(SnomedExportResult.Result.EXCEPTION)) {
-			throw new ExportException(result.getMessage());
+			throw new RuntimeException(result.getMessage());
 		}
 		
 		exportModel.getExportResult().setResultAndMessage(result.getResult(), result.getMessage());
