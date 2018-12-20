@@ -215,7 +215,7 @@
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.core.tests</artifactId>
 			<version>${project.version}</version>
-			<scope>tests</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
