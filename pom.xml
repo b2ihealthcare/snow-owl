@@ -47,6 +47,7 @@
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
 		<xtend.compiler.version>2.15.0</xtend.compiler.version>
+		<jacoco.version>0.8.2</jacoco.version>
 		
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
@@ -60,6 +61,7 @@
 		<module>snomed</module>
 		<module>tests</module>
 		<module>releng</module>
+		<module>dist</module>
 	</modules>
 
 	<dependencies>
@@ -915,17 +917,11 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.2</version>
+				<version>${jacoco.version}</version>
 				<executions>
 					<execution>
 						<goals>
 							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<goals>
-							<goal>report</goal>
 						</goals>
 					</execution>
 				</executions>
