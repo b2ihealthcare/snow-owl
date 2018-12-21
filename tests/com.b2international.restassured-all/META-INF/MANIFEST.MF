@@ -44,9 +44,14 @@ Require-Bundle: groovy-all;bundle-version="2.4.13",
  org.apache.httpcomponents.httpasyncclient;bundle-version="4.1.4",
  org.apache.httpcomponents.httpclient;bundle-version="4.5.3",
  org.apache.httpcomponents.httpcore;bundle-version="4.4.10",
- org.ccil.cowan.tagsoup;bundle-version="1.2.0"
-Import-Package: com.fasterxml.jackson.core;version="2.8.11",
- com.fasterxml.jackson.databind;version="2.8.11"
+ org.ccil.cowan.tagsoup;bundle-version="1.2.0",
+ com.fasterxml.jackson.module.jackson-module-jaxb-annotations;bundle-version="2.9.0",
+ com.sun.xml.bind.jaxb-core;bundle-version="2.3.0",
+ com.sun.xml.bind.jaxb-impl;bundle-version="2.3.0",
+ jaxb-api;bundle-version="2.3.0",
+ javax.annotation-api;bundle-version="1.3.1"
+Import-Package: com.fasterxml.jackson.core;version="2.9.0",
+ com.fasterxml.jackson.databind;version="2.9.0"
 Bundle-ClassPath: lib/json-path-3.2.0.jar,
  lib/rest-assured-3.2.0.jar,
  lib/rest-assured-common-3.2.0.jar,
