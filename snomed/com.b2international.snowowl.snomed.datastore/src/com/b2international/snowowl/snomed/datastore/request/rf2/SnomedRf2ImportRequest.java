@@ -255,7 +255,6 @@ public class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportR
 					// Unmap (release resources) file when its closed.
 					// That can cause JVM crash if file is accessed after it was unmapped
 					// (there is possible race condition).
-					.cleanerHackEnable()
 					.allocateStartSize(256 * 1024*1024)  // 256MB
 				    .allocateIncrement(128 * 1024*1024)  // 128MB
 					.make();
