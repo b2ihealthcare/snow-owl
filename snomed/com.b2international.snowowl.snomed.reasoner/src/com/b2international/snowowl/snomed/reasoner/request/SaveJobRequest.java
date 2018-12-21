@@ -16,7 +16,9 @@
 package com.b2international.snowowl.snomed.reasoner.request;
 
 import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS;
+import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -45,7 +47,9 @@ import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLock
 import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.request.CommitResult;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -58,13 +62,19 @@ import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.primitives.Longs;
 
 /**
  * @since 7.0
@@ -78,7 +88,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 	private static final int SCROLL_LIMIT = 10_000;
 	private static final String SCROLL_KEEP_ALIVE = "5m";
 
-//	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
+	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
 
 	@JsonProperty
 	private final String classificationId;
@@ -194,7 +204,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final BulkRequestBuilder<TransactionContext> bulkRequestBuilder = BulkRequest.create();
 
 		applyChanges(subMonitor, context, bulkRequestBuilder);
-		fixEquivalences(context, bulkRequestBuilder);
 
 		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
 			.setBody(bulkRequestBuilder)
@@ -223,17 +232,18 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
 
-		applyRelationshipChanges(context, bulkRequestBuilder, assigner, isConcreteDomainSupported(context));
+		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder);
+		applyRelationshipChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 
 		if (isConcreteDomainSupported(context)) {
-			applyConcreteDomainChanges(context, bulkRequestBuilder, assigner);
+			applyConcreteDomainChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 		}
 	}
 
 	private void applyRelationshipChanges(final BranchContext context, 
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
-			final boolean concreteDomainSupported) {
+			final Set<String> conceptIdsToSkip) {
 
 		final RelationshipChangeSearchRequestBuilder relationshipRequestBuilder = ClassificationRequests.prepareSearchRelationshipChange()
 				.setLimit(SCROLL_LIMIT)
@@ -253,6 +263,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
 
+			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
+			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectRelationshipNamespacesAndModules(conceptIds, context);
 
 			for (final RelationshipChange change : nextChanges) {
@@ -312,7 +324,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private void applyConcreteDomainChanges(final BranchContext context, 
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
-			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner) {
+			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
+			final Set<String> conceptIdsToSkip) {
 
 		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
@@ -332,6 +345,8 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 					.map(r -> r.getReferencedComponent().getId())
 					.collect(Collectors.toSet());
 
+			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
+			conceptIds.removeAll(conceptIdsToSkip);
 			namespaceAndModuleAssigner.collectConcreteDomainModules(conceptIds, context);
 
 			for (final ConcreteDomainChange change : nextChanges) {
@@ -387,44 +402,55 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		bulkRequestBuilder.add(request);
 	}
 
-	private void fixEquivalences(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
+	private Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 
-//		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
-//				.setLimit(SCROLL_LIMIT)
-//				.setScroll(SCROLL_KEEP_ALIVE)
-//				.setExpand("equivalentConcepts()")
-//				.filterByClassificationId(classificationId);
-//
-//		final SearchResourceRequestIterator<EquivalentConceptSetSearchRequestBuilder, EquivalentConceptSets> equivalentConceptIterator = 
-//				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
-//						r -> r.build().execute(context));
-//
-//		final List<EquivalentConceptSet> equivalenciesToFix = Lists.newArrayList();
-//
-//		while (equivalentConceptIterator.hasNext()) {
-//			final EquivalentConceptSets nextBatch = equivalentConceptIterator.next();
-//
-//			for (final EquivalentConceptSet equivalentSet : nextBatch) {
-//				if (equivalentSet.isUnsatisfiable()) {
-//					continue;
-//				}
-//
-//				final SnomedConcept representativeConcept = equivalentSet.getEquivalentConcepts()
-//						.first()
-//						.get();
-//
-//				// FIXME: make equivalence set to fix user-selectable, only subtype of SMP can be auto-merged
-//				if (Longs.asList(representativeConcept.getStatedParentIds()).contains(SMP_ROOT)
-//						|| Longs.asList(representativeConcept.getStatedAncestorIds()).contains(SMP_ROOT)) {
-//					equivalenciesToFix.add(equivalentSet);
-//				}
-//			}
-//		}
-//
-//		if (!equivalenciesToFix.isEmpty()) {
-//			final EquivalentConceptMerger merger = new EquivalentConceptMerger(context, bulkRequestBuilder, equivalenciesToFix);
-//			merger.fixEquivalencies();
-//		}
+		// XXX: Restrict merging to active components only
+		final String expand = "equivalentConcepts(expand("
+				+ "members(active:true),"
+				+ "relationships(active:true),"
+				+ "inboundRelationships(active:true)))";
+		
+		final EquivalentConceptSetSearchRequestBuilder equivalentConceptRequest = ClassificationRequests.prepareSearchEquivalentConceptSet()
+				.setLimit(SCROLL_LIMIT)
+				.setScroll(SCROLL_KEEP_ALIVE)
+				.setExpand(expand)
+				.filterByClassificationId(classificationId);
+
+		final SearchResourceRequestIterator<EquivalentConceptSetSearchRequestBuilder, EquivalentConceptSets> equivalentConceptIterator = 
+				new SearchResourceRequestIterator<>(equivalentConceptRequest, 
+						r -> r.build().execute(context));
+
+		final Multimap<SnomedConcept, SnomedConcept> equivalentConcepts = HashMultimap.create();
+
+		while (equivalentConceptIterator.hasNext()) {
+			final EquivalentConceptSets nextBatch = equivalentConceptIterator.next();
+
+			for (final EquivalentConceptSet equivalentSet : nextBatch) {
+				if (equivalentSet.isUnsatisfiable()) {
+					continue;
+				}
+
+				final List<SnomedConcept> conceptsToRemove = newArrayList(equivalentSet.getEquivalentConcepts());
+				final SnomedConcept conceptToKeep = conceptsToRemove.remove(0);
+
+				// FIXME: make equivalence set to fix user-selectable; currently, only descendants of SMP are auto-merged
+				final List<Long> statedParents = Longs.asList(conceptToKeep.getStatedParentIds());
+				final List<Long> statedAncestors = Longs.asList(conceptToKeep.getStatedAncestorIds());
+				if (statedParents.contains(SMP_ROOT) || statedAncestors.contains(SMP_ROOT)) {
+					equivalentConcepts.putAll(conceptToKeep, conceptsToRemove);
+				}
+			}
+		}
+
+		if (!equivalentConcepts.isEmpty()) {
+			final EquivalentConceptMerger merger = new EquivalentConceptMerger(bulkRequestBuilder, equivalentConcepts);
+			merger.merge();
+		}
+		
+		return equivalentConcepts.values()
+				.stream()
+				.map(SnomedConcept::getId)
+				.collect(Collectors.toSet());
 	}
 
 	private boolean isConcreteDomainSupported(final BranchContext context) {
