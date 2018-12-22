@@ -112,7 +112,9 @@ public class ValidateCodeResult {
 
 		/**
 		 * Builds a result for errors when value set member is not found
-		 * @param logicalId
+		 * @param system
+		 * @param componentId
+		 * @param valueSetId
 		 * @return
 		 */
 		public Builder valueSetMemberNotFoundResult(String system, String componentId, String valueSetId) {
@@ -124,7 +126,7 @@ public class ValidateCodeResult {
 		
 		/**
 		 * Builds an OK result
-		 * @param logicalId
+		 * @param display
 		 * @return
 		 */
 		public Builder okResult(String display) {

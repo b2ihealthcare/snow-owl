@@ -59,7 +59,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		
 		/**
 		 * Returns the matching {@link ICodeSystemApiProvider} for the given logical id (repository:branchPath).
-		 * @param logical id (e.g. icd10Store:20140101)
+		 * @param logicalId - the logical id (e.g. icd10Store:20140101)
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */

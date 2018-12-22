@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,27 +33,31 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 
 	@NotNull
 	private final Rf2ReleaseType rf2ReleaseType;
-	
+
 	@NotEmpty
 	private final String branchPath;
-	
+
 	@NotNull
 	private final boolean createVersion;
-	
+
 	private ImportStatus importStatus = ImportStatus.WAITING_FOR_FILE;
 	private Date startDate;
 	private Date completionDate;
-	
+
 	@NotEmpty
 	private final String codeSystemShortName;
-	
+
 	/**
 	 * Creates a new import configuration instance.
-	 * @param rf2ReleaseType the RF2 release type.
-	 * @param branchPath the branch path where the import has to be performed.
-	 * @param languageRefSetId the language reference set identifier concept ID for the preferred language. 
-	 * @param createVersion boolean indicating whether a new version has to be created for each individual 
-	 * effective times. Has no effect if the RF2 release type in *NOT* full.
+	 * 
+	 * @param rf2ReleaseType
+	 *            the RF2 release type.
+	 * @param branchPath
+	 *            the branch path where the import has to be performed.
+	 * @param createVersion
+	 *            boolean indicating whether a new version has to be created for each individual effective times.
+	 * @param codeSystemShortName
+	 *            - the codesystem to target with the RF2 import
 	 */
 	public SnomedImportConfiguration(final Rf2ReleaseType rf2ReleaseType, final String branchPath, final boolean createVersion,
 			final String codeSystemShortName) {
@@ -72,7 +76,7 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	public String getBranchPath() {
 		return branchPath;
 	}
-	
+
 	@Override
 	public boolean shouldCreateVersion() {
 		return createVersion;
@@ -82,25 +86,27 @@ public class SnomedImportConfiguration implements ISnomedImportConfiguration {
 	public ImportStatus getStatus() {
 		return importStatus;
 	}
-	
+
 	@Override
 	public Date getStartDate() {
 		return startDate;
 	}
-	
+
 	@Override
 	public Date getCompletionDate() {
 		return completionDate;
 	}
-	
+
 	@Override
 	public String getCodeSystemShortName() {
 		return codeSystemShortName;
 	}
-	
+
 	/**
 	 * Sets the status to the desired value.
-	 * @param importStatus the import status to set.
+	 * 
+	 * @param importStatus
+	 *            the import status to set.
 	 */
 	public void setStatus(final ImportStatus importStatus) {
 		if (ImportStatus.RUNNING == importStatus) {

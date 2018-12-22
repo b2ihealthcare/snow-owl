@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -24,6 +25,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongIterator;
@@ -268,19 +271,21 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	 * but there can be a dirty concept if a property changed on it.
 	 * We will use whatever we actually have locally to compute the new revision.
 	 */
-	private void update(SnomedConceptDocument.Builder doc, SnomedConceptDocument concept, SnomedConceptDocument currentVersion) {
-		final String id = concept != null ? concept.getId() : currentVersion.getId();
-		final boolean active = concept != null ? concept.isActive() : currentVersion.isActive();
+	private void update(SnomedConceptDocument.Builder doc, @Nullable SnomedConceptDocument newOrDirtyRevision, SnomedConceptDocument cleanRevision) {
+		checkArgument(newOrDirtyRevision != null || cleanRevision != null, "Either the newOrDirtyRevision is null or the cleanRevision but not both");
+
+		final String id = newOrDirtyRevision != null ? newOrDirtyRevision.getId() : cleanRevision.getId();
+		final boolean active = newOrDirtyRevision != null ? newOrDirtyRevision.isActive() : cleanRevision.isActive();
 		
 		doc.active(active)
-			.released(concept != null ? concept.isReleased() : currentVersion.isReleased())
-			.effectiveTime(concept != null ? concept.getEffectiveTime() : currentVersion.getEffectiveTime())
-			.moduleId(concept != null ? concept.getModuleId() : currentVersion.getModuleId())
-			.exhaustive(concept != null ? concept.isExhaustive() : currentVersion.isExhaustive())
-			.primitive(concept != null ? concept.isPrimitive() : currentVersion.isPrimitive())
-			.refSetType(concept != null ? concept.getRefSetType() : currentVersion.getRefSetType())
-			.referencedComponentType(concept != null ? concept.getReferencedComponentType() : currentVersion.getReferencedComponentType())
-			.mapTargetComponentType(concept != null ? concept.getMapTargetComponentType() : currentVersion.getMapTargetComponentType())
+			.released(newOrDirtyRevision != null ? newOrDirtyRevision.isReleased() : cleanRevision.isReleased())
+			.effectiveTime(newOrDirtyRevision != null ? newOrDirtyRevision.getEffectiveTime() : cleanRevision.getEffectiveTime())
+			.moduleId(newOrDirtyRevision != null ? newOrDirtyRevision.getModuleId() : cleanRevision.getModuleId())
+			.exhaustive(newOrDirtyRevision != null ? newOrDirtyRevision.isExhaustive() : cleanRevision.isExhaustive())
+			.primitive(newOrDirtyRevision != null ? newOrDirtyRevision.isPrimitive() : cleanRevision.isPrimitive())
+			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
+			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
+			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
 			.doi(doiData.getDoiScore(id));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(id);
@@ -298,10 +303,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			inferred.update(id, doc);
 		}
 		
-		final Collection<String> currentMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getMemberOf();
-		final Collection<String> currentActiveMemberOf = currentVersion == null ? Collections.<String> emptySet()
-				: currentVersion.getActiveMemberOf();
+		final Collection<String> currentMemberOf = cleanRevision == null ? Collections.emptySet() : cleanRevision.getMemberOf();
+		final Collection<String> currentActiveMemberOf = cleanRevision == null ? Collections.emptySet() : cleanRevision.getActiveMemberOf();
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
 	}

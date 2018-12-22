@@ -38,7 +38,7 @@ public final class Plugins {
 	/**
 	 * Constructs a new {@link Plugins} instance with the given set of Plug-ins.
 	 * 
-	 * @param fragments
+	 * @param plugins
 	 */
 	public Plugins(Collection<Plugin> plugins) {
 		this.plugins = ImmutableList.copyOf(plugins);
@@ -64,8 +64,8 @@ public final class Plugins {
 	/**
 	 * Executes {@link Plugin#run(SnowOwlConfiguration, Environment, IProgressMonitor)} methods.
 	 * 
+	 * @param configuration
 	 * @param environment
-	 * @param monitor
 	 * @throws Exception
 	 * @see Plugin#run(Environment)
 	 */

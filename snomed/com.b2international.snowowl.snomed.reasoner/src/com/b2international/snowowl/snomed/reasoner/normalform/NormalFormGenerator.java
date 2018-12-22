@@ -111,7 +111,7 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 	 * <p>
 	 * The returned collection might not be in normal form.
 	 * 
-	 * @param concept the concept for which components should be generated
+	 * @param conceptId - the concept for which components should be generated
 	 * @return the existing components of the specified concept
 	 */
 	public abstract Collection<T> getExistingComponents(final long conceptId);
@@ -120,7 +120,7 @@ public abstract class NormalFormGenerator<T extends Serializable> {
 	 * Computes and returns a set of components in normal form for the specified
 	 * concept.
 	 * 
-	 * @param concept the concept for which components should be generated
+	 * @param conceptId - the concept for which components should be generated
 	 * @return the generated components of the specified concept in normal form
 	 */
 	public abstract Collection<T> getGeneratedComponents(final long conceptId);

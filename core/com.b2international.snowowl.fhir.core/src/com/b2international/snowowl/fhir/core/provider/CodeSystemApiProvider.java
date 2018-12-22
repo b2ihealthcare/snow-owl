@@ -84,7 +84,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	/**
 	 * Subclasses may override this method to provide additional properties supported by this FHIR provider.
-	 * @param supportedProperties
 	 * @return
 	 */
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
@@ -178,7 +177,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	/**
 	 * Returns the designated FHIR Uri for the given code system
-	 * @param codeSystemEntry 
+	 * @param codeSystemEntry
 	 * @param codeSystemVersion 
 	 * @return
 	 */
@@ -187,6 +186,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link CodeSystemEntry}
 	 * @param codeSystemEntry
+	 * @param codeSystemVersion
 	 * @return FHIR Code system
 	 */
 	protected final Builder createCodeSystemBuilder(final CodeSystemEntry codeSystemEntry, final CodeSystemVersionEntry codeSystemVersion) {
@@ -327,7 +327,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 	
 	/**
-	 * @param properties
+	 * @param request - the lookup request
 	 */
 	protected void validateRequestedProperties(LookupRequest request) {
 		final Collection<String> properties = request.getProperties();
@@ -354,7 +354,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * Set the base properties if requested
 	 * @param lookupRequest
 	 * @param resultBuilder 
-	 * @param snomedName
+	 * @param name
 	 * @param version
 	 * @param displayString
 	 */

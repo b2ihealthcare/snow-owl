@@ -81,8 +81,7 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	 * Method to bind all bindings available in the given {@link Map}. Mainly used by the builder, but subclasses are allowed to change the underlying
 	 * registry.
 	 * 
-	 * @param type
-	 * @param object
+	 * @param source
 	 * @return
 	 */
 	@Override

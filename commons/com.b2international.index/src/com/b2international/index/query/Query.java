@@ -57,7 +57,6 @@ public final class Query<T> {
 		/**
 		 * Keeps the context of the search alive with a default <code>60s</code> keep alive time value.
 		 *  
-		 * @param scrollKeepAlive
 		 * @return
 		 * @see #scroll(String)
 		 */

@@ -150,7 +150,7 @@ import com.b2international.snowowl.eventbus.net4j.IEventBusProtocol;
 	
 	@Override
 	public String toString() {
-		return String.format("Address: %s, message: %s tag:", address, body, tag);
+		return String.format("Address: %s, message: %s, tag: %s", address, body, tag);
 	}
 
 }

@@ -59,7 +59,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param termFilter the expression to match
+	 * @param termFilter - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
@@ -73,7 +73,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param termFilter the expression to match
+	 * @param exactTermFilter - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
@@ -109,7 +109,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	/**
 	 * Filter descriptions by their case significance value. This method accepts ECL values as caseSignificanceFilter.
 	 * 
-	 * @param caseSignificances
+	 * @param caseSignificanceFilter
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByCaseSignificance(CaseSignificance)
 	 * @see #filterByCaseSignificance(String)
@@ -170,7 +170,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	
 	/**
 	 * Filter descriptions by applying the given regular expression on their terms. 
-	 * @param regex - the reguler expression to apply
+	 * @param regex - the regular expression to apply
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTermRegex(String regex) {

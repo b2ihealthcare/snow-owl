@@ -64,7 +64,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	
 	/**
 	 * ConceptMaps
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return bundle of concept maps
 	 */
 	@ApiOperation(
@@ -108,7 +108,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	/**
 	 * HTTP Get for retrieving a concept map by its concept map id
 	 * @param conceptMapId
-	 * @param request parameters
+	 * @param parameters - request parameters
 	 * @return @link {@link ConceptMap}
 	 */
 	@ApiOperation(

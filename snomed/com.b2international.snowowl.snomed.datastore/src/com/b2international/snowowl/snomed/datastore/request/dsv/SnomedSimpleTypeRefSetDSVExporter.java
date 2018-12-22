@@ -115,7 +115,6 @@ final class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	/**
 	 * Executes the export to delimiter separated values.
 	 * 
-	 * @param monitor
 	 * @return The file with the exported values.
 	 * @throws SnowowlServiceException
 	 */

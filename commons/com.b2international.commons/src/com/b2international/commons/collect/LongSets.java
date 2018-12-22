@@ -27,13 +27,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.AbstractLongIterator;
@@ -203,7 +201,7 @@ public class LongSets {
 	
 	/**
 	 * Evaluates the procedure argument on each element of the given iterator.
-	 * @param iterator the iterator which elements will be evaluated against the procedure.
+	 * @param itr the iterator which elements will be evaluated against the procedure.
 	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
 	 */
 	public static void forEach(final LongIterator itr, final LongCollectionProcedure procedure) {
@@ -233,11 +231,9 @@ public class LongSets {
 		
 		final LongListIteratorWrapper itr = new LongListIteratorWrapper(iterator); 
 		final int nThreads = Runtime.getRuntime().availableProcessors();
-		final AtomicReference<ExecutorService> service = new AtomicReference<ExecutorService>();
+		final ExecutorService service = Executors.newFixedThreadPool(nThreads);
 		
 		try {
-			
-			service.set(Executors.newFixedThreadPool(nThreads));
 			
 			@SuppressWarnings("unchecked") final Future<Void>[] $ = new Future[size(itr)];
 			itr.reset();
@@ -247,45 +243,24 @@ public class LongSets {
 				
 				@Override
 				public void apply(final long input) {
-	
-					$[i.getAndIncrement()] = service.get().submit(new Callable<Void>() {
-						@Override 
-						public Void call() throws Exception {
-							procedure.apply(input);
-							return com.b2international.commons.Void.VOID;
-						}
-						
+					$[i.getAndIncrement()] = service.submit(() -> {
+						procedure.apply(input);
+						return com.b2international.commons.Void.VOID;
 					});
-					
 				}
 			});
-			
-			if (null != service && null != service.get()) {
-				service.get().shutdown();
-				service.set(null);
-			}
 			
 			for (final Future<Void> f : $) {
 				f.get();
 			}
 			
-			
 		} catch (final InterruptedException e) {
-			
 			Thread.interrupted();
 			throw new RuntimeException(e);
-			
 		} catch (final ExecutionException e) {
-			
 			throw new RuntimeException(e);
-			
 		} finally {
-			
-			if (null != service && null != service.get()) {
-				service.get().shutdown();
-				service.set(null);
-			}
-			
+			service.shutdown();
 		}
 		
 	}

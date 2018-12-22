@@ -116,7 +116,7 @@ public abstract class DescriptionRequestHelper {
 	}
 
 	/**
-	 * Retrieves the fully specified name for the concept identified by the given identifier, if it exists. 
+	 * Retrieves the fully specified name for the concept identified by the given identifier, if it exists.
 	 * <p>
 	 * The first active description with "fully specified name" as the type will be returned, where all of the following conditions apply:
 	 * <ul>
@@ -126,14 +126,17 @@ public abstract class DescriptionRequestHelper {
 	 * <p>
 	 * If no such description can be found, the search is repeated with the following conditions:
 	 * <ul>
-	 * <li>the description's language code matches the supplied {@code Locale}'s language (eg. {@code "en"} on description, {@code "en-US"} on {@code Locale});
+	 * <li>the description's language code matches the supplied {@code Locale}'s language (eg. {@code "en"} on description, {@code "en-US"} on
+	 * {@code Locale});
 	 * </ul>
 	 * <p>
-	 * Failing that, the whole check starts from the beginning with the next {@link Locale} in the list.
-	 * The method falls back to the first active fully specified name if the language code does not match any of the specified {@code Locale}s.
+	 * Failing that, the whole check starts from the beginning with the next {@link Locale} in the list. The method falls back to the first active
+	 * fully specified name if the language code does not match any of the specified {@code Locale}s.
 	 * 
-	 * @param conceptRef the reference to the concept for which the preferred term should be returned (may not be {@code null})
-	 * @param locales    a list of {@link Locale}s to use, in order of preference
+	 * @param conceptId
+	 *            - the identifier of the concept for which the preferred term should be returned (may not be {@code null})
+	 * @param locales
+	 *            - a list of {@link Locale}s to use, in order of preference
 	 * @return the preferred term for the concept
 	 */
 	public SnomedDescription getFullySpecifiedName(String conceptId, List<ExtendedLocale> locales) {

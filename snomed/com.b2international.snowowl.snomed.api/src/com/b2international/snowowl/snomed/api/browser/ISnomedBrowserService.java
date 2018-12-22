@@ -101,7 +101,7 @@ public interface ISnomedBrowserService {
 	/**
 	 * Retrieves a map of enum constants and corresponding concepts.
 	 *
-	 * @param storageRef the storage reference locating the version and branch to inspect (may not be {@code null})
+	 * @param branch - branch to inspect (may not be {@code null})
 	 * @param extendedLocales the {@link ExtendedLocale}s to inspect when determining FSN, in decreasing order of preference
 	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
 	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered

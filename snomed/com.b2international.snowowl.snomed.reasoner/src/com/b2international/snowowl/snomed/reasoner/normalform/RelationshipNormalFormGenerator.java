@@ -270,8 +270,6 @@ public final class RelationshipNormalFormGenerator extends NormalFormGenerator<S
 		 * @param fragments
 		 *            the relationship fragments to associate with this union
 		 *            group (may not be <code>null</code>)
-		 *            
-		 * @param unionGroupNumber the union group number
 		 */
 		public UnionGroup(final Iterable<RelationshipFragment> fragments) {
 			checkArgument(fragments != null, "fragments is null.");
