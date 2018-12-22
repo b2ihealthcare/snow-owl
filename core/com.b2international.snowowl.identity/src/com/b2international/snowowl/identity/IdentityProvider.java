@@ -89,7 +89,7 @@ public interface IdentityProvider {
 					try {
 						providers.add(factory.create(env, providerConfig.get()));
 					} catch (Exception e) {
-						throw new SnowowlRuntimeException(String.format("Couldn't initialize '{}''s identity provider", factory), e);
+						throw new SnowowlRuntimeException(String.format("Couldn't initialize '%s' identity provider", factory), e);
 					}
 				}
 			}

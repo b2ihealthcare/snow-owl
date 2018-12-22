@@ -127,7 +127,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		try {
 
 			if (quantity > 1) {
-				LOGGER.debug(String.format("Sending %s ID bulk generation request.", category.getDisplayName()));
+				LOGGER.debug("Sending {} ID bulk generation request.", category.getDisplayName());
 				
 				generateRequest = httpPost(String.format("sct/bulk/generate?token=%s", getToken()), createBulkGenerationData(namespace, category, quantity));
 				final String response = execute(generateRequest);
@@ -140,7 +140,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				return getComponentIds(records);
 				
 			} else {
-				LOGGER.debug(String.format("Sending %s ID single generation request.", category.getDisplayName()));
+				LOGGER.debug("Sending {} ID single generation request.", category.getDisplayName());
 				
 				generateRequest = httpPost(String.format("sct/generate?token=%s", getToken()), createGenerationData(namespace, category));
 				final String response = execute(generateRequest);
@@ -159,7 +159,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 
 	@Override
 	public void register(final Set<String> componentIds) {
-		LOGGER.debug(String.format("Registering {} component IDs.", componentIds.size()));
+		LOGGER.debug("Registering {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
 		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
@@ -190,7 +190,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					currentNamespace = entry.getKey();
 					
 					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-						LOGGER.debug(String.format("Sending bulk registration request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+						LOGGER.debug("Sending bulk registration request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						registerRequest = httpPost(String.format("sct/bulk/register?token=%s", getToken()), createBulkRegistrationData(bulkIds));
 						execute(registerRequest);
 					}
@@ -224,7 +224,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		try {
 
 			if (quantity > 1) {
-				LOGGER.debug(String.format("Sending %s ID bulk reservation request.", category.getDisplayName()));
+				LOGGER.debug("Sending {} ID bulk reservation request.", category.getDisplayName());
 	
 				reserveRequest = httpPost(String.format("sct/bulk/reserve?token=%s", getToken()), createBulkReservationData(namespace, category, quantity));
 				final String bulkResponse = execute(reserveRequest);
@@ -237,7 +237,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				return getComponentIds(records);
 			
 			} else {
-				LOGGER.debug(String.format("Sending %s ID reservation request.", category.getDisplayName()));
+				LOGGER.debug("Sending {} ID reservation request.", category.getDisplayName());
 
 				reserveRequest = httpPost(String.format("sct/reserve?token=%s", getToken()), createReservationData(namespace, category));
 				final String response = execute(reserveRequest);
@@ -287,7 +287,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					currentNamespace = entry.getKey();
 					
 					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-						LOGGER.debug(String.format("Sending bulk release request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+						LOGGER.debug("Sending bulk release request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						releaseRequest = httpPut(String.format("sct/bulk/release?token=%s", getToken()), createBulkReleaseData(currentNamespace, bulkIds));
 						execute(releaseRequest);
 					}
@@ -341,7 +341,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 					currentNamespace = entry.getKey();
 					
 					for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-						LOGGER.debug(String.format("Sending bulk deprecation request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+						LOGGER.debug("Sending bulk deprecation request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 						deprecateRequest = httpPut(String.format("sct/bulk/deprecate?token=%s", getToken()), createBulkDeprecationData(currentNamespace, bulkIds));
 						execute(deprecateRequest);
 					}
@@ -384,7 +384,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 						currentNamespace = entry.getKey();
 						
 						for (final Collection<String> bulkIds : Iterables.partition(entry.getValue(), BULK_LIMIT)) {
-							LOGGER.debug(String.format("Sending bulk publication request for namespace %s with size %d.", currentNamespace, bulkIds.size()));
+							LOGGER.debug("Sending bulk publication request for namespace {} with size {}.", currentNamespace, bulkIds.size());
 							deprecateRequest = httpPut(String.format("sct/bulk/publish?token=%s", getToken()), createBulkPublishData(currentNamespace, bulkIds));
 							execute(deprecateRequest);
 						}
@@ -472,7 +472,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 			} else {
 				
 				final String componentId = Iterables.getOnlyElement(componentIds);
-				LOGGER.debug(String.format("Sending component ID %s get request.", componentId));
+				LOGGER.debug("Sending component ID {} get request.", componentId);
 				singleRequest = httpGet(String.format("sct/ids/%s?token=%s", componentId, getToken()));
 				final String response = execute(singleRequest);
 
@@ -559,7 +559,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		JobStatus status = JobStatus.PENDING;
 
 		try {
-			LOGGER.debug(String.format("Polling job status with ID %s.", jobId));
+			LOGGER.debug("Polling job status with ID {}.", jobId);
 
 			request = httpGet(String.format("bulk/jobs/%s?token=%s", jobId, token));
 

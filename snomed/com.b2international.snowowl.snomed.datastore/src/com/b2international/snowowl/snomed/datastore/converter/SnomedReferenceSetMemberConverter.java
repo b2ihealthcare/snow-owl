@@ -111,7 +111,7 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 		case CONCEPT: return SnomedRequests.prepareSearchConcept().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		case DESCRIPTION: return SnomedRequests.prepareSearchDescription().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
 		case RELATIONSHIP: return SnomedRequests.prepareSearchRelationship().setLimit(componentIds.size()).filterByIds(componentIds).setExpand(expand).setLocales(locales()).build().execute(context());
-		default: throw new NotImplementedException("Not implemented non core target component expansion", category);
+		default: throw new NotImplementedException("Not implemented non core target component expansion: '%s'", category);
 		}
 	}
 
