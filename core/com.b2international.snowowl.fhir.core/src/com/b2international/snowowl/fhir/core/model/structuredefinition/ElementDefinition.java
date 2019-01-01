@@ -20,9 +20,11 @@ import java.util.Collection;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR definition of an element in a resource or an extension.
@@ -38,6 +40,9 @@ public class ElementDefinition extends Element {
 	private final String sliceName;
 	
 	private final String label;
+	
+	@JsonProperty("code")
+	private final Collection<Coding> codes;
 	
 	private final Slicing slicing;
 	
@@ -69,6 +74,7 @@ public class ElementDefinition extends Element {
 			final String path,
 			final String sliceName,
 			final String label,
+			final Collection<Coding> codes,
 			final Slicing slicing,
 			final String shortDefinition,
 			final String definition,
@@ -86,6 +92,7 @@ public class ElementDefinition extends Element {
 		this.path = path;
 		this.sliceName = sliceName;
 		this.label = label;
+		this.codes = codes;
 		this.slicing = slicing;
 		this.shortDefinition = shortDefinition;
 		this.definition = definition;
@@ -108,12 +115,13 @@ public class ElementDefinition extends Element {
 		private String path;
 		private String sliceName;
 		private String label;
+		private Collection<Coding> codes = Sets.newHashSet();
 		private Slicing slicing;
 		private String shortDefinition;
 		private String definition;
 		private String comment;
 		private String requirements;
-		private Collection<String> aliases;
+		private Collection<String> aliases = Sets.newHashSet();
 		private int min;
 		private String max;
 		private Base base;
@@ -131,6 +139,7 @@ public class ElementDefinition extends Element {
 					path,
 					sliceName,
 					label,
+					codes,
 					slicing,
 					shortDefinition,
 					definition,
