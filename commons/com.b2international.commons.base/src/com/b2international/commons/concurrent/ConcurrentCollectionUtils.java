@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,6 @@ public class ConcurrentCollectionUtils {
 	 * }
 	 * </pre>
 	 * @param subjects the subject iterable. 
-	 * @param nThreads - the number of threads to use for concurrency
 	 * @param closure the procedure to apply on each element.
 	 */
 	public static <T> void forEach(final Iterable<? extends T> subjects, final Procedure<? super T> closure) {
@@ -239,38 +238,23 @@ public class ConcurrentCollectionUtils {
 		checkNotNull(closure, "Closure function argument cannot be null.");
 		checkArgument(nThreads >= 1, "Number of threads cannot be zero or less.");
 		
-		ExecutorService service = null;
+		ExecutorService service = Executors.newFixedThreadPool(nThreads);
 		
 		try {
-			
-			service = Executors.newFixedThreadPool(nThreads);
 			
 			@SuppressWarnings("unchecked") final Future<Void>[] $ = new Future[Iterables.size(subjects)];
 			
 			int i = 0;
 			for (final T subject : subjects) {
-				
-				$[i++] = service.submit(new Callable<Void>() {
-					@Override public Void call() throws Exception {
-						closure.apply(subject);
-						return com.b2international.commons.Void.VOID;
-					}
-					
+				$[i++] = service.submit(() -> {
+					closure.apply(subject);
+					return com.b2international.commons.Void.VOID;
 				});
-				
-			}
-			
-			if (null != service) {
-				
-				service.shutdown();
-				service = null;
-				
 			}
 			
 			for (final Future<Void> f : $) {
 				f.get();
 			}
-			
 			
 		} catch (final InterruptedException e) {
 			
@@ -282,14 +266,7 @@ public class ConcurrentCollectionUtils {
 			throw new RuntimeException(e);
 			
 		} finally {
-			
-			if (null != service) {
-				
-				service.shutdown();
-				service = null;
-				
-			}
-			
+			service.shutdown();
 		}
 		
 	}

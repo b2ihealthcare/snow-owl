@@ -302,7 +302,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	/**
 	 * Creates a new empty result object with the specified offset and limit parameter.
-	 * @param offset
+
 	 * @param limit
 	 * @return
 	 */
@@ -310,6 +310,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 
 	/**
 	 * Executes this search request.
+	 * 
 	 * @param context
 	 * @return
 	 * @throws IOException
@@ -318,6 +319,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	/**
 	 * Constructs the operator property name for the given property name.
+	 * 
 	 * @param property
 	 * @return
 	 */

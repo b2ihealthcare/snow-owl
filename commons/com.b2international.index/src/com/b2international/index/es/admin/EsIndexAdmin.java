@@ -234,7 +234,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				try {
 					response = client().cluster().health(req);
 					currentTime = System.currentTimeMillis();
-					if (!response.isTimedOut()) {
+					if (response != null && !response.isTimedOut()) {
 						break; 
 					}
 				} catch (Exception e) {

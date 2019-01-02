@@ -103,8 +103,8 @@ public final class FileUtils {
 	 * as an input stream and the file name. The temporary file will be deleted on graceful JVM halt.
 	 * <p>May return with {@code null} if the file cannot be created.
 	 * <p>Callers are responsible for closing the input stream.
-	 * @param is the input stream to the file.
-	 * @param the file name. Can be null. If {@code null} a random UUID will be assigned as the temporary file name.
+	 * @param is - the input stream to the file.
+	 * @param fileName - the file name. Can be null. If {@code null} a random UUID will be assigned as the temporary file name.
 	 * @return the temporary copy file. Or {@code null} if the copy failed.
 	 * @see File#deleteOnExit()
 	 */
@@ -377,8 +377,8 @@ public final class FileUtils {
 	/**
 	 * Returns a file path from the given directory that matches the path matcher expression.
 	 * It is expected to have a single file in the directory that matches the expression.
-	 * @param directory to find the file within
-	 * @param path matcher expression
+	 * @param workDir to find the file within
+	 * @param pathMatcherExpression
 	 * @return path for the matched file.
 	 */
 	public static Path getFileFromWorkFolder(String workDir, String pathMatcherExpression) throws IOException {

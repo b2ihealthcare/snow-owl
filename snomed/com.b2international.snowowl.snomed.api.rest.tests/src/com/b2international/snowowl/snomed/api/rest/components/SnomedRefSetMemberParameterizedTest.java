@@ -21,6 +21,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.searchComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.createNewComponent;
@@ -50,17 +51,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.api.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.api.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -134,7 +138,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 		for (String disallowedComponentType : REFERENCED_COMPONENT_TYPES) {
 			if (!referencedComponentType.equals(disallowedComponentType)) {
-				String componentId = createNewComponent(branchPath, disallowedComponentType);
+				String componentId = getFirstMatchingReferencedComponent(branchPath, disallowedComponentType);
 
 				Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
 						.putAll(getValidProperties())
@@ -286,17 +290,33 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	private String createRefSetMember() {
 		String refSetId = createNewRefSet(branchPath, refSetType);
-		String componentId = createNewComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
-
+		String componentId = getFirstMatchingReferencedComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
+		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
 				.putAll(getValidProperties())
 				.put("commitComment", "Created new reference set member")
 				.build();
-
+		
 		ValidatableResponse response = createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(201);
-
-
+		
 		return lastPathSegment(response.extract().header("Location"));
+	}
+
+	private String getFirstMatchingReferencedComponent(IBranchPath branchPath, String referencedComponentType) {
+		return searchComponent(branchPath, getSnomedComponentType(referencedComponentType), ImmutableMap.of("limit", 1)).extract().jsonPath().<String>getList("items.id").get(0);
+	}
+
+	private SnomedComponentType getSnomedComponentType(String referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT:
+			return SnomedComponentType.CONCEPT;
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			return SnomedComponentType.DESCRIPTION;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			return SnomedComponentType.RELATIONSHIP;
+		default:
+			throw new UnsupportedOperationException("Not implemented case for: " + referencedComponentType);
+		}
 	}
 
 	private Map<String, Object> getValidProperties() {

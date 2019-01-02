@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.provider;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.LogicalId;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 
 /**
  * FHIR API provider interface with common functionality for all resource-based FHIR providers.
@@ -34,7 +33,7 @@ public interface IFhirApiProvider {
 	boolean isSupported(String uri);
 	
 	/**
-	 * @param logical code system path (repositoryId:branchPath)
+	 * @param logicalId - logical code system path (repositoryId:branchPath)
 	 * @return true if this provider supports the code system represented by the logical id
 	 */
 	boolean isSupported(LogicalId logicalId);

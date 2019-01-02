@@ -139,7 +139,6 @@ public class LookupRequest {
 
 	/**
 	 * Returns <code>true</code> if the given code is present in the given collection of properties, returns <code>false</code> otherwise.
-	 * @param properties
 	 * @param property
 	 * @return
 	 */
@@ -149,7 +148,7 @@ public class LookupRequest {
 	
 	/**
 	 * Returns true if the property is requested
-	 * @param the property to check
+	 * @param conceptProperty - the property to check
 	 * @return
 	 */
 	public boolean isPropertyRequested(IConceptProperty conceptProperty) {

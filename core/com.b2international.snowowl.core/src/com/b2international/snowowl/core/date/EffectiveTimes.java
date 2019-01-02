@@ -135,11 +135,11 @@ public abstract class EffectiveTimes {
 	 *            - to extract time from
 	 * @return the number of milliseconds from the date object
 	 */
-	public static final long getEffectiveTime(@Nullable Object effectiveTime) {
+	public static final long getEffectiveTime(@Nullable Date effectiveTime) {
 		if (null == effectiveTime) {
 			return UNSET_EFFECTIVE_TIME;
 		}
-		return Dates.getTime(effectiveTime);
+		return effectiveTime.getTime();
 	}
 
 	/**

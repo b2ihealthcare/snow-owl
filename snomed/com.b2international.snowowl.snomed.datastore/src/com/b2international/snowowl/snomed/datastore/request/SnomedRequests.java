@@ -398,7 +398,7 @@ public abstract class SnomedRequests {
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a concept.
-	 * @param concept id of the concept to be updated
+	 * @param componentId - id of the concept to be updated
 	 * @return SNOMED CT concept update request builder
 	 */
 	public static SnomedConceptUpdateRequestBuilder prepareUpdateConcept(String componentId) {
@@ -407,7 +407,7 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a description.
-	 * @param description id of the description to be updated
+	 * @param componentId - description id of the description to be updated
 	 * @return SNOMED CT description update request builder
 	 */
 	public static SnomedDescriptionUpdateRequestBuilder prepareUpdateDescription(String componentId) {
@@ -416,7 +416,7 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating a relationship.
-	 * @param relationship id of the relationship to be updated
+	 * @param componentId - relationship id of the relationship to be updated
 	 * @return SNOMED CT relationship update request builder
 	 */
 	public static SnomedRelationshipUpdateRequestBuilder prepareUpdateRelationship(String componentId) {

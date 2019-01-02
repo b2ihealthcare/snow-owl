@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
 
 /**
  * Abstract class for SNOMED CT search request builders. It collects functionality common to SNOMED CT components.
+ * 
  * @since 4.5
  */
 public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> 
@@ -57,6 +58,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 
 	/**
 	 * Filter to return components with the specified state (active/inactive)
+	 * 
 	 * @param active
 	 * @return this builder
 	 */
@@ -66,6 +68,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	
 	/**
 	 * Filter to return components with the specified released flag value (released|unreleased)
+	 * 
 	 * @param released
 	 * @return this builder
 	 */
@@ -74,8 +77,9 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	}
 
 	/**
-	 * Filter to return components with the specified effective time represented as a string in yyyy-MM-dd format
-	 * @param effectiveTime in yyyy-MM-dd format.
+	 * Filter to return components with the specified effective time represented as a string in {@value DateFormats#SHORT} format
+	 * 
+	 * @param effectiveTime - the effective time filter.
 	 * @return this builder
 	 * @see DateFormats#SHORT
 	 * @see EffectiveTimes
@@ -90,9 +94,10 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	
 	/**
 	 * Filter to return components with the specified effective time represented as a long (ms since epoch) format.
-	 * @param effectiveTime in long (ms since epoch) format
+	 * 
+	 * @param effectiveTime - in long (ms since epoch) format
 	 * @return this builder
-	 * @see DateFormats#DEFAULT
+	 * 
 	 * @see EffectiveTimes
 	 * @see Date#Date(long)
 	 * @see Date#getTime()
@@ -104,10 +109,11 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 	/**
 	 * Filter to return components with the effective times that fall between the start and end dates
 	 * represented as longs (ms since epoch).
-	 * @param effectiveTime starting effective time in long (ms since epoch) format
-	 * @param effectiveTime ending effective time in long (ms since epoch) format
+	 * 
+	 * @param from - effectiveTime starting effective time in long (ms since epoch) format
+	 * @param to - effectiveTime ending effective time in long (ms since epoch) format
 	 * @return this builder
-	 * @see DateFormats#DEFAULT
+
 	 * @see EffectiveTimes
 	 * @see Date#Date(long)
 	 * @see Date#getTime()

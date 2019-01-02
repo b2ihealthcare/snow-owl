@@ -21,12 +21,13 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.index.RevisionDocument;
 
 /**
- * <i>Builder</i> class to build a generic requests responsible for deleting a SNOMED CT component.
- * This class should be instantiated from the corresponding static method on the central SnomedRequests class.
+ * <i>Builder</i> class to build a generic requests responsible for deleting a SNOMED CT component. This class should be instantiated from the
+ * corresponding static method on the central SnomedRequests class.
  * 
  * @since 4.5
  */
-public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
+public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilder, TransactionContext, Boolean>
+		implements TransactionalRequestBuilder<Boolean> {
 
 	private final String componentId;
 	private final Class<? extends RevisionDocument> type;
@@ -41,8 +42,8 @@ public class DeleteRequestBuilder extends BaseRequestBuilder<DeleteRequestBuilde
 	/**
 	 * Forces the deletion of the component if the value is <code>true</code>.
 	 * 
-	 * @param whether
-	 *            to force or not the deletion
+	 * @param force
+	 *            - whether to force or not the deletion
 	 * @return
 	 */
 	public DeleteRequestBuilder force(boolean force) {

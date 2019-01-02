@@ -23,12 +23,11 @@ import java.io.InputStream;
 public interface MrcmImporter {
 
 	/**
-	 * Imports the given MRCM file impersonating a user given with the user name argument.
+	 * Imports the given MRCM file impersonating a user given with the user name
+	 * argument.
 	 * 
-	 * @param userName
-	 *            the user name.
-	 * @param mrcmFile
-	 *            the MRCM file to process and import.
+	 * @param user   - the user name.
+	 * @param source - the MRCM file to process and import.
 	 */
 	void doImport(String user, InputStream source);
 

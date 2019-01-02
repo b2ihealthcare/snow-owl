@@ -89,7 +89,7 @@ public interface IdentityProvider {
 					try {
 						providers.add(factory.create(env, providerConfig.get()));
 					} catch (Exception e) {
-						throw new SnowowlRuntimeException(String.format("Couldn't initialize '{}''s identity provider", factory), e);
+						throw new SnowowlRuntimeException(String.format("Couldn't initialize '%s' identity provider", factory), e);
 					}
 				}
 			}
@@ -121,7 +121,6 @@ public interface IdentityProvider {
 	/**
 	 * Filters and return users based on the given filters. In case of no filters returns all users (paged response). 
 	 * @param usernames - filter by user name
-	 * @param offset - paging offset to specify where to start reading the users collection
 	 * @param limit - paging limit to specify how many users should we read from the users collection
 	 * @return
 	 */

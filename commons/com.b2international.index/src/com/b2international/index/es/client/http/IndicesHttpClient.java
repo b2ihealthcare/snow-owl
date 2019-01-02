@@ -56,7 +56,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return client.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException("Couldn't check the existence of ES indices " + indices, e);
+			throw new IndexException("Couldn't check the existence of ES indices " + Arrays.toString(indices), e);
 		}
 	}
 

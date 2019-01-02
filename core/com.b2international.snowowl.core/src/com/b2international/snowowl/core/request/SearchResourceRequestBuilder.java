@@ -51,6 +51,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the "search after" parameter to the specified array of scroll values.
+	 * 
 	 * @param searchAfter
 	 * @return
 	 * @see PageableCollectionResource#getSearchAfter()
@@ -61,7 +62,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	/**
-	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request. 
+	 * Sets the scroll keep alive value to the specified value to start a scroll based on the query of this request.
+	 * 
 	 * @param scrollKeepAlive
 	 * @return this builder instance
 	 */
@@ -79,6 +81,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the scroll Id to continue a previously started scroll.
+	 * 
 	 * @param scrollId
 	 * @return
 	 * @see PageableCollectionResource#getScrollId()
@@ -90,7 +93,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Sets the limit of the result set returned
-	 * @param limit of the result set
+	 * @param limit - limit of the result set
 	 * @return this builder instance
 	 */
 	public final B setLimit(int limit) {
@@ -145,7 +148,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	/**
 	 * Sorts the result set by the given sort fields.
 	 * 
-	 * @param sortFields - the list of fields to sort by, in order
+	 * @param sorts - the list of fields to sort by, in order
 	 * @return this builder instance
 	 */
 	public final B sortBy(List<Sort> sorts) {

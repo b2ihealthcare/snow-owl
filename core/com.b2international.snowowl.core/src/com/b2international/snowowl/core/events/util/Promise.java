@@ -90,7 +90,7 @@ public final class Promise<T> extends AbstractFuture<T> {
 	/**
 	 * Define what to do when the promise becomes rejected.
 	 * 
-	 * @param then
+	 * @param fail
 	 * @return
 	 */
 	public final Promise<T> fail(final Function<Throwable, T> fail) {
@@ -148,16 +148,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * with the function passed in.  The new promise will be available at the time
 	 * when this promise is available.
 	 * 
-	 * @param fail
+	 * @param then
 	 * @return promise with type T
 	 */
-	public final <U> Promise<U> then(final Function<T, U> func) {
+	public final <U> Promise<U> then(final Function<T, U> then) {
 		final Promise<U> transformed = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 			@Override
 			public void onSuccess(T result) {
 				try {
-					transformed.resolve(func.apply(result));
+					transformed.resolve(then.apply(result));
 				} catch (Throwable t) {
 					onFailure(t);
 				}
@@ -177,16 +177,16 @@ public final class Promise<T> extends AbstractFuture<T> {
 	 * with the function passed in.  The new promise will be available at the earliest when the original 
 	 * promise is ready.
 	 * 
-	 * @param fail
+	 * @param then
 	 * @return promise with type T
 	 */
-	public final <U> Promise<U> thenWith(final Function<T, Promise<U>> func) {
+	public final <U> Promise<U> thenWith(final Function<T, Promise<U>> then) {
 		final Promise<U> transformed = new Promise<>();
 		Futures.addCallback(this, new FutureCallback<T>() {
 			@Override
 			public void onSuccess(T result) {
 				try {
-					transformed.resolveWith(func.apply(result));
+					transformed.resolveWith(then.apply(result));
 				} catch (Throwable t) {
 					onFailure(t);
 				}
@@ -203,11 +203,11 @@ public final class Promise<T> extends AbstractFuture<T> {
 	/**
 	 * Resolves the promise by sending the given result object to all then listeners.
 	 * 
-	 * @param t
+	 * @param result
 	 *            - the resolution of this promise
 	 */
-	public final void resolve(T t) {
-		set(t);
+	public final void resolve(T result) {
+		set(result);
 	}
 	
 	final void resolveWith(Promise<T> t) {

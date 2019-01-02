@@ -75,7 +75,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * This filter affects the score of each result. If results should be returned in order of 
 	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
 	 * 
-	 * @param term the expression to match
+	 * @param term - the expression to match
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
@@ -85,7 +85,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	/**
 	 * Filters the concepts based on the type of its descriptions where the description type is specified by concept ID 
 	 * representing the type. E.g.: "900000000000003001" for <i>Fully Specified Name</i>.
-	 * @param description type represented by its concept ID
+	 * @param type - description type represented concept identifiers or ECL expressions
 	 * @return SnomedConceptSearchRequestBuilder
 	 * 
 	 * @see SnomedConcepts
@@ -99,7 +99,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * The currently supported ECL version is v1.1. See <a href="http://snomed.org/ecl">ECL Specification and Guide</a> or
 	 * <a href="http://www.snomed.org/news-articles/expression-constraint-language">About ECL</a> for more information.
 	 * 
-	 * @param expression ECL expression
+	 * @param expression - the ECL expression
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByEcl(String expression) {
@@ -194,7 +194,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * Filter matches to have any of the specified ancestor identifier amongst the stated super types (including direct as well).
 	 * E.g.:a filter that returns all of the <i>stated</i> (direct and non-direct) children of the specified parents.
 	 * 
-	 * @param ancestorId
+	 * @param ancestorIds
 	 * @return SnomedConceptSearchRequestBuilder
 	 * @see CharacteristicType
 	 */

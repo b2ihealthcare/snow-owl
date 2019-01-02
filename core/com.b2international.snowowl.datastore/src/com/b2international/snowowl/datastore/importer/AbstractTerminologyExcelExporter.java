@@ -180,7 +180,7 @@ public abstract class AbstractTerminologyExcelExporter<T, M> extends AbstractFil
 	/**
 	 * Creates the index sheet based on the given sheet names.
 	 * 
-	 * @param sheetNames
+	 * @param components
 	 */
 	protected void createIndexSheet(final Collection<T> components) {
 

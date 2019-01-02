@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.Max;
@@ -158,8 +159,8 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		if (releasedRelationship.isActive() != relationship.isActive()) return true;
 		if (!releasedRelationship.getModuleId().equals(relationship.getModuleId())) return true;
 		if (!releasedRelationship.getDestinationId().equals(relationship.getDestinationId())) return true;
-		if (releasedRelationship.getGroup() != relationship.getGroup()) return true;
-		if (releasedRelationship.getUnionGroup() != relationship.getUnionGroup()) return true;
+		if (!Objects.equals(releasedRelationship.getGroup(), relationship.getGroup())) return true;
+		if (!Objects.equals(releasedRelationship.getUnionGroup(), relationship.getUnionGroup())) return true;
 		if (!releasedRelationship.getTypeId().equals(relationship.getTypeId())) return true;
 		if (!releasedRelationship.getCharacteristicType().getConceptId().equals(relationship.getCharacteristicTypeId())) return true;
 		if (!releasedRelationship.getModifier().getConceptId().equals(relationship.getModifierId())) return true;
@@ -172,7 +173,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 			return false;
 		}
 
-		if (original.getGroup() != newGroup) {
+		if (!Objects.equals(original.getGroup(), newGroup)) {
 			relationship.group(newGroup);
 			return true;
 		} else {
@@ -185,7 +186,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 			return false;
 		}
 
-		if (original.getUnionGroup() != newUnionGroup) {
+		if (!Objects.equals(original.getUnionGroup(), newUnionGroup)) {
 			relationship.unionGroup(newUnionGroup);
 			return true;
 		} else {

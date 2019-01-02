@@ -102,7 +102,7 @@ public class ValueSetFilter {
 		
 		/**
 		 * Creates an ECL expression filter (expression = eclExpression) 
-		 * @param id
+		 * @param eclExpression
 		 * @return
 		 */
 		public Builder eclExpression(String eclExpression) {
@@ -116,7 +116,6 @@ public class ValueSetFilter {
 		protected ValueSetFilter doBuild() {
 			return new ValueSetFilter(property, operator, value);
 		}
-
 
 	}
 

@@ -129,7 +129,7 @@ public enum ClassPathScanner {
 	/**
 	 * Returns instances of classes implementing the given interface.
 	 * 
-	 * @param interfaceType - the expected type
+	 * @param interfaceType - the expected interface
 	 * @return
 	 */
 	public <T> Collection<T> getComponentsByInterface(Class<T> interfaceType) {
@@ -139,7 +139,7 @@ public enum ClassPathScanner {
 	/**
 	 * Returns instances of classes extending the given superclass.
 	 * 
-	 * @param interfaceType - the expected type
+	 * @param superclass - the expected superclass
 	 * @return
 	 */
 	public <T> Collection<T> getComponentsBySuperclass(Class<T> superclass) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	
 	/**
 	 * Returns the code system versions that have matching branch paths
-	 * @param branch path to filter by
+	 * @param branchPath - branch path to filter by
 	 */
 	public CodeSystemVersionSearchRequestBuilder filterByBranchPath(String branchPath) {
 		
@@ -74,7 +74,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	
 	/**
 	 * Returns the code system versions that have matching parent branch paths
-	 * @param parent branch path to filter by
+	 * @param parentBranchPath - parent branch path to filter by
 	 */
 	public CodeSystemVersionSearchRequestBuilder filterByParentBranchPath(String parentBranchPath) {
 		this.parentBranchPath = parentBranchPath;

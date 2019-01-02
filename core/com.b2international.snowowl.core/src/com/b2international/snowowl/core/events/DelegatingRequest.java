@@ -50,6 +50,7 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 	/**
 	 * @return the context identifier where the next request will be executed.
 	 */
+	@JsonIgnore
 	public String getContextId() {
 		if (next() instanceof DelegatingRequest<?, ?, ?>) {
 			return ((DelegatingRequest<?, ?, ?>) next()).getContextId();

@@ -80,7 +80,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 		
 		/**
 		 * Constructor to create the root preferences node, does not contain preferences, it is the root of the preferences tree
-		 * @param configDirectory
+		 * @param configDir
 		 */
 		private FileBasedConfigurationPreferences(Path configDir)  {
 			if (!Files.isDirectory(configDir)){
@@ -94,7 +94,7 @@ public class FileBasedPreferencesService implements PreferencesService {
 		
 		/**
 		 * Constructor to create child preferences nodes.
-		 * @param parent teh parent node
+		 * @param parent the parent node
 		 * @param nodeName the name of the node
 		 */
 		private FileBasedConfigurationPreferences(FileBasedConfigurationPreferences parent, String nodeName){
@@ -111,14 +111,14 @@ public class FileBasedPreferencesService implements PreferencesService {
 			this.name = nodeName;
 			this.file = parent.getConfigDir().resolve(getFilePath(nodeName)).toFile();
 						
-			try {				
+			try (FileInputStream in = new FileInputStream(file)) {				
 				if(!file.exists()){
 					file.createNewFile();
 				}
 				
 				this.properties = new Properties();
 			
-				properties.load(new FileInputStream(file));
+				properties.load(in);
 			} catch (IOException e) {
 				throw new RuntimeException("Could not load preferences from file: "+file.getAbsolutePath(), e);
 			}
@@ -284,8 +284,8 @@ public class FileBasedPreferencesService implements PreferencesService {
 
 		@Override
 		public void flush() throws BackingStoreException {
-			try {
-				properties.store(new FileOutputStream(file), null);
+			try (FileOutputStream out = new FileOutputStream(file)) {
+				properties.store(out, null);
 			} catch (IOException e) {
 				throw new BackingStoreException("Error while flushing",e);
 			}
