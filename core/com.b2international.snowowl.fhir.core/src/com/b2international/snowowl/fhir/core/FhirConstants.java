@@ -28,4 +28,9 @@ public class FhirConstants {
 	 */
 	public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
+	/**
+	 * A date, or partial date (e.g. just year or year + month) as used in human communication. 
+	 * There is no time zone. Dates SHALL be valid dates.
+	 */
+	public static final String DATE_SHORT_FORMAT = "yyyy-MM-dd";
 }

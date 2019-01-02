@@ -278,6 +278,7 @@ public class FilterTest extends FhirTest {
 				+ "\"identifier\":"
 				+ "{\"use\":\"official\",\"system\":\"www.hl7.org\",\"value\":\"OID:1234.1234\"},"
 				+ "\"version\":\"2018.01.01\","
+				+ "\"name\":\"Local code system\","
 				+ "\"title\":\"title\","
 				+ "\"status\":\"active\","
 				+ "\"publisher\":\"B2i\","

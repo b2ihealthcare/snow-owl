@@ -26,6 +26,7 @@ import com.b2international.snowowl.fhir.tests.filter.SearchRequestParametersTest
 import com.b2international.snowowl.fhir.tests.serialization.domain.BundleSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.CodeSystemSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
+import com.b2international.snowowl.fhir.tests.serialization.domain.ElementDefinitionSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ModelDeserializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ModelSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.UsageContextSerializationTest;
@@ -74,6 +75,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	SubsumptionRequestDeserializationTest.class,
 
 	//Domain models
+	TypedPropertySerializationTest.class,
 	UsageContextSerializationTest.class,
 	ModelSerializationTest.class,
 	ModelDeserializationTest.class,
@@ -82,6 +84,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Transl
 	ValueSetSerializationTest.class,
 	ConceptMapSerializationTest.class,
 	ConceptMapFilterTest.class,
+	ElementDefinitionSerializationTest.class
 
 })
 public class AllFhirTests {

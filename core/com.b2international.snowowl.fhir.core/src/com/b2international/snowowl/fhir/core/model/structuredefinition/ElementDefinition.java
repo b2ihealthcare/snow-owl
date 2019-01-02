@@ -16,13 +16,20 @@
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
+import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
+import com.b2international.snowowl.fhir.core.model.typedproperty.TypedPropertySerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -69,6 +76,44 @@ public class ElementDefinition extends Element {
 	@JsonProperty("type")
 	private final Collection<Type> types;
 	
+	@JsonSerialize(using = TypedPropertySerializer.class)
+	@JsonUnwrapped
+	@JsonProperty
+	private final TypedProperty<?> defaultValue;
+	
+	private final String meaningWhenMissing;
+	
+	private final String orderMeaning;
+	
+	private final TypedProperty<?> fixed;
+	
+	private final TypedProperty<?> pattern;
+	
+	@JsonProperty("example")
+	private final Collection<Example> examples;
+	
+	private final TypedProperty<?> minValue;
+	
+	private final TypedProperty<?> maxValue;
+	
+	private final Integer maxLength;
+	
+	@JsonProperty("condition")
+	private final Set<Id> conditions;
+	
+	@JsonProperty("constraint")
+	private final Set<Constraint> constraints;
+	
+	private final Boolean mustSupport;
+	
+	private final Boolean isModifier;
+	
+	private final Boolean isSummary;
+	
+	private final Binding binding;
+	
+	private final MappingElement mapping;
+	
 	@SuppressWarnings("rawtypes")
 	protected ElementDefinition(final String id, final Collection<Extension> extensions,
 			final String path,
@@ -85,7 +130,24 @@ public class ElementDefinition extends Element {
 			final String max,
 			final Base base,
 			final Uri contentReference,
-			final Collection<Type> types) {
+			final Collection<Type> types,
+			final TypedProperty<?> defaultValue,
+			final String meaningWhenMissing,
+			final String orderMeaning,
+			final TypedProperty<?> fixed,
+			final TypedProperty<?> pattern,
+			final Collection<Example> examples,
+			final TypedProperty<?> minValue,
+			final TypedProperty<?> maxValue,
+			final Integer maxLength,
+			final Set<Id> conditions,
+			final Set<Constraint> constraints,
+			final Boolean mustSupport,
+			final Boolean isModifier,
+			final Boolean isSummary,
+			final Binding binding,
+			final MappingElement mapping
+		) {
 		
 		super(id, extensions);
 		
@@ -104,6 +166,22 @@ public class ElementDefinition extends Element {
 		this.base = base;
 		this.contentReference = contentReference;
 		this.types = types;
+		this.defaultValue = defaultValue;
+		this.meaningWhenMissing = meaningWhenMissing;
+		this.orderMeaning = orderMeaning;
+		this.fixed = fixed;
+		this.pattern = pattern;
+		this.examples = examples;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
+		this.maxLength = maxLength;
+		this.conditions = conditions;
+		this.constraints = constraints;
+		this.mustSupport = mustSupport;
+		this.isModifier = isModifier;
+		this.isSummary = isSummary;
+		this.binding = binding;
+		this.mapping = mapping;
 	}
 	
 	public static Builder builder() {
@@ -127,7 +205,43 @@ public class ElementDefinition extends Element {
 		private Base base;
 		private	Uri contentReference;
 		private Collection<Type> types = Lists.newArrayList();
+		private TypedProperty<?> defaultValue;
+		private String meaningWhenMissing;
+		private String orderMeaning;
+		private TypedProperty<?> fixed;
+		private TypedProperty<?> pattern;
+		private Collection<Example> examples;
+		private TypedProperty<?> minValue;
+		private TypedProperty<?> maxValue;
+		private Integer maxLength;
+		private Set<Id> conditions;
+		private Set<Constraint> constraints;
+		private Boolean mustSupport;
+		private Boolean isModifier;
+		private Boolean isSummary;
+		private Binding binding;
+		private MappingElement mapping;
 		
+		public Builder path(final String path) {
+			this.path = path;
+			return getSelf();
+		}
+		
+		public Builder sliceName(final String sliceName) {
+			this.sliceName = sliceName;
+			return getSelf();
+		}
+		
+		public Builder label(final String label) {
+			this.label = label;
+			return getSelf();
+		}
+		
+		public Builder defaultValue(final String stringValue) {
+			this.defaultValue = new StringProperty(stringValue);
+			return getSelf();
+		}
+
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -150,7 +264,24 @@ public class ElementDefinition extends Element {
 					max,
 					base,
 					contentReference,
-					types);
+					types,
+					defaultValue,
+					meaningWhenMissing,
+					orderMeaning,
+					fixed,
+					pattern,
+					examples,
+					minValue,
+					maxValue,
+					maxLength,
+					conditions,
+					constraints,
+					mustSupport,
+					isModifier,
+					isSummary,
+					binding,
+					mapping
+			);
 		}
 	
 	}

@@ -16,10 +16,14 @@
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.fhir.core.codesystems.AggregationMode;
+import com.b2international.snowowl.fhir.core.codesystems.ReferenceVersionRules;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
@@ -85,8 +89,8 @@ public class Type extends Element {
 		private Uri code;
 		private Uri profile;
 		private Uri targetProfile;
-		private Collection<Code> aggregations = Lists.newArrayList();
-		private Code versioning;
+		private Collection<AggregationMode> aggregationModes = Lists.newArrayList();
+		private ReferenceVersionRules referenceVersionRule;
 		
 		
 		@Override
@@ -109,24 +113,25 @@ public class Type extends Element {
 			return getSelf();
 		}
 		
-		public Builder aggregations(Collection<Code> aggregations) {
-			this.aggregations = aggregations;
+		public Builder aggregations(Collection<AggregationMode> aggregationModes) {
+			this.aggregationModes = aggregationModes;
 			return getSelf();
 		}
 		
-		public Builder addAggregation(Code aggregation) {
-			this.aggregations.add(aggregation);
+		public Builder addAggregation(AggregationMode aggregationMode) {
+			this.aggregationModes.add(aggregationMode);
 			return getSelf();
 		}
 		
-		public Builder versioning(String versioning) {
-			this.versioning = new Code(versioning);
+		public Builder versioning(ReferenceVersionRules referenceVersionRule) {
+			this.referenceVersionRule = referenceVersionRule;
 			return getSelf();
 		}
 		
 		@Override
 		protected Type doBuild() {
-			return new Type(id, extensions, code, profile, targetProfile, aggregations, versioning);
+			Set<Code> aggregationCodes = aggregationModes.stream().map(a -> a.getCode()).collect(Collectors.toSet());
+			return new Type(id, extensions, code, profile, targetProfile, aggregationCodes, referenceVersionRule.getCode());
 		}
 	}
 
