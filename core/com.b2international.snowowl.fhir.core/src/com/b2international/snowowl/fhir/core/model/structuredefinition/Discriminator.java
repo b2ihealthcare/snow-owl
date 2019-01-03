@@ -24,7 +24,7 @@ import com.b2international.snowowl.fhir.core.codesystems.DiscriminatorType;
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -39,14 +39,14 @@ public class Discriminator extends Element {
 	//How the element value is interpreted when discrimination is evaluated.
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Code type;
 	
 	//A FHIRPath expression, using a restricted subset of FHIRPath, 
 	//that is used to identify the element on which discrimination is based.
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String path;
 	

@@ -62,7 +62,6 @@ import io.swagger.annotations.ApiModel;
 public class ConceptMap extends MetadataResource {
 
 	// FHIR header "resourceType" : "ConceptMap",
-
 	@Mandatory
 	@JsonProperty
 	private final String resourceType = "ConceptMap";

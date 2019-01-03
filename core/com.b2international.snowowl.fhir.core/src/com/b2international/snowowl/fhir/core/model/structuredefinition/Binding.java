@@ -26,6 +26,7 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Reference;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,7 +38,7 @@ public class Binding extends Element {
 
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Code strength;
 	

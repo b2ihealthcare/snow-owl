@@ -22,6 +22,8 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -32,16 +34,20 @@ public class Mapping {
 
 	@Valid
 	@NotNull
+	@Mandatory
 	@JsonProperty
 	private final Id identity;
 	
 	@Valid
+	@Summary
 	@JsonProperty
 	private final Uri uri;
 	
+	@Summary
 	@JsonProperty
 	private final String name;
 	
+	@Summary
 	@JsonProperty
 	private final String comment;
 	

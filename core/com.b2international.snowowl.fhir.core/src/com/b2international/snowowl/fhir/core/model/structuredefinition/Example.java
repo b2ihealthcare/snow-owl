@@ -24,7 +24,7 @@ import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.typedproperty.StringProperty;
 import com.b2international.snowowl.fhir.core.model.typedproperty.TypedProperty;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -35,13 +35,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Example extends Element {
 	
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String label;
 	
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private TypedProperty<?> value;
 	

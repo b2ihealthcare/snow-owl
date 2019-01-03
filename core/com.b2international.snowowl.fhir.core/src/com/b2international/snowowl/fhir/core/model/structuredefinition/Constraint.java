@@ -25,6 +25,7 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,7 +37,7 @@ public class Constraint extends Element {
 
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Id key;
 	
@@ -46,17 +47,17 @@ public class Constraint extends Element {
 	
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Code severity;
 	
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String human;
 
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String expression;
 	

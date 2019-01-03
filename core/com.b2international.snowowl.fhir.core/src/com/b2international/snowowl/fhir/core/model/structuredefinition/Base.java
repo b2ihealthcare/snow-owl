@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -31,16 +31,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Base extends Element {
 
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String path;
 	
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final int min;
 	
 	@NotNull
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final String max;
 	

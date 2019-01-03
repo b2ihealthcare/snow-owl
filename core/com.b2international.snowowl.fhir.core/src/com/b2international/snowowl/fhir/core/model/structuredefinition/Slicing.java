@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.SlicingRules;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
@@ -54,7 +55,7 @@ public class Slicing {
 	
 	@NotNull
 	@Valid
-	@Summary
+	@Mandatory
 	@JsonProperty
 	private final Code rules;
 	
