@@ -18,10 +18,7 @@ package com.b2international.snowowl.api.rest.admin;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.text.MessageFormat;
-
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,10 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.commons.exceptions.ApiError;
-import com.b2international.snowowl.api.admin.exception.LockConflictException;
-import com.b2international.snowowl.api.admin.exception.LockException;
-import com.b2international.snowowl.api.admin.exception.RepositoryNotFoundException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.api.rest.AbstractRestService;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.DeferredResults;
@@ -71,12 +66,6 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {
 	
-	@ExceptionHandler(LockException.class)
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	public @ResponseBody RestApiError handleLockException(final LockException e) {
-		return RestApiError.of(ApiError.Builder.of(e.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
-	}
-
 	@ApiOperation(
 			value="Retrieve all repositories",
 			notes="Retrieves all repositories that store terminology content.")
@@ -211,7 +200,7 @@ public class RepositoryRestService extends AbstractRestService {
 
 		final Repository repository = ApplicationContext.getServiceForClass(RepositoryManager.class).get(repositoryUuid);
 		if (repository == null) {
-			throw new RepositoryNotFoundException(repositoryUuid);
+			throw new NotFoundException("Repository", repositoryUuid);
 		}
 	}
 	
@@ -223,7 +212,7 @@ public class RepositoryRestService extends AbstractRestService {
 		try {
 			getLockManager().unlock(context, target);
 		} catch (final OperationLockException e) {
-			throw new LockException(e.getMessage());
+			throw new BadRequestException(e.getMessage());
 		}
 	}
 	
@@ -231,14 +220,12 @@ public class RepositoryRestService extends AbstractRestService {
 		try {
 			getLockManager().lock(context, timeoutMillis, target);
 		} catch (final DatastoreOperationLockException e) {
-
 			final DatastoreLockContext conflictingContext = e.getContext(target);
-			throw new LockConflictException(MessageFormat.format("Failed to acquire lock for all repositories because {0} is {1}.", 
+			throw new BadRequestException("Failed to acquire lock for all repositories because %s is %s.", 
 					conflictingContext.getUserId(), 
-					conflictingContext.getDescription()));
-
+					conflictingContext.getDescription());
 		} catch (final OperationLockException | InterruptedException e) {
-			throw new LockException(e.getMessage());
+			throw new BadRequestException(e.getMessage());
 		}
 	}
 	
