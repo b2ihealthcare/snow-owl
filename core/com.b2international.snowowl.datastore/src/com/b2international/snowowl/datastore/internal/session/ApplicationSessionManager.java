@@ -243,8 +243,8 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 
 	@Override
 	public void authenticate(final String username, final String password) throws LoginException {
-		if (IdentityProvider.NOOP != identityProvider) {
-			LogUtils.logUserAccess(LOG, username, "Authenticating: " + username);
+		if (IdentityProvider.NOOP != identityProvider && LOG.isTraceEnabled()) {
+			LogUtils.logUserAccess(LOG, username, String.format("Authenticating user '%s'", username));
 		}
 		
 		boolean success = this.identityProvider.auth(username, password);
@@ -253,7 +253,7 @@ public class ApplicationSessionManager extends Notifier implements IApplicationS
 		}
 		
 		if (IdentityProvider.NOOP != identityProvider) {
-			LogUtils.logUserAccess(LOG, username, "Authenticated: " + username);
+			LogUtils.logUserAccess(LOG, username, String.format("Authenticated user '%s'", username));
 		}
 	}
 
