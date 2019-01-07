@@ -51,6 +51,14 @@ public abstract class SnomedComponentRestRequests {
 				.post("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
 				.then();
 	}
+	
+	public static ValidatableResponse searchComponent(IBranchPath branchPath, SnomedComponentType type, Map<String, Object> params) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
+				.contentType(JSON_UTF8)
+				.queryParams(params)
+				.get("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
+				.then();
+	}
 
 	public static ValidatableResponse getComponent(IBranchPath branchPath, SnomedComponentType type, String id, String... expand) {
 		assertNotNull(id);

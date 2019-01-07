@@ -44,9 +44,9 @@ public abstract class AbstractSnomedApiTest {
 			Class<?> testClass = description.getTestClass();
 			BranchBase branchBaseAnnotation = getBranchBaseAnnotation(testClass);
 			String testBasePath = getTestBasePath(branchBaseAnnotation);
+			String testClassName = testClass.getSimpleName();
 
 			if (isolateTests(branchBaseAnnotation)) {
-				String testClassName = testClass.getSimpleName();
 				String testMethodName = description.getMethodName()
 						.replace("[", "_") // Remove special characters from parameterized test names
 						.replace("]", "");
@@ -59,7 +59,7 @@ public abstract class AbstractSnomedApiTest {
 				
 				branchPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(testBasePath, testClassName, testMethodName));
 			} else {
-				branchPath = BranchPathUtils.createPath(testBasePath);
+				branchPath = BranchPathUtils.createPath(SnomedApiTestConstants.PATH_JOINER.join(testBasePath, testClassName));
 			}
 
 			SnomedBranchingRestRequests.createBranchRecursively(branchPath);

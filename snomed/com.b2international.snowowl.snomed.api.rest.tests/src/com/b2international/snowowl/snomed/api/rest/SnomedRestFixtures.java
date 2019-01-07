@@ -15,7 +15,24 @@
  */
 package com.b2international.snowowl.snomed.api.rest;
 
-import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.createComponent;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_CARDINALITY;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_IN_GROUP_CARDINALITY;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.ATTRIBUTE_RULE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.CONTENT_TYPE_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.DOMAIN_TEMPLATE_FOR_PRECOORDINATION;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.EDITORIAL_GUIDE_REFERENCE;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_AXIOM_1;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.OWL_ONTOLOGY_1;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PARENT_DOMAIN;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.PROXIMAL_PRIMITIVE_REFINEMENT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RANGE_CONSTRAINT;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_REFSET_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedApiTestConstants.RULE_STRENGTH_ID;
+import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.*;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.api.rest.SnomedMergingRestRequests.createMerge;
@@ -33,6 +50,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
@@ -432,8 +450,7 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static String createReferencedComponent(IBranchPath branchPath, SnomedRefSetType refSetType) {
-		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
-		return createNewComponent(branchPath, referencedComponentType);
+		return createNewComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
 	}
 
 	public static String createNewComponent(IBranchPath branchPath, String referencedComponentType) {
@@ -455,7 +472,6 @@ public abstract class SnomedRestFixtures {
 
 	public static ComponentCategory getFirstAllowedReferencedComponentCategory(SnomedRefSetType refSetType) {
 		String referencedComponentType = getFirstAllowedReferencedComponentType(refSetType);
-
 		switch (referencedComponentType) {
 		case SnomedTerminologyComponentConstants.CONCEPT:
 			return ComponentCategory.CONCEPT;
@@ -466,6 +482,25 @@ public abstract class SnomedRestFixtures {
 		default:
 			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a category.");
 		}
+	}
+	
+	public static SnomedComponentType getSnomedComponentType(String referencedComponentType) {
+		switch (referencedComponentType) {
+		case SnomedTerminologyComponentConstants.CONCEPT:
+			return SnomedComponentType.CONCEPT;
+		case SnomedTerminologyComponentConstants.DESCRIPTION:
+			return SnomedComponentType.DESCRIPTION;
+		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+			return SnomedComponentType.RELATIONSHIP;
+		default:
+			throw new IllegalStateException("Can't convert referenced component type '" + referencedComponentType + "' to a component type.");
+		}
+	}
+	
+	public static String getFirstMatchingComponent(IBranchPath branchPath, String referencedComponentType) {
+		return Iterables.getFirst(searchComponent(branchPath, getSnomedComponentType(referencedComponentType), ImmutableMap.of("limit", 1))
+				.extract()
+				.<List<String>>path("items.id"), null);
 	}
 
 	public static void createConcreteDomainParentConcept(IBranchPath conceptPath) {
@@ -495,6 +530,103 @@ public abstract class SnomedRestFixtures {
 		getComponent(refSetPath, SnomedComponentType.REFSET, refSetId).statusCode(200);
 
 		return refSetId;
+	}
+	
+	public static Map<String, Object> getValidProperties(SnomedRefSetType refSetType) {
+		switch (refSetType) {
+		case ASSOCIATION:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, ImmutableMap.of("id", Concepts.ROOT_CONCEPT))
+					.build();
+		case ATTRIBUTE_VALUE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.ROOT_CONCEPT)
+					.build();
+		case COMPLEX_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 0)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.build();
+		case DESCRIPTION_TYPE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, Concepts.ROOT_CONCEPT)
+					.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 100)
+					.build();
+		case EXTENDED_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "extendedMapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 10)
+					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 10)
+					.put(SnomedRf2Headers.FIELD_MAP_RULE, "extendedMapRule")
+					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice")
+					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
+					.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.MAP_CATEGORY_NOT_CLASSIFIED)
+					.build();
+		case LANGUAGE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)
+					.build();
+		case MODULE_DEPENDENCY:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20170222")
+					.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20170223")
+					.build();
+		case SIMPLE:
+			return ImmutableMap.of();
+		case SIMPLE_MAP:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget")
+					.build();
+		case SIMPLE_MAP_WITH_DESCRIPTION:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget")
+					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
+					.build();
+		case OWL_AXIOM:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_AXIOM_1)
+					.build();
+		case OWL_ONTOLOGY:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_ONTOLOGY_1)
+					.build();
+		case MRCM_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, DOMAIN_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, PARENT_DOMAIN)
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, PROXIMAL_PRIMITIVE_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, PROXIMAL_PRIMITIVE_REFINEMENT)
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION)
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION)
+					.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, EDITORIAL_GUIDE_REFERENCE)
+					.build();
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, DOMAIN_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, ATTRIBUTE_CARDINALITY)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, ATTRIBUTE_IN_GROUP_CARDINALITY)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID)
+					.build();
+		case MRCM_ATTRIBUTE_RANGE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, RANGE_CONSTRAINT)
+					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, ATTRIBUTE_RULE)
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID)
+					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID)
+					.build();
+		case MRCM_MODULE_SCOPE:
+			return ImmutableMap.<String, Object>builder()
+					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, RULE_REFSET_ID)
+					.build();
+		default:
+			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
+		}
 	}
 
 	private static SnomedCoreConfiguration getSnomedCoreConfiguration() {
