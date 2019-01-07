@@ -36,14 +36,6 @@ public abstract class SnomedComponentRestRequests {
 	private static final Joiner COMMA_JOINER = Joiner.on(",");
 	private static final String JSON_UTF8 = ContentType.JSON.withCharset(Charsets.UTF_8);
 
-	public static ValidatableResponse searchComponent(IBranchPath branchPath, SnomedComponentType type, Map<String, Object> filters) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.accept(JSON_UTF8)
-				.queryParams(filters)
-				.get("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
-				.then();
-	}
-	
 	public static ValidatableResponse createComponent(IBranchPath branchPath, SnomedComponentType type, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(JSON_UTF8)
