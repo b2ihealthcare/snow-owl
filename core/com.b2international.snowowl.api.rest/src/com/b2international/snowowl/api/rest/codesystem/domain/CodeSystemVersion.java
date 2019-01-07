@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.codesystem.domain;
+package com.b2international.snowowl.api.rest.codesystem.domain;
 
 import java.util.Date;
 
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
-
 /**
  */
-public class CodeSystemVersion implements ICodeSystemVersion {
+public class CodeSystemVersion implements CodeSystemVersionProperties {
 
 	private Date importDate;
 	private Date effectiveDate;
@@ -31,7 +29,11 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 	private String parentBranchPath;
 	private boolean patched;
 
-	@Override
+	/**
+	 * Returns the date on which this code system version was imported into the server.
+	 * 
+	 * @return the import date of this code system version
+	 */
 	public Date getImportDate() {
 		return importDate;
 	}
@@ -41,7 +43,11 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 		return effectiveDate;
 	}
 
-	@Override
+	/**
+	 * Returns the date on which this code system version was last modified.
+	 * 
+	 * @return the last modification date of this code system version (can be {@code null})
+	 */
 	public Date getLastModificationDate() {
 		return lastModificationDate;
 	}
@@ -55,13 +61,20 @@ public class CodeSystemVersion implements ICodeSystemVersion {
 	public String getVersion() {
 		return version;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the parent branch path where the version branch is forked off
+	 * @return parent branch path
+	 */
 	public String getParentBranchPath() {
 		return parentBranchPath;
 	}
 
-	@Override
+	/**
+	 * Indicates if any modifications have been made on this code system version after releasing it.
+	 *  
+	 * @return {@code true} if this code system version includes retroactive modifications, {@code false} otherwise
+	 */
 	public boolean isPatched() {
 		return patched;
 	}

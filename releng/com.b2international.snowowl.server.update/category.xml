@@ -9,9 +9,6 @@
    <feature url="features/com.b2international.snowowl.snomed.core.feature_7.1.0.qualifier.jar" id="com.b2international.snowowl.snomed.core.feature" version="7.1.0.qualifier">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.api.feature_7.1.0.qualifier.jar" id="com.b2international.snowowl.api.feature" version="7.1.0.qualifier">
-      <category name="server-core"/>
-   </feature>
    <feature url="features/com.b2international.snowowl.snomed.api.feature_7.1.0.qualifier.jar" id="com.b2international.snowowl.snomed.api.feature" version="7.1.0.qualifier">
       <category name="snomed-core"/>
    </feature>

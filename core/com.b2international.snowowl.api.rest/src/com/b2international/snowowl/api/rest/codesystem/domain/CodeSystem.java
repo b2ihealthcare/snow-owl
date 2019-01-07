@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.codesystem.domain;
+package com.b2international.snowowl.api.rest.codesystem.domain;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
+ * Captures metadata about a code system, which holds a set of real-world concepts of medical significance (optionally
+ * along with different components forming a description of said concepts) and their corresponding unique code.
  */
 @JsonDeserialize(builder=CodeSystem.Builder.class)
-public class CodeSystem implements ICodeSystem {
+public class CodeSystem {
 	
 	public static Builder builder() {
 		return new Builder();
@@ -180,57 +181,101 @@ public class CodeSystem implements ICodeSystem {
 	private String repositoryUuid;
 	private String extensionOf;
 
-	@Override
+	/**
+	 * Returns the assigned object identifier (OID) of this code system.
+	 * 
+	 * @return the assigned object identifier of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
+	 */
 	public String getOid() {
 		return oid;
 	}
 
-	@Override
+	/**
+	 * Returns the name of this code system.
+	 * 
+	 * @return the name of this code system, eg. "{@code SNOMED Clinical Terms}"
+	 */
 	public String getName() {
 		return name;
 	}
 
-	@Override
+	/**
+	 * Returns the short name of this code system, which is usually an abbreviation of the name.
+	 * 
+	 * @return the short name of this code system, eg. "{@code SNOMEDCT}"
+	 */
 	public String getShortName() {
 		return shortName;
 	}
 
-	@Override
+	/**
+	 * Returns an URL for this code system which points to the maintaining organization's website.
+	 * 
+	 * @return the URL of the maintaining organization, eg. "{@code http://example.com/}" (can be {@code null}) 
+	 */
 	public String getOrganizationLink() {
 		return organizationLink;
 	}
 
-	@Override
+	/**
+	 * Returns the primary language tag for this code system.
+	 * 
+	 * @return the primary language tag, eg. "en_US"
+	 */
 	public String getPrimaryLanguage() {
 		return primaryLanguage;
 	}
 
-	@Override
+	/**
+	 * Returns a short paragraph describing the origins and purpose of this code system.
+	 * 
+	 * @return the citation for this code system (can be {@code null})
+	 */	
 	public String getCitation() {
 		return citation;
 	}
 
-	@Override
+	/**
+	 * Returns the branch path of the code system.
+	 * 
+	 * @return the path for the code system.
+	 */
 	public String getBranchPath() {
 		return branchPath;
 	}
-	
-	@Override
+
+	/**
+	 * Returns with the application specific icon path of the code system.
+	 * 
+	 * @return the application specific icon path.
+	 */
 	public String getIconPath() {
 		return iconPath;
 	}
-	
-	@Override
+
+	/**
+	 * Returns with the application specific ID to associate the code system
+	 * with any application specific feature or container repository.
+	 * 
+	 * @return the application specific ID.
+	 */
 	public String getTerminologyId() {
 		return terminologyId;
 	}
-	
-	@Override
+
+	/**
+	 * Returns with the unique ID of the repository where the current code
+	 * system belongs to.
+	 * 
+	 * @return the repository UUID for the code system.
+	 */
 	public String getRepositoryUuid() {
 		return repositoryUuid;
 	}
-	
-	@Override
+
+	/**
+	 * Returns the unique ID of the base Code System of this Code System.
+	 */
 	public String getExtensionOf() {
 		return extensionOf;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.codesystem;
+package com.b2international.snowowl.api.rest.codesystem;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,19 +21,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiErrorException;
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystemVersion;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystem;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersion;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.CodeSystemVersionEntry;
@@ -50,9 +48,12 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
-public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
+/**
+ * @since 7.1
+ */
+public class CodeSystemVersionService {
 
-	private static final Function<CodeSystemVersionEntry, ICodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = (input) -> {
+	private static final Function<CodeSystemVersionEntry, CodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = (input) -> {
 		final CodeSystemVersion result = new CodeSystemVersion();
 		result.setDescription(input.getDescription());
 		result.setEffectiveDate(toDate(input.getEffectiveDate()));
@@ -68,29 +69,42 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		return timeStamp >= 0L ? new Date(timeStamp) : null;
 	}
 
-	private static final Ordering<ICodeSystemVersion> VERSION_ID_ORDERING = Ordering.natural().onResultOf(new Function<ICodeSystemVersion, String>() {
-		@Override
-		public String apply(final ICodeSystemVersion input) {
-			return input.getVersion();
-		}
-	});
+	private static final Ordering<CodeSystemVersion> VERSION_ID_ORDERING = Ordering.natural().onResultOf(CodeSystemVersion::getVersion);
 
-	@Override
-	public List<ICodeSystemVersion> getCodeSystemVersions(final String shortName) {
+	@Autowired
+	private CodeSystemService codeSystems;
+
+	/**
+	 * Lists all released code system versions for a single code system with the specified short name, if it exists.
+	 * 
+	 * @param shortName the code system short name to look for, eg. "{@code SNOMEDCT}" (may not be {@code null})
+	 * 
+	 * @return the requested code system's released versions, ordered by version ID
+	 * 
+	 * @throws CodeSystemNotFoundException if a code system with the given short name is not registered
+	 */
+	public List<CodeSystemVersion> getCodeSystemVersions(final String shortName) {
 		checkNotNull(shortName, "Short name may not be null.");
-		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
+		final CodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		final Collection<CodeSystemVersionEntry> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid()); 
 		return toSortedCodeSystemVersionList(versions);
 	}
-	
-	@Resource
-	private ICodeSystemService codeSystems;
 
-	@Override
-	public ICodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
+	/**
+	 * Retrieves a single released code system version for the specified code system short name and version identifier, if it exists.
+	 * 
+	 * @param shortName the code system short name to look for, eg. "{@code SNOMEDCT}" (may not be {@code null})
+	 * @param version   the code system version identifier to look for, eg. "{@code 2014-07-31}" (may not be {@code null})
+	 * 
+	 * @return the requested code system version
+	 * 
+	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
+	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
+	 */
+	public CodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
 		checkNotNull(shortName, "Short name may not be null.");
 		checkNotNull(versionId, "Version identifier may not be null.");
-		final ICodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
+		final CodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		
 		final CodeSystemVersions versions = CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
@@ -108,9 +122,17 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 			return CODE_SYSTEM_VERSION_CONVERTER.apply(version);
 		}
 	}
-	
-	@Override
-	public ICodeSystemVersion createVersion(String shortName, ICodeSystemVersionProperties properties) {
+
+	/**
+	 * Creates a new version in terminology denoted by the given shortName parameter using the given {@link ICodeSystemVersionProperties} as base
+	 * properties.
+	 * 
+	 * @param shortName  the code system short name to look for, eg. "{@code SNOMEDCT}" (may not be {@code null})
+	 * @param properties the base properties of the code system version to create
+	 * 
+	 * @return the newly created code system version, as returned by {@link #getCodeSystemVersionById(String, String)}
+	 */
+	public CodeSystemVersion createVersion(String shortName, CodeSystemVersionProperties properties) {
 		Request<ServiceProvider, Boolean> req = CodeSystemRequests.prepareNewCodeSystemVersion()
 				.setCodeSystemShortName(shortName)
 				.setVersionId(properties.getVersion())
@@ -150,40 +172,6 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		}
 	}
 
-//	private void configureVersion(final ICodeSystem codeSystem, final ICodeSystemVersionProperties properties,
-//			final VersioningService versioningService) {
-//		versioningService.configureDescription(properties.getDescription());
-//		versioningService.configureParentBranchPath(codeSystem.getBranchPath());
-//		versioningService.configureCodeSystemShortName(codeSystem.getShortName());
-//		
-//		final IStatus dateResult = versioningService.configureEffectiveTime(properties.getEffectiveDate());
-//		if (!dateResult.isOK()) {
-//			throw new BadRequestException("The specified %s effective time is invalid. %s", properties.getEffectiveDate(), dateResult.getMessage());
-//		}
-//
-//		final IStatus versionResult = versioningService.configureNewVersionId(properties.getVersion(), false);
-//		if (!versionResult.isOK()) {
-//			throw new AlreadyExistsException("Version", properties.getVersion());
-//		}
-//		
-//		// FIXME remove hard coded SNOMED CT store value, versioning should get the repositoryId from the API
-//		final String repositoryId = "snomedStore";
-//		
-//		final String versionBranch = codeSystem.getBranchPath() + "/" + properties.getVersion();
-//		
-//		try {
-//			RepositoryRequests
-//				.branching()
-//				.prepareGet(versionBranch)
-//				.build(repositoryId)
-//				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-//				.getSync();
-//			throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", versionBranch);
-//		} catch (NotFoundException expected) {
-//			// fall-through
-//		}
-//	}
-
 	private Collection<CodeSystemVersionEntry> getCodeSystemVersions(final String shortName, final String repositoryId) {
 		return CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
@@ -199,8 +187,8 @@ public class CodeSystemVersionServiceImpl implements ICodeSystemVersionService {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
-	private List<ICodeSystemVersion> toSortedCodeSystemVersionList(final Collection<CodeSystemVersionEntry> sourceCodeSystemVersions) {
-		final Collection<ICodeSystemVersion> targetCodeSystemVersions = Collections2.transform(sourceCodeSystemVersions, CODE_SYSTEM_VERSION_CONVERTER);
+	private List<CodeSystemVersion> toSortedCodeSystemVersionList(final Collection<CodeSystemVersionEntry> sourceCodeSystemVersions) {
+		final Collection<CodeSystemVersion> targetCodeSystemVersions = Collections2.transform(sourceCodeSystemVersions, CODE_SYSTEM_VERSION_CONVERTER);
 		return VERSION_ID_ORDERING.immutableSortedCopy(targetCodeSystemVersions);
 	}
 

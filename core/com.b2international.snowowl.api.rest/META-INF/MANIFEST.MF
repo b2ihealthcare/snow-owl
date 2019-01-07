@@ -3,11 +3,7 @@ Bundle-Version: 7.1.0.qualifier
 Bundle-Name: Snow Owl Administrative Web Services
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: com.b2international.snowowl.api.rest;singleton:=true
-Import-Package: com.b2international.snowowl.api.codesystem,
- com.b2international.snowowl.api.codesystem.domain,
- com.b2international.snowowl.api.impl.codesystem,
- com.b2international.snowowl.api.impl.codesystem.domain,
- javax.servlet;version="2.6.0",
+Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  javax.validation.constraints,
  org.eclipse.core.runtime;version="3.4.0",
@@ -53,3 +49,10 @@ Bundle-ClassPath: .,
  WEB-INF/lib/springfox-swagger-common-2.8.0.jar,
  WEB-INF/lib/springfox-swagger2-2.8.0.jar
 Bundle-Vendor: B2i Healthcare
+Export-Package: com.b2international.snowowl.api.rest,
+ com.b2international.snowowl.api.rest.admin,
+ com.b2international.snowowl.api.rest.codesystem,
+ com.b2international.snowowl.api.rest.codesystem.domain,
+ com.b2international.snowowl.api.rest.domain,
+ com.b2international.snowowl.api.rest.info,
+ com.b2international.snowowl.api.rest.util

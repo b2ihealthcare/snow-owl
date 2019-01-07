@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.b2international.snowowl.api.rest.domain;
+
+import java.util.Date;
+
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 /**
- * Contains domain model objects related to code system metadata.
+ * Carries Jackson annotations for {@link CodeSystemVersionProperties}. 
+ * 
+ * @since 1.0
  */
-package com.b2international.snowowl.api.codesystem.domain;
+public interface CodeSystemVersionPropertiesMixin {
+
+	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
+	Date getEffectiveDate();
+}

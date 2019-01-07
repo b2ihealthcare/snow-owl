@@ -44,12 +44,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersionProperties;
-import com.b2international.snowowl.api.impl.codesystem.CodeSystemServiceImpl;
-import com.b2international.snowowl.api.impl.codesystem.CodeSystemVersionServiceImpl;
-import com.b2international.snowowl.api.rest.domain.ICodeSystemVersionPropertiesMixin;
+import com.b2international.snowowl.api.rest.codesystem.CodeSystemService;
+import com.b2international.snowowl.api.rest.codesystem.CodeSystemVersionService;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersionProperties;
+import com.b2international.snowowl.api.rest.domain.CodeSystemVersionPropertiesMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.classmate.TypeResolver;
@@ -113,13 +111,13 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 	}
 	
 	@Bean
-	public ICodeSystemVersionService codeSystemVersionService() {
-		return new CodeSystemVersionServiceImpl();
+	public CodeSystemVersionService codeSystemVersionService() {
+		return new CodeSystemVersionService();
 	}
 	
 	@Bean
-	public ICodeSystemService codeSystemService() {
-		return new CodeSystemServiceImpl();
+	public CodeSystemService codeSystemService() {
+		return new CodeSystemService();
 	}
 	
 	@Bean
@@ -159,7 +157,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurerAdapter {
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
 		objectMapper.setDateFormat(df);
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-		objectMapper.addMixIn(ICodeSystemVersionProperties.class, ICodeSystemVersionPropertiesMixin.class);
+		objectMapper.addMixIn(CodeSystemVersionProperties.class, CodeSystemVersionPropertiesMixin.class);
 		return objectMapper;
 	}
 	

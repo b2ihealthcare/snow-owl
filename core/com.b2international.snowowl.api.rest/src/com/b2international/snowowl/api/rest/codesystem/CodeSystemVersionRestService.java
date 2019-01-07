@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.api.codesystem.ICodeSystemVersionService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystemVersion;
 import com.b2international.snowowl.api.rest.AbstractRestService;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystemVersion;
 import com.b2international.snowowl.api.rest.codesystem.domain.VersionInput;
 import com.b2international.snowowl.api.rest.domain.RestApiError;
 import com.b2international.snowowl.api.rest.util.Responses;
@@ -55,7 +54,7 @@ import io.swagger.annotations.ApiResponses;
 public class CodeSystemVersionRestService extends AbstractRestService {
 	
 	@Autowired
-	protected ICodeSystemVersionService codeSystemVersionService;
+	protected CodeSystemVersionService codeSystemVersionService;
 
 	@ApiOperation(
 			value="Retrieve all code system versions",
@@ -65,7 +64,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CollectionResource<ICodeSystemVersion> getAllCodeSystemVersionsByShortName(
+	public CollectionResource<CodeSystemVersion> getAllCodeSystemVersionsByShortName(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") final String shortName) {
 
@@ -80,7 +79,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Code system or version not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{version}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public ICodeSystemVersion getCodeSystemVersionByShortNameAndVersionId(
+	public CodeSystemVersion getCodeSystemVersionByShortNameAndVersionId(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") 
 			final String shortName,
@@ -112,7 +111,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@ApiParam(value="Version parameters")
 			@RequestBody final VersionInput input) {
 		ApiValidation.checkInput(input);
-		final ICodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
+		final CodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
 		return Responses.created(getVersionURI(shortName, version.getVersion())).build();
 	}
 

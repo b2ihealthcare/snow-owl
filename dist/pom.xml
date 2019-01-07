@@ -74,18 +74,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.api</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.api.impl</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.api.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>

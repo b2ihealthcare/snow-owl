@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.impl.codesystem;
+package com.b2international.snowowl.api.rest.codesystem;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -22,11 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.api.codesystem.ICodeSystemService;
-import com.b2international.snowowl.api.codesystem.domain.ICodeSystem;
-import com.b2international.snowowl.api.impl.codesystem.domain.CodeSystem;
+import com.b2international.snowowl.api.rest.codesystem.domain.CodeSystem;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.CodeSystems;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
@@ -36,19 +35,26 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
-public final class CodeSystemServiceImpl implements ICodeSystemService {
+/**
+ * @since 7.1
+ */
+public final class CodeSystemService {
 
-	private static final Ordering<ICodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(ICodeSystem::getShortName);
+	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
 
-	@Override
-	public List<ICodeSystem> getCodeSystems() {
+	/**
+	 * Lists all registered code systems.
+	 * 
+	 * @return a list containing all registered code systems, ordered by short name (never {@code null})
+	 */
+	public List<CodeSystem> getCodeSystems() {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
-					final List<ICodeSystem> codeSystems = newArrayList();
+					final List<CodeSystem> codeSystems = newArrayList();
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
 						codeSystems.addAll(Lists.transform(result.getItems(), input -> CodeSystem.builder(input).build()));
 					}
@@ -61,8 +67,16 @@ public final class CodeSystemServiceImpl implements ICodeSystemService {
 		return ApplicationContext.getServiceForClass(IEventBus.class);
 	}
 
-	@Override
-	public ICodeSystem getCodeSystemById(String shortNameOrOid) {
+	/**
+	 * Retrieves a single code system matches the given shortName or object identifier (OID) parameter, if it exists.
+	 * 
+	 * @param shortNameOrOid the code system short name or OID to look for, eg. "{@code SNOMEDCT}" or "{@code 3.4.5.6.10000}" (may not be {@code null})
+	 * 
+	 * @return the requested code system
+	 * 
+	 * @throws CodeSystemNotFoundException if a code system with the given short name or OID is not registered
+	 */
+	public CodeSystem getCodeSystemById(String shortNameOrOid) {
 		checkNotNull(shortNameOrOid, "Shortname Or OID parameter may not be null.");
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {

@@ -5,9 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.fhir.api
 Bundle-Version: 7.1.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: com.b2international.snowowl.api.codesystem,
- com.b2international.snowowl.api.codesystem.domain,
- javax.servlet;version="2.6.0",
+Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0",
  javax.validation.constraints,
  org.eclipse.core.runtime;version="3.4.0",

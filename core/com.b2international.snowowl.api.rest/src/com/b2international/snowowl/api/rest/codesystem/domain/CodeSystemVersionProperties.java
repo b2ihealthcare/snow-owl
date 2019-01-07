@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.api.codesystem.domain;
+package com.b2international.snowowl.api.rest.codesystem.domain;
 
 import java.util.Date;
 
@@ -22,7 +22,7 @@ import java.util.Date;
  * 
  * @since 1.0
  */
-public interface ICodeSystemVersionProperties {
+public interface CodeSystemVersionProperties {
 
 	/**
 	 * Returns the description of this code system version.
