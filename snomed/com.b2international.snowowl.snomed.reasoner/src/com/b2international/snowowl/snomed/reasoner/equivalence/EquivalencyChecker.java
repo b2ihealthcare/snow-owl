@@ -39,8 +39,11 @@ import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequest
  */
 public final class EquivalencyChecker extends ClassifyOperation<LongKeyLongMap> {
 
-	private EquivalencyChecker(final String reasonerId, final String userId, final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, final String branch) {
+	public EquivalencyChecker(final String reasonerId, 
+			final String userId, 
+			final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, 
+			final String branch) {
 
 		super(reasonerId, userId, additionalConcepts, repositoryId, branch);
 	}
