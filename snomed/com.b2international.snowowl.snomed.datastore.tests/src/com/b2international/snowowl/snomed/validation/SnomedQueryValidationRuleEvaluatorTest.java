@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.validation;
 
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.concept;
-import static com.b2international.snowowl.snomed.core.tests.util.DocumentBuilders.description;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;

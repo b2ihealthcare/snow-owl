@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ public class IndexConfiguration {
 	private Integer numberOfShards = 6;
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+
+	@NotEmpty
+	private String clusterName = IndexClientFactory.DEFAULT_CLUSTER_NAME;
 	// @Nullable
 	private String clusterUrl;
 	// @Nullable
@@ -61,6 +64,8 @@ public class IndexConfiguration {
 	private int connectTimeout = IndexClientFactory.DEFAULT_CONNECT_TIMEOUT;
 	@Min(1_000)
 	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
+	@Min(2_001)
+	private int clusterHealthTimeout = IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -173,6 +178,16 @@ public class IndexConfiguration {
 	}
 
 	@JsonProperty
+	public String getClusterName() {
+		return clusterName;
+	}
+	
+	@JsonProperty
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+	
+	@JsonProperty
 	public String getClusterUrl() {
 		return clusterUrl;
 	}
@@ -220,5 +235,15 @@ public class IndexConfiguration {
 	@JsonProperty
 	public void setClusterPassword(String clusterPassword) {
 		this.clusterPassword = clusterPassword;
+	}
+	
+	@JsonProperty
+	public int getClusterHealthTimeout() {
+		return clusterHealthTimeout;
+	}
+	
+	@JsonProperty
+	public void setClusterHealthTimeout(int clusterHealthTimeout) {
+		this.clusterHealthTimeout = clusterHealthTimeout;
 	}
 }

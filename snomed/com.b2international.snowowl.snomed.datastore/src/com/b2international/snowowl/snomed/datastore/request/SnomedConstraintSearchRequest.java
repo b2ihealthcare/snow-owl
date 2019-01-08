@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.descendantIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.refSetIds;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.relationshipKeys;
 import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.selfIds;
@@ -38,35 +38,36 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
 final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<BranchContext, SnomedConstraints, SnomedConstraintDocument> {
 
 	public enum OptionKey {
-		
+
 		/**
-		 * Match MRCM constraints that are applicable to concepts having the given
-		 * identifiers.
+		 * Match MRCM constraints that are applicable to concepts having the given identifiers.
 		 */
 		SELF,
-		
+
 		/**
-		 * Match MRCM constraints that are applicable to concepts that are descendants
-		 * of other concepts with the given identifiers.
+		 * Match MRCM constraints that are applicable to concepts that are direct children of other concepts with the given identifiers. identifiers.
+		 */
+		CHILD,
+
+		/**
+		 * Match MRCM constraints that are applicable to concepts that are descendants of other concepts with the given identifiers.
 		 */
 		DESCENDANT,
-		
+
 		/**
-		 * Match MRCM constraints that are applicable to concepts that are members of 
-		 * reference sets with the specified identifiers.
+		 * Match MRCM constraints that are applicable to concepts that are members of reference sets with the specified identifiers.
 		 */
-		REFSET, 
-		
+		REFSET,
+
 		/**
-		 * Match MRCM constraints that are applicable to concepts that have a relationship
-		 * with the specified type and destination identifiers.
+		 * Match MRCM constraints that are applicable to concepts that have a relationship with the specified type and destination identifiers.
 		 */
 		RELATIONSHIP,
-		
+
 		/**
 		 * Match MRCM constraints that has any of the given {@link PredicateType}.
 		 */
-		TYPE
+		TYPE,
 	}
 	
 	@Override
@@ -77,6 +78,10 @@ final class SnomedConstraintSearchRequest extends SearchIndexResourceRequest<Bra
 		
 		if (containsKey(OptionKey.SELF)) {
 			queryBuilder.filter(selfIds(getCollection(OptionKey.SELF, String.class)));
+		}
+		
+		if (containsKey(OptionKey.CHILD)) {
+			queryBuilder.filter(childIds(getCollection(OptionKey.CHILD, String.class)));
 		}
 		
 		if (containsKey(OptionKey.DESCENDANT)) {

@@ -91,10 +91,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedLanguageRefSetMember/acceptabilityId"/>
     </genClasses>
     <genClasses ecoreClass="snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/group"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/serializedValue"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/label"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/uomComponentId"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/operatorComponentId"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/typeId"/>
       <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/dataType"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute snomedrefset.ecore#//SnomedConcreteDataTypeRefSetMember/characteristicTypeId"/>
     </genClasses>

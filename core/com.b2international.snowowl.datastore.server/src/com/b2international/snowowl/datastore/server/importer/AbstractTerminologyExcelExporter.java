@@ -365,7 +365,7 @@ public abstract class AbstractTerminologyExcelExporter<T, M> extends AbstractFil
 
 	}
 
-	private String getStatusFromBoolean(boolean active) {
+	protected final String getStatusFromBoolean(boolean active) {
 		return active ? "Active" : "Inactive";
 	}
 

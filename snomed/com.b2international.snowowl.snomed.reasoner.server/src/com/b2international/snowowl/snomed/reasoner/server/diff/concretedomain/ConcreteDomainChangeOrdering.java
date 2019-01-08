@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package com.b2international.snowowl.snomed.reasoner.server.diff.concretedomain;
 
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 /**
  * Compares {@link ConcreteDomainFragment} instances for ontology change processing. 
- *
  */
 public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainFragment> {
 	
@@ -31,22 +31,18 @@ public final class ConcreteDomainChangeOrdering extends Ordering<ConcreteDomainF
 		// Prevents instantiation
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.google.common.collect.Ordering#compare(java.lang.Object, java.lang.Object)
-	 */
 	@Override
 	public int compare(final ConcreteDomainFragment left, final ConcreteDomainFragment right) {
 		
-		final int typeDelta = left.getType() - right.getType();
+		final int typeDelta = left.getDataType().compareTo(right.getDataType());
 		if (typeDelta != 0) return typeDelta;
 		
-		final int attributeLabelDelta = left.getLabel().compareTo(right.getLabel());
-		if (attributeLabelDelta != 0) return attributeLabelDelta;
-
-		final int uomDelta = Longs.compare(left.getUomId(), right.getUomId());
-		if (uomDelta != 0) return uomDelta;
+		final int typeIdDelta = Longs.compare(left.getTypeId(), right.getTypeId());
+		if (typeIdDelta != 0) return typeIdDelta;
 		
-		return left.getValue().compareTo(right.getValue());
+		final int groupDelta = Ints.compare(left.getGroup(), right.getGroup());
+		if (groupDelta != 0) return groupDelta;
+
+		return left.getSerializedValue().compareTo(right.getSerializedValue());
 	}
 }

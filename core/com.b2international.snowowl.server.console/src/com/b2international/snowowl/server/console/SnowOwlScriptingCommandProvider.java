@@ -40,7 +40,7 @@ public class SnowOwlScriptingCommandProvider implements CommandProvider {
 	public String getHelp() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("---Snow Owl Scripting Commands---\n");
-		buffer.append("\tscript run [filename] - execute a Groovy script file\n");
+		buffer.append("\tscript run <filename> - execute a Groovy script file\n");
 		return buffer.toString();
 	}
 	

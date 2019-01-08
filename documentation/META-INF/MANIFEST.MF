@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Documentation
 Bundle-SymbolicName: documentation;singleton:=true
-Bundle-Version: 6.9.0.qualifier
+Bundle-Version: 6.12.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -26,7 +26,6 @@ Require-Bundle: com.b2international.commons,
  com.b2international.snowowl.snomed.exporter.server,
  com.b2international.snowowl.snomed.importer,
  com.b2international.snowowl.snomed.importer.rf2,
- com.b2international.snowowl.snomed.refset.core,
  com.b2international.snowowl.snomed.semanticengine,
  com.b2international.snowowl.snomed.semanticengine.simpleast,
  com.b2international.snowowl.snomed.reasoner,

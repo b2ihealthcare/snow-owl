@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.validation.eval;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.scripting.api.ScriptEngine;
@@ -25,6 +26,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 6.1
@@ -38,14 +40,21 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule) throws Exception {
+	public List<ComponentIdentifier> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws Exception {
 		final String script = Files
 			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
 			.collect(Collectors.joining(System.getProperty("line.separator")));
+		
+		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", validationResourcesDirectory);
+		
+		if (filterParams != null && !filterParams.isEmpty()) {
+			paramsBuilder.putAll(filterParams);
+		}
+		
 		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
 			ImmutableMap.<String, Object>of(
 				"ctx", context,
-				"resourcesDir", validationResourcesDirectory
+				"params", paramsBuilder.build()
 			)
 		);
 	}

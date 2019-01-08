@@ -26,7 +26,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.collect.Multimap;
 
@@ -87,6 +86,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		public static final String STATED_DESCENDANTS = "statedDescendants";
 		public static final String DESCENDANTS = "descendants";
 		public static final String RELATIONSHIPS = "relationships";
+		public static final String INBOUND_RELATIONSHIPS = "inboundRelationships";
 		public static final String DESCRIPTIONS = "descriptions";
 		public static final String FULLY_SPECIFIED_NAME = "fsn";
 		public static final String PREFERRED_TERM = "pt";
@@ -95,7 +95,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	}
 	
 	/**
-	 * Helper function to get ancestors of a given {@link SnomedConcept}.
+	 * Helper function to get ancestors of a given {@link SnomedConcept}, both stated and inferred.
 	 */
 	public static final Function<SnomedConcept, Set<String>> GET_ANCESTORS = (concept) -> {
 		final Set<String> ancestors = newHashSet();
@@ -114,6 +114,20 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 		return ancestors;
 	};
 
+	/**
+	 * Helper function to get only direct parents of a given {@link SnomedConcept}, both stated and inferred.
+	 */
+	public static final Function<SnomedConcept, Set<String>> GET_PARENTS = (concept) -> {
+		final Set<String> ancestors = newHashSet();
+		for (long parent : concept.getParentIds()) {
+			ancestors.add(Long.toString(parent));
+		}
+		for (long parent : concept.getStatedParentIds()) {
+			ancestors.add(Long.toString(parent));
+		}
+		return ancestors;
+	};
+
 	private DefinitionStatus definitionStatus;
 	private SubclassDefinitionStatus subclassDefinitionStatus;
 	private InactivationIndicator inactivationIndicator;
@@ -123,6 +137,7 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	private SnomedDescriptions descriptions;
 	private SnomedDescriptions preferredDescriptions;
 	private SnomedRelationships relationships;
+	private SnomedRelationships inboundRelationships;
 	private SnomedConcepts ancestors;
 	private SnomedConcepts descendants;
 	private SnomedConcepts statedAncestors;
@@ -203,6 +218,13 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	 */
 	public SnomedRelationships getRelationships() {
 		return relationships;
+	}
+	
+	/**
+	 * @return the inbound relationships of the SNOMED CT Concept.
+	 */
+	public SnomedRelationships getInboundRelationships() {
+		return inboundRelationships;
 	}
 
 	/**
@@ -305,6 +327,10 @@ public final class SnomedConcept extends SnomedCoreComponent implements Definiti
 	
 	public void setRelationships(SnomedRelationships relationships) {
 		this.relationships = relationships;
+	}
+	
+	public void setInboundRelationships(SnomedRelationships inboundRelationships) {
+		this.inboundRelationships = inboundRelationships;
 	}
 	
 	public void setFsn(SnomedDescription fsn) {

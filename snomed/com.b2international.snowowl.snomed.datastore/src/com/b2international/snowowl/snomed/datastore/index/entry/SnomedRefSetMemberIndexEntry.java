@@ -15,23 +15,16 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyDecimal;
-import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.b2international.index.query.Expressions.matchRange;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
+import static com.b2international.index.query.Expressions.*;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.*;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.RevisionHash;
@@ -73,7 +66,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Function;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -90,14 +82,13 @@ import com.google.common.collect.ImmutableMap;
 	SnomedDocument.Fields.MODULE_ID, 
 	SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
 	SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.ATTRIBUTE_NAME,
 	SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
 	SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
 	SnomedRefSetMemberIndexEntry.Fields.INTEGER_VALUE,
 	SnomedRefSetMemberIndexEntry.Fields.DECIMAL_VALUE,
-	SnomedRefSetMemberIndexEntry.Fields.OPERATOR_ID,
+	SnomedRefSetMemberIndexEntry.Fields.RELATIONSHIP_GROUP,
+	SnomedRefSetMemberIndexEntry.Fields.TYPE_ID,
 	SnomedRefSetMemberIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
-	SnomedRefSetMemberIndexEntry.Fields.UNIT_ID,
 	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_LENGTH,
 	SnomedRefSetMemberIndexEntry.Fields.DESCRIPTION_FORMAT,
 	SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID,
@@ -131,15 +122,23 @@ import com.google.common.collect.ImmutableMap;
 })
 public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
-	private static final long serialVersionUID = 5198766293865046258L;
-
 	public static class Fields extends SnomedDocument.Fields {
-		// known RF2 fields
+		// All member types
 		public static final String REFERENCE_SET_ID = "referenceSetId"; // XXX different than the RF2 header field name
 		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
+		public static final String REFSET_TYPE = "referenceSetType";
+		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
+
+		// Language type
 		public static final String ACCEPTABILITY_ID = SnomedRf2Headers.FIELD_ACCEPTABILITY_ID;
+		
+		// Attribute value type
 		public static final String VALUE_ID = SnomedRf2Headers.FIELD_VALUE_ID;
+		
+		// Association type
 		public static final String TARGET_COMPONENT = SnomedRf2Headers.FIELD_TARGET_COMPONENT;
+		
+		// Simple, complex extended map type
 		public static final String MAP_TARGET = SnomedRf2Headers.FIELD_MAP_TARGET;
 		public static final String MAP_TARGET_DESCRIPTION = SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION;
 		public static final String MAP_GROUP = SnomedRf2Headers.FIELD_MAP_GROUP;
@@ -148,18 +147,33 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MAP_ADVICE = SnomedRf2Headers.FIELD_MAP_ADVICE;
 		public static final String MAP_CATEGORY_ID = SnomedRf2Headers.FIELD_MAP_CATEGORY_ID;
 		public static final String CORRELATION_ID = SnomedRf2Headers.FIELD_CORRELATION_ID;
+		
+		// Description format
 		public static final String DESCRIPTION_FORMAT = SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT;
 		public static final String DESCRIPTION_LENGTH = SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH;
-		public static final String OPERATOR_ID = SnomedRf2Headers.FIELD_OPERATOR_ID;
-		public static final String UNIT_ID = SnomedRf2Headers.FIELD_UNIT_ID;
+		
+		// Query type
 		public static final String QUERY = SnomedRf2Headers.FIELD_QUERY;
+		
+		// Concrete domain type
+		public static final String RELATIONSHIP_GROUP = SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String DATA_TYPE = "dataType";
+		public static final String SERIALIZED_VALUE = SnomedRf2Headers.FIELD_VALUE;
+		public static final String BOOLEAN_VALUE = "booleanValue";
+		public static final String STRING_VALUE = "stringValue";
+		public static final String INTEGER_VALUE = "integerValue";
+		public static final String DECIMAL_VALUE = "decimalValue";
+
+		// Module dependency type
 		public static final String SOURCE_EFFECTIVE_TIME = SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME;
 		public static final String TARGET_EFFECTIVE_TIME = SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME;
-		private static final String DATA_VALUE = SnomedRf2Headers.FIELD_VALUE;
-		public static final String ATTRIBUTE_NAME = SnomedRf2Headers.FIELD_ATTRIBUTE_NAME;
+		
+		// OWL expression type
 		public static final String OWL_EXPRESSION = SnomedRf2Headers.FIELD_OWL_EXPRESSION;
 		
+		// MRCM domain type
 		public static final String MRCM_DOMAIN_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT;
 		public static final String MRCM_PARENT_DOMAIN = SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN;
 		public static final String MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT;
@@ -168,30 +182,25 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION = SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION;
 		public static final String MRCM_EDITORIAL_GUIDE_REFERENCE = SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE;
 		
+		// MRCM attribute domain type
 		public static final String MRCM_DOMAIN_ID = SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID;
 		public static final String MRCM_GROUPED = SnomedRf2Headers.FIELD_MRCM_GROUPED;
 		public static final String MRCM_ATTRIBUTE_CARDINALITY = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY;
 		public static final String MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY;
-		public static final String MRCM_RULE_STRENGTH_ID = SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID;
-		public static final String MRCM_CONTENT_TYPE_ID = SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID;
-		
+
+		// MRCM attribute range type
 		public static final String MRCM_RANGE_CONSTRAINT = SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT;
 		public static final String MRCM_ATTRIBUTE_RULE = SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE;
 		
-		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
+		// Used both in MRCM attribute domain and range reference sets
+		public static final String MRCM_RULE_STRENGTH_ID = SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID;
+		public static final String MRCM_CONTENT_TYPE_ID = SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID;
 		
-		// extra index fields to store datatype and map target type
-		public static final String DATA_TYPE = "dataType";
-		public static final String REFSET_TYPE = "referenceSetType";
-		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
-		// CD value fields per type
-		public static final String BOOLEAN_VALUE = "booleanValue";
-		public static final String STRING_VALUE = "stringValue";
-		public static final String INTEGER_VALUE = "integerValue";
-		public static final String DECIMAL_VALUE = "decimalValue";
+		// MRCM module scope
+		public static final String MRCM_RULE_REFSET_ID = SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID;
 	}
 	
-		public static Builder builder() {
+	public static Builder builder() {
 		return new Builder();
 	}
 	
@@ -231,7 +240,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		} else {
 			builder.referencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
 		}
-		
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {
 			final Object value = entry.getValue();
@@ -274,12 +282,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 			@Override
 			public Builder caseSnomedConcreteDataTypeRefSetMember(final SnomedConcreteDataTypeRefSetMember concreteDataTypeMember) {
-				return builder.field(Fields.ATTRIBUTE_NAME, concreteDataTypeMember.getLabel())
+				return builder
 						.field(Fields.DATA_TYPE, concreteDataTypeMember.getDataType())
-						.field(Fields.DATA_VALUE, concreteDataTypeMember.getSerializedValue())
-						.field(Fields.CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId())
-						.field(Fields.OPERATOR_ID, concreteDataTypeMember.getOperatorComponentId())
-						.field(Fields.UNIT_ID, concreteDataTypeMember.getUomComponentId());
+						.field(Fields.SERIALIZED_VALUE, concreteDataTypeMember.getSerializedValue())
+						.field(Fields.RELATIONSHIP_GROUP, concreteDataTypeMember.getGroup())
+						.field(Fields.TYPE_ID, concreteDataTypeMember.getTypeId())
+						.field(Fields.CHARACTERISTIC_TYPE_ID, concreteDataTypeMember.getCharacteristicTypeId());
 			}
 
 			@Override
@@ -382,24 +390,16 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		switch (rf2Field) {
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
-			if (value instanceof String && !StringUtils.isEmpty((String) value)) {
-				Date parsedDate = EffectiveTimes.parse((String) value, DateFormats.SHORT);
-				return EffectiveTimes.getEffectiveTime(parsedDate);
-			} else {
-				return EffectiveTimes.UNSET_EFFECTIVE_TIME;
-			}
+			return EffectiveTimes.getEffectiveTime(value);
 		default: 
 			return value;
 		}
 	}
 
 	public static Collection<SnomedRefSetMemberIndexEntry> from(final Iterable<SnomedReferenceSetMember> refSetMembers) {
-		return FluentIterable.from(refSetMembers).transform(new Function<SnomedReferenceSetMember, SnomedRefSetMemberIndexEntry>() {
-			@Override
-			public SnomedRefSetMemberIndexEntry apply(final SnomedReferenceSetMember refSetMember) {
-				return builder(refSetMember).build();
-			}
-		}).toList();
+		return FluentIterable.from(refSetMembers)
+				.transform(refSetMember -> builder(refSetMember).build())
+				.toList();
 	}
 
 	public static final class Expressions extends SnomedDocument.Expressions {
@@ -424,6 +424,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
 		}
 
+		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
+			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
+		}
+		
 		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {
 			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
 		}
@@ -440,6 +444,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeIds);
 		}
 		
+		public static Expression characteristicTypeId(String characteristicTypeId) {
+			return exactMatch(Fields.CHARACTERISTIC_TYPE_ID, characteristicTypeId);
+		}
+		
 		public static Expression correlationIds(Collection<String> correlationIds) {
 			return matchAny(Fields.CORRELATION_ID, correlationIds);
 		}
@@ -450,14 +458,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression mapCategoryIds(Collection<String> mapCategoryIds) {
 			return matchAny(Fields.MAP_CATEGORY_ID, mapCategoryIds);
-		}
-		
-		public static Expression operatorIds(Collection<String> operatorIds) {
-			return matchAny(Fields.OPERATOR_ID, operatorIds);
-		}
-		
-		public static Expression unitIds(Collection<String> unitIds) {
-			return matchAny(Fields.UNIT_ID, unitIds);
 		}
 		
 		public static Expression valueIds(Collection<String> valueIds) {
@@ -507,16 +507,26 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 		
 		public static Expression dataTypes(Collection<DataType> dataTypes) {
-			return matchAny(Fields.DATA_TYPE, FluentIterable.from(dataTypes).transform(new Function<DataType, String>() {
-				@Override
-				public String apply(DataType input) {
-					return input.name();
-				}
-			}).toSet());
+			return matchAny(Fields.DATA_TYPE, FluentIterable.from(dataTypes)
+					.transform(DataType::name)
+					.toSet());
 		}
 		
-		public static Expression attributeNames(Collection<String> attributeNames) {
-			return matchAny(Fields.ATTRIBUTE_NAME, attributeNames);
+		public static Expression relationshipGroup(int relationshipGroup) {
+			return match(Fields.RELATIONSHIP_GROUP, relationshipGroup);
+		}
+		
+		public static Expression relationshipGroup(int relationshipGroupStart, int relationshipGroupEnd) {
+			checkArgument(relationshipGroupStart <= relationshipGroupEnd, "Group end should be greater than or equal to groupStart");
+			if (relationshipGroupStart == relationshipGroupEnd) {
+				return relationshipGroup(relationshipGroupStart);
+			} else {
+				return matchRange(Fields.RELATIONSHIP_GROUP, relationshipGroupStart, relationshipGroupEnd);
+			}
+		}
+		
+		public static Expression typeIds(Collection<String> typeIds) {
+			return matchAny(Fields.TYPE_ID, typeIds);
 		}
 		
 		public static Expression sourceEffectiveTime(long effectiveTime) {
@@ -530,7 +540,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
 			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(type -> type.name()).toSet());
 		}
-		
 	}
 
 	@JsonPOJOBuilder(withPrefix="")
@@ -549,11 +558,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		private String valueId;
 		// CONCRETE DOMAIN reference set members
 		private DataType dataType;
-		private String attributeName;
 		private Object value;
-		private String operatorId;
+		private Integer relationshipGroup;
+		private String typeId;
 		private String characteristicTypeId;
-		private String unitId;
 		// DESCRIPTION
 		private Integer descriptionLength;
 		private String descriptionFormat;
@@ -612,11 +620,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public Builder field(String fieldName, Object value) {
 			switch (fieldName) {
 			case Fields.ACCEPTABILITY_ID: this.acceptabilityId = (String) value; break;
-			case Fields.ATTRIBUTE_NAME: this.attributeName = (String) value; break;
+			case Fields.RELATIONSHIP_GROUP: this.relationshipGroup = (Integer) value; break;
+			case Fields.TYPE_ID: this.typeId = (String) value; break;
 			case Fields.CHARACTERISTIC_TYPE_ID: this.characteristicTypeId = (String) value; break;
 			case Fields.CORRELATION_ID: this.correlationId = (String) value; break;
 			case Fields.DATA_TYPE: this.dataType = (DataType) value; break;
-			case Fields.DATA_VALUE: this.value = value; break;
+			case Fields.SERIALIZED_VALUE: this.value = value; break;
 			case Fields.DESCRIPTION_FORMAT: this.descriptionFormat = (String) value; break;
 			case Fields.DESCRIPTION_LENGTH: this.descriptionLength = (Integer) value; break;
 			case Fields.MAP_ADVICE: this.mapAdvice = (String) value; break;
@@ -626,12 +635,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.MAP_RULE: this.mapRule = (String) value; break;
 			case Fields.MAP_TARGET: this.mapTarget = (String) value; break;
 			case Fields.MAP_TARGET_DESCRIPTION: this.mapTargetDescription = (String) value; break;
-			case Fields.OPERATOR_ID: this.operatorId = (String) value; break;
 			case Fields.QUERY: this.query = (String) value; break;
 			case Fields.SOURCE_EFFECTIVE_TIME: this.sourceEffectiveTime = (Long) value; break;
 			case Fields.TARGET_COMPONENT: this.targetComponent = (String) value; break;
 			case Fields.TARGET_EFFECTIVE_TIME: this.targetEffectiveTime = (Long) value; break;
-			case Fields.UNIT_ID: this.unitId = (String) value; break;
 			case Fields.VALUE_ID: this.valueId = (String) value; break;
 			case Fields.OWL_EXPRESSION: this.owlExpression = (String) value; break;
 			
@@ -695,8 +702,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder attributeName(String attributeName) {
-			this.attributeName = attributeName;
+		Builder relationshipGroup(Integer relationshipGroup) {
+			this.relationshipGroup = relationshipGroup;
+			return getSelf();
+		}
+		
+		Builder typeId(String typeId) {
+			this.typeId = typeId;
 			return getSelf();
 		}
 		
@@ -760,11 +772,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		Builder operatorId(final String operatorId) {
-			this.operatorId = operatorId;
-			return getSelf();
-		}
-		
 		Builder query(final String query) {
 			this.query = query;
 			return getSelf();
@@ -777,11 +784,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		Builder targetEffectiveTime(final Long targetEffectiveTime) {
 			this.targetEffectiveTime = targetEffectiveTime;
-			return getSelf();
-		}
-		
-		Builder unitId(final String unitId) {
-			this.unitId = unitId;
 			return getSelf();
 		}
 		
@@ -919,7 +921,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			doc.valueId = valueId;
 			// concrete domain members
 			doc.dataType = dataType;
-			doc.attributeName = attributeName;
+			doc.typeId = typeId;
 			if (dataType != null) {
 				switch (dataType) {
 				case BOOLEAN:
@@ -949,9 +951,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				default: throw new UnsupportedOperationException("Unsupported concrete domain data type: " + dataType);
 				}
 			}
+			doc.relationshipGroup = relationshipGroup;
 			doc.characteristicTypeId = characteristicTypeId;
-			doc.operatorId = operatorId;
-			doc.unitId = unitId;
 			// description
 			doc.descriptionFormat = descriptionFormat;
 			doc.descriptionLength = descriptionLength;
@@ -1022,17 +1023,17 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private String valueId;
 	// CONCRETE DOMAIN reference set members
 	private DataType dataType;
-	private String attributeName;
 	
 	// only one of these value fields should be set when this represents a concrete domain member
 	private String stringValue;
 	private Boolean booleanValue;
 	private Integer integerValue;
 	private BigDecimal decimalValue;
-	
-	private String operatorId;
+
+	private Integer relationshipGroup;
+	private String typeId;
 	private String characteristicTypeId;
-	private String unitId;
+	
 	// DESCRIPTION
 	private Integer descriptionLength;
 	private String descriptionFormat;
@@ -1179,17 +1180,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public DataType getDataType() {
 		return dataType;
 	}
-
-	public String getUnitId() {
-		return unitId;
+	
+	public Integer getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
-	public String getAttributeName() {
-		return attributeName;
-	}
-
-	public String getOperatorId() {
-		return operatorId;
+	public String getTypeId() {
+		return typeId;
 	}
 
 	public String getCharacteristicTypeId() {
@@ -1380,11 +1377,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		putIfPresent(builder, Fields.VALUE_ID, getValueId());
 		// CONCRETE DOMAIN reference set members
 		putIfPresent(builder, Fields.DATA_TYPE, getDataType());
-		putIfPresent(builder, Fields.ATTRIBUTE_NAME, getAttributeName());
-		putIfPresent(builder, Fields.DATA_VALUE, getValue());
-		putIfPresent(builder, Fields.OPERATOR_ID, getOperatorId());
+		putIfPresent(builder, Fields.RELATIONSHIP_GROUP, getRelationshipGroup());
+		putIfPresent(builder, Fields.TYPE_ID, getTypeId());
+		putIfPresent(builder, Fields.SERIALIZED_VALUE, getValue());
 		putIfPresent(builder, Fields.CHARACTERISTIC_TYPE_ID, getCharacteristicTypeId());
-		putIfPresent(builder, Fields.UNIT_ID, getUnitId());
 		// DESCRIPTION
 		putIfPresent(builder, Fields.DESCRIPTION_LENGTH, getDescriptionLength());
 		putIfPresent(builder, Fields.DESCRIPTION_FORMAT, getDescriptionFormat());
@@ -1447,11 +1443,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("targetComponent", targetComponent)
 				.add("valueId", valueId)
 				.add("dataType", dataType)
-				.add("attributeName", attributeName)
+				.add("typeId", typeId)
+				.add("relationshipGroup", relationshipGroup)
 				.add("value", getValue())
-				.add("operatorId", operatorId)
 				.add("characteristicTypeId", characteristicTypeId)
-				.add("unitId", unitId)
 				.add("descriptionLength", descriptionLength)
 				.add("descriptionFormat", descriptionFormat)
 				.add("acceptabilityId", acceptabilityId)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,16 @@ public final class SnomedConstraintSearchRequestBuilder
 		return addOption(SnomedConstraintSearchRequest.OptionKey.SELF, selfIds);
 	}
 	
-	public SnomedConstraintSearchRequestBuilder filterByDescendantId(String descendantd) {
-		return addOption(SnomedConstraintSearchRequest.OptionKey.DESCENDANT, descendantd);
+	public SnomedConstraintSearchRequestBuilder filterByChildId(String childId) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.CHILD, childId);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByChildIds(Collection<String> childIds) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.CHILD, childIds);
+	}
+	
+	public SnomedConstraintSearchRequestBuilder filterByDescendantId(String descendantId) {
+		return addOption(SnomedConstraintSearchRequest.OptionKey.DESCENDANT, descendantId);
 	}
 	
 	public SnomedConstraintSearchRequestBuilder filterByDescendantIds(Collection<String> descendantIds) {

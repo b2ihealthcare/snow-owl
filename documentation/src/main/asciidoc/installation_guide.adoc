@@ -78,9 +78,9 @@ Create a non-login user for Snow Owl Server to run as:
 # useradd -r -s /sbin/nologin snowowl 
 --------------------------
 
-For optimal indexing performance, consult the "Production Deployment" sections of 
-https://www.elastic.co/guide/en/elasticsearch/guide/current/hardware.html[Elasticsearch: The Definitive Guide]. In particular, the
-following settings are applicable to an installation of the terminology server:
+For optimal indexing and searching performance, consult the "Important system configuration" section of 
+https://www.elastic.co/guide/en/elasticsearch/reference/6.3/system-config.html[Elasticsearch: Reference Guide].
+In particular, the following settings are applicable to an installation of the terminology server:
 
 --------------------------
 # sysctl settings, to be added to /etc/sysctl.conf or equivalent
@@ -90,7 +90,14 @@ vm.max_map_count = 262144
 
 # "noop" I/O scheduler, should be set in eg. /etc/rc.local for solid state disks:
 
-echo noop > /sys/block/sda/queue/scheduler
+echo noop > /sys/block/sdX/queue/scheduler
+
+# increase the maximum limit of available file descriptors and threads in /etc/security/limits.conf
+
+*    soft    nofile 65536
+*    hard    nofile 65536  
+*    soft    nproc  4096
+*    hard    nproc  4096 
 --------------------------
 
 === Network

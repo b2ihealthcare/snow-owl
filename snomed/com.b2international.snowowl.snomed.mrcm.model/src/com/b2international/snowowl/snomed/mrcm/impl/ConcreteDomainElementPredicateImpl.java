@@ -14,6 +14,7 @@
  */
 package com.b2international.snowowl.snomed.mrcm.impl;
 
+import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ConcreteDomainElementPredicate;
 import com.b2international.snowowl.snomed.mrcm.MrcmPackage;
 
@@ -29,9 +30,8 @@ import org.eclipse.emf.ecore.EClass;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getName <em>Name</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getLabel <em>Label</em>}</li>
- *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getType <em>Type</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getAttribute <em>Attribute</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getRange <em>Range</em>}</li>
  *   <li>{@link com.b2international.snowowl.snomed.mrcm.impl.ConcreteDomainElementPredicateImpl#getCharacteristicTypeConceptId <em>Characteristic Type Concept Id</em>}</li>
  * </ul>
  *
@@ -62,8 +62,8 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getName() {
-		return (String)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME, true);
+	public ConceptSetDefinition getAttribute() {
+		return (ConceptSetDefinition)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE, true);
 	}
 
 	/**
@@ -71,8 +71,8 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setName(String newName) {
-		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__NAME, newName);
+	public void setAttribute(ConceptSetDefinition newAttribute) {
+		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE, newAttribute);
 	}
 
 	/**
@@ -80,8 +80,8 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public String getLabel() {
-		return (String)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL, true);
+	public DataType getRange() {
+		return (DataType)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE, true);
 	}
 
 	/**
@@ -89,26 +89,8 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public void setLabel(String newLabel) {
-		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__LABEL, newLabel);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public DataType getType() {
-		return (DataType)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE, true);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void setType(DataType newType) {
-		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__TYPE, newType);
+	public void setRange(DataType newRange) {
+		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE, newRange);
 	}
 
 	/**

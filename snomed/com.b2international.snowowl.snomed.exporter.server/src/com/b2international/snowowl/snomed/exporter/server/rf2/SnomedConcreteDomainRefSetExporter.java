@@ -38,13 +38,11 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(super.convertToString(doc));
 		sb.append(HT);
-		sb.append(nullToEmpty(doc.getUnitId()));
-		sb.append(HT);
-		sb.append(doc.getOperatorId());
-		sb.append(HT);
-		sb.append(nullToEmpty(doc.getAttributeName()));
-		sb.append(HT);
 		sb.append(doc.getValue()); //the direct value
+		sb.append(HT);
+		sb.append(doc.getRelationshipGroup());
+		sb.append(HT);
+		sb.append(nullToEmpty(doc.getTypeId()));
 		sb.append(HT);
 		sb.append(nullToEmpty(doc.getCharacteristicTypeId()));
 		return sb.toString();
@@ -52,6 +50,6 @@ public class SnomedConcreteDomainRefSetExporter extends SnomedRefSetExporter {
 	
 	@Override
 	public String[] getColumnHeaders() {
-		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
+		return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER;
 	}
 }

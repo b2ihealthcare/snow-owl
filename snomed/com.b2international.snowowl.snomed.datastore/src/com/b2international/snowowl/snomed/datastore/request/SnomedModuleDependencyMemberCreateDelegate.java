@@ -18,11 +18,13 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.core.store.SnomedModuleDependencyReferenceSetMemberBuilder;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.0
@@ -37,23 +39,46 @@ final class SnomedModuleDependencyMemberCreateDelegate extends SnomedRefSetMembe
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.MODULE_DEPENDENCY);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
 
-		SnomedModuleDependencyRefSetMember member = SnomedComponents.newModuleDependencyMember()
+		SnomedModuleDependencyReferenceSetMemberBuilder builder = SnomedComponents.newModuleDependencyMember()
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
 				.withModule(getModuleId())
-				.withRefSet(getReferenceSetId())
-				.withSourceEffectiveTime(EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT))
-				.withTargetEffectiveTime(EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT))
-				.addTo(context);
+				.withRefSet(getReferenceSetId());
+		
+		try {
+			
+			if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
+				String sourceEffectiveTime = getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+				builder.withSourceEffectiveTime(Strings.isNullOrEmpty(sourceEffectiveTime) ? null : EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT));
+			}
+			
+		} catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Error while parsing date")) {
+				throw new BadRequestException(e.getMessage());
+			}
+		}
+		
+		
+		try {
+			
+			if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
+				String targetEffectiveTime = getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+				builder.withTargetEffectiveTime(Strings.isNullOrEmpty(targetEffectiveTime) ? null : EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT));
+			}
+			
+		} catch (IllegalArgumentException e) {
+			if (e.getMessage().contains("Error while parsing date")) {
+				throw new BadRequestException(e.getMessage());
+			}
+		}
 
-		return member.getUuid();
+			
+		return builder.addTo(context).getUuid();
 	}
 
 }

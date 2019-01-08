@@ -207,9 +207,9 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 *            - the commit message
 	 * @return
 	 */
-	Branch rebase(Branch onTopOf, String commitMessage);
+	Branch rebase(Branch onTopOf, String userId, String commitMessage);
 
-	Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen);
+	Branch rebase(Branch onTopOf, String userId, String commitMessage, Runnable postReopen);
 
 	/**
 	 * Merges changes to this {@link Branch} by squashing the change set of the specified {@link Branch} into a single commit.
@@ -222,7 +222,7 @@ public interface Branch extends Deletable, MetadataHolder, Serializable {
 	 * @throws BranchMergeException
 	 *             - if the branch cannot be merged for some reason
 	 */
-	Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException;
+	Branch merge(Branch changesFrom, String userId, String commitMessage) throws BranchMergeException;
 
 	/**
 	 * Creates a new child branch.

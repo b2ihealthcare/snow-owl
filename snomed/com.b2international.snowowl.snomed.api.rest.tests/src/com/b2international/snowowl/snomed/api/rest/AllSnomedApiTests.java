@@ -82,6 +82,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
 	SnomedRefSetApiTest.class,
+	SnomedReferenceSetDeletionPerformanceTest.class,
 	SnomedRefSetParameterizedTest.class,
 	SnomedRefSetMemberParameterizedTest.class,
 	SnomedRefSetMemberApiTest.class,

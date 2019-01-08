@@ -16,13 +16,12 @@
 package com.b2international.snowowl.validation.snomed;
 
 
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.description;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
  * 
  * @since 6.4
  */
+@RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
@@ -55,16 +55,20 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument activeConcept = concept(generateConceptId()).build();
 		indexRevision(MAIN, nextStorageKey(), activeConcept);
 		
-		SnomedRelationshipIndexEntry invalidSourceRelationship = relationship(inactiveSourceConcept.getId(), Concepts.IS_A, activeConcept.getId()).build();
+		SnomedRelationshipIndexEntry invalidSourceRelationship = relationship(inactiveSourceConcept.getId(), Concepts.IS_A, activeConcept.getId())
+				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidSourceRelationship);
 		
-		SnomedRelationshipIndexEntry invalidDestinationRelationship = relationship(activeConcept.getId(), Concepts.IS_A, inactiveDestinationConcept.getId()).build();
+		SnomedRelationshipIndexEntry invalidDestinationRelationship = relationship(activeConcept.getId(), Concepts.IS_A, inactiveDestinationConcept.getId())
+				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidDestinationRelationship);
 		
-		SnomedRelationshipIndexEntry invalidTypeRelationship = relationship(activeConcept.getId(), inactiveTypeConcept.getId(), Concepts.FINDING_SITE).build();
+		SnomedRelationshipIndexEntry invalidTypeRelationship = relationship(activeConcept.getId(), inactiveTypeConcept.getId(), Concepts.FINDING_SITE)
+				.build();
 		indexRevision(MAIN, nextStorageKey(), invalidTypeRelationship);
 		
-		SnomedRelationshipIndexEntry validRelationship = relationship(activeConcept.getId(), Concepts.IS_A, Concepts.FINDING_SITE).build();
+		SnomedRelationshipIndexEntry validRelationship = relationship(activeConcept.getId(), Concepts.IS_A, Concepts.FINDING_SITE)
+				.build();
 		indexRevision(MAIN, nextStorageKey(), validRelationship);
 		
 		ValidationIssues validationIssues = validate(ruleId);
@@ -84,20 +88,23 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		// index three concepts
 		SnomedConceptDocument c1 = concept(generateConceptId()).build();
 		indexRevision(MAIN, nextStorageKey(), c1);
-		SnomedDescriptionIndexEntry d1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!").conceptId(c1.getId())
+		SnomedDescriptionIndexEntry d1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!")
+				.conceptId(c1.getId())
 				.build();
 		indexRevision(MAIN, nextStorageKey(), d1);
 
 		SnomedConceptDocument c2 = concept(generateConceptId()).build();
 		indexRevision(MAIN, nextStorageKey(), c2);
-		SnomedDescriptionIndexEntry d2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!").conceptId(c2.getId())
+		SnomedDescriptionIndexEntry d2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello World!")
+				.conceptId(c2.getId())
 				.build();
 		indexRevision(MAIN, nextStorageKey(), d2);
 
 		SnomedConceptDocument c3 = concept(generateConceptId()).build();
 		indexRevision(MAIN, nextStorageKey(), c3);
 		SnomedDescriptionIndexEntry d3 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel World!")
-				.conceptId(c3.getId()).build();
+				.conceptId(c3.getId())
+				.build();
 		indexRevision(MAIN, nextStorageKey(), d3);
 
 		ValidationIssues issues = validate(ruleId);

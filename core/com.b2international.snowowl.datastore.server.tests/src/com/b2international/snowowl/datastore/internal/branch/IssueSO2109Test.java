@@ -58,6 +58,7 @@ import com.b2international.snowowl.datastore.internal.branch.CDOBranchManagerImp
 import com.b2international.snowowl.datastore.internal.branch.InternalBranch;
 import com.b2international.snowowl.datastore.internal.branch.InternalCDOBasedBranch;
 import com.b2international.snowowl.datastore.server.internal.JsonSupport;
+import com.b2international.snowowl.identity.domain.User;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -149,7 +150,7 @@ public class IssueSO2109Test {
 				Collections.<Integer> emptyList()), actual);
 
 		try {
-			manager.rebase(childWithChanges, (InternalBranch) childWithChanges.parent(), "commit message", new Runnable() {
+			manager.rebase(childWithChanges, (InternalBranch) childWithChanges.parent(), User.SYSTEM.getUsername(), "commit message", new Runnable() {
 				@Override
 				public void run() {
 					throw new RuntimeException(INTERRUPT_MESSAGE);

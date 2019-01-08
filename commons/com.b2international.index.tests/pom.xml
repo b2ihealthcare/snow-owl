@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.b2international.snowowl</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>6.12.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>com.b2international.index.tests</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho.version}</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.classic</id>
+								<versionRange>[1.0.7,1.0.8)</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.core</id>
+								<versionRange>[1.0.7,1.0.8)</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>ch.qos.logback.slf4j</id>
+								<versionRange>[1.0.7,1.0.8)</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.snowowl.logging.logbackconfiguration</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>com.b2international.collections.fastutil</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>${tycho.version}</version>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>http-tests</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<argLine>-Dso.index.es.useHttp</argLine>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<failIfNoTests>false</failIfNoTests>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+					<!-- Kill test JVM if tests take more than 10 minutes (600 seconds) 
+						to finish -->
+					<forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

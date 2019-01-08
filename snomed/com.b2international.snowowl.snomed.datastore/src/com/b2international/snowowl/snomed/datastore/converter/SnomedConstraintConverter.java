@@ -138,9 +138,8 @@ final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstr
 		} else if (fragment instanceof ConcreteDomainPredicateFragment) {
 			final SnomedConcreteDomainPredicate concreteDomainPredicate = new SnomedConcreteDomainPredicate();
 			concreteDomainPredicate.setCharacteristicTypeId(((ConcreteDomainPredicateFragment) fragment).getCharacteristicTypeId());
-			concreteDomainPredicate.setLabel(((ConcreteDomainPredicateFragment) fragment).getLabel());
-			concreteDomainPredicate.setName(((ConcreteDomainPredicateFragment) fragment).getName());
-			concreteDomainPredicate.setDataType(((ConcreteDomainPredicateFragment) fragment).getDataType());
+			concreteDomainPredicate.setAttribute(toResource(((ConcreteDomainPredicateFragment) fragment).getAttribute()));
+			concreteDomainPredicate.setRange(((ConcreteDomainPredicateFragment) fragment).getRange());
 			predicate = concreteDomainPredicate;
 		} else if (fragment instanceof DependencyPredicateFragment) {
 			final SnomedDependencyPredicate dependencyPredicate = new SnomedDependencyPredicate();

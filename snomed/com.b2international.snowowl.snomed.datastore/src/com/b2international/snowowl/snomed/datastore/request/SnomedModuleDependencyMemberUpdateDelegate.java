@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 /**
  * @since 5.0
@@ -41,7 +42,8 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 		boolean changed = false;
 
 		if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
-			Date newSourceEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME), DateFormats.SHORT);
+			String sourceEffectiveTime = getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+			Date newSourceEffectiveTime = Strings.isNullOrEmpty(sourceEffectiveTime) ? null : EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
 			if (!Objects.equal(newSourceEffectiveTime, moduleDependencyMember.getSourceEffectiveTime())) {
 				moduleDependencyMember.setSourceEffectiveTime(newSourceEffectiveTime);
 				changed |= true;
@@ -49,7 +51,8 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 		}
 
 		if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
-			Date newTargetEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME), DateFormats.SHORT);
+			String targetEffectiveTime = getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+			Date newTargetEffectiveTime = Strings.isNullOrEmpty(targetEffectiveTime) ? null : EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
 			if (!Objects.equal(newTargetEffectiveTime, moduleDependencyMember.getTargetEffectiveTime())) {
 				moduleDependencyMember.setTargetEffectiveTime(newTargetEffectiveTime);
 				changed |= true;

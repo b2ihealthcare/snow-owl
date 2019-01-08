@@ -183,20 +183,19 @@ unlock_repository_and_exit() {
 }
 
 # Copies the contents of the specified repository to the zip file.
-backup_repository() {
-	lock_repository
+backup_mysql() {
+	echo_date "Backing up MySQL content for database $REPOSITORY..."
 	
-	echo_date "Creating SQL dump from contents of repository $REPOSITORY..."
 	DATABASE_DUMP_FILE="$REPOSITORY.sql"
 	mysqldump --user="$MYSQL_USERNAME" --password="$MYSQL_PASSWORD" "$REPOSITORY" > "$ABSOLUTE_ARCHIVE_PREFIX/$DATABASE_DUMP_FILE" || unlock_repository_and_exit "Couldn't create SQL dump for repository $REPOSITORY. Exiting with error."
 
-	echo_date "Saving index content for repository $REPOSITORY..."
-	INDEX_NAME="${REPOSITORY}"
-	rsync --verbose --recursive --dirs --prune-empty-dirs --exclude=segments.gen --exclude=write.lock "$INDEX_NAME" "$ABSOLUTE_ARCHIVE_PREFIX/indexes" || unlock_repository_and_exit "Couldn't copy files from $REPOSITORY index folder. Exiting with error."
-	
-	unlock_repository
-	
-	echo_date "Done backing up repository $REPOSITORY."
+	echo_date "Done backing up MySQL database $REPOSITORY."
+}
+
+backup_resources() {
+	echo_date "Backing up resources directory (indexes, attachments, etc)..."
+	rsync --verbose --recursive --dirs --exclude=segments.gen --exclude=write.lock "resources" "$ABSOLUTE_ARCHIVE_PREFIX"
+	echo_date "Done backing up resources directory (indexes, attachments, etc)."
 }
 
 # Retrieves the list of terminology repositories and backs them up one by one.
@@ -210,8 +209,10 @@ backup_repositories() {
 	
 	echo "$CURL_MESSAGE" | grep -Po '"id":.*?[^\\]",' | sed 's/\"id\":\"\(.*\)\",/\1/' | while read -r REPOSITORY
 	do
-		backup_repository || break
+		backup_mysql || break
 	done
+	
+	backup_resources
 	
 	# Check if the loop above was left via a break
 	if [ $? -ne 0 ]; then exit 1; fi
@@ -230,8 +231,8 @@ check_arguments() {
 		error_exit "Please set the variable SNOW_OWL_SERVER_HOME or pass it in as an argument before running this script. Exiting with error."
 	fi
 
-	if [ ! -d "$SNOW_OWL_SERVER_HOME/resources/indexes" ]; then
-		error_exit "No index directory could be found for the installation under '$SNOW_OWL_SERVER_HOME'. Exiting with error."
+	if [ ! -d "$SNOW_OWL_SERVER_HOME/resources" ]; then
+		error_exit "No resources directory could be found for the installation under '$SNOW_OWL_SERVER_HOME'. Exiting with error."
 	fi
 	
 	if [ "x$SNOWOWL_USERNAME" = "x" ]; then
@@ -259,8 +260,8 @@ main() {
 
 	echo_date "Create backup destination directory '$ABSOLUTE_ARCHIVE_PREFIX'."
 	
-	# Creates both $ABSOLUTE_ARCHIVE_PREFIX and $ABSOLUTE_ARCHIVE_PREFIX/indexes 
-	mkdir --parents --verbose "$ABSOLUTE_ARCHIVE_PREFIX/indexes" || error_exit "Couldn't create directory '$ABSOLUTE_ARCHIVE_PREFIX'. Exiting with error."
+	# Creates both $ABSOLUTE_ARCHIVE_PREFIX and $ABSOLUTE_ARCHIVE_PREFIX/resources 
+	mkdir --parents --verbose "$ABSOLUTE_ARCHIVE_PREFIX/resources" || error_exit "Couldn't create directory '$ABSOLUTE_ARCHIVE_PREFIX'. Exiting with error."
 	
 	echo_date "Starting backup; sending message to connected users."
 
@@ -295,7 +296,7 @@ main() {
 	fi
 	
 	# Need to switch directories because of relative paths within the zip
-	cd "$SNOW_OWL_SERVER_HOME/resources/indexes" || error_exit "Couldn't switch to index directory '$SNOW_OWL_SERVER_HOME/resources'. Exiting with error." 
+	cd "$SNOW_OWL_SERVER_HOME" || error_exit "Couldn't switch to index directory '$SNOW_OWL_SERVER_HOME'. Exiting with error." 
 
 	backup_repositories
 	unlock_all_repositories

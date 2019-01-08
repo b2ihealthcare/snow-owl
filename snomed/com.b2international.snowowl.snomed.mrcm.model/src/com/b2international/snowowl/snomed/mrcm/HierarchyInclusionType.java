@@ -37,6 +37,9 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * The '<em><b>SELF</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the specified concept.
+	 * <!-- end-model-doc -->
 	 * @see #SELF_VALUE
 	 * @generated
 	 * @ordered
@@ -47,6 +50,9 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * The '<em><b>DESCENDANT</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include subtype descendants of the specified concept.
+	 * <!-- end-model-doc -->
 	 * @see #DESCENDANT_VALUE
 	 * @generated
 	 * @ordered
@@ -57,11 +63,25 @@ public enum HierarchyInclusionType implements Enumerator {
 	 * The '<em><b>SELF OR DESCENDANT</b></em>' literal object.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the specified concept and all its subtype concepts.
+	 * <!-- end-model-doc -->
 	 * @see #SELF_OR_DESCENDANT_VALUE
 	 * @generated
 	 * @ordered
 	 */
-	SELF_OR_DESCENDANT(2, "SELF_OR_DESCENDANT", "SELF_OR_DESCENDANT");
+	SELF_OR_DESCENDANT(2, "SELF_OR_DESCENDANT", "SELF_OR_DESCENDANT"), /**
+	 * The '<em><b>CHILD</b></em>' literal object.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the direct children of the specified concept.
+	 * <!-- end-model-doc -->
+	 * @see #CHILD_VALUE
+	 * @generated
+	 * @ordered
+	 */
+	CHILD(3, "CHILD", "CHILD");
 
 	/**
 	 * The '<em><b>SELF</b></em>' literal value.
@@ -106,6 +126,24 @@ public enum HierarchyInclusionType implements Enumerator {
 	public static final int SELF_OR_DESCENDANT_VALUE = 2;
 
 	/**
+	 * The '<em><b>CHILD</b></em>' literal value.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of '<em><b>CHILD</b></em>' literal object isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * Include the direct children of the specified concept.
+	 * <!-- end-model-doc -->
+	 * @see #CHILD
+	 * @model
+	 * @generated
+	 * @ordered
+	 */
+	public static final int CHILD_VALUE = 3;
+
+	/**
 	 * An array of all the '<em><b>Hierarchy Inclusion Type</b></em>' enumerators.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -116,6 +154,7 @@ public enum HierarchyInclusionType implements Enumerator {
 			SELF,
 			DESCENDANT,
 			SELF_OR_DESCENDANT,
+			CHILD,
 		};
 
 	/**
@@ -175,6 +214,7 @@ public enum HierarchyInclusionType implements Enumerator {
 			case SELF_VALUE: return SELF;
 			case DESCENDANT_VALUE: return DESCENDANT;
 			case SELF_OR_DESCENDANT_VALUE: return SELF_OR_DESCENDANT;
+			case CHILD_VALUE: return CHILD;
 		}
 		return null;
 	}

@@ -170,9 +170,9 @@
 		</encoder>
 	</appender>
 
-	<root level="INFO" additivity="false" name="com.b2international.snowowl.userevents">
+	<logger level="INFO" additivity="false" name="com.b2international.snowowl.userevents">
 		<appender-ref ref="SNOWOWL_LOG_FILE" />
-	</root>
+	</logger>
 
 	<logger level="INFO" additivity="false" name="org.eclipse.virgo.medic.eventlog.localized">
 		<appender-ref ref="EVENT_LOG_STDOUT" />
@@ -183,6 +183,8 @@
 		<!-- appender-ref ref="SIFTED_LOG_FILE" /-->
 		<appender-ref ref="LOG_FILE" />
 	</logger>
+	
+	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
 
 	<root level="INFO">
 		<!-- appender-ref ref="SIFTED_LOG_FILE" / -->

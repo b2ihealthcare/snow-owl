@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.server.dependencies.feature"
       label="Snow Owl Server Dependencies"
-      version="6.9.0.qualifier"
+      version="6.12.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -64,42 +64,42 @@ Visit us at http://b2i.sg
          id="org.eclipse.emf.cdo"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.common"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.net4j"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.db"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.emf.cdo.server.net4j"
          download-size="0"
          install-size="0"
-         version="4.1.12.b2i"
+         version="4.1.14.b2i"
          unpack="false"/>
 
    <plugin
@@ -923,12 +923,6 @@ Visit us at http://b2i.sg
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   <plugin
-         id="com.b2international.org.apache.lucene"
-         download-size="0"
-         install-size="0"
-         version="7.3.1.201809071000-b2i"/>
 
    <plugin
          id="io.netty.buffer"

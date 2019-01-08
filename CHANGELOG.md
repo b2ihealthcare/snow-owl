@@ -1,6 +1,82 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.11.0
+
+### Breaking changes
+
+This section discusses the changes that you need to be aware of when migrating your application to Snow Owl 6.11.0.
+
+#### Concrete Domain Reference Set Member changes (#288)
+
+Property groups now can contain concrete domain properties as well, not just relationships (new column `relationshipGroup`). Also, the `attributeName` property has been renamed to `typeId` and all concrete domain labels (attribute names) must be converted to valid, existing SNOMED CT Concepts in order to support new concrete domain schema. In case you did not had any concrete domain members and you are not planning to use this feature, you can safely use your existing dataset without issues. In other cases, feel free to contact [B2i](mailto:support@b2i.sg) to support your migration to Snow Owl 6.11.0.
+
+### Added
+- Add `repository.index.clusterName` configuration key to customize the clusterName of the embedded ES instance (#281)
+- Add `so.index.es.useHttp` system property to enforce usage of HTTP connection to the embedded ES instance (#281)
+- Support for TCP based connection to remote Elasticsearch clusters (`clusterUrl` configuration key now supports both `tcp://` and `http://`) (#281)
+  * _NOTE: TCP connection to a cluster does not yet support authentication_
+- Java API methods to simplify synchronous execution of requests (8d0e15d)
+- Support for `childOf` HierarchyInclusionType in MRCM rules (#287)
+- Support for `dependencies` between two code system. A Code System now declare another as a dependency,  (#286)
+- New Concept and Description inactivation indicators (102b127) 
+
+### Changes
+- Make SNOMED CT Description `term` field mutable (#284)
+- Allow non-SNOMED CT identifier in `mapCategoryId` column (8b325be) 
+- Export FSN in description term columns when exporting Mapping Reference Sets to DSV (#283)
+
+### Dependencies
+- Elasticsearch has been bumped to the latest 6.5 version (#281)
+
+### Bugs
+- Set `write.wait_for_active_shards` setting to `all` to fix inconsistencies in the underlying index when using replicas
+- Fix serialization issue when using the class `SctId` (8284600)
+- Fix missing clause for `referencedComponentType` filters (b98308a)
+- Report a conflict when an inbound relationship references detached destination concept. Fixes object not found and versioning errors (a8ce29e) 
+- Fix script arguments unrecognized by Elasticsearch (#289)
+
+## 6.10.0
+
+### Dependencies
+- Bump Jackson modules to 2.8.11 and Jackson Databind module to 2.8.11.2 (fixes security vulnerability issues reported by GitHub)
+
+### Performance
+- Simplify and improve SNOMED CT Description term fuzzy matching functionality (9d7bce4) 
+
+### Bugs
+- Delete all types of referring members when component is deleted (130d938)
+- Fix de/serialization of module dependency member fields (a5f4369)
+- Validate versionId before creating Code System Version entry (39efad0) 
+- Fix reference set DSV import related issues (bb3efa0, bc8ec3b)
+- Fix potentional validation issue duplication (7956697)
+- Fix error when trying to revert effective time of an RF2 component without any released versions (7f16873)
+- Use single-node discovery in embedded mode by default (38075a3)
+
+## 6.9.0
+
+### Added
+- Support for unpublished component only validation (#271)
+- Inbound relationship expand for SNOMED CT Concept search and get requests (#267)
+- Configuration option for Elasticsearch cluster health request timeout (2819c8c)
+
+### Changed
+- Consider additional relationship types as well when computing MRCM rules for a concept (110f2e3)
+- `sourceEffectiveTime` and `targetEffectiveTime` reference set member properties serialized as effective time instead of dates (8e0e830) 
+
+### Removed
+- Merged `com.b2international.snowowl.index.api`, `com.b2international.snowowl.index.es` and `com.b2international.org.apache.lucene` bundles into a single `com.b2international.snowowl.index` module (#269)
+
+### Performance
+- Improve evaluation of ECL queries targeting large set of focus concepts (c73fd72, 35e1380)
+- Improve execution of Concept search requests with both ECL and TERM filters (530eb15)  
+
+### Bugs
+- Fix FUZZY + TERM filter bug when the term consist only of escaped characters (0cc2c4c) 
+- Fix NSEE when attempting to export an RF2 package with no SNOMED CT versions yet in the system (c79dc21)
+- Fix server startup issue due to a bug in startup script (2530f67)
+- Ignore 404 responses thrown by Elasticsearch REST client (c6be1d2)
+
 ## 6.8.0
 
 ### Added

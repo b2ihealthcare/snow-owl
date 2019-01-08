@@ -254,6 +254,20 @@ public class SnomedCDOConflictProcessor extends AbstractCDOConflictProcessor imp
 		
 		return super.changedInSourceAndTargetSingleValued(targetDelta, targetFeatureDelta, sourceDelta, sourceFeatureDelta);
 	}
+	
+	@Override
+	public Object changedInTargetAndDetachedInSource(CDORevisionDelta targetDelta) {
+		
+		if (isRebase) {
+			Conflict conflict = checkDetachedReferences(newTargetRevisionIdToFeatureIdMap, targetDelta.getID());
+			
+			if (conflict != null) {
+				return conflict;
+			}
+		}
+		
+		return super.changedInTargetAndDetachedInSource(targetDelta);
+	}
 
 	@Override
 	public Collection<MergeConflict> handleCDOConflicts(final CDOView sourceView, final CDOView targetView, final Map<CDOID, Conflict> conflicts) {

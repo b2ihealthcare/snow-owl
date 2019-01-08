@@ -21,7 +21,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
@@ -51,8 +53,10 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Queues;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.0
@@ -62,6 +66,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	private static final Logger LOG = LoggerFactory.getLogger("validation");
 	
 	Collection<String> ruleIds;
+
+	private Map<String, Object> ruleParameters = Maps.newHashMap();
 	
 	ValidateRequest() {}
 	
@@ -72,7 +78,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.branchPath();
-		
+
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
 		if (!CompareUtils.isEmpty(ruleIds)) {
@@ -84,12 +90,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 				.build()
 				.execute(context);
 		
-		
 		final ValidationThreadPool pool = context.service(ValidationThreadPool.class);
-		
 		final BlockingQueue<IssuesToPersist> issuesToPersistQueue = Queues.newLinkedBlockingDeque();
-		// evaluate selected rules
 		final List<Promise<Object>> validationPromises = Lists.newArrayList();
+		// evaluate selected rules
 		for (ValidationRule rule : rules) {
 			checkArgument(rule.getCheckType() != null, "CheckType is missing for rule " + rule.getId());
 			final ValidationRuleEvaluator evaluator = ValidationRuleEvaluator.Registry.get(rule.getType());
@@ -99,7 +103,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 					
 					try {
 						LOG.info("Executing rule '{}'...", rule.getId());
-						List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule);
+						final List<ComponentIdentifier> componentIdentifiers = evaluator.eval(context, rule, ruleParameters);
 						issuesToPersistQueue.offer(new IssuesToPersist(rule.getId(), componentIdentifiers));
 						LOG.info("Execution of rule '{}' successfully completed in '{}'.", rule.getId(), w);
 						// TODO report successfully executed validation rule
@@ -137,13 +141,24 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								.execute(context)
 								.getItems();
 						
-						final Set<ComponentIdentifier> existingComponentIdentifiers = existingRuleIssues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet());
+						final Set<String> issueIdsToDelete = Sets.newHashSet();
+						
+						final Map<ComponentIdentifier, ValidationIssue> existingIsssuesByComponentIdentifier = new HashMap<>();
+						
+						for (ValidationIssue issue : existingRuleIssues) {
+							if (existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent())) {
+								issueIdsToDelete.add(issue.getId());
+							} else {
+								existingIsssuesByComponentIdentifier.put(issue.getAffectedComponent(), issue);
+							}
+						}
+						
 						// remove all processed whitelist entries 
 						final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
 						final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
 						for (ComponentIdentifier componentIdentifier : ruleIssues.affectedComponentIds) {
 							
-							if (!existingComponentIdentifiers.remove(componentIdentifier)) {
+							if (!existingIsssuesByComponentIdentifier.containsKey(componentIdentifier)) {
 								final ValidationIssue validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
@@ -153,14 +168,27 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 								
 								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
 								persistedIssues++; 
+							} else {
+								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
+								
+								final ValidationIssue validationIssue = new ValidationIssue(
+									issueToCopy.getId(),
+									issueToCopy.getRuleId(),
+									issueToCopy.getBranchPath(),
+									issueToCopy.getAffectedComponent(),
+									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));
+								validationIssue.setDetails(Maps.newHashMap());
+								
+								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
+								persistedIssues++; 
+								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
 						}
 						
-						final Set<String> issueIdsToDelete = existingRuleIssues
-								.stream()
-								.filter(issue -> existingComponentIdentifiers.contains(issue.getAffectedComponent()))
-								.map(ValidationIssue::getId)
-								.collect(Collectors.toSet());
+						existingRuleIssues
+							.stream()
+							.filter(issue -> existingIsssuesByComponentIdentifier.containsKey(issue.getAffectedComponent()))
+							.forEach(issue -> issueIdsToDelete.add(issue.getId()));
 						
 						if (!issueIdsToDelete.isEmpty()) {
 							index.removeAll(Collections.singletonMap(ValidationIssue.class, issueIdsToDelete));
@@ -212,8 +240,12 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult> 
 		return whiteListedEntries;
 	}
 	
-	public void setRuleIds(Collection<String> ruleIds) {
+	void setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;
+	}
+	
+	void setRuleParameters(Map<String, Object> ruleParameters) {
+		this.ruleParameters = ruleParameters;
 	}
 	
 	private static final class IssuesToPersist {

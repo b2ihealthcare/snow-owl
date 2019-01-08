@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.protege.owlapi.concurrent.SynchronizedOWLDataFactoryImpl;
@@ -156,14 +155,14 @@ public class SnomedOntologyService {
 	/**
 	 * 
 	 * @param branchPath
-	 * @param changes 
+	 * @param change 
 	 */
-	public void applyChanges(final OWLOntology ontology, final List<OWLOntologyChange> changes) {
+	public void applyChanges(final OWLOntology ontology, final OWLOntologyChange change) {
 		// Don't apply if the ontology was already removed from the manager
 		if (!manager.contains(ontology.getOntologyID())) {
 			return;
 		}
 		
-		manager.applyChanges(changes);
+		manager.applyChange(change);
 	}
 }

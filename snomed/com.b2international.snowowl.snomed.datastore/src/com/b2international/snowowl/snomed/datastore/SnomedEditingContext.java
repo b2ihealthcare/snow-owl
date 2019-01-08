@@ -23,6 +23,7 @@ import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.PRIMITIVE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.STATED_RELATIONSHIP;
+import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.INFERRED_RELATIONSHIP;
 import static com.b2international.snowowl.snomed.SnomedConstants.Concepts.SYNONYM;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.COMPONENT_IS_RELEASED_MESSAGE;
 import static com.b2international.snowowl.snomed.datastore.SnomedDeletionPlanMessages.UNABLE_TO_DELETE_CONCEPT_DUE_TO_RELEASED_INBOUND_RSHIP_MESSAGE;
@@ -322,12 +323,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		Description description = buildDefaultDescription(fullySpecifiedName, FULLY_SPECIFIED_NAME);
 		description.setConcept(concept);
 		
-		// add 'Is a' relationship to parent if specified
-		buildDefaultIsARelationship(parentConcept, concept);
+		// add 'Is a' relationships to parent if specified
+		buildDefaultIsARelationship(parentConcept, concept, STATED_RELATIONSHIP);
+		buildDefaultIsARelationship(parentConcept, concept, INFERRED_RELATIONSHIP);
 		
 		return concept;
 	}
 	
+	private void buildDefaultIsARelationship(Concept parentConcept, Concept concept, String charTypeId) {
+		Relationship relationship = buildDefaultRelationship(concept, findConceptById(IS_A), 
+				parentConcept, findConceptById(charTypeId));
+		relationship.setModule(concept.getModule());
+	}
+
 	
 	/**Returns with the currently used language type reference set, falls back to an existing language if the configured identifier can not be resolved.*/
 	public SnomedStructuralRefSet getLanguageRefSet(String languageReferenceSetId) {
@@ -745,16 +753,6 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 		return ApplicationContext.getInstance().getService(SnomedConfiguration.class);
 	}
 	
-	private Relationship buildDefaultIsARelationship(Concept parentConcept, Concept concept) {
-		
-		Relationship relationship = buildDefaultRelationship(concept, findConceptById(IS_A), 
-				parentConcept, findConceptById(STATED_RELATIONSHIP));
-		
-		relationship.setModule(concept.getModule());
-		
-		return relationship;
-	}
-	
 	@Override
 	public void preCommit() {
 		
@@ -838,15 +836,19 @@ public class SnomedEditingContext extends BaseSnomedEditingContext {
 	private Set<SnomedRefSetMember> getMembersByProps(Iterable<String> deletedIds) {
 		return RepositoryRequests.prepareBulkRead()
 				.setBody(BulkRequest.<BranchContext>create()
-						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.CORRELATION_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT)) // association
+						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID)) // attribute value
+						.add(getReferringMembersByProps(deletedIds, Fields.TYPE_ID)) // cd
+						.add(getReferringMembersByProps(deletedIds, Fields.CHARACTERISTIC_TYPE_ID)) // cd
 						.add(getReferringMembersByProps(deletedIds, Fields.DESCRIPTION_FORMAT))
-						.add(getReferringMembersByProps(deletedIds, Fields.MAP_CATEGORY_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.OPERATOR_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.TARGET_COMPONENT))
-						.add(getReferringMembersByProps(deletedIds, Fields.UNIT_ID))
-						.add(getReferringMembersByProps(deletedIds, Fields.VALUE_ID))
+						.add(getReferringMembersByProps(deletedIds, Fields.ACCEPTABILITY_ID)) // language
+						.add(getReferringMembersByProps(deletedIds, Fields.MAP_TARGET)) // simple map
+						.add(getReferringMembersByProps(deletedIds, Fields.CORRELATION_ID)) // complex map
+						.add(getReferringMembersByProps(deletedIds, Fields.MAP_CATEGORY_ID)) // extended map
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_DOMAIN_ID)) // MRCM attr domain
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_RULE_STRENGTH_ID)) // MRCM attr domain/range
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_CONTENT_TYPE_ID)) // MRCM attr domain/range
+						.add(getReferringMembersByProps(deletedIds, Fields.MRCM_RULE_REFSET_ID)) // MRCM module scope
 						)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))

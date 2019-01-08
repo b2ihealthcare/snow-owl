@@ -12,7 +12,7 @@ Export-Package: org.eclipse.emf.cdo.server.internal.net4j.bundle;versi
  on="4.0.100";x-internal:=true,org.eclipse.emf.cdo.server.internal.net
  4j.protocol;version="4.0.100";x-friends:="org.eclipse.emf.cdo.tests",
  org.eclipse.emf.cdo.server.net4j;version="4.0.100"
-Bundle-Version: 4.1.12.b2i
+Bundle-Version: 4.1.14.b2i
 Ant-Version: Apache Ant 1.8.3
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy

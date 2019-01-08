@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import com.b2international.snowowl.datastore.request.Merging;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.datastore.server.internal.CDOBasedRepository;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.identity.domain.User;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -195,6 +196,7 @@ public class SnomedBranchRequestTest {
 		Promise<Merge> merge = merges.prepareCreate()
 				.setSource(first.path())
 				.setTarget(first.parentPath())
+				.setUserId(User.SYSTEM.getUsername())
 				.setCommitComment("Merging changes")
 				.build(REPOSITORY_ID)
 				.execute(bus);

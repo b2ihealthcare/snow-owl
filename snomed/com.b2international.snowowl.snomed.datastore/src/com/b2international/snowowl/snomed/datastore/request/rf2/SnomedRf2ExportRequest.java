@@ -27,7 +27,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -452,14 +451,18 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	private Date getArchiveEffectiveTime(final TreeSet<CodeSystemVersionEntry> versionsToExport) {
 
-		Optional<CodeSystemVersionEntry> lastVersionToExport = Optional.ofNullable(endEffectiveTime != null 
-				? getVersionBefore(versionsToExport, endEffectiveTime.getTime())
-				: versionsToExport.last());
-
+		Optional<CodeSystemVersionEntry> lastVersionToExport;
+		
+		if (endEffectiveTime != null) {
+			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime.getTime()));
+		} else {
+			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
+		}
+		
 		Optional<Date> latestModuleEffectiveTime = lastVersionToExport.flatMap(this::getLatestModuleEffectiveTime);
 		
 		if (includePreReleaseContent) {
-
+			
 			if (!transientEffectiveTime.isEmpty()) {
 				return adjustCurrentHour(Dates.parse(transientEffectiveTime, DateFormats.SHORT));
 			} else if (latestModuleEffectiveTime.isPresent()) {
@@ -512,16 +515,7 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			.first();
 		
 		return moduleDependencyMember.map(m -> {
-			try {
-				String sourceEffectiveTime = (String) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-				return EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			} catch (SnowowlRuntimeException e) {
-				if (e.getCause() instanceof ParseException) {
-					return null;
-				} else {
-					throw e;
-				}
-			}
+			return (Date) m.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 		});
 	}
 

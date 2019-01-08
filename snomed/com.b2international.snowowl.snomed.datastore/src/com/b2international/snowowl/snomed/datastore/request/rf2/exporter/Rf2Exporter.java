@@ -22,6 +22,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -96,11 +97,15 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 	protected abstract Stream<List<String>> getMappedStream(R results, RepositoryContext context, String branch);
 
 	protected final String getEffectiveTime(final SnomedComponent component) {
-		if (component.getEffectiveTime() == null) {
+		return getEffectiveTime(component.getEffectiveTime());
+	}
+	
+	protected final String getEffectiveTime(final Date effectiveTime) {
+		if (effectiveTime == null) {
 			// FIXME: Should we add a test for unexpected encounters of unversioned content here?
 			return transientEffectiveTime;
 		} else {
-			return EffectiveTimes.format(component.getEffectiveTime(), DateFormats.SHORT); 
+			return EffectiveTimes.format(effectiveTime, DateFormats.SHORT); 
 		}
 	}
 

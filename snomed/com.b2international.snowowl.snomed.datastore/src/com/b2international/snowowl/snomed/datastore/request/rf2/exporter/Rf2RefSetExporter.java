@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -133,7 +134,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case ASSOCIATION:
 				return "c";
 			case CONCRETE_DATA_TYPE: 
-				return "ccss";
+				return "sicc";
 			case QUERY: 
 				return "s";
 			case DESCRIPTION_TYPE: 
@@ -256,8 +257,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			case ASSOCIATION:
 				return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
 			case CONCRETE_DATA_TYPE:
-				// XXX: Choosing the non-AU format here, which includes the attribute name
-				return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER_WITH_LABEL;
+				return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER;
 			case QUERY:
 				return SnomedRf2Headers.QUERY_TYPE_HEADER;
 			case DESCRIPTION_TYPE: 
@@ -302,7 +302,6 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 	}
 
 	@Override
-	@SuppressWarnings("deprecation")
 	protected Stream<List<String>> getMappedStream(final SnomedReferenceSetMembers results, 
 			final RepositoryContext context, 
 			final String branch) {
@@ -319,12 +318,6 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			switch (extraColumns.get(j)) {
 				case SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID:
 					extraColumns.set(j, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
-					break;
-				case SnomedRf2Headers.FIELD_UOM_ID:
-					extraColumns.set(j, SnomedRf2Headers.FIELD_UNIT_ID);
-					break;
-				case SnomedRf2Headers.FIELD_DATA_VALUE:
-					extraColumns.set(j, SnomedRf2Headers.FIELD_VALUE);
 					break;
 				default:
 					// Use RF2 column name for the property name
@@ -359,6 +352,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return ((SnomedCoreComponent) object).getId();
 		} else if (object instanceof Boolean) {
 			return BooleanUtils.toString((Boolean) object);
+		} else if (object instanceof Date) {
+			return getEffectiveTime((Date) object);
 		} else {
 			return String.valueOf(object);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import static com.b2international.snowowl.snomed.api.rest.SnomedRestFixtures.ina
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -49,6 +50,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -659,21 +661,22 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void updateReleasedDescriptionTerm() throws Exception {
-		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm")
+	public void shouldUpdateReleasedDescriptionTerm() throws Exception {
+		final String descriptionId = createNewDescription(branchPath);
+		final String newTerm = "updatedUnreleasedDescriptionTerm";
+		final Map<?, ?> update = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_TERM, newTerm)
 				.put("commitComment", "Update unreleased description term")
 				.build();
 		
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
 		
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
-			.body(SnomedRf2Headers.FIELD_TERM, equalTo(SnomedRestFixtures.DEFAULT_TERM));
+			.body(SnomedRf2Headers.FIELD_TERM, equalTo(newTerm));
 	}
 	
 	@Test
@@ -720,4 +723,18 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.getSync();
 		
 	}
+	
+	@Test
+	public void searchFuzzyWithFilteredCharacters() throws Exception {
+		int numberOfResults = SnomedRequests.prepareSearchDescription()
+			.setLimit(0)
+			.filterByTerm(TextConstants.DELIMITERS)
+			.withFuzzySearch()
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync()
+			.getTotal();
+		assertThat(numberOfResults).isZero();
+	}
+	
 }

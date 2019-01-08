@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,9 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionIndexRead;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.LogUtils;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.Net4jProtocolConstants;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -73,9 +70,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 
 	private SnomedRefSetDSVExportModel exportSetting;
 
-	private String userId;
-	private IBranchPath branchPath;
-
 	public SnomedRefSetDSVExportServerIndication(SignalProtocol<?> protocol) {
 		super(protocol, Net4jProtocolConstants.REFSET_TO_DSV_SIGNAL);
 		exportSetting = new SnomedRefSetDSVExportModel();
@@ -91,7 +85,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		// the file path does not equals to the path given by the user it is for
 		// the temporary file on the server side.
 		exportSetting.setExportPath(Files.createTempDirectory("dsv-export-temp-dir").toFile().getAbsolutePath());
-		userId = in.readUTF();
 		exportSetting.setRefSetId(in.readUTF());
 		exportSetting.setIncludeDescriptionId(in.readBoolean());
 		exportSetting.setIncludeRelationshipTargetId(in.readBoolean());
@@ -111,7 +104,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		exportSetting.setDelimiter(in.readUTF());
 		exportSetting.setBranchBase(in.readLong());
 		exportSetting.setBranchPath(in.readUTF());
-		branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
 	}
 
 	@Override
@@ -124,10 +116,8 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 			response = exporter.executeDSVExport(monitor);
 		} catch (Exception e) {
 			final String reason = null != e.getMessage() ? " Reason: '" + e.getMessage() + "'" : "";
-			LogUtils.logExportActivity(LOGGER, userId, branchPath, "Caught exception while exporting SNOMED CT terminology to DSV format." + reason);
-			
 			LOGGER.error("Error while exporting DSV.", e);
-			result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components to delimiter separated files.");
+			result.setResultAndMessage(Result.EXCEPTION, "An error occurred while exporting SNOMED CT components to delimiter separated files." + reason);
 		}
 		sendResult(out, result, response);
 		
@@ -137,8 +127,6 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 	}
 	
 	private IRefSetDSVExporter getRefSetExporter() {
-		IBranchPath branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
-		
 		RepositoryManager repositoryManager = ApplicationContext.getInstance().getService(RepositoryManager.class);
 		RevisionIndex revisionIndex = repositoryManager.get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 		
@@ -147,7 +135,7 @@ public class SnomedRefSetDSVExportServerIndication extends IndicationWithMonitor
 		final Query<SnomedConceptDocument> query = builder.where(SnomedConceptDocument.Expressions.id(exportSetting.getRefSetId())).build();
 		
 		
-		SnomedConceptDocument refsetConcept = revisionIndex.read(branchPath.getPath(), new RevisionIndexRead<SnomedConceptDocument>() {
+		SnomedConceptDocument refsetConcept = revisionIndex.read(exportSetting.getBranchPath(), new RevisionIndexRead<SnomedConceptDocument>() {
 
 			@Override
 			public SnomedConceptDocument execute(RevisionSearcher searcher) throws IOException {

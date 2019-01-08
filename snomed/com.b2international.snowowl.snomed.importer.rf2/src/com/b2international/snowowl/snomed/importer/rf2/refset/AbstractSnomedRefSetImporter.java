@@ -223,6 +223,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	protected abstract M createMember();
 	
 	protected SnomedRefSet getOrCreateRefSet(final String refSetSctId, final String referencedComponentId) {
+		getImportContext().conceptVisited(refSetSctId);
 		
 		SnomedRefSet refSet = Iterables.getOnlyElement(getImportContext().getRefSetLookup().getComponents(Collections.singleton(refSetSctId)), null);
 		

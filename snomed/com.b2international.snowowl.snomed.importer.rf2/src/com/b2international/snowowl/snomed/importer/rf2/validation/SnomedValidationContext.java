@@ -196,9 +196,7 @@ public final class SnomedValidationContext {
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE_ID)) {
 				releaseFileValidators.add(new SnomedAttributeValueRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))  {
-				releaseFileValidators.add(new SnomedConcreteDataTypeRefSetValidator(configuration, url, this, true));
-			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_VALUE)) { // AU CDT refset
-				releaseFileValidators.add(new SnomedConcreteDataTypeRefSetValidator(configuration, url, this, false));
+				releaseFileValidators.add(new SnomedConcreteDataTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_MAP_TARGET)) {
 				releaseFileValidators.add(new SnomedSimpleMapTypeRefSetValidator(configuration, url, this));
 			} else if (lastColumn.equalsIgnoreCase(SnomedRf2Headers.FIELD_CORRELATION_ID)) {
@@ -247,9 +245,14 @@ public final class SnomedValidationContext {
 		postValidate(subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE));
 
 		final Collection<SnomedValidationDefect> validationResult = newHashSet();
+
+		if (configuration.isValidReleaseFile(configuration.getStatedRelationshipFile())) {
+			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
+		}
 		
-		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.STATED_RELATIONSHIP).validate());
-		validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+		if (configuration.isValidReleaseFile(configuration.getRelationshipFile())) {
+			validationResult.addAll(new SnomedTaxonomyValidator(configuration, repositoryState, Concepts.INFERRED_RELATIONSHIP).validate());
+		}
 		
 		this.defects.forEach((file, defects) -> {
 			defects.asMap().forEach((type, messages) -> {
@@ -319,5 +322,4 @@ public final class SnomedValidationContext {
 		final Hits<? extends SnomedDocument> hits = searcher.search(query);
 		return hits.getTotal() > 0 ? Iterables.getOnlyElement(hits).isActive() : false;
 	}
-	
 }

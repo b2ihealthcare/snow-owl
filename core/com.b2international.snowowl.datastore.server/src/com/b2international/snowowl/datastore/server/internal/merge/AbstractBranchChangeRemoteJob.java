@@ -38,29 +38,33 @@ import com.b2international.snowowl.datastore.server.remotejobs.BranchExclusiveRu
  */
 public abstract class AbstractBranchChangeRemoteJob extends Job {
 
-	public static AbstractBranchChangeRemoteJob create(Repository repository, String source, String target, String commitMessage, String reviewId) {
+	public static AbstractBranchChangeRemoteJob create(Repository repository, String source, String target, String userId, String commitMessage, String reviewId, String parentLockContext) {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
 		
 		if (targetPath.getParent().equals(sourcePath)) {
-			return new BranchRebaseJob(repository, source, target, commitMessage, reviewId);
+			return new BranchRebaseJob(repository, source, target, userId, commitMessage, reviewId, parentLockContext);
 		} else {
-			return new BranchMergeJob(repository, source, target, commitMessage, reviewId);
+			return new BranchMergeJob(repository, source, target, userId, commitMessage, reviewId, parentLockContext);
 		}
 	}
 
 	private final AtomicReference<Merge> merge = new AtomicReference<>();
 	
 	protected Repository repository;
+	protected String userId;
 	protected String commitComment;
 	protected String reviewId;
+	protected String parentLockContext;
 
-	protected AbstractBranchChangeRemoteJob(final Repository repository, final String sourcePath, final String targetPath, final String commitComment, final String reviewId) {
+	protected AbstractBranchChangeRemoteJob(final Repository repository, final String sourcePath, final String targetPath, final String userId, final String commitComment, final String reviewId, String parentLockContext) {
 		super(commitComment);
 		
 		this.repository = repository;
+		this.userId = userId;
 		this.commitComment = commitComment;
 		this.reviewId = reviewId;
+		this.parentLockContext = parentLockContext;
 		
 		merge.set(MergeImpl.builder(sourcePath, targetPath).build());
 		

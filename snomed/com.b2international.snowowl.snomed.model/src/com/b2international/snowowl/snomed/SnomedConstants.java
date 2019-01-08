@@ -267,6 +267,7 @@ public abstract class SnomedConstants {
 		// Inactivation indicator reference sets
 		public static final String REFSET_CONCEPT_INACTIVITY_INDICATOR = "900000000000489007";
 		public static final String REFSET_DESCRIPTION_INACTIVITY_INDICATOR = "900000000000490003";
+		public static final String REFSET_RELATIONSHIP_INACTIVITY_INDICATOR = "900000000000547002";
 		
 		// MRCM related concepts
 		public static final String RULE_STRENGTH_ROOT = "723573005";
@@ -282,6 +283,8 @@ public abstract class SnomedConstants {
 		public static final String INAPPROPRIATE = "900000000000494007";
 		public static final String PENDING_MOVE = "900000000000492006";
 		public static final String CONCEPT_NON_CURRENT = "900000000000495008";
+		public static final String NONCONFORMANCE_TO_EDITORIAL_POLICY = "723277005";
+		public static final String NOT_SEMANTICALLY_EQUIVALENT = "723278000";
 		
 		// Historical reference sets
 		public static final String REFSET_HISTORICAL_ASSOCIATION = "900000000000522004";
@@ -307,8 +310,15 @@ public abstract class SnomedConstants {
 		public static final String ICD_10_REFERENCE_SET_ID = "447562003";
 		public static final String ICD_10_CM_COMPLEX_MAP_REFERENCE_SET_ID = "6011000124106";
 
-		// Concepts that require special care when classifying
+		// Concept model attribute hierarchy roots
 		public static final String CONCEPT_MODEL_ATTRIBUTE = "410662002";
+		public static final String SG_CONCRETE_DOMAIN_ATTRIBUTE = "31041000132100";
+		
+		// Concept model attribute hierarchy roots, starting with INT 20180131
+		public static final String CONCEPT_MODEL_OBJECT_ATTRIBUTE = "762705008";
+		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
+		
+		// Concepts that require special care when classifying
 		public static final String PART_OF = "123005000";
 		public static final String LATERALITY = "272741003";
 		public static final String HAS_ACTIVE_INGREDIENT = "127489000";

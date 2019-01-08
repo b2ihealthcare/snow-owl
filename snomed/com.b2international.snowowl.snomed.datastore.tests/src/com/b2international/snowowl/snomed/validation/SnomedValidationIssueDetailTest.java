@@ -15,68 +15,120 @@
  */
 package com.b2international.snowowl.snomed.validation;
 
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.eclipse.xtext.parser.IParser;
+import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.options.Options;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.IDisposableService;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
+import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
+import com.b2international.snowowl.snomed.core.ecl.EclParser;
+import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.core.ecl.TestBranchContext;
+import com.b2international.snowowl.snomed.datastore.id.RandomSnomedIdentiferGenerator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension;
+import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 
 /**
  * @since 6.4
  */
-public class SnomedValidationIssueDetailTest {
+public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 
-	private static final String TEST_BRANCH = "testBranch";
-	private static final String TEST_RULE_ID = "testRuleId";
-	private static final short TEST_TERMINOLOGY_SHORT = 0;
+	private BranchContext context;
+	private SnomedQueryValidationRuleEvaluator evaluator;
+	private ValidationRepository repository;
 	
-	private ServiceProvider context;
+	private static final String TEST_RULE_ID = "testRuleId";
+	
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return ImmutableList.of(SnomedConceptDocument.class, SnomedDescriptionIndexEntry.class);
+	}
+	
+	@Override
+	protected void configureMapper(ObjectMapper mapper) {
+		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		mapper.registerModule(new PrimitiveCollectionModule());
+	}
 	
 	@Before
 	public void setup() {
-		final ObjectMapper mapper = new ObjectMapper();
-		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationIssue.class));
-		index.admin().create();
-		final ValidationRepository repository = new ValidationRepository(index);
-		context = ServiceProvider.EMPTY.inject()
-				.bind(ValidationRepository.class, repository)
+		super.setup();
+		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), getMapper(), new Mappings(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class));
+		repository = new ValidationRepository(index);
+		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+		context = TestBranchContext.on(MAIN)
+				.with(ObjectMapper.class, getMapper())
+				.with(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)))
+				.with(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)))
+				.with(Index.class, rawIndex())
+				.with(RevisionIndex.class, index())
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
+				.with(ValidationRepository.class, repository)
 				.build();
+		evaluator = new SnomedQueryValidationRuleEvaluator();
+		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {
+			ValidationRuleEvaluator.Registry.register(evaluator);
+		}
+		
+		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
+		extensionProvider.addExtension(new SnomedValidationIssueDetailExtension());
+		
 	}
 	
 	@After
-	public void tearDown() {
-		context.service(ValidationRepository.class).admin().delete();
-		if(context instanceof IDisposableService) {
-			((IDisposableService) context).dispose();
-		}
+	public void teardown() {
+		super.teardown();
+		repository.dispose();
 	}
 	
 	@Test
 	public void filterByModuleId() {
-		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, "1010101010101010");
+		final Map<String, Object> details = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID, "1010101010101010");
 
 		final ValidationIssue issueWithDetails = createIssue("1122334455",details);
 		final ValidationIssue issueWithoutDetails = createIssue("5544332211", Collections.emptyMap());
@@ -96,8 +148,8 @@ public class SnomedValidationIssueDetailTest {
 
 	@Test
 	public void filterByModuleIds() {
-		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111"));
-		final Map<String, Object> details2 = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, "2222");
+		final Map<String, Object> details = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID, newArrayList("1111"));
+		final Map<String, Object> details2 = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID, "2222");
 		
 		final ValidationIssue issueWithModuleId = createIssue("111111111", details);
 		final ValidationIssue issueWithModuleId2 = createIssue("222222222", details2);
@@ -107,7 +159,7 @@ public class SnomedValidationIssueDetailTest {
 		save(issueWithModuleId2);
 		save(issueWithoutModuleId);
 		
-		final Map<String, Object> detailsToSearch = ImmutableMap.of(SnomedRf2Headers.FIELD_MODULE_ID, newArrayList("1111", "2222"));
+		final Map<String, Object> detailsToSearch = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID, newArrayList("1111", "2222"));
 		
 		ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 				.all()
@@ -121,8 +173,8 @@ public class SnomedValidationIssueDetailTest {
 
 	@Test
 	public void filterByAffectedComponentStatus() {
-		final Map<String, Object> details = ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, true);
-		final Map<String, Object> details2 = ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, false);
+		final Map<String, Object> details = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_STATUS, true);
+		final Map<String, Object> details2 = ImmutableMap.of(SnomedIssueDetailFilterFields.COMPONENT_STATUS, false);
 		
 		final ValidationIssue issueWithActiveComponent = createIssue("444444444", details);
 		final ValidationIssue issueWithInactiveComponent = createIssue("555555555", details2);
@@ -140,12 +192,37 @@ public class SnomedValidationIssueDetailTest {
 		assertComponents(issues, issueWithActiveComponent.getAffectedComponent());
 	}
 	
+	@Test
+	public void duplicateIssueWithSameComponentIdTest() throws Exception {
+		final String conceptId = RandomSnomedIdentiferGenerator.generateConceptId();
+
+		final ValidationIssue existingIssue = createIssue(conceptId, Collections.emptyMap());
+		final ValidationIssue existingIssue2 = createIssue(conceptId, Collections.emptyMap());
+		save(existingIssue);
+		save(existingIssue2);
+		
+		ImmutableMap<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
+			.put("componentType", "concept")
+			.put("active", true)
+			.build();
+
+		SnomedConceptDocument theConcept = concept(conceptId).active(true).build();
+		indexRevision(MAIN, STORAGE_KEY1, theConcept);
+		
+		createSnomedQueryRule(ruleQuery);
+		
+		final ValidationIssues issues = validate();
+
+		assertThat(issues.getItems().size()).isEqualTo(1);
+	}
+	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
+		final short terminologyShort = 100;
 		final ValidationIssue issue = new ValidationIssue(
 			UUID.randomUUID().toString(),
 			TEST_RULE_ID,
-			TEST_BRANCH,
-			ComponentIdentifier.of(TEST_TERMINOLOGY_SHORT, componentId),
+			MAIN,
+			ComponentIdentifier.of(terminologyShort, componentId),
 			false);
 		
 		if (!CompareUtils.isEmpty(details)) {
@@ -172,4 +249,54 @@ public class SnomedValidationIssueDetailTest {
 		).containsOnly(expectedComponents);
 	}
 	
+	@Test
+	public void conceptAttributeChange() throws Exception {
+		final String conceptId = RandomSnomedIdentiferGenerator.generateConceptId();
+		
+		indexRevision(MAIN, STORAGE_KEY1, concept(conceptId).effectiveTime(-1).build());
+		
+		createSnomedQueryRule(
+			ImmutableMap.<String, Object>builder()
+				.put("componentType", "concept")
+				.put("ecl", conceptId)
+				.build()
+		);
+		
+		final ValidationIssues firstValidation = validate();
+		
+		indexRevision(MAIN, STORAGE_KEY1, concept(conceptId).effectiveTime(Long.MAX_VALUE).build());
+		
+		ValidationIssues afterConceptEffectiveTimeChangeValidation = validate();
+		
+		assertThat(firstValidation).hasSize(1);
+		assertThat(firstValidation.first().get().getDetails().get(SnomedDocument.Fields.EFFECTIVE_TIME))
+			.isEqualTo(-1);
+		
+		assertThat(afterConceptEffectiveTimeChangeValidation).hasSize(1);
+		assertThat(afterConceptEffectiveTimeChangeValidation.first().get().getDetails().get(SnomedDocument.Fields.EFFECTIVE_TIME))
+			.isEqualTo(Long.MAX_VALUE);
+		
+	}
+	
+	private ValidationIssues validate() {
+		new RevisionIndexReadRequest<>(ValidationRequests.prepareValidate().build()).execute(context);
+		return ValidationRequests.issues().prepareSearch()
+			.all()
+			.filterByRule(TEST_RULE_ID)
+			.build()
+			.execute(context);
+	}
+	
+	private void createSnomedQueryRule(final Map<String, Object> ruleQuery) throws JsonProcessingException {
+		ValidationRequests.rules().prepareCreate()
+			.setId(TEST_RULE_ID)
+			.setType(evaluator.type())
+			.setMessageTemplate("Error")
+			.setSeverity(Severity.ERROR)
+			.setImplementation(context.service(ObjectMapper.class).writeValueAsString(ruleQuery))
+			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.build()
+			.execute(context);
+	}
+
 }

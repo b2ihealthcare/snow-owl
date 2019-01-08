@@ -106,17 +106,17 @@ public final class BranchData implements Branch {
 	}
 
 	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage) {
+	public Branch rebase(Branch onTopOf, String userId, String commitMessage) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Branch rebase(Branch onTopOf, String commitMessage, Runnable postReopen) {
+	public Branch rebase(Branch onTopOf, String userId, String commitMessage, Runnable postReopen) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Branch merge(Branch changesFrom, String commitMessage) throws BranchMergeException {
+	public Branch merge(Branch changesFrom, String userId, String commitMessage) throws BranchMergeException {
 		throw new UnsupportedOperationException();
 	}
 

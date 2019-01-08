@@ -135,8 +135,7 @@ public final class ModuleDependencyCollector {
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getDescriptionFormat());
 			
 			// concrete domain
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getOperatorId());
-			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getUnitId());
+			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getTypeId());
 			registerIfConcept(componentIdsByReferringModule, doc.getModuleId(), doc.getCharacteristicTypeId());
 			
 			// association
@@ -162,5 +161,4 @@ public final class ModuleDependencyCollector {
 			componentIdsByReferringModule.put(moduleId, dependency);
 		}
 	}
-	
 }

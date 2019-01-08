@@ -1280,40 +1280,31 @@ public interface SnomedRefSetPackage extends EPackage {
 	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UUID = SNOMED_REF_SET_MEMBER__UUID;
 
 	/**
+	 * The feature id for the '<em><b>Group</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+
+	/**
 	 * The feature id for the '<em><b>Serialized Value</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 0;
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
 
 	/**
-	 * The feature id for the '<em><b>Label</b></em>' attribute.
+	 * The feature id for the '<em><b>Type Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__LABEL = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 1;
-
-	/**
-	 * The feature id for the '<em><b>Uom Component Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UOM_COMPONENT_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
-
-	/**
-	 * The feature id for the '<em><b>Operator Component Id</b></em>' attribute.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__OPERATOR_COMPONENT_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 3;
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 2;
 
 	/**
 	 * The feature id for the '<em><b>Data Type</b></em>' attribute.
@@ -1322,7 +1313,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__DATA_TYPE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 4;
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__DATA_TYPE = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 3;
 
 	/**
 	 * The feature id for the '<em><b>Characteristic Type Id</b></em>' attribute.
@@ -1331,7 +1322,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__CHARACTERISTIC_TYPE_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 5;
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__CHARACTERISTIC_TYPE_ID = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 4;
 
 	/**
 	 * The number of structural features of the '<em>Snomed Concrete Data Type Ref Set Member</em>' class.
@@ -1340,7 +1331,7 @@ public interface SnomedRefSetPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 6;
+	int SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER_FEATURE_COUNT = SNOMED_REF_SET_MEMBER_FEATURE_COUNT + 5;
 
 	/**
 	 * The meta object id for the '{@link com.b2international.snowowl.snomed.snomedrefset.impl.SnomedAssociationRefSetMemberImpl <em>Snomed Association Ref Set Member</em>}' class.
@@ -2829,6 +2820,17 @@ public interface SnomedRefSetPackage extends EPackage {
 	EClass getSnomedConcreteDataTypeRefSetMember();
 
 	/**
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getGroup <em>Group</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Group</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getGroup()
+	 * @see #getSnomedConcreteDataTypeRefSetMember()
+	 * @generated
+	 */
+	EAttribute getSnomedConcreteDataTypeRefSetMember_Group();
+
+	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getSerializedValue <em>Serialized Value</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2840,37 +2842,15 @@ public interface SnomedRefSetPackage extends EPackage {
 	EAttribute getSnomedConcreteDataTypeRefSetMember_SerializedValue();
 
 	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getLabel <em>Label</em>}'.
+	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getTypeId <em>Type Id</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Label</em>'.
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getLabel()
+	 * @return the meta object for the attribute '<em>Type Id</em>'.
+	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getTypeId()
 	 * @see #getSnomedConcreteDataTypeRefSetMember()
 	 * @generated
 	 */
-	EAttribute getSnomedConcreteDataTypeRefSetMember_Label();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getUomComponentId <em>Uom Component Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Uom Component Id</em>'.
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getUomComponentId()
-	 * @see #getSnomedConcreteDataTypeRefSetMember()
-	 * @generated
-	 */
-	EAttribute getSnomedConcreteDataTypeRefSetMember_UomComponentId();
-
-	/**
-	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getOperatorComponentId <em>Operator Component Id</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Operator Component Id</em>'.
-	 * @see com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getOperatorComponentId()
-	 * @see #getSnomedConcreteDataTypeRefSetMember()
-	 * @generated
-	 */
-	EAttribute getSnomedConcreteDataTypeRefSetMember_OperatorComponentId();
+	EAttribute getSnomedConcreteDataTypeRefSetMember_TypeId();
 
 	/**
 	 * Returns the meta object for the attribute '{@link com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember#getDataType <em>Data Type</em>}'.
@@ -3643,6 +3623,14 @@ public interface SnomedRefSetPackage extends EPackage {
 		EClass SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER = eINSTANCE.getSnomedConcreteDataTypeRefSetMember();
 
 		/**
+		 * The meta object literal for the '<em><b>Group</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__GROUP = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_Group();
+
+		/**
 		 * The meta object literal for the '<em><b>Serialized Value</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -3651,28 +3639,12 @@ public interface SnomedRefSetPackage extends EPackage {
 		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__SERIALIZED_VALUE = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_SerializedValue();
 
 		/**
-		 * The meta object literal for the '<em><b>Label</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Type Id</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__LABEL = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_Label();
-
-		/**
-		 * The meta object literal for the '<em><b>Uom Component Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__UOM_COMPONENT_ID = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_UomComponentId();
-
-		/**
-		 * The meta object literal for the '<em><b>Operator Component Id</b></em>' attribute feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__OPERATOR_COMPONENT_ID = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_OperatorComponentId();
+		EAttribute SNOMED_CONCRETE_DATA_TYPE_REF_SET_MEMBER__TYPE_ID = eINSTANCE.getSnomedConcreteDataTypeRefSetMember_TypeId();
 
 		/**
 		 * The meta object literal for the '<em><b>Data Type</b></em>' attribute feature.

@@ -70,9 +70,8 @@ public abstract class PredicateFragment extends ConceptModelComponentFragment {
 					predicate.isActive(), 
 					EffectiveTimes.getEffectiveTime(predicate.getEffectiveTime()), 
 					predicate.getAuthor(), 
-					((ConcreteDomainElementPredicate) predicate).getLabel(), 
-					((ConcreteDomainElementPredicate) predicate).getName(), 
-					((ConcreteDomainElementPredicate) predicate).getType(), 
+					ConceptSetDefinitionFragment.from(((ConcreteDomainElementPredicate) predicate).getAttribute()), 
+					((ConcreteDomainElementPredicate) predicate).getRange(), 
 					((ConcreteDomainElementPredicate) predicate).getCharacteristicTypeConceptId());
 			
 		} else if (predicate instanceof DependencyPredicate) {

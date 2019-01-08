@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.model.LongConcepts;
 import com.b2international.snowowl.snomed.reasoner.model.SnomedOntologyUtils;
 
 import uk.ac.manchester.cs.owl.owlapi.EmptyInMemOWLOntologyFactory;
@@ -56,7 +57,13 @@ public class DelegateOntologyFactory extends EmptyInMemOWLOntologyFactory implem
 		final URI relativeUri = SnomedOntologyUtils.BASE_IRI.toURI().relativize(documentIRI.toURI());
 		final String path = relativeUri.getPath();
 		final IBranchPath branchPath = BranchPathUtils.createPath(path);
-        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), ontologyID, branchPath, getIndex(), isConcreteDomainSupported());
+        final DelegateOntology ont = new DelegateOntology(getOWLOntologyManager(), 
+        		ontologyID, 
+        		branchPath, 
+        		getIndex(), 
+        		isConcreteDomainSupported(),
+        		LongConcepts.CONCEPT_MODEL_ATTRIBUTE_ID,
+        		LongConcepts.SG_CONCRETE_DOMAIN_ATTRIBUTE_ID);
         handler.ontologyCreated(ont);
         return ont;
 	}
