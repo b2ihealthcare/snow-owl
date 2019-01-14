@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,21 +53,15 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 
 	private static final int PIPE_SIZE = 8192;
 
-	public enum Type {
-		FUNCTIONAL,
-		MANCHESTER,
-		XML
-	}
-
 	@NotNull
-	private Type exportType;
+	private OntologyExportType exportType;
 
 	@NotEmpty
 	private String ontologyModuleId;
 
 	OntologyExportRequest() {}
 
-	public void setExportType(final Type exportType) {
+	public void setExportType(final OntologyExportType exportType) {
 		this.exportType = exportType;
 	}
 
