@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.ontology;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.StringReader;
 import java.text.MessageFormat;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -29,38 +30,15 @@ import java.util.function.BiFunction;
 import java.util.function.LongFunction;
 import java.util.function.LongPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassAxiom;
-import org.semanticweb.owlapi.model.OWLClassExpression;
-import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDataHasValue;
-import org.semanticweb.owlapi.model.OWLDataProperty;
-import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
-import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
-import org.semanticweb.owlapi.model.OWLDisjointUnionAxiom;
-import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
-import org.semanticweb.owlapi.model.OWLLiteral;
-import org.semanticweb.owlapi.model.OWLObject;
-import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
-import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
-import org.semanticweb.owlapi.model.OWLObjectVisitor;
-import org.semanticweb.owlapi.model.OWLObjectVisitorEx;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyID;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLPropertyExpression;
-import org.semanticweb.owlapi.model.OWLQuantifiedObjectRestriction;
-import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
-import org.semanticweb.owlapi.model.OWLSubDataPropertyOfAxiom;
-import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
-import org.semanticweb.owlapi.model.OWLSubPropertyAxiom;
+import org.coode.owlapi.functionalparser.OWLFunctionalSyntaxParser;
+import org.coode.owlapi.functionalparser.ParseException;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.AbstractLongIterator;
@@ -68,6 +46,7 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdMap;
 import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
@@ -76,41 +55,44 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
 
 /**
  * @since
  */
 public final class DelegateOntology extends DelegateOntologyStub implements OWLOntology {
 
-	// The prefix used for SNOMED CT identifiers (also the default)
-	private static final String PREFIX_SCT = "sct:";
+	// The prefix used for SNOMED CT identifiers (also the default namespace for ":" prefixes)
+	private static final String PREFIX_SCT = ":";
+	private static final String PREFIX_SCT_LONG = "sct:";
 	private static final String NAMESPACE_SCT = "http://snomed.info/id/";
 
 	// The prefix used for SNOMED CT module ontology identifiers
 	private static final String PREFIX_SCTM = "sctm:";
 	public static final String NAMESPACE_SCTM = "http://snomed.info/sct/";
 
-	// Prefix for Snow Owl-specific extension IRIs
-	private static final String PREFIX_SO = "so:";
-	private static final String NAMESPACE_SO = "http://b2i.sg/snowowl/";
+	// Post 2018-01 INT datasets use different concepts for object and data attribute roots; only one out of the two set of concepts can be used
+	private static final long POST_2018_OBJECT_ATTRIBUTE = Long.parseLong(Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+	private static final long POST_2018_DATA_ATTRIBUTE = Long.parseLong(Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
+	
+	private static final long PRE_2018_OBJECT_ATTRIBUTE = Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE);
+	private static final long PRE_2018_DATA_ATTRIBUTE = Long.parseLong(Concepts.SG_CONCRETE_DOMAIN_ATTRIBUTE);
 
-	private static final long CONCEPT_MODEL_OBJECT_ATTRIBUTE = 762705008L;
-	private static final long CONCEPT_MODEL_DATA_ATTRIBUTE = 762706009L;
-	private static final long ROLE_GROUP = 609096000L;
+	private static final long ROLE_GROUP = Long.parseLong(Concepts.ROLE_GROUP);
 
 	private static final long PART_OF = 123005000L;
 	private static final long LATERALITY = 272741003L;
 	private static final long HAS_DOSE_FORM = 411116001L;
 	private static final long HAS_ACTIVE_INGREDIENT = 127489000L;
-	
-	public static final String PREFIX_DATA = PREFIX_SO + "data_";
 
-	private static final LongSet NEVER_GROUPED_TYPE_IDS = PrimitiveSets.newLongOpenHashSet(PART_OF, 
+	// Post 2018-01 INT datasets provide never grouped type IDs as part of the MRCM attribute reference set
+	private static final LongSet PRE_2018_NEVER_GROUPED_TYPE_IDS = PrimitiveSets.newLongOpenHashSet(
+			PART_OF, 
 			LATERALITY, 
 			HAS_DOSE_FORM, 
 			HAS_ACTIVE_INGREDIENT);
 
+	private static final Logger LOGGER = LoggerFactory.getLogger("ontology");
+	
 	private final class EntityDeclarationAxiomIterator extends AbstractIterator<OWLDeclarationAxiom> {
 		private final LongIterator idIterator;
 		private final LongFunction<OWLEntity> entityFactory;
@@ -176,7 +158,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
-	private final class SubPropertyOfAxiomIterator<P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+	private final class SubPropertyAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression<R, P>, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
 		private final BiFunction<P, P, A> subPropertyAxiomFactory;
@@ -184,7 +166,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		private long childId = -1L;
 		private LongIterator parentIterator;
 
-		public SubPropertyOfAxiomIterator(final LongIterator childIterator,
+		public SubPropertyAxiomIterator(final LongIterator childIterator,
 				final LongFunction<P> propertyFactory,
 				final BiFunction<P, P, A> subPropertyAxiomFactory) {
 
@@ -227,25 +209,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
-	private final class ConcreteDomainAttributeIterator extends AbstractIterator<OWLDeclarationAxiom> {
-		private final Iterator<Long> attributeNameIterator;
-
-		private ConcreteDomainAttributeIterator(final Iterator<Long> attributeNameIterator) {
-			this.attributeNameIterator = attributeNameIterator;
-		}
-
-		@Override
-		protected OWLDeclarationAxiom computeNext() {
-			if (!attributeNameIterator.hasNext()) {
-				return endOfData();
-			}
-
-			final Long typeId = attributeNameIterator.next();
-			final OWLDataProperty attributeProperty = getDataFactory().getOWLDataProperty(PREFIX_DATA + typeId, prefixManager);
-			return getOWLDeclarationAxiom(attributeProperty);
-		}
-	}
-
 	private final class DisjointUnionAxiomIterator extends AbstractIterator<OWLDisjointUnionAxiom> {
 		private final LongIterator idIterator;
 
@@ -276,6 +239,36 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
+	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLAxiom> {
+		private final Iterator<String> axiomIterator;
+		private final OWLFunctionalSyntaxParser parser;
+		
+		public FunctionalSyntaxAxiomIterator(final Stream<String> axiomStream) {
+			this.axiomIterator = axiomStream.iterator();
+			this.parser = new OWLFunctionalSyntaxParser(new StringReader(""));
+			parser.setUp(DelegateOntology.this, new OWLOntologyLoaderConfiguration());
+			parser.setPrefixes(prefixManager);
+		}
+
+		@Override
+		protected OWLAxiom computeNext() {
+			if (!axiomIterator.hasNext()) {
+				return endOfData();
+			}
+			
+			final String axiomString = axiomIterator.next();
+			parser.ReInit(new StringReader(axiomString));
+			
+			try {
+				final OWLAxiom parsedAxiom = parser.Axiom();
+				return parsedAxiom;
+			} catch (final ParseException e) {
+				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
+				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
+			}
+		}
+	}
+
 	/**
 	 * Creates a {@link DefaultPrefixManager} instance for the specified ontology.
 	 * Prefixes will be configured in accordance with the OWL reference set
@@ -287,10 +280,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	 */
 	private static DefaultPrefixManager createPrefixManager() {
 		final DefaultPrefixManager prefixManager = new DefaultPrefixManager();
-		// prefixManager.setDefaultPrefix(NAMESPACE_SCT);
-		prefixManager.setPrefix(PREFIX_SCT, NAMESPACE_SCT);
+		prefixManager.setDefaultPrefix(NAMESPACE_SCT);
+		prefixManager.setPrefix(PREFIX_SCT_LONG, NAMESPACE_SCT);
 		prefixManager.setPrefix(PREFIX_SCTM, NAMESPACE_SCTM);
-		prefixManager.setPrefix(PREFIX_SO, NAMESPACE_SO);
 		return prefixManager;
 	}
 
@@ -299,6 +291,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	private final ReasonerTaxonomy taxonomy;
 
 	private final DefaultPrefixManager prefixManager;
+	
+	private final long objectAttributeId;
+	private final long dataAttributeId;
+	private final LongSet neverGroupedIds;
 
 	public DelegateOntology(final OWLOntologyManager manager, 
 			final OWLOntologyID ontologyID, 
@@ -309,6 +305,24 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		this.taxonomy = taxonomy;
 
 		this.prefixManager = createPrefixManager();
+		
+		if (taxonomy.getConceptMap().getInternalId(POST_2018_OBJECT_ATTRIBUTE) != -1) {
+			objectAttributeId = POST_2018_OBJECT_ATTRIBUTE;
+		} else {
+			objectAttributeId = PRE_2018_OBJECT_ATTRIBUTE;
+		}
+		
+		if (taxonomy.getConceptMap().getInternalId(POST_2018_DATA_ATTRIBUTE) != -1) {
+			dataAttributeId = POST_2018_DATA_ATTRIBUTE;
+		} else {
+			dataAttributeId = PRE_2018_DATA_ATTRIBUTE;
+		}
+		
+		if (!taxonomy.getNeverGroupedTypeIds().isEmpty()) {
+			this.neverGroupedIds = taxonomy.getNeverGroupedTypeIds();
+		} else {
+			this.neverGroupedIds = PRE_2018_NEVER_GROUPED_TYPE_IDS;
+		}
 	}
 
 	@Override
@@ -365,14 +379,15 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			@Override
 			@SuppressWarnings("unchecked")
 			public Iterator<OWLAxiom> iterator() {
-				return Iterators.concat(conceptDeclarationAxioms(),
+				return Iterators.concat(
+						conceptDeclarationAxioms(),
+						objectAttributeDeclarationAxioms(),
+						dataAttributeDeclarationAxioms(),
+						owlReferenceSetAxioms(),
 						conceptSubClassOfAxioms(),
 						conceptEquivalentClassesAxioms(),
-						objectAttributeDeclarationAxioms(),
 						objectAttributeSubPropertyOfAxioms(),
-						dataAttributeDeclarationAxioms(),
 						dataAttributeSubPropertyOfAxioms(),
-						concreteDomainAttributeAxioms(),
 						disjointUnionAxioms());
 			}
 
@@ -383,48 +398,64 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		};
 	}
 
+	////////////////////////
+	// Declaration axioms
+	////////////////////////
+	
 	private Iterator<OWLDeclarationAxiom> conceptDeclarationAxioms() {
 		return new EntityDeclarationAxiomIterator(conceptIdIterator(), this::getConceptClass);
 	}
 
-	private Iterator<OWLSubClassOfAxiom> conceptSubClassOfAxioms() {
-		return new ConceptAxiomIterator<>(conceptIdIterator(),
-				conceptId -> !taxonomy.getFullyDefinedConcepts()
-				.contains(conceptId), 
-				this::getOWLSubClassOfAxiom);
-	}
-
-	private Iterator<OWLEquivalentClassesAxiom> conceptEquivalentClassesAxioms() {
-		return new ConceptAxiomIterator<>(conceptIdIterator(),
-				conceptId -> taxonomy.getFullyDefinedConcepts()
-				.contains(conceptId), 
-				this::getOWLEquivalentClassesAxiom);
-	}
-
-	private Iterator<? extends OWLAxiom> objectAttributeDeclarationAxioms() {
+	private Iterator<OWLDeclarationAxiom> objectAttributeDeclarationAxioms() {
 		return new EntityDeclarationAxiomIterator(objectAttributeIdIterator(), this::getConceptObjectProperty);
 	}
 
-	private Iterator<? extends OWLAxiom> objectAttributeSubPropertyOfAxioms() {
-		return new SubPropertyOfAxiomIterator<>(objectAttributeIdIterator(), this::getConceptObjectProperty, this::getOWLSubObjectPropertyOfAxiom);
-	}
-
-	private Iterator<? extends OWLAxiom> dataAttributeDeclarationAxioms() {
+	private Iterator<OWLDeclarationAxiom> dataAttributeDeclarationAxioms() {
 		return new EntityDeclarationAxiomIterator(dataAttributeIdIterator(), this::getConceptDataProperty);
 	}
 
-	private Iterator<? extends OWLAxiom> dataAttributeSubPropertyOfAxioms() {
-		return new SubPropertyOfAxiomIterator<>(dataAttributeIdIterator(), this::getConceptDataProperty, this::getOWLSubDataPropertyOfAxiom);
+	///////////////////////////////
+	// Concept definition axioms
+	///////////////////////////////
+	
+	private Iterator<OWLSubClassOfAxiom> conceptSubClassOfAxioms() {
+		final LongPredicate primitiveConcept = conceptId -> !taxonomy.getFullyDefinedConcepts().contains(conceptId);
+		return new ConceptAxiomIterator<>(conceptIdIterator(), primitiveConcept, this::getOWLSubClassOfAxiom);
 	}
 
-	private Iterator<OWLDeclarationAxiom> concreteDomainAttributeAxioms() {
-		return new ConcreteDomainAttributeIterator(concreteDomainLabelIterator());
+	private Iterator<OWLEquivalentClassesAxiom> conceptEquivalentClassesAxioms() {
+		final LongPredicate fullyDefinedConcept = conceptId -> taxonomy.getFullyDefinedConcepts().contains(conceptId);
+		return new ConceptAxiomIterator<>(conceptIdIterator(), fullyDefinedConcept, this::getOWLEquivalentClassesAxiom);
 	}
 
+	////////////////////////////////////////////
+	// "Sub <object|data> property of" axioms
+	////////////////////////////////////////////
+	
+	private Iterator<OWLSubObjectPropertyOfAxiom> objectAttributeSubPropertyOfAxioms() {
+		return new SubPropertyAxiomIterator<>(objectAttributeIdIterator(), this::getConceptObjectProperty, this::getOWLSubObjectPropertyOfAxiom);
+	}
+
+	private Iterator<OWLSubDataPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
+		return new SubPropertyAxiomIterator<>(dataAttributeIdIterator(), this::getConceptDataProperty, this::getOWLSubDataPropertyOfAxiom);
+	}
+
+	///////////////////////////////////////////////////
+	// Disjoint union axioms for exhaustive concepts
+	///////////////////////////////////////////////////
+	
 	private Iterator<OWLDisjointUnionAxiom> disjointUnionAxioms() {
 		return new DisjointUnionAxiomIterator(exhaustiveIdIterator());
 	}
 
+	///////////////////////////////////////////////////////////
+	// Anything else declared as an OWL reference set member
+	///////////////////////////////////////////////////////////
+	
+	private Iterator<OWLAxiom> owlReferenceSetAxioms() {
+		return new FunctionalSyntaxAxiomIterator(taxonomy.getStatedAxioms().valueStream());
+	}
+	
 	private LongIterator conceptIdIterator() {
 		return new AbstractLongIterator() {
 			private final LongIterator delegate = taxonomy.getConceptMap().getSctIds();
@@ -433,11 +464,8 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			protected long computeNext() {
 				while (delegate.hasNext()) {
 					final long candidate = delegate.next();
-					final LongSet allAncestors = taxonomy.getStatedAncestors()
-							.getDestinations(candidate, false);
-
-					if (!allAncestors.contains(CONCEPT_MODEL_OBJECT_ATTRIBUTE) 
-							&& !allAncestors.contains(CONCEPT_MODEL_DATA_ATTRIBUTE)) {
+					final LongSet allAncestors = taxonomy.getStatedAncestors().getDestinations(candidate, false);
+					if (!allAncestors.contains(objectAttributeId) && !allAncestors.contains(dataAttributeId)) {
 						return candidate;
 					}
 				}
@@ -448,20 +476,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private LongIterator objectAttributeIdIterator() {
-		return getConceptAndSubTypes(CONCEPT_MODEL_OBJECT_ATTRIBUTE).iterator();
+		return getConceptAndSubTypes(objectAttributeId).iterator();
 	}
 
 	private LongIterator dataAttributeIdIterator() {
-		return getConceptAndSubTypes(CONCEPT_MODEL_DATA_ATTRIBUTE).iterator();
-	}
-
-	private Iterator<Long> concreteDomainLabelIterator() {
-		return taxonomy.getStatedConcreteDomainMembers()
-				.values()
-				.stream()
-				.map(ConcreteDomainFragment::getTypeId)
-				.distinct()
-				.iterator();
+		return getConceptAndSubTypes(dataAttributeId).iterator();
 	}
 
 	private LongIterator exhaustiveIdIterator() {
@@ -475,9 +494,8 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 				+ objectHierarchyCount()
 				+ dataAttributeCount()
 				+ dataHierarchyCount()
-				+ concreteDomainAttributeCount()
 				+ disjointUnionCount()
-				+ additionalAxiomCount();
+				+ owlReferenceSetAxiomCount();
 	}
 
 	private int conceptCount() {
@@ -487,37 +505,27 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int objectAttributeCount() {
-		return getConceptAndSubTypesCount(CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+		return getConceptAndSubTypesCount(objectAttributeId);
 	}
 
 	private int objectHierarchyCount() {
-		return hierarchyCount(CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+		return hierarchyCount(objectAttributeId);
 	}
 
 	private int dataAttributeCount() {
-		return getConceptAndSubTypesCount(CONCEPT_MODEL_DATA_ATTRIBUTE);
+		return getConceptAndSubTypesCount(dataAttributeId);
 	}
 
 	private int dataHierarchyCount() {
-		return hierarchyCount(CONCEPT_MODEL_DATA_ATTRIBUTE);
-	}
-
-	private int concreteDomainAttributeCount() {
-		return Ints.checkedCast(taxonomy.getStatedConcreteDomainMembers()
-				.values()
-				.stream()
-				.map(ConcreteDomainFragment::getTypeId)
-				.distinct()
-				.count());
+		return hierarchyCount(dataAttributeId);
 	}
 
 	private int disjointUnionCount() {
 		return taxonomy.getExhaustiveConcepts().size();
 	}
 
-	private int additionalAxiomCount() {
-		// See additionalAxioms() for the source of "3" 
-		return 3;
+	private int owlReferenceSetAxiomCount() {
+		return (int) taxonomy.getStatedAxioms().valueStream().count();
 	}
 
 	private int getConceptAndSubTypesCount(final long ancestorId) {
@@ -577,6 +585,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 	public OWLClassExpression getOWLThing() {
 		return getDataFactory().getOWLThing();
+	}
+	
+	private OWLClassExpression getOWLNothing() {
+		return getDataFactory().getOWLNothing();
 	}
 
 	private OWLObjectProperty getConceptObjectProperty(final long conceptId) {
@@ -656,7 +668,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private boolean isNeverGrouped(final StatementFragment r) {
-		return NEVER_GROUPED_TYPE_IDS.contains(r.getTypeId()) && r.getGroup() == 0;
+		return neverGroupedIds.contains(r.getTypeId()) && r.getGroup() == 0;
 	}
 
 	private boolean isActiveIngredient(final StatementFragment r) {
@@ -739,7 +751,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 		final OWL2Datatype owl2Datatype = getOWL2Datatype(sctDataType);
 		
-		final OWLDataProperty dataProperty = getDataFactory().getOWLDataProperty(PREFIX_DATA + typeId, prefixManager);
+		final OWLDataProperty dataProperty = getDataFactory().getOWLDataProperty(PREFIX_SCT + typeId, prefixManager);
 		final OWLLiteral valueLiteral = getDataFactory().getOWLLiteral(serializedValue, owl2Datatype);
 		final OWLDataHasValue dataExpression = getDataFactory().getOWLDataHasValue(dataProperty, valueLiteral);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.google.common.collect.Multimap;
@@ -42,6 +43,9 @@ public final class ReasonerTaxonomy {
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
 	private final InternalIdMultimap<StatementFragment> additionalGroupedRelationships;
 	
+	private final InternalIdMultimap<String> statedAxioms;
+	private final LongSet neverGroupedTypeIds;
+	
 	private final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers;
 	private final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 	private final Multimap<String, ConcreteDomainFragment> additionalGroupedConcreteDomainMembers;
@@ -50,6 +54,7 @@ public final class ReasonerTaxonomy {
 	private final InternalSctIdSet unsatisfiableConcepts;
 	private final InternalSctIdMultimap equivalentConcepts;
 	private final LongList iterationOrder;
+
 
 	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
 			final InternalIdEdges statedAncestors,
@@ -61,6 +66,9 @@ public final class ReasonerTaxonomy {
 			final InternalIdMultimap<StatementFragment> statedNonIsARelationships,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
 			final InternalIdMultimap<StatementFragment> additionalGroupedRelationships, 
+			
+			final InternalIdMultimap<String> statedAxioms,
+			final LongSet neverGroupedTypeIds,
 			
 			final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers,
 			final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers,
@@ -81,6 +89,9 @@ public final class ReasonerTaxonomy {
 		this.statedNonIsARelationships = statedNonIsARelationships;
 		this.existingInferredRelationships = existingInferredRelationships;
 		this.additionalGroupedRelationships = additionalGroupedRelationships;
+		
+		this.statedAxioms = statedAxioms;
+		this.neverGroupedTypeIds = neverGroupedTypeIds;
 		
 		this.statedConcreteDomainMembers = statedConcreteDomainMembers;
 		this.inferredConcreteDomainMembers = inferredConcreteDomainMembers;
@@ -136,10 +147,18 @@ public final class ReasonerTaxonomy {
 		return additionalGroupedRelationships;
 	}
 
+	public InternalIdMultimap<String> getStatedAxioms() {
+		return statedAxioms;
+	}
+	
+	public LongSet getNeverGroupedTypeIds() {
+		return neverGroupedTypeIds;
+	}
+
 	public Multimap<String, ConcreteDomainFragment> getStatedConcreteDomainMembers() {
 		return statedConcreteDomainMembers;
 	}
-
+	
 	public Multimap<String, ConcreteDomainFragment> getInferredConcreteDomainMembers() {
 		return inferredConcreteDomainMembers;
 	}
@@ -177,6 +196,9 @@ public final class ReasonerTaxonomy {
 				statedNonIsARelationships, 
 				existingInferredRelationships,
 				additionalGroupedRelationships,
+				
+				statedAxioms,
+				neverGroupedTypeIds,
 				
 				statedConcreteDomainMembers, 
 				inferredConcreteDomainMembers,

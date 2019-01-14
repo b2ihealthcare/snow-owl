@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,11 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongList;
+import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -103,12 +108,15 @@ public final class ReasonerTaxonomyBuilder {
 	private InternalIdMultimap.Builder<StatementFragment> statedNonIsARelationships;
 	private InternalIdMultimap.Builder<StatementFragment> additionalGroupedRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
+	
+	private InternalIdMultimap.Builder<String> statedAxioms;
+	private final LongSet neverGroupedIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(4);
+	
 	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> statedConcreteDomainMembers;
 	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> additionalGroupedConcreteDomainMembers;
 	private ImmutableMultimap.Builder<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
 
 	private InternalIdMap builtConceptMap;
-
 
 	public ReasonerTaxonomyBuilder() {
 		this(ImmutableSet.<String>of());
@@ -183,6 +191,8 @@ public final class ReasonerTaxonomyBuilder {
 		this.statedNonIsARelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.additionalGroupedRelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
+		
+		this.statedAxioms = InternalIdMultimap.builder(builtConceptMap);
 		
 		// Concrete domain member builders are not backed by the internal map
 		this.statedConcreteDomainMembers = ImmutableMultimap.builder();
@@ -623,6 +633,95 @@ public final class ReasonerTaxonomyBuilder {
 		}
 	}
 	
+	public ReasonerTaxonomyBuilder addActiveAxioms(final RevisionSearcher searcher) {
+		entering("Registering active stated OWL axioms using revision searcher");
+
+		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM));
+		
+		if (!excludedModuleIds.isEmpty()) {
+			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRefSetMemberIndexEntry.class)
+				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
+						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, // 1
+						SnomedRefSetMemberIndexEntry.Fields.OWL_EXPRESSION) // 2
+				.where(whereExpressionBuilder.build())
+				.sortBy(SortBy.builder()
+						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
+						.sortByField(SnomedRefSetMemberIndexEntry.Fields.ID, Order.ASC)
+						.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final List<String> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		String lastReferencedComponentId = "";
+		
+		for (final Hits<String[]> hits : scrolledHits) {
+			for (final String[] member : hits) {
+				final String referencedComponentId = member[1];
+				final String expression = member[2];
+				
+				if (lastReferencedComponentId.isEmpty()) {
+					lastReferencedComponentId = referencedComponentId;
+				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
+					statedAxioms.putAll(lastReferencedComponentId, fragments);
+					fragments.clear();
+					lastReferencedComponentId = referencedComponentId;
+				}
+				
+				fragments.add(expression);
+			}
+		}
+		
+		leaving("Registering active stated OWL axioms using revision searcher");
+		return this;
+	}
+	
+	public ReasonerTaxonomyBuilder addNeverGroupedTypeIds(final RevisionSearcher searcher) {
+		entering("Registering 'never grouped' type IDs using revision searcher");
+		
+		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.mrcmGrouped(false));
+		
+		if (!excludedModuleIds.isEmpty()) {
+			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedRefSetMemberIndexEntry.class)
+				.fields(SnomedRefSetMemberIndexEntry.Fields.ID, // 0
+						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID) // 1
+				.where(whereExpressionBuilder.build())
+				.sortBy(SortBy.builder()
+						.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
+						.sortByField(SnomedRefSetMemberIndexEntry.Fields.ID, Order.ASC)
+						.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final LongList fragments = PrimitiveLists.newLongArrayListWithExpectedSize(SCROLL_LIMIT);
+		
+		for (final Hits<String[]> hits : scrolledHits) {
+			for (final String[] member : hits) {
+				final String referencedComponentId = member[1];
+				fragments.add(Long.parseLong(referencedComponentId));
+			}
+			
+			neverGroupedIds.addAll(fragments);
+			fragments.clear();
+		}
+		
+		leaving("Registering 'never grouped' type IDs using revision searcher");
+		return this;
+	}
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
 
@@ -780,6 +879,8 @@ public final class ReasonerTaxonomyBuilder {
 				statedNonIsARelationships.build(),
 				additionalGroupedRelationships.build(),
 				existingInferredRelationships.build(),
+				statedAxioms.build(),
+				LongCollections.unmodifiableSet(neverGroupedIds),
 				statedConcreteDomainMembers.build(),
 				additionalGroupedConcreteDomainMembers.build(),
 				inferredConcreteDomainMembers.build(),

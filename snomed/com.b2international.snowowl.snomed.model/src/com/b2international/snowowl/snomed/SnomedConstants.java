@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,6 +319,7 @@ public abstract class SnomedConstants {
 		public static final String CONCEPT_MODEL_DATA_ATTRIBUTE = "762706009";
 		
 		// Concepts that require special care when classifying
+		public static final String ROLE_GROUP = "609096000";
 		public static final String PART_OF = "123005000";
 		public static final String LATERALITY = "272741003";
 		public static final String HAS_ACTIVE_INGREDIENT = "127489000";
