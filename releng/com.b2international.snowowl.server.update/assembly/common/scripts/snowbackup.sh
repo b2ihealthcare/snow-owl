@@ -229,18 +229,19 @@ backup_mysql() {
 	# take an incremental backup (even if we did a full seconds ago, this is needed to keep track of number of snapshots properly)
   xtrabackup --backup --target-dir="$INCREMENTAL_PREFIX$CURRENT_DATE" --incremental-basedir=$LAST_BKP -u$MYSQL_USERNAME -p$MYSQL_PASSWORD || unlock_repository_and_exit "Couldn't create incremental backup of MySQL. Exiting with error."
 
-	# Keep only the last N backup, count the current folders, substract one for the first full backup dir
+	# Keep only the last N backup, count the current incremental snapshots
 	NUMBER_OF_SNAPSHOTS=$( ls . | grep $INCREMENTAL_PREFIX | wc -l )
 	# Do the cleanup if we have more than the configured snapshots to keep
 	if [ $NUMBER_OF_SNAPSHOTS -gt $NUMBER_OF_SNAPSHOTS_TO_KEEP ];
 	then
 		SNAPSHOTS_TO_CLEAN=$(ls . | grep $INCREMENTAL_PREFIX | head -$(( $NUMBER_OF_SNAPSHOTS - $NUMBER_OF_SNAPSHOTS_TO_KEEP)) )
-		echo_date "Cleaning $(( $NUMBER_OF_SNAPSHOTS - $NUMBER_OF_SNAPSHOTS_TO_KEEP )) snapshot(s)..."
-		# Prepare the first
-		xtrabackup --prepare --apply-log-only --target-dir=$FULL_BKP_DIR
+		echo_date "Cleaning $(( $NUMBER_OF_SNAPSHOTS - $NUMBER_OF_SNAPSHOTS_TO_KEEP )) snapshot(s) of MySQL backups..."
+		# Prepare the full bkp dir for snapshot cleaning
+		xtrabackup --prepare --apply-log-only --target-dir=$FULL_BKP_DIR || unlock_repository_and_exit "Couldn't clean up snapshot $snapshot. Exiting with error."
 		for snapshot in $SNAPSHOTS_TO_CLEAN; do
-			echo_date "Cleaning snapshot of $snapshot..."
-			xtrabackup --prepare --apply-log-only --target-dir=$FULL_BKP_DIR --incremental-dir=$snapshot
+			echo_date "Cleaning MySQL snapshot of $snapshot..."
+			# Clean the now obsolete snapshot
+			xtrabackup --prepare --apply-log-only --target-dir=$FULL_BKP_DIR --incremental-dir=$snapshot || unlock_repository_and_exit "Couldn't clean up snapshot $snapshot. Exiting with error."
 			rm -rf $snapshot
 		done
 	fi
@@ -251,10 +252,36 @@ backup_mysql() {
 
 backup_resources() {
 	echo_date "Backing up resources directory (attachments, etc)..."
+
+	# Take backup
 	mkdir --parents $BACKUP_DIR/resources
 	cd $SO_HOME
-	rsync --verbose --recursive --dirs --exclude 'indexes' "resources/" "$BACKUP_DIR/resources/$CURRENT_DATE" || unlock_repository_and_exit "Couldn't create backup of resources directory. Exiting with error."
+	if [ -z "$(ls -A $BACKUP_DIR/resources)" ]; 
+	then
+		rsync --verbose --recursive --delete --dirs --exclude 'indexes' "resources/" "$BACKUP_DIR/resources/$CURRENT_DATE" || unlock_repository_and_exit "Couldn't take full backup of resources directory. Exiting with error."
+  	else 
+		LAST_BKP=$(ls -t $BACKUP_DIR/resources | head -1) 	
+		rsync --verbose --recursive --delete --dirs --exclude 'indexes' --link-dest="$BACKUP_DIR/resources/$LAST_BKP" "resources/" "$BACKUP_DIR/resources/$CURRENT_DATE" || unlock_repository_and_exit "Couldn't take incremental backup of resources directory. Exiting with error."
+	fi
 	cd --
+
+	# Keep only the last N backup
+	cd $BACKUP_DIR/resources
+	# Count the current incremental snapshots
+	NUMBER_OF_SNAPSHOTS=$( ls . | wc -l )
+	# Do the cleanup if we have more than the configured snapshots to keep
+	if [ $NUMBER_OF_SNAPSHOTS -gt $NUMBER_OF_SNAPSHOTS_TO_KEEP ];
+	then
+		SNAPSHOTS_TO_CLEAN=$( ls . | head -$(( $NUMBER_OF_SNAPSHOTS - $NUMBER_OF_SNAPSHOTS_TO_KEEP)) )
+		echo_date "Cleaning $(( $NUMBER_OF_SNAPSHOTS - $NUMBER_OF_SNAPSHOTS_TO_KEEP )) snapshot(s) of resources backups..."
+		for snapshot in $SNAPSHOTS_TO_CLEAN; do
+			echo_date "Cleaning resources snapshot of $snapshot..."
+			# Clean the now obsolete snapshot
+			rm -rf $snapshot
+		done
+	fi
+	cd --
+	
 	echo_date "Done backing up resources directory (attachments, etc)."
 }
 
@@ -275,8 +302,8 @@ backup_indexes() {
 backup_repositories() {
 	echo_date "Backing up installed terminology repositories..."
 
-	backup_mysql
-	#backup_resources
+	#backup_mysql
+	backup_resources
   #backup_indexes
 
 	echo "$BACKUP_TYPE $CURRENT_DATE" > $BACKUP_DIR/last_backup_info
