@@ -83,8 +83,8 @@ USE_ROOT_ARCHIVE_STRUCTURE=false
 # The base URL for administrative services
 SO_ADMIN_URL="$BASE_URL/admin"
 
-# The timestamp suffix for the top-level directory, eg. 20120904_1021
-CURRENT_DATE=`date +%Y%m%d_%H%M`
+# The timestamp suffix for the top-level directory, eg. 20120904_102102
+CURRENT_DATE=`date +%Y%m%d_%H%M%S`
 
 # The working directory and the resulting archive file prefix
 ARCHIVE_PREFIX="snowowl_$CURRENT_DATE"
@@ -161,7 +161,7 @@ so_rest_call() {
 # Invokes curl to make an HTTP request to any Web Server or API; stores returned message and HTTP status code in output variables.
 rest_call() {
 	CURL_OUTPUT=`curl -q --fail --silent --show-error --write-out "\n%{http_code}" "$@"`
-	CURL_MESSAGE=`echo "$CURL_OUTPUT" | head -n-1`
+	CURL_RESPONSE=`echo "$CURL_OUTPUT" | head -n-1`
 	CURL_HTTP_STATUS=`echo "$CURL_OUTPUT" | tail -n1`
 }
 
@@ -288,12 +288,49 @@ backup_resources() {
 backup_indexes() {
 	echo_date "Backing up Elasticsearch indices..."
 	mkdir --parents $BACKUP_DIR/indexes
+	REPO="backup"
 
-	# Create a backup repository first (TODO check if exists)
-	rest_call -XPUT -H 'Content-Type: application/json' $ES_URL/_snapshot/backup -d '{ "type": "fs", "settings": { "location": "$BACKUP_DIR/indexes", "max_snapshot_bytes_per_sec": "$SNAPSHOT_BYTES_PER_SEC" } }'
+REPO_CONFIG=$(cat <<EOF
+{ 
+	"type": "fs", 
+	"settings": { 
+		"location": "$BACKUP_DIR/indexes", 
+		"max_snapshot_bytes_per_sec": "$SNAPSHOT_BYTES_PER_SEC" 
+	} 
+}
+EOF
+)
+
+	# Create a backup repository first (it will return 200 if it is already exists)
+	rest_call -XPUT -H 'Content-Type: application/json' "$ES_URL/_snapshot/$REPO" -d "$REPO_CONFIG"
+	if [ "$CURL_HTTP_STATUS" -ne "200" ]; then
+		unlock_repository_and_exit "Couldn't create ES snapshot repository. API call returned $CURL_HTTP_STATUS status. Exiting with error."
+	fi
 
   # Start backing up the index and wait for its completion
-	rest_call -XPUT $ES_URL/_snapshot/backup/$CURRENT_DATE?wait_for_completion=true
+	rest_call -XPUT "$ES_URL/_snapshot/$REPO/$CURRENT_DATE?wait_for_completion=true" 
+	if [ "$CURL_HTTP_STATUS" -ne "200" ]; then
+		unlock_repository_and_exit "Couldn't take snapshot of Elasticsearch. Exiting with error."
+	fi	
+
+	# Keep only the last N backup
+	rest_call -s "$ES_URL/_snapshot/$REPO/_all" 
+
+	if [ "$CURL_HTTP_STATUS" -ne "200" ]; then
+		unlock_repository_and_exit "Couldn't get snapshots from repository $REPO for clean up. Exiting with error."
+	fi
+
+	SNAPSHOTS=$(echo $CURL_RESPONSE | jq -r ".snapshots[:-${NUMBER_OF_SNAPSHOTS_TO_KEEP}][].snapshot")
+	# Do the cleanup if we have more than the configured snapshots to keep
+	for SNAPSHOT in $SNAPSHOTS
+	do
+		# Clean the now obsolete snapshot
+		echo_date "Cleaning elasticsearch indices snapshot $SNAPSHOT..."
+		rest_call -s -XDELETE "$ES_URL/_snapshot/$REPO/$SNAPSHOT"
+		if [ "$CURL_HTTP_STATUS" -ne "200" ]; then
+			unlock_repository_and_exit "Couldn't clean up snapshot of $SNAPSHOT. Exiting with error."
+		fi
+	done
 
 	echo_date "Done backing up Elasticsearch indices."
 }
@@ -303,8 +340,8 @@ backup_repositories() {
 	echo_date "Backing up installed terminology repositories..."
 
 	#backup_mysql
-	backup_resources
-  #backup_indexes
+	#backup_resources
+  backup_indexes
 
 	echo "$BACKUP_TYPE $CURRENT_DATE" > $BACKUP_DIR/last_backup_info
 
