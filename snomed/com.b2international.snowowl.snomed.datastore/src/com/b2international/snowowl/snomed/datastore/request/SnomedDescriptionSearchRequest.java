@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDes
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.b2international.index.Hits;
@@ -88,9 +87,16 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		addNamespaceFilter(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);
-		addLanguageRefSetFilter(queryBuilder);
-		addAcceptableInFilter(queryBuilder);
-		addPreferredInFilter(queryBuilder);
+		
+		addEclFilter(context, queryBuilder, OptionKey.LANGUAGE_REFSET, ids -> {
+			return Expressions.builder()
+					.should(preferredIn(ids))
+					.should(acceptableIn(ids))
+					.build();
+		});
+		addEclFilter(context, queryBuilder, OptionKey.ACCEPTABLE_IN, ids -> acceptableIn(ids));
+		addEclFilter(context, queryBuilder, OptionKey.PREFERRED_IN, ids -> preferredIn(ids));
+		
 		addEffectiveTimeClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
@@ -184,28 +190,4 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 	}
 
-	private void addLanguageRefSetFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.LANGUAGE_REFSET)) {
-			final Collection<String> languageRefSetIds = getCollection(OptionKey.LANGUAGE_REFSET, String.class);
-			final ExpressionBuilder filter = Expressions.builder();
-			filter.should(preferredIn(languageRefSetIds));
-			filter.should(acceptableIn(languageRefSetIds));
-			queryBuilder.filter(filter.build());
-		}
-	}
-	
-	private void addAcceptableInFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.ACCEPTABLE_IN)) {
-			final Collection<String> acceptableIn = getCollection(OptionKey.ACCEPTABLE_IN, String.class);
-			queryBuilder.filter(acceptableIn(acceptableIn));
-		}
-	}
-	
-	private void addPreferredInFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.PREFERRED_IN)) {
-			final Collection<String> preferredIn = getCollection(OptionKey.PREFERRED_IN, String.class);
-			queryBuilder.filter(preferredIn(preferredIn));
-		}
-	}
-	
 }

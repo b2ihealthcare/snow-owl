@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,9 +226,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	}
 	
 	/**
-	 * Filter to return descriptions based on their language reference set membership.
+	 * Filter to return descriptions based on their language reference set membership or ECL filter. When the given argument is an ECL expression the
+	 * request will resolve the expression and the filter will match all descriptions that has any language reference set member in any of the matched
+	 * concept IDs (language reference sets probably).
 	 * 
-	 * @param languageRefSetIds - the language reference set IDs where the descriptions are members 
+	 * @param languageRefSetIds
+	 *            - the language reference set IDs where the descriptions are members
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByAcceptableIn(Iterable)
 	 * @see #filterByPreferredIn(Iterable)
@@ -251,9 +254,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	}
 	
 	/**
-	 * Filter to return descriptions based on their preferred {@link Acceptability acceptability} membership in the given language refset.
+	 * Filter to return descriptions based on their preferred {@link Acceptability acceptability} membership in the given language refset or ECL
+	 * filter. When the given argument is an ECL expression the request will resolve the expression and the filter will match all descriptions that
+	 * has preferred language reference set member in any of the matched concept IDs (language reference sets probably).
 	 * 
-	 * @param languageRefSetId - the language reference set ID where the descriptions are members with preferred acceptability 
+	 * @param languageRefSetId
+	 *            - the language reference set ID where the descriptions are members with preferred acceptability
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByAcceptableIn(String)
 	 * @see #filterByLanguageRefSet(String)
@@ -291,9 +297,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	}
 	
 	/**
-	 * Filter to return descriptions based on their acceptable {@link Acceptability acceptability} membership in the given language refset.
+	 * Filter to return descriptions based on their acceptable {@link Acceptability acceptability} membership in the given language refset or ECL
+	 * filter. When the given argument is an ECL expression the request will resolve the expression and the filter will match all descriptions that
+	 * has acceptable language reference set member in any of the matched concept IDs (language reference sets probably).
 	 * 
-	 * @param languageRefSetId - the language reference set ID where the descriptions are members with preferred acceptability 
+	 * @param languageRefSetId
+	 *            - the language reference set ID where the descriptions are members with preferred acceptability
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByAcceptableIn(String)
 	 * @see #filterByLanguageRefSet(String)
