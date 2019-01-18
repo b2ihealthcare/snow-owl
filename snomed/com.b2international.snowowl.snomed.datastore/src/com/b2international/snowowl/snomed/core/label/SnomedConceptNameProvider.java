@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.label;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -36,11 +41,19 @@ public final class SnomedConceptNameProvider {
 	private static final long NAME_PROVIDER_TIMEOUT = TimeUnit.SECONDS.toMillis(10L);
 	
 	private final IEventBus bus;
-	private final LanguageSetting languageSetting;
+	private final List<ExtendedLocale> locales;
 
-	public SnomedConceptNameProvider(final IEventBus bus, final LanguageSetting languageSetting) {
+	public SnomedConceptNameProvider(final IEventBus bus) {
 		this.bus = bus;
-		this.languageSetting = languageSetting;
+		this.locales = SnomedRequests.prepareSearchConcept()
+				.filterByActive(true)
+				.setFields(SnomedConceptDocument.Fields.ID)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+				.execute(bus)
+				.getSync()
+				.stream().map(SnomedConcept::getId)
+				.map(id -> ExtendedLocale.valueOf("en-x-"+id))
+				.collect(Collectors.toList());
 	}
 	
 	public String getComponentLabel(final IBranchPath branchPath, final String componentId) {
@@ -49,7 +62,7 @@ public final class SnomedConceptNameProvider {
 			protected SnomedDescriptions execute(final SnomedDescriptionSearchRequestBuilder req) {
 				return req.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath()).execute(bus).getSync(NAME_PROVIDER_TIMEOUT, TimeUnit.MILLISECONDS);
 			}
-		}.getPreferredTerm(componentId, languageSetting.getLanguagePreference());
+		}.getPreferredTerm(componentId, locales);
 		
 		return (pt != null) ? pt.getTerm() : componentId;
 	}
