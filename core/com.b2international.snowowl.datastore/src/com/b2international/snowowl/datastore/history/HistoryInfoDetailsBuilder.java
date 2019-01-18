@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@ import static com.b2international.snowowl.core.CoreTerminologyBroker.UNSPECIFIED
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.view.CDOView;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
 import com.b2international.snowowl.core.api.component.TerminologyComponentIdProvider;
 
@@ -42,22 +44,27 @@ public interface HistoryInfoDetailsBuilder extends TerminologyComponentIdProvide
 	 */
 	Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo);
 	
+	void configureLocales(List<ExtendedLocale> locales);
+	
 	/**
 	 * No-operation instance. Does nothing.
 	 */
 	HistoryInfoDetailsBuilder NOOP = new HistoryInfoDetailsBuilder() {
 		
 		@Override
-		public Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, 
-				final CDOView beforeView, final CDOCommitInfo commitInfo) {
-			
+		public Collection<IHistoryInfoDetails> buildDetails(final CDOView currentView, final CDOView beforeView, final CDOCommitInfo commitInfo) {
 			return emptyList();
-		};
+		}
 		
 		@Override
 		public short getTerminologyComponentId() {
 			return UNSPECIFIED_NUMBER_SHORT;
-		};
+		}
+		
+		@Override
+		public void configureLocales(List<ExtendedLocale> locales) {
+		}
+		
 	};
 	
 }

@@ -33,6 +33,8 @@ import org.eclipse.emf.cdo.common.revision.delta.CDOSetFeatureDelta;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EStructuralFeature;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IHistoryInfoDetails;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
@@ -45,6 +47,17 @@ import com.b2international.snowowl.datastore.history.HistoryInfoDetailsBuilder;
  */
 public abstract class AbstractHistoryInfoDetailsBuilder implements HistoryInfoDetailsBuilder {
 
+	private List<ExtendedLocale> locales;
+	
+	@Override
+	public void configureLocales(List<ExtendedLocale> locales) {
+		this.locales = Collections3.toImmutableList(locales);
+	}
+	
+	protected final List<ExtendedLocale> getLocales() {
+		return locales;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see com.b2international.snowowl.datastore.history.IHistoryInfoDetailsBuilder#buildDetails(org.eclipse.emf.cdo.view.CDOView, org.eclipse.emf.cdo.view.CDOView, org.eclipse.emf.cdo.common.commit.CDOCommitInfo)

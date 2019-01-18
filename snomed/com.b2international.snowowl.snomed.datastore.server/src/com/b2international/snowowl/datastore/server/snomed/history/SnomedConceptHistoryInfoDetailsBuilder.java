@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,33 @@
 package com.b2international.snowowl.datastore.server.snomed.history;
 
 import static com.b2international.commons.StringUtils.isEmpty;
-import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.*;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.ACCEPTABILITY_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CASE_SIGNIFICANCE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CHARACTERISTIC_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.CORRELATION_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DEFINITION_STATUS_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_FORMAT_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_LENGTH_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TERM_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.DESCRIPTION_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EFFECTIVE_TIME_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.EXHAUSTIVE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.GROUP_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_GROUP_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MAP_TARGET_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODIFIER_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.MODULE_ID_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.OPERATOR_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELATIONSHIP_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.RELEASED_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.SOURCE_EFFECTIVE_TIME_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.STATUS_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.TARGET_EFFECTIVE_TIME_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNION_GROUP_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.UNIT_TYPE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_FEATURE_NAME;
+import static com.b2international.snowowl.datastore.server.snomed.history.SnomedHistoryInfoConstants.VALUE_ID_FEATURE_NAME;
 
 import java.text.DateFormat;
 import java.util.Collection;
@@ -68,11 +94,11 @@ public class SnomedConceptHistoryInfoDetailsBuilder extends AbstractHistoryInfoD
 		@Override
 		public String load(final CDOObject object) throws Exception {
 			if (object instanceof Concept) {
-				return SnomedHistoryUtils.getLabelForConcept((Concept) object);
+				return SnomedHistoryUtils.getLabelForConcept((Concept) object, getLocales());
 			} else if (object instanceof Description) {
 				return SnomedHistoryUtils.getLabelForDescription((Description) object);
 			} else if (object instanceof Relationship) {
-				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object);
+				return SnomedHistoryUtils.getLabelForRelationship((Relationship) object, getLocales());
 			}
 			throw new IllegalArgumentException("Unknown object type: " + object.getClass());
 		}
