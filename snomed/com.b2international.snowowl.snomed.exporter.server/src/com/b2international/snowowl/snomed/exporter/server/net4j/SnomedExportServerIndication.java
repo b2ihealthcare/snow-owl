@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.AcceptHeader;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
@@ -64,7 +65,6 @@ import com.b2international.snowowl.snomed.SnomedConstants;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -140,6 +140,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 
 	private String codeSystemShortName;
 	private boolean extensionOnly;
+	private List<ExtendedLocale> locales;
 
 	public SnomedExportServerIndication(SignalProtocol<?> protocol) {
 		super(protocol, Net4jProtocolConstants.SNOMED_EXPORT_SIGNAL);
@@ -203,6 +204,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 		
 		tempDir = Files.createTempDirectory("export");
 		
+		locales = AcceptHeader.parseExtendedLocales(new StringReader(in.readUTF()));
 		exportContext = new SnomedExportContextImpl(
 				BranchPathUtils.createPath(branchPath), // TODO remove IBranchPath
 				releaseType, 
@@ -213,7 +215,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				modulesToExport,
 				new Id2Rf1PropertyMapper(),
 				getReleaseRootPath(tempDir, namespace),
-				AcceptHeader.parseExtendedLocales(new StringReader(in.readUTF())));
+				locales);
 		
 		logActivity(String.format("SNOMED CT %s export has been requested", releaseType.getDisplayName()));
 	}
@@ -559,7 +561,7 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 			}
 			
 			logActivity("Exporting SNOMED CT descriptions into RF1 format");
-			final String languageRefSetId = SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference().get(0).getLanguageTag());
+			final String languageRefSetId = SnomedConstants.LanguageCodeReferenceSetIdentifierMapping.getReferenceSetIdentifier(locales.get(0).getLanguageTag());
 			new SnomedRf1DescriptionExporter(exportContext, revisionSearcher, languageRefSetId, includeExtendedDescriptionTypes).execute();
 			
 			if (monitor.isCanceled()) {
