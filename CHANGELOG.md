@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.12.0
+
+### Added
+- Environment variable substitution is now supported in `snowowl_config.yml` configuration file via ${...} expressions
+
 ## 6.11.0
 
 ### Breaking changes
