@@ -69,6 +69,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String unsetEffectiveTimeLabel;
 	private String codeSystemShortName;
 	private boolean extensionOnly;
+	private String locales;
 
 	public SnomedRf2ExportModel(final String userId, 
 			final Branch branch, 
@@ -215,6 +216,14 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		this.extensionOnly = extensionOnly;
 	}
 	
+	public String getLocales() {
+		return locales;
+	}
+	
+	public void setLocales(String locales) {
+		this.locales = locales;
+	}
+	
 	private String initExportPath() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.getProperty("user.home"));
@@ -254,5 +263,5 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		sb.append(".zip");
 		return sb.toString();
 	}
-	
+
 }

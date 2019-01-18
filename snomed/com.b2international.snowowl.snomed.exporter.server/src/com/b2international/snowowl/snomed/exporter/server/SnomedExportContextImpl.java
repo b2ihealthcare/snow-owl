@@ -19,10 +19,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.exporter.server.rf1.Id2Rf1PropertyMapper;
@@ -35,6 +37,7 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 	private final IBranchPath currentBranchPath;
 	private final ContentSubType contentSubType;
 	private final String unsetEffectiveTimeLabel;
+	private final List<ExtendedLocale> locales;
 
 	private Date startEffectiveTime;
 	private Date endEffectiveTime;
@@ -56,8 +59,8 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 			final String namespaceId,
 			final Set<String> moduleIds,
 			final Id2Rf1PropertyMapper id2Rf1PropertyMapper,
-			final Path releaseRootPath) {
-
+			final Path releaseRootPath,
+			final List<ExtendedLocale> locales) {
 		this.currentBranchPath = checkNotNull(currentBranchPath, "currentBranchPath");
 		this.contentSubType = checkNotNull(contentSubType, "contentSubType");
 		this.unsetEffectiveTimeLabel = checkNotNull(unsetEffectiveTimeLabel, "unsetEffectiveTimeLabel");
@@ -68,11 +71,17 @@ public class SnomedExportContextImpl implements SnomedExportContext {
 		this.id2Rf1PropertyMapper = id2Rf1PropertyMapper;
 		this.releaseRootPath = releaseRootPath;
 		this.unpublishedExport = false;
+		this.locales = locales;
 	}
 	
 	@Override
 	public IBranchPath getCurrentBranchPath() {
 		return currentBranchPath;
+	}
+	
+	@Override
+	public List<ExtendedLocale> getLocales() {
+		return locales;
 	}
 
 	@Override

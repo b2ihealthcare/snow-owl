@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,6 +40,7 @@ import org.eclipse.net4j.util.io.ExtendedDataOutputStream;
 import org.eclipse.net4j.util.om.monitor.OMMonitor;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.http.AcceptHeader;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionIndex;
@@ -210,7 +212,8 @@ public class SnomedExportServerIndication extends IndicationWithMonitoring {
 				namespace,
 				modulesToExport,
 				new Id2Rf1PropertyMapper(),
-				getReleaseRootPath(tempDir, namespace));
+				getReleaseRootPath(tempDir, namespace),
+				AcceptHeader.parseExtendedLocales(new StringReader(in.readUTF())));
 		
 		logActivity(String.format("SNOMED CT %s export has been requested", releaseType.getDisplayName()));
 	}
