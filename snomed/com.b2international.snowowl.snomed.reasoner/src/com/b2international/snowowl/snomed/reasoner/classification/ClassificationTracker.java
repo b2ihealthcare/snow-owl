@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.reasoner.index;
+package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.io.IOException;
 import java.util.Map;
@@ -50,6 +50,10 @@ import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.Reason
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainWriter;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.RelationshipWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
+import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
+import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
+import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.normalform.NormalFormGenerator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

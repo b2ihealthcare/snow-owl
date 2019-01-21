@@ -31,7 +31,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 
 /**
  * @since 7.0

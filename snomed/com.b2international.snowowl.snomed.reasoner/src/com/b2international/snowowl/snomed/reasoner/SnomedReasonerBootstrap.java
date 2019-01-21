@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 
 /**
  * @since 7.0

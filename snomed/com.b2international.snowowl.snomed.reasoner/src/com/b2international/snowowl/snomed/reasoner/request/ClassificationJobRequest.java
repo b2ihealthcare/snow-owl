@@ -39,9 +39,9 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
 

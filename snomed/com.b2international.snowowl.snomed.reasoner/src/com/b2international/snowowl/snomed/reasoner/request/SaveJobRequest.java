@@ -58,6 +58,7 @@ import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceA
 import com.b2international.snowowl.snomed.datastore.request.IdRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
@@ -69,7 +70,6 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTracker;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
