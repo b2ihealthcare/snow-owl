@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - Environment variable substitution is now supported in `snowowl_config.yml` configuration file via ${...} expressions
 
 ### Removed
+- `snomed.language` configuration key, all APIs, commands now accept a list of locales in preference order to compute display names/labels/etc.
 - Unused and obsolete `Export RefSet to Excel` functionality
 
 ## 6.11.0
