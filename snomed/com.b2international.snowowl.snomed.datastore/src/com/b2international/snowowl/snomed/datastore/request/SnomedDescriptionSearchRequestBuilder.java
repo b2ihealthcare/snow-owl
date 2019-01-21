@@ -32,6 +32,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT descriptions.
@@ -377,7 +378,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		}
 	
 		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
-			throw new IllegalArgumentException("Don't know how to convert extended locale " + unconvertableLocales.get(0).toString() + " to a language reference set identifier.");
+			throw new IllegalArgumentException("Don't know how to convert extended locale " + Iterables.toString(unconvertableLocales) + " to a language reference set identifier.");
 		}
 		
 		return languageRefSetIds;
