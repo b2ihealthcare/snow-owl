@@ -21,7 +21,6 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,10 +37,11 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.reasoner.classification.INormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
@@ -60,13 +60,12 @@ import com.google.common.collect.Sets;
  *
  * @author law223 - initial implementation in Snorocket's SNOMED API
  */
-public final class NormalFormGenerator {
+public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NormalFormGenerator.class);
 	private static final long IS_A = Long.parseLong(Concepts.IS_A);
 
 	private final ReasonerTaxonomy reasonerTaxonomy;
-
 	private final LongKeyMap<Collection<StatementFragment>> statementCache = PrimitiveMaps.newLongKeyOpenHashMap();
 	private final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
 
@@ -81,6 +80,7 @@ public final class NormalFormGenerator {
 		this.reasonerTaxonomy = reasonerTaxonomy;
 	}
 
+	@Override
 	public final void computeChanges(final IProgressMonitor monitor, 
 			final OntologyChangeProcessor<StatementFragment> statementProcessor,
 			final OntologyChangeProcessor<ConcreteDomainFragment> concreteDomainProcessor) {
@@ -122,7 +122,7 @@ public final class NormalFormGenerator {
 
 		} finally {
 			subMonitor.done();
-			LOGGER.info(MessageFormat.format("<<< Distribution normal form generation [{0}]", stopwatch.toString()));
+			LOGGER.info("<<< Distribution normal form generation [{}]", stopwatch.toString());
 		}
 	}
 

@@ -44,9 +44,9 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdMultimap;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalSctIdSet;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.IReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainWriter;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.RelationshipWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -54,7 +54,6 @@ import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocum
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.normalform.NormalFormGenerator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -219,13 +218,15 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
-	public void classificationCompleted(final String classificationId, final ReasonerTaxonomy inferredTaxonomy) {
+	public void classificationCompleted(final String classificationId, 
+			final IReasonerTaxonomy inferredTaxonomy, 
+			final INormalFormGenerator normalFormGenerator) {
+		
 		index.write(writer -> {
 
 			indexUnsatisfiableConcepts(writer, classificationId, inferredTaxonomy.getUnsatisfiableConcepts());
 			indexEquivalentConcepts(writer, classificationId, inferredTaxonomy.getEquivalentConcepts());
 
-			final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
 			final RelationshipWriter relationshipWriter = new RelationshipWriter(classificationId, writer);
 			final ConcreteDomainWriter concreteDomainWriter = new ConcreteDomainWriter(classificationId, writer);
 
@@ -292,12 +293,12 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private void indexUnsatisfiableConcepts(final Writer writer, 
 			final String classificationId, 
-			final InternalSctIdSet unsatisfiableConcepts) throws IOException {
+			final IInternalSctIdSet internalSctIdSet) throws IOException {
 
-		if (!unsatisfiableConcepts.isEmpty()) {
+		if (!internalSctIdSet.isEmpty()) {
 			final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
 					.classificationId(classificationId)
-					.conceptIds(unsatisfiableConcepts.toLongList())
+					.conceptIds(internalSctIdSet.toLongList())
 					.unsatisfiable(true)
 					.build();
 	
@@ -307,11 +308,11 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private void indexEquivalentConcepts(final Writer writer, 
 			final String classificationId, 
-			final InternalSctIdMultimap equivalentConcepts) throws IOException {
+			final IInternalSctIdMultimap internalSctIdMultimap) throws IOException {
 
-		for (final LongIterator itr = equivalentConcepts.keySet().iterator(); itr.hasNext(); /*empty*/) {
+		for (final LongIterator itr = internalSctIdMultimap.keySet().iterator(); itr.hasNext(); /*empty*/) {
 			final long representativeConcept = itr.next();
-			final LongSet equivalents = equivalentConcepts.get(representativeConcept);
+			final LongSet equivalents = internalSctIdMultimap.get(representativeConcept);
 			final LongList orderedConcepts = PrimitiveLists.newLongArrayListWithExpectedSize(equivalents.size() + 1);
 
 			orderedConcepts.add(representativeConcept);
