@@ -27,9 +27,9 @@ import java.util.Objects;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.InternalIdEdges;
-import com.b2international.snowowl.datastore.server.snomed.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
  * Represents concept attribute-value pairs, used when relationships originating
