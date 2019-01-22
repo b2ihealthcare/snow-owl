@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
+package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +34,7 @@ import com.b2international.collections.longs.LongSet;
  * 
  * @since 7.0
  */
-public final class InternalSctIdSet {
+public final class InternalSctIdSet implements IInternalSctIdSet {
 
 	public static final Builder builder(final InternalIdMap internalIdMap) {
 		return new Builder(internalIdMap);
@@ -84,10 +84,12 @@ public final class InternalSctIdSet {
 		this.internalIdArray = internalIdArray;
 	}
 
+	@Override
 	public boolean contains(final String sctId) {
 		return contains(Long.parseLong(sctId));
 	}
 
+	@Override
 	public boolean contains(final long sctId) {
 		final int internalId = internalIdMap.getInternalId(sctId);
 
@@ -98,11 +100,12 @@ public final class InternalSctIdSet {
 		}
 	}
 
+	@Override
 	public LongList toLongList() {
 		return toLongCollection(() -> PrimitiveLists.newLongArrayListWithExpectedSize(size()));
 	}
 
-	public <T extends LongCollection> T toLongCollection(final Supplier<T> collectionSupplier) {
+	private <T extends LongCollection> T toLongCollection(final Supplier<T> collectionSupplier) {
 		final T result = collectionSupplier.get();
 
 		for (final LongIterator itr = iterator(); itr.hasNext(); /*empty*/) {
@@ -112,6 +115,7 @@ public final class InternalSctIdSet {
 		return result;
 	}
 
+	@Override
 	public LongIterator iterator() {
 		return new AbstractLongIterator() {
 			private int i = 0;
@@ -127,10 +131,12 @@ public final class InternalSctIdSet {
 		};
 	}
 
+	@Override
 	public int size() {
 		return internalIdArray.length;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return size() == 0;
 	}

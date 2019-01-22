@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
+package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
 import java.util.Collection;
 
@@ -30,7 +30,7 @@ import com.b2international.collections.longs.LongSet;
  * 
  * @since 7.0
  */
-public final class InternalSctIdMultimap {
+public final class InternalSctIdMultimap implements IInternalSctIdMultimap {
 
 	public static final Builder builder(final InternalIdMap internalIdMap) {
 		return new Builder(internalIdMap);
@@ -80,10 +80,12 @@ public final class InternalSctIdMultimap {
 		this.internalIdMultimap = internalIdMultimap;
 	}
 
+	@Override
 	public LongSet get(final String key) {
 		return get(Long.parseLong(key));
 	}
 
+	@Override
 	public LongSet get(final long key) {
 		final int internalId = internalIdMap.getInternalIdChecked(key);
 		final IntSet values = internalIdMultimap.get(internalId);
@@ -102,6 +104,7 @@ public final class InternalSctIdMultimap {
 		}
 	}
 
+	@Override
 	public LongSet keySet() {
 		final LongSet keySet = PrimitiveSets.newLongOpenHashSetWithExpectedSize(internalIdMultimap.size());
 
@@ -114,6 +117,7 @@ public final class InternalSctIdMultimap {
 		return keySet;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return internalIdMultimap.isEmpty();
 	}

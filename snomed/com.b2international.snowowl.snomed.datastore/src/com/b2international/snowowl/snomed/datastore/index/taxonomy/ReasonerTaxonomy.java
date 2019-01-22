@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.snomed.index.taxonomy;
+package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -29,7 +29,7 @@ import com.google.common.collect.Multimap;
  * 
  * @since 7.0
  */
-public final class ReasonerTaxonomy {
+public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 	private final InternalIdMap conceptMap;
 
@@ -119,10 +119,12 @@ public final class ReasonerTaxonomy {
 		return checkNotNull(inferredAncestors, "Inferred ancestors are unset on this taxonomy.");
 	}
 
+	@Override
 	public InternalSctIdSet getUnsatisfiableConcepts() {
 		return checkNotNull(unsatisfiableConcepts, "Unsatisfiable concept IDs are unset on this taxonomy.");
 	}
 
+	@Override
 	public InternalSctIdMultimap getEquivalentConcepts() {
 		return checkNotNull(equivalentConcepts, "Inferred equivalences are unset on this taxonomy.");
 	}
