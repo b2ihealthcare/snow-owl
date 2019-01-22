@@ -79,7 +79,7 @@ import com.google.common.primitives.Longs;
 /**
  * @since 7.0
  */
-final class SaveJobRequest implements Request<BranchContext, Boolean> {
+public class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
@@ -99,7 +99,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 	private DatastoreLockContext lockContext;
 	private IOperationLockTarget lockTarget;
 
-	SaveJobRequest(final String classificationId, final String userId) {
+	protected SaveJobRequest(final String classificationId, final String userId) {
 		this.classificationId = classificationId;
 		this.userId = userId;
 	}
@@ -223,15 +223,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final BranchContext context,
 			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 
-		final SnomedNamespaceAndModuleAssigner assigner = context
-				.service(SnomedNamespaceAndModuleAssignerProvider.class)
-				.get();
-
-		final String assignerName = assigner.getClass()
-				.getSimpleName();
-
-		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
-
+		final SnomedNamespaceAndModuleAssigner assigner = createNamespaceAndModuleAssigner(context);
 		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder);
 		applyRelationshipChanges(context, bulkRequestBuilder, assigner, conceptIdsToSkip);
 
@@ -402,7 +394,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 		bulkRequestBuilder.add(request);
 	}
 
-	private Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
+	protected Set<String> mergeEquivalentConcepts(final BranchContext context, final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
 
 		// XXX: Restrict merging to active components only
 		final String expand = "equivalentConcepts(expand("
@@ -453,8 +445,20 @@ final class SaveJobRequest implements Request<BranchContext, Boolean> {
 				.collect(Collectors.toSet());
 	}
 
-	private boolean isConcreteDomainSupported(final BranchContext context) {
+	protected boolean isConcreteDomainSupported(final BranchContext context) {
 		final SnomedCoreConfiguration snomedCoreConfiguration = context.service(SnomedCoreConfiguration.class);
 		return snomedCoreConfiguration.isConcreteDomainSupported();
+	}
+	
+	protected SnomedNamespaceAndModuleAssigner createNamespaceAndModuleAssigner(final BranchContext context) {
+		final SnomedNamespaceAndModuleAssigner assigner = context
+				.service(SnomedNamespaceAndModuleAssignerProvider.class)
+				.get();
+
+		final String assignerName = assigner.getClass()
+				.getSimpleName();
+
+		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assignerName);
+		return assigner;
 	}
 }
