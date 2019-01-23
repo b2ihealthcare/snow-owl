@@ -571,9 +571,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	public long getConceptId(final OWLClass conceptClass) {
-		final IRI iri = conceptClass.getIRI();
-		if (iri.toString().startsWith(NAMESPACE_SCT)) {
-			return Long.parseLong(iri.getFragment()); 
+		final String iri = conceptClass.getIRI().toString();
+		if (iri.startsWith(NAMESPACE_SCT)) {
+			return Long.parseLong(iri.substring(NAMESPACE_SCT.length())); 
 		} else {
 			return -1L;
 		}
