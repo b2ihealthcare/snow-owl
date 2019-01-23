@@ -432,9 +432,11 @@ public final class ReasonerTaxonomyBuilder {
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.UNION_GROUP, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.TYPE_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, Order.ASC)
-						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
 						.build())
@@ -477,7 +479,6 @@ public final class ReasonerTaxonomyBuilder {
 						&& lastStatedRelationship[2].equals(relationship[2]) // type
 						&& lastStatedRelationship[3].equals(relationship[3]) // destination
 						&& lastStatedRelationship[5].equals(relationship[5]); // group
-				
 				
 				final StatementFragment statement = new StatementFragment(
 						typeId,
@@ -530,9 +531,11 @@ public final class ReasonerTaxonomyBuilder {
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.UNION_GROUP, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.TYPE_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.DESTINATION_ID, Order.ASC)
-						.sortByField(SnomedRelationshipIndexEntry.Fields.GROUP, Order.ASC)
+						.sortByField(SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, Order.ASC)
 						.sortByField(SnomedRelationshipIndexEntry.Fields.ID, Order.ASC)
 						.build())
 				.limit(SCROLL_LIMIT)
@@ -874,16 +877,21 @@ public final class ReasonerTaxonomyBuilder {
 		return new ReasonerTaxonomy(builtConceptMap,
 				statedAncestors.build(),
 				statedDescendants.build(),
+				
 				fullyDefinedConcepts.build(),
 				exhaustiveConcepts.build(),
+				
 				statedNonIsARelationships.build(),
-				additionalGroupedRelationships.build(),
 				existingInferredRelationships.build(),
+				additionalGroupedRelationships.build(),
+				
 				statedAxioms.build(),
 				LongCollections.unmodifiableSet(neverGroupedIds),
+				
 				statedConcreteDomainMembers.build(),
 				additionalGroupedConcreteDomainMembers.build(),
 				inferredConcreteDomainMembers.build(),
+				
 				null, 
 				null,
 				null,

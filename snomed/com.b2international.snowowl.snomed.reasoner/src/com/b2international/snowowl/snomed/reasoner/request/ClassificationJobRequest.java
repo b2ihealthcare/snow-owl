@@ -84,42 +84,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
 
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
-		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
-		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
-		taxonomyBuilder.finishConcepts();
+		final ReasonerTaxonomy taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupportEnabled);
 		
-		taxonomyBuilder.addConceptFlags(revisionSearcher);
-		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
-		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
-		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
-
-		if (concreteDomainSupportEnabled) {
-			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
-		}
-
-		// Add the extra definitions
-		taxonomyBuilder.addConceptFlags(additionalConcepts.stream());
-
-		final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
-				.flatMap(c -> c.getRelationships().stream());
-		
-		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
-		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
-		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
-
-		if (concreteDomainSupportEnabled) {
-			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
-				.flatMap(c -> c.getMembers().stream());
-			
-			final Stream<SnomedReferenceSetMember> relationshipMembers = additionalConcepts.stream()
-				.flatMap(c -> c.getRelationships().stream())
-				.flatMap(c -> c.getMembers().stream());
-			
-			taxonomyBuilder.addActiveConcreteDomainMembers(Stream.concat(conceptMembers, relationshipMembers));
-		}
-		
-		final ReasonerTaxonomy taxonomy = taxonomyBuilder.build();
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
 		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));
 		final IRI ontologyIRI = IRI.create(DelegateOntology.NAMESPACE_SCTM + Concepts.MODULE_SCT_CORE); // TODO: custom moduleId in ontology IRI?
@@ -142,5 +108,50 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		}
 
 		return Boolean.TRUE;
+	}
+
+	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final boolean concreteDomainSupportEnabled) {
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder();
+		
+		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
+		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
+		taxonomyBuilder.finishConcepts();
+		
+		taxonomyBuilder.addConceptFlags(revisionSearcher);
+		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
+		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
+		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
+		taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
+		
+		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
+		taxonomyBuilder.addActiveAxioms(revisionSearcher);
+
+		if (concreteDomainSupportEnabled) {
+			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
+		}
+
+		// Add the extra definitions
+		taxonomyBuilder.addConceptFlags(additionalConcepts.stream());
+
+		final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
+				.flatMap(c -> c.getRelationships().stream());
+		
+		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
+		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
+		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
+		taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
+
+		if (concreteDomainSupportEnabled) {
+			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
+				.flatMap(c -> c.getMembers().stream());
+			
+			final Stream<SnomedReferenceSetMember> relationshipMembers = additionalConcepts.stream()
+				.flatMap(c -> c.getRelationships().stream())
+				.flatMap(c -> c.getMembers().stream());
+			
+			taxonomyBuilder.addActiveConcreteDomainMembers(Stream.concat(conceptMembers, relationshipMembers));
+		}
+		
+		return taxonomyBuilder.build();
 	}
 }

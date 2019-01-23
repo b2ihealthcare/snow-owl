@@ -136,12 +136,13 @@ public final class ReasonerTaxonomyInferrer {
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		
-		final Deque<Node<OWLClass>> nodesToProcess = new LinkedList<Node<OWLClass>>();
+		Deque<Node<OWLClass>> firstLayer = new LinkedList<Node<OWLClass>>();
+		Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
 		final Set<Node<OWLClass>> deferredNodes = newHashSet();
 		
 		final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
 		final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
-		nodesToProcess.addAll(initialNodes);
+		firstLayer.addAll(initialNodes);
 		
 		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
 		iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
@@ -152,18 +153,26 @@ public final class ReasonerTaxonomyInferrer {
 		equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
 
 		// Breadth-first walk through the class hierarchy
-		while (!nodesToProcess.isEmpty()) {
-			final Node<OWLClass> current = nodesToProcess.removeFirst();
+		while (!firstLayer.isEmpty()) {
+			final Node<OWLClass> current = firstLayer.removeFirst();
 			deferredNodes.remove(current);
 			final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
-
-			// Indicate that the previous set of caches can be emptied
-			if (nodesToProcess.isEmpty() && deferredNodes.isEmpty()) {
-				iterationOrder.add(DEPTH_CHANGE);
-			}
-
 			final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
-			nodesToProcess.addAll(nextNodes);
+			secondLayer.addAll(nextNodes);
+		
+			if (firstLayer.isEmpty()) {
+				// Indicate that the previous set of caches can be emptied
+				if (deferredNodes.isEmpty()) {
+					iterationOrder.add(DEPTH_CHANGE);
+				}
+		
+				// Swap the role of the two layers
+				if (!secondLayer.isEmpty()) {
+					Deque<Node<OWLClass>> temp = firstLayer;
+					firstLayer = secondLayer;
+					secondLayer = temp;
+				}
+			}
 		}
 
 		processedConceptIds = null;
@@ -261,6 +270,10 @@ public final class ReasonerTaxonomyInferrer {
 
 	private boolean isNodeProcessed(final Node<OWLClass> node) {
 		for (final OWLClass entity : node) {
+			if (entity.isOWLThing()) {
+				return true;
+			}
+			
 			final long conceptId = ontology.getConceptId(entity);
 			if (conceptId == DEPTH_CHANGE) { continue; }
 			if (!processedConceptIds.contains(conceptId)) { return false; }
