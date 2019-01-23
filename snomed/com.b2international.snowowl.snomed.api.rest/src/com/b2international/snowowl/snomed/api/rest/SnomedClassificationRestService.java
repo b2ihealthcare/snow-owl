@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -136,12 +137,18 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		
 		ApiValidation.checkInput(request);
 		
+		final ControllerLinkBuilder linkBuilder = linkTo(SnomedClassificationRestService.class)
+				.slash("classifications");
+		
 		return DeferredResults.wrap(ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
 				.setUserId(principal.getName())
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
 				.execute(bus)
-				.then(id -> Responses.created(getClassificationUri(id)).build()));
+				.then(id -> {
+					final URI resourceUri = linkBuilder.slash(id).toUri();
+					return Responses.created(resourceUri).build();
+				}));
 	}
 
 	@ApiOperation(
@@ -364,12 +371,5 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(bus)
 			.getSync();
-	}
-
-	private URI getClassificationUri(final String classificationId) {
-		return linkTo(SnomedClassificationRestService.class)
-				.slash("classifications")
-				.slash(classificationId)
-				.toUri();
 	}
 }
