@@ -31,6 +31,9 @@ public final class DefaultNamespaceAndModuleAssigner implements SnomedNamespaceA
 	private String defaultNamespace;
 	private String defaultModule;
 
+	// Empty constructor required for executable extension-based initialization 
+	public DefaultNamespaceAndModuleAssigner() { }
+	
 	public DefaultNamespaceAndModuleAssigner(final String defaultNamespace, final String defaultModule) {
 		this.defaultNamespace = defaultNamespace;
 		this.defaultModule = defaultModule;
