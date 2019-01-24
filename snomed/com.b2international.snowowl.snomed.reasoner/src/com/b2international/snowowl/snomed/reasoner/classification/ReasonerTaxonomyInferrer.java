@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
@@ -113,7 +112,8 @@ public final class ReasonerTaxonomyInferrer {
 
 				try {
 					reasonerInfo = (ProtegeOWLReasonerInfo) classElement.get().createExecutableExtension(VALUE_ATTRIBUTE);
-				} catch (final CoreException e) {
+					reasonerInfo.initialise();
+				} catch (final Exception e) {
 					throw new ReasonerApiException("Couldn't create reasoner info instance for extension '%s'.", reasonerId, e);
 				}
 
