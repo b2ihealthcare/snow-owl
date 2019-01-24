@@ -35,11 +35,12 @@ public final class StatementFragment implements Serializable {
 
 	// Only stored if the original relationship is known
 	private final long statementId;
+	private final boolean released;
 
 	private boolean hasStatedPair;
 
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, -1L, false);
+		this(typeId, destinationId, false, 0, 0, false, -1L, false, false);
 	}
 
 	public StatementFragment(final long typeId,
@@ -49,6 +50,7 @@ public final class StatementFragment implements Serializable {
 			final int unionGroup,
 			final boolean universal,
 			final long statementId,
+			final boolean released,
 			final boolean hasStatedPair) {
 
 		this.typeId = typeId;
@@ -59,6 +61,7 @@ public final class StatementFragment implements Serializable {
 		this.universal = universal;
 
 		this.statementId = statementId;
+		this.released = released;
 		this.hasStatedPair = hasStatedPair;
 	}
 
@@ -89,6 +92,10 @@ public final class StatementFragment implements Serializable {
 	public long getStatementId() {
 		return statementId;
 	}
+	
+	public boolean isReleased() {
+		return released;
+	}
 
 	public boolean hasStatedPair() {
 		return hasStatedPair;
@@ -111,6 +118,8 @@ public final class StatementFragment implements Serializable {
 		builder.append(universal);
 		builder.append(", statementId=");
 		builder.append(statementId);
+		builder.append(", released=");
+		builder.append(released);
 		builder.append(", hasStatedPair=");
 		builder.append(hasStatedPair);
 		builder.append("]");

@@ -59,6 +59,7 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 				.group(100)
 				.unionGroup(null)
 				.nature(ChangeNature.INFERRED)
+				.released(true)
 				.build();
 
 		indexDocument(id, expected);

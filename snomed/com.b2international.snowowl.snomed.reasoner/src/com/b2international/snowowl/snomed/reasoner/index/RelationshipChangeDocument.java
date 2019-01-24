@@ -79,6 +79,7 @@ public final class RelationshipChangeDocument {
 		private String destinationId;
 		private Integer group;
 		private Integer unionGroup;
+		private boolean released;
 
 		@JsonCreator
 		private Builder() {
@@ -124,6 +125,11 @@ public final class RelationshipChangeDocument {
 			this.unionGroup = unionGroup;
 			return this;
 		}
+		
+		public Builder released(final boolean released) {
+			this.released = released;
+			return this;
+		}
 
 		public RelationshipChangeDocument build() {
 			return new RelationshipChangeDocument(classificationId, 
@@ -133,7 +139,8 @@ public final class RelationshipChangeDocument {
 					typeId,
 					destinationId,
 					group, 
-					unionGroup);
+					unionGroup,
+					released);
 		}
 	}
 
@@ -148,6 +155,7 @@ public final class RelationshipChangeDocument {
 	private final String destinationId; 
 	private final Integer group;
 	private final Integer unionGroup;
+	private final boolean released;
 
 	private RelationshipChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
@@ -156,7 +164,8 @@ public final class RelationshipChangeDocument {
 			final String typeId, 
 			final String destinationId, 
 			final Integer group, 
-			final Integer unionGroup) {
+			final Integer unionGroup,
+			final boolean released) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
@@ -166,6 +175,7 @@ public final class RelationshipChangeDocument {
 		this.destinationId = destinationId;
 		this.group = group;
 		this.unionGroup = unionGroup;
+		this.released = released;
 	}
 
 	public String getClassificationId() {
@@ -200,6 +210,10 @@ public final class RelationshipChangeDocument {
 		return unionGroup;
 	}
 
+	public boolean isReleased() {
+		return released;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
@@ -219,6 +233,8 @@ public final class RelationshipChangeDocument {
 		builder.append(group);
 		builder.append(", unionGroup=");
 		builder.append(unionGroup);
+		builder.append(", released=");
+		builder.append(released);
 		builder.append("]");
 		return builder.toString();
 	}

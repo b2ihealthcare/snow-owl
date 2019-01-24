@@ -426,6 +426,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 						unionGroupNumber,
 						property.isUniversal(),
 						property.getStatementId(),
+						property.isReleased(),
 						property.hasStatedPair()));
 	}
 

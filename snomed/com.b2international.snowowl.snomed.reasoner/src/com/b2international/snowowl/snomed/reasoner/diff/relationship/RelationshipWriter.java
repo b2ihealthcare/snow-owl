@@ -45,6 +45,7 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 
 		if (fragment.getStatementId() != -1L) {
 			builder.relationshipId(Long.toString(fragment.getStatementId()));
+			builder.released(fragment.isReleased());
 		}
 		
 		if (ChangeNature.REDUNDANT.equals(nature) && fragment.hasStatedPair()) {

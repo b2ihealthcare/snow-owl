@@ -74,7 +74,11 @@ final class NormalFormRelationship implements NormalFormProperty {
 	public long getStatementId() {
 		return fragment.getStatementId();
 	}
-	
+
+	public boolean isReleased() {
+		return fragment.isReleased();
+	}
+
 	public boolean hasStatedPair() {
 		return fragment.hasStatedPair();
 	}

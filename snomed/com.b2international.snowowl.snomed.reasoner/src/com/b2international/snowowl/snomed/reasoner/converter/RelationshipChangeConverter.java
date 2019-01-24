@@ -93,6 +93,8 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 				relationship.setTypeId(entry.getTypeId());
 				relationship.setDestinationId(entry.getDestinationId());
 			}
+		} else {
+			relationship.setReleased(entry.isReleased());
 		}
 
 		resource.setRelationship(relationship);

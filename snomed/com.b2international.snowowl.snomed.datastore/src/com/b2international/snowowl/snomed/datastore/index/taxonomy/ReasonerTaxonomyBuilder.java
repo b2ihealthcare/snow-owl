@@ -428,7 +428,8 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.GROUP, // 5
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 6
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
-						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID) // 8
+						SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID, // 8
+						SnomedRelationshipIndexEntry.Fields.RELEASED) // 9
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
@@ -474,6 +475,7 @@ public final class ReasonerTaxonomyBuilder {
 				final int group = Integer.parseInt(relationship[5]);
 				final int unionGroup = Integer.parseInt(relationship[6]);
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[7]);
+				final boolean released = Boolean.parseBoolean(relationship[9]);
 				final boolean hasStatedPair = lastStatedRelationship != null
 						&& lastStatedRelationship[1].equals(relationship[1]) // source
 						&& lastStatedRelationship[2].equals(relationship[2]) // type
@@ -488,6 +490,7 @@ public final class ReasonerTaxonomyBuilder {
 						unionGroup,
 						universal,
 						statementId,
+						released,
 						hasStatedPair);
 		
 				fragments.add(statement);
@@ -527,7 +530,8 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED, // 4
 						SnomedRelationshipIndexEntry.Fields.GROUP, // 5
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP, // 6
-						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID) // 7
+						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID, // 7
+						SnomedRelationshipIndexEntry.Fields.RELEASED) // 8
 				.where(whereExpressionBuilder.build())
 				.sortBy(SortBy.builder()
 						.sortByField(SnomedRelationshipIndexEntry.Fields.SOURCE_ID, Order.ASC)
@@ -564,7 +568,8 @@ public final class ReasonerTaxonomyBuilder {
 				final int group = Integer.parseInt(relationship[5]);
 				final int unionGroup = Integer.parseInt(relationship[6]);
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship[7]);
-		
+				final boolean released = Boolean.parseBoolean(relationship[8]);
+				
 				final StatementFragment statement = new StatementFragment(typeId,
 						destinationId,
 						destinationNegated,
@@ -572,6 +577,7 @@ public final class ReasonerTaxonomyBuilder {
 						unionGroup,
 						universal,
 						statementId,
+						released,
 						false); // Relationships added through this method have no stated pair
 				
 				fragments.add(statement);
@@ -622,8 +628,8 @@ public final class ReasonerTaxonomyBuilder {
 							unionGroup,
 							universal,
 							statementId,
-							false); // XXX: "injected" concepts will not set the flag correctly, but they are
-									// usually only added for equivalence checks
+							false,  // XXX: "injected" concepts will not set these flags correctly, but they should
+							false); // only be used for equivalence checks 
 
 					fragments.add(statement);
 				}
