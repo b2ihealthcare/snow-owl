@@ -343,8 +343,6 @@ backup_repositories() {
 	backup_resources
 	backup_indexes
 
-	echo "$BACKUP_TYPE $CURRENT_DATE" > $BACKUP_DIR/last_backup_info
-
 	echo_date "Done backing up installed repositories."
 }
 
