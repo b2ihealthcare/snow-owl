@@ -145,11 +145,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
 				.flatMap(c -> c.getMembers().stream());
 			
-			final Stream<SnomedReferenceSetMember> relationshipMembers = additionalConcepts.stream()
-				.flatMap(c -> c.getRelationships().stream())
-				.flatMap(c -> c.getMembers().stream());
-			
-			taxonomyBuilder.addActiveConcreteDomainMembers(Stream.concat(conceptMembers, relationshipMembers));
+			taxonomyBuilder.addActiveConcreteDomainMembers(conceptMembers);
 		}
 		
 		return taxonomyBuilder.build();
