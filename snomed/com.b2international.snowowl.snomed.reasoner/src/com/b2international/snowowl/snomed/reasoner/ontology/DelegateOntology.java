@@ -239,7 +239,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 	}
 
-	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLAxiom> {
+	private final class FunctionalSyntaxAxiomIterator extends AbstractIterator<OWLLogicalAxiom> {
 		private final Iterator<String> axiomIterator;
 		private final OWLFunctionalSyntaxParser parser;
 		
@@ -251,7 +251,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		}
 
 		@Override
-		protected OWLAxiom computeNext() {
+		protected OWLLogicalAxiom computeNext() {
 			if (!axiomIterator.hasNext()) {
 				return endOfData();
 			}
@@ -260,8 +260,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			parser.ReInit(new StringReader(axiomString));
 			
 			try {
-				final OWLAxiom parsedAxiom = parser.Axiom();
+				final OWLLogicalAxiom parsedAxiom = (OWLLogicalAxiom) parser.Axiom();
 				return parsedAxiom;
+			} catch (final ClassCastException e) {
+				LOGGER.warn("Encountered non-logical OWL axiom '{}'", axiomString, e);
+				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
 			} catch (final ParseException e) {
 				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
@@ -374,6 +377,37 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	@Override
+	public Set<OWLLogicalAxiom> getLogicalAxioms() {
+		return new AbstractSet<OWLLogicalAxiom>() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public Iterator<OWLLogicalAxiom> iterator() {
+				return Iterators.concat(
+						owlReferenceSetAxioms(),
+						conceptSubClassOfAxioms(),
+						conceptEquivalentClassesAxioms(),
+						objectAttributeSubPropertyOfAxioms(),
+						dataAttributeSubPropertyOfAxioms(),
+						disjointUnionAxioms());
+			}
+
+			@Override
+			public int size() {
+				return getLogicalAxiomCount();
+			}
+		};
+	}
+	
+	@Override
+	public int getLogicalAxiomCount() {
+		return conceptCount()
+				+ objectHierarchyCount()
+				+ dataHierarchyCount()
+				+ disjointUnionCount()
+				+ owlReferenceSetAxiomCount();
+	}
+	
+	@Override
 	public Set<OWLAxiom> getAxioms() {
 		return new AbstractSet<OWLAxiom>() {
 			@Override
@@ -452,7 +486,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	// Anything else declared as an OWL reference set member
 	///////////////////////////////////////////////////////////
 	
-	private Iterator<OWLAxiom> owlReferenceSetAxioms() {
+	private Iterator<OWLLogicalAxiom> owlReferenceSetAxioms() {
 		return new FunctionalSyntaxAxiomIterator(taxonomy.getStatedAxioms().valueStream());
 	}
 	
