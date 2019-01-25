@@ -368,7 +368,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships, predicate, statedNonIsARelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), statedNonIsARelationships::putAll);
 	
 		leaving("Registering active stated non-IS A relationships using relationship stream");
 		return this;
@@ -400,7 +400,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships, predicate, additionalGroupedRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships::putAll);
 	
 		leaving("Registering active additional grouped relationships using relationship stream");
 		return this;
@@ -513,7 +513,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships, predicate, existingInferredRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships::putAll);
 		
 		leaving("Registering active inferred relationships using relationship stream");
 		return this;
@@ -594,7 +594,6 @@ public final class ReasonerTaxonomyBuilder {
 	 * XXX: sortedRelationships should be sorted by source ID; we can not verify this in advance
 	 */
 	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships,
-			final Predicate<SnomedRelationship> predicate,
 			final BiConsumer<String, List<StatementFragment>> consumer) {
 		
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
@@ -602,37 +601,36 @@ public final class ReasonerTaxonomyBuilder {
 
 		for (final List<SnomedRelationship> chunk : Iterables.partition(sortedRelationships::iterator, SCROLL_LIMIT)) {
 			for (final SnomedRelationship relationship : chunk) {
-				if (predicate.test(relationship)) {
-					final String sourceId = relationship.getSourceId();
-					
-					if (lastSourceId.isEmpty()) {
-						lastSourceId = sourceId;
-					} else if (!lastSourceId.equals(relationship.getSourceId())) {
-						consumer.accept(lastSourceId, fragments);
-						fragments.clear();
-					}
-
-					final long statementId = Long.parseLong(relationship.getId());
-					final long typeId = Long.parseLong(relationship.getTypeId());
-					final long destinationId = Long.parseLong(relationship.getDestinationId());
-					final boolean destinationNegated = relationship.isDestinationNegated();
-					final int group = relationship.getGroup();
-					final int unionGroup = relationship.getUnionGroup();
-					final boolean universal = RelationshipModifier.UNIVERSAL.equals(relationship.getModifier());
-
-					final StatementFragment statement = new StatementFragment(
-							typeId,
-							destinationId,
-							destinationNegated,
-							group,
-							unionGroup,
-							universal,
-							statementId,
-							false,  // XXX: "injected" concepts will not set these flags correctly, but they should
-							false); // only be used for equivalence checks 
-
-					fragments.add(statement);
+				final String sourceId = relationship.getSourceId();
+				
+				if (lastSourceId.isEmpty()) {
+					lastSourceId = sourceId;
+				} else if (!lastSourceId.equals(sourceId)) {
+					consumer.accept(lastSourceId, fragments);
+					fragments.clear();
+					lastSourceId = sourceId;
 				}
+
+				final long statementId = Long.parseLong(relationship.getId());
+				final long typeId = Long.parseLong(relationship.getTypeId());
+				final long destinationId = Long.parseLong(relationship.getDestinationId());
+				final boolean destinationNegated = relationship.isDestinationNegated();
+				final int group = relationship.getGroup();
+				final int unionGroup = relationship.getUnionGroup();
+				final boolean universal = RelationshipModifier.UNIVERSAL.equals(relationship.getModifier());
+
+				final StatementFragment statement = new StatementFragment(
+						typeId,
+						destinationId,
+						destinationNegated,
+						group,
+						unionGroup,
+						universal,
+						statementId,
+						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
+						false); // only be used for equivalence checks 
+
+				fragments.add(statement);
 			}
 		}
 
