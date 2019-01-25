@@ -251,6 +251,7 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final RelationshipChanges nextChanges = relationshipIterator.next();
 
 			final Set<String> conceptIds = nextChanges.stream()
+					.filter(change -> ChangeNature.INFERRED.equals(change.getChangeNature()))
 					.map(RelationshipChange::getRelationship)
 					.map(ReasonerRelationship::getSourceId)
 					.collect(Collectors.toSet());
