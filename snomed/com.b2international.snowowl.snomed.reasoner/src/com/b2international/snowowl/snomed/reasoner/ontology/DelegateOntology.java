@@ -431,6 +431,42 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 			}
 		};
 	}
+	
+	@Override
+	public <T extends OWLAxiom> Set<T> getAxioms(AxiomType<T> axiomType) {
+		// Minimal implementation for FaCT++ which is only interested in declaration axioms
+		if (AxiomType.DECLARATION.equals(axiomType)) {
+			return new AbstractSet<T>() {
+				@Override
+				@SuppressWarnings("unchecked")
+				public Iterator<T> iterator() {
+					return (Iterator<T>) Iterators.concat(
+							conceptDeclarationAxioms(),
+							objectAttributeDeclarationAxioms(),
+							dataAttributeDeclarationAxioms());
+				}
+
+				@Override
+				public int size() {
+					return getAxiomCount(axiomType);
+				}
+			};
+		} else {
+			return super.getAxioms(axiomType);
+		}
+	}
+	
+	@Override
+	public <T extends OWLAxiom> int getAxiomCount(AxiomType<T> axiomType) {
+		// Minimal implementation for FaCT++ which is only interested in declaration axioms
+		if (AxiomType.DECLARATION.equals(axiomType)) {
+			return conceptCount()
+					+ objectAttributeCount()
+					+ dataAttributeCount();
+		} else {
+			return super.getAxiomCount(axiomType);
+		}
+	}
 
 	////////////////////////
 	// Declaration axioms
