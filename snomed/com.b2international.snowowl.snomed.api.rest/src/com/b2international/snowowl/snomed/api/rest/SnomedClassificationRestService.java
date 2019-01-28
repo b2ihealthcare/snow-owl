@@ -346,7 +346,9 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 		
 		// TODO: compare all fields to find out what the client wants us to do, check for conflicts, etc.
 		if (ClassificationStatus.SAVED.equals(updatedRun.getStatus())) {
-			ClassificationRequests.prepareSaveClassification(classificationId, principal.getName())
+			ClassificationRequests.prepareSaveClassification()
+					.setClassificationId(classificationId)
+					.setUserId(principal.getName())
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(bus)
 					.getSync();
