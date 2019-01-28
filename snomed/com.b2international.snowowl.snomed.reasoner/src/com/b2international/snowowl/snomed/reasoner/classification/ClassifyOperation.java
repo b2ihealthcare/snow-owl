@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.OperationCanceledException;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -45,15 +46,35 @@ public abstract class ClassifyOperation<T> {
 	protected final List<SnomedConcept> additionalConcepts;
 	protected final String repositoryId;
 	protected final String branch;
+	protected final String parentLockContext;
 
-	public ClassifyOperation(final String reasonerId, final String userId, final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, final String branch) {
+	public ClassifyOperation(final String reasonerId, 
+			final String userId, 
+			final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, 
+			final String branch) {
+		
+		this(reasonerId, 
+				userId, 
+				additionalConcepts, 
+				repositoryId, 
+				branch, 
+				DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW);
+	}
+	
+	public ClassifyOperation(final String reasonerId, 
+			final String userId, 
+			final List<SnomedConcept> additionalConcepts,
+			final String repositoryId, 
+			final String branch,
+			final String parentLockContext) {	
 
 		this.reasonerId = reasonerId;
 		this.userId = userId;
 		this.additionalConcepts = additionalConcepts;
 		this.repositoryId = repositoryId;
 		this.branch = branch;
+		this.parentLockContext = parentLockContext;
 	}
 
 	/**
@@ -72,6 +93,7 @@ public abstract class ClassifyOperation<T> {
 					.setReasonerId(reasonerId)
 					.setUserId(userId)
 					.addAllConcepts(additionalConcepts)
+					.setParentLockContext(parentLockContext)
 					.build(repositoryId, branch)
 					.execute(getEventBus())
 					.getSync();
