@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,20 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.datastore.request.job.JobRequests;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationSchedulingRule;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 
 /**
+ * Signals the classification tracker that a classification run is about to
+ * start, then schedules a remote job for the actual work.
+ * 
  * @since 7.0
  */
 final class ClassificationCreateRequest implements Request<BranchContext, String> {
+
+	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 
 	@NotEmpty
 	private String classificationId;
@@ -49,6 +53,9 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 
 	@NotNull
 	private List<SnomedConcept> additionalConcepts;
+
+	@NotNull
+	private String parentLockContext;
 
 	ClassificationCreateRequest() {}
 
@@ -68,20 +75,25 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		this.additionalConcepts = additionalConcepts;
 	}
 
+	void setParentLockContext(final String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+	}
+
 	@Override
 	public String execute(final BranchContext context) {
 		final String repositoryId = context.id();
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
+		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
 
 		tracker.classificationScheduled(classificationId, reasonerId, userId, branch.path());
 
-		final AsyncRequest<Boolean> runRequest = new ClassificationJobRequestBuilder()
+		final AsyncRequest<Boolean> jobRequest = new ClassificationJobRequestBuilder()
 				.setReasonerId(reasonerId)
+				.setParentLockContext(parentLockContext)
 				.addAllConcepts(additionalConcepts)
 				.build(repositoryId, branch.path());
-
-		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);
+		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				config.getMaxReasonerCount(), 
 				repositoryId, 
@@ -90,11 +102,10 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		return JobRequests.prepareSchedule()
 				.setId(classificationId)
 				.setUser(userId)
-				.setRequest(runRequest)
-				.setDescription(String.format("Classifying the ontology on %s", branch))
+				.setRequest(jobRequest)
+				.setDescription(String.format("Classifying the ontology on %s", branch.path()))
 				.setSchedulingRule(rule)
 				.buildAsync()
-				.execute(context.service(IEventBus.class))
-				.getSync(1L, TimeUnit.MINUTES);
+				.get(SCHEDULE_TIMEOUT_MILLIS);
 	}
 }

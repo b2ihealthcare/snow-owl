@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import static com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -37,21 +37,15 @@ import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
 import com.b2international.snowowl.datastore.oplock.OperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreOperationLockException;
-import com.b2international.snowowl.datastore.oplock.impl.IDatastoreOperationLockManager;
-import com.b2international.snowowl.datastore.oplock.impl.SingleRepositoryAndBranchLockTarget;
 import com.b2international.snowowl.datastore.request.CommitResult;
+import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.datastore.request.RepositoryRequests;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
@@ -70,105 +64,69 @@ import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.EquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 
 /**
+ * Represents a request that saves pre-recorded changes of a classification,
+ * usually running in a remote job.
+ * 
  * @since 7.0
  */
 public class SaveJobRequest implements Request<BranchContext, Boolean> {
 
 	private static final Logger LOG = LoggerFactory.getLogger("reasoner");
 
-	private static final long LOCK_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(5L);
-
 	private static final int SCROLL_LIMIT = 10_000;
 	private static final String SCROLL_KEEP_ALIVE = "5m";
-
+	
 	private static final long SMP_ROOT = Long.parseLong(Concepts.GENERATED_SINGAPORE_MEDICINAL_PRODUCT);
 
-	@JsonProperty
-	private final String classificationId;
+	@NotEmpty
+	private String classificationId;
 
-	@JsonProperty
-	private final String userId;
+	@NotEmpty
+	private String userId;
 
-	private DatastoreLockContext lockContext;
-	private IOperationLockTarget lockTarget;
+	@NotNull
+	private String parentLockContext;
 
-	protected SaveJobRequest(final String classificationId, final String userId) {
+	protected SaveJobRequest() {}
+	
+	protected void setClassificationId(final String classificationId) {
 		this.classificationId = classificationId;
+	}
+	
+	protected void setUserId(final String userId) {
 		this.userId = userId;
 	}
-
+	
+	protected void setParentLockContext(final String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+	}
+	
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final IProgressMonitor monitor = context.service(IProgressMonitor.class);
+		final Branch branch = context.branch();
+		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 
-		try {
-			lock(context);
+		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext, branch)) {
 			return persistChanges(context, monitor);
+		} catch (final OperationLockException e) {
+			tracker.classificationFailed(classificationId);
+			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for persisting classification changes; %s", e.getMessage(), e);
+		} catch (final InterruptedException e) {
+			tracker.classificationFailed(classificationId);
+			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for persisting classification changes.", e);
 		} catch (final Exception e) {
-			final ClassificationTracker classificationTracker = context.service(ClassificationTracker.class);
-			classificationTracker.classificationSaveFailed(classificationId);
+			tracker.classificationSaveFailed(classificationId);
 			throw new ReasonerApiException("Error while persisting classification changes on '%s'.", context.branchPath(), e);
 		} finally {
 			monitor.done();
-			unlock(context);
 		}
-	}
-
-	private void lock(final BranchContext context) {
-		final DatastoreLockContext localLockContext = createLockContext(userId);
-		final IOperationLockTarget localLockTarget = createLockTarget(BranchPathUtils.createPath(context.branchPath()));
-
-		try {
-
-			final IDatastoreOperationLockManager lockManager = context.service(IDatastoreOperationLockManager.class);
-			lockManager.lock(localLockContext, LOCK_TIMEOUT_MILLIS, localLockTarget);
-			lockContext = localLockContext;
-			lockTarget = localLockTarget;
-
-		} catch (OperationLockException | InterruptedException e) {
-			if (e instanceof DatastoreOperationLockException) {
-				final DatastoreOperationLockException lockException = (DatastoreOperationLockException) e;
-				final DatastoreLockContext otherContext = lockException.getContext(localLockTarget);
-				throw new DatastoreOperationLockException(getContextDescription(otherContext));
-			} else {
-				throw new DatastoreOperationLockException(getDefaultContextDescription());
-			}
-		}
-	}
-
-	private SingleRepositoryAndBranchLockTarget createLockTarget(final IBranchPath branchPath) {
-		return new SingleRepositoryAndBranchLockTarget(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath);
-	}
-
-	private DatastoreLockContext createLockContext(final String userId) {
-		return new DatastoreLockContext(userId, SAVE_CLASSIFICATION_RESULTS);
-	}
-
-	private String getDefaultContextDescription() {
-		return "of concurrent activity";
-	}
-
-	private String getContextDescription(final DatastoreLockContext otherContext) {
-		return String.format("%s is currently %s", otherContext.getUserId(), otherContext.getDescription());
-	}
-
-	private void unlock(final BranchContext context) {
-		try {
-			if (null != lockContext && null != lockTarget) {
-				final IDatastoreOperationLockManager lockManager = context.service(IDatastoreOperationLockManager.class);
-				lockManager.unlock(lockContext, lockTarget);
-			}
-		} finally {
-			lockContext = null;
-			lockTarget = null;
-		}		
 	}
 
 	private Boolean persistChanges(final BranchContext context, final IProgressMonitor monitor) {
@@ -188,10 +146,10 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 		}
 
 		if (classification.getTimestamp() < branch.headTimestamp()) {
-			throw new BadRequestException("Classification '%s' is stale (recorded timestamp: %s, current timestamp of branch '%s': %s).", 
-					classificationId, 
-					classification.getTimestamp(),
+			throw new BadRequestException("Classification '%s' on branch '%s' is stale (classification timestamp: %s, head timestamp: %s).", 
+					classificationId,
 					branchPath,
+					classification.getTimestamp(),
 					branch.headTimestamp());
 		}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,10 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.oplock.OperationLockException;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
+import com.b2international.snowowl.datastore.request.Locks;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -47,6 +50,10 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntology;
 import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFactory;
 
 /**
+ * Encapsulates the computation-intensive part of a classification.
+ * <p>
+ * This request should be run as part of a remote job, not directly.
+ * 
  * @since 5.7
  */
 final class ClassificationJobRequest implements Request<BranchContext, Boolean> {
@@ -57,7 +64,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	@NotNull
 	private List<SnomedConcept> additionalConcepts;
 
-	private String classificationId;
+	@NotNull
+	private String parentLockContext;
 
 	ClassificationJobRequest() {}
 
@@ -68,11 +76,16 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	void setAdditionalConcepts(final List<SnomedConcept> additionalConcepts) {
 		this.additionalConcepts = additionalConcepts;
 	}
+	
+	void setParentLockContext(final String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+	}
 
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
-		classificationId = job.getId();
+		final String classificationId = job.getId();
+		final String userId = job.getUser();
 
 		final Branch branch = context.branch();
 		final long headTimestamp = branch.headTimestamp();
@@ -84,7 +97,16 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
 
-		final ReasonerTaxonomy taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupportEnabled);
+		final ReasonerTaxonomy taxonomy;
+		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
+			taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupportEnabled);
+		} catch (final OperationLockException e) {
+			tracker.classificationFailed(classificationId);
+			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
+		} catch (final InterruptedException e) {
+			tracker.classificationFailed(classificationId);
+			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for classification.", e);
+		}
 		
 		final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
 		ontologyManager.addOntologyFactory(new DelegateOntologyFactory(taxonomy));

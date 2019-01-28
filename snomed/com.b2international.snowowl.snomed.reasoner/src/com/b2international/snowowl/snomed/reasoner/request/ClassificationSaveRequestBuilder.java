@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.reasoner.request;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.request.RepositoryRequestBuilder;
 
 /**
@@ -27,16 +28,33 @@ public final class ClassificationSaveRequestBuilder
 		extends BaseRequestBuilder<ClassificationSaveRequestBuilder, RepositoryContext, String> 
 		implements RepositoryRequestBuilder<String> {
 
-	private final String classificationId;
-	private final String userId;
+	private String classificationId;
+	private String userId;
+	private String parentLockContext = DatastoreLockContextDescriptions.ROOT;
 
-	ClassificationSaveRequestBuilder(final String classificationId, final String userId) {
+	ClassificationSaveRequestBuilder() { }
+	
+	public ClassificationSaveRequestBuilder setClassificationId(String classificationId) {
 		this.classificationId = classificationId;
+		return getSelf();
+	}
+
+	public ClassificationSaveRequestBuilder setUserId(String userId) {
 		this.userId = userId;
+		return getSelf();
+	}
+	
+	public ClassificationSaveRequestBuilder setParentLockContext(String parentLockContext) {
+		this.parentLockContext = parentLockContext;
+		return getSelf();
 	}
 
 	@Override
 	protected Request<RepositoryContext, String> doBuild() {
-		return new ClassificationSaveRequest(classificationId, userId);
+		ClassificationSaveRequest request = new ClassificationSaveRequest();
+		request.setClassificationId(classificationId);
+		request.setUserId(userId);
+		request.setParentLockContext(parentLockContext);
+		return request;
 	}
 }
