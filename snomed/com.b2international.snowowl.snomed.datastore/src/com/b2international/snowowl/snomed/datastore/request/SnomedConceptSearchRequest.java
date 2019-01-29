@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
+import com.b2international.snowowl.snomed.core.ql.QlExpression;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.SearchProfileQueryProvider;
@@ -74,6 +75,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		 * ECL expression to match
 		 */
 		ECL,
+		
+		/**
+		 * Query language expression to match
+		 */
+		QL,
 		
 		/**
 		 * The definition status to match
@@ -167,6 +173,11 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
 			queryBuilder.filter(EclExpression.of(ecl).resolveToExpression(context).getSync());
+		}
+		
+		if (containsKey(OptionKey.QL)) {
+			final String ql = getString(OptionKey.QL);
+			queryBuilder.filter(QlExpression.of(ql).resolveToExpression(context).getSync());
 		}
 		
 		Expression searchProfileQuery = null;

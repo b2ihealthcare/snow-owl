@@ -27,12 +27,17 @@ import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.datastore.cdo.ICDORepositoryManager;
+import com.b2international.snowowl.snomed.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
+import com.b2international.snowowl.snomed.core.ql.DefaultQlParser;
+import com.b2international.snowowl.snomed.core.ql.DefaultQlSerializer;
+import com.b2international.snowowl.snomed.core.ql.QlParser;
+import com.b2international.snowowl.snomed.core.ql.QlSerializer;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssignerProvider;
@@ -52,9 +57,13 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
 		env.services().registerService(LanguageSetting.class, new StaticLanguageSetting(coreConfig.getLanguage(), SnomedCoreConfiguration.DEFAULT_LANGUAGE));
 		
-		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
-		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
-		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
+		final Injector eclInjector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+		env.services().registerService(EclParser.class, new DefaultEclParser(eclInjector.getInstance(IParser.class), eclInjector.getInstance(IResourceValidator.class)));
+		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(eclInjector.getInstance(ISerializer.class)));
+		
+		final Injector qlInjector = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
+		env.services().registerService(QlParser.class, new DefaultQlParser(qlInjector.getInstance(IParser.class), qlInjector.getInstance(IResourceValidator.class)));
+		env.services().registerService(QlSerializer.class, new DefaultQlSerializer(qlInjector.getInstance(ISerializer.class)));
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
