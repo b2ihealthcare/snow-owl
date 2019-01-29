@@ -1,0 +1,36 @@
+grammar com.b2international.snowowl.snomed.QL
+with com.b2international.snowowl.snomed.ecl.Ecl
+
+generate ql "http://www.b2international.com/snowowl/snomed/QL"
+
+Query:
+	{Query} (disjunction=Disjunction)?;
+	
+Disjunction:
+	Conjunction ({Disjunction.left = current} 'OR' right = Conjunction)*;
+
+Conjunction:
+	Exclusion ({Conjunction.left = current} 'AND' right = Exclusion)*;
+
+Exclusion:
+	Filter ({Exclusion.left = current} 'MINUS' right = Filter)?;
+
+Filter:
+	EclFilter | TermFilter
+;
+
+EclFilter:
+	ECL (ecl = Script)
+;
+
+TermFilter:
+	TERM (term = STRING)
+;
+
+terminal TERM:
+	'term'
+;
+
+terminal ECL:
+	'ecl'
+;

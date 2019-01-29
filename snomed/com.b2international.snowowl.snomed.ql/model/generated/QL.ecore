@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="ql" nsURI="http://www.b2international.com/snowowl/snomed/QL"
+    nsPrefix="ql">
+  <eClassifiers xsi:type="ecore:EClass" name="Query">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="disjunction" eType="#//Disjunction"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Disjunction">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Disjunction"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="right" eType="#//Conjunction"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Conjunction" eSuperTypes="#//Disjunction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Exclusion" eSuperTypes="#//Conjunction"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Filter" eSuperTypes="#//Exclusion"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EclFilter" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="ecl" eType="ecore:EClass platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.ecore#//Script"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TermFilter" eSuperTypes="#//Filter">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>
