@@ -171,6 +171,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	private SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> getMemberConceptIterator(String expand) {
 		
 		SnomedConceptSearchRequestBuilder builder = SnomedRequests.prepareSearchConcept()
+			.setLocales(locales)
 			.setExpand(expand)
 			.filterByActive(true)
 			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))

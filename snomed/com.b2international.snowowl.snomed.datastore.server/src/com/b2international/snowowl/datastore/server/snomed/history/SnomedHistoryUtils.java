@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,16 @@ package com.b2international.snowowl.datastore.server.snomed.history;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
+
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.view.CDOView;
 
-import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.datastore.cdo.CDOUtils;
 import com.b2international.snowowl.snomed.Concept;
 import com.b2international.snowowl.snomed.Description;
 import com.b2international.snowowl.snomed.Relationship;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedConceptLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionLookupService;
 import com.b2international.snowowl.snomed.datastore.SnomedRelationshipLookupService;
@@ -43,14 +44,13 @@ public abstract class SnomedHistoryUtils {
 	
 	private SnomedHistoryUtils() { }
 	
-	public static String getLabelForConcept(final Concept concept) {
+	public static String getLabelForConcept(final Concept concept, final List<ExtendedLocale> locales) {
 		checkArgument(CDOUtils.checkObject(concept));
 		
 		// TODO this code belongs to the client where lang.refset preference is actually available
-		final LanguageSetting langSetting = ApplicationContext.getServiceForClass(LanguageSetting.class);
 		Optional<Description> preferredTerm = FluentIterable.from(concept.getDescriptions()).firstMatch(new Predicate<Description>() {
 			@Override public boolean apply(Description input) {
-				return SnomedModelExtensions.isPreferred(input, langSetting.getLanguagePreference().get(0).getLanguageRefSetId());
+				return SnomedModelExtensions.isPreferred(input, locales.get(0).getLanguageRefSetId());
 			}
 		});
 		
@@ -62,13 +62,13 @@ public abstract class SnomedHistoryUtils {
 		return description.getTerm();
 	}
 	
-	public static String getLabelForRelationship(final Relationship relationship) {
+	public static String getLabelForRelationship(final Relationship relationship, List<ExtendedLocale> locales) {
 		checkArgument(CDOUtils.checkObject(relationship));
 		return String.format("%s %s%s%s", 
-				getLabelForConcept(relationship.getSource()), 
-				getLabelForConcept(relationship.getType()), 
+				getLabelForConcept(relationship.getSource(), locales), 
+				getLabelForConcept(relationship.getType(), locales), 
 				relationship.isDestinationNegated() ? " NOT " : " ", 
-				getLabelForConcept(relationship.getDestination()));
+				getLabelForConcept(relationship.getDestination(), locales));
 	}
 	
 	public static Concept getConcept(final String id, final CDOView view) {

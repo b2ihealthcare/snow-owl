@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.ChangeKind;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.api.impl.history.domain.HistoryInfo;
 import com.b2international.snowowl.api.impl.history.domain.HistoryInfoDetails;
 import com.b2international.snowowl.api.impl.history.domain.HistoryVersion;
@@ -101,14 +102,14 @@ public abstract class AbstractHistoryServiceImpl implements IHistoryService {
 	}
 
 	@Override
-	public List<IHistoryInfo> getHistory(final String branchPath, final String componentId) {
+	public List<IHistoryInfo> getHistory(final String branchPath, final String componentId, List<ExtendedLocale> locales) {
 		final IBranchPath branch = BranchPathUtils.createPath(branchPath);
 		final long storageKey = getStorageKey(branch, componentId);
 		if (!CDOIDUtils.checkId(storageKey)) {
 			throw new ComponentNotFoundException(handledCategory, componentId);
 		}
 
-		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(branch, storageKey, ComponentIdentifier.of(terminologyComponentId, componentId));
+		final HistoryInfoConfiguration configuration = HistoryInfoConfigurationImpl.create(branch, storageKey, ComponentIdentifier.of(terminologyComponentId, componentId), locales);
 		final Collection<com.b2international.snowowl.core.api.IHistoryInfo> sourceHistoryInfos = getHistoryService().getHistory(configuration);			
 		final Collection<IHistoryInfo> targetHistoryInfos = Collections2.transform(sourceHistoryInfos, CONVERTER);
 

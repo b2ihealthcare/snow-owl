@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,16 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.exporter.server.ComponentExportType;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.SnomedRfFileNameBuilder;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
 
 /**
  * Base for all SNOMED&nbsp;CT reference set RF2 exporters.
@@ -108,23 +105,18 @@ public class SnomedRefSetExporter extends AbstractSnomedRf2CoreExporter<SnomedRe
 		return SnomedRfFileNameBuilder.buildRefSetFileName(getExportContext(), getRefsetName(), refset);
 	}
 
-	protected String getRefsetName() {
-		
-		return SnomedRequests.prepareGetConcept(refset.getId())
-			.setExpand("pt()")
-			.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())
-			.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-			.then(new Function<SnomedConcept, String>() {
-				@Override public String apply(SnomedConcept input) {
-					SnomedDescription pt = input.getPt();
-					if (pt == null || Strings.isNullOrEmpty(pt.getTerm())) { 
-						return refset.getId(); 
-					} else { 
-						return pt.getTerm(); 
-					}
-				};
-			})
-			.getSync();
+	protected final String getRefsetName() {
+		return SnomedRequests.prepareSearchDescription()
+				.one()
+				.filterByActive(true)
+				.filterByType("<<"+Concepts.SYNONYM)
+				.filterByPreferredIn(getExportContext().getLocales())
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())
+				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
+				.getSync()
+				.stream()
+				.findFirst()
+				.map(SnomedDescription::getTerm)
+				.orElse(refset.getId());
 	}
 }

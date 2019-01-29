@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.id.CDOIDUtil;
 import org.eclipse.emf.cdo.view.CDOView;
 
 import com.b2international.commons.collections.CloseableMap;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.history.HistoryInfoConfiguration;
@@ -94,6 +96,11 @@ public class InternalHistoryInfoConfigurationImpl implements InternalHistoryInfo
 		return configuration.getBranchPath();
 	}
 
+	@Override
+	public List<ExtendedLocale> getLocales() {
+		return configuration.getLocales();
+	}
+	
 	@Override
 	public Connection getConnection() {
 		return connection;

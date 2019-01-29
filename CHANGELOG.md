@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.12.0
+
+### Added
+- Environment variable substitution is now supported in `snowowl_config.yml` configuration file via ${...} expressions
+
+### Removed
+- `snomed.language` configuration key, all APIs, commands now accept a list of locales in preference order to compute display names/labels/etc.
+- Unused and obsolete `Export RefSet to Excel` functionality
+
 ## 6.11.0
 
 ### Breaking changes
@@ -18,7 +27,7 @@ Property groups now can contain concrete domain properties as well, not just rel
   * _NOTE: TCP connection to a cluster does not yet support authentication_
 - Java API methods to simplify synchronous execution of requests (8d0e15d)
 - Support for `childOf` HierarchyInclusionType in MRCM rules (#287)
-- Support for `dependencies` between two code system. A Code System now declare another as a dependency,  (#286)
+- Support for `dependencies` between two code system. A Code System now declare another as a dependency (#286)
 - New Concept and Description inactivation indicators (102b127) 
 
 ### Changes

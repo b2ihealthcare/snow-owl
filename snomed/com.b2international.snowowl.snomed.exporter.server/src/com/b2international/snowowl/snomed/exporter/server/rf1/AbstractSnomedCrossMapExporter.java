@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.label.SnomedConceptNameProvider;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
 import com.b2international.snowowl.snomed.exporter.server.SnomedExportContext;
 import com.b2international.snowowl.snomed.exporter.server.rf2.SnomedExporter;
@@ -50,7 +49,7 @@ public abstract class AbstractSnomedCrossMapExporter implements SnomedExporter {
 		this.exportContext = checkNotNull(exportContext, "exportContext");
 		this.mapSetSetting = checkNotNull(mapSetSetting);
 		this.revisionSearcher = checkNotNull(revisionSearcher);
-		this.label = new SnomedConceptNameProvider(ApplicationContext.getServiceForClass(IEventBus.class), ApplicationContext.getServiceForClass(LanguageSetting.class)).getComponentLabel(exportContext.getCurrentBranchPath(), refSetId);
+		this.label = new SnomedConceptNameProvider(ApplicationContext.getServiceForClass(IEventBus.class)).getComponentLabel(exportContext.getCurrentBranchPath(), refSetId);
 	}
 
 	public String getRefSetId() {

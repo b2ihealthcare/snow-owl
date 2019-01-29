@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.CheckType;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.dsl.scg.Concept;
 import com.b2international.snowowl.dsl.scg.ScgPackage;
@@ -31,9 +32,9 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -187,7 +188,8 @@ public class SCGJavaValidator extends AbstractSCGJavaValidator {
 		
 		final SnomedConcept concept = SnomedRequests.prepareGetConcept(id)
 				.setExpand("descriptions(),pt()")
-				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				// TODO fix hardcoded locales
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf("en-sg"), ExtendedLocale.valueOf("en-gb")))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getBranch())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync();

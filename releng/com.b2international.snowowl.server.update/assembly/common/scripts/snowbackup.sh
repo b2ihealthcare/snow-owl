@@ -339,11 +339,9 @@ EOF
 backup_repositories() {
 	echo_date "Backing up installed terminology repositories..."
 
-	#backup_mysql
-	#backup_resources
-  backup_indexes
-
-	echo "$BACKUP_TYPE $CURRENT_DATE" > $BACKUP_DIR/last_backup_info
+	backup_mysql
+	backup_resources
+	backup_indexes
 
 	echo_date "Done backing up installed repositories."
 }
