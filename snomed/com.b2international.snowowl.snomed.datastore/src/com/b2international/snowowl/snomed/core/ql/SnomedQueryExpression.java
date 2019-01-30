@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 /**
  * @since 6.12
  */
-public final class QlExpression {
+public final class SnomedQueryExpression {
 
 	private final String ql;
 	
 	private Promise<Expression> expressionPromise;
 
-	private QlExpression(String ql) {
+	private SnomedQueryExpression(String ql) {
 		this.ql = ql.trim();
 	}
 	
@@ -46,8 +46,8 @@ public final class QlExpression {
 		return expressionPromise;
 	}
 	
-	public static QlExpression of(String ql) {
-		return new QlExpression(ql);
+	public static SnomedQueryExpression of(String ql) {
+		return new SnomedQueryExpression(ql);
 	}
 	
 }

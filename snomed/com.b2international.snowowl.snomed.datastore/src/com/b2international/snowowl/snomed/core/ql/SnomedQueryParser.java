@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,13 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import org.eclipse.xtext.serializer.ISerializer;
-
-import com.b2international.snowowl.snomed.ql.Query;
+import com.b2international.snowowl.snomed.ql.Disjunction;
 
 /**
  * @since 6.12
  */
-public class DefaultQlSerializer implements QlSerializer {
+public interface SnomedQueryParser {
 
-	private final ISerializer qlSerializer;
-
-	public DefaultQlSerializer(ISerializer eclSerializer) {
-		this.qlSerializer = eclSerializer;
-	}
-	
-	@Override
-	public String serialize(Query domainmodel) {
-		synchronized (qlSerializer) {
-			return qlSerializer.serialize(domainmodel);
-		}
-	}
+	Disjunction parse(String expression);
 	
 }

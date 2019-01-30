@@ -45,7 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
-import com.b2international.snowowl.snomed.core.ql.SnomedQlEvaluationRequestBuilder;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.dsv.SnomedDSVRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
@@ -317,8 +317,8 @@ public abstract class SnomedRequests {
 		return new SnomedEclEvaluationRequestBuilder(expression);
 	}
 	
-	public static SnomedQlEvaluationRequestBuilder prepareQlEvaluation(String expression) {
-		return new SnomedQlEvaluationRequestBuilder(expression);
+	public static SnomedQueryEvaluationRequestBuilder prepareQlEvaluation(String expression) {
+		return new SnomedQueryEvaluationRequestBuilder(expression);
 	}
 	
 	/**

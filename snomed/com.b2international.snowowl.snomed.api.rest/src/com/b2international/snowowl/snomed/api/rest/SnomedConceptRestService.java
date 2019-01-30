@@ -111,7 +111,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
 			
-			@ApiParam(value="The Snomed query expression to match")
+			@ApiParam(value="The SNOMED CT Query expression to match")
 			@RequestParam(value="ql", required=false) 
 			final String qlFilter,
 			

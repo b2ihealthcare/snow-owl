@@ -34,10 +34,10 @@ import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.core.lang.StaticLanguageSetting;
-import com.b2international.snowowl.snomed.core.ql.DefaultQlParser;
-import com.b2international.snowowl.snomed.core.ql.DefaultQlSerializer;
-import com.b2international.snowowl.snomed.core.ql.QlParser;
-import com.b2international.snowowl.snomed.core.ql.QlSerializer;
+import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQueryParser;
+import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQuerySerializer;
+import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
+import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssignerProvider;
@@ -61,8 +61,8 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(eclInjector.getInstance(ISerializer.class)));
 		
 		final Injector qlInjector = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
-		env.services().registerService(QlParser.class, new DefaultQlParser(qlInjector.getInstance(IParser.class), qlInjector.getInstance(IResourceValidator.class)));
-		env.services().registerService(QlSerializer.class, new DefaultQlSerializer(qlInjector.getInstance(ISerializer.class)));
+		env.services().registerService(SnomedQueryParser.class, new DefaultSnomedQueryParser(qlInjector.getInstance(IParser.class), qlInjector.getInstance(IResourceValidator.class)));
+		env.services().registerService(SnomedQuerySerializer.class, new DefaultSnomedQuerySerializer(qlInjector.getInstance(ISerializer.class)));
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());

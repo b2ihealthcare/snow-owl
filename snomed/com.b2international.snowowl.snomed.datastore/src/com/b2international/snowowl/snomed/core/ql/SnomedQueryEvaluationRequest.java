@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,17 +41,19 @@ import com.b2international.snowowl.snomed.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.TermFilter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 
 /**
  * @since 6.12
  */
-final class SnomedQlEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
+final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promise<Expression>> {
 
 	private static final long serialVersionUID = 8932162693072727864L;
 
-	private final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
+	@JsonIgnore
+	private transient final PolymorphicDispatcher<Promise<Expression>> dispatcher = PolymorphicDispatcher.createForSingleTarget("eval", 2, 2, this);
 
 	@Nullable
 	@JsonProperty
@@ -63,7 +65,7 @@ final class SnomedQlEvaluationRequest implements Request<BranchContext, Promise<
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		final Disjunction parseResult = context.service(QlParser.class).parse(expression);		
+		final Disjunction parseResult = context.service(SnomedQueryParser.class).parse(expression);		
 		return evaluate(context, parseResult);
 	}
 	
@@ -75,6 +77,7 @@ final class SnomedQlEvaluationRequest implements Request<BranchContext, Promise<
 		final String term = termFilter.getTerm();
 		
 		return SnomedRequests.prepareSearchDescription()
+				.all()
 				.filterByTerm(term)
 				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))
@@ -99,16 +102,13 @@ final class SnomedQlEvaluationRequest implements Request<BranchContext, Promise<
 	
 	protected Promise<Expression> eval(BranchContext context, final Disjunction disjunction) {
 		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
-				.then(new Function<List<Object>, Expression>() {
-					@Override
-					public Expression apply(List<Object> innerExpressions) {
+				.then(innerExpressions -> {
 						final Expression left = (Expression) innerExpressions.get(0);
 						final Expression right = (Expression) innerExpressions.get(1);
 						return Expressions.builder()
 								.should(left)
 								.should(right)
 								.build();
-					}
 				});
 	}
 	

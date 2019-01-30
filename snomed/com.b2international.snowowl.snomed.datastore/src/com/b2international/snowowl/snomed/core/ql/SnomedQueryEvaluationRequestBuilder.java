@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,21 @@ import com.b2international.snowowl.datastore.request.RevisionIndexRequestBuilder
 /**
  * @since 6.12
  */
-public final class SnomedQlEvaluationRequestBuilder 
-		extends BaseRequestBuilder<SnomedQlEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
+public final class SnomedQueryEvaluationRequestBuilder 
+		extends BaseRequestBuilder<SnomedQueryEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
 		implements RevisionIndexRequestBuilder<Promise<Expression>> {
 
-	private final SnomedQlEvaluationRequest req = new SnomedQlEvaluationRequest();
+	private final String expression;
 	
-	public SnomedQlEvaluationRequestBuilder(String expression) {
-		req.setExpression(expression);
+	public SnomedQueryEvaluationRequestBuilder(String expression) {
+		this.expression = expression;
 	}
 	
 	@Override
 	protected Request<BranchContext, Promise<Expression>> doBuild() {
-		return req;
+		SnomedQueryEvaluationRequest request = new SnomedQueryEvaluationRequest();
+		request.setExpression(expression);
+		return request;
 	}
 	
 }

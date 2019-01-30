@@ -113,7 +113,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return SnomedConceptSearchRequestBuilder
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByQuery(String expression) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.QL, expression);
+		return addOption(SnomedConceptSearchRequest.OptionKey.QUERY, expression);
 	}
 
 	/**

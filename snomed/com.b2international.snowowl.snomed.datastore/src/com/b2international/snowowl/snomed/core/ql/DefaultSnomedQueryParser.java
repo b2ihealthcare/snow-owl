@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ import com.b2international.snowowl.snomed.ql.Query;
 /**
  * @since 6.12
  */
-public class DefaultQlParser implements QlParser {
+public class DefaultSnomedQueryParser implements SnomedQueryParser {
 	
 	private final IParser qlParser;
 	private final IResourceValidator validator;
 	
-	public DefaultQlParser(IParser qlParser, IResourceValidator validator) {
+	public DefaultSnomedQueryParser(IParser qlParser, IResourceValidator validator) {
 		this.qlParser = qlParser;
 		this.validator = validator;
 	}
