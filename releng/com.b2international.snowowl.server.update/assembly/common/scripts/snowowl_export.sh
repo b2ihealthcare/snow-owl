@@ -18,9 +18,8 @@
 #
 # Snow Owl terminology server export script
 # See usage or execute the script with the -h flag to get further information.
+# Configurable params
 #
-
-##### Configurable params #####
 
 # The user for the user authentication for the REST API.
 SNOW_OWL_USER=""
@@ -31,16 +30,18 @@ SNOW_OWL_PASSWORD=""
 # The export type to use for the export config.
 EXPORT_TYPE="DELTA"
 
-# The target folder to save the exported snapshot.
+# The target folder to save the exported RF2 content.
 TARGET_FOLDER=""
 
-# The server where the export should be initiated on
-TARGET_ENVIRONMENT=""
+# Base URL for the server that runs Snow Owl.
+SNOW_OWL_BASE_URL="http://localhost:8080"
 
-# Base URL for the server endpoints
-SNOW_OWL_BASE_URL=""
+# Api URL of the running Snow Owl server.
+SNOW_OWL_API_URL="snowowl/snomed-ct/v3"
 
-##### Global variables / Constants #####
+#
+# Global variables / constants, advanced configurable params.
+#
 
 # Media type to use for the export configuration.
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
@@ -83,22 +84,20 @@ NAME:
 		Define a username with privileges to the Snow Owl REST API
 	-p
 		Define the password for the above user
-    -t
-        Target environment which server the export should be initiated on
+    -b
+        Base URL for the server defaults to (http://localhost:8080)
     -f
         Target folder where the exported content should be saved
     -e
         Export type for the export configuration (possible values are SNAPSHOT, DELTA, FULL)
-    -b
-        Base URL of the Snow Owl server
+    -a
+        Base API URL of the Snow Owl server defaults to (snowowl/snomed-ct/v3)
 NOTES:
 	This script can be used to initiate a delta export job that will run an export from a snow owl server every day at 20:00 server time and it will save it to the folder the script is within.
 	Mandatory variables:
 		- SNOW OWL user to use for the Snow Owl export
 	    - SNOW OWL password for the above user
-        - The target enviroment where the Snow Owl server runs
         - Target folder to save the exported content
-        - Snow Owl server base url eg.: "snowowl/snomed-ct/v3"
 EOF
 
 }
@@ -107,16 +106,12 @@ validate_variables() {
     check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
 	check_if_empty "${SNOW_OWL_PASSWORD}" "Snow Owl password must be specified"
 	check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
-    check_if_empty "${TARGET_ENVIRONMENT}" "Target environment must be specified"
-    check_if_empty "${SNOW_OWL_BASE_URL}" "Snow Owl base URL must be specified"
 
     if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
         echo "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
         exit 1;
     fi
-
-    EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_BASE_URL}/exports"
-
+    
     if [[ ! -d "${TARGET_FOLDER}" ]]; then
         echo "Creating target folder"
         mkdir "${TARGET_FOLDER}"
@@ -133,8 +128,10 @@ check_if_empty() {
 
 export_delta() {
     echo "Creating snapshot export config"
+    EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
+    
     EXPORT_CONFIG_POST_INPUT='{"branchPath": "MAIN", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
-    EXPORT_LOCATION="http://"${TARGET_ENVIRONMENT}":8080/"${EXPORT_CONFIG_POST_ENDPOINT}""
+    EXPORT_LOCATION="${SNOW_OWL_BASE_URL}/${EXPORT_CONFIG_POST_ENDPOINT}"
 
     echo "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORT_LOCATION}""
 
@@ -169,7 +166,7 @@ execute() {
     exit 0
 }
 
-while getopts "u:p::t:f:eb:h" option; do
+while getopts "u:p::f:e:b:a:h" option; do
     case "${option}" in
     h)
         usage
@@ -179,14 +176,14 @@ while getopts "u:p::t:f:eb:h" option; do
         SNOW_OWL_USER=${OPTARG};;
     p)
         SNOW_OWL_PASSWORD=${OPTARG};;
-    t)
-        TARGET_ENVIRONMENT=${OPTARG};;
     f)
         TARGET_FOLDER=${OPTARG};;
     e)
         EXPORT_TYPE=${OPTARG};;
     b)
         SNOW_OWL_BASE_URL=${OPTARG};;
+    a)
+        SNOW_OWL_API_URL=${OPTARG};;    
     \?)
         echo "Invalid option: {$OPTARG}." >&2
         usage
