@@ -67,9 +67,6 @@ EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
 # The renamed version of the export file.
 RENAMED_EXPORT_FILE=""
 
-# Calculates the current location of this specific bash script (works until the path is not a symlink)
-SCRIPT_LOCATION="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 usage() {
 
 	cat <<EOF
@@ -93,7 +90,7 @@ NAME:
     -a
         Base API URL of the Snow Owl server defaults to (snowowl/snomed-ct/v3)
 NOTES:
-	This script can be used to initiate a delta export job that will run an export from a snow owl server every day at 20:00 server time and it will save it to the folder the script is within.
+	This script can be used to initiate an export job that will run an export from a Snow Owl server. 
 	Mandatory variables:
 		- SNOW OWL user to use for the Snow Owl export
 	    - SNOW OWL password for the above user
@@ -129,7 +126,7 @@ check_if_empty() {
 export_delta() {
     echo "Creating snapshot export config"
     EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
-    
+
     EXPORT_CONFIG_POST_INPUT='{"branchPath": "MAIN", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
     EXPORT_LOCATION="${SNOW_OWL_BASE_URL}/${EXPORT_CONFIG_POST_ENDPOINT}"
 
@@ -148,16 +145,10 @@ download_delta() {
 
     RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-    curl -u "${SNOW_OWL_USER}:${SNOW_OWL_PASSWORD}" -X GET -H "Accept: ${ACCEPT_HEADER}" -ko "${RENAMED_EXPORT_FILE}" "${EXPORT_DOWNLOAD_GET_ENDPOINT}"
-     
-    cd "${SCRIPT_LOCATION}"
-
-    mv "${RENAMED_EXPORT_FILE}" "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
+    curl -u "${SNOW_OWL_USER}:${SNOW_OWL_PASSWORD}" -X GET -H "Accept: ${ACCEPT_HEADER}" -ko "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" "${EXPORT_DOWNLOAD_GET_ENDPOINT}"
 }
 
 execute() {
-
-    TARGET_FOLDER="${SCRIPT_LOCATION}"
 
     validate_variables
 
