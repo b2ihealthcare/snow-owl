@@ -37,7 +37,7 @@ TARGET_FOLDER=""
 SNOW_OWL_BASE_URL="http://localhost:8080"
 
 # Api URL of the running Snow Owl server.
-SNOW_OWL_API_URL="snowowl/snomed-ct/v3"
+SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
 
 #
 # Global variables / constants, advanced configurable params.
@@ -62,7 +62,7 @@ IS_CONCEPT_AND_RELATIONSHIPS_ONLY=${false}
 EXPORT_CONFIG_POST_ENDPOINT=""
 
 # The initial name of the export.
-EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
+EXPORT_FILE_NAME=""
 
 # The renamed version of the export file.
 RENAMED_EXPORT_FILE=""
@@ -88,7 +88,7 @@ NAME:
     -e
         Export type for the export configuration (possible values are SNAPSHOT, DELTA, FULL)
     -a
-        Base API URL of the Snow Owl server defaults to (snowowl/snomed-ct/v3)
+        Base API URL of the Snow Owl server defaults to (/snowowl/snomed-ct/v3)
 NOTES:
 	This script can be used to initiate an export job that will run an export from a Snow Owl server. 
 	Mandatory variables:
@@ -128,7 +128,7 @@ export_delta() {
     EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
     EXPORT_CONFIG_POST_INPUT='{"branchPath": "MAIN", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
-    EXPORT_LOCATION="${SNOW_OWL_BASE_URL}/${EXPORT_CONFIG_POST_ENDPOINT}"
+    EXPORT_LOCATION="${SNOW_OWL_BASE_URL}${EXPORT_CONFIG_POST_ENDPOINT}"
 
     echo "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORT_LOCATION}""
 
@@ -151,6 +151,8 @@ download_delta() {
 execute() {
 
     validate_variables
+
+    EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
 
     export_delta
 
