@@ -1,14 +1,14 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -92,27 +92,19 @@ public class QlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.DISJUNCTION:
+      case QlPackage.CONSTRAINT:
       {
-        Disjunction disjunction = (Disjunction)theEObject;
-        T result = caseDisjunction(disjunction);
+        Constraint constraint = (Constraint)theEObject;
+        T result = caseConstraint(constraint);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case QlPackage.CONJUNCTION:
+      case QlPackage.NESTED_FILTER:
       {
-        Conjunction conjunction = (Conjunction)theEObject;
-        T result = caseConjunction(conjunction);
-        if (result == null) result = caseDisjunction(conjunction);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case QlPackage.EXCLUSION:
-      {
-        Exclusion exclusion = (Exclusion)theEObject;
-        T result = caseExclusion(exclusion);
-        if (result == null) result = caseConjunction(exclusion);
-        if (result == null) result = caseDisjunction(exclusion);
+        NestedFilter nestedFilter = (NestedFilter)theEObject;
+        T result = caseNestedFilter(nestedFilter);
+        if (result == null) result = caseFilter(nestedFilter);
+        if (result == null) result = caseConstraint(nestedFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -120,9 +112,7 @@ public class QlSwitch<T> extends Switch<T>
       {
         Filter filter = (Filter)theEObject;
         T result = caseFilter(filter);
-        if (result == null) result = caseExclusion(filter);
-        if (result == null) result = caseConjunction(filter);
-        if (result == null) result = caseDisjunction(filter);
+        if (result == null) result = caseConstraint(filter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -131,9 +121,7 @@ public class QlSwitch<T> extends Switch<T>
         EclFilter eclFilter = (EclFilter)theEObject;
         T result = caseEclFilter(eclFilter);
         if (result == null) result = caseFilter(eclFilter);
-        if (result == null) result = caseExclusion(eclFilter);
-        if (result == null) result = caseConjunction(eclFilter);
-        if (result == null) result = caseDisjunction(eclFilter);
+        if (result == null) result = caseConstraint(eclFilter);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -142,9 +130,31 @@ public class QlSwitch<T> extends Switch<T>
         TermFilter termFilter = (TermFilter)theEObject;
         T result = caseTermFilter(termFilter);
         if (result == null) result = caseFilter(termFilter);
-        if (result == null) result = caseExclusion(termFilter);
-        if (result == null) result = caseConjunction(termFilter);
-        if (result == null) result = caseDisjunction(termFilter);
+        if (result == null) result = caseConstraint(termFilter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.DISJUNCTION:
+      {
+        Disjunction disjunction = (Disjunction)theEObject;
+        T result = caseDisjunction(disjunction);
+        if (result == null) result = caseConstraint(disjunction);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.CONJUNCTION:
+      {
+        Conjunction conjunction = (Conjunction)theEObject;
+        T result = caseConjunction(conjunction);
+        if (result == null) result = caseConstraint(conjunction);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case QlPackage.EXCLUSION:
+      {
+        Exclusion exclusion = (Exclusion)theEObject;
+        T result = caseExclusion(exclusion);
+        if (result == null) result = caseConstraint(exclusion);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -169,49 +179,33 @@ public class QlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Constraint</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Constraint</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseDisjunction(Disjunction object)
+  public T caseConstraint(Constraint object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Nested Filter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Nested Filter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseConjunction(Conjunction object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Exclusion</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Exclusion</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseExclusion(Exclusion object)
+  public T caseNestedFilter(NestedFilter object)
   {
     return null;
   }
@@ -260,6 +254,54 @@ public class QlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseTermFilter(TermFilter object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Disjunction</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseDisjunction(Disjunction object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Conjunction</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseConjunction(Conjunction object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Exclusion</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseExclusion(Exclusion object)
   {
     return null;
   }

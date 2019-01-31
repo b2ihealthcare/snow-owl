@@ -19,19 +19,26 @@ with com.b2international.snowowl.snomed.ecl.Ecl
 generate ql "http://www.b2international.com/snowowl/snomed/QL"
 
 Query:
-	{Query} (disjunction=Disjunction)?;
+	{Query} (constraint=Constraint)?;
 	
-Disjunction:
+Constraint:
+	Disjunction;
+	
+Disjunction returns Constraint:
 	Conjunction ({Disjunction.left = current} 'OR' right = Conjunction)*;
 
-Conjunction:
+Conjunction returns Constraint:
 	Exclusion ({Conjunction.left = current} 'AND' right = Exclusion)*;
 
-Exclusion:
+Exclusion returns Constraint:
 	Filter ({Exclusion.left = current} 'MINUS' right = Filter)?;
 
+NestedFilter:
+  ROUND_OPEN constraint = Constraint ROUND_CLOSE 
+;
+
 Filter:
-	EclFilter | TermFilter
+	EclFilter | TermFilter | NestedFilter
 ;
 
 EclFilter:

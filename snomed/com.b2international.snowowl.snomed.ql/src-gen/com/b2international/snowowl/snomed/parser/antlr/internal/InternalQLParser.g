@@ -1,14 +1,14 @@
 /*
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -100,23 +100,51 @@ ruleQuery returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getQueryAccess().getDisjunctionDisjunctionParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getQueryAccess().getConstraintConstraintParserRuleCall_1_0());
 				}
-				lv_disjunction_1_0=ruleDisjunction
+				lv_constraint_1_0=ruleConstraint
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getQueryRule());
 					}
 					set(
 						$current,
-						"disjunction",
-						lv_disjunction_1_0,
-						"com.b2international.snowowl.snomed.QL.Disjunction");
+						"constraint",
+						lv_constraint_1_0,
+						"com.b2international.snowowl.snomed.QL.Constraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)?
 	)
+;
+
+// Entry rule entryRuleConstraint
+entryRuleConstraint returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getConstraintRule()); }
+	iv_ruleConstraint=ruleConstraint
+	{ $current=$iv_ruleConstraint.current; }
+	EOF;
+
+// Rule Constraint
+ruleConstraint returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	{
+		/* */
+	}
+	{
+		newCompositeNode(grammarAccess.getConstraintAccess().getDisjunctionParserRuleCall());
+	}
+	this_Disjunction_0=ruleDisjunction
+	{
+		$current = $this_Disjunction_0.current;
+		afterParserOrEnumRuleCall();
+	}
 ;
 
 // Entry rule entryRuleDisjunction
@@ -314,6 +342,52 @@ ruleExclusion returns [EObject current=null]
 	)
 ;
 
+// Entry rule entryRuleNestedFilter
+entryRuleNestedFilter returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getNestedFilterRule()); }
+	iv_ruleNestedFilter=ruleNestedFilter
+	{ $current=$iv_ruleNestedFilter.current; }
+	EOF;
+
+// Rule NestedFilter
+ruleNestedFilter returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_ROUND_OPEN_0=RULE_ROUND_OPEN
+		{
+			newLeafNode(this_ROUND_OPEN_0, grammarAccess.getNestedFilterAccess().getROUND_OPENTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getNestedFilterAccess().getConstraintConstraintParserRuleCall_1_0());
+				}
+				lv_constraint_1_0=ruleConstraint
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getNestedFilterRule());
+					}
+					set(
+						$current,
+						"constraint",
+						lv_constraint_1_0,
+						"com.b2international.snowowl.snomed.QL.Constraint");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		this_ROUND_CLOSE_2=RULE_ROUND_CLOSE
+		{
+			newLeafNode(this_ROUND_CLOSE_2, grammarAccess.getNestedFilterAccess().getROUND_CLOSETerminalRuleCall_2());
+		}
+	)
+;
+
 // Entry rule entryRuleFilter
 entryRuleFilter returns [EObject current=null]:
 	{ newCompositeNode(grammarAccess.getFilterRule()); }
@@ -351,6 +425,18 @@ ruleFilter returns [EObject current=null]
 		this_TermFilter_1=ruleTermFilter
 		{
 			$current = $this_TermFilter_1.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getFilterAccess().getNestedFilterParserRuleCall_2());
+		}
+		this_NestedFilter_2=ruleNestedFilter
+		{
+			$current = $this_NestedFilter_2.current;
 			afterParserOrEnumRuleCall();
 		}
 	)

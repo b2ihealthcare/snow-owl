@@ -1,21 +1,21 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.Conjunction;
+import com.b2international.snowowl.snomed.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.QlPackage;
 
@@ -26,7 +26,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -42,7 +41,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Disjunction
+public class DisjunctionImpl extends ConstraintImpl implements Disjunction
 {
   /**
    * The cached value of the '{@link #getLeft() <em>Left</em>}' containment reference.
@@ -52,7 +51,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * @generated
    * @ordered
    */
-  protected Disjunction left;
+  protected Constraint left;
 
   /**
    * The cached value of the '{@link #getRight() <em>Right</em>}' containment reference.
@@ -62,7 +61,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * @generated
    * @ordered
    */
-  protected Conjunction right;
+  protected Constraint right;
 
   /**
    * <!-- begin-user-doc -->
@@ -90,7 +89,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public Disjunction getLeft()
+  public Constraint getLeft()
   {
     return left;
   }
@@ -100,9 +99,9 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetLeft(Disjunction newLeft, NotificationChain msgs)
+  public NotificationChain basicSetLeft(Constraint newLeft, NotificationChain msgs)
   {
-    Disjunction oldLeft = left;
+    Constraint oldLeft = left;
     left = newLeft;
     if (eNotificationRequired())
     {
@@ -117,7 +116,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setLeft(Disjunction newLeft)
+  public void setLeft(Constraint newLeft)
   {
     if (newLeft != left)
     {
@@ -138,7 +137,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public Conjunction getRight()
+  public Constraint getRight()
   {
     return right;
   }
@@ -148,9 +147,9 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetRight(Conjunction newRight, NotificationChain msgs)
+  public NotificationChain basicSetRight(Constraint newRight, NotificationChain msgs)
   {
-    Conjunction oldRight = right;
+    Constraint oldRight = right;
     right = newRight;
     if (eNotificationRequired())
     {
@@ -165,7 +164,7 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setRight(Conjunction newRight)
+  public void setRight(Constraint newRight)
   {
     if (newRight != right)
     {
@@ -228,10 +227,10 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
     switch (featureID)
     {
       case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Disjunction)newValue);
+        setLeft((Constraint)newValue);
         return;
       case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Conjunction)newValue);
+        setRight((Constraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -248,10 +247,10 @@ public class DisjunctionImpl extends MinimalEObjectImpl.Container implements Dis
     switch (featureID)
     {
       case QlPackage.DISJUNCTION__LEFT:
-        setLeft((Disjunction)null);
+        setLeft((Constraint)null);
         return;
       case QlPackage.DISJUNCTION__RIGHT:
-        setRight((Conjunction)null);
+        setRight((Constraint)null);
         return;
     }
     super.eUnset(featureID);

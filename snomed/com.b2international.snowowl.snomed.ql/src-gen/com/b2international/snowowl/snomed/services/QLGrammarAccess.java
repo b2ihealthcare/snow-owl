@@ -1,14 +1,14 @@
-/**
+/*
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -39,24 +39,35 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.Query");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Action cQueryAction_0 = (Action)cGroup.eContents().get(0);
-		private final Assignment cDisjunctionAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cDisjunctionDisjunctionParserRuleCall_1_0 = (RuleCall)cDisjunctionAssignment_1.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
 		
 		//Query:
-		//	{Query} disjunction=Disjunction?;
+		//	{Query} constraint=Constraint?;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//{Query} disjunction=Disjunction?
+		//{Query} constraint=Constraint?
 		public Group getGroup() { return cGroup; }
 		
 		//{Query}
 		public Action getQueryAction_0() { return cQueryAction_0; }
 		
-		//disjunction=Disjunction?
-		public Assignment getDisjunctionAssignment_1() { return cDisjunctionAssignment_1; }
+		//constraint=Constraint?
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+		
+		//Constraint
+		public RuleCall getConstraintConstraintParserRuleCall_1_0() { return cConstraintConstraintParserRuleCall_1_0; }
+	}
+	public class ConstraintElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.Constraint");
+		private final RuleCall cDisjunctionParserRuleCall = (RuleCall)rule.eContents().get(1);
+		
+		//Constraint:
+		//	Disjunction;
+		@Override public ParserRule getRule() { return rule; }
 		
 		//Disjunction
-		public RuleCall getDisjunctionDisjunctionParserRuleCall_1_0() { return cDisjunctionDisjunctionParserRuleCall_1_0; }
+		public RuleCall getDisjunctionParserRuleCall() { return cDisjunctionParserRuleCall; }
 	}
 	public class DisjunctionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.Disjunction");
@@ -68,7 +79,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightConjunctionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Disjunction:
+		//Disjunction Constraint:
 		//	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -103,7 +114,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightExclusionParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Conjunction:
+		//Conjunction Constraint:
 		//	Exclusion ({Conjunction.left=current} 'AND' right=Exclusion)*;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -138,7 +149,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		private final Assignment cRightAssignment_1_2 = (Assignment)cGroup_1.eContents().get(2);
 		private final RuleCall cRightFilterParserRuleCall_1_2_0 = (RuleCall)cRightAssignment_1_2.eContents().get(0);
 		
-		//Exclusion:
+		//Exclusion Constraint:
 		//	Filter ({Exclusion.left=current} 'MINUS' right=Filter)?;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -163,17 +174,45 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//Filter
 		public RuleCall getRightFilterParserRuleCall_1_2_0() { return cRightFilterParserRuleCall_1_2_0; }
 	}
+	public class NestedFilterElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.NestedFilter");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cROUND_OPENTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cConstraintAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cConstraintConstraintParserRuleCall_1_0 = (RuleCall)cConstraintAssignment_1.eContents().get(0);
+		private final RuleCall cROUND_CLOSETerminalRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//NestedFilter:
+		//	ROUND_OPEN constraint=Constraint ROUND_CLOSE;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//ROUND_OPEN constraint=Constraint ROUND_CLOSE
+		public Group getGroup() { return cGroup; }
+		
+		//ROUND_OPEN
+		public RuleCall getROUND_OPENTerminalRuleCall_0() { return cROUND_OPENTerminalRuleCall_0; }
+		
+		//constraint=Constraint
+		public Assignment getConstraintAssignment_1() { return cConstraintAssignment_1; }
+		
+		//Constraint
+		public RuleCall getConstraintConstraintParserRuleCall_1_0() { return cConstraintConstraintParserRuleCall_1_0; }
+		
+		//ROUND_CLOSE
+		public RuleCall getROUND_CLOSETerminalRuleCall_2() { return cROUND_CLOSETerminalRuleCall_2; }
+	}
 	public class FilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.Filter");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cEclFilterParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cTermFilterParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cNestedFilterParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		
 		//Filter:
-		//	EclFilter | TermFilter;
+		//	EclFilter | TermFilter | NestedFilter;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//EclFilter | TermFilter
+		//EclFilter | TermFilter | NestedFilter
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//EclFilter
@@ -181,6 +220,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//TermFilter
 		public RuleCall getTermFilterParserRuleCall_1() { return cTermFilterParserRuleCall_1; }
+		
+		//NestedFilter
+		public RuleCall getNestedFilterParserRuleCall_2() { return cNestedFilterParserRuleCall_2; }
 	}
 	public class EclFilterElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.QL.EclFilter");
@@ -231,9 +273,11 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	
 	private final QueryElements pQuery;
+	private final ConstraintElements pConstraint;
 	private final DisjunctionElements pDisjunction;
 	private final ConjunctionElements pConjunction;
 	private final ExclusionElements pExclusion;
+	private final NestedFilterElements pNestedFilter;
 	private final FilterElements pFilter;
 	private final EclFilterElements pEclFilter;
 	private final TermFilterElements pTermFilter;
@@ -250,9 +294,11 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.grammar = internalFindGrammar(grammarProvider);
 		this.gaEcl = gaEcl;
 		this.pQuery = new QueryElements();
+		this.pConstraint = new ConstraintElements();
 		this.pDisjunction = new DisjunctionElements();
 		this.pConjunction = new ConjunctionElements();
 		this.pExclusion = new ExclusionElements();
+		this.pNestedFilter = new NestedFilterElements();
 		this.pFilter = new FilterElements();
 		this.pEclFilter = new EclFilterElements();
 		this.pTermFilter = new TermFilterElements();
@@ -288,7 +334,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 
 	
 	//Query:
-	//	{Query} disjunction=Disjunction?;
+	//	{Query} constraint=Constraint?;
 	public QueryElements getQueryAccess() {
 		return pQuery;
 	}
@@ -297,7 +343,17 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getQueryAccess().getRule();
 	}
 	
-	//Disjunction:
+	//Constraint:
+	//	Disjunction;
+	public ConstraintElements getConstraintAccess() {
+		return pConstraint;
+	}
+	
+	public ParserRule getConstraintRule() {
+		return getConstraintAccess().getRule();
+	}
+	
+	//Disjunction Constraint:
 	//	Conjunction ({Disjunction.left=current} 'OR' right=Conjunction)*;
 	public DisjunctionElements getDisjunctionAccess() {
 		return pDisjunction;
@@ -307,7 +363,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getDisjunctionAccess().getRule();
 	}
 	
-	//Conjunction:
+	//Conjunction Constraint:
 	//	Exclusion ({Conjunction.left=current} 'AND' right=Exclusion)*;
 	public ConjunctionElements getConjunctionAccess() {
 		return pConjunction;
@@ -317,7 +373,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getConjunctionAccess().getRule();
 	}
 	
-	//Exclusion:
+	//Exclusion Constraint:
 	//	Filter ({Exclusion.left=current} 'MINUS' right=Filter)?;
 	public ExclusionElements getExclusionAccess() {
 		return pExclusion;
@@ -327,8 +383,18 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return getExclusionAccess().getRule();
 	}
 	
+	//NestedFilter:
+	//	ROUND_OPEN constraint=Constraint ROUND_CLOSE;
+	public NestedFilterElements getNestedFilterAccess() {
+		return pNestedFilter;
+	}
+	
+	public ParserRule getNestedFilterRule() {
+		return getNestedFilterAccess().getRule();
+	}
+	
 	//Filter:
-	//	EclFilter | TermFilter;
+	//	EclFilter | TermFilter | NestedFilter;
 	public FilterElements getFilterAccess() {
 		return pFilter;
 	}

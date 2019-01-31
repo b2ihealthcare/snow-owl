@@ -1,21 +1,21 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.ql.impl;
 
-import com.b2international.snowowl.snomed.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.Query;
 
@@ -36,7 +36,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.impl.QueryImpl#getDisjunction <em>Disjunction</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.impl.QueryImpl#getConstraint <em>Constraint</em>}</li>
  * </ul>
  *
  * @generated
@@ -44,14 +44,14 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 public class QueryImpl extends MinimalEObjectImpl.Container implements Query
 {
   /**
-   * The cached value of the '{@link #getDisjunction() <em>Disjunction</em>}' containment reference.
+   * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getDisjunction()
+   * @see #getConstraint()
    * @generated
    * @ordered
    */
-  protected Disjunction disjunction;
+  protected Constraint constraint;
 
   /**
    * <!-- begin-user-doc -->
@@ -79,9 +79,9 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public Disjunction getDisjunction()
+  public Constraint getConstraint()
   {
-    return disjunction;
+    return constraint;
   }
 
   /**
@@ -89,13 +89,13 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetDisjunction(Disjunction newDisjunction, NotificationChain msgs)
+  public NotificationChain basicSetConstraint(Constraint newConstraint, NotificationChain msgs)
   {
-    Disjunction oldDisjunction = disjunction;
-    disjunction = newDisjunction;
+    Constraint oldConstraint = constraint;
+    constraint = newConstraint;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__DISJUNCTION, oldDisjunction, newDisjunction);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__CONSTRAINT, oldConstraint, newConstraint);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -106,20 +106,20 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setDisjunction(Disjunction newDisjunction)
+  public void setConstraint(Constraint newConstraint)
   {
-    if (newDisjunction != disjunction)
+    if (newConstraint != constraint)
     {
       NotificationChain msgs = null;
-      if (disjunction != null)
-        msgs = ((InternalEObject)disjunction).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__DISJUNCTION, null, msgs);
-      if (newDisjunction != null)
-        msgs = ((InternalEObject)newDisjunction).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__DISJUNCTION, null, msgs);
-      msgs = basicSetDisjunction(newDisjunction, msgs);
+      if (constraint != null)
+        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__CONSTRAINT, null, msgs);
+      if (newConstraint != null)
+        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.QUERY__CONSTRAINT, null, msgs);
+      msgs = basicSetConstraint(newConstraint, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__DISJUNCTION, newDisjunction, newDisjunction));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.QUERY__CONSTRAINT, newConstraint, newConstraint));
   }
 
   /**
@@ -132,8 +132,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__DISJUNCTION:
-        return basicSetDisjunction(null, msgs);
+      case QlPackage.QUERY__CONSTRAINT:
+        return basicSetConstraint(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -148,8 +148,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__DISJUNCTION:
-        return getDisjunction();
+      case QlPackage.QUERY__CONSTRAINT:
+        return getConstraint();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -164,8 +164,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__DISJUNCTION:
-        setDisjunction((Disjunction)newValue);
+      case QlPackage.QUERY__CONSTRAINT:
+        setConstraint((Constraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -181,8 +181,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__DISJUNCTION:
-        setDisjunction((Disjunction)null);
+      case QlPackage.QUERY__CONSTRAINT:
+        setConstraint((Constraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -198,8 +198,8 @@ public class QueryImpl extends MinimalEObjectImpl.Container implements Query
   {
     switch (featureID)
     {
-      case QlPackage.QUERY__DISJUNCTION:
-        return disjunction != null;
+      case QlPackage.QUERY__CONSTRAINT:
+        return constraint != null;
     }
     return super.eIsSet(featureID);
   }

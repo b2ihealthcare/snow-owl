@@ -15,50 +15,49 @@
  */
 package com.b2international.snowowl.snomed.ql;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Ecl Filter</b></em>'.
+ * A representation of the model object '<em><b>Nested Filter</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.EclFilter#getEcl <em>Ecl</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.NestedFilter#getConstraint <em>Constraint</em>}</li>
  * </ul>
  *
- * @see com.b2international.snowowl.snomed.ql.QlPackage#getEclFilter()
+ * @see com.b2international.snowowl.snomed.ql.QlPackage#getNestedFilter()
  * @model
  * @generated
  */
-public interface EclFilter extends Filter
+public interface NestedFilter extends Filter
 {
   /**
-   * Returns the value of the '<em><b>Ecl</b></em>' containment reference.
+   * Returns the value of the '<em><b>Constraint</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Ecl</em>' containment reference isn't clear,
+   * If the meaning of the '<em>Constraint</em>' containment reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Ecl</em>' containment reference.
-   * @see #setEcl(Script)
-   * @see com.b2international.snowowl.snomed.ql.QlPackage#getEclFilter_Ecl()
+   * @return the value of the '<em>Constraint</em>' containment reference.
+   * @see #setConstraint(Constraint)
+   * @see com.b2international.snowowl.snomed.ql.QlPackage#getNestedFilter_Constraint()
    * @model containment="true"
    * @generated
    */
-  Script getEcl();
+  Constraint getConstraint();
 
   /**
-   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.EclFilter#getEcl <em>Ecl</em>}' containment reference.
+   * Sets the value of the '{@link com.b2international.snowowl.snomed.ql.NestedFilter#getConstraint <em>Constraint</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Ecl</em>' containment reference.
-   * @see #getEcl()
+   * @param value the new value of the '<em>Constraint</em>' containment reference.
+   * @see #getConstraint()
    * @generated
    */
-  void setEcl(Script value);
+  void setConstraint(Constraint value);
 
-} // EclFilter
+} // NestedFilter

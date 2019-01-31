@@ -43,15 +43,15 @@ Workflow {
 				baseName = "com.b2international.snowowl.snomed.ql"
 				rootPath = rootPath
 				runtimeTest = {
-					enabled = true
+					enabled = false
 				}
 				eclipsePlugin = {
-					enabled = true
+					enabled = false
 				}
 				eclipsePluginTest = {
 					enabled = false
 				}
-				createEclipseMetaData = true
+				createEclipseMetaData = false
 			}
 			code = {
 				encoding = "UTF-8"

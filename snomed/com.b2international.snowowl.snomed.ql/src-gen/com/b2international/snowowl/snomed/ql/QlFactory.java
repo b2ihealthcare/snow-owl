@@ -1,14 +1,14 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -45,31 +45,22 @@ public interface QlFactory extends EFactory
   Query createQuery();
 
   /**
-   * Returns a new object of class '<em>Disjunction</em>'.
+   * Returns a new object of class '<em>Constraint</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Disjunction</em>'.
+   * @return a new object of class '<em>Constraint</em>'.
    * @generated
    */
-  Disjunction createDisjunction();
+  Constraint createConstraint();
 
   /**
-   * Returns a new object of class '<em>Conjunction</em>'.
+   * Returns a new object of class '<em>Nested Filter</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>Conjunction</em>'.
+   * @return a new object of class '<em>Nested Filter</em>'.
    * @generated
    */
-  Conjunction createConjunction();
-
-  /**
-   * Returns a new object of class '<em>Exclusion</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Exclusion</em>'.
-   * @generated
-   */
-  Exclusion createExclusion();
+  NestedFilter createNestedFilter();
 
   /**
    * Returns a new object of class '<em>Filter</em>'.
@@ -97,6 +88,33 @@ public interface QlFactory extends EFactory
    * @generated
    */
   TermFilter createTermFilter();
+
+  /**
+   * Returns a new object of class '<em>Disjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Disjunction</em>'.
+   * @generated
+   */
+  Disjunction createDisjunction();
+
+  /**
+   * Returns a new object of class '<em>Conjunction</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Conjunction</em>'.
+   * @generated
+   */
+  Conjunction createConjunction();
+
+  /**
+   * Returns a new object of class '<em>Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Exclusion</em>'.
+   * @generated
+   */
+  Exclusion createExclusion();
 
   /**
    * Returns the package supported by this factory.

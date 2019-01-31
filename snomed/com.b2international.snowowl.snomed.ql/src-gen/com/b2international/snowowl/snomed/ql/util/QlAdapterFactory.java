@@ -1,14 +1,14 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -93,19 +93,14 @@ public class QlAdapterFactory extends AdapterFactoryImpl
         return createQueryAdapter();
       }
       @Override
-      public Adapter caseDisjunction(Disjunction object)
+      public Adapter caseConstraint(Constraint object)
       {
-        return createDisjunctionAdapter();
+        return createConstraintAdapter();
       }
       @Override
-      public Adapter caseConjunction(Conjunction object)
+      public Adapter caseNestedFilter(NestedFilter object)
       {
-        return createConjunctionAdapter();
-      }
-      @Override
-      public Adapter caseExclusion(Exclusion object)
-      {
-        return createExclusionAdapter();
+        return createNestedFilterAdapter();
       }
       @Override
       public Adapter caseFilter(Filter object)
@@ -121,6 +116,21 @@ public class QlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseTermFilter(TermFilter object)
       {
         return createTermFilterAdapter();
+      }
+      @Override
+      public Adapter caseDisjunction(Disjunction object)
+      {
+        return createDisjunctionAdapter();
+      }
+      @Override
+      public Adapter caseConjunction(Conjunction object)
+      {
+        return createConjunctionAdapter();
+      }
+      @Override
+      public Adapter caseExclusion(Exclusion object)
+      {
+        return createExclusionAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -160,46 +170,31 @@ public class QlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Disjunction <em>Disjunction</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Constraint <em>Constraint</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.Disjunction
+   * @see com.b2international.snowowl.snomed.ql.Constraint
    * @generated
    */
-  public Adapter createDisjunctionAdapter()
+  public Adapter createConstraintAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Conjunction <em>Conjunction</em>}'.
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.NestedFilter <em>Nested Filter</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.Conjunction
+   * @see com.b2international.snowowl.snomed.ql.NestedFilter
    * @generated
    */
-  public Adapter createConjunctionAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Exclusion <em>Exclusion</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see com.b2international.snowowl.snomed.ql.Exclusion
-   * @generated
-   */
-  public Adapter createExclusionAdapter()
+  public Adapter createNestedFilterAdapter()
   {
     return null;
   }
@@ -245,6 +240,51 @@ public class QlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createTermFilterAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Disjunction <em>Disjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.Disjunction
+   * @generated
+   */
+  public Adapter createDisjunctionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Conjunction <em>Conjunction</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.Conjunction
+   * @generated
+   */
+  public Adapter createConjunctionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ql.Exclusion <em>Exclusion</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ql.Exclusion
+   * @generated
+   */
+  public Adapter createExclusionAdapter()
   {
     return null;
   }

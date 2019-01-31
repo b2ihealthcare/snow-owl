@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
-
-import com.b2international.snowowl.snomed.ql.EclFilter;
+import com.b2international.snowowl.snomed.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.NestedFilter;
 import com.b2international.snowowl.snomed.ql.QlPackage;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -30,35 +29,35 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Ecl Filter</b></em>'.
+ * An implementation of the model object '<em><b>Nested Filter</b></em>'.
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link com.b2international.snowowl.snomed.ql.impl.EclFilterImpl#getEcl <em>Ecl</em>}</li>
+ *   <li>{@link com.b2international.snowowl.snomed.ql.impl.NestedFilterImpl#getConstraint <em>Constraint</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class EclFilterImpl extends FilterImpl implements EclFilter
+public class NestedFilterImpl extends FilterImpl implements NestedFilter
 {
   /**
-   * The cached value of the '{@link #getEcl() <em>Ecl</em>}' containment reference.
+   * The cached value of the '{@link #getConstraint() <em>Constraint</em>}' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @see #getEcl()
+   * @see #getConstraint()
    * @generated
    * @ordered
    */
-  protected Script ecl;
+  protected Constraint constraint;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected EclFilterImpl()
+  protected NestedFilterImpl()
   {
     super();
   }
@@ -71,7 +70,7 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   @Override
   protected EClass eStaticClass()
   {
-    return QlPackage.Literals.ECL_FILTER;
+    return QlPackage.Literals.NESTED_FILTER;
   }
 
   /**
@@ -79,9 +78,9 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public Script getEcl()
+  public Constraint getConstraint()
   {
-    return ecl;
+    return constraint;
   }
 
   /**
@@ -89,13 +88,13 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public NotificationChain basicSetEcl(Script newEcl, NotificationChain msgs)
+  public NotificationChain basicSetConstraint(Constraint newConstraint, NotificationChain msgs)
   {
-    Script oldEcl = ecl;
-    ecl = newEcl;
+    Constraint oldConstraint = constraint;
+    constraint = newConstraint;
     if (eNotificationRequired())
     {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, oldEcl, newEcl);
+      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__CONSTRAINT, oldConstraint, newConstraint);
       if (msgs == null) msgs = notification; else msgs.add(notification);
     }
     return msgs;
@@ -106,20 +105,20 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
    * <!-- end-user-doc -->
    * @generated
    */
-  public void setEcl(Script newEcl)
+  public void setConstraint(Constraint newConstraint)
   {
-    if (newEcl != ecl)
+    if (newConstraint != constraint)
     {
       NotificationChain msgs = null;
-      if (ecl != null)
-        msgs = ((InternalEObject)ecl).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      if (newEcl != null)
-        msgs = ((InternalEObject)newEcl).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.ECL_FILTER__ECL, null, msgs);
-      msgs = basicSetEcl(newEcl, msgs);
+      if (constraint != null)
+        msgs = ((InternalEObject)constraint).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__CONSTRAINT, null, msgs);
+      if (newConstraint != null)
+        msgs = ((InternalEObject)newConstraint).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - QlPackage.NESTED_FILTER__CONSTRAINT, null, msgs);
+      msgs = basicSetConstraint(newConstraint, msgs);
       if (msgs != null) msgs.dispatch();
     }
     else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.ECL_FILTER__ECL, newEcl, newEcl));
+      eNotify(new ENotificationImpl(this, Notification.SET, QlPackage.NESTED_FILTER__CONSTRAINT, newConstraint, newConstraint));
   }
 
   /**
@@ -132,8 +131,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return basicSetEcl(null, msgs);
+      case QlPackage.NESTED_FILTER__CONSTRAINT:
+        return basicSetConstraint(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -148,8 +147,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return getEcl();
+      case QlPackage.NESTED_FILTER__CONSTRAINT:
+        return getConstraint();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -164,8 +163,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)newValue);
+      case QlPackage.NESTED_FILTER__CONSTRAINT:
+        setConstraint((Constraint)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -181,8 +180,8 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        setEcl((Script)null);
+      case QlPackage.NESTED_FILTER__CONSTRAINT:
+        setConstraint((Constraint)null);
         return;
     }
     super.eUnset(featureID);
@@ -198,10 +197,10 @@ public class EclFilterImpl extends FilterImpl implements EclFilter
   {
     switch (featureID)
     {
-      case QlPackage.ECL_FILTER__ECL:
-        return ecl != null;
+      case QlPackage.NESTED_FILTER__CONSTRAINT:
+        return constraint != null;
     }
     return super.eIsSet(featureID);
   }
 
-} //EclFilterImpl
+} //NestedFilterImpl

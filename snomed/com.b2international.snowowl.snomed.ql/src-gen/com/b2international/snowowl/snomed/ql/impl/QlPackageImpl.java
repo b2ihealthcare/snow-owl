@@ -1,14 +1,14 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -18,10 +18,12 @@ package com.b2international.snowowl.snomed.ql.impl;
 import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
 
 import com.b2international.snowowl.snomed.ql.Conjunction;
+import com.b2international.snowowl.snomed.ql.Constraint;
 import com.b2international.snowowl.snomed.ql.Disjunction;
 import com.b2international.snowowl.snomed.ql.EclFilter;
 import com.b2international.snowowl.snomed.ql.Exclusion;
 import com.b2international.snowowl.snomed.ql.Filter;
+import com.b2international.snowowl.snomed.ql.NestedFilter;
 import com.b2international.snowowl.snomed.ql.QlFactory;
 import com.b2international.snowowl.snomed.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.Query;
@@ -54,21 +56,14 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass disjunctionEClass = null;
+  private EClass constraintEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass conjunctionEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass exclusionEClass = null;
+  private EClass nestedFilterEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -90,6 +85,27 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * @generated
    */
   private EClass termFilterEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass disjunctionEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass conjunctionEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass exclusionEClass = null;
 
   /**
    * Creates an instance of the model <b>Package</b>, registered with
@@ -172,7 +188,7 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getQuery_Disjunction()
+  public EReference getQuery_Constraint()
   {
     return (EReference)queryEClass.getEStructuralFeatures().get(0);
   }
@@ -182,9 +198,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EClass getDisjunction()
+  public EClass getConstraint()
   {
-    return disjunctionEClass;
+    return constraintEClass;
   }
 
   /**
@@ -192,9 +208,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getDisjunction_Left()
+  public EClass getNestedFilter()
   {
-    return (EReference)disjunctionEClass.getEStructuralFeatures().get(0);
+    return nestedFilterEClass;
   }
 
   /**
@@ -202,29 +218,9 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  public EReference getDisjunction_Right()
+  public EReference getNestedFilter_Constraint()
   {
-    return (EReference)disjunctionEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EClass getConjunction()
-  {
-    return conjunctionEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public EClass getExclusion()
-  {
-    return exclusionEClass;
+    return (EReference)nestedFilterEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -282,6 +278,96 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getDisjunction()
+  {
+    return disjunctionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getDisjunction_Left()
+  {
+    return (EReference)disjunctionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getDisjunction_Right()
+  {
+    return (EReference)disjunctionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getConjunction()
+  {
+    return conjunctionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getConjunction_Left()
+  {
+    return (EReference)conjunctionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getConjunction_Right()
+  {
+    return (EReference)conjunctionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getExclusion()
+  {
+    return exclusionEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getExclusion_Left()
+  {
+    return (EReference)exclusionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EReference getExclusion_Right()
+  {
+    return (EReference)exclusionEClass.getEStructuralFeatures().get(1);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public QlFactory getQlFactory()
   {
     return (QlFactory)getEFactoryInstance();
@@ -308,15 +394,12 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     // Create classes and their features
     queryEClass = createEClass(QUERY);
-    createEReference(queryEClass, QUERY__DISJUNCTION);
+    createEReference(queryEClass, QUERY__CONSTRAINT);
 
-    disjunctionEClass = createEClass(DISJUNCTION);
-    createEReference(disjunctionEClass, DISJUNCTION__LEFT);
-    createEReference(disjunctionEClass, DISJUNCTION__RIGHT);
+    constraintEClass = createEClass(CONSTRAINT);
 
-    conjunctionEClass = createEClass(CONJUNCTION);
-
-    exclusionEClass = createEClass(EXCLUSION);
+    nestedFilterEClass = createEClass(NESTED_FILTER);
+    createEReference(nestedFilterEClass, NESTED_FILTER__CONSTRAINT);
 
     filterEClass = createEClass(FILTER);
 
@@ -325,6 +408,18 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     termFilterEClass = createEClass(TERM_FILTER);
     createEAttribute(termFilterEClass, TERM_FILTER__TERM);
+
+    disjunctionEClass = createEClass(DISJUNCTION);
+    createEReference(disjunctionEClass, DISJUNCTION__LEFT);
+    createEReference(disjunctionEClass, DISJUNCTION__RIGHT);
+
+    conjunctionEClass = createEClass(CONJUNCTION);
+    createEReference(conjunctionEClass, CONJUNCTION__LEFT);
+    createEReference(conjunctionEClass, CONJUNCTION__RIGHT);
+
+    exclusionEClass = createEClass(EXCLUSION);
+    createEReference(exclusionEClass, EXCLUSION__LEFT);
+    createEReference(exclusionEClass, EXCLUSION__RIGHT);
   }
 
   /**
@@ -359,23 +454,22 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
     // Set bounds for type parameters
 
     // Add supertypes to classes
-    conjunctionEClass.getESuperTypes().add(this.getDisjunction());
-    exclusionEClass.getESuperTypes().add(this.getConjunction());
-    filterEClass.getESuperTypes().add(this.getExclusion());
+    nestedFilterEClass.getESuperTypes().add(this.getFilter());
+    filterEClass.getESuperTypes().add(this.getConstraint());
     eclFilterEClass.getESuperTypes().add(this.getFilter());
     termFilterEClass.getESuperTypes().add(this.getFilter());
+    disjunctionEClass.getESuperTypes().add(this.getConstraint());
+    conjunctionEClass.getESuperTypes().add(this.getConstraint());
+    exclusionEClass.getESuperTypes().add(this.getConstraint());
 
     // Initialize classes and features; add operations and parameters
     initEClass(queryEClass, Query.class, "Query", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getQuery_Disjunction(), this.getDisjunction(), null, "disjunction", null, 0, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getQuery_Constraint(), this.getConstraint(), null, "constraint", null, 0, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(disjunctionEClass, Disjunction.class, "Disjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getDisjunction_Left(), this.getDisjunction(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getDisjunction_Right(), this.getConjunction(), null, "right", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(constraintEClass, Constraint.class, "Constraint", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(conjunctionEClass, Conjunction.class, "Conjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(exclusionEClass, Exclusion.class, "Exclusion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(nestedFilterEClass, NestedFilter.class, "NestedFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getNestedFilter_Constraint(), this.getConstraint(), null, "constraint", null, 0, 1, NestedFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(filterEClass, Filter.class, "Filter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -384,6 +478,18 @@ public class QlPackageImpl extends EPackageImpl implements QlPackage
 
     initEClass(termFilterEClass, TermFilter.class, "TermFilter", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getTermFilter_Term(), ecorePackage.getEString(), "term", null, 0, 1, TermFilter.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(disjunctionEClass, Disjunction.class, "Disjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getDisjunction_Left(), this.getConstraint(), null, "left", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getDisjunction_Right(), this.getConstraint(), null, "right", null, 0, 1, Disjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(conjunctionEClass, Conjunction.class, "Conjunction", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getConjunction_Left(), this.getConstraint(), null, "left", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getConjunction_Right(), this.getConstraint(), null, "right", null, 0, 1, Conjunction.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(exclusionEClass, Exclusion.class, "Exclusion", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getExclusion_Left(), this.getFilter(), null, "left", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getExclusion_Right(), this.getFilter(), null, "right", null, 0, 1, Exclusion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     // Create resource
     createResource(eNS_URI);

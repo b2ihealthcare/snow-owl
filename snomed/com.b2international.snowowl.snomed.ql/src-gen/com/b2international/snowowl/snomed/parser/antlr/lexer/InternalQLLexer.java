@@ -71,8 +71,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = MINUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:14:7: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
-            // InternalQLLexer.g:14:9: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'S' | 's' )
+            // InternalQLLexer.g:26:7: ( ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'S' | 's' ) )
+            // InternalQLLexer.g:26:9: ( 'M' | 'm' ) ( 'I' | 'i' ) ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'S' | 's' )
             {
             if ( input.LA(1)=='M'||input.LA(1)=='m' ) {
                 input.consume();
@@ -135,8 +135,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = AND;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:16:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
-            // InternalQLLexer.g:16:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
+            // InternalQLLexer.g:28:5: ( ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' ) )
+            // InternalQLLexer.g:28:7: ( 'A' | 'a' ) ( 'N' | 'n' ) ( 'D' | 'd' )
             {
             if ( input.LA(1)=='A'||input.LA(1)=='a' ) {
                 input.consume();
@@ -181,8 +181,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = OR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:18:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
-            // InternalQLLexer.g:18:6: ( 'O' | 'o' ) ( 'R' | 'r' )
+            // InternalQLLexer.g:30:4: ( ( 'O' | 'o' ) ( 'R' | 'r' ) )
+            // InternalQLLexer.g:30:6: ( 'O' | 'o' ) ( 'R' | 'r' )
             {
             if ( input.LA(1)=='O'||input.LA(1)=='o' ) {
                 input.consume();
@@ -218,8 +218,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = Comma;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:20:7: ( ',' )
-            // InternalQLLexer.g:20:9: ','
+            // InternalQLLexer.g:32:7: ( ',' )
+            // InternalQLLexer.g:32:9: ','
             {
             match(','); 
 
@@ -238,8 +238,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_TERM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:22:11: ( 'term' )
-            // InternalQLLexer.g:22:13: 'term'
+            // InternalQLLexer.g:34:11: ( 'term' )
+            // InternalQLLexer.g:34:13: 'term'
             {
             match("term"); 
 
@@ -259,8 +259,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_ECL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:24:10: ( 'ecl' )
-            // InternalQLLexer.g:24:12: 'ecl'
+            // InternalQLLexer.g:36:10: ( 'ecl' )
+            // InternalQLLexer.g:36:12: 'ecl'
             {
             match("ecl"); 
 
@@ -280,11 +280,11 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_TERM_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:26:18: ( '|' (~ ( '|' ) )* '|' )
-            // InternalQLLexer.g:26:20: '|' (~ ( '|' ) )* '|'
+            // InternalQLLexer.g:38:18: ( '|' (~ ( '|' ) )* '|' )
+            // InternalQLLexer.g:38:20: '|' (~ ( '|' ) )* '|'
             {
             match('|'); 
-            // InternalQLLexer.g:26:24: (~ ( '|' ) )*
+            // InternalQLLexer.g:38:24: (~ ( '|' ) )*
             loop1:
             do {
                 int alt1=2;
@@ -297,7 +297,7 @@ public class InternalQLLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // InternalQLLexer.g:26:24: ~ ( '|' )
+            	    // InternalQLLexer.g:38:24: ~ ( '|' )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='{')||(input.LA(1)>='}' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -334,8 +334,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_REVERSED;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:28:15: ( 'R' )
-            // InternalQLLexer.g:28:17: 'R'
+            // InternalQLLexer.g:40:15: ( 'R' )
+            // InternalQLLexer.g:40:17: 'R'
             {
             match('R'); 
 
@@ -354,8 +354,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_TO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:30:9: ( '..' )
-            // InternalQLLexer.g:30:11: '..'
+            // InternalQLLexer.g:42:9: ( '..' )
+            // InternalQLLexer.g:42:11: '..'
             {
             match(".."); 
 
@@ -375,8 +375,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_ZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:32:11: ( '0' )
-            // InternalQLLexer.g:32:13: '0'
+            // InternalQLLexer.g:44:11: ( '0' )
+            // InternalQLLexer.g:44:13: '0'
             {
             match('0'); 
 
@@ -395,8 +395,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_DIGIT_NONZERO;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:34:20: ( '1' .. '9' )
-            // InternalQLLexer.g:34:22: '1' .. '9'
+            // InternalQLLexer.g:46:20: ( '1' .. '9' )
+            // InternalQLLexer.g:46:22: '1' .. '9'
             {
             matchRange('1','9'); 
 
@@ -415,8 +415,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_COLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:36:12: ( ':' )
-            // InternalQLLexer.g:36:14: ':'
+            // InternalQLLexer.g:48:12: ( ':' )
+            // InternalQLLexer.g:48:14: ':'
             {
             match(':'); 
 
@@ -435,8 +435,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_CURLY_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:38:17: ( '{' )
-            // InternalQLLexer.g:38:19: '{'
+            // InternalQLLexer.g:50:17: ( '{' )
+            // InternalQLLexer.g:50:19: '{'
             {
             match('{'); 
 
@@ -455,8 +455,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_CURLY_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:40:18: ( '}' )
-            // InternalQLLexer.g:40:20: '}'
+            // InternalQLLexer.g:52:18: ( '}' )
+            // InternalQLLexer.g:52:20: '}'
             {
             match('}'); 
 
@@ -475,8 +475,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_ROUND_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:42:17: ( '(' )
-            // InternalQLLexer.g:42:19: '('
+            // InternalQLLexer.g:54:17: ( '(' )
+            // InternalQLLexer.g:54:19: '('
             {
             match('('); 
 
@@ -495,8 +495,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_ROUND_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:44:18: ( ')' )
-            // InternalQLLexer.g:44:20: ')'
+            // InternalQLLexer.g:56:18: ( ')' )
+            // InternalQLLexer.g:56:20: ')'
             {
             match(')'); 
 
@@ -515,8 +515,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_OPEN;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:46:18: ( '[' )
-            // InternalQLLexer.g:46:20: '['
+            // InternalQLLexer.g:58:18: ( '[' )
+            // InternalQLLexer.g:58:20: '['
             {
             match('['); 
 
@@ -535,8 +535,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_SQUARE_CLOSE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:48:19: ( ']' )
-            // InternalQLLexer.g:48:21: ']'
+            // InternalQLLexer.g:60:19: ( ']' )
+            // InternalQLLexer.g:60:21: ']'
             {
             match(']'); 
 
@@ -555,8 +555,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_PLUS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:50:11: ( '+' )
-            // InternalQLLexer.g:50:13: '+'
+            // InternalQLLexer.g:62:11: ( '+' )
+            // InternalQLLexer.g:62:13: '+'
             {
             match('+'); 
 
@@ -575,8 +575,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_DASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:52:11: ( '-' )
-            // InternalQLLexer.g:52:13: '-'
+            // InternalQLLexer.g:64:11: ( '-' )
+            // InternalQLLexer.g:64:13: '-'
             {
             match('-'); 
 
@@ -595,8 +595,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_CARET;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:54:12: ( '^' )
-            // InternalQLLexer.g:54:14: '^'
+            // InternalQLLexer.g:66:12: ( '^' )
+            // InternalQLLexer.g:66:14: '^'
             {
             match('^'); 
 
@@ -615,8 +615,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_NOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:56:10: ( '!' )
-            // InternalQLLexer.g:56:12: '!'
+            // InternalQLLexer.g:68:10: ( '!' )
+            // InternalQLLexer.g:68:12: '!'
             {
             match('!'); 
 
@@ -635,8 +635,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_DOT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:58:10: ( '.' )
-            // InternalQLLexer.g:58:12: '.'
+            // InternalQLLexer.g:70:10: ( '.' )
+            // InternalQLLexer.g:70:12: '.'
             {
             match('.'); 
 
@@ -655,8 +655,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_WILDCARD;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:60:15: ( '*' )
-            // InternalQLLexer.g:60:17: '*'
+            // InternalQLLexer.g:72:15: ( '*' )
+            // InternalQLLexer.g:72:17: '*'
             {
             match('*'); 
 
@@ -675,8 +675,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:62:12: ( '=' )
-            // InternalQLLexer.g:62:14: '='
+            // InternalQLLexer.g:74:12: ( '=' )
+            // InternalQLLexer.g:74:14: '='
             {
             match('='); 
 
@@ -695,8 +695,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_NOT_EQUAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:64:16: ( '!=' )
-            // InternalQLLexer.g:64:18: '!='
+            // InternalQLLexer.g:76:16: ( '!=' )
+            // InternalQLLexer.g:76:18: '!='
             {
             match("!="); 
 
@@ -716,8 +716,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:66:9: ( '<' )
-            // InternalQLLexer.g:66:11: '<'
+            // InternalQLLexer.g:78:9: ( '<' )
+            // InternalQLLexer.g:78:11: '<'
             {
             match('<'); 
 
@@ -736,8 +736,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:68:9: ( '>' )
-            // InternalQLLexer.g:68:11: '>'
+            // InternalQLLexer.g:80:9: ( '>' )
+            // InternalQLLexer.g:80:11: '>'
             {
             match('>'); 
 
@@ -756,8 +756,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_DBL_LT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:70:13: ( '<<' )
-            // InternalQLLexer.g:70:15: '<<'
+            // InternalQLLexer.g:82:13: ( '<<' )
+            // InternalQLLexer.g:82:15: '<<'
             {
             match("<<"); 
 
@@ -777,8 +777,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_DBL_GT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:72:13: ( '>>' )
-            // InternalQLLexer.g:72:15: '>>'
+            // InternalQLLexer.g:84:13: ( '>>' )
+            // InternalQLLexer.g:84:15: '>>'
             {
             match(">>"); 
 
@@ -798,8 +798,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_LT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:74:12: ( '<!' )
-            // InternalQLLexer.g:74:14: '<!'
+            // InternalQLLexer.g:86:12: ( '<!' )
+            // InternalQLLexer.g:86:14: '<!'
             {
             match("<!"); 
 
@@ -819,8 +819,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_GT_EM;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:76:12: ( '>!' )
-            // InternalQLLexer.g:76:14: '>!'
+            // InternalQLLexer.g:88:12: ( '>!' )
+            // InternalQLLexer.g:88:14: '>!'
             {
             match(">!"); 
 
@@ -840,8 +840,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_GTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:78:10: ( '>=' )
-            // InternalQLLexer.g:78:12: '>='
+            // InternalQLLexer.g:90:10: ( '>=' )
+            // InternalQLLexer.g:90:12: '>='
             {
             match(">="); 
 
@@ -861,8 +861,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_LTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:80:10: ( '<=' )
-            // InternalQLLexer.g:80:12: '<='
+            // InternalQLLexer.g:92:10: ( '<=' )
+            // InternalQLLexer.g:92:12: '<='
             {
             match("<="); 
 
@@ -882,8 +882,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_HASH;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:82:11: ( '#' )
-            // InternalQLLexer.g:82:13: '#'
+            // InternalQLLexer.g:94:11: ( '#' )
+            // InternalQLLexer.g:94:13: '#'
             {
             match('#'); 
 
@@ -902,8 +902,8 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:84:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
-            // InternalQLLexer.g:84:11: ( ' ' | '\\t' | '\\n' | '\\r' )
+            // InternalQLLexer.g:96:9: ( ( ' ' | '\\t' | '\\n' | '\\r' ) )
+            // InternalQLLexer.g:96:11: ( ' ' | '\\t' | '\\n' | '\\r' )
             {
             if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
                 input.consume();
@@ -930,12 +930,12 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:86:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // InternalQLLexer.g:86:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalQLLexer.g:98:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalQLLexer.g:98:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // InternalQLLexer.g:86:24: ( options {greedy=false; } : . )*
+            // InternalQLLexer.g:98:24: ( options {greedy=false; } : . )*
             loop2:
             do {
                 int alt2=2;
@@ -960,7 +960,7 @@ public class InternalQLLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // InternalQLLexer.g:86:52: .
+            	    // InternalQLLexer.g:98:52: .
             	    {
             	    matchAny(); 
 
@@ -990,12 +990,12 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:88:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // InternalQLLexer.g:88:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalQLLexer.g:100:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalQLLexer.g:100:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // InternalQLLexer.g:88:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalQLLexer.g:100:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop3:
             do {
                 int alt3=2;
@@ -1008,7 +1008,7 @@ public class InternalQLLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // InternalQLLexer.g:88:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalQLLexer.g:100:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -1028,7 +1028,7 @@ public class InternalQLLexer extends Lexer {
                 }
             } while (true);
 
-            // InternalQLLexer.g:88:40: ( ( '\\r' )? '\\n' )?
+            // InternalQLLexer.g:100:40: ( ( '\\r' )? '\\n' )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -1037,9 +1037,9 @@ public class InternalQLLexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // InternalQLLexer.g:88:41: ( '\\r' )? '\\n'
+                    // InternalQLLexer.g:100:41: ( '\\r' )? '\\n'
                     {
-                    // InternalQLLexer.g:88:41: ( '\\r' )?
+                    // InternalQLLexer.g:100:41: ( '\\r' )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -1048,7 +1048,7 @@ public class InternalQLLexer extends Lexer {
                     }
                     switch (alt4) {
                         case 1 :
-                            // InternalQLLexer.g:88:41: '\\r'
+                            // InternalQLLexer.g:100:41: '\\r'
                             {
                             match('\r'); 
 
@@ -1080,10 +1080,10 @@ public class InternalQLLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // InternalQLLexer.g:90:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // InternalQLLexer.g:90:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalQLLexer.g:102:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalQLLexer.g:102:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // InternalQLLexer.g:90:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalQLLexer.g:102:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
@@ -1101,10 +1101,10 @@ public class InternalQLLexer extends Lexer {
             }
             switch (alt8) {
                 case 1 :
-                    // InternalQLLexer.g:90:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalQLLexer.g:102:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // InternalQLLexer.g:90:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalQLLexer.g:102:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop6:
                     do {
                         int alt6=3;
@@ -1120,7 +1120,7 @@ public class InternalQLLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // InternalQLLexer.g:90:21: '\\\\' .
+                    	    // InternalQLLexer.g:102:21: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1128,7 +1128,7 @@ public class InternalQLLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalQLLexer.g:90:28: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalQLLexer.g:102:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1153,10 +1153,10 @@ public class InternalQLLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // InternalQLLexer.g:90:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalQLLexer.g:102:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // InternalQLLexer.g:90:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalQLLexer.g:102:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop7:
                     do {
                         int alt7=3;
@@ -1172,7 +1172,7 @@ public class InternalQLLexer extends Lexer {
 
                         switch (alt7) {
                     	case 1 :
-                    	    // InternalQLLexer.g:90:54: '\\\\' .
+                    	    // InternalQLLexer.g:102:54: '\\\\' .
                     	    {
                     	    match('\\'); 
                     	    matchAny(); 
@@ -1180,7 +1180,7 @@ public class InternalQLLexer extends Lexer {
                     	    }
                     	    break;
                     	case 2 :
-                    	    // InternalQLLexer.g:90:61: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalQLLexer.g:102:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();

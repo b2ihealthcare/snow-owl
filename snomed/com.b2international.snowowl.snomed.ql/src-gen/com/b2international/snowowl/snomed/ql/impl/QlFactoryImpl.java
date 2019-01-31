@@ -1,14 +1,14 @@
 /**
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
- * Licensed under the Apache License, Version 2.0 (the \"License\");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an \"AS IS\" BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -78,12 +78,14 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
     switch (eClass.getClassifierID())
     {
       case QlPackage.QUERY: return createQuery();
-      case QlPackage.DISJUNCTION: return createDisjunction();
-      case QlPackage.CONJUNCTION: return createConjunction();
-      case QlPackage.EXCLUSION: return createExclusion();
+      case QlPackage.CONSTRAINT: return createConstraint();
+      case QlPackage.NESTED_FILTER: return createNestedFilter();
       case QlPackage.FILTER: return createFilter();
       case QlPackage.ECL_FILTER: return createEclFilter();
       case QlPackage.TERM_FILTER: return createTermFilter();
+      case QlPackage.DISJUNCTION: return createDisjunction();
+      case QlPackage.CONJUNCTION: return createConjunction();
+      case QlPackage.EXCLUSION: return createExclusion();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
     }
@@ -105,10 +107,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Disjunction createDisjunction()
+  public Constraint createConstraint()
   {
-    DisjunctionImpl disjunction = new DisjunctionImpl();
-    return disjunction;
+    ConstraintImpl constraint = new ConstraintImpl();
+    return constraint;
   }
 
   /**
@@ -116,21 +118,10 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
    * <!-- end-user-doc -->
    * @generated
    */
-  public Conjunction createConjunction()
+  public NestedFilter createNestedFilter()
   {
-    ConjunctionImpl conjunction = new ConjunctionImpl();
-    return conjunction;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public Exclusion createExclusion()
-  {
-    ExclusionImpl exclusion = new ExclusionImpl();
-    return exclusion;
+    NestedFilterImpl nestedFilter = new NestedFilterImpl();
+    return nestedFilter;
   }
 
   /**
@@ -164,6 +155,39 @@ public class QlFactoryImpl extends EFactoryImpl implements QlFactory
   {
     TermFilterImpl termFilter = new TermFilterImpl();
     return termFilter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Disjunction createDisjunction()
+  {
+    DisjunctionImpl disjunction = new DisjunctionImpl();
+    return disjunction;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Conjunction createConjunction()
+  {
+    ConjunctionImpl conjunction = new ConjunctionImpl();
+    return conjunction;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Exclusion createExclusion()
+  {
+    ExclusionImpl exclusion = new ExclusionImpl();
+    return exclusion;
   }
 
   /**
