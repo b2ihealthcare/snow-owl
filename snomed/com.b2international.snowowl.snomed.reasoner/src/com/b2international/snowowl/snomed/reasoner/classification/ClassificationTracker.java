@@ -71,12 +71,19 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private final class CleanUpTask extends TimerTask {
 
+		private final int maximumReasonerRuns;
+
+		public CleanUpTask(final int maximumReasonerRuns) {
+			this.maximumReasonerRuns = maximumReasonerRuns;
+		}
+
 		@Override
 		public void run() {
 			try {
 				index.write(writer -> {
 
-					final Query<String> query = Query.select(String.class)
+					// Actually remove soft-deleted classifications and related documents
+					final Query<String> deleteQuery = Query.select(String.class)
 							.from(ClassificationTaskDocument.class)
 							.fields(ClassificationTaskDocument.Fields.ID)
 							.where(Expressions.builder()
@@ -85,13 +92,74 @@ public final class ClassificationTracker implements IDisposableService {
 							.limit(Integer.MAX_VALUE)
 							.build();
 
-					deleteClassifications(writer, query);
+					deleteClassifications(writer, deleteQuery);
+					
+					/*
+					 * Select the next set of classifications for removal, keeping the maximum number of
+					 * tasks specified in the configuration file
+					 */
+					final Query<ClassificationTaskDocument> firstNQuery = Query.select(ClassificationTaskDocument.class)
+							.where(Expressions.builder()
+									.filter(ClassificationTaskDocument.Expressions.deleted(false))
+									.build())
+							.sortBy(SortBy.builder()
+									.sortByField(ClassificationTaskDocument.Fields.CREATION_DATE, Order.DESC)
+									.sortByField(ClassificationTaskDocument.Fields.ID, Order.ASC)
+									.build())
+							.limit(maximumReasonerRuns)
+							.build();
+
+					final Hits<ClassificationTaskDocument> firstNTasks = writer.searcher()
+							.search(firstNQuery);
+
+					if (firstNTasks.getTotal() > maximumReasonerRuns) {
+						final ClassificationTaskDocument firstToRemove = Iterables.getLast(firstNTasks);
+						final long endDate = firstToRemove.getCreationDate().getTime();
+
+						final Query<String> markQuery = Query.select(String.class)
+								.from(ClassificationTaskDocument.class)
+								.where(ClassificationTaskDocument.Expressions.created(0L, endDate))
+								.limit(Integer.MAX_VALUE)
+								.build();
+
+						markClassifications(writer, markQuery);
+					}
+
 					writer.commit();
 					return null;
 				});
 
 			} catch (final IllegalStateException e) {
 				cancel();
+			}
+		}
+		
+		private void deleteClassifications(final Writer writer, final Query<String> deleteQuery) throws IOException {
+			final Hits<String> deletedIds = writer.searcher()
+					.search(deleteQuery);
+
+			if (deletedIds.getTotal() > 0) {
+				LOG.trace("Deleting classification tasks: {}", deletedIds);
+
+				writer.bulkDelete(new BulkDelete<>(ClassificationTaskDocument.class, ClassificationTaskDocument.Expressions.ids(deletedIds)));
+				writer.bulkDelete(new BulkDelete<>(EquivalentConceptSetDocument.class, EquivalentConceptSetDocument.Expressions.classificationId(deletedIds)));
+				writer.bulkDelete(new BulkDelete<>(ConcreteDomainChangeDocument.class, ConcreteDomainChangeDocument.Expressions.classificationId(deletedIds)));
+				writer.bulkDelete(new BulkDelete<>(RelationshipChangeDocument.class, RelationshipChangeDocument.Expressions.classificationId(deletedIds)));
+			}
+		}
+		
+		private void markClassifications(final Writer writer, final Query<String> markQuery) throws IOException {
+			final Hits<String> markedIds = writer.searcher()
+					.search(markQuery);
+			
+			if (markedIds.getTotal() > 0) {
+				LOG.trace("Selecting classification tasks for deletion: {}", markedIds);
+				
+				writer.bulkUpdate(new BulkUpdate<>(
+						ClassificationTaskDocument.class, 
+						ClassificationTaskDocument.Expressions.ids(markedIds), 
+						ClassificationTaskDocument.Fields.ID, 
+						ClassificationTaskDocument.Scripts.DELETED));
 			}
 		}
 	}
@@ -105,47 +173,21 @@ public final class ClassificationTracker implements IDisposableService {
 
 		this.index.write(writer -> {
 			// Set classification statuses where a process was interrupted by a shutdown to FAILED
-			updateTasksByStatus(writer, ImmutableSet.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED), 
-					ClassificationTaskDocument.Scripts.FAILED,
+			updateTasksByStatus(writer, 
+					ImmutableSet.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED),	// from 
+					ClassificationTaskDocument.Scripts.FAILED,										// to
 					ImmutableMap.of("completionDate", System.currentTimeMillis()));
 
-			updateTasksByStatus(writer, ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS), 
-					ClassificationTaskDocument.Scripts.SAVE_FAILED,
+			updateTasksByStatus(writer, 
+					ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS),						// from 
+					ClassificationTaskDocument.Scripts.SAVE_FAILED,									// to
 					ImmutableMap.of());
-
-			// Trim the list 
-			final Query<ClassificationTaskDocument> firstNQuery = Query.select(ClassificationTaskDocument.class)
-					.where(Expressions.builder()
-							.filter(ClassificationTaskDocument.Expressions.deleted(false))
-							.build())
-					.sortBy(SortBy.builder()
-							.sortByField(ClassificationTaskDocument.Fields.CREATION_DATE, Order.DESC)
-							.sortByField(ClassificationTaskDocument.Fields.ID, Order.ASC)
-							.build())
-					.limit(maximumReasonerRuns)
-					.build();
-
-			final Hits<ClassificationTaskDocument> firstNTasks = writer.searcher()
-					.search(firstNQuery);
-
-			if (firstNTasks.getTotal() > maximumReasonerRuns) {
-				final ClassificationTaskDocument firstToRemove = Iterables.getLast(firstNTasks);
-				final long endDate = firstToRemove.getCreationDate().getTime();
-
-				final Query<String> deleteQuery = Query.select(String.class)
-						.from(ClassificationTaskDocument.class)
-						.where(ClassificationTaskDocument.Expressions.created(0L, endDate))
-						.limit(Integer.MAX_VALUE)
-						.build();
-
-				deleteClassifications(writer, deleteQuery);
-			}
-
+			
 			writer.commit();
 			return null;
 		});
 
-		this.cleanUp = new CleanUpTask();
+		this.cleanUp = new CleanUpTask(maximumReasonerRuns);
 		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpInterval, cleanUpInterval);
 	}
 
@@ -160,20 +202,6 @@ public final class ClassificationTracker implements IDisposableService {
 				ClassificationTaskDocument.Fields.ID, 
 				script,
 				scriptArgs));
-	}
-
-	private void deleteClassifications(final Writer writer, final Query<String> query) throws IOException {
-		final Hits<String> deletedIds = writer.searcher()
-				.search(query);
-
-		if (deletedIds.getTotal() > 0) {
-			LOG.trace("Purging classification tasks {}", deletedIds);
-
-			writer.bulkDelete(new BulkDelete<>(ClassificationTaskDocument.class, ClassificationTaskDocument.Expressions.ids(deletedIds)));
-			writer.bulkDelete(new BulkDelete<>(EquivalentConceptSetDocument.class, EquivalentConceptSetDocument.Expressions.classificationId(deletedIds)));
-			writer.bulkDelete(new BulkDelete<>(ConcreteDomainChangeDocument.class, ConcreteDomainChangeDocument.Expressions.classificationId(deletedIds)));
-			writer.bulkDelete(new BulkDelete<>(RelationshipChangeDocument.class, RelationshipChangeDocument.Expressions.classificationId(deletedIds)));
-		}
 	}
 
 	@Override
