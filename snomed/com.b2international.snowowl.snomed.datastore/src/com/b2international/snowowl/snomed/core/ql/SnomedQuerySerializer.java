@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import com.b2international.snowowl.snomed.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
  * @since 6.12

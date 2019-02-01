@@ -4,7 +4,7 @@
     modelDirectory="/com.b2international.snowowl.snomed.ql/src-gen" modelPluginID="com.b2international.snowowl.snomed.ql"
     forceOverwrite="true" modelName="QL" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
     complianceLevel="6.0" copyrightFields="false" runtimeVersion="2.12" usedGenPackages="platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.genmodel#//ecl">
-  <genPackages prefix="Ql" basePackage="com.b2international.snowowl.snomed" disposableProviderFactory="true"
+  <genPackages prefix="Ql" basePackage="com.b2international.snowowl.snomed.ql" disposableProviderFactory="true"
       fileExtensions="ql" ecorePackage="QL.ecore#/">
     <genClasses ecoreClass="QL.ecore#//Query">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference QL.ecore#//Query/constraint"/>

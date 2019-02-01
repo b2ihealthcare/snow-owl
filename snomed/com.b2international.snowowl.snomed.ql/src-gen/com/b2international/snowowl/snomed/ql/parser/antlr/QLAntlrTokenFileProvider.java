@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.ql.parser.antlr;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import java.io.InputStream;
+import org.eclipse.xtext.parser.antlr.IAntlrTokenFileProvider;
 
-/**
- * @since 6.12
- */
-public interface SnomedQueryParser {
+public class QLAntlrTokenFileProvider implements IAntlrTokenFileProvider {
 
-	Constraint parse(String expression);
-	
+	@Override
+	public InputStream getAntlrTokenFile() {
+		ClassLoader classLoader = getClass().getClassLoader();
+		return classLoader.getResourceAsStream("com/b2international/snowowl/snomed/ql/parser/antlr/internal/InternalQLParser.tokens");
+	}
 }

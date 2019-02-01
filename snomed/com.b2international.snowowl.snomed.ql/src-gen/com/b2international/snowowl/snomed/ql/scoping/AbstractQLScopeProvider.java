@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.ql.scoping;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ecl.scoping.EclScopeProvider;
 
-/**
- * @since 6.12
- */
-public interface SnomedQueryParser {
-
-	Constraint parse(String expression);
-	
+public abstract class AbstractQLScopeProvider extends EclScopeProvider {
 }

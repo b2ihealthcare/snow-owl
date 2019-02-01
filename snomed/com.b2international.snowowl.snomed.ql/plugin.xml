@@ -4,7 +4,7 @@
 	<extension point="org.eclipse.emf.ecore.generated_package">
 		<package 
 			uri = "http://www.b2international.com/snowowl/snomed/Ql"
-			class = "com.b2international.snowowl.snomed.ql.QlPackage"
-			genModel = "model/generated/Ql.genmodel" />
+			class = "com.b2international.snowowl.snomed.ql.ql.QlPackage"
+			genModel = "model/generated/QL.genmodel" />
 	</extension>
 </plugin>

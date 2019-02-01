@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.ql.validation;
 
-import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ecl.validation.EclValidator;
+import java.util.ArrayList;
+import java.util.List;
+import org.eclipse.emf.ecore.EPackage;
 
-/**
- * @since 6.12
- */
-public interface SnomedQueryParser {
-
-	Constraint parse(String expression);
+public abstract class AbstractQLValidator extends EclValidator {
+	
+	@Override
+	protected List<EPackage> getEPackages() {
+		List<EPackage> result = new ArrayList<EPackage>(super.getEPackages());
+		result.add(com.b2international.snowowl.snomed.ql.ql.QlPackage.eINSTANCE);
+		return result;
+	}
 	
 }

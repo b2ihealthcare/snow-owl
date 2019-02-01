@@ -37,8 +37,8 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.SyntaxException;
-import com.b2international.snowowl.snomed.ql.Disjunction;
-import com.b2international.snowowl.snomed.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
  * @since 6.12
@@ -54,7 +54,7 @@ public class DefaultSnomedQueryParser implements SnomedQueryParser {
 	}
 
 	@Override
-	public Disjunction parse(String expression) {
+	public Constraint parse(String expression) {
 		if (expression == null) {
 			throw new BadRequestException("Expression cannot be null.");
 		} else if (StringUtils.isEmpty(expression)) {
@@ -85,7 +85,7 @@ public class DefaultSnomedQueryParser implements SnomedQueryParser {
 							throw new SyntaxException("QL", errors);
 						}
 					}
-					return dm.getDisjunction();
+					return dm.getConstraint();
 				}
 			}
 		}

@@ -36,11 +36,13 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
-import com.b2international.snowowl.snomed.ql.Conjunction;
-import com.b2international.snowowl.snomed.ql.Disjunction;
-import com.b2international.snowowl.snomed.ql.EclFilter;
-import com.b2international.snowowl.snomed.ql.Exclusion;
-import com.b2international.snowowl.snomed.ql.TermFilter;
+import com.b2international.snowowl.snomed.ql.ql.Conjunction;
+import com.b2international.snowowl.snomed.ql.ql.Constraint;
+import com.b2international.snowowl.snomed.ql.ql.Disjunction;
+import com.b2international.snowowl.snomed.ql.ql.EclFilter;
+import com.b2international.snowowl.snomed.ql.ql.Exclusion;
+import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.TermFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
@@ -65,12 +67,16 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		final Disjunction parseResult = context.service(SnomedQueryParser.class).parse(expression);		
+		final Constraint parseResult = context.service(SnomedQueryParser.class).parse(expression);		
 		return evaluate(context, parseResult);
 	}
 	
 	private Promise<Expression> evaluate(BranchContext context, EObject expression) {
 		return dispatcher.invoke(context, expression);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
+		return evaluate(context, nestedFilter.getConstraint());
 	}
 	
 	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
