@@ -36,13 +36,15 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  */
 @Doc(type="classificationtask")
 @JsonDeserialize(builder=ClassificationTaskDocument.Builder.class)
-@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; ctx._source.timestamp = params.timestamp")
+@Script(name=ClassificationTaskDocument.Scripts.RUNNING, script="ctx._source.status = 'RUNNING'; "
+		+ "ctx._source.timestamp = params.timestamp")
 @Script(name=ClassificationTaskDocument.Scripts.COMPLETED, script="ctx._source.status = 'COMPLETED'; "
 		+ "ctx._source.completionDate = params.completionDate; "
 		+ "ctx._source.hasInferredChanges = params.hasInferredChanges; "
 		+ "ctx._source.hasRedundantStatedChanges = params.hasRedundantStatedChanges; "
 		+ "ctx._source.hasEquivalentConcepts = params.hasEquivalentConcepts")
-@Script(name=ClassificationTaskDocument.Scripts.FAILED, script="ctx._source.status = 'FAILED'; ctx._source.completionDate = params.completionDate")
+@Script(name=ClassificationTaskDocument.Scripts.FAILED, script="ctx._source.status = 'FAILED'; "
+		+ "ctx._source.completionDate = params.completionDate")
 @Script(name=ClassificationTaskDocument.Scripts.DELETED, script="ctx._source.deleted = true")
 @Script(name=ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, script="ctx._source.status = 'SAVING_IN_PROGRESS'")
 @Script(name=ClassificationTaskDocument.Scripts.SAVED, script="ctx._source.status = 'SAVED'; "
