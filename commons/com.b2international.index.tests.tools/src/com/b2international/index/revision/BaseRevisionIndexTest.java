@@ -37,6 +37,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClient;
 import com.b2international.index.Indexes;
+import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Query;
@@ -219,6 +220,7 @@ public abstract class BaseRevisionIndexTest {
 					|| Revision.COMMIT_TIMESTAMP.equals(f.getName()) 
 					|| Revision.BRANCH_PATH.equals(f.getName()) 
 					|| Revision.STORAGE_KEY.equals(f.getName()) 
+					|| WithScore.SCORE.equals(f.getName())
 					|| DocumentMapping._ID.equals(f.getName())) {
 				// skip revision fields from equality check
 				continue;

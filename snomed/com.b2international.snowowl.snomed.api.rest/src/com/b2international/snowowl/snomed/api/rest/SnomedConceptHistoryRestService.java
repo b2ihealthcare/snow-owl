@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.api.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,9 +59,13 @@ public class SnomedConceptHistoryRestService extends AbstractSnomedRestService {
 
 			@ApiParam(value="The concept identifier")
 			@PathVariable(value="conceptId")
-			final String conceptId) {
+			final String conceptId,
+			
+			@ApiParam(value="Accepted language tags, in order of preference")
+			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
+			final String acceptLanguage) {
 
-		return CollectionResource.of(delegate.getHistory(branchPath, conceptId));
+		return CollectionResource.of(delegate.getHistory(branchPath, conceptId, getExtendedLocales(acceptLanguage)));
 	}
 
 }

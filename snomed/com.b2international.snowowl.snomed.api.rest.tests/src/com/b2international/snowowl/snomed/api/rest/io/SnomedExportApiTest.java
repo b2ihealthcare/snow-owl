@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -103,6 +104,7 @@ import com.google.common.collect.Sets;
 public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
+	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(ExtendedLocale.valueOf("en-gb"), ExtendedLocale.valueOf("en-us"));
 	
 	private static void assertArchiveContainsLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
 		
@@ -302,6 +304,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReferenceBranch(branchPath.getPath())
+			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
 		
@@ -312,6 +315,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
 			.setReferenceBranch(branchPath.getPath())
+			.setLocales(LOCALES)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
 		

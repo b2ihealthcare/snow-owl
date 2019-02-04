@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -88,19 +87,22 @@ public class SnomedRf1ConceptExporter extends AbstractSnomedRf1CoreExporter<Snom
 		concept.status = BooleanUtils.toString(doc.isActive());
 		concept.definitionStatus = BooleanUtils.toString(doc.isPrimitive());
 		
-		final LanguageSetting languageSetting = ApplicationContext.getInstance().getService(LanguageSetting.class);
-		IEventBus eventBus = ApplicationContext.getInstance().getService(IEventBus.class);
+		IEventBus bus = ApplicationContext.getInstance().getService(IEventBus.class);
 		
 		try {
 			//fsn
-			SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(doc.getId())
-				.setLocales(languageSetting.getLanguagePreference())
-				.setExpand("fsn()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())
-				.execute(eventBus)
-				.getSync();
-			
-			concept.fsn = snomedConcept.getFsn().getTerm();
+			concept.fsn = SnomedRequests.prepareSearchDescription()
+					.one()
+					.filterByActive(true)
+					.filterByType(Concepts.FULLY_SPECIFIED_NAME)
+					.filterByPreferredIn(getExportContext().getLocales())
+					.filterByConcept(doc.getId())
+					.build(SnomedDatastoreActivator.REPOSITORY_UUID, getExportContext().getCurrentBranchPath().getPath())
+					.execute(bus)
+					.getSync()
+					.first()
+					.map(SnomedDescription::getTerm)
+					.orElse(doc.getId());
 		
 			//inactivation status
 			if (!doc.isActive()) {

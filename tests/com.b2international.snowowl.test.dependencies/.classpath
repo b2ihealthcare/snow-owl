@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="xtend-gen"/>
+	<classpathentry exported="true" kind="lib" path="system-rules-1.18.0.jar" sourcepath="system-rules-1.18.0-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="jukito-1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="contiperf-2.3.2.jar" sourcepath="contiperf-2.3.2-src.zip"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>

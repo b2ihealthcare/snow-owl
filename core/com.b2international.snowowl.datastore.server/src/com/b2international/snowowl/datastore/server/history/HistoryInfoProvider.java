@@ -289,6 +289,7 @@ public enum HistoryInfoProvider {
 				
 				final HistoryInfoDetailsBuilder builder = // 
 						HistoryInfoDetailsBuilderProvider.INSTANCE.getBuilder(configuration.getTerminologyComponentId());
+				builder.configureLocales(configuration.getLocales());
 				details.addAll(builder.buildDetails(currentView, beforeView, commitInfo)); 
 			}
 			

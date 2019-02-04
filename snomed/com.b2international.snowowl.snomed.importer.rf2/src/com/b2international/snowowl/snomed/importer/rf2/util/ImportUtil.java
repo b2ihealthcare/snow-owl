@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -511,31 +510,52 @@ public final class ImportUtil {
 				
 				if (!isEmpty(defects)) {
 					
-					List<String> flattenedDefects = defects.stream()
+					long numberOfDefects = defects.stream()
 						.map( d -> d.getDefects())
 						.flatMap( d -> d.stream())
-						.collect(Collectors.toList());
-					
-					final String message = String.format("Validation encountered %s issue(s).", flattenedDefects.size());
+						.count();
+				
+					final String message = String.format("Validation encountered %s issue(s).", numberOfDefects);
 					LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, message);
 					
-					if (flattenedDefects.size() > 100) {
-						LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, "Logging the first hundred errors...");
-					}
+					// log critical defects first
+					defects.stream()
+						.filter(d -> d.getDefectType().isCritical())
+						.forEach(d -> logDefect(requestingUserId, branchPath, d));
 					
-					flattenedDefects
-						.stream()
-						.limit(100) // FIXME only log the first 100 for now
-						.forEach( d -> LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, d));
+					// log warnings after
+					defects.stream()
+						.filter(d -> !d.getDefectType().isCritical())
+						.forEach(d -> logDefect(requestingUserId, branchPath, d));
 					
 					return defects.stream().noneMatch(d -> d.getDefectType().isCritical());
 				}
 				
 				return true;
 			}
+
 		});
 	}
 
+	private void logDefect(final String requestingUserId, final IBranchPath branchPath, SnomedValidationDefect validationDefect) {
+
+		// log defect label first
+		LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, validationDefect.getDefectType().toString());
+		
+		// log first 100 messages
+		validationDefect.getDefects().stream()
+			.limit(100)
+			.forEach(defectMessage -> {
+				LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, String.format("\t%s", defectMessage));
+			});
+		
+		// log the number of remaining issues
+		if (validationDefect.getDefects().size() > 100) {
+			LogUtils.logImportActivity(IMPORT_LOGGER, requestingUserId, branchPath, String.format("\t... and %s more", validationDefect.getDefects().size() - 100));
+		}
+		
+	}
+	
 	private RevisionIndex getIndex() {
 		return ApplicationContext.getInstance().getService(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(RevisionIndex.class);
 	}

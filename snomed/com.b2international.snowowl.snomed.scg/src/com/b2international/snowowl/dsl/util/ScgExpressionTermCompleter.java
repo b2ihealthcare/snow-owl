@@ -17,6 +17,7 @@ package com.b2international.snowowl.dsl.util;
 
 import org.eclipse.emf.common.util.EList;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.dsl.scg.Attribute;
 import com.b2international.snowowl.dsl.scg.AttributeValue;
@@ -25,9 +26,9 @@ import com.b2international.snowowl.dsl.scg.Expression;
 import com.b2international.snowowl.dsl.scg.Group;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableList;
 
 public class ScgExpressionTermCompleter {
 	
@@ -82,7 +83,7 @@ public class ScgExpressionTermCompleter {
 	private SnomedDescription getPt(String id) {
 		return SnomedRequests.prepareGetConcept(id)
 				.setExpand("pt()")
-				.setLocales(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.setLocales(ImmutableList.of(ExtendedLocale.valueOf("en-sg"), ExtendedLocale.valueOf("en-gb")))
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
 				.getSync().getPt();

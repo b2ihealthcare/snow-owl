@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ public class SnomedServerProtocol extends SignalProtocol<Object> {
 				return new SnomedExportServerIndication(this);
 			case Net4jProtocolConstants.REFSET_TO_DSV_SIGNAL:
 				return new SnomedRefSetDSVExportServerIndication(this);
-			case Net4jProtocolConstants.SNOMED_EXPORT_REFSET_TO_EXCEL_SIGNAL:
-				return new SnomedRefSetExcelExportServerIndication(this);
 			default:
 				return super.createSignalReactor(signalID);
 		}

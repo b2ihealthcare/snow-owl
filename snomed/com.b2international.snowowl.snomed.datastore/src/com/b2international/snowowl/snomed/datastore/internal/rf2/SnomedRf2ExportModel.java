@@ -32,14 +32,10 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.ContentSubType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedMapSetSetting;
-import com.b2international.snowowl.snomed.datastore.request.DescriptionRequestHelper;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
@@ -73,6 +69,7 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 	private String unsetEffectiveTimeLabel;
 	private String codeSystemShortName;
 	private boolean extensionOnly;
+	private String locales;
 
 	public SnomedRf2ExportModel(final String userId, 
 			final Branch branch, 
@@ -219,6 +216,14 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		this.extensionOnly = extensionOnly;
 	}
 	
+	public String getLocales() {
+		return locales;
+	}
+	
+	public void setLocales(String locales) {
+		this.locales = locales;
+	}
+	
 	private String initExportPath() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(System.getProperty("user.home"));
@@ -232,18 +237,16 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 				.filterByActive(true)
 				.filterByConcept(refsetId)
 				.filterByType("<<" + Concepts.SYNONYM)
-				.filterByPreferredIn(ApplicationContext.getServiceForClass(LanguageSetting.class).getLanguagePreference())
+				.filterByPreferredIn("<"+Concepts.REFSET_LANGUAGE_TYPE)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, getClientBranch().path())
 				.execute(ApplicationContext.getServiceForClass(IEventBus.class))
-				.then(new Function<SnomedDescriptions, String>() {
-					@Override public String apply(SnomedDescriptions input) {
-						SnomedDescription pt = Iterables.getOnlyElement(input, null);
-						if (pt == null || Strings.isNullOrEmpty(pt.getTerm())) { 
-							return refsetId; 
-						} else { 
-							return pt.getTerm(); 
-						}
-					};
+				.then(input -> {
+					SnomedDescription pt = Iterables.getOnlyElement(input, null);
+					if (pt == null || Strings.isNullOrEmpty(pt.getTerm())) { 
+						return refsetId; 
+					} else { 
+						return pt.getTerm(); 
+					}
 				})
 				.getSync();
 			
@@ -260,5 +263,5 @@ public final class SnomedRf2ExportModel extends SnomedExportModel {
 		sb.append(".zip");
 		return sb.toString();
 	}
-	
+
 }

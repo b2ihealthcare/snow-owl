@@ -44,7 +44,6 @@ public abstract class Net4jProtocolConstants {
 	public static final short SNOMED_INDEX_SEARCHER_SIGNAL = 205;
 	public static final short SNOMED_REFSET_INDEX_SEARCHER_SIGNAL = 206;
 	public static final short SNOMED_EXPORT_MAP_REFSET_TO_DSV_SIGNAL = 207;
-	public static final short SNOMED_EXPORT_REFSET_TO_EXCEL_SIGNAL = 208;
 	
 	//ICD-10 protocol
 	public static final short ICD10_IMPORT_SIGNAL = 301;

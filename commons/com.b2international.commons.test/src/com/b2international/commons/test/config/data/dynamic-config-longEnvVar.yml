@@ -1,0 +1,5 @@
+
+globalParameter: SOME_PARAM
+
+allParams:
+  longAttribute: ${SOME_ATTRIBUTE}

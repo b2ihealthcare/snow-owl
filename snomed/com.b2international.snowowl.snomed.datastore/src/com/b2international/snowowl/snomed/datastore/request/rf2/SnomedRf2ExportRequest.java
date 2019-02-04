@@ -48,6 +48,7 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.FileUtils;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -82,7 +83,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.b2international.snowowl.snomed.core.lang.LanguageSetting;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -169,6 +169,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	@JsonProperty 
 	private boolean extensionOnly;
+	
+	@JsonProperty
+	@NotEmpty
+	private List<ExtendedLocale> locales;
 
 	SnomedRf2ExportRequest() {}
 
@@ -257,6 +261,10 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 
 	void setExtensionOnly(final boolean extensionOnly) {
 		this.extensionOnly = extensionOnly;
+	}
+	
+	void setLocales(List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
 
 	@Override
@@ -936,12 +944,11 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 			refSetsToLoad = refSets;
 		}
 		
-		final LanguageSetting languageSetting = getServiceForClass(LanguageSetting.class);
 		final SnomedConceptSearchRequestBuilder refSetRequestBuilder = SnomedRequests.prepareSearchConcept()
 				.all()
 				.filterByIds(refSetsToLoad)
 				.setExpand("pt(),referenceSet()")
-				.setLocales(languageSetting.getLanguagePreference());
+				.setLocales(locales);
 
 		final Request<BranchContext, SnomedConcepts> request = refSetRequestBuilder.build();
 		final SnomedConcepts referenceSets = execute(context, currentVersion, request);

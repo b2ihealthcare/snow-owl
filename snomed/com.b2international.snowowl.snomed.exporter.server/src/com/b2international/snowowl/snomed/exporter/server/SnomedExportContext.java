@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ package com.b2international.snowowl.snomed.exporter.server;
 
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.ContentSubType;
@@ -38,6 +40,11 @@ public interface SnomedExportContext {
 	 * @return the client's current branch path.
 	 */
 	IBranchPath getCurrentBranchPath();
+	
+	/**
+	 * @return the locales to use when calculating display terms, preferred terms, etc. 
+	 */
+	List<ExtendedLocale> getLocales();
 	
 	/**
 	 * Returns with the RF2 content subtype for the export.
