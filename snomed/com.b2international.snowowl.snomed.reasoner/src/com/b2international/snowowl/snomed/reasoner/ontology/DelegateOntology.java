@@ -181,10 +181,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 				return endOfData();
 			}
 
-			final long parentId = parentIterator.next();
-			final P childProperty = propertyFactory.apply(childId);
-			final P parentProperty = propertyFactory.apply(parentId);
-			return subPropertyAxiomFactory.apply(childProperty, parentProperty);	
+			if (parentIterator != null) {
+				final long parentId = parentIterator.next();
+				final P childProperty = propertyFactory.apply(childId);
+				final P parentProperty = propertyFactory.apply(parentId);
+				return subPropertyAxiomFactory.apply(childProperty, parentProperty);	
+			}
+			
+			return endOfData();
 		}
 
 		private boolean computeNextApplicableChildId() {
