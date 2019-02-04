@@ -626,13 +626,24 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private LongSet getAllSubTypes(final long ancestorId) {
-		final LongSet subTypes = PrimitiveSets.newLongOpenHashSet();
+		final LongSet allSubTypes = PrimitiveSets.newLongOpenHashSet();
 
 		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			subTypes.addAll(taxonomy.getStatedDescendants()
+			allSubTypes.addAll(taxonomy.getStatedDescendants()
 					.getDestinations(ancestorId, false));
 		}
 
+		return allSubTypes;
+	}
+	
+	private LongSet getSubTypes(final long parentId) {
+		final LongSet subTypes = PrimitiveSets.newLongOpenHashSet();
+		
+		if (taxonomy.getConceptMap().getInternalId(parentId) != InternalIdMap.NO_INTERNAL_ID) {
+			subTypes.addAll(taxonomy.getStatedDescendants()
+					.getDestinations(parentId, true));
+		}
+		
 		return subTypes;
 	}
 
@@ -640,12 +651,16 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		int parentsCount = 0;
 
 		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			for (final LongIterator itr = getAllSubTypes(ancestorId).iterator(); itr.hasNext(); /* empty */) {
-				final int parents = taxonomy.getStatedAncestors()
-						.getDestinations(itr.next(), true)
-						.size();
+			// Get the direct children of the attribute root concept
+			for (final LongIterator directItr = getSubTypes(ancestorId).iterator(); directItr.hasNext(); /* empty */) {
+				// Descendants of each direct child will contribute as many "SubPropertyOf" axioms as they have stated (direct) parents
+				for (final LongIterator descendantItr = getAllSubTypes(directItr.next()).iterator(); descendantItr.hasNext(); /* empty */) {
+					final int parents = taxonomy.getStatedAncestors()
+							.getDestinations(descendantItr.next(), true)
+							.size();
 
-				parentsCount += parents;
+					parentsCount += parents;
+				}
 			}
 		}
 
