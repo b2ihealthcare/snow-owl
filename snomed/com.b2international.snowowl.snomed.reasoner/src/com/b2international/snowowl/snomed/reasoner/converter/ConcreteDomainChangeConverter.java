@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.reasoner.converter;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,12 +43,12 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.id.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
 import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -76,15 +79,30 @@ public final class ConcreteDomainChangeConverter
 	@Override
 	protected ConcreteDomainChange toResource(final ConcreteDomainChangeDocument entry) {
 		final ConcreteDomainChange resource = new ConcreteDomainChange();
-		resource.setChangeNature(entry.getNature());
 		resource.setClassificationId(entry.getClassificationId());
+		resource.setChangeNature(entry.getNature());
 
+		/*
+		 * - Inferred members: ID refers to the "origin" member ID (it will point to a stated or "grouped additional" CD member) 
+		 * - Redundant members: ID refers to the member that should be removed or deactivated
+		 */
 		final SnomedReferenceSetMember concreteDomainMember = new SnomedReferenceSetMember();
-		final SnomedCoreComponent referencedComponent = createReferencedComponent(entry.getReferencedComponentId());
 		concreteDomainMember.setId(entry.getMemberId());
-		concreteDomainMember.setReferencedComponent(referencedComponent);
-		concreteDomainMember.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, entry.getGroup()));
 
+		if (ChangeNature.INFERRED.equals(entry.getNature())) {
+			/*
+			 * Inferences carry information about the group which can differ from the values
+			 * on the "origin" member, so make note of it here. Characteristic type is
+			 * always "inferred".
+			 */
+			concreteDomainMember.setReferencedComponent(createReferencedComponent(entry.getReferencedComponentId()));
+			concreteDomainMember.setProperties(newHashMap());
+			concreteDomainMember.getProperties().put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, entry.getGroup());
+		} else {
+			// Redundant CD members only need the ID and released flag populated to do the delete/inactivation
+			concreteDomainMember.setReleased(entry.isReleased());
+		}
+		
 		resource.setConcreteDomainMember(concreteDomainMember);
 		return resource;
 	}
@@ -110,6 +128,106 @@ public final class ConcreteDomainChangeConverter
 			return;
 		}
 
+		/*
+		 * Depending on the CD member change search request, we might need to issue
+		 * SNOMED CT searches against multiple branches; find out which ones we have.
+		 */
+		final Multimap<String, ConcreteDomainChange> itemsByBranch = getItemsByBranch(results);
+		
+		// Check if we only need to load inferred CD members in their entirety
+		final Options expandOptions = expand().getOptions(ConcreteDomainChange.Expand.CONCRETE_DOMAIN_MEMBER);
+		final boolean inferredOnly = expandOptions.getBoolean("inferredOnly");
+
+		final Options cdMemberExpandOptions = expandOptions.getOptions("expand");
+		
+		final Options referencedComponentOptions = cdMemberExpandOptions.getOptions(REFERENCED_COMPONENT);
+		final boolean needsReferencedComponent = cdMemberExpandOptions.keySet().contains(REFERENCED_COMPONENT);
+
+		for (final String branch : itemsByBranch.keySet()) {
+			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);
+
+			/*
+			 * Expand referenced component on the member currently set on each item first,
+			 * as it might have changed when compared to the "origin" member.
+			 */
+			if (needsReferencedComponent) {
+				final List<SnomedReferenceSetMember> blankMembers = itemsForCurrentBranch.stream()
+						.filter(c -> !inferredOnly || ChangeNature.INFERRED.equals(c.getChangeNature()))
+						.map(ConcreteDomainChange::getConcreteDomainMember)
+						.collect(Collectors.toList());
+
+				final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponent = Multimaps.index(blankMembers, m -> m.getReferencedComponent().getId());
+				final Multimap<ComponentCategory, String> referencedComponentsByCategory = Multimaps.index(membersByReferencedComponent.keySet(), SnomedIdentifiers::getComponentCategory);
+
+				for (final Entry<ComponentCategory, Collection<String>> categoryEntry : referencedComponentsByCategory.asMap().entrySet()) {
+					expandComponentCategory(branch, 
+							categoryEntry.getKey(),
+							categoryEntry.getValue(),
+							referencedComponentOptions, 
+							membersByReferencedComponent);
+				}
+			}
+			
+			// Then fetch all the required members (these will have a referenced component ID that should no longer be copied on inferred members)
+			final Set<String> memberIds = itemsForCurrentBranch.stream()
+					.filter(c -> !inferredOnly || ChangeNature.INFERRED.equals(c.getChangeNature()))
+					.map(c -> c.getConcreteDomainMember().getId())
+					.collect(Collectors.toSet());
+
+			final Request<BranchContext, SnomedReferenceSetMembers> memberSearchRequest = SnomedRequests.prepareSearchMember()
+					.filterByIds(memberIds)
+					.setLimit(memberIds.size())
+					.setExpand(cdMemberExpandOptions)
+					.setLocales(locales())
+					.build();
+
+			final SnomedReferenceSetMembers concreteDomainMembers = new BranchRequest<>(branch, memberSearchRequest).execute(context());
+			final Map<String, SnomedReferenceSetMember> membersByUuid = Maps.uniqueIndex(concreteDomainMembers, SnomedReferenceSetMember::getId);
+
+			/*
+			 * Finally, set the member on the change item, but preserve the "adjusted" properties:
+			 * 
+			 * - inferred referenced component ID
+			 * - inferred relationship group
+			 */
+			for (final ConcreteDomainChange item : itemsForCurrentBranch) {
+				final SnomedReferenceSetMember blankMember = item.getConcreteDomainMember();
+				final String memberUuid = blankMember.getId();
+				final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
+				
+				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
+					
+					blankMember.setActive(true);
+					// blankMember.setModuleId(...) is not set
+					blankMember.setReleased(false);
+					
+					blankMember.setReferenceSetId(expandedMember.getReferenceSetId());
+					blankMember.setType(expandedMember.type());
+					// blankMember.setReferencedComponent(...) is always set
+
+					// Merge properties which are not already present
+					for (final String property : expandedMember.getProperties().keySet()) {
+						if (!blankMember.getProperties().containsKey(property)) {
+							blankMember.getProperties().put(property, expandedMember.getProperties().get(property));
+						}
+					}
+					
+				} else if (!inferredOnly) {
+
+					blankMember.setActive(expandedMember.isActive());
+					// blankMember.setModuleId(...) is not set
+					// blankMember.setReleased(...) is always set
+					
+					blankMember.setReferenceSetId(expandedMember.getReferenceSetId());
+					blankMember.setType(expandedMember.type());
+					blankMember.setReferencedComponent(expandedMember.getReferencedComponent());
+					blankMember.setProperties(expandedMember.getProperties());
+				}
+			}
+		}
+	}
+
+	private Multimap<String, ConcreteDomainChange> getItemsByBranch(final List<ConcreteDomainChange> results) {
 		final Set<String> classificationTaskIds = results.stream()
 				.map(ConcreteDomainChange::getClassificationId)
 				.collect(Collectors.toSet());
@@ -123,69 +241,16 @@ public final class ConcreteDomainChangeConverter
 				.collect(Collectors.toMap(ClassificationTask::getId, ClassificationTask::getBranch));
 
 		final Multimap<String, ConcreteDomainChange> itemsByBranch = Multimaps.index(results, r -> branchesByClassificationIdMap.get(r.getClassificationId()));
-
-		final Options expandOptions = expand().get(ConcreteDomainChange.Expand.CONCRETE_DOMAIN_MEMBER, Options.class);
-		final Options referencedComponentOptions = expandOptions.getOptions(REFERENCED_COMPONENT);
-		final boolean needsReferencedComponent = expandOptions.keySet().remove(REFERENCED_COMPONENT);
-
-		for (final String branch : itemsByBranch.keySet()) {
-			final Collection<ConcreteDomainChange> itemsForCurrentBranch = itemsByBranch.get(branch);
-
-			// Expand referenced component on the initial, "blank" reference set member of each item
-			if (needsReferencedComponent) {
-				final List<SnomedReferenceSetMember> blankMembers = itemsForCurrentBranch.stream()
-						.map(ConcreteDomainChange::getConcreteDomainMember)
-						.collect(Collectors.toList());
-
-				final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponent = Multimaps.index(blankMembers, m -> m.getReferencedComponent().getId());
-				final Multimap<ComponentCategory, String> referencedComponentsByCategory = Multimaps.index(membersByReferencedComponent.keySet(), SnomedIdentifiers::getComponentCategory);
-
-				for (final ComponentCategory category : referencedComponentsByCategory.keySet()) {
-					expandComponentCategory(branch, 
-							referencedComponentOptions, 
-							membersByReferencedComponent, 
-							referencedComponentsByCategory, 
-							category);
-				}
-			}
-			
-			// Then fetch all the members (these will have a referenced component ID that is no longer valid for inferred members)
-			final Set<String> memberIds = itemsForCurrentBranch.stream()
-					.map(c -> c.getConcreteDomainMember().getId())
-					.collect(Collectors.toSet());
-
-			final Request<BranchContext, SnomedReferenceSetMembers> memberSearchRequest = SnomedRequests.prepareSearchMember()
-					.filterByIds(memberIds)
-					.all()
-					.setExpand(expandOptions.get("expand", Options.class))
-					.setLocales(locales())
-					.build();
-
-			final SnomedReferenceSetMembers concreteDomainMembers = new BranchRequest<>(branch, memberSearchRequest).execute(context());
-			final Map<String, SnomedReferenceSetMember> membersByUuid = Maps.uniqueIndex(concreteDomainMembers, SnomedReferenceSetMember::getId);
-
-			// Finally, set the member on the change item, but preserve the "adjusted" version that holds the inferred component target's ID
-			for (final ConcreteDomainChange item : itemsForCurrentBranch) {
-				final String memberUuid = item.getConcreteDomainMember().getId();
-				final SnomedCoreComponent adjustedReferencedComponent = item.getConcreteDomainMember().getReferencedComponent();
-				final int adjustedGroup = (int) item.getConcreteDomainMember().getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
-				final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
-
-				expandedMember.setReferencedComponent(adjustedReferencedComponent);
-				expandedMember.getProperties().put(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, adjustedGroup);
-				item.setConcreteDomainMember(expandedMember);
-			}
-		}
+		return itemsByBranch;
 	}
 
 	// Copied from SnomedReferenceSetMemberConverter
 	private void expandComponentCategory(final String branch,
-			final Options expandOptions,
-			final Multimap<String, SnomedReferenceSetMember> referencedComponentIdToMemberMap,
-			final Multimap<ComponentCategory, String> componentCategoryToIdMap, 
-			final ComponentCategory category) {
+			final ComponentCategory category,
+			final Collection<String> componentIds,
+			final Options componentOptions, 
+			final Multimap<String, SnomedReferenceSetMember> membersByReferencedComponent) {
 
-		final Collection<String> componentIds = componentCategoryToIdMap.get(category);
 		final SearchResourceRequestBuilder<?, BranchContext, ? extends CollectionResource<? extends SnomedCoreComponent>> search = 
 				createSearchRequestBuilder(category);
 
@@ -193,12 +258,13 @@ public final class ConcreteDomainChangeConverter
 			.filterByIds(componentIds)
 			.setLimit(componentIds.size())
 			.setLocales(locales())
-			.setExpand(expandOptions.get("expand", Options.class));
+			.setExpand(componentOptions.get("expand", Options.class));
 
-		final CollectionResource<? extends SnomedCoreComponent> components = new BranchRequest<>(branch, search.build()).execute(context());
+		final CollectionResource<? extends SnomedCoreComponent> components = new BranchRequest<>(branch, search.build())
+			.execute(context());
 
 		for (final SnomedCoreComponent component : components) {
-			for (final SnomedReferenceSetMember member : referencedComponentIdToMemberMap.get(component.getId())) {
+			for (final SnomedReferenceSetMember member : membersByReferencedComponent.get(component.getId())) {
 				((SnomedReferenceSetMember) member).setReferencedComponent(component);
 			}
 		}
