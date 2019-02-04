@@ -62,10 +62,7 @@ IS_CONCEPT_AND_RELATIONSHIPS_ONLY=${false}
 EXPORT_CONFIG_POST_ENDPOINT=""
 
 # The initial name of the export.
-EXPORT_FILE_NAME=""
-
-# The renamed version of the export file.
-RENAMED_EXPORT_FILE=""
+EXPORT_FILE_NAME="snowowl_export"
 
 usage() {
 
@@ -123,20 +120,22 @@ check_if_empty() {
 	fi
 }
 
-export_delta() {
-    echo "Creating snapshot export config"
+initiate_export() {
+    echo "Creating ${EXPORT_TYPE} export config"
     EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
+    echo "${SNOW_OWL_BASE_URL}"
     EXPORT_CONFIG_POST_INPUT='{"branchPath": "MAIN", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
     EXPORT_LOCATION="${SNOW_OWL_BASE_URL}${EXPORT_CONFIG_POST_ENDPOINT}"
 
     echo "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORT_LOCATION}""
 
     EXPORT_UUID="$(curl -u "${SNOW_OWL_USER}:${SNOW_OWL_PASSWORD}" -i -X POST -H "Content-type: ${MEDIA_TYPE}" "${EXPORT_LOCATION}" -d "${EXPORT_CONFIG_POST_INPUT}" | tr -d '\r' | sed -En 's/^Location: (.*)/\1/p')"
-    download_delta
+    download_export_archive
+
 }
 
-download_delta() {
+download_export_archive() {
     EXPORT_DOWNLOAD_GET_ENDPOINT="${EXPORT_UUID}/archive"
 
     echo "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_DOWNLOAD_GET_ENDPOINT}"
@@ -154,7 +153,7 @@ execute() {
 
     EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
 
-    export_delta
+    initiate_export
 
     exit 0
 }
