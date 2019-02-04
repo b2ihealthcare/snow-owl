@@ -95,11 +95,11 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
-		final boolean concreteDomainSupportEnabled = configuration.isConcreteDomainSupported();
+		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
-			taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupportEnabled);
+			taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupported);
 		} catch (final OperationLockException e) {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
@@ -132,7 +132,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		return Boolean.TRUE;
 	}
 
-	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final boolean concreteDomainSupportEnabled) {
+	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final boolean concreteDomainSupported) {
 		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(Concepts.UK_MODULES_NOCLASSIFY);
 		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
@@ -148,7 +148,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
 		taxonomyBuilder.addActiveAxioms(revisionSearcher);
 
-		if (concreteDomainSupportEnabled) {
+		if (concreteDomainSupported) {
 			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
 		}
 
@@ -163,7 +163,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
 		taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
 
-		if (concreteDomainSupportEnabled) {
+		if (concreteDomainSupported) {
 			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
 				.flatMap(c -> c.getMembers().stream());
 			
