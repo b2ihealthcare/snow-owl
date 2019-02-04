@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public final class ConcreteDomainChangeDocument {
 		private String memberId;
 		private String referencedComponentId;
 		private int group;
+		private boolean released;
 
 		@JsonCreator
 		private Builder() {
@@ -94,12 +95,18 @@ public final class ConcreteDomainChangeDocument {
 			return this;
 		}
 		
+		public Builder released(final boolean released) {
+			this.released = released;
+			return this;
+		}
+		
 		public ConcreteDomainChangeDocument build() {
 			return new ConcreteDomainChangeDocument(classificationId, 
 					nature, 
 					memberId, 
 					referencedComponentId,
-					group);
+					group,
+					released);
 		}
 	}
 
@@ -112,18 +119,21 @@ public final class ConcreteDomainChangeDocument {
 	// Values that should be changed on the original member, before saving/presenting it as an inference
 	private final String referencedComponentId;
 	private final int group; 
+	private final boolean released;
 
 	private ConcreteDomainChangeDocument(final String classificationId, 
 			final ChangeNature nature, 
 			final String memberId,
 			final String referencedComponentId, 
-			final int group) {
+			final int group,
+			final boolean released) {
 
 		this.classificationId = classificationId;
 		this.nature = nature;
 		this.memberId = memberId;
 		this.referencedComponentId = referencedComponentId;
 		this.group = group;
+		this.released = released;
 	}
 
 	public String getClassificationId() {
@@ -145,6 +155,10 @@ public final class ConcreteDomainChangeDocument {
 	public int getGroup() {
 		return group;
 	}
+	
+	public boolean isReleased() {
+		return released;
+	}
 
 	@Override
 	public String toString() {
@@ -159,6 +173,8 @@ public final class ConcreteDomainChangeDocument {
 		builder.append(referencedComponentId);
 		builder.append(", group=");
 		builder.append(group);
+		builder.append(", released=");
+		builder.append(released);
 		builder.append("]");
 		return builder.toString();
 	}

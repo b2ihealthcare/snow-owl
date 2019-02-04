@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,21 @@ public class ConcreteDomainFragment implements Serializable {
 	private final int group;
 	private final String serializedValue;
 	private final long typeId;
+	private final boolean released;
 
-	public ConcreteDomainFragment(final String memberId, final long refSetId, final int group, final String serializedValue, final long typeId) {
+	public ConcreteDomainFragment(final String memberId, 
+			final long refSetId, 
+			final int group, 
+			final String serializedValue, 
+			final long typeId, 
+			final boolean released) {
+		
 		this.memberId = memberId;
 		this.refSetId = refSetId;
 		this.group = group;
 		this.serializedValue = serializedValue;
 		this.typeId = typeId;
+		this.released = released;
 	}
 
 	public String getMemberId() {
@@ -57,6 +65,10 @@ public class ConcreteDomainFragment implements Serializable {
 
 	public long getTypeId() {
 		return typeId;
+	}
+	
+	public boolean isReleased() {
+		return released;
 	}
 
 	@Override

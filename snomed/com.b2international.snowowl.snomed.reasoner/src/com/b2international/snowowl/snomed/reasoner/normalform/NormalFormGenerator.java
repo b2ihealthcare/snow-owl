@@ -1,6 +1,6 @@
 /*
  * Copyright 2009 International Health Terminology Standards Development Organisation
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -451,7 +451,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 						property.getRefSetId(),
 						groupNumber,
 						property.getSerializedValue(),
-						property.getTypeId()));
+						property.getTypeId(),
+						property.isReleased()));
 	}
 
 	private Collection<StatementFragment> getTargetRelationships(final long conceptId) {

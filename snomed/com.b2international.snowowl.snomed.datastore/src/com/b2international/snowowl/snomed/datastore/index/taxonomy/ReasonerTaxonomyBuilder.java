@@ -781,12 +781,14 @@ public final class ReasonerTaxonomyBuilder {
 				final String serializedValue = SnomedRefSetUtil.serializeValue(member.getDataType(), member.getValue());
 				final Integer group = member.getRelationshipGroup();
 				final long typeId = Long.parseLong(member.getTypeId());
+				final boolean released = member.isReleased();
 
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(memberId, 
 						refsetId,
 						group,
 						serializedValue,
-						typeId);
+						typeId,
+						released);
 
 				if (Concepts.STATED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					statedFragments.add(fragment);
@@ -855,7 +857,8 @@ public final class ReasonerTaxonomyBuilder {
 							refsetId,
 							group,
 							serializedValue,
-							typeId);
+							typeId,
+							false); // XXX: "injected" CD members will not set this flag correctly, but they should only be used in equivalence checks
 
 					if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 						statedFragments.add(fragment);
