@@ -758,19 +758,22 @@ public final class ReasonerTaxonomyBuilder {
 		final List<ConcreteDomainFragment> statedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<ConcreteDomainFragment> inferredFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<ConcreteDomainFragment> additionalGroupedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final String lastReferencedComponentId = "";
+		String lastReferencedComponentId = "";
 
 		for (final Hits<SnomedRefSetMemberIndexEntry> hits : scrolledHits) {
 			for (final SnomedRefSetMemberIndexEntry member : hits) {
 				final String referencedComponentId = member.getReferencedComponentId();
 
-				if (!lastReferencedComponentId.equals(referencedComponentId)) {
+				if (lastReferencedComponentId.isEmpty()) {
+					lastReferencedComponentId = referencedComponentId;
+				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
 					statedConcreteDomainMembers.putAll(lastReferencedComponentId, statedFragments);
 					inferredConcreteDomainMembers.putAll(lastReferencedComponentId, inferredFragments);
 					additionalGroupedConcreteDomainMembers.putAll(lastReferencedComponentId, additionalGroupedFragments);
 					statedFragments.clear();
 					inferredFragments.clear();
 					additionalGroupedFragments.clear();
+					lastReferencedComponentId = referencedComponentId;
 				}
 
 				final String memberId = member.getId();
@@ -789,7 +792,7 @@ public final class ReasonerTaxonomyBuilder {
 					statedFragments.add(fragment);
 				} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId()) && member.getRelationshipGroup() > 0) {
 					additionalGroupedFragments.add(fragment);
-				} else {
+				} else if (Concepts.INFERRED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					inferredFragments.add(fragment);
 				}
 			}
@@ -817,7 +820,7 @@ public final class ReasonerTaxonomyBuilder {
 		final List<ConcreteDomainFragment> statedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<ConcreteDomainFragment> inferredFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<ConcreteDomainFragment> additionalGroupedFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final String lastReferencedComponentId = "";
+		String lastReferencedComponentId = "";
 
 		for (final List<SnomedReferenceSetMember> chunk : Iterables.partition(sortedMembers::iterator, SCROLL_LIMIT)) {
 			for (final SnomedReferenceSetMember member : chunk) {
@@ -830,13 +833,16 @@ public final class ReasonerTaxonomyBuilder {
 
 					final String referencedComponentId = member.getReferencedComponent().getId();
 
-					if (!lastReferencedComponentId.equals(referencedComponentId)) {
+					if (lastReferencedComponentId.isEmpty()) {
+						lastReferencedComponentId = referencedComponentId;
+					} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
 						statedConcreteDomainMembers.putAll(lastReferencedComponentId, statedFragments);
 						inferredConcreteDomainMembers.putAll(lastReferencedComponentId, inferredFragments);
 						additionalGroupedConcreteDomainMembers.putAll(lastReferencedComponentId, additionalGroupedFragments);
 						statedFragments.clear();
 						inferredFragments.clear();
 						additionalGroupedFragments.clear();
+						lastReferencedComponentId = referencedComponentId;
 					}
 
 					final String memberId = member.getId();
@@ -855,7 +861,7 @@ public final class ReasonerTaxonomyBuilder {
 						statedFragments.add(fragment);
 					} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId) && group > 0) {
 						additionalGroupedFragments.add(fragment);
-					} else {
+					} else if (Concepts.INFERRED_RELATIONSHIP.equals(characteristicTypeId)) {
 						inferredFragments.add(fragment);
 					}
 				}
