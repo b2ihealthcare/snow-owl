@@ -159,6 +159,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private final class SubPropertyAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression<R, P>, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
+		private final long attributeRootId;
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
 		private final BiFunction<P, P, A> subPropertyAxiomFactory;
@@ -166,10 +167,12 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		private long childId = -1L;
 		private LongIterator parentIterator;
 
-		public SubPropertyAxiomIterator(final LongIterator childIterator,
+		public SubPropertyAxiomIterator(final long attributeRootId,
+				final LongIterator childIterator,
 				final LongFunction<P> propertyFactory,
 				final BiFunction<P, P, A> subPropertyAxiomFactory) {
 
+			this.attributeRootId = attributeRootId;
 			this.childIterator = childIterator;
 			this.propertyFactory = propertyFactory;
 			this.subPropertyAxiomFactory = subPropertyAxiomFactory;
@@ -177,39 +180,43 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 
 		@Override
 		protected A computeNext() {
-			if (computeNextApplicableChildId()) {
+			final long parentId = nextApplicableParentId(); 
+			if (parentId == -1L) {
 				return endOfData();
 			}
 
-			if (parentIterator != null) {
-				final long parentId = parentIterator.next();
-				final P childProperty = propertyFactory.apply(childId);
-				final P parentProperty = propertyFactory.apply(parentId);
-				return subPropertyAxiomFactory.apply(childProperty, parentProperty);	
-			}
-			
-			return endOfData();
+			final P childProperty = propertyFactory.apply(childId);
+			final P parentProperty = propertyFactory.apply(parentId);
+			return subPropertyAxiomFactory.apply(childProperty, parentProperty);	
 		}
 
-		private boolean computeNextApplicableChildId() {
-			// Current ID is good if there are more parents to iterate over
-			if (parentIterator != null && parentIterator.hasNext()) {
-				return true;
+		private long nextApplicableParentId() {
+			// Check if there are more parents to return for the current value of "childId"
+			if (parentIterator != null) {
+				while (parentIterator.hasNext()) {
+					final long parentId = parentIterator.next();
+					if (parentId != attributeRootId) {
+						return parentId;
+					}
+				}
 			}
 
-			// Otherwise, return the next child which has parents
+			// Otherwise, look for the next child which has parents
 			while (childIterator.hasNext()) {
 				childId = childIterator.next();
 				parentIterator = taxonomy.getStatedAncestors()
 						.getDestinations(childId, true)
 						.iterator();
 
-				if (parentIterator.hasNext()) {
-					return true;
+				while (parentIterator.hasNext()) {
+					final long parentId = parentIterator.next();
+					if (parentId != attributeRootId) {
+						return parentId;
+					}
 				}
 			}
 
-			return false;
+			return -1L;
 		}
 	}
 
@@ -507,11 +514,17 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	////////////////////////////////////////////
 	
 	private Iterator<OWLSubObjectPropertyOfAxiom> objectAttributeSubPropertyOfAxioms() {
-		return new SubPropertyAxiomIterator<>(objectAttributeIdIterator(), this::getConceptObjectProperty, this::getOWLSubObjectPropertyOfAxiom);
+		return new SubPropertyAxiomIterator<>(objectAttributeId, 
+				objectAttributeIdIterator(), 
+				this::getConceptObjectProperty, 
+				this::getOWLSubObjectPropertyOfAxiom);
 	}
 
 	private Iterator<OWLSubDataPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
-		return new SubPropertyAxiomIterator<>(dataAttributeIdIterator(), this::getConceptDataProperty, this::getOWLSubDataPropertyOfAxiom);
+		return new SubPropertyAxiomIterator<>(dataAttributeId, 
+				dataAttributeIdIterator(), 
+				this::getConceptDataProperty, 
+				this::getOWLSubDataPropertyOfAxiom);
 	}
 
 	///////////////////////////////////////////////////
@@ -550,11 +563,11 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private LongIterator objectAttributeIdIterator() {
-		return getConceptAndSubTypes(objectAttributeId).iterator();
+		return getAllSubTypes(objectAttributeId).iterator();
 	}
 
 	private LongIterator dataAttributeIdIterator() {
-		return getConceptAndSubTypes(dataAttributeId).iterator();
+		return getAllSubTypes(dataAttributeId).iterator();
 	}
 
 	private LongIterator exhaustiveIdIterator() {
@@ -579,7 +592,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int objectAttributeCount() {
-		return getConceptAndSubTypesCount(objectAttributeId);
+		return getAllSubTypesCount(objectAttributeId);
 	}
 
 	private int objectHierarchyCount() {
@@ -587,7 +600,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int dataAttributeCount() {
-		return getConceptAndSubTypesCount(dataAttributeId);
+		return getAllSubTypesCount(dataAttributeId);
 	}
 
 	private int dataHierarchyCount() {
@@ -602,33 +615,32 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 		return (int) taxonomy.getStatedAxioms().valueStream().count();
 	}
 
-	private int getConceptAndSubTypesCount(final long ancestorId) {
+	private int getAllSubTypesCount(final long ancestorId) {
 		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
 			return taxonomy.getStatedDescendants()
 					.getDestinations(ancestorId, false)
-					.size() + 1;
+					.size();
 		} else {
 			return 0;
 		}
 	}
 
-	private LongSet getConceptAndSubTypes(final long ancestorId) {
-		final LongSet conceptAndSubTypes = PrimitiveSets.newLongOpenHashSet();
+	private LongSet getAllSubTypes(final long ancestorId) {
+		final LongSet subTypes = PrimitiveSets.newLongOpenHashSet();
 
 		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			conceptAndSubTypes.add(ancestorId);
-			conceptAndSubTypes.addAll(taxonomy.getStatedDescendants()
+			subTypes.addAll(taxonomy.getStatedDescendants()
 					.getDestinations(ancestorId, false));
 		}
 
-		return conceptAndSubTypes;
+		return subTypes;
 	}
 
 	private int hierarchyCount(final long ancestorId) {
 		int parentsCount = 0;
 
 		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			for (final LongIterator itr = getConceptAndSubTypes(ancestorId).iterator(); itr.hasNext(); /* empty */) {
+			for (final LongIterator itr = getAllSubTypes(ancestorId).iterator(); itr.hasNext(); /* empty */) {
 				final int parents = taxonomy.getStatedAncestors()
 						.getDestinations(itr.next(), true)
 						.size();
