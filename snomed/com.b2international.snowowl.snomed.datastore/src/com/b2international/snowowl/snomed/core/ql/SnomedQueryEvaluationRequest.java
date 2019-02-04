@@ -34,6 +34,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
@@ -84,7 +85,9 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		
 		return SnomedRequests.prepareSearchDescription()
 				.all()
+				.filterByActive(true)
 				.filterByTerm(term)
+				.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 				.build(context.id(), context.branchPath())
 				.execute(context.service(IEventBus.class))
 				.then(descriptions -> {

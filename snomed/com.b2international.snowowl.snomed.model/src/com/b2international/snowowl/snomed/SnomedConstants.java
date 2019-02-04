@@ -386,10 +386,6 @@ public abstract class SnomedConstants {
 		public static final String PRODUCT_TERM_PLURAL = "69701000132106";
 		public static final String SEARCH_TERM = "9221000132108";
 		public static final String SHORT_NAME = "9211000132103";
-		public static final String SIXTY_CHAR_SHORT_NAME = "9251000132104";
-		public static final String INGREDIENT_SYNONYM = "5981000132100";
-		public static final String TRADE_SYNONYM = "5961000132108";
-		public static final String STRENGTH_SYNONYM = "5971000132102";
 		
 		public static final String HAS_PRODUCT_HIERARCHY_LEVEL = "9171000132101";
 		public static final String SUBSTANCE = "105590001";

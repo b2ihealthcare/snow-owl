@@ -25,21 +25,21 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public final class SnomedQueryExpression {
 
-	private final String ql;
+	private final String query;
 	
 	private Promise<Expression> expressionPromise;
 
 	private SnomedQueryExpression(String ql) {
-		this.ql = ql.trim();
+		this.query = ql.trim();
 	}
 	
 	public String getQl() {
-		return ql;
+		return query;
 	}
 	
 	public Promise<Expression> resolveToExpression(final BranchContext context) {
 		if (expressionPromise == null) {
-			expressionPromise = SnomedRequests.prepareQlEvaluation(ql)
+			expressionPromise = SnomedRequests.prepareQlEvaluation(query)
 					.build()
 					.execute(context);
 		}
