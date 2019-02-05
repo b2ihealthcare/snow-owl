@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.ql.validation
 
-import org.eclipse.xtext.validation.Check
-import com.b2international.snowowl.snomed.ql.ql.Disjunction
-import com.b2international.snowowl.snomed.ql.ql.Constraint
 import com.b2international.snowowl.snomed.ql.ql.Conjunction
+import com.b2international.snowowl.snomed.ql.ql.Constraint
+import com.b2international.snowowl.snomed.ql.ql.Disjunction
+import com.b2international.snowowl.snomed.ql.ql.EclFilter
 import com.b2international.snowowl.snomed.ql.ql.Exclusion
 import com.b2international.snowowl.snomed.ql.ql.QlPackage
+import com.b2international.snowowl.snomed.ql.ql.TermFilter
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
@@ -57,6 +59,20 @@ class QLValidator extends AbstractQLValidator {
 			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__LEFT, AMBIGUOUS_CODE)
 		} else if (isAmbiguous(right)) {
 			error(AMBIGUOUS_MESSAGE, it, QlPackage.Literals.CONJUNCTION__RIGHT, AMBIGUOUS_CODE)
+		}
+	}
+	
+	@Check
+	def checkShortTermFilter(TermFilter it) {
+		if (it.term.length < 3) {
+			error("Term filter too short", QlPackage.Literals.TERM_FILTER__TERM)
+		}
+	}
+	
+	@Check
+	def checkEmptyEclFilter(EclFilter it) {
+		if (it.ecl.constraint === null) {
+			error("Ecl expression not specified", QlPackage.Literals.ECL_FILTER__ECL)
 		}
 	}
 	
