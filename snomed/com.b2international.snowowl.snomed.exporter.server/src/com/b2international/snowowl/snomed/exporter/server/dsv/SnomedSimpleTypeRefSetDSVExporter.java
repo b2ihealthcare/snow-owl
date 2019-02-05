@@ -566,7 +566,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					case DATAYPE: {
 						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 						final String typeId = datatypeItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.get(typeId);
+						int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
+						
+						if (occurrences < 1) {
+							break;
+						}
 						
 						final List<String> properties = concept.getMembers()
 								.stream()
