@@ -111,6 +111,10 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestParam(value="ecl", required=false) 
 			final String eclFilter,
 			
+			@ApiParam(value="The SNOMED CT Query expression to match")
+			@RequestParam(value="query", required=false) 
+			final String queryFilter,
+			
 			@ApiParam(value="The scrollKeepAlive to start a scroll using this query")
 			@RequestParam(value="scrollKeepAlive", required=false) 
 			final String scrollKeepAlive,
@@ -154,6 +158,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.filterByDefinitionStatus(definitionStatusFilter)
 					.filterByNamespace(namespaceFilter)
 					.filterByEcl(eclFilter)
+					.filterByQuery(queryFilter)
 					.filterByTerm(termFilter)
 					.filterByDescriptionLanguageRefSet(extendedLocales)
 					.setExpand(expand)
