@@ -281,7 +281,7 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 		final ConcreteDomainChangeSearchRequestBuilder concreteDomainRequestBuilder = ClassificationRequests.prepareSearchConcreteDomainChange()
 				.setLimit(SCROLL_LIMIT)
 				.setScroll(SCROLL_KEEP_ALIVE)
-				.setExpand("concreteDomainMember()")
+				.setExpand("concreteDomainMember(inferredOnly:true)")
 				.filterByClassificationId(classificationId);
 
 		final SearchResourceRequestIterator<ConcreteDomainChangeSearchRequestBuilder, ConcreteDomainChanges> concreteDomainIterator =
@@ -292,8 +292,9 @@ public class SaveJobRequest implements Request<BranchContext, Boolean> {
 			final ConcreteDomainChanges nextChanges = concreteDomainIterator.next();
 
 			final Set<String> conceptIds = nextChanges.stream()
+					.filter(c -> ChangeNature.INFERRED.equals(c.getChangeNature()))
 					.map(ConcreteDomainChange::getConcreteDomainMember)
-					.map(r -> r.getReferencedComponent().getId())
+					.map(m -> m.getReferencedComponent().getId())
 					.collect(Collectors.toSet());
 
 			// Concepts which will be inactivated as part of equivalent concept merging should be excluded
