@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.dsv;
+package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-
-import com.b2international.snowowl.core.api.SnowowlServiceException;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Common interface for reference set DSV exporters.
@@ -31,8 +29,7 @@ public interface IRefSetDSVExporter {
 	 * Executes the DSV export process.
 	 * @param monitor
 	 * @return
-	 * @throws SnowowlServiceException
 	 * @throws IOException 
 	 */
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException, IOException;
+	public File executeDSVExport(IProgressMonitor monitor) throws IOException;
 }
