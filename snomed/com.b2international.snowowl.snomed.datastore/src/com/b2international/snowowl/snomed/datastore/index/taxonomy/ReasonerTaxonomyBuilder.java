@@ -91,6 +91,7 @@ public final class ReasonerTaxonomyBuilder {
 	
 	private static final Set<String> CD_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
 			Concepts.STATED_RELATIONSHIP, 
+			Concepts.ADDITIONAL_RELATIONSHIP,
 			Concepts.INFERRED_RELATIONSHIP);
 	
 	private static final int SCROLL_LIMIT = 50_000;
@@ -902,8 +903,8 @@ public final class ReasonerTaxonomyBuilder {
 				LongCollections.unmodifiableSet(neverGroupedIds),
 				
 				statedConcreteDomainMembers.build(),
-				additionalGroupedConcreteDomainMembers.build(),
 				inferredConcreteDomainMembers.build(),
+				additionalGroupedConcreteDomainMembers.build(),
 				
 				null, 
 				null,
