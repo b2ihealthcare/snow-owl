@@ -34,6 +34,8 @@ import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.datastore.converter.BaseResourceConverter;
 import com.b2international.snowowl.datastore.request.BranchRequest;
+import com.b2international.snowowl.datastore.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -168,7 +170,11 @@ public final class ConcreteDomainChangeConverter
 				}
 			}
 			
-			// Then fetch all the required members (these will have a referenced component ID that should no longer be copied on inferred members)
+			/*
+			 * Then fetch all the required members (these will have a referenced component
+			 * ID that should no longer be copied on inferred members). Note that the same "origin"
+			 * member might be used for multiple inferred counterparts.
+			 */
 			final Set<String> memberIds = itemsForCurrentBranch.stream()
 					.filter(c -> !inferredOnly || ChangeNature.INFERRED.equals(c.getChangeNature()))
 					.map(c -> c.getConcreteDomainMember().getId())
@@ -181,7 +187,10 @@ public final class ConcreteDomainChangeConverter
 					.setLocales(locales())
 					.build();
 
-			final SnomedReferenceSetMembers concreteDomainMembers = new BranchRequest<>(branch, memberSearchRequest).execute(context());
+			final SnomedReferenceSetMembers concreteDomainMembers = new BranchRequest<>(branch, 
+				new RevisionIndexReadRequest<>(memberSearchRequest))
+				.execute(context());
+			
 			final Map<String, SnomedReferenceSetMember> membersByUuid = Maps.uniqueIndex(concreteDomainMembers, SnomedReferenceSetMember::getId);
 
 			/*
@@ -205,7 +214,10 @@ public final class ConcreteDomainChangeConverter
 					blankMember.setType(expandedMember.type());
 					// blankMember.setReferencedComponent(...) is always set
 
-					// Merge properties which are not already present
+					// Inferred CD members always have an inferred characteristic type
+					blankMember.getProperties().put(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.INFERRED_RELATIONSHIP);
+					
+					// Merge all other properties which are not already set
 					for (final String property : expandedMember.getProperties().keySet()) {
 						if (!blankMember.getProperties().containsKey(property)) {
 							blankMember.getProperties().put(property, expandedMember.getProperties().get(property));
@@ -260,7 +272,8 @@ public final class ConcreteDomainChangeConverter
 			.setLocales(locales())
 			.setExpand(componentOptions.get("expand", Options.class));
 
-		final CollectionResource<? extends SnomedCoreComponent> components = new BranchRequest<>(branch, search.build())
+		final CollectionResource<? extends SnomedCoreComponent> components = new BranchRequest<>(branch, 
+			new RevisionIndexReadRequest<>(search.build()))
 			.execute(context());
 
 		for (final SnomedCoreComponent component : components) {
