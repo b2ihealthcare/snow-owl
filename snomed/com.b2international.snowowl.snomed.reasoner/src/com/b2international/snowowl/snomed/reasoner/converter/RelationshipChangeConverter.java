@@ -287,7 +287,8 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 				.setLocales(locales())
 				.build();
 
-		final SnomedConcepts concepts = new BranchRequest<>(branch, conceptSearchRequest)
+		final SnomedConcepts concepts = new BranchRequest<>(branch,
+				new RevisionIndexReadRequest<>(conceptSearchRequest))
 				.execute(context());
 
 		for (final SnomedConcept concept : concepts) {
