@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.reasoner.converter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -53,7 +52,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
- * @since 7.0
+ * @since 6.11 (originally introduced on 7.0)
  */
 public final class RelationshipChangeConverter 
 extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
@@ -187,7 +186,7 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			// Now fetch the rest of the properties for the relationships (except IS As where no ID is recorded)
 			final Set<String> relationshipIds = itemsForCurrentBranch.stream()
 					.filter(rc -> !inferredOnly || ChangeNature.INFERRED.equals(rc.getChangeNature()))
-					.map(rc -> rc.getRelationship().getId())
+					.map(rc -> rc.getRelationship().getOriginId())
 					.filter(id -> id != null)
 					.collect(Collectors.toSet());
 
@@ -205,39 +204,50 @@ extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, Re
 			final Map<String, SnomedRelationship> relationshipsById = Maps.uniqueIndex(relationships, SnomedRelationship::getId);
 
 			for (final RelationshipChange item : itemsForCurrentBranch) {
-				final ReasonerRelationship blankRelationship = item.getRelationship();
-				final String relationshipId = blankRelationship.getId();
-				final Optional<SnomedRelationship> optionalRelationship = Optional.ofNullable(relationshipsById.get(relationshipId));
+				final ReasonerRelationship reasonerRelationship = item.getRelationship();
+				final String originId = reasonerRelationship.getOriginId();
 				
 				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
+
+					if (originId == null) {
+						
+						reasonerRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
+						// reasonerRelationship.setDestination(...) is already set
+						reasonerRelationship.setDestinationNegated(false);
+						// reasonerRelationship.setGroup(...) is already set
+						reasonerRelationship.setModifier(RelationshipModifier.EXISTENTIAL);
+						reasonerRelationship.setReleased(false);
+						// reasonerRelationship.setSource(...) is already set
+						// reasonerRelationship.setType(...) is already set
+						// reasonerRelationship.setUnionGroup(...) is already set
+						
+					} else {
 					
-					blankRelationship.setReleased(false);
-					// blankRelationship.setModuleId(...) is not set
-					// blankRelationship.setSource(...) is always set
-					if (blankRelationship.getType() == null) { blankRelationship.setType(optionalRelationship.get().getType()); }
-					if (blankRelationship.getDestination() == null) { blankRelationship.setDestination(optionalRelationship.get().getDestination()); }
-					blankRelationship.setDestinationNegated(optionalRelationship.map(SnomedRelationship::isDestinationNegated).orElse(false));
-					// blankRelationship.setGroup(...) is always set
-					// blankRelationship.setUnionGroup(...) is always set
-					blankRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
-					// blankRelationship.setMembers(...) is not set at this time (TODO)
-					blankRelationship.setModifier(optionalRelationship.map(SnomedRelationship::getModifier).orElse(RelationshipModifier.EXISTENTIAL));
+						final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
+						reasonerRelationship.setCharacteristicType(CharacteristicType.INFERRED_RELATIONSHIP);
+						reasonerRelationship.setDestination(expandedRelationship.getDestination());
+						reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+						// reasonerRelationship.setGroup(...) is already set
+						reasonerRelationship.setModifier(expandedRelationship.getModifier());
+						reasonerRelationship.setReleased(false);
+						// reasonerRelationship.setSource(...) is already set
+						reasonerRelationship.setType(expandedRelationship.getType());
+						// reasonerRelationship.setUnionGroup(...) is already set
+					}
 					
 				} else if (!inferredOnly) {
 					
-					final SnomedRelationship expandedRelationship = optionalRelationship.get();
+					final SnomedRelationship expandedRelationship = relationshipsById.get(originId);
 					
-					// blankRelationship.setReleased(...) is always set
-					// blankRelationship.setModuleId(...) is not set
-					blankRelationship.setSource(expandedRelationship.getSource());
-					blankRelationship.setType(expandedRelationship.getType());
-					blankRelationship.setDestination(expandedRelationship.getDestination());
-					blankRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
-					blankRelationship.setGroup(expandedRelationship.getGroup());
-					blankRelationship.setUnionGroup(expandedRelationship.getUnionGroup());
-					blankRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
-					// blankRelationship.setMembers(...) is not set at this time (TODO)
-					blankRelationship.setModifier(expandedRelationship.getModifier());
+					reasonerRelationship.setCharacteristicType(expandedRelationship.getCharacteristicType());
+					reasonerRelationship.setDestination(expandedRelationship.getDestination());
+					reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
+					reasonerRelationship.setGroup(expandedRelationship.getGroup());
+					reasonerRelationship.setModifier(expandedRelationship.getModifier());
+					// reasonerRelationship.setReleased(...) is already set
+					reasonerRelationship.setSource(expandedRelationship.getSource());
+					reasonerRelationship.setType(expandedRelationship.getType());
+					reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());
 				}
 			}
 		}

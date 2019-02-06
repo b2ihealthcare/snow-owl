@@ -17,11 +17,10 @@ package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
 
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * @since 7.0
+ * @since 6.11 (originally introduced on 7.0)
  */
 public final class ConcreteDomainChange implements Serializable {
 
@@ -34,7 +33,7 @@ public final class ConcreteDomainChange implements Serializable {
 	
 	private String classificationId;
 	private ChangeNature changeNature;
-	private SnomedReferenceSetMember concreteDomainMember;
+	private ReasonerConcreteDomainMember concreteDomainMember;
 
 	@JsonIgnore
 	public String getClassificationId() {
@@ -53,11 +52,11 @@ public final class ConcreteDomainChange implements Serializable {
 		this.changeNature = changeNature;
 	}
 
-	public SnomedReferenceSetMember getConcreteDomainMember() {
+	public ReasonerConcreteDomainMember getConcreteDomainMember() {
 		return concreteDomainMember;
 	}
 
-	public void setConcreteDomainMember(final SnomedReferenceSetMember concreteDomainMember) {
+	public void setConcreteDomainMember(final ReasonerConcreteDomainMember concreteDomainMember) {
 		this.concreteDomainMember = concreteDomainMember;
 	}
 
