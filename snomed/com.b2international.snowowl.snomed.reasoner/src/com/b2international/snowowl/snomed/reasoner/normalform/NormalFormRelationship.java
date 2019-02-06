@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 International Health Terminology Standards Development Organisation
+ * Copyright 2009-2017 International Health Terminology Standards Development Organisation
  * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +22,17 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.PropertyChain;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
@@ -41,18 +45,24 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	private final StatementFragment fragment;
 	private final ReasonerTaxonomy reasonerTaxonomy;
+	private final Map<Long, NodeGraph> transitiveNodeGraphs;
+	private final boolean useNodeGraphs;
 	
 	/**
 	 * Creates a new instance from the specified relationship.
 	 *
 	 * @param fragment the relationship to wrap (may not be <code>null</code>)
 	 * @param reasonerTaxonomy
+	 * @param transitiveNodeGraphs 
+	 * @param useNodeGraphs 
 	 *
 	 * @throws NullPointerException if the given relationship is <code>null</code>
 	 */
-	public NormalFormRelationship(final StatementFragment fragment, final ReasonerTaxonomy reasonerTaxonomy) {
+	public NormalFormRelationship(final StatementFragment fragment, final ReasonerTaxonomy reasonerTaxonomy, final Map<Long, NodeGraph> transitiveNodeGraphs, final boolean useNodeGraphs) {
 		this.fragment = checkNotNull(fragment, "fragment");
 		this.reasonerTaxonomy = checkNotNull(reasonerTaxonomy, "reasonerTaxonomy");
+		this.transitiveNodeGraphs = checkNotNull(transitiveNodeGraphs, "transitiveNodeGraphs");
+		this.useNodeGraphs = useNodeGraphs;
 	}
 
 	public boolean isDestinationNegated() {
@@ -99,13 +109,38 @@ final class NormalFormRelationship implements NormalFormProperty {
 			/*
 			 * Things same or stronger than (some/all) rA:
 			 *
+			 * Rule 1:
 			 * - (some/all) r'A, where r' is equal to r or is a descendant of r
 			 * - (some/all) rA', where A' is equal to A or is a descendant of A
 			 * - (some/all) r'A', where both of the above applies
+			 * 
+			 * Rule 2:
+			 * Given attribute r, s and t with a property chain SubObjectPropertyOf(ObjectPropertyChain(t s) r),
+			 * and two relationships A and B, A with r = C and B with u = D, within the same role group,
+			 * A is redundant if:
+			 * 		Attribute u is the same as or a subtype of t, and
+			 * 		D has relationship to C via attribute s
 			 */
-			return true
-					&& closureContains(getTypeId(), other.getTypeId()) 
-					&& closureContains(getDestinationId(), other.getDestinationId());
+			if (closureContains(getTypeId(), other.getTypeId()) 
+				&& closureContains(getDestinationId(), other.getDestinationId())) {
+				return true;
+			}
+
+			if (useNodeGraphs) {
+				final Set<PropertyChain> propertyChains = reasonerTaxonomy.getPropertyChains()
+						.stream()
+						.filter(propertyChain -> closureContains(getTypeId(), propertyChain.getSourceType()))
+						.filter(propertyChain -> propertyChain.getInferredType() == other.getTypeId())
+						.collect(Collectors.toSet());
+				
+				for (PropertyChain propertyChain : propertyChains) {
+					if (propertyClosureContains(getDestinationId(), propertyChain.getDestinationType(), other.getDestinationId())) {
+						return true;
+					}
+				}
+			}
+				
+			return false;
 
 		} else if (isDestinationNegated() && !other.isDestinationNegated()) {
 
@@ -144,6 +179,26 @@ final class NormalFormRelationship implements NormalFormProperty {
 					&& closureContains(other.getTypeId(), getTypeId()) 
 					&& closureContains(other.getDestinationId(), getDestinationId());
 		}
+	}
+
+	private boolean propertyClosureContains(long destinationId1, long destinationType, long destinationId2) {
+		// Build closure containing all possible hops using chainDestinationType
+		// For every concept found also add its super types
+
+		NodeGraph nodeGraph = transitiveNodeGraphs.getOrDefault(destinationType, new NodeGraph());
+		
+		if (closureContains(destinationId1, destinationId2)) {
+			return true;
+		}
+		
+		for (LongIterator itr = nodeGraph.getAncestors(destinationId1).iterator(); itr.hasNext(); /* empty */) {
+			long chainNode = itr.next();
+			if (closureContains(chainNode, destinationId2)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	private boolean ancestorsContains(final long conceptId1, final long conceptId2) {

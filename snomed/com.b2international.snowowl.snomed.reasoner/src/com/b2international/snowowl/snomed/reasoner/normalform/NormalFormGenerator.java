@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 International Health Terminology Standards Development Organisation
+ * Copyright 2009-2017 International Health Terminology Standards Development Organisation
  * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,11 @@
  */
 package com.b2international.snowowl.snomed.reasoner.normalform;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,6 +42,7 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.index.taxonomy.PropertyChain;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.classification.INormalFormGenerator;
 import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxonomyInferrer;
@@ -68,7 +71,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 	private final ReasonerTaxonomy reasonerTaxonomy;
 	private final LongKeyMap<Collection<StatementFragment>> statementCache = PrimitiveMaps.newLongKeyOpenHashMap();
 	private final LongKeyMap<Collection<ConcreteDomainFragment>> concreteDomainCache = PrimitiveMaps.newLongKeyOpenHashMap();
-
+	private final Map<Long, NodeGraph> transitiveNodeGraphs = newHashMap();
+	
 	/**
 	 * Creates a new distribution normal form generator instance.
 	 *
@@ -88,6 +92,15 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		LOGGER.info(">>> Distribution normal form generation");
 
+		final Set<Long> graphTypeIds = reasonerTaxonomy.getPropertyChains()
+				.stream()
+				.map(PropertyChain::getDestinationType)
+				.collect(Collectors.toSet());
+
+		// Initialize node graphs for properties we need to traverse
+		LOGGER.info("--- Initializing node graphs for types: {}", graphTypeIds);
+		graphTypeIds.forEach(id -> transitiveNodeGraphs.put(id, new NodeGraph()));
+		
 		final LongList entries = reasonerTaxonomy.getIterationOrder();
 		LongSet previousLayer = null;
 		LongSet currentLayer = PrimitiveSets.newLongOpenHashSet();
@@ -96,6 +109,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 		try {
 
+			// Round 1: build alternative hierarchies
 			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
 				final long conceptId = itr.next();
 
@@ -109,7 +123,38 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 					continue;
 				}
 
-				precomputeProperties(conceptId);
+				precomputeProperties(conceptId, false);
+				
+				final Collection<StatementFragment> inferredNonIsAFragments = statementCache.get(conceptId);
+				inferredNonIsAFragments.stream()
+					.filter(r -> transitiveNodeGraphs.keySet().contains(r.getTypeId()))
+					.forEachOrdered(r -> transitiveNodeGraphs.get(r.getTypeId())
+							.addParent(conceptId, r.getDestinationId()));
+			}
+			
+			// Clear the last layer of concepts
+			previousLayer = null;
+			currentLayer = PrimitiveSets.newLongOpenHashSet();
+			statementCache.clear();
+			concreteDomainCache.clear();
+		
+			LOGGER.info("--- Use property graphs for hierarchy computation");
+			
+			// Round 2: record changes using the hierarchies
+			for (final LongIterator itr = entries.iterator(); itr.hasNext(); /* empty */) {
+				final long conceptId = itr.next();
+
+				if (conceptId == ReasonerTaxonomyInferrer.DEPTH_CHANGE) {
+					if (previousLayer != null) {
+						invalidate(previousLayer);
+					}
+
+					previousLayer = currentLayer;
+					currentLayer = PrimitiveSets.newLongOpenHashSet();
+					continue;
+				}
+
+				precomputeProperties(conceptId, true);
 
 				final Collection<StatementFragment> existingStatements = reasonerTaxonomy.getExistingInferredRelationships().get(conceptId);
 				final Collection<StatementFragment> targetStatements = getTargetRelationships(conceptId);
@@ -138,7 +183,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		concreteDomainCache.keySet().removeAll(keysToInvalidate);
 	}
 
-	private void precomputeProperties(final long conceptId) {
+	private void precomputeProperties(final long conceptId, final boolean useNodeGraphs) {
 		final LongSet parentIds = reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId, true);
 
 		/*
@@ -194,7 +239,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 				ownInferredNonIsaRelationships,
 				ownInferredMembers,
 				candidateNonIsARelationships,
-				candidateMembers);
+				candidateMembers,
+				useNodeGraphs);
 
 		// Extract results; place them in the cache, so following concepts can re-use it
 		statementCache.put(conceptId, ImmutableList.copyOf(relationshipsFromGroupSet(targetGroupSet)));
@@ -206,13 +252,15 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			final Collection<StatementFragment> existingInferredNonIsAFragments,
 			final Collection<ConcreteDomainFragment> existingInferredMembers, 
 			final LongKeyMap<Collection<StatementFragment>> candidateNonIsAFragments, 
-			final LongKeyMap<Collection<ConcreteDomainFragment>> candidateMembers) {
+			final LongKeyMap<Collection<ConcreteDomainFragment>> candidateMembers, 
+			final boolean useNodeGraphs) {
 
 		// Index existing inferred properties into a GroupSet (without redundancy check)
 		final NormalFormGroupSet existingGroupSet = new NormalFormGroupSet();
 		final Iterable<NormalFormGroup> existingGroups = toGroups(true, 
 				existingInferredNonIsAFragments, 
-				existingInferredMembers);
+				existingInferredMembers,
+				useNodeGraphs);
 
 		for (final NormalFormGroup ownInferredGroup : existingGroups) {
 			existingGroupSet.addUnique(ownInferredGroup);
@@ -224,7 +272,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			final long parentId = itr.next();
 			final Iterable<NormalFormGroup> otherGroups = toGroups(false, 
 					candidateNonIsAFragments.get(parentId),
-					candidateMembers.get(parentId));
+					candidateMembers.get(parentId),
+					useNodeGraphs);
 
 			Iterables.addAll(targetGroupSet, otherGroups);
 		}
@@ -232,7 +281,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		// Finally, add the (stated) information from the concept itself
 		final Iterable<NormalFormGroup> ownGroups = toGroups(false,
 				candidateNonIsAFragments.get(conceptId),
-				candidateMembers.get(conceptId));
+				candidateMembers.get(conceptId),
+				useNodeGraphs);
 
 		Iterables.addAll(targetGroupSet, ownGroups);
 
@@ -247,7 +297,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private Iterable<NormalFormGroup> toGroups(final boolean preserveNumbers, 
 			final Collection<StatementFragment> conceptRelationships, 
-			final Collection<ConcreteDomainFragment> conceptMembers) {
+			final Collection<ConcreteDomainFragment> conceptMembers, 
+			final boolean useNodeGraphs) {
 
 		final Multimap<Integer, StatementFragment> relationshipsByGroupId = Multimaps.index(conceptRelationships, StatementFragment::getGroup);
 		final Multimap<Integer, ConcreteDomainFragment> membersByGroupId = Multimaps.index(conceptMembers, ConcreteDomainFragment::getGroup);
@@ -259,7 +310,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			final Collection<StatementFragment> groupRelationships = relationshipsByGroupId.get(key);
 			final Collection<ConcreteDomainFragment> groupMembers = membersByGroupId.get(key);
 
-			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(preserveNumbers, groupRelationships, groupMembers);
+			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(preserveNumbers, groupRelationships, groupMembers, useNodeGraphs);
 			final Iterable<NormalFormUnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
 
 			if (key == 0) {
@@ -290,7 +341,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private Iterable<NormalFormUnionGroup> toUnionGroups(final boolean preserveNumbers, 
 			final Collection<StatementFragment> groupRelationships, 
-			final Collection<ConcreteDomainFragment> groupMembers) {
+			final Collection<ConcreteDomainFragment> groupMembers, 
+			final boolean useNodeGraphs) {
 
 		final Multimap<Integer, StatementFragment> relationshipsByUnionGroupId = Multimaps.index(groupRelationships, StatementFragment::getUnionGroup);
 		final ImmutableList.Builder<NormalFormUnionGroup> unionGroups = ImmutableList.builder();
@@ -306,10 +358,10 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 			if (key == 0) {
 				// Properties in union group 0 form separate union groups
-				unionGroups.addAll(toZeroUnionGroups(unionGroupRelationships, groupMembers));
+				unionGroups.addAll(toZeroUnionGroups(unionGroupRelationships, groupMembers, useNodeGraphs));
 			} else {
 				// Other group numbers produce a single union group from all properties
-				unionGroups.add(toNonZeroUnionGroup(preserveNumbers, key, unionGroupRelationships));
+				unionGroups.add(toNonZeroUnionGroup(preserveNumbers, key, unionGroupRelationships, useNodeGraphs));
 			}
 		}
 
@@ -318,12 +370,13 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private Iterable<NormalFormUnionGroup> toZeroUnionGroups(
 			final Collection<StatementFragment> unionGroupRelationships, 
-			final Collection<ConcreteDomainFragment> unionGroupMembers) {
+			final Collection<ConcreteDomainFragment> unionGroupMembers, 
+			final boolean useNodeGraphs) {
 
 		final ImmutableList.Builder<NormalFormUnionGroup> zeroUnionGroups = ImmutableList.builder();
 
 		for (final StatementFragment unionGroupRelationship : unionGroupRelationships) {
-			final NormalFormRelationship normalFormRelationship = new NormalFormRelationship(unionGroupRelationship, reasonerTaxonomy);
+			final NormalFormRelationship normalFormRelationship = new NormalFormRelationship(unionGroupRelationship, reasonerTaxonomy, transitiveNodeGraphs, useNodeGraphs);
 			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormRelationship));
 		}
 
@@ -337,11 +390,12 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private NormalFormUnionGroup toNonZeroUnionGroup(final boolean preserveNumbers, 
 			final int unionGroupNumber, 
-			final Collection<StatementFragment> unionGroupRelationships) {
+			final Collection<StatementFragment> unionGroupRelationships, 
+			final boolean useNodeGraphs) {
 
 		final Iterable<NormalFormProperty> properties = FluentIterable
 				.from(unionGroupRelationships)
-				.transform(ugr -> new NormalFormRelationship(ugr, reasonerTaxonomy));
+				.transform(ugr -> new NormalFormRelationship(ugr, reasonerTaxonomy, transitiveNodeGraphs, useNodeGraphs));
 
 		final NormalFormUnionGroup unionGroup = new NormalFormUnionGroup(properties);
 		if (preserveNumbers) {

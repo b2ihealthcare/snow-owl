@@ -32,7 +32,10 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -119,6 +122,8 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalIdMap builtConceptMap;
 
+	private ImmutableSet.Builder<PropertyChain> propertyChains;
+
 	public ReasonerTaxonomyBuilder() {
 		this(ImmutableSet.<String>of());
 	}
@@ -200,6 +205,8 @@ public final class ReasonerTaxonomyBuilder {
 		this.additionalGroupedConcreteDomainMembers = ImmutableMultimap.builder();
 		this.inferredConcreteDomainMembers = ImmutableMultimap.builder();
 
+		this.propertyChains = ImmutableSet.builder();
+		
 		return this;
 	}
 
@@ -682,6 +689,28 @@ public final class ReasonerTaxonomyBuilder {
 					lastReferencedComponentId = referencedComponentId;
 				}
 				
+				// SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
+				// TransitiveObjectProperty(:774081006)
+				StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
+				
+				try {
+					String firstToken = tok.nextToken();
+					if ("transitiveobjectproperty".equals(firstToken)) {
+						long propertyId = Long.parseLong(tok.nextToken());
+						propertyChains.add(new PropertyChain(propertyId, propertyId, propertyId));
+					} else if ("subobjectpropertyof".equals(firstToken)) {
+						String nextToken = tok.nextToken();
+						if ("objectpropertychain".equals(nextToken)) {
+							long sourceType = Long.parseLong(tok.nextToken());
+							long destinationType = Long.parseLong(tok.nextToken());
+							long inferredType = Long.parseLong(tok.nextToken());
+							propertyChains.add(new PropertyChain(sourceType, destinationType, inferredType));
+						}
+					}
+				} catch (NoSuchElementException | NumberFormatException e) {
+					// skip
+				}
+				
 				fragments.add(expression);
 			}
 		}
@@ -901,6 +930,7 @@ public final class ReasonerTaxonomyBuilder {
 				
 				statedAxioms.build(),
 				LongCollections.unmodifiableSet(neverGroupedIds),
+				propertyChains.build(),
 				
 				statedConcreteDomainMembers.build(),
 				inferredConcreteDomainMembers.build(),

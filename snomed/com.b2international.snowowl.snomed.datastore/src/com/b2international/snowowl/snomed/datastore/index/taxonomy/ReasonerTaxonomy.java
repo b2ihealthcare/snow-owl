@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Set;
+
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -45,6 +47,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	
 	private final InternalIdMultimap<String> statedAxioms;
 	private final LongSet neverGroupedTypeIds;
+	private Set<PropertyChain> propertyChains;
 	
 	private final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers;
 	private final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers;
@@ -54,7 +57,6 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	private final InternalSctIdSet unsatisfiableConcepts;
 	private final InternalSctIdMultimap equivalentConcepts;
 	private final LongList iterationOrder;
-
 
 	/*package*/ ReasonerTaxonomy(final InternalIdMap conceptMap, 
 			final InternalIdEdges statedAncestors,
@@ -69,6 +71,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 			
 			final InternalIdMultimap<String> statedAxioms,
 			final LongSet neverGroupedTypeIds,
+			final Set<PropertyChain> propertyChains, 
 			
 			final Multimap<String, ConcreteDomainFragment> statedConcreteDomainMembers,
 			final Multimap<String, ConcreteDomainFragment> inferredConcreteDomainMembers,
@@ -92,6 +95,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		
 		this.statedAxioms = statedAxioms;
 		this.neverGroupedTypeIds = neverGroupedTypeIds;
+		this.propertyChains = propertyChains;
 		
 		this.statedConcreteDomainMembers = statedConcreteDomainMembers;
 		this.inferredConcreteDomainMembers = inferredConcreteDomainMembers;
@@ -156,6 +160,10 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	public LongSet getNeverGroupedTypeIds() {
 		return neverGroupedTypeIds;
 	}
+	
+	public Set<PropertyChain> getPropertyChains() {
+		return propertyChains;
+	}
 
 	public Multimap<String, ConcreteDomainFragment> getStatedConcreteDomainMembers() {
 		return statedConcreteDomainMembers;
@@ -201,6 +209,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 				
 				statedAxioms,
 				neverGroupedTypeIds,
+				propertyChains,
 				
 				statedConcreteDomainMembers, 
 				inferredConcreteDomainMembers,
