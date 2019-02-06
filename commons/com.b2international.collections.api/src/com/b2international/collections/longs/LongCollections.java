@@ -36,7 +36,22 @@ public abstract class LongCollections {
 		
 		@Override
 		public boolean add(long value) {
-			throw new UnsupportedOperationException("Can't add value " + value + " to a SingletonLongSet.");
+			throw new UnsupportedOperationException("Can't add value " + value + " to an EmptyLongSet.");
+		}
+	}
+	
+	private static class EmptyLongList extends AbstractLongList implements Serializable {
+		
+		private static final EmptyLongList INSTANCE = new EmptyLongList();
+		
+		@Override
+		public LongListIterator listIterator() {
+			return EmptyLongListIterator.INSTANCE;
+		}
+		
+		@Override
+		public boolean add(long value) {
+			throw new UnsupportedOperationException("Can't add value " + value + " to an EmptyLongList.");
 		}
 	}
 
@@ -57,6 +72,56 @@ public abstract class LongCollections {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+	}
+	
+	private static class EmptyLongListIterator implements LongListIterator, Serializable {
+		
+		private static final EmptyLongListIterator INSTANCE = new EmptyLongListIterator();
+		
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+		
+		@Override
+		public long next() {
+			throw new NoSuchElementException();
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public boolean hasPrevious() {
+			return false;
+		}
+		
+		@Override
+		public long previous() {
+			throw new NoSuchElementException();
+		}
+		
+		@Override
+		public int nextIndex() {
+			return 0;
+		}
+		
+		@Override
+		public int previousIndex() {
+			return -1;
+		}
+		
+		@Override
+		public void add(long value) {
+			throw new UnsupportedOperationException();			
+		}
+		
+		@Override
+		public void set(long value) {
+			throw new UnsupportedOperationException();			
 		}
 	}
 	
@@ -229,6 +294,13 @@ public abstract class LongCollections {
 	 */
 	public static final LongSet emptySet() {
 		return EmptyLongSet.INSTANCE;
+	}
+
+	/**
+	 * @return an unmodifiable, empty {@link LongList}
+	 */
+	public static LongList emptyList() {
+		return EmptyLongList.INSTANCE;
 	}
 
 	/**

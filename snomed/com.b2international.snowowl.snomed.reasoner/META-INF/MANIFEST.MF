@@ -3,25 +3,23 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Reasoner Plug-in
 Bundle-SymbolicName: com.b2international.snowowl.snomed.reasoner;singleton:=true
 Bundle-Version: 6.12.0.qualifier
-Bundle-Activator: com.b2international.snowowl.snomed.reasoner.SnomedReasonerActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
- org.eclipse.core.resources;bundle-version="3.8.1",
- org.eclipse.net4j;bundle-version="[4.1.0,5.0.0)",
  org.protege.editor.owl,
  org.protege.editor.core.application,
  org.protege.common,
  org.semanticweb.owl.owlapi;bundle-version="[3.4.4,4.0.0)",
  com.b2international.snowowl.snomed.datastore,
+ com.b2international.snowowl.snomed.datastore.server,
  com.b2international.snowowl.eventbus
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: com.b2international.snowowl.snomed.reasoner,
- com.b2international.snowowl.snomed.reasoner.classification,
- com.b2international.snowowl.snomed.reasoner.classification.entry,
- com.b2international.snowowl.snomed.reasoner.classification.operation,
+Export-Package: com.b2international.snowowl.snomed.reasoner.classification,
+ com.b2international.snowowl.snomed.reasoner.diff,
+ com.b2international.snowowl.snomed.reasoner.diff.relationship,
+ com.b2international.snowowl.snomed.reasoner.domain,
  com.b2international.snowowl.snomed.reasoner.equivalence,
  com.b2international.snowowl.snomed.reasoner.exceptions,
- com.b2international.snowowl.snomed.reasoner.model,
- com.b2international.snowowl.snomed.reasoner.net4j,
- com.b2international.snowowl.snomed.reasoner.preferences
+ com.b2international.snowowl.snomed.reasoner.ontology,
+ com.b2international.snowowl.snomed.reasoner.request
+Import-Package: org.slf4j

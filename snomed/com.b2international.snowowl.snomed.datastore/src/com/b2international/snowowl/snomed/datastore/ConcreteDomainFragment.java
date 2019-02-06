@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,51 +18,37 @@ package com.b2international.snowowl.snomed.datastore;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.b2international.snowowl.snomed.snomedrefset.DataType;
-
 /**
  * Bare minimum representation of a concrete domain.
+ * 
+ * @since
  */
 public class ConcreteDomainFragment implements Serializable {
 
-	private static final long serialVersionUID = 2L;
-
-	private final String serializedValue;
-	private final long typeId;
-	private final long storageKey;
+	private final String memberId;
 	private final long refSetId;
 	private final int group;
+	private final String serializedValue;
+	private final long typeId;
+	private final boolean released;
 
-	public ConcreteDomainFragment(final String serializedValue, 
-			final long typeId, 
-			final long storageKey, 
+	public ConcreteDomainFragment(final String memberId, 
 			final long refSetId, 
-			final int group) {
+			final int group, 
+			final String serializedValue, 
+			final long typeId, 
+			final boolean released) {
 		
-		this.serializedValue = serializedValue;
-		this.typeId = typeId;
-		this.storageKey = storageKey;
+		this.memberId = memberId;
 		this.refSetId = refSetId;
 		this.group = group;
+		this.serializedValue = serializedValue;
+		this.typeId = typeId;
+		this.released = released;
 	}
 
-	/**
-	 * @return the data type (derived from the reference set SCTID)
-	 */
-	public DataType getDataType() {
-		return SnomedRefSetUtil.getDataType(Long.toString(refSetId));
-	}
-
-	public String getSerializedValue() {
-		return serializedValue;
-	}
-
-	public long getTypeId() {
-		return typeId;
-	}
-
-	public long getStorageKey() {
-		return storageKey;
+	public String getMemberId() {
+		return memberId;
 	}
 
 	public long getRefSetId() {
@@ -73,9 +59,21 @@ public class ConcreteDomainFragment implements Serializable {
 		return group;
 	}
 
+	public String getSerializedValue() {
+		return serializedValue;
+	}
+
+	public long getTypeId() {
+		return typeId;
+	}
+	
+	public boolean isReleased() {
+		return released;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(serializedValue, typeId, storageKey, refSetId, group);
+		return Objects.hash(refSetId, group, serializedValue, typeId);
 	}
 
 	@Override
@@ -86,27 +84,11 @@ public class ConcreteDomainFragment implements Serializable {
 
 		final ConcreteDomainFragment other = (ConcreteDomainFragment) obj;
 
-		if (!Objects.equals(serializedValue, other.serializedValue)) { return false; }
-		if (typeId != other.typeId) { return false; }
-		if (storageKey != other.storageKey) { return false; }
 		if (refSetId != other.refSetId) { return false; }
 		if (group != other.group) { return false; }
+		if (!Objects.equals(serializedValue, other.serializedValue)) { return false; }
+		if (typeId != other.typeId) { return false; }
 
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ConcreteDomainFragment [serializedValue=");
-		builder.append(serializedValue);
-		builder.append(", typeId=");
-		builder.append(typeId);
-		builder.append(", storageKey=");
-		builder.append(storageKey);
-		builder.append(", refSetId=");
-		builder.append(refSetId);
-		builder.append("]");
-		return builder.toString();
 	}
 }

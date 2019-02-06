@@ -47,7 +47,7 @@ public interface ServiceProvider {
 	 * @see DelegatingContext.Builder#build()
 	 */
 	default DelegatingContext.Builder<? extends ServiceProvider> inject() {
-		return new DelegatingContext.Builder<>(this, ServiceProvider.class);
+		return new DelegatingContext.Builder<>(ServiceProvider.class, this);
 	}
 	
 	/**

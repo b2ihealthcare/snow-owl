@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.id.SnomedNamespaceAndModuleAssignerProvider;
+import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssignerProvider;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -77,5 +77,4 @@ public class SnomedCoreBootstrap extends DefaultBootstrapFragment {
 			repository.setWriterPoolCapacity(snomedConfig.getWriterPoolCapacity());
 		}
 	}
-	
 }

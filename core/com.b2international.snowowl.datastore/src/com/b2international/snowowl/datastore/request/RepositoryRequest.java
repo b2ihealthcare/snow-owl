@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.Bindable;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.RepositoryContextProvider;
@@ -49,8 +50,8 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 		// if the previous context is a delegate context, injecting all services can override this safely 
 		repositoryContext.bind(IProgressMonitor.class, new NullProgressMonitor());
 		
-		if (context instanceof DelegatingContext) {
-			repositoryContext.bindAll((DelegatingContext) context);
+		if (context instanceof Bindable) {
+			repositoryContext.bindAll((Bindable) context);
 		}
 		
 		return next(repositoryContext.build());

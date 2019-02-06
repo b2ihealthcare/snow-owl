@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -539,6 +539,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression refSetTypes(Collection<SnomedRefSetType> refSetTypes) {
 			return matchAny(Fields.REFSET_TYPE, FluentIterable.from(refSetTypes).transform(type -> type.name()).toSet());
+		}
+		
+		public static Expression mrcmGrouped(boolean mrcmGrouped) {
+			return match(Fields.MRCM_GROUPED, mrcmGrouped);
 		}
 	}
 

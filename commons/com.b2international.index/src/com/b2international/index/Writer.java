@@ -30,6 +30,8 @@ public interface Writer extends AutoCloseable {
 
 	<T> void bulkUpdate(BulkUpdate<T> update) throws IOException;
 	
+	<T> void bulkDelete(BulkDelete<T> delete) throws IOException;
+	
 	void remove(Class<?> type, String key) throws IOException;
 	
 	void removeAll(Map<Class<?>, Set<String>> keysByType) throws IOException;
