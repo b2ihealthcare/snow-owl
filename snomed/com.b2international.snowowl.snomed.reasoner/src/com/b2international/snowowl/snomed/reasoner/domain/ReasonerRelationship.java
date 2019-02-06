@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.domain;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -24,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 6.11 (originally introduced on 7.0)
  */
-public final class ReasonerRelationship {
+public final class ReasonerRelationship implements Serializable {
 
 	private String originId;
 

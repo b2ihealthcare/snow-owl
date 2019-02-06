@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.reasoner.domain;
 
+import java.io.Serializable;
+
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
@@ -27,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 6.11
  */
-public final class ReasonerConcreteDomainMember {
+public final class ReasonerConcreteDomainMember implements Serializable {
 
 	private String originMemberId;
 	
