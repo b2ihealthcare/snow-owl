@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.AbstractLongIterator;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
@@ -544,22 +543,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 	
 	private LongIterator conceptIdIterator() {
-		return new AbstractLongIterator() {
-			private final LongIterator delegate = taxonomy.getConceptMap().getSctIds();
-
-			@Override
-			protected long computeNext() {
-				while (delegate.hasNext()) {
-					final long candidate = delegate.next();
-					final LongSet allAncestors = taxonomy.getStatedAncestors().getDestinations(candidate, false);
-					if (!allAncestors.contains(objectAttributeId) && !allAncestors.contains(dataAttributeId)) {
-						return candidate;
-					}
-				}
-
-				return endOfData();
-			}
-		};
+		return taxonomy.getConceptMap().getSctIds();
 	}
 
 	private LongIterator objectAttributeIdIterator() {
@@ -586,9 +570,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLO
 	}
 
 	private int conceptCount() {
-		return taxonomy.getConceptMap().size()
-				- objectAttributeCount()
-				- dataAttributeCount();
+		return taxonomy.getConceptMap().size();
 	}
 
 	private int objectAttributeCount() {
