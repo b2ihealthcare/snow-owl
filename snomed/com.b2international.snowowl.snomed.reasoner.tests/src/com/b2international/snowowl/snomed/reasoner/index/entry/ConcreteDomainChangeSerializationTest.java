@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ import org.junit.Test;
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 7.0
  */
-public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
+public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected void configureMapper(final ObjectMapper mapper) {
@@ -39,7 +39,7 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return Collections.singleton(RelationshipChangeDocument.class);
+		return Collections.singleton(ConcreteDomainChangeDocument.class);
 	}
 
 	private static String randomUUID() {
@@ -51,22 +51,19 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 		final String id = randomUUID();
 		final String classificationId = randomUUID();
 
-		final RelationshipChangeDocument expected = RelationshipChangeDocument.builder()
+		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
 				.classificationId(classificationId)
-				.sourceId("sourceId")
-				.typeId("typeId")
-				.destinationId("destinationId")
 				.group(1)
-				.unionGroup(2)
+				.memberId(randomUUID())
 				.nature(ChangeNature.INFERRED)
-				.released(true)
-				.relationshipId("12345678901")
+				.referencedComponentId("12345678901")
+				.released(false)
 				.build();
 
 		indexDocument(id, expected);
 
-		final RelationshipChangeDocument actual = rawIndex()
-				.read(r -> r.get(RelationshipChangeDocument.class, id));
+		final ConcreteDomainChangeDocument actual = rawIndex()
+				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
 		assertDocEquals(expected, actual);
 	}
 }
