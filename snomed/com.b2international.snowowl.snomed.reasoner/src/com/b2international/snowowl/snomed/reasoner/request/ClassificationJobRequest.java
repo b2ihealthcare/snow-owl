@@ -93,6 +93,25 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 
 		tracker.classificationRunning(classificationId, headTimestamp);
 
+		try {
+			executeClassification(context, classificationId, userId, branch, tracker);
+		} catch (final ReasonerApiException e) {
+			tracker.classificationFailed(classificationId);
+			throw e;
+		} catch (final Exception e) {
+			tracker.classificationFailed(classificationId);
+			throw new ReasonerApiException("Exception caught while running classification.", e);
+		}
+
+		return Boolean.TRUE;
+	}
+
+	private void executeClassification(final BranchContext context, 
+			final String classificationId, 
+			final String userId,
+			final Branch branch, 
+			final ClassificationTracker tracker) {
+		
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
@@ -101,10 +120,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
 			taxonomy = buildTaxonomy(revisionSearcher, concreteDomainSupported);
 		} catch (final OperationLockException e) {
-			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		} catch (final InterruptedException e) {
-			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Thread interrupted while acquiring exclusive access to terminology store for classification.", e);
 		}
 		
@@ -122,14 +139,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 			tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
 
 		} catch (final OWLOntologyCreationException e) {
-			tracker.classificationFailed(classificationId);
-			throw new ReasonerApiException("Caught exception while creating ontology instance.", e);
-		} catch (final ReasonerApiException e) {
-			tracker.classificationFailed(classificationId);
-			throw e;
+			throw new ReasonerApiException("Exception caught while creating ontology instance.", e);
 		}
-
-		return Boolean.TRUE;
 	}
 
 	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final boolean concreteDomainSupported) {
