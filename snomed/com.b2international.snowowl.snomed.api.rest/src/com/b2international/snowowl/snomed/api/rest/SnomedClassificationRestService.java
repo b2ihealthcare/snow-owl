@@ -94,15 +94,15 @@ public class SnomedClassificationRestService extends AbstractSnomedRestService {
 	@RequestMapping(value="/classifications", method=RequestMethod.GET)
 	public @ResponseBody DeferredResult<ClassificationTasks> getAllClassificationRuns(
 			@ApiParam(value="The branch path")
-			@RequestParam(value="branch") 
+			@RequestParam(value="branch", required=false) 
 			final String branch,
 			
 			@ApiParam(value="The classification status")
-			@RequestParam(value="status") 
+			@RequestParam(value="status", required=false) 
 			final ClassificationStatus status,
 
 			@ApiParam(value="The user identifier")
-			@RequestParam(value="userId") 
+			@RequestParam(value="userId", required=false) 
 			final String userId) {
 
 		return DeferredResults.wrap(ClassificationRequests.prepareSearchClassification()
