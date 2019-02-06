@@ -134,55 +134,60 @@ public final class ReasonerTaxonomyInferrer {
 	public ReasonerTaxonomy addInferences(final ReasonerTaxonomy taxonomy) {
 		LOGGER.info(">>> Taxonomy extraction");
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		
-		Deque<Node<OWLClass>> firstLayer = new LinkedList<Node<OWLClass>>();
-		Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
-		final Set<Node<OWLClass>> deferredNodes = newHashSet();
-		
-		final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
-		final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
-		firstLayer.addAll(initialNodes);
-		
-		processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
-		iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
+		try {
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			
+			Deque<Node<OWLClass>> firstLayer = new LinkedList<Node<OWLClass>>();
+			Deque<Node<OWLClass>> secondLayer = new LinkedList<Node<OWLClass>>();
+			final Set<Node<OWLClass>> deferredNodes = newHashSet();
+			
+			final NodeSet<OWLClass> initialSubClasses = reasoner.getSubClasses(ontology.getOWLThing(), true);
+			final Set<Node<OWLClass>> initialNodes = initialSubClasses.getNodes();
+			firstLayer.addAll(initialNodes);
+			
+			processedConceptIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(EXPECTED_SIZE);
+			iterationOrder = PrimitiveLists.newLongArrayListWithExpectedSize(EXPECTED_SIZE);
 
-		final InternalIdMap conceptMap = taxonomy.getConceptMap();
-		inferredAncestors = InternalIdEdges.builder(conceptMap);
-		unsatisfiableConcepts = InternalSctIdSet.builder(conceptMap);
-		equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
+			final InternalIdMap conceptMap = taxonomy.getConceptMap();
+			inferredAncestors = InternalIdEdges.builder(conceptMap);
+			unsatisfiableConcepts = InternalSctIdSet.builder(conceptMap);
+			equivalentConcepts = InternalSctIdMultimap.builder(conceptMap);
 
-		// Breadth-first walk through the class hierarchy
-		while (!firstLayer.isEmpty()) {
-			final Node<OWLClass> current = firstLayer.removeFirst();
-			deferredNodes.remove(current);
-			final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
-			final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
-			secondLayer.addAll(nextNodes);
-		
-			if (firstLayer.isEmpty()) {
-				// Indicate that the previous set of caches can be emptied
-				if (deferredNodes.isEmpty()) {
-					iterationOrder.add(DEPTH_CHANGE);
-				}
-		
-				// Swap the role of the two layers
-				if (!secondLayer.isEmpty()) {
-					Deque<Node<OWLClass>> temp = firstLayer;
-					firstLayer = secondLayer;
-					secondLayer = temp;
+			// Breadth-first walk through the class hierarchy
+			while (!firstLayer.isEmpty()) {
+				final Node<OWLClass> current = firstLayer.removeFirst();
+				deferredNodes.remove(current);
+				final NodeSet<OWLClass> nextNodeSet = processNode(current, deferredNodes);
+				final Set<Node<OWLClass>> nextNodes = nextNodeSet.getNodes();
+				secondLayer.addAll(nextNodes);
+			
+				if (firstLayer.isEmpty()) {
+					// Indicate that the previous set of caches can be emptied
+					if (deferredNodes.isEmpty()) {
+						iterationOrder.add(DEPTH_CHANGE);
+					}
+			
+					// Swap the role of the two layers
+					if (!secondLayer.isEmpty()) {
+						Deque<Node<OWLClass>> temp = firstLayer;
+						firstLayer = secondLayer;
+						secondLayer = temp;
+					}
 				}
 			}
+
+			processedConceptIds = null;
+
+			LOGGER.info("<<< Taxonomy extraction [{}]", stopwatch.stop());
+
+			return taxonomy.withInferences(inferredAncestors.build(), 
+					unsatisfiableConcepts.build(), 
+					equivalentConcepts.build(),
+					iterationOrder);
+			
+		} finally {
+			reasoner.dispose();
 		}
-
-		processedConceptIds = null;
-
-		LOGGER.info("<<< Taxonomy extraction [{}]", stopwatch.stop());
-
-		return taxonomy.withInferences(inferredAncestors.build(), 
-				unsatisfiableConcepts.build(), 
-				equivalentConcepts.build(),
-				iterationOrder);
 	}
 
 	private NodeSet<OWLClass> processNode(final Node<OWLClass> node, Set<Node<OWLClass>> deferredNodes) {
