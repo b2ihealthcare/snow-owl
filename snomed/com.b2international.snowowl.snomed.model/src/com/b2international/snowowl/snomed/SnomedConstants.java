@@ -387,6 +387,7 @@ public abstract class SnomedConstants {
 		public static final String PRODUCT_TERM_PLURAL = "69701000132106";
 		public static final String SEARCH_TERM = "9221000132108";
 		public static final String SHORT_NAME = "9211000132103";
+		
 		public static final String HAS_PRODUCT_HIERARCHY_LEVEL = "9171000132101";
 		public static final String SUBSTANCE = "105590001";
 		public static final String HAS_COMPONENT = "246093002";
