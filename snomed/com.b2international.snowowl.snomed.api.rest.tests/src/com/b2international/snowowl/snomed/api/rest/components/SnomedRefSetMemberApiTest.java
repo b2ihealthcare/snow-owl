@@ -738,7 +738,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.put(SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", queryRefSetId)
 				.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId)
-				.put(SnomedRf2Headers.FIELD_QUERY, "<" + Concepts.REFSET_ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_QUERY, "ecl " + "<" + Concepts.REFSET_ROOT_CONCEPT)
 				.put("commitComment", "Created new query reference set member")
 				.build();
 
@@ -775,7 +775,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.put(SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", queryRefSetId)
 				.put(SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId)
-				.put(SnomedRf2Headers.FIELD_QUERY, "<" + parentId)
+				.put(SnomedRf2Headers.FIELD_QUERY, "ecl " + "<" + parentId)
 				.put("commitComment", "Created new query reference set member")
 				.build();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.dsv;
+package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -32,18 +31,13 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
-import org.eclipse.net4j.util.om.monitor.OMMonitor.Async;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
-import com.b2international.snowowl.datastore.BranchPathUtils;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
@@ -51,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
@@ -82,37 +75,36 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
 	
+	private final BranchContext context;
+	
 	private String refSetId;
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipId;
 	private boolean includeInactiveMembers;
 	private Collection<AbstractSnomedDsvExportItem> exportItems;
 	private List<ExtendedLocale> locales;
-	private IBranchPath branchPath;
-	private String exportPath;
 	private Joiner joiner;
 	private String lineSeparator;
 	
 	private Map<String, Integer> descriptionCount; // maximum number of descriptions by type
 	private Map<Integer, Map<String, Integer>> propertyCount; // maximum number of properties by group and type
 
+
 	/**
 	 * Creates a new instance with the export parameters.
 	 * 
 	 * @param exportSetting
 	 */
-	public SnomedSimpleTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
-		refSetId = exportSetting.getRefSetId();
-		includeDescriptionId = exportSetting.includeDescriptionId();
-		includeRelationshipId = exportSetting.includeRelationshipTargetId();
-		includeInactiveMembers = exportSetting.includeInactiveMembers();
-		exportItems = exportSetting.getExportItems();
-		locales = exportSetting.getLocales();
-		branchPath = BranchPathUtils.createPath(exportSetting.getBranchPath());
-		exportPath = exportSetting.getExportPath();
-		
-		joiner = Joiner.on(exportSetting.getDelimiter());
-		lineSeparator = System.getProperty("line.separator");
+	public SnomedSimpleTypeRefSetDSVExporter(final BranchContext context, final SnomedRefSetDSVExportModel exportSetting) {
+		this.refSetId = exportSetting.getRefSetId();
+		this.includeDescriptionId = exportSetting.includeDescriptionId();
+		this.includeRelationshipId = exportSetting.includeRelationshipTargetId();
+		this.includeInactiveMembers = exportSetting.includeInactiveMembers();
+		this.exportItems = exportSetting.getExportItems();
+		this.locales = exportSetting.getLocales();
+		this.context = context;
+		this.joiner = Joiner.on(exportSetting.getDelimiter());
+		this.lineSeparator = System.lineSeparator();
 	}
 
 	/**
@@ -120,49 +112,23 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	 * 
 	 * @param monitor
 	 * @return The file with the exported values.
-	 * @throws SnowowlServiceException
 	 */
 	@Override
-	public File executeDSVExport(OMMonitor monitor) throws SnowowlServiceException, IOException {
-
-		monitor.begin(100);
-		Async async = monitor.forkAsync(80);
-		OMMonitor remainderMonitor = null;
-		Path exportPath = getExportPath();
-		
+	public File executeDSVExport(IProgressMonitor monitor) throws IOException {
+		monitor.beginTask("Export RefSet to DSV...", 100);
+		Path exportPath = Files.createTempFile("dsv-export-" + refSetId + Dates.now(), ".csv");
 		try {
-			
 			try (BufferedWriter writer = Files.newBufferedWriter(exportPath, Charsets.UTF_8)) {
 				computeHeader();
 				writeHeader(writer);
-				async.stop();
-				async = null;
-			
-				remainderMonitor = monitor.fork(20);
-				writeValues(remainderMonitor, writer);
+				writeValues(monitor, writer);
 			}
-			
 			return exportPath.toFile();
-		} catch (Exception e) {
-			throw new SnowowlServiceException(e);
 		} finally {
-			if (null != async) { async.stop(); }
-			if (null != remainderMonitor) { remainderMonitor.done(); }
-			if (null != monitor) { monitor.done(); }
+			if (null != monitor) { 
+				monitor.done(); 
+			}
 		}
-	}
-
-	private Path getExportPath() {
-		SnomedDescription refSetPreferredTerm = SnomedRequests.prepareGetConcept(refSetId)
-			.setLocales(locales)
-			.setExpand("pt()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getEventBus())
-			.getSync()
-			.getPt();
-			
-		String fileName = (refSetPreferredTerm == null) ? refSetId : refSetPreferredTerm.getTerm();
-		return Paths.get(exportPath, fileName + ".csv");
 	}
 
 	/*
@@ -184,10 +150,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			builder.isActiveMemberOf(refSetId);
 		}
 		
-		return new SearchResourceRequestIterator<>(builder, 
-				b -> b.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-					.execute(getEventBus())
-					.getSync());
+		return new SearchResourceRequestIterator<>(builder, b -> b.build().execute(context));
 	}
 
 	/*
@@ -487,15 +450,13 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	}
 
 	private Map<String, String> createTypeIdMap(String ancestorId) {
-		return SnomedRequests.prepareSearchConcept()
+		return createTypeIdMap(SnomedRequests.prepareSearchConcept()
 			.all()
 			.setLocales(locales)
 			.filterByAncestor(ancestorId)
 			.setExpand("pt()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getEventBus())
-			.then(concepts -> createTypeIdMap(concepts))
-			.getSync();
+			.build()
+			.execute(context));
 	}
 
 	private Map<String, String> createTypeIdMap(SnomedConcepts concepts) {
@@ -505,15 +466,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				c -> getPreferredTerm(c)));
 	}
 
-	private void writeValues(OMMonitor monitor, BufferedWriter writer) throws IOException {
+	private void writeValues(IProgressMonitor monitor, BufferedWriter writer) throws IOException {
 		SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> conceptIterator = getMemberConceptIterator(DATA_EXPAND);
 		
 		while (conceptIterator.hasNext()) {
 			SnomedConcepts chunk = conceptIterator.next();
-			if (!monitor.hasBegun()) {
-				monitor.begin(chunk.getTotal());
-			}
-			
 			writeValues(writer, chunk);
 			monitor.worked(chunk.getItems().size());
 		}
@@ -566,7 +523,11 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 					case DATAYPE: {
 						final DatatypeSnomedDsvExportItem datatypeItem = (DatatypeSnomedDsvExportItem) exportItem;
 						final String typeId = datatypeItem.getComponentId();
-						int occurrences = zeroGroupOccurrences.get(typeId);
+						int occurrences = zeroGroupOccurrences.getOrDefault(typeId, 0);
+						
+						if (occurrences < 1) {
+							break;
+						}
 						
 						final List<String> properties = concept.getMembers()
 								.stream()
@@ -671,7 +632,4 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 		return (concept.getPt() == null) ? "" : concept.getPt().getId();
 	}
 
-	private static IEventBus getEventBus() {
-		return ApplicationContext.getServiceForClass(IEventBus.class);
-	}
 }

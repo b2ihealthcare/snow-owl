@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.exporter.server.dsv;
+package com.b2international.snowowl.snomed.datastore.request.dsv;
 
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
@@ -26,13 +26,12 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.net4j.util.om.monitor.OMMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.api.SnowowlServiceException;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -42,11 +41,11 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedRefSetDSVExportModel;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Strings;
 
 /**
  * This class implements the export process of the DSV export for map type reference sets. 
@@ -54,31 +53,33 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 
-	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static final String LINE_SEPARATOR = System.lineSeparator();
 	
+	private final BranchContext context;
 	private final SnomedRefSetDSVExportModel exportSetting;
 
-	public MapTypeRefSetDSVExporter(final SnomedRefSetDSVExportModel exportSetting) {
+	public MapTypeRefSetDSVExporter(final BranchContext context, final SnomedRefSetDSVExportModel exportSetting) {
+		this.context = context;
 		this.exportSetting = exportSetting;
 	}
 
 	@Override
-	public File executeDSVExport(final OMMonitor monitor) throws SnowowlServiceException, IOException {
+	public File executeDSVExport(IProgressMonitor monitor) throws IOException {
 		final int memberNumberToSignal = 100;
 		
 		final SnomedConcept refSetToExport = SnomedRequests.prepareGetConcept(exportSetting.getRefSetId())
 				.setLocales(exportSetting.getLocales())
 				.setExpand("referenceSet(expand(members(limit:" + Integer.MAX_VALUE + ", expand(referencedComponent(expand(fsn()))))))")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, exportSetting.getBranchPath())
-				.get();
+				.build()
+				.execute(context);
 		
 		final SnomedReferenceSetMembers membersToExport = refSetToExport.getReferenceSet().getMembers();
 		final int activeMemberCount = membersToExport.getTotal();
 		
 		if (activeMemberCount < memberNumberToSignal) {
-			monitor.begin(1);
+			monitor.beginTask("Exporting RefSet to DSV", 1);
 		} else {
-			monitor.begin(activeMemberCount / memberNumberToSignal);
+			monitor.beginTask("Exporting RefSet to DSV", activeMemberCount / memberNumberToSignal);
 		}
 		
 		final File file = Files.createTempFile("dsv-export-" + refSetToExport.getId() + Dates.now(), ".csv").toFile();
@@ -98,7 +99,7 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				writeLine(os, toDsvLine(member, labels));
 				count++;
 				if (count % memberNumberToSignal == 0) {
-					monitor.worked();
+					monitor.worked(1);
 				}
 			}
 		} catch (final Exception e) {
@@ -123,8 +124,8 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 			.filterByEcl(String.format("< (%s OR %s) ", Concepts.MODULE_ROOT, Concepts.REFSET_ATTRIBUTE))
 			.setExpand("fsn()")
 			.setLocales(exportSetting.getLocales())
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, exportSetting.getBranchPath())
-			.get();
+			.build()
+			.execute(context);
 		
 		final Map<String, String> labels = newHashMapWithExpectedSize(membersToExport.getTotal() + modelComponents.getTotal());
 		
@@ -206,8 +207,8 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						.filterByActive(true)
 						.filterBySource(member.getReferencedComponent().getId())
 						.filterByType(Concepts.HAS_SDD_CLASS)
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID, exportSetting.getBranchPath())
-						.get()
+						.build()
+						.execute(context)
 						.first()
 						.map(relationship -> {
 							SnomedDescription pt = relationship.getDestination().getPt();
@@ -216,7 +217,7 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						.get();
 			case MAP_CATEGORY:
 				final String mapCategoryId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID);
-				if (StringUtils.isEmpty(mapCategoryId)) {
+				if (Strings.isNullOrEmpty(mapCategoryId)) {
 					return nullToEmpty(mapCategoryId); 
 				} else {
 					return labelMap.get(mapCategoryId);

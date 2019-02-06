@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,54 +115,12 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		}
 		return Paths.get(String.format("%s_%sRefset_%s%s%s_%s_%s.txt",
 				prefix,
-				getColumnTypePrefix(),
+				getColumnTypePrefix(refSetType),
 				getRefSetName(),
 				releaseType.toString(),
 				getLanguageElement(),
 				countryNamespaceElement,
 				archiveEffectiveTime));
-	}
-
-	private String getColumnTypePrefix() {
-		switch (refSetType) {
-			case SIMPLE: 
-				return "";
-			case ATTRIBUTE_VALUE:
-				return "c";
-			case LANGUAGE:
-				return "c";
-			case ASSOCIATION:
-				return "c";
-			case CONCRETE_DATA_TYPE: 
-				return "sicc";
-			case QUERY: 
-				return "s";
-			case DESCRIPTION_TYPE: 
-				return "ci";
-			case SIMPLE_MAP: 
-				return "s";
-			case SIMPLE_MAP_WITH_DESCRIPTION: 
-				return "ss";
-			case COMPLEX_MAP: 
-				return "iisssc";
-			case EXTENDED_MAP: 
-				return "iissscc";
-			case MODULE_DEPENDENCY: 
-				return "ss";
-			case OWL_AXIOM: //$FALL-THROUGH$
-			case OWL_ONTOLOGY:
-				return "s";
-			case MRCM_DOMAIN:
-				return "sssssss";
-			case MRCM_ATTRIBUTE_DOMAIN:
-				return "cisscc";
-			case MRCM_ATTRIBUTE_RANGE:
-				return "sscc";
-			case MRCM_MODULE_SCOPE:
-				return "c";
-			default: 
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
-		}
 	}
 
 	private String getRefSetName() {
@@ -247,45 +205,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 
 	@Override
 	protected String[] getHeader() {
-		switch (refSetType) {
-			case SIMPLE: 
-				return SnomedRf2Headers.SIMPLE_TYPE_HEADER;
-			case ATTRIBUTE_VALUE:
-				return SnomedRf2Headers.ATTRIBUTE_VALUE_TYPE_HEADER;
-			case LANGUAGE:
-				return SnomedRf2Headers.LANGUAGE_TYPE_HEADER;
-			case ASSOCIATION:
-				return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
-			case CONCRETE_DATA_TYPE:
-				return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER;
-			case QUERY:
-				return SnomedRf2Headers.QUERY_TYPE_HEADER;
-			case DESCRIPTION_TYPE: 
-				return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
-			case SIMPLE_MAP: 
-				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
-			case SIMPLE_MAP_WITH_DESCRIPTION: 
-				return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
-			case COMPLEX_MAP: 
-				return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
-			case EXTENDED_MAP: 
-				return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
-			case MODULE_DEPENDENCY: 
-				return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
-			case OWL_AXIOM: //$FALL-THROUGH$
-			case OWL_ONTOLOGY:
-				return SnomedRf2Headers.OWL_EXPRESSION_HEADER;
-			case MRCM_DOMAIN:
-				return SnomedRf2Headers.MRCM_DOMAIN_HEADER;
-			case MRCM_ATTRIBUTE_DOMAIN:
-				return SnomedRf2Headers.MRCM_ATTRIBUTE_DOMAIN_HEADER;
-			case MRCM_ATTRIBUTE_RANGE:
-				return SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER;
-			case MRCM_MODULE_SCOPE:
-				return SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER;
-			default: 
-				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
-		}
+		return getHeader(refSetType);
 	}
 
 	@Override
@@ -358,4 +278,89 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return String.valueOf(object);
 		}
 	}
+	
+	static String getColumnTypePrefix(SnomedRefSetType refSetType) {
+		switch (refSetType) {
+			case SIMPLE: 
+				return "";
+			case ATTRIBUTE_VALUE:
+				return "c";
+			case LANGUAGE:
+				return "c";
+			case ASSOCIATION:
+				return "c";
+			case CONCRETE_DATA_TYPE: 
+				return "sicc";
+			case QUERY: 
+				return "s";
+			case DESCRIPTION_TYPE: 
+				return "ci";
+			case SIMPLE_MAP: 
+				return "s";
+			case SIMPLE_MAP_WITH_DESCRIPTION: 
+				return "ss";
+			case COMPLEX_MAP: 
+				return "iisssc";
+			case EXTENDED_MAP: 
+				return "iissscc";
+			case MODULE_DEPENDENCY: 
+				return "ss";
+			case OWL_AXIOM: //$FALL-THROUGH$
+			case OWL_ONTOLOGY:
+				return "s";
+			case MRCM_DOMAIN:
+				return "sssssss";
+			case MRCM_ATTRIBUTE_DOMAIN:
+				return "cisscc";
+			case MRCM_ATTRIBUTE_RANGE:
+				return "sscc";
+			case MRCM_MODULE_SCOPE:
+				return "c";
+			default: 
+				throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
+		}
+	}
+	
+	static String[] getHeader(SnomedRefSetType refSetType) {
+		switch (refSetType) {
+		case SIMPLE: 
+			return SnomedRf2Headers.SIMPLE_TYPE_HEADER;
+		case ATTRIBUTE_VALUE:
+			return SnomedRf2Headers.ATTRIBUTE_VALUE_TYPE_HEADER;
+		case LANGUAGE:
+			return SnomedRf2Headers.LANGUAGE_TYPE_HEADER;
+		case ASSOCIATION:
+			return SnomedRf2Headers.ASSOCIATION_TYPE_HEADER;
+		case CONCRETE_DATA_TYPE:
+			return SnomedRf2Headers.CONCRETE_DATA_TYPE_HEADER;
+		case QUERY:
+			return SnomedRf2Headers.QUERY_TYPE_HEADER;
+		case DESCRIPTION_TYPE: 
+			return SnomedRf2Headers.DESCRIPTION_TYPE_HEADER;
+		case SIMPLE_MAP: 
+			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER;
+		case SIMPLE_MAP_WITH_DESCRIPTION: 
+			return SnomedRf2Headers.SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION;
+		case COMPLEX_MAP: 
+			return SnomedRf2Headers.COMPLEX_MAP_TYPE_HEADER;
+		case EXTENDED_MAP: 
+			return SnomedRf2Headers.EXTENDED_MAP_TYPE_HEADER;
+		case MODULE_DEPENDENCY: 
+			return SnomedRf2Headers.MODULE_DEPENDENCY_HEADER;
+		case OWL_AXIOM: //$FALL-THROUGH$
+		case OWL_ONTOLOGY:
+			return SnomedRf2Headers.OWL_EXPRESSION_HEADER;
+		case MRCM_DOMAIN:
+			return SnomedRf2Headers.MRCM_DOMAIN_HEADER;
+		case MRCM_ATTRIBUTE_DOMAIN:
+			return SnomedRf2Headers.MRCM_ATTRIBUTE_DOMAIN_HEADER;
+		case MRCM_ATTRIBUTE_RANGE:
+			return SnomedRf2Headers.MRCM_ATTRIBUTE_RANGE_HEADER;
+		case MRCM_MODULE_SCOPE:
+			return SnomedRf2Headers.MRCM_MODULE_SCOPE_HEADER;
+		default: 
+			throw new IllegalArgumentException("Unknown SNOMED CT reference set type: " + refSetType);
+		}
+	}
+	
 }

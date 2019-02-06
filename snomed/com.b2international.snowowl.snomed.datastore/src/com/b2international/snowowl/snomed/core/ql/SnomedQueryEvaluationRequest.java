@@ -36,6 +36,7 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.ecl.ecl.Any;
 import com.b2international.snowowl.snomed.ecl.ecl.Script;
 import com.b2international.snowowl.snomed.ql.ql.Conjunction;
 import com.b2international.snowowl.snomed.ql.ql.Constraint;
@@ -83,6 +84,10 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	protected Promise<Expression> eval(BranchContext context, final TermFilter termFilter) {
 		final String term = termFilter.getTerm();
 		
+		if (term.length()<3) {
+			return Promise.immediate(Expressions.matchAll());
+		}
+		
 		return SnomedRequests.prepareSearchDescription()
 				.all()
 				.filterByActive(true)
@@ -102,6 +107,9 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 	protected Promise<Expression> eval(BranchContext context, final EclFilter eclFilter) {
 		final Script script = eclFilter.getEcl();
 		final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(script.getConstraint());
+		if (script instanceof Any) {
+			return Promise.immediate(Expressions.matchAll());
+		}
 		return EclExpression.of(eclExpression)
 					.resolve(context)
 					.then(ids -> {

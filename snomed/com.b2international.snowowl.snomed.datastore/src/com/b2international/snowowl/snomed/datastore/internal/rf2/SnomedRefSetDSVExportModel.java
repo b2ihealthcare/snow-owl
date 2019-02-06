@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.Lists;
 
 /**
@@ -28,16 +27,11 @@ import com.google.common.collect.Lists;
 public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 
 	private String refSetId;
-	private SnomedRefSetType refSetType;
-
 	private boolean includeDescriptionId;
 	private boolean includeRelationshipTargetId;
 	private boolean includeInactiveMembers;
 	private List<AbstractSnomedDsvExportItem> exportItems = Lists.newArrayList();
 	private String delimiter;
-	private long branchBase;
-	// used for simple and complex map type refsets
-	private String branchPath;
 	
 	private List<ExtendedLocale> locales;
 
@@ -45,10 +39,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		super();
 	}
 	
-	public SnomedRefSetType getRefSetType() {
-		return refSetType;
-	}
-
 	public String getRefSetId() {
 		return refSetId;
 	}
@@ -73,14 +63,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		this.delimiter = delimiter;
 	}
 
-	public long getBranchBase() {
-		return branchBase;
-	}
-
-	public void setBranchBase(long branchBase) {
-		this.branchBase = branchBase;
-	}
-
 	public List<AbstractSnomedDsvExportItem> getExportItems() {
 		return exportItems;
 	}
@@ -97,10 +79,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 		exportItems.addAll(items);
 	}
 
-	public String getBranchPath() {
-		return branchPath;
-	}
-	
 	public void setIncludeDescriptionId(boolean includeDescriptionId) {
 		this.includeDescriptionId = includeDescriptionId;
 	}
@@ -123,10 +101,6 @@ public class SnomedRefSetDSVExportModel extends SnomedExportModel {
 	
 	public boolean includeInactiveMembers() {
 		return includeInactiveMembers;
-	}
-	
-	public void setBranchPath(String branchPath) {
-		this.branchPath = branchPath;
 	}
 	
 }

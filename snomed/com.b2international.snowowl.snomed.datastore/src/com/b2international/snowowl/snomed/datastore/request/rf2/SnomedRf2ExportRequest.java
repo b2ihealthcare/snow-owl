@@ -92,6 +92,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConceptExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2DescriptionExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2LanguageRefSetExporter;
+import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetDescriptorRefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RelationshipExporter;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
@@ -692,6 +693,36 @@ final class SnomedRf2ExportRequest implements Request<RepositoryContext, Rf2Expo
 				throw new IllegalStateException("Component type '" + componentToExport + "' can not be exported.");
 			}
 		}
+		
+		if (Boolean.valueOf(System.getProperty("so.snomed.refsetdescriptor_preview", "false"))) {
+			exportRefSetDescriptor(releaseDirectory,
+					context,
+					branch,
+					archiveEffectiveTime,
+					effectiveTimeFilterStart,
+					effectiveTimeFilterEnd,
+					languageCodes,
+					visitedComponentEffectiveTimes);
+		}
+	}
+
+	private void exportRefSetDescriptor(Path releaseDirectory, 
+			RepositoryContext context, 
+			String branch, 
+			String archiveEffectiveTime, 
+			long effectiveTimeFilterStart, 
+			long effectiveTimeFilterEnd, 
+			Collection<String> languageCodes, 
+			Set<String> visitedComponentEffectiveTimes) throws IOException {
+		final Rf2RefSetDescriptorRefSetExporter exporter = new Rf2RefSetDescriptorRefSetExporter(releaseType, 
+				countryNamespaceElement, 
+				namespaceFilter,
+				transientEffectiveTime,
+				archiveEffectiveTime,
+				includePreReleaseContent,
+				modules);
+		
+		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportConcepts(final Path releaseDirectory, 
