@@ -13,4 +13,10 @@
             class="com.b2international.snowowl.snomed.reasoner.index.ClassificationMappingProvider">
       </provider>
    </extension>
+   <extension
+         point="com.b2international.snowowl.datastore.server.classLoaderProvider">
+      <classLoaderProvider
+            class="com.b2international.snowowl.snomed.reasoner.SnomedReasonerClassLoaderProvider">
+      </classLoaderProvider>
+   </extension>
 </plugin>
