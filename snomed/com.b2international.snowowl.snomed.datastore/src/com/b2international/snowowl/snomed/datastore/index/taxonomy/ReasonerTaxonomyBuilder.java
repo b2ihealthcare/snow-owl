@@ -771,6 +771,17 @@ public final class ReasonerTaxonomyBuilder {
 			}
 		}
 		
+		if (!lastReferencedComponentId.isEmpty()) {
+			if (builtConceptMap.containsKey(lastReferencedComponentId)) {
+				statedAxioms.putAll(lastReferencedComponentId, fragments);
+			} else {
+				LOGGER.debug("Not registering {} OWL axioms for concept {} as it is inactive.",
+						fragments.size(),
+						lastReferencedComponentId);
+			}
+			fragments.clear();
+		}
+		
 		leaving("Registering active stated OWL axioms using revision searcher");
 		return this;
 	}
