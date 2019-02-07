@@ -70,7 +70,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	
 	private static final String DATA_EXPAND = "pt(),"
 			+ "descriptions(active:true),"
-			+ "relationships(active:true,destination(expand(pt()))),"
+			+ "relationships(active:true, expand(destination(expand(pt())))),"
 			+ "members()";
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
@@ -505,7 +505,6 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						final ComponentIdSnomedDsvExportItem relationshipItem = (ComponentIdSnomedDsvExportItem) exportItem;
 						final String typeId = relationshipItem.getComponentId();
 						int occurrences = zeroGroupOccurrences.get(typeId);
-						
 						final Map<String, String> destinationsById = concept.getRelationships()
 								.stream()
 								.filter(r -> typeId.equals(r.getTypeId())
