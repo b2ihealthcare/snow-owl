@@ -237,8 +237,15 @@ public final class ReasonerTaxonomyBuilder {
 
 		for (final Hits<String[]> hits : scrolledHits) {
 			for (final String[] relationship : hits) {
-				sourceIds.add(relationship[1]);
-				destinationIds.add(relationship[2]);
+				if (builtConceptMap.containsKey(relationship[1]) && builtConceptMap.containsKey(relationship[2])) {
+					sourceIds.add(relationship[1]);
+					destinationIds.add(relationship[2]);
+				} else {
+					LOGGER.debug("Not registering IS A relationship {} as its source {} and/or destination {} is inactive.",
+							relationship[0],
+							relationship[1],
+							relationship[2]);
+				}
 			}
 
 			statedAncestors.addEdges(sourceIds, destinationIds);
@@ -264,8 +271,15 @@ public final class ReasonerTaxonomyBuilder {
 
 		for (final Iterable<SnomedRelationship> chunk : Iterables.partition(filteredRelationships::iterator, SCROLL_LIMIT)) {
 			for (final SnomedRelationship relationship : chunk) {
-				sourceIds.add(relationship.getSourceId());
-				destinationIds.add(relationship.getDestinationId());
+				if (builtConceptMap.containsKey(relationship.getSourceId()) && builtConceptMap.containsKey(relationship.getDestinationId())) {
+					sourceIds.add(relationship.getSourceId());
+					destinationIds.add(relationship.getDestinationId());
+				} else {
+					LOGGER.debug("Not registering IS A relationship {} as its source {} or destination {} is inactive.",
+							relationship.getId(),
+							relationship.getSourceId(),
+							relationship.getDestinationId());
+				}
 			}
 
 			statedAncestors.addEdges(sourceIds, destinationIds);
@@ -471,7 +485,13 @@ public final class ReasonerTaxonomyBuilder {
 				if (lastSourceId.isEmpty()) {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
-					existingInferredRelationships.putAll(lastSourceId, fragments);
+					if (builtConceptMap.containsKey(lastSourceId)) {
+						existingInferredRelationships.putAll(lastSourceId, fragments);
+					} else {
+						LOGGER.debug("Not registering {} existing inferred relationships for source concept {} as it is inactive.",
+								fragments.size(),
+								lastSourceId);
+					}
 					fragments.clear();
 					lastSourceId = sourceId;
 				}
@@ -506,7 +526,13 @@ public final class ReasonerTaxonomyBuilder {
 		}
 		
 		if (!lastSourceId.isEmpty()) {
-			existingInferredRelationships.putAll(lastSourceId, fragments);
+			if (builtConceptMap.containsKey(lastSourceId)) {
+				existingInferredRelationships.putAll(lastSourceId, fragments);
+			} else {
+				LOGGER.debug("Not registering {} existing inferred relationships for source concept {} as it is inactive.",
+						fragments.size(),
+						lastSourceId);
+			}
 			fragments.clear();
 		}
 				
@@ -564,7 +590,13 @@ public final class ReasonerTaxonomyBuilder {
 				if (lastSourceId.isEmpty()) {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
-					fragmentBuilder.putAll(lastSourceId, fragments);
+					if (builtConceptMap.containsKey(lastSourceId)) {
+						fragmentBuilder.putAll(lastSourceId, fragments);
+					} else {
+						LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
+								fragments.size(),
+								lastSourceId);
+					}
 					fragments.clear();
 					lastSourceId = sourceId;
 				}
@@ -593,7 +625,13 @@ public final class ReasonerTaxonomyBuilder {
 		}
 		
 		if (!lastSourceId.isEmpty()) {
-			fragmentBuilder.putAll(lastSourceId, fragments);
+			if (builtConceptMap.containsKey(lastSourceId)) {
+				fragmentBuilder.putAll(lastSourceId, fragments);
+			} else {
+				LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
+						fragments.size(),
+						lastSourceId);
+			}
 			fragments.clear();
 		}
 	}
@@ -614,7 +652,13 @@ public final class ReasonerTaxonomyBuilder {
 				if (lastSourceId.isEmpty()) {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
-					consumer.accept(lastSourceId, fragments);
+					if (builtConceptMap.containsKey(lastSourceId)) {
+						consumer.accept(lastSourceId, fragments);
+					} else {
+						LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
+								fragments.size(),
+								lastSourceId);
+					}
 					fragments.clear();
 					lastSourceId = sourceId;
 				}
@@ -643,7 +687,13 @@ public final class ReasonerTaxonomyBuilder {
 		}
 
 		if (!lastSourceId.isEmpty()) {
-			consumer.accept(lastSourceId, fragments);
+			if (builtConceptMap.containsKey(lastSourceId)) {
+				consumer.accept(lastSourceId, fragments);
+			} else {
+				LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
+						fragments.size(),
+						lastSourceId);
+			}
 			fragments.clear();
 		}
 	}
@@ -684,7 +734,13 @@ public final class ReasonerTaxonomyBuilder {
 				if (lastReferencedComponentId.isEmpty()) {
 					lastReferencedComponentId = referencedComponentId;
 				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
-					statedAxioms.putAll(lastReferencedComponentId, fragments);
+					if (builtConceptMap.containsKey(lastReferencedComponentId)) {
+						statedAxioms.putAll(lastReferencedComponentId, fragments);
+					} else {
+						LOGGER.debug("Not registering {} OWL axioms for concept {} as it is inactive.",
+								fragments.size(),
+								lastReferencedComponentId);
+					}
 					fragments.clear();
 					lastReferencedComponentId = referencedComponentId;
 				}
