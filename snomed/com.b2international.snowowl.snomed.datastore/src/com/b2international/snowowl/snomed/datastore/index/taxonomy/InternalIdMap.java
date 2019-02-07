@@ -109,6 +109,14 @@ public final class InternalIdMap {
 		}
 	}
 
+	public boolean containsKey(final String sctId) {
+		return containsKey(Long.parseLong(sctId));
+	}
+
+	public boolean containsKey(final long sctId) {
+		return sctIdToInternal.containsKey(sctId);
+	}
+
 	public int size() {
 		return sctIdToInternal.size();
 	}

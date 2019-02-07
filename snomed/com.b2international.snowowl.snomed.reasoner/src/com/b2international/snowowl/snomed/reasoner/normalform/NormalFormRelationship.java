@@ -24,15 +24,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
-import com.b2international.snowowl.snomed.datastore.index.taxonomy.PropertyChain;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
@@ -113,7 +110,14 @@ final class NormalFormRelationship implements NormalFormProperty {
 			 * - (some/all) r'A, where r' is equal to r or is a descendant of r
 			 * - (some/all) rA', where A' is equal to A or is a descendant of A
 			 * - (some/all) r'A', where both of the above applies
-			 * 
+			 */
+			if (true
+				&& closureContains(getTypeId(), other.getTypeId()) 
+				&& closureContains(getDestinationId(), other.getDestinationId())) {
+				return true;
+			}
+
+			/*
 			 * Rule 2:
 			 * Given attribute r, s and t with a property chain SubObjectPropertyOf(ObjectPropertyChain(t s) r),
 			 * and two relationships A and B, A with r = C and B with u = D, within the same role group,
@@ -121,23 +125,13 @@ final class NormalFormRelationship implements NormalFormProperty {
 			 * 		Attribute u is the same as or a subtype of t, and
 			 * 		D has relationship to C via attribute s
 			 */
-			if (closureContains(getTypeId(), other.getTypeId()) 
-				&& closureContains(getDestinationId(), other.getDestinationId())) {
-				return true;
-			}
-
 			if (useNodeGraphs) {
-				final Set<PropertyChain> propertyChains = reasonerTaxonomy.getPropertyChains()
+				return reasonerTaxonomy.getPropertyChains()
 						.stream()
-						.filter(propertyChain -> closureContains(getTypeId(), propertyChain.getSourceType()))
-						.filter(propertyChain -> propertyChain.getInferredType() == other.getTypeId())
-						.collect(Collectors.toSet());
-				
-				for (PropertyChain propertyChain : propertyChains) {
-					if (propertyClosureContains(getDestinationId(), propertyChain.getDestinationType(), other.getDestinationId())) {
-						return true;
-					}
-				}
+						.filter(propertyChain -> true
+								&& propertyChain.getInferredType() == other.getTypeId() 
+								&& closureContains(getTypeId(), propertyChain.getSourceType()))
+						.anyMatch(propertyChain -> propertyClosureContains(getDestinationId(), propertyChain.getDestinationType(), other.getDestinationId()));
 			}
 				
 			return false;
