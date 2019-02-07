@@ -33,7 +33,7 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 	boolean execute(SnomedRefSetMember member, TransactionContext context) {
 		SnomedConcreteDataTypeRefSetMember concreteDomainMember = (SnomedConcreteDataTypeRefSetMember) member;
 		String newValue = getProperty(SnomedRf2Headers.FIELD_VALUE);
-		int newGroup = getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class);
+		Integer newGroup = getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class);
 		String newTypeId = getComponentId(SnomedRf2Headers.FIELD_TYPE_ID);
 		String newCharacteristicTypeId = getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
@@ -44,7 +44,7 @@ final class SnomedConcreteDomainMemberUpdateDelegate extends SnomedRefSetMemberU
 			changed |= true;
 		}
 
-		if (newGroup != concreteDomainMember.getGroup()) {
+		if (newGroup != null && newGroup.intValue() != concreteDomainMember.getGroup()) {
 			concreteDomainMember.setGroup(newGroup);
 			changed |= true;
 		}
