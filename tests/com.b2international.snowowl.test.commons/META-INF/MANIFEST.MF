@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.snomed.importer.rf2,
  com.b2international.snowowl.snomed.model,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
- com.b2international.snowowl.snomed.datastore.server
+ com.b2international.snowowl.snomed.datastore.server,
+ com.fasterxml.jackson.datatype.jackson-datatype-guava;bundle-version="2.8.10"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: ch.qos.logback.classic;version="1.0.7",

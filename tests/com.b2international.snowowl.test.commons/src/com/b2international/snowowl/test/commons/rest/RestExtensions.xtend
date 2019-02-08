@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,16 @@ import com.b2international.snowowl.core.ApplicationContext
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException
 import com.b2international.snowowl.identity.IdentityProvider
 import com.b2international.snowowl.identity.IdentityWriter
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.guava.GuavaModule
 import com.google.common.base.Joiner
 import com.google.common.base.Preconditions
 import com.google.common.base.Splitter
 import com.jayway.restassured.RestAssured
+import com.jayway.restassured.config.ObjectMapperConfig
+import com.jayway.restassured.config.RestAssuredConfig
 import com.jayway.restassured.http.ContentType
+import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
 import java.io.File
@@ -87,6 +92,14 @@ class RestExtensions {
 			
 			// Enable logging on failed requests
 			RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+			// add custom 
+			val mapper = new ObjectMapper()
+			mapper.registerModule(new GuavaModule)
+			RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+				override create(Class arg0, String arg1) {
+					return mapper
+				}
+			}))
 			
 			// add the user to the current identity provider
 			try {
