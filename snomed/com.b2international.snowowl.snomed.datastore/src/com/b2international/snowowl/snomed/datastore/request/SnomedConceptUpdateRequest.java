@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 		if (members != null) {
 			updateComponents(context, concept, 
-					getPreviousMemberIds(concept, context), members, 
+					getPreviousMemberIds(concept, context), getUpdateableMembers(members).toSet(),
 					id -> SnomedRequests.prepareDeleteMember(id).build());
 		}
 		
@@ -183,10 +183,14 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			.build()
 			.execute(context);
 		
-		return FluentIterable.from(members)
-				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()))
+		return getUpdateableMembers(members)
 				.transform(m -> m.getId())
 				.toSet();
+	}
+
+	private FluentIterable<SnomedReferenceSetMember> getUpdateableMembers(Iterable<SnomedReferenceSetMember> members) {
+		return FluentIterable.from(members)
+				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()));
 	}
 
 	private boolean isDifferentToPreviousRelease(Concept concept, SnomedConcept releasedConcept) {
