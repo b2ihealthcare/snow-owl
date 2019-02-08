@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
@@ -70,7 +71,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 	
 	private static final String DATA_EXPAND = "pt(),"
 			+ "descriptions(active:true),"
-			+ "relationships(active:true, expand(destination(expand(pt())))),"
+			+ "relationships(active:true,expand(destination(expand(pt())))),"
 			+ "members()";
 
 	private static final Map<String, Integer> NO_OCCURRENCES = ImmutableMap.of();
@@ -576,7 +577,7 @@ public class SnomedSimpleTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						break;
 
 					case EFFECTIVE_TIME:
-						dataRow.add(Dates.formatByGmt(concept.getEffectiveTime()));
+						dataRow.add(EffectiveTimes.format(concept.getEffectiveTime()));
 						break;
 
 					case STATUS_LABEL:
