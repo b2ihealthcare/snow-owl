@@ -18,147 +18,181 @@
 #
 # Snow Owl terminology server export script
 # See usage or execute the script with the -h flag to get further information.
-# Configurable params
+
+
+#
+# Parameters that must be configured before execution
 #
 
-# The user for the user authentication for the REST API.
+# The username to authenticate through the REST API
 SNOW_OWL_USER=""
 
-# The password for the above user.
-SNOW_OWL_PASSWORD=""
+# The password for the above user
+SNOW_OWL_USER_PASSWORD=""
 
-# The export type to use for the export config.
-EXPORT_TYPE="DELTA"
-
-# The target folder to save the exported RF2 content.
+# The target folder to save the exported RF2 content
 TARGET_FOLDER=""
 
-# Base URL for the server that runs Snow Owl.
+
+#
+# Global variables / constants, advanced parameters
+#
+
+# Default branch to export
+BRANCH_TO_EXPORT="MAIN"
+
+# The export type to use for the export config
+EXPORT_TYPE="DELTA"
+
+# Base URL of the Snow Owl server
 SNOW_OWL_BASE_URL="http://localhost:8080"
 
-# Api URL of the running Snow Owl server.
+# URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
 
-#
-# Global variables / constants, advanced configurable params.
-#
+# The address where the export config endpoint can be found
+EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
-# Media type to use for the export configuration.
+# Media type to use for REST requests
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
 
-# The uuid of the export request given by Snow Owl.
-EXPORT_UUID=""
-
-# The input data for the export config.
-EXPORT_CONFIG_POST_INPUT=""
-
-# Accept header for archive download.
+# Accept header for archive download
 ACCEPT_HEADER="application/octet-stream"
 
-# Forces the export config to export concepts and relationships only.
-IS_CONCEPT_AND_RELATIONSHIPS_ONLY=${false}
+# The UUID of the export request given by Snow Owl
+EXPORT_UUID=""
 
-# The address where the export config endpoint can be found.
-EXPORT_CONFIG_POST_ENDPOINT=""
-
-# The initial name of the export.
-EXPORT_FILE_NAME="snowowl_export"
+# The input data for the export config
+EXPORT_CONFIG_POST_INPUT=""
 
 usage() {
 
-	cat <<EOF
+cat <<EOF
 
 NAME:
-	Snow Owl export script. The export file will be saved where the user has set it to.
+
+    Export script for the Snow Owl terminology server
     
     OPTIONS:
-	-h
-		Show this help
-	-u
-		Define a username with privileges to the Snow Owl REST API
-	-p
-		Define the password for the above user
+
+    -h
+        Show this help
+    -u
+        Define a username with privileges to the Snow Owl REST API
+    -p
+        Define the password for the above user
     -b
-        Base URL for the server defaults to (http://localhost:8080)
-    -f
+        Snow Owl base URL, defaults to 'http://localhost:8080'
+    -t
         Target folder where the exported content should be saved
     -e
-        Export type for the export configuration (possible values are SNAPSHOT, DELTA, FULL)
+        Export type (possible values are SNAPSHOT, DELTA, FULL), defaults to DELTA
     -a
-        Base API URL of the Snow Owl server defaults to (/snowowl/snomed-ct/v3)
+        REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
+
 NOTES:
-	This script can be used to initiate an export job that will run an export from a Snow Owl server. 
-	Mandatory variables:
-		- SNOW OWL user to use for the Snow Owl export
-	    - SNOW OWL password for the above user
-        - Target folder to save the exported content
+
+    This script can be used to export content from a Snow Owl terminology server. 
+
+    Mandatory variables:
+        - SNOW OWL user that is able to authenticate through the REST API
+        - Password for the above user
+        - Target folder for the export archive
+
 EOF
 
 }
 
+echo_date() {
+    echo -e "[`date +\"%Y-%m-%d %H:%M:%S\"`] $@"
+}
+
+check_if_empty() {
+    if [[ -z "$1" ]]; then
+        echo_date "$2"
+        exit 1
+    fi
+}
+
 validate_variables() {
+
     check_if_empty "${SNOW_OWL_USER}" "Snow Owl username must be specified"
-	check_if_empty "${SNOW_OWL_PASSWORD}" "Snow Owl password must be specified"
-	check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
+    check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
+    check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
 
     if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
-        echo "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
+        echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
         exit 1;
     fi
     
     if [[ ! -d "${TARGET_FOLDER}" ]]; then
-        echo "Creating target folder"
+        echo_date "Creating target folder @ ${TARGET_FOLDER}"
         mkdir "${TARGET_FOLDER}"
     fi
 
-}
+    EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
 
-check_if_empty() {
-	if [[ -z "$1" ]]; then
-		echo "$2"
-		exit 1
-	fi
 }
 
 initiate_export() {
-    echo "Creating ${EXPORT_TYPE} export config"
-    EXPORT_CONFIG_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
-    echo "${SNOW_OWL_BASE_URL}"
-    EXPORT_CONFIG_POST_INPUT='{"branchPath": "MAIN", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
-    EXPORT_LOCATION="${SNOW_OWL_BASE_URL}${EXPORT_CONFIG_POST_ENDPOINT}"
+    EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"}'
+    EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
-    echo "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORT_LOCATION}""
+    echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORTS_ENDPOINT}""
 
-    EXPORT_UUID="$(curl -u "${SNOW_OWL_USER}:${SNOW_OWL_PASSWORD}" -i -X POST -H "Content-type: ${MEDIA_TYPE}" "${EXPORT_LOCATION}" -d "${EXPORT_CONFIG_POST_INPUT}" | tr -d '\r' | sed -En 's/^Location: (.*)/\1/p')"
+    RESPONSE="$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
+        --request POST \
+        --header "Content-type: ${MEDIA_TYPE}" \
+        --data "${EXPORT_CONFIG_POST_INPUT}" \
+        --include --silent --show-error \
+        "${EXPORTS_ENDPOINT}" | grep -Fi Location)"
+
+    ID=${RESPONSE##*/}
+    EXPORT_UUID=${ID%$'\r'}
+
     download_export_archive
 
 }
 
 download_export_archive() {
-    EXPORT_DOWNLOAD_GET_ENDPOINT="${EXPORT_UUID}/archive"
 
-    echo "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_DOWNLOAD_GET_ENDPOINT}"
+    check_if_empty "${EXPORT_UUID}" "Unique export identifier is missing"
+
+    EXPORT_DOWNLOAD_GET_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}/${EXPORT_UUID}/archive"
+
+    echo_date "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_UUID}"
 
     DATE=$(date +"%Y%m%d_%H%M%S")
 
     RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-    curl -u "${SNOW_OWL_USER}:${SNOW_OWL_PASSWORD}" -X GET -H "Accept: ${ACCEPT_HEADER}" -ko "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" "${EXPORT_DOWNLOAD_GET_ENDPOINT}"
+    HTTP_STATUS=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
+        --request GET \
+        --header "Accept: ${ACCEPT_HEADER}" \
+        --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" \
+        --silent --show-error \
+        --write-out %{http_code} \
+        "${EXPORT_DOWNLOAD_GET_ENDPOINT}")
+
+    if [ "${HTTP_STATUS}" != "200" ]; then
+        echo_date "Download of export archive returned with code ${HTTP_STATUS}"
+    else
+        echo_date "Export archive is available @ ${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
+    fi
+
 }
 
 execute() {
 
     validate_variables
 
-    EXPORT_FILE_NAME="snow_owl_${EXPORT_TYPE}_export"
-
     initiate_export
 
     exit 0
 }
 
-while getopts "u:p::f:e:b:a:h" option; do
+while getopts ":hu:p:t:e:b:a:" option; do
     case "${option}" in
     h)
         usage
@@ -167,8 +201,8 @@ while getopts "u:p::f:e:b:a:h" option; do
     u)
         SNOW_OWL_USER=${OPTARG};;
     p)
-        SNOW_OWL_PASSWORD=${OPTARG};;
-    f)
+        SNOW_OWL_USER_PASSWORD=${OPTARG};;
+    t)
         TARGET_FOLDER=${OPTARG};;
     e)
         EXPORT_TYPE=${OPTARG};;
@@ -177,12 +211,12 @@ while getopts "u:p::f:e:b:a:h" option; do
     a)
         SNOW_OWL_API_URL=${OPTARG};;    
     \?)
-        echo "Invalid option: {$OPTARG}." >&2
+        echo_date "Invalid option: $OPTARG." >&2
         usage
         exit 1
         ;;
     :)
-        echo "Option -{$OPTARG} requires an argument." >&2
+        echo_date "Option -$OPTARG requires an argument." >&2
         usage
         exit 1
         ;;
