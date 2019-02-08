@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 	public String execute(SnomedRefSet refSet, TransactionContext context) {
 		checkRefSetType(refSet, SnomedRefSetType.SIMPLE_MAP);
 		checkReferencedComponent(refSet);
-		checkNonEmptyProperty(refSet, SnomedRf2Headers.FIELD_MAP_TARGET);
 
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
 		checkComponentExists(refSet, context, SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, getReferencedComponentId());
@@ -63,6 +62,7 @@ final class SnomedSimpleMapMemberCreateDelegate extends SnomedRefSetMemberCreate
 
 	@Override
 	protected Set<String> getRequiredComponentIds() {
+		checkNonEmptyProperty(SnomedRf2Headers.FIELD_MAP_TARGET);
 
 		Builder<String> requiredComponentIds = ImmutableSet.<String>builder();
 		
