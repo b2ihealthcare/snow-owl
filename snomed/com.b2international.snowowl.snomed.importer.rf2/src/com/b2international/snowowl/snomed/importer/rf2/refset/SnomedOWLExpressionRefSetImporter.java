@@ -24,8 +24,12 @@ import org.supercsv.cellprocessor.NullObjectPattern;
 import org.supercsv.cellprocessor.ParseBool;
 import org.supercsv.cellprocessor.ift.CellProcessor;
 
+import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.importer.rf2.csv.OWLExpressionRefSetRow;
 import com.b2international.snowowl.snomed.importer.rf2.csv.cellprocessor.ParseUuid;
 import com.b2international.snowowl.snomed.importer.rf2.model.ComponentImportType;
@@ -33,14 +37,17 @@ import com.b2international.snowowl.snomed.importer.rf2.model.IndexConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportConfiguration;
 import com.b2international.snowowl.snomed.importer.rf2.model.SnomedImportContext;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSet;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetFactory;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.5
  */
-public abstract class AbstractSnomedOWLExpressionRefSetImporter extends AbstractSnomedRefSetImporter<OWLExpressionRefSetRow, SnomedOWLExpressionRefSetMember> {
+public class SnomedOWLExpressionRefSetImporter extends AbstractSnomedRefSetImporter<OWLExpressionRefSetRow, SnomedOWLExpressionRefSetMember> {
 
 	private static final Map<String, CellProcessor> CELL_PROCESSOR_MAPPING = ImmutableMap.<String, CellProcessor>builder()
 			.put(OWLExpressionRefSetRow.PROP_UUID, new ParseUuid())
@@ -66,7 +73,7 @@ public abstract class AbstractSnomedOWLExpressionRefSetImporter extends Abstract
 			SnomedRf2Headers.OWL_EXPRESSION_HEADER,
 			INDEXES);
 
-	public AbstractSnomedOWLExpressionRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
+	public SnomedOWLExpressionRefSetImporter(final SnomedImportContext importContext, final InputStream releaseFileStream, final String releaseFileIdentifier) {
 		super(IMPORT_CONFIGURATION, importContext, releaseFileStream, releaseFileIdentifier);
 	}
 
@@ -96,6 +103,37 @@ public abstract class AbstractSnomedOWLExpressionRefSetImporter extends Abstract
 		member.setReferencedComponentId(row.getReferencedComponentId());
 		member.setOwlExpression(row.getOwlExpression());
 
+	}
+
+	@Override
+	protected SnomedRefSetType getRefSetType() {
+		// FIXME this should be fixed properly by reverting to only one refset type from OWL_AXIOM and OWL_ONTOLOGY 
+		return null;
+	}
+	
+	@Override
+	protected Expression getAvailableComponentQuery() {
+		return SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(ImmutableSet.<SnomedRefSetType>of(SnomedRefSetType.OWL_AXIOM, SnomedRefSetType.OWL_ONTOLOGY));
+	}
+	
+	@Override
+	protected SnomedRefSet createRefSet(String identifierConceptId, String referencedComponentId) {
+		createIdentifierConceptIfNotExists(identifierConceptId);
+		final SnomedRefSet refSet = createUninitializedRefSet(identifierConceptId);
+		refSet.setIdentifierId(identifierConceptId);
+		refSet.setReferencedComponentType(SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId));
+		refSet.setType(getRefsetType(identifierConceptId));
+		initRefSet(refSet, referencedComponentId);
+		return refSet;
+	}
+
+	private SnomedRefSetType getRefsetType(String identifierConceptId) {
+		if (Concepts.REFSET_OWL_AXIOM.equals(identifierConceptId)) {
+			return SnomedRefSetType.OWL_AXIOM;
+		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(identifierConceptId)) {
+			return SnomedRefSetType.OWL_ONTOLOGY;
+		}
+		throw new SnowowlRuntimeException("Unknown OWL Expression reference set identifier ID: " + identifierConceptId);
 	}
 
 }

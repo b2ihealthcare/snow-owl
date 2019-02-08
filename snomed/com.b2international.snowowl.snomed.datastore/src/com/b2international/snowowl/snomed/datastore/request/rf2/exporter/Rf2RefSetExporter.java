@@ -135,10 +135,9 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		switch (refSetType) {
 			case CONCRETE_DATA_TYPE:
 				return "ConcreteDomainReferenceSet";
-			case OWL_AXIOM:
-				return "OWLAxiom";
+			case OWL_AXIOM: //$FALL-THROUGH$
 			case OWL_ONTOLOGY:
-				return "OWLOntology";
+				return "OWLExpression";
 			case MRCM_DOMAIN:
 				return "MRCMDomain";
 			case MRCM_ATTRIBUTE_DOMAIN:

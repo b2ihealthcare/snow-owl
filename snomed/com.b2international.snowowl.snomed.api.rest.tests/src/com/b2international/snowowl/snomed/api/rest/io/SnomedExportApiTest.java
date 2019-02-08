@@ -1136,7 +1136,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.put("sct2_TextDefinition", false)
 				.put("der2_cRefset_LanguageDelta", false)
 				.put("der2_ssRefset_ModuleDependency", false)
-				.put("der2_sRefset_OWLAxiomReferenceSet", true)
+				.put("sct2_sRefset_OWLExpression", true)
 				.build();
 				
 		assertArchiveContainsFiles(exportArchive, files);
@@ -1147,7 +1147,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, inferredLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(false, additionalLine));
-		fileToLinesMap.put("der2_sRefset_OWLAxiomReferenceSet", Pair.of(true, owlMemberLine));
+		fileToLinesMap.put("sct2_sRefset_OWLExpression", Pair.of(true, owlMemberLine));
 		
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
@@ -1333,19 +1333,17 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.ROOT_CONCEPT,
 				"test axiom");
 
-		String expectedOwlAxiomDeltaFile = "sct2_sRefset_OWLAxiomDelta";
-		String expectedOwlOntologyDeltaFile = "sct2_sRefset_OWLOntologyDelta";
+		String expectedOwlExpressionDeltaFile = "sct2_sRefset_OWLExpressionDelta";
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
-				.put(expectedOwlAxiomDeltaFile, true)
-				.put(expectedOwlOntologyDeltaFile, true)
+				.put(expectedOwlExpressionDeltaFile, true)
 				.build();
 			
 		assertArchiveContainsFiles(exportArchive, files);
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
-		fileToLinesMap.put(expectedOwlOntologyDeltaFile, Pair.of(true, owlOntologyMemberLine));
-		fileToLinesMap.put(expectedOwlAxiomDeltaFile, Pair.of(true, owlAxiomMemberLine));
+		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlOntologyMemberLine));
+		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}

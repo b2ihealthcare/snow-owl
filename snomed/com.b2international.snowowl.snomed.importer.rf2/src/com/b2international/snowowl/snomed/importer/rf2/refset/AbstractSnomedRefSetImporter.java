@@ -62,7 +62,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	}
 
 	@Override
-	protected final Expression getAvailableComponentQuery() {
+	protected Expression getAvailableComponentQuery() {
 		return SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(getRefSetType()));
 	}
 	
@@ -189,7 +189,7 @@ public abstract class AbstractSnomedRefSetImporter<T extends AbstractRefSetRow, 
 	 * component, subclasses should override to set the type, or do something
 	 * completely different.
 	 */
-	protected final SnomedRefSet createRefSet(final String identifierConceptId, final String referencedComponentId) {
+	protected SnomedRefSet createRefSet(final String identifierConceptId, final String referencedComponentId) {
 		
 		createIdentifierConceptIfNotExists(identifierConceptId);
 		final SnomedRefSet refSet = createUninitializedRefSet(identifierConceptId);
