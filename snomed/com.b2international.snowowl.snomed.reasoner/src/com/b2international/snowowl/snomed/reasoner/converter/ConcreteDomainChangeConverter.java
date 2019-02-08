@@ -181,10 +181,10 @@ public final class ConcreteDomainChangeConverter
 			for (final ConcreteDomainChange item : itemsForCurrentBranch) {
 				final ReasonerConcreteDomainMember reasonerMember = item.getConcreteDomainMember();
 				final String memberUuid = reasonerMember.getOriginMemberId();
-				final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
-				final Map<String, Object> expandedProperties = expandedMember.getProperties();
 				
 				if (ChangeNature.INFERRED.equals(item.getChangeNature())) {
+					final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
+					final Map<String, Object> expandedProperties = expandedMember.getProperties();
 					
 					reasonerMember.setCharacteristicTypeId(Concepts.INFERRED_RELATIONSHIP);
 					// reasonerMember.setGroup(...) is already set
@@ -195,6 +195,8 @@ public final class ConcreteDomainChangeConverter
 					reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID));
 					
 				} else if (!inferredOnly) {
+					final SnomedReferenceSetMember expandedMember = membersByUuid.get(memberUuid);
+					final Map<String, Object> expandedProperties = expandedMember.getProperties();
 
 					reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 					reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
