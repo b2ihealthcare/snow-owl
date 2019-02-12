@@ -321,12 +321,12 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private void indexUnsatisfiableConcepts(final Writer writer, 
 			final String classificationId, 
-			final IInternalSctIdSet internalSctIdSet) throws IOException {
+			final IInternalSctIdSet unsatisfiableConcepts) throws IOException {
 
-		if (!internalSctIdSet.isEmpty()) {
+		if (!unsatisfiableConcepts.isEmpty()) {
 			final EquivalentConceptSetDocument equivalentDoc = EquivalentConceptSetDocument.builder()
 					.classificationId(classificationId)
-					.conceptIds(internalSctIdSet.toLongList())
+					.conceptIds(unsatisfiableConcepts.toLongList())
 					.unsatisfiable(true)
 					.build();
 	
@@ -336,11 +336,11 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private void indexEquivalentConcepts(final Writer writer, 
 			final String classificationId, 
-			final IInternalSctIdMultimap internalSctIdMultimap) throws IOException {
+			final IInternalSctIdMultimap equivalentConcepts) throws IOException {
 
-		for (final LongIterator itr = internalSctIdMultimap.keySet().iterator(); itr.hasNext(); /*empty*/) {
+		for (final LongIterator itr = equivalentConcepts.keySet().iterator(); itr.hasNext(); /*empty*/) {
 			final long representativeConcept = itr.next();
-			final LongSet equivalents = internalSctIdMultimap.get(representativeConcept);
+			final LongSet equivalents = equivalentConcepts.get(representativeConcept);
 			final LongList orderedConcepts = PrimitiveLists.newLongArrayListWithExpectedSize(equivalents.size() + 1);
 
 			orderedConcepts.add(representativeConcept);
