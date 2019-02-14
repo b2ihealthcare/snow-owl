@@ -94,7 +94,50 @@ public abstract class SnomedConstants {
 				Concepts.STATED_RELATIONSHIP, 
 				Concepts.INFERRED_RELATIONSHIP);
 
+		public static final Set<String> TOP_LEVEL_CONCEPTS = ImmutableSet.of(
+				Concepts.BODY_STUCTURE,
+				Concepts.CLINICAL_FINDING,
+				Concepts.ENVIRONMENT_OR_GEOGRAPHICAL_LOCATION,
+				Concepts.EVENT,
+				Concepts.OBSERVABLE_ENTITY,
+				Concepts.ORGANISM,
+				Concepts.PHARMACEUTICAL_BIOLOGIC_PRODUCT,
+				Concepts.PHYSICAL_FORCE,
+				Concepts.PHYSICAL_OBJECT,
+				Concepts.PROCEDURE,
+				Concepts.QUALIFIER_VALUE,
+				Concepts.RECORD_ARTIFACT,
+				Concepts.SNOMED_CT_MODEL_COMPONENT,
+				Concepts.SITUATION_WITH_EXPLICIT_CONTEXT,
+				Concepts.SOCIAL_CONTEXT,
+				Concepts.SPECIAL_CONCEPT,
+				Concepts.SPECIMEN,
+				Concepts. STAGING_AND_SCALES,
+				Concepts.SUBSTANCE);
+
 		public static final String ROOT_CONCEPT = "138875005";
+		
+		//SNOMED CT Top Level concepts
+		public static final String BODY_STUCTURE = "123037004";
+		public static final String CLINICAL_FINDING = "404684003";
+		public static final String ENVIRONMENT_OR_GEOGRAPHICAL_LOCATION = "308916002";
+		public static final String EVENT = "272379006";
+		public static final String OBSERVABLE_ENTITY = "363787002";
+		public static final String ORGANISM = "410607006";
+		public static final String PHARMACEUTICAL_BIOLOGIC_PRODUCT = "373873005";
+		public static final String PHYSICAL_FORCE = "78621006";
+		public static final String PHYSICAL_OBJECT = "260787004";
+		public static final String PROCEDURE = "71388002";
+		public static final String QUALIFIER_VALUE = "362981000";
+		public static final String RECORD_ARTIFACT = "419891008";
+		public static final String SNOMED_CT_MODEL_COMPONENT = "900000000000441003";
+		public static final String SITUATION_WITH_EXPLICIT_CONTEXT = "243796009";
+		public static final String SOCIAL_CONTEXT = "48176007";
+		public static final String SPECIAL_CONCEPT = "370115009";
+		public static final String SPECIMEN = "123038009";
+		public static final String STAGING_AND_SCALES = "254291000";
+		public static final String SUBSTANCE = "105590001";
+		
 		public static final String IS_A = "116680003";
 		public static final String FINDING_SITE = "363698007";
 		public static final String METHOD = "260686004";
@@ -134,11 +177,7 @@ public abstract class SnomedConstants {
 		public static final String CD_UNEQUAL = "431878004";  // <>
 		
 
-		public static final String TOPLEVEL_METADATA = "900000000000441003";
 		public static final String LINKAGE = "106237007";
-		public static final String PHARMACEUTICAL = "373873005";
-		public static final String PHYSICAL_OBJECT = "260787004";
-		public static final String QUALIFIER_VALUE_TOPLEVEL_CONCEPT = "362981000";
 		
 		public static final String NOT_REFINABLE = "900000000000007000";
 		public static final String OPTIONAL_REFINABLE = "900000000000216007";
@@ -387,7 +426,6 @@ public abstract class SnomedConstants {
 		public static final String SHORT_NAME = "9211000132103";
 		
 		public static final String HAS_PRODUCT_HIERARCHY_LEVEL = "9171000132101";
-		public static final String SUBSTANCE = "105590001";
 		public static final String HAS_COMPONENT = "246093002";
 		public static final String HAS_SDD_CLASS = "8921000132109";
 
