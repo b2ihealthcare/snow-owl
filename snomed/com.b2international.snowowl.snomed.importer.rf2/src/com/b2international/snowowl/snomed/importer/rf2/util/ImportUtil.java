@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -67,9 +68,7 @@ import com.b2international.snowowl.core.ft.Features;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.CodeSystemEntry;
 import com.b2international.snowowl.datastore.cdo.ICDOConnectionManager;
-import com.b2international.snowowl.datastore.oplock.IOperationLockManager;
 import com.b2international.snowowl.datastore.oplock.IOperationLockTarget;
-import com.b2international.snowowl.datastore.oplock.OperationLockException;
 import com.b2international.snowowl.datastore.oplock.OperationLockRunner;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContext;
 import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
@@ -431,10 +430,8 @@ public final class ImportUtil {
 				public void run() {
 					resultHolder[0] = doImportLocked(requestingUserId, configuration, result, branchPath, context, subMonitor, importers, editingContext, branch, repositoryState);
 				}
-			}, lockContext, IOperationLockManager.NO_TIMEOUT, lockTarget);
-		} catch (final OperationLockException | InterruptedException e) {
-			throw new ImportException("Caught exception while locking repository for import.", e);
-		} catch (final InvocationTargetException e) {
+			}, lockContext, TimeUnit.SECONDS.toMillis(5), lockTarget);
+		} catch (final InvocationTargetException | InterruptedException e) {
 			throw new ImportException("Failed to import RF2 release.", e.getCause());
 		} finally {
 			features.disable(importFeatureToggle);
