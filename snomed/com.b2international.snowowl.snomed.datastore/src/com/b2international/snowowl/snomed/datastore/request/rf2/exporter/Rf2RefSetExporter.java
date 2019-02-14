@@ -257,7 +257,15 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 					// Append extra columns using the properties map
 					final Map<String, Object> properties = member.getProperties();
 					for (final String extraColumn : extraColumns) {
-						builder.add(toColumn(properties.get(extraColumn)));
+						Object property = properties.get(extraColumn);
+						if (extraColumn.equals(SnomedRf2Headers.FIELD_QUERY)) {
+							String query = (String) property;
+							query = query.replace("\r", " ");
+							query = query.replace("\n", " ");
+							query = query.replace("\t", " ");
+							property = query;
+						}
+						builder.add(toColumn(property));
 					}
 
 					return builder.build();
