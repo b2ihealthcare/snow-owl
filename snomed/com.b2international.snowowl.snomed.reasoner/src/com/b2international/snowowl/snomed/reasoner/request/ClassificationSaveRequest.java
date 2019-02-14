@@ -59,6 +59,19 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 	@NotNull
 	private String parentLockContext;
 
+	@NotEmpty
+	private String commitComment;
+
+	// @Nullable
+	private String moduleId;
+
+	// @Nullable
+	private String namespace;
+
+	private boolean fixEquivalences;
+
+	private boolean handleConcreteDomains;
+
 	ClassificationSaveRequest() {}
 	
 	void setClassificationId(final String classificationId) {
@@ -71,6 +84,26 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 	
 	void setParentLockContext(final String parentLockContext) {
 		this.parentLockContext = parentLockContext;
+	}
+	
+	void setCommitComment(final String commitComment) {
+		this.commitComment = commitComment;
+	}
+
+	void setModuleId(final String moduleId) {
+		this.moduleId = moduleId;
+	}
+
+	void setNamespace(final String namespace) {
+		this.namespace = namespace;
+	}
+
+	void setFixEquivalences(final boolean fixEquivalences) {
+		this.fixEquivalences = fixEquivalences;
+	}
+
+	void setHandleConcreteDomains(final boolean handleConcreteDomains) {
+		this.handleConcreteDomains = handleConcreteDomains;
 	}
 
 	@Override
@@ -104,6 +137,11 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 				.setClassificationId(classificationId)
 				.setUserId(userId)
 				.setParentLockContext(parentLockContext)
+				.setCommitComment(commitComment)
+				.setModuleId(moduleId)
+				.setNamespace(namespace)
+				.setFixEquivalences(fixEquivalences)
+				.setHandleConcreteDomains(handleConcreteDomains)
 				.build(context.id(), branchPath);
 
 		return JobRequests.prepareSchedule()
